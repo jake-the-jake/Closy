@@ -11,9 +11,11 @@ import {
 import { useNavigation } from "@react-navigation/native";
 
 import { EmptyState } from "@/components/ui/empty-state";
+import { RemoteSyncNotice } from "@/components/ui/remote-sync-notice";
 import { ScreenContainer } from "@/components/ui/screen-container";
-import type { Outfit } from "@/features/outfits/types/outfit";
+import { useAuth } from "@/features/auth";
 import { useOutfits } from "@/features/outfits/outfits-service";
+import { useRemoteSyncStore } from "@/lib/sync";
 import { theme } from "@/theme";
 
 const CREATE_OUTFIT_HREF = "/create-outfit" as Href;
@@ -22,6 +24,9 @@ export function OutfitsScreen() {
   const navigation = useNavigation();
   const router = useRouter();
   const outfits = useOutfits();
+  const { supabaseConfigured, isAuthenticated } = useAuth();
+  const outfitsSync = useRemoteSyncStore((s) => s.outfits);
+  const dismissOutfitsError = useRemoteSyncStore((s) => s.dismissOutfitsError);
 
   const openCreate = useCallback(() => {
     router.push(CREATE_OUTFIT_HREF);
@@ -45,12 +50,33 @@ export function OutfitsScreen() {
     });
   }, [navigation, openCreate]);
 
+  const listHeader = useMemo(
+    () =>
+      supabaseConfigured && isAuthenticated ? (
+        <RemoteSyncNotice
+          snapshot={outfitsSync}
+          domain="outfits"
+          onDismissError={dismissOutfitsError}
+        />
+      ) : null,
+    [
+      dismissOutfitsError,
+      isAuthenticated,
+      outfitsSync,
+      supabaseConfigured,
+    ],
+  );
+
   const listEmpty = useMemo(
     () => (
       <View style={styles.emptyWrap}>
         <EmptyState
           title="No outfits yet"
-          description="Tap New to combine pieces from your wardrobe into a look."
+          description={
+            supabaseConfigured && isAuthenticated
+              ? "Tap New to build a look. Outfits sync to your account when the network is available."
+              : "Tap New to combine pieces from your wardrobe into a look."
+          }
         />
         <Pressable
           onPress={openCreate}
@@ -65,7 +91,7 @@ export function OutfitsScreen() {
         </Pressable>
       </View>
     ),
-    [openCreate],
+    [isAuthenticated, openCreate, supabaseConfigured],
   );
 
   return (
@@ -78,6 +104,7 @@ export function OutfitsScreen() {
           styles.listContent,
           outfits.length === 0 && styles.listContentEmpty,
         ]}
+        ListHeaderComponent={listHeader}
         ListEmptyComponent={listEmpty}
         keyboardShouldPersistTaps={
           Platform.OS === "web" ? "always" : "handled"

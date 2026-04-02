@@ -204,7 +204,7 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
   const saveDisabled =
     props.mode === "create" && wardrobeItems.length === 0;
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     const trimmed = name.trim();
     if (!trimmed) {
       setNameError("Add a name for this outfit.");
@@ -219,11 +219,14 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
     setSaving(true);
     try {
       if (props.mode === "create") {
-        outfitsService.addOutfit({ name: trimmed, clothingItemIds: selectedIds });
+        await outfitsService.addOutfit({
+          name: trimmed,
+          clothingItemIds: selectedIds,
+        });
         if (router.canGoBack()) router.back();
         else router.replace("/(tabs)/outfits" as Href);
       } else {
-        outfitsService.updateOutfit(props.outfitId, {
+        await outfitsService.updateOutfit(props.outfitId, {
           name: trimmed,
           clothingItemIds: selectedIds,
         });

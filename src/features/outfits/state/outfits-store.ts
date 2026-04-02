@@ -1,3 +1,7 @@
+/**
+ * Local outfits cache. Signed-in users: `hydrateOutfitsFromCloud` → `setOutfits`.
+ * Mutations go through `outfits-service` (remote when id is a Supabase UUID).
+ */
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -18,6 +22,10 @@ const asyncStorage = {
 
 export type OutfitsState = {
   outfits: Outfit[];
+  /** Replace list after a remote fetch (or clear). */
+  setOutfits: (outfits: Outfit[]) => void;
+  /** Prepend a row returned from Supabase insert. */
+  ingestOutfit: (outfit: Outfit) => void;
   addOutfit: (input: CreateOutfitInput) => Outfit;
   updateOutfit: (id: string, input: CreateOutfitInput) => void;
   deleteOutfit: (id: string) => void;
@@ -47,6 +55,9 @@ export const useOutfitsStore = create<OutfitsState>()(
   persist(
     (set) => ({
       outfits: [],
+      setOutfits: (outfits) => set({ outfits }),
+      ingestOutfit: (outfit) =>
+        set((s) => ({ outfits: [outfit, ...s.outfits] })),
       addOutfit: (input) => {
         const outfit: Outfit = {
           id: createLocalOutfitId(),

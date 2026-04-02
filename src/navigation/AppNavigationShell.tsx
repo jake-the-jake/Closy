@@ -3,7 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { Platform, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { AuthProvider } from "@/features/auth";
+import { AuthGate, AuthProvider } from "@/features/auth";
 import { AppPersistGate } from "@/lib/app-persist-gate";
 import { theme } from "@/theme";
 
@@ -11,65 +11,71 @@ import { theme } from "@/theme";
 export const ADD_EDIT_PRESENTATION =
   Platform.OS === "web" ? ("card" as const) : ("modal" as const);
 
-/**
- * Shared Expo Router tree: SafeAreaProvider → Stack (same screens on every platform).
- * Native root wraps this in GestureHandlerRootView via `_layout.tsx`.
- * Web root mounts this directly from `_layout.web.tsx` (no RNGH import in that file).
- */
 export function AppNavigationShell() {
   return (
     <AppPersistGate>
       <AuthProvider>
         <SafeAreaProvider style={styles.safeArea}>
-          <StatusBar style="auto" />
-          <Stack
-            screenOptions={{
-              headerTintColor: theme.colors.text,
-              headerStyle: { backgroundColor: theme.colors.surface },
-              contentStyle: {
-                flex: 1,
-                backgroundColor: theme.colors.background,
-              },
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="sign-in" options={{ title: "Sign in" }} />
-            <Stack.Screen name="sign-up" options={{ title: "Create account" }} />
-            <Stack.Screen
-              name="add-item"
-              options={{
-                title: "Add item",
-                presentation: ADD_EDIT_PRESENTATION,
-                animation: Platform.OS === "web" ? "fade" : "default",
-              }}
-            />
-            <Stack.Screen
-              name="edit-item/[id]"
-              options={{
-                title: "Edit item",
-                presentation: ADD_EDIT_PRESENTATION,
-                animation: Platform.OS === "web" ? "fade" : "default",
-              }}
-            />
-            <Stack.Screen name="item/[id]" options={{ title: "Item" }} />
-            <Stack.Screen
-              name="create-outfit"
-              options={{
-                title: "New outfit",
-                presentation: ADD_EDIT_PRESENTATION,
-                animation: Platform.OS === "web" ? "fade" : "default",
-              }}
-            />
-            <Stack.Screen
-              name="edit-outfit/[id]"
-              options={{
-                title: "Edit outfit",
-                presentation: ADD_EDIT_PRESENTATION,
-                animation: Platform.OS === "web" ? "fade" : "default",
-              }}
-            />
-            <Stack.Screen name="outfit/[id]" options={{ title: "Outfit" }} />
-          </Stack>
+          <AuthGate>
+            <>
+              <StatusBar style="auto" />
+              <Stack
+                screenOptions={{
+                  headerTintColor: theme.colors.text,
+                  headerStyle: { backgroundColor: theme.colors.surface },
+                  contentStyle: {
+                    flex: 1,
+                    backgroundColor: theme.colors.background,
+                  },
+                }}
+              >
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="sign-in" options={{ title: "Sign in" }} />
+                <Stack.Screen
+                  name="sign-up"
+                  options={{ title: "Create account" }}
+                />
+                <Stack.Screen
+                  name="add-item"
+                  options={{
+                    title: "Add item",
+                    presentation: ADD_EDIT_PRESENTATION,
+                    animation: Platform.OS === "web" ? "fade" : "default",
+                  }}
+                />
+                <Stack.Screen
+                  name="edit-item/[id]"
+                  options={{
+                    title: "Edit item",
+                    presentation: ADD_EDIT_PRESENTATION,
+                    animation: Platform.OS === "web" ? "fade" : "default",
+                  }}
+                />
+                <Stack.Screen name="item/[id]" options={{ title: "Item" }} />
+                <Stack.Screen
+                  name="create-outfit"
+                  options={{
+                    title: "New outfit",
+                    presentation: ADD_EDIT_PRESENTATION,
+                    animation: Platform.OS === "web" ? "fade" : "default",
+                  }}
+                />
+                <Stack.Screen
+                  name="edit-outfit/[id]"
+                  options={{
+                    title: "Edit outfit",
+                    presentation: ADD_EDIT_PRESENTATION,
+                    animation: Platform.OS === "web" ? "fade" : "default",
+                  }}
+                />
+                <Stack.Screen name="outfit/[id]" options={{ title: "Outfit" }} />
+                <Stack.Screen
+                  name="published-outfit/[id]"
+                  options={{ title: "Discover" }}
+                />
+              </Stack>
+            </>
+          </AuthGate>
         </SafeAreaProvider>
       </AuthProvider>
     </AppPersistGate>

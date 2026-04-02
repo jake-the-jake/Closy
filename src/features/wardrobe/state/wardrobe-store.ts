@@ -14,8 +14,9 @@ const asyncStorage = {
 };
 
 /**
- * Client wardrobe cache. Persisted locally via Zustand `persist` + AsyncStorage (native and web).
- * Remote sync (e.g. Supabase) can hydrate with `setItems` later without changing route-level imports.
+ * Client wardrobe cache (Zustand + AsyncStorage). For signed-in users, Supabase
+ * `wardrobe_items` is loaded via `hydrateWardrobeFromCloud` → `setItems`; the UI
+ * still reads this store through `wardrobe-service` / `useWardrobeItems`.
  */
 export type WardrobeState = {
   items: ClothingItem[];

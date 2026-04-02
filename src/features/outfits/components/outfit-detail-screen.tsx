@@ -1,5 +1,5 @@
-import { useCallback, useLayoutEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useLayoutEffect, useState } from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { type Href, Link, useRouter } from "expo-router";
 
@@ -8,8 +8,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ScreenContainer } from "@/components/ui/screen-container";
 import { findClothingItemById } from "@/features/wardrobe/data/find-clothing-item";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
+import { useAuth } from "@/features/auth";
+import { discoverService } from "@/features/discover";
 import { confirmDeleteOutfit } from "@/features/outfits/lib/confirm-delete-outfit";
-import { useOutfitsStore } from "@/features/outfits/state/outfits-store";
+import { outfitsService } from "@/features/outfits/outfits-service";
+import {
+  buildOutfitSharePayload,
+  presentOutfitShareSheet,
+} from "@/features/social";
 import type { Outfit } from "@/features/outfits/types/outfit";
 import { useWardrobeItems } from "@/features/wardrobe/wardrobe-service";
 import { theme } from "@/theme";
@@ -22,7 +28,8 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
   const navigation = useNavigation();
   const router = useRouter();
   const wardrobeItems = useWardrobeItems();
-  const deleteOutfit = useOutfitsStore((s) => s.deleteOutfit);
+  const { isAuthenticated, supabaseConfigured } = useAuth();
+  const [publishing, setPublishing] = useState(false);
 
   const openEdit = useCallback(() => {
     if (outfit == null) return;
@@ -32,6 +39,66 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
     } as Href);
   }, [outfit, router]);
 
+  const openShare = useCallback(() => {
+    if (outfit == null) return;
+    const resolved = outfit.clothingItemIds.map((id) => ({
+      id,
+      item: findClothingItemById(wardrobeItems, id),
+    }));
+    const payload = buildOutfitSharePayload(outfit, resolved);
+    void presentOutfitShareSheet(payload).then((result) => {
+      if (result.status === "unavailable") {
+        Alert.alert("Could not share", result.message);
+      }
+    });
+  }, [outfit, wardrobeItems]);
+
+  const publishToDiscover = useCallback(() => {
+    if (outfit == null) return;
+    if (!supabaseConfigured) {
+      Alert.alert(
+        "Discover unavailable",
+        "Configure Supabase in your environment and apply the published_outfits migration to enable Discover.",
+      );
+      return;
+    }
+    if (!isAuthenticated) {
+      Alert.alert("Sign in", "Sign in to publish outfits to the Discover feed.");
+      return;
+    }
+    Alert.alert(
+      "Publish to Discover?",
+      "A snapshot of this outfit (names, categories, and any cloud-stored photo URLs) will appear in Discover. Future edits to your saved outfit won’t change this post.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Publish",
+          onPress: () => {
+            void (async () => {
+              setPublishing(true);
+              try {
+                const published = await discoverService.publishOutfitFromCurrentWardrobe(
+                  outfit,
+                  wardrobeItems,
+                );
+                if (published) {
+                  Alert.alert("Published", "Your outfit is live on Discover.");
+                } else {
+                  Alert.alert(
+                    "Could not publish",
+                    "Check your connection and try again.",
+                  );
+                }
+              } finally {
+                setPublishing(false);
+              }
+            })();
+          },
+        },
+      ],
+    );
+  }, [outfit, wardrobeItems, isAuthenticated, supabaseConfigured]);
+
   const requestDeleteOutfit = useCallback(() => {
     if (outfit == null) return;
     const id = outfit.id;
@@ -40,11 +107,13 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
       title: "Delete this outfit?",
       message: `"${displayName}" will be removed from your saved outfits. You can create it again later from your wardrobe.`,
       onConfirm: () => {
-        deleteOutfit(id);
-        router.replace("/(tabs)/outfits" as Href);
+        void (async () => {
+          await outfitsService.deleteOutfit(id);
+          router.replace("/(tabs)/outfits" as Href);
+        })();
       },
     });
-  }, [deleteOutfit, outfit, router]);
+  }, [outfit, router]);
 
   useLayoutEffect(() => {
     const title =
@@ -54,21 +123,34 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
       headerRight:
         outfit != null
           ? () => (
-              <Pressable
-                onPress={openEdit}
-                accessibilityRole="button"
-                accessibilityLabel="Edit outfit"
-                style={({ pressed }) => [
-                  styles.headerEditHit,
-                  pressed && { opacity: 0.75 },
-                ]}
-              >
-                <Text style={styles.headerEditText}>Edit</Text>
-              </Pressable>
+              <View style={styles.headerActions}>
+                <Pressable
+                  onPress={openShare}
+                  accessibilityRole="button"
+                  accessibilityLabel="Share outfit"
+                  style={({ pressed }) => [
+                    styles.headerActionHit,
+                    pressed && { opacity: 0.75 },
+                  ]}
+                >
+                  <Text style={styles.headerEditText}>Share</Text>
+                </Pressable>
+                <Pressable
+                  onPress={openEdit}
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit outfit"
+                  style={({ pressed }) => [
+                    styles.headerActionHitLast,
+                    pressed && { opacity: 0.75 },
+                  ]}
+                >
+                  <Text style={styles.headerEditText}>Edit</Text>
+                </Pressable>
+              </View>
             )
           : undefined,
     });
-  }, [navigation, openEdit, outfit]);
+  }, [navigation, openEdit, openShare, outfit]);
 
   if (!outfit) {
     return (
@@ -93,6 +175,23 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
           {outfit.clothingItemIds.length}{" "}
           {outfit.clothingItemIds.length === 1 ? "piece" : "pieces"}
         </Text>
+
+        <AppButton
+          label="Share outfit summary"
+          fullWidth
+          onPress={openShare}
+          accessibilityLabel="Share outfit summary"
+          accessibilityHint="Opens your device's share options with a text summary of this look"
+        />
+
+        <AppButton
+          label={publishing ? "Publishing…" : "Publish to Discover"}
+          fullWidth
+          onPress={publishToDiscover}
+          disabled={publishing}
+          accessibilityLabel="Publish to Discover"
+          accessibilityHint="Posts a public snapshot of this outfit to the Discover feed"
+        />
 
         <AppButton
           label="Edit outfit"
@@ -229,10 +328,19 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     marginTop: 4,
   },
-  headerEditHit: {
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerActionHit: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     marginRight: -theme.spacing.xs,
+  },
+  headerActionHitLast: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    marginRight: -theme.spacing.sm,
   },
   headerEditText: {
     fontSize: theme.typography.fontSize.md,

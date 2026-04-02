@@ -1,3 +1,8 @@
+/**
+ * Supabase data access for `wardrobe_items` (RLS-scoped to `auth.uid()`).
+ * The Zustand wardrobe store is the UI cache: hydrate replaces the snapshot
+ * after a successful read; create/update/delete go through `wardrobe-service`.
+ */
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { useWardrobeStore } from "@/features/wardrobe/state/wardrobe-store";
@@ -7,6 +12,7 @@ import {
   type ClothingItem,
   type CreateClothingItemInput,
 } from "@/features/wardrobe/types/clothing-item";
+import { useRemoteSyncStore } from "@/lib/sync";
 import { supabase } from "@/lib/supabase/client";
 
 export const WARDROBE_ITEMS_TABLE = "wardrobe_items";
@@ -61,12 +67,15 @@ export function persistableImageUrlForCloud(uri: string): string {
 }
 
 /**
- * When the server returns rows, they replace the in-memory list (device cache).
- * If the server has no rows, local items are left unchanged so first-time sign-in
- * does not wipe an existing offline wardrobe.
+ * Replace the wardrobe cache with the server snapshot after a successful fetch.
+ * Empty results mean an empty wardrobe in Supabase (not “keep old cache”).
+ * On fetch error, the cache is left unchanged.
  */
 export async function hydrateWardrobeFromCloud(userId: string): Promise<void> {
   if (!supabase) return;
+  const patchWardrobe = useRemoteSyncStore.getState().patchWardrobe;
+  patchWardrobe({ phase: "syncing", errorMessage: null });
+
   const { data, error } = await supabase
     .from(WARDROBE_ITEMS_TABLE)
     .select("*")
@@ -74,6 +83,11 @@ export async function hydrateWardrobeFromCloud(userId: string): Promise<void> {
     .order("created_at", { ascending: false });
   if (error) {
     console.warn("[Closy] Wardrobe fetch failed:", error.message);
+    patchWardrobe({
+      phase: "error",
+      errorMessage: error.message,
+      updatedAt: Date.now(),
+    });
     return;
   }
   const rows = (data ?? []) as WardrobeItemRow[];
@@ -82,18 +96,30 @@ export async function hydrateWardrobeFromCloud(userId: string): Promise<void> {
     const item = mapRowToClothingItem(row);
     if (item) items.push(item);
   }
-  if (items.length > 0) {
-    useWardrobeStore.getState().setItems(items);
-  }
+  useWardrobeStore.getState().setItems(items);
+  patchWardrobe({
+    phase: "success",
+    errorMessage: null,
+    updatedAt: Date.now(),
+  });
 }
+
+export type InsertWardrobeItemCloudMeta = {
+  /** Client-generated UUID — must match the Storage object path `{userId}/{id}.*`. */
+  id: string;
+  /** Persisted `image_url` (Supabase public URL or empty). */
+  imageUrl: string;
+};
 
 export async function insertWardrobeItemToCloud(
   client: SupabaseClient,
   userId: string,
   input: CreateClothingItemInput,
+  meta: InsertWardrobeItemCloudMeta,
 ): Promise<ClothingItem | null> {
-  const image_url = persistableImageUrlForCloud(input.localImageUri ?? "");
+  const image_url = persistableImageUrlForCloud(meta.imageUrl);
   const payload = {
+    id: meta.id,
     user_id: userId,
     name: input.name,
     category: input.category,

@@ -1,10 +1,17 @@
-import { PlaceholderScreen } from "@/components/ui/placeholder-screen";
+import { StyleSheet, View } from "react-native";
+
+import { DiscoverFeedScreen } from "@/features/discover";
 
 export default function DiscoverTab() {
   return (
-    <PlaceholderScreen
-      title="Discover"
-      subtitle="Browse ideas and inspiration — more here soon."
-    />
+    <View style={styles.root}>
+      <DiscoverFeedScreen />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});

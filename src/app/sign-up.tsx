@@ -53,6 +53,7 @@ export default function SignUpRoute() {
     return (
       <ScreenContainer scroll={false} omitTopSafeArea style={styles.centered}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={styles.bootCaption}>Checking your session…</Text>
       </ScreenContainer>
     );
   }
@@ -124,6 +125,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
+    gap: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  bootCaption: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textMuted,
+    textAlign: "center",
   },
   stack: {
     gap: theme.spacing.md,

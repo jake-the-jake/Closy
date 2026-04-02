@@ -13,8 +13,10 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState } from "@/components/ui/empty-state";
+import { RemoteSyncNotice } from "@/components/ui/remote-sync-notice";
 import { ScreenContainer } from "@/components/ui/screen-container";
 import { WebHtmlButton } from "@/components/web/web-html-button";
+import { useAuth } from "@/features/auth";
 import {
   CategoryFilterBar,
   type WardrobeCategoryFilter,
@@ -27,6 +29,7 @@ import {
   type WardrobeSortMode,
 } from "@/features/wardrobe/lib/wardrobe-list-display";
 import { useWardrobeItems } from "@/features/wardrobe/wardrobe-service";
+import { useRemoteSyncStore } from "@/lib/sync";
 import { layout } from "@/lib/constants";
 import { theme } from "@/theme";
 
@@ -38,6 +41,9 @@ const ADD_ITEM_HREF = "/add-item" as Href;
 
 export function WardrobeScreen() {
   const items = useWardrobeItems();
+  const { supabaseConfigured, isAuthenticated } = useAuth();
+  const wardrobeSync = useRemoteSyncStore((s) => s.wardrobe);
+  const dismissWardrobeError = useRemoteSyncStore((s) => s.dismissWardrobeError);
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const [categoryFilter, setCategoryFilter] =
@@ -66,6 +72,13 @@ export function WardrobeScreen() {
   const listHeader = useMemo(
     () => (
       <View style={styles.headerBlock}>
+        {supabaseConfigured && isAuthenticated ? (
+          <RemoteSyncNotice
+            snapshot={wardrobeSync}
+            domain="wardrobe"
+            onDismissError={dismissWardrobeError}
+          />
+        ) : null}
         <Text style={styles.count} accessibilityRole="header">
           {items.length === 0
             ? "0 pieces"
@@ -81,7 +94,16 @@ export function WardrobeScreen() {
         <WardrobeSortBar selected={sortMode} onSelect={setSortMode} />
       </View>
     ),
-    [categoryFilter, items.length, listItems.length, sortMode],
+    [
+      categoryFilter,
+      dismissWardrobeError,
+      isAuthenticated,
+      items.length,
+      listItems.length,
+      sortMode,
+      supabaseConfigured,
+      wardrobeSync,
+    ],
   );
 
   const listEmptyComponent = useMemo(() => {
@@ -91,7 +113,11 @@ export function WardrobeScreen() {
         {items.length === 0 ? (
           <EmptyState
             title="Nothing here yet"
-            description="Tap + to add an item. Your list is saved on this device."
+            description={
+              supabaseConfigured && isAuthenticated
+                ? "Tap + to add a piece. Items sync to your account when the network is available."
+                : "Tap + to add an item. Your list is saved on this device."
+            }
           />
         ) : (
           <EmptyState
@@ -105,7 +131,13 @@ export function WardrobeScreen() {
         )}
       </View>
     );
-  }, [items.length, listItems.length, categoryFilter]);
+  }, [
+    categoryFilter,
+    isAuthenticated,
+    items.length,
+    listItems.length,
+    supabaseConfigured,
+  ]);
 
   const listExtraData = useMemo(
     () => ({
