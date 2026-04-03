@@ -1,0 +1,9 @@
+# Local Supabase / CLI metadata. Run `supabase link` for remote project ref.
+
+project_id = "closy"
+
+[api]
+enabled = true
+
+[functions.process-wardrobe-image]
+verify_jwt = true

@@ -53,6 +53,7 @@ export const theme = {
       semibold: "600",
     },
   },
+  /** iOS / Android only — on web use `boxShadow` to avoid RN Web `shadow*` deprecation warnings. */
   shadows: {
     fab: {
       shadowColor: colors.shadow,

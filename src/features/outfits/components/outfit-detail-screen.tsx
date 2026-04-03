@@ -1,13 +1,11 @@
 import { useCallback, useLayoutEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { type Href, Link, useRouter } from "expo-router";
 
 import { AppButton } from "@/components/ui/app-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScreenContainer } from "@/components/ui/screen-container";
-import { findClothingItemById } from "@/features/wardrobe/data/find-clothing-item";
-import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import { useAuth } from "@/features/auth";
 import { discoverService } from "@/features/discover";
 import { confirmDeleteOutfit } from "@/features/outfits/lib/confirm-delete-outfit";
@@ -17,6 +15,8 @@ import {
   presentOutfitShareSheet,
 } from "@/features/social";
 import type { Outfit } from "@/features/outfits/types/outfit";
+import { findClothingItemById } from "@/features/wardrobe/data/find-clothing-item";
+import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import { useWardrobeItems } from "@/features/wardrobe/wardrobe-service";
 import { theme } from "@/theme";
 
@@ -24,12 +24,20 @@ export type OutfitDetailScreenProps = {
   outfit: Outfit | undefined;
 };
 
+type ActionNotice = {
+  variant: "success" | "error";
+  message: string;
+} | null;
+
 export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
   const navigation = useNavigation();
   const router = useRouter();
   const wardrobeItems = useWardrobeItems();
   const { isAuthenticated, supabaseConfigured } = useAuth();
   const [publishing, setPublishing] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareNotice, setShareNotice] = useState<ActionNotice>(null);
+  const [publishNotice, setPublishNotice] = useState<ActionNotice>(null);
 
   const openEdit = useCallback(() => {
     if (outfit == null) return;
@@ -39,65 +47,151 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
     } as Href);
   }, [outfit, router]);
 
-  const openShare = useCallback(() => {
+  const openShare = useCallback(async () => {
     if (outfit == null) return;
-    const resolved = outfit.clothingItemIds.map((id) => ({
-      id,
-      item: findClothingItemById(wardrobeItems, id),
-    }));
-    const payload = buildOutfitSharePayload(outfit, resolved);
-    void presentOutfitShareSheet(payload).then((result) => {
+    setShareNotice(null);
+    setSharing(true);
+    console.log("[Closy][OutfitDetail] share action start", { outfitId: outfit.id });
+    try {
+      const resolved = outfit.clothingItemIds.map((id) => ({
+        id,
+        item: findClothingItemById(wardrobeItems, id),
+      }));
+      const payload = buildOutfitSharePayload(outfit, resolved);
+      const result = await presentOutfitShareSheet(payload);
+      console.log("[Closy][OutfitDetail] share action result", result);
+
       if (result.status === "unavailable") {
-        Alert.alert("Could not share", result.message);
+        setShareNotice({ variant: "error", message: result.message });
+      } else if (result.status === "copied") {
+        setShareNotice({ variant: "success", message: result.message });
+      } else if (result.status === "shared") {
+        setShareNotice({
+          variant: "success",
+          message:
+            Platform.OS === "web"
+              ? "Share completed (or summary was sent via your browser)."
+              : "Share completed.",
+        });
+      } else {
+        setShareNotice({
+          variant: "success",
+          message: "Share sheet closed without sharing.",
+        });
       }
-    });
+    } catch (err) {
+      console.error("[Closy][OutfitDetail] share action threw", err);
+      setShareNotice({
+        variant: "error",
+        message:
+          err instanceof Error ? err.message : "Something went wrong while sharing.",
+      });
+    } finally {
+      setSharing(false);
+    }
   }, [outfit, wardrobeItems]);
 
-  const publishToDiscover = useCallback(() => {
-    if (outfit == null) return;
-    if (!supabaseConfigured) {
-      Alert.alert(
-        "Discover unavailable",
-        "Configure Supabase in your environment and apply the published_outfits migration to enable Discover.",
+  const runPublishToDiscover = useCallback(async () => {
+    if (outfit == null) {
+      console.warn("[Closy][OutfitDetail] publish run skipped: no outfit");
+      return;
+    }
+    setPublishing(true);
+    setPublishNotice(null);
+    console.log("[Closy][OutfitDetail] publish request", { outfitId: outfit.id });
+    try {
+      const published = await discoverService.publishOutfitFromCurrentWardrobe(
+        outfit,
+        wardrobeItems,
       );
+      if (published) {
+        console.log("[Closy][OutfitDetail] publish success", {
+          publishedId: published.id,
+        });
+        setPublishNotice({
+          variant: "success",
+          message: `Published to Discover. Open the Discover tab and refresh if you don’t see it yet.`,
+        });
+      } else {
+        console.warn("[Closy][OutfitDetail] publish returned null");
+        setPublishNotice({
+          variant: "error",
+          message:
+            "Could not publish. Check your connection, sign-in, and Supabase configuration.",
+        });
+      }
+    } catch (err) {
+      console.error("[Closy][OutfitDetail] publish threw", err);
+      setPublishNotice({
+        variant: "error",
+        message:
+          err instanceof Error ? err.message : "Publish failed unexpectedly.",
+      });
+    } finally {
+      setPublishing(false);
+    }
+  }, [outfit, wardrobeItems]);
+
+  const beginPublishToDiscover = useCallback(() => {
+    if (outfit == null) return;
+    setPublishNotice(null);
+
+    if (!supabaseConfigured) {
+      console.warn("[Closy][OutfitDetail] publish blocked: supabase not configured");
+      setPublishNotice({
+        variant: "error",
+        message:
+          "Discover isn’t configured. Add Supabase env vars and run migrations.",
+      });
       return;
     }
     if (!isAuthenticated) {
-      Alert.alert("Sign in", "Sign in to publish outfits to the Discover feed.");
+      console.warn("[Closy][OutfitDetail] publish blocked: not signed in");
+      setPublishNotice({
+        variant: "error",
+        message: "Sign in to publish to Discover.",
+      });
       return;
     }
-    Alert.alert(
-      "Publish to Discover?",
-      "A snapshot of this outfit (names, categories, and any cloud-stored photo URLs) will appear in Discover. Future edits to your saved outfit won’t change this post.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Publish",
-          onPress: () => {
-            void (async () => {
-              setPublishing(true);
-              try {
-                const published = await discoverService.publishOutfitFromCurrentWardrobe(
-                  outfit,
-                  wardrobeItems,
-                );
-                if (published) {
-                  Alert.alert("Published", "Your outfit is live on Discover.");
-                } else {
-                  Alert.alert(
-                    "Could not publish",
-                    "Check your connection and try again.",
-                  );
-                }
-              } finally {
-                setPublishing(false);
-              }
-            })();
-          },
+
+    const body =
+      "A snapshot of this outfit (names, categories, and any cloud-stored photo URLs) will appear in Discover. Future edits to your saved outfit won’t change this post.";
+
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined") {
+        const ok = window.confirm(`Publish to Discover?\n\n${body}`);
+        console.log("[Closy][OutfitDetail] publish confirm (web)", { ok });
+        if (ok) void runPublishToDiscover();
+      } else {
+        console.error("[Closy][OutfitDetail] publish: window undefined on web");
+        setPublishNotice({
+          variant: "error",
+          message: "Cannot confirm publish in this environment.",
+        });
+      }
+      return;
+    }
+
+    Alert.alert("Publish to Discover?", body, [
+      {
+        text: "Cancel",
+        style: "cancel",
+        onPress: () =>
+          console.log("[Closy][OutfitDetail] publish cancelled (native)"),
+      },
+      {
+        text: "Publish",
+        onPress: () => {
+          void runPublishToDiscover();
         },
-      ],
-    );
-  }, [outfit, wardrobeItems, isAuthenticated, supabaseConfigured]);
+      },
+    ]);
+  }, [
+    outfit,
+    isAuthenticated,
+    supabaseConfigured,
+    runPublishToDiscover,
+  ]);
 
   const requestDeleteOutfit = useCallback(() => {
     if (outfit == null) return;
@@ -125,7 +219,7 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
           ? () => (
               <View style={styles.headerActions}>
                 <Pressable
-                  onPress={openShare}
+                  onPress={() => void openShare()}
                   accessibilityRole="button"
                   accessibilityLabel="Share outfit"
                   style={({ pressed }) => [
@@ -176,22 +270,60 @@ export function OutfitDetailScreen({ outfit }: OutfitDetailScreenProps) {
           {outfit.clothingItemIds.length === 1 ? "piece" : "pieces"}
         </Text>
 
+        {shareNotice ? (
+          <View
+            style={[
+              styles.notice,
+              shareNotice.variant === "error" ? styles.noticeError : styles.noticeSuccess,
+            ]}
+          >
+            <Text style={styles.noticeText}>{shareNotice.message}</Text>
+          </View>
+        ) : null}
+
         <AppButton
           label="Share outfit summary"
           fullWidth
-          onPress={openShare}
+          onPress={() => void openShare()}
+          loading={sharing}
           accessibilityLabel="Share outfit summary"
-          accessibilityHint="Opens your device's share options with a text summary of this look"
+          accessibilityHint="Shares a text summary of this look (browser share or copy on web)"
         />
 
+        {publishNotice ? (
+          <View
+            style={[
+              styles.notice,
+              publishNotice.variant === "error"
+                ? styles.noticeError
+                : styles.noticeSuccess,
+            ]}
+          >
+            <Text style={styles.noticeText}>{publishNotice.message}</Text>
+          </View>
+        ) : null}
+
         <AppButton
-          label={publishing ? "Publishing…" : "Publish to Discover"}
+          label="Publish to Discover"
           fullWidth
-          onPress={publishToDiscover}
-          disabled={publishing}
+          onPress={beginPublishToDiscover}
+          loading={publishing}
           accessibilityLabel="Publish to Discover"
           accessibilityHint="Posts a public snapshot of this outfit to the Discover feed"
         />
+
+        {publishNotice?.variant === "success" ? (
+          <AppButton
+            label="Open Discover"
+            variant="secondary"
+            fullWidth
+            onPress={() => {
+              console.log("[Closy][OutfitDetail] navigate to Discover tab");
+              router.push("/(tabs)/discover" as Href);
+            }}
+            accessibilityLabel="Open Discover tab"
+          />
+        ) : null}
 
         <AppButton
           label="Edit outfit"
@@ -266,6 +398,24 @@ const styles = StyleSheet.create({
   lede: {
     fontSize: theme.typography.fontSize.md,
     color: theme.colors.textMuted,
+  },
+  notice: {
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    padding: theme.spacing.md,
+  },
+  noticeSuccess: {
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+  },
+  noticeError: {
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.danger,
+  },
+  noticeText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text,
+    lineHeight: 20,
   },
   sectionLabel: {
     fontSize: theme.typography.fontSize.xs,

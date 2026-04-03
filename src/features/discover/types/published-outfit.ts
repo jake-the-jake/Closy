@@ -23,11 +23,22 @@ export type PublishedOutfitSnapshot = {
 export type PublishedOutfit = {
   id: string;
   authorUserId: string;
+  /**
+   * Resolved for display: `profiles.display_name` when set, else denormalized
+   * `author_display_name` from the post row. Use `publishedOutfitAuthorLabel` for UI.
+   */
+  authorDisplayName: string;
+  /** From `profiles.avatar_url` when present; null if no profile photo. */
+  authorAvatarUrl: string | null;
   sourceOutfitId: string;
   name: string;
   pieceCount: number;
   snapshot: PublishedOutfitSnapshot;
   publishedAt: number;
+  /** Total likes (all users). */
+  likeCount: number;
+  /** Current session user has liked this post (false when signed out). */
+  likedByMe: boolean;
 };
 
 function isSnapshotLine(v: unknown): v is PublishedOutfitSnapshotLine {

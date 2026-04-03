@@ -1,5 +1,6 @@
 import type { Outfit } from "@/features/outfits/types/outfit";
 import type { ResolvedOutfitPiece } from "@/features/outfits/sharing/outfit-share-payload";
+import { clothingItemDisplayUri } from "@/features/wardrobe/lib/clothing-item-images";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import { persistableImageUrlForCloud } from "@/features/wardrobe/lib/cloud-wardrobe";
 import {
@@ -22,7 +23,7 @@ function lineFromResolved(
     };
   }
   const name = item.name.trim() || "Untitled piece";
-  const remote = persistableImageUrlForCloud(item.imageUrl);
+  const remote = persistableImageUrlForCloud(clothingItemDisplayUri(item));
   return {
     clothingItemId: id,
     label: name,

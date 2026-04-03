@@ -18,5 +18,5 @@
     "expo-env.d.ts",
     "src/types/expo-public-env.d.ts"
   ],
-  "exclude": ["node_modules", "example"]
+  "exclude": ["node_modules", "example", "supabase/functions"]
 }

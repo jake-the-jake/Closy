@@ -1,8 +1,8 @@
 import type { User } from "@supabase/supabase-js";
 
 /**
- * Stable app-level view of account data. Backed by Supabase Auth today
- * (`user_metadata`); a `profiles` table can mirror these fields later.
+ * Stable app-level view of account data from Supabase Auth (`user_metadata`).
+ * Discover-facing name/avatar are read from `public.profiles` when present.
  */
 export type AccountProfile = {
   userId: string;

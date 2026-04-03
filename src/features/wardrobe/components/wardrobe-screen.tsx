@@ -297,8 +297,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     alignItems: "center",
     justifyContent: "center",
-    ...theme.shadows.fab,
-    elevation: 10,
+    // RN Web warns on shadow* — use boxShadow on web only; native keeps elevation + shadow*.
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }
+      : { ...theme.shadows.fab, elevation: 10 }),
   },
   fabPressed: {
     backgroundColor: theme.colors.primaryPressed,

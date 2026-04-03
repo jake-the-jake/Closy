@@ -13,10 +13,15 @@ import { AppButton } from "@/components/ui/app-button";
 import { ScreenContainer } from "@/components/ui/screen-container";
 import { useAuth } from "@/features/auth";
 import {
+  fetchPublicProfileByUserId,
+  upsertMyProfile,
+} from "@/features/profile/lib/cloud-profiles";
+import {
   buildAccountProfile,
   displayInitials,
 } from "../types/account-profile";
 import { media } from "@/lib/constants";
+import { supabase } from "@/lib/supabase/client";
 import { theme } from "@/theme";
 
 export function ProfileAccountView() {
@@ -29,43 +34,119 @@ export function ProfileAccountView() {
     updateProfileDisplayName,
   } = useAuth();
 
-  const profile = useMemo(
+  const account = useMemo(
     () => (user ? buildAccountProfile(user) : null),
     [user],
   );
 
+  const [remoteProfile, setRemoteProfile] = useState<Awaited<
+    ReturnType<typeof fetchPublicProfileByUserId>
+  > | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
   const [draftDisplayName, setDraftDisplayName] = useState("");
-  const [savingName, setSavingName] = useState(false);
+  const [draftAvatarUrl, setDraftAvatarUrl] = useState("");
+  const [saving, setSaving] = useState(false);
   const [nameNotice, setNameNotice] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    if (!profile) return;
-    setDraftDisplayName(profile.displayName);
-    setNameNotice(null);
-    setNameError(null);
-  }, [profile]);
+    if (!user?.id || !isAuthenticated) {
+      setRemoteProfile(null);
+      setProfileLoading(false);
+      return;
+    }
+    const uid = user.id;
+    const userSnapshot = user;
+    let cancelled = false;
+    setProfileLoading(true);
+    void fetchPublicProfileByUserId(uid).then((row) => {
+      if (cancelled) return;
+      setRemoteProfile(row);
+      setProfileLoading(false);
+      const acct = buildAccountProfile(userSnapshot);
+      const name =
+        row?.displayName != null && row.displayName.trim().length > 0
+          ? row.displayName.trim()
+          : acct.displayName;
+      const av =
+        (row?.avatarUrl != null && row.avatarUrl.trim().length > 0
+          ? row.avatarUrl.trim()
+          : "") ||
+        acct.avatarUrl?.trim() ||
+        "";
+      setDraftDisplayName(name);
+      setDraftAvatarUrl(av);
+      setNameNotice(null);
+      setNameError(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when account identity changes, not every session refresh
+  }, [user?.id, isAuthenticated]);
+
+  const baselineDisplayName = useMemo(() => {
+    if (!account) return "";
+    const fromDb = remoteProfile?.displayName?.trim() ?? "";
+    return fromDb.length > 0 ? fromDb : account.displayName;
+  }, [account, remoteProfile?.displayName]);
+
+  const baselineAvatarUrl = useMemo(() => {
+    if (!account) return "";
+    const fromDb = remoteProfile?.avatarUrl?.trim() ?? "";
+    if (fromDb.length > 0) return fromDb;
+    return account.avatarUrl?.trim() ?? "";
+  }, [account, remoteProfile?.avatarUrl]);
 
   const nameDirty =
-    profile != null && draftDisplayName.trim() !== profile.displayName.trim();
+    account != null &&
+    draftDisplayName.trim() !== baselineDisplayName.trim();
 
-  const onSaveDisplayName = useCallback(async () => {
+  const avatarDirty =
+    account != null &&
+    draftAvatarUrl.trim() !== baselineAvatarUrl.trim();
+
+  const onSaveProfile = useCallback(async () => {
     setNameError(null);
     setNameNotice(null);
-    if (!profile) return;
-    setSavingName(true);
+    if (!user?.id || !account || !supabase) return;
+    if (!nameDirty && !avatarDirty) return;
+    setSaving(true);
     try {
-      const { error } = await updateProfileDisplayName(draftDisplayName);
-      if (error) {
-        setNameError(error.message);
-        return;
+      if (nameDirty) {
+        const { error } = await updateProfileDisplayName(draftDisplayName);
+        if (error) {
+          setNameError(error.message);
+          return;
+        }
       }
-      setNameNotice("Display name saved.");
+      if (avatarDirty) {
+        const trimmed = draftAvatarUrl.trim();
+        const pe = await upsertMyProfile(supabase, user.id, {
+          avatarUrl: trimmed.length > 0 ? trimmed : null,
+        });
+        if (pe.error) {
+          setNameError(pe.error.message);
+          return;
+        }
+      }
+      setNameNotice("Profile saved.");
+      const row = await fetchPublicProfileByUserId(user.id);
+      setRemoteProfile(row);
     } finally {
-      setSavingName(false);
+      setSaving(false);
     }
-  }, [draftDisplayName, profile, updateProfileDisplayName]);
+  }, [
+    account,
+    avatarDirty,
+    draftAvatarUrl,
+    draftDisplayName,
+    nameDirty,
+    updateProfileDisplayName,
+    user?.id,
+  ]);
 
   const onSignOut = useCallback(async () => {
     setSigningOut(true);
@@ -99,7 +180,7 @@ export function ProfileAccountView() {
     );
   }
 
-  if (!isAuthenticated || !user || !profile) {
+  if (!isAuthenticated || !user || !account) {
     return (
       <ScreenContainer scroll={false} omitTopSafeArea style={styles.centered}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -108,8 +189,18 @@ export function ProfileAccountView() {
     );
   }
 
-  const initials = displayInitials(draftDisplayName || profile.displayName);
-  const showAvatar = profile.avatarUrl != null && profile.avatarUrl.length > 0;
+  if (profileLoading) {
+    return (
+      <ScreenContainer scroll={false} omitTopSafeArea style={styles.centered}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={styles.muted}>Loading your profile…</Text>
+      </ScreenContainer>
+    );
+  }
+
+  const heroAvatarUri = draftAvatarUrl.trim();
+  const showAvatar = heroAvatarUri.length > 0;
+  const initials = displayInitials(draftDisplayName || baselineDisplayName);
 
   return (
     <ScreenContainer scroll omitTopSafeArea style={styles.body}>
@@ -119,7 +210,7 @@ export function ProfileAccountView() {
         <View style={styles.hero}>
           {showAvatar ? (
             <Image
-              source={{ uri: profile.avatarUrl! }}
+              source={{ uri: heroAvatarUri }}
               style={styles.avatarImage}
               contentFit="cover"
               transition={media.imageTransitionMs.card}
@@ -131,16 +222,17 @@ export function ProfileAccountView() {
             </View>
           )}
           <Text style={styles.heroName}>
-            {draftDisplayName.trim() || profile.displayName}
+            {draftDisplayName.trim() || baselineDisplayName}
           </Text>
-          <Text style={styles.heroEmail}>{profile.email ?? "No email on file"}</Text>
+          <Text style={styles.heroEmail}>{account.email ?? "No email on file"}</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Your name</Text>
+          <Text style={styles.cardTitle}>Public profile</Text>
           <Text style={styles.cardHint}>
-            Shown in the app as you personalize Closy. Stored in your account
-            metadata (avatar coming later).
+            Your display name and photo appear on Discover when you publish
+            outfits. Stored in your Closy profile (synced with your account
+            name).
           </Text>
           <Text style={styles.inputLabel}>Display name</Text>
           <TextInput
@@ -156,21 +248,38 @@ export function ProfileAccountView() {
             autoCapitalize="words"
             autoCorrect
             accessibilityLabel="Display name"
-            editable={!savingName}
+            editable={!saving}
+          />
+          <Text style={styles.inputLabel}>Avatar image URL (optional)</Text>
+          <TextInput
+            value={draftAvatarUrl}
+            onChangeText={(t) => {
+              setDraftAvatarUrl(t);
+              if (nameError) setNameError(null);
+              if (nameNotice) setNameNotice(null);
+            }}
+            placeholder="https://…"
+            placeholderTextColor={theme.colors.textMuted}
+            style={styles.textField}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            accessibilityLabel="Avatar image URL"
+            editable={!saving}
           />
           {nameError ? <Text style={styles.error}>{nameError}</Text> : null}
           {nameNotice ? <Text style={styles.notice}>{nameNotice}</Text> : null}
           <AppButton
-            label="Save display name"
+            label="Save profile"
             variant="secondary"
             fullWidth
-            onPress={() => void onSaveDisplayName()}
-            loading={savingName}
-            disabled={savingName || !nameDirty}
+            onPress={() => void onSaveProfile()}
+            loading={saving}
+            disabled={saving || (!nameDirty && !avatarDirty)}
             accessibilityHint={
-              nameDirty
-                ? "Updates the name on your account"
-                : "Change the name above to enable saving"
+              nameDirty || avatarDirty
+                ? "Saves your public name and avatar"
+                : "Change the fields above to enable saving"
             }
           />
         </View>
@@ -180,7 +289,7 @@ export function ProfileAccountView() {
           <View style={styles.kvRow}>
             <Text style={styles.kvLabel}>Email</Text>
             <Text style={styles.kvValue} selectable>
-              {profile.email ?? "—"}
+              {account.email ?? "—"}
             </Text>
           </View>
           <View style={styles.kvRow}>
@@ -188,18 +297,18 @@ export function ProfileAccountView() {
             <Text
               style={[
                 styles.kvValue,
-                profile.emailConfirmed
+                account.emailConfirmed
                   ? styles.statusOk
                   : styles.statusPending,
               ]}
             >
-              {profile.emailConfirmed ? "Verified" : "Pending"}
+              {account.emailConfirmed ? "Verified" : "Pending"}
             </Text>
           </View>
           <View style={styles.kvRow}>
             <Text style={styles.kvLabel}>User id</Text>
             <Text style={styles.kvMono} selectable numberOfLines={1}>
-              {profile.userId}
+              {account.userId}
             </Text>
           </View>
         </View>

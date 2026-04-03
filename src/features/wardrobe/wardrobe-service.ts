@@ -7,6 +7,10 @@
  *   rows sync on update/delete (best effort).
  * - **No session or failed remote op**: `createItem` falls back to local `local-…` ids.
  */
+import {
+  clothingItemDisplayUri,
+  normalizeImageRefs,
+} from "@/features/wardrobe/lib/clothing-item-images";
 import { createClothingItem } from "@/features/wardrobe/lib/create-clothing-item";
 import {
   deleteWardrobeItemFromCloud,
@@ -16,15 +20,20 @@ import {
   updateWardrobeItemInCloud,
 } from "@/features/wardrobe/lib/cloud-wardrobe";
 import {
-  deleteWardrobeItemImageByPublicUrl,
-  isWardrobeImagePublicObjectUrl,
+  deleteAllWardrobeImagesForItem,
+  invokeProcessWardrobeDerivatives,
   newCloudWardrobeRowId,
-  uploadWardrobeItemImage,
+  uploadWardrobeItemOriginal,
 } from "@/features/wardrobe/lib/wardrobe-image-storage";
 import { useWardrobeStore } from "@/features/wardrobe/state/wardrobe-store";
 import type { ClothingItem, CreateClothingItemInput } from "@/features/wardrobe/types/clothing-item";
 import { getAuthedUserId } from "@/lib/supabase/get-authed-user-id";
 import { supabase } from "@/lib/supabase/client";
+
+function isPublicWardrobeUrl(url: string): boolean {
+  const t = url.trim();
+  return t.startsWith("https://") || t.startsWith("http://");
+}
 
 /**
  * Wardrobe reads/writes. Local Zustand + AsyncStorage is always updated for UI;
@@ -41,22 +50,37 @@ export const wardrobeService = {
     if (client && userId) {
       const id = newCloudWardrobeRowId();
       let imageUrl = "";
+      let imageRefs: ClothingItem["imageRefs"] = null;
+
       if (input.localImageUri?.trim()) {
-        const up = await uploadWardrobeItemImage(
+        const up = await uploadWardrobeItemOriginal(
           client,
           userId,
           id,
           input.localImageUri,
         );
         if (up.ok) {
-          imageUrl = up.publicUrl;
+          const proc = await invokeProcessWardrobeDerivatives(client, id);
+          if (proc.ok) {
+            imageRefs = proc.imageRefs;
+            imageUrl = proc.imageRefs.display;
+          } else {
+            console.warn(
+              "[Closy] Wardrobe derivative pipeline failed:",
+              proc.errorMessage,
+            );
+            imageRefs = normalizeImageRefs(null, up.publicUrl);
+            imageUrl = up.publicUrl;
+          }
         } else {
           console.warn("[Closy] Wardrobe image upload failed:", up.errorMessage);
         }
       }
+
       const remote = await insertWardrobeItemToCloud(client, userId, input, {
         id,
         imageUrl,
+        imageRefs,
       });
       if (remote) {
         useWardrobeStore.getState().addItem(remote);
@@ -81,32 +105,48 @@ export const wardrobeService = {
     }
 
     let syncItem = item;
+
     if (item.imageUrl.trim() && !persistableImageUrlForCloud(item.imageUrl)) {
-      const up = await uploadWardrobeItemImage(
+      const legacyUrl =
+        prev?.imageRefs?.original?.trim() ||
+        prev?.imageUrl?.trim() ||
+        "";
+      if (isPublicWardrobeUrl(legacyUrl)) {
+        await deleteAllWardrobeImagesForItem(client, userId, item.id, legacyUrl);
+      }
+
+      const up = await uploadWardrobeItemOriginal(
         client,
         userId,
         item.id,
         item.imageUrl,
       );
       if (up.ok) {
-        syncItem = { ...item, imageUrl: up.publicUrl };
+        const proc = await invokeProcessWardrobeDerivatives(client, item.id);
+        if (proc.ok) {
+          syncItem = {
+            ...item,
+            imageUrl: proc.imageRefs.display,
+            imageRefs: proc.imageRefs,
+          };
+        } else {
+          console.warn(
+            "[Closy] Wardrobe derivative pipeline failed:",
+            proc.errorMessage,
+          );
+          syncItem = {
+            ...item,
+            imageUrl: up.publicUrl,
+            imageRefs: normalizeImageRefs(null, up.publicUrl),
+          };
+        }
         useWardrobeStore.getState().updateItem(syncItem);
       } else {
         console.warn("[Closy] Wardrobe image upload failed:", up.errorMessage);
-        const fallbackUrl = prev?.imageUrl ?? "";
-        syncItem = { ...item, imageUrl: fallbackUrl };
+        const fallbackUrl = prev ? clothingItemDisplayUri(prev) : "";
+        syncItem = { ...item, imageUrl: fallbackUrl, imageRefs: prev?.imageRefs };
         useWardrobeStore.getState().updateItem(syncItem);
       }
-    }
-
-    const prevRemote = (prev?.imageUrl ?? "").trim();
-    const nextRemote = syncItem.imageUrl.trim();
-    if (
-      prevRemote &&
-      isWardrobeImagePublicObjectUrl(prevRemote) &&
-      prevRemote !== nextRemote
-    ) {
-      await deleteWardrobeItemImageByPublicUrl(client, prevRemote);
     }
 
     await updateWardrobeItemInCloud(client, userId, syncItem);
@@ -117,9 +157,12 @@ export const wardrobeService = {
     const userId = await getAuthedUserId();
     const existing = useWardrobeStore.getState().items.find((row) => row.id === id);
     if (client && userId && isCloudWardrobeItemId(id)) {
-      const url = existing?.imageUrl?.trim() ?? "";
-      if (url && isWardrobeImagePublicObjectUrl(url)) {
-        await deleteWardrobeItemImageByPublicUrl(client, url);
+      const legacyUrl =
+        existing?.imageRefs?.original?.trim() ||
+        existing?.imageUrl?.trim() ||
+        "";
+      if (legacyUrl && isPublicWardrobeUrl(legacyUrl)) {
+        await deleteAllWardrobeImagesForItem(client, userId, id, legacyUrl);
       }
       await deleteWardrobeItemFromCloud(client, userId, id);
     }

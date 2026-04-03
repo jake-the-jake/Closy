@@ -6,10 +6,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { useWardrobeStore } from "@/features/wardrobe/state/wardrobe-store";
+import { clothingItemDisplayUri } from "@/features/wardrobe/lib/clothing-item-images";
 import {
   CLOTHING_CATEGORIES,
   type ClothingCategory,
   type ClothingItem,
+  type ClothingItemImageRefs,
   type CreateClothingItemInput,
 } from "@/features/wardrobe/types/clothing-item";
 import { useRemoteSyncStore } from "@/lib/sync";
@@ -33,10 +35,22 @@ export type WardrobeItemRow = {
   colour: string;
   brand: string;
   image_url: string | null;
+  image_refs: unknown | null;
   tags: string[] | null;
   created_at: string;
   updated_at: string;
 };
+
+function parseImageRefsFromRow(raw: unknown): ClothingItemImageRefs | null {
+  if (raw == null) return null;
+  if (typeof raw !== "object" || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const original = typeof o.original === "string" ? o.original.trim() : "";
+  const thumbnail = typeof o.thumbnail === "string" ? o.thumbnail.trim() : "";
+  const display = typeof o.display === "string" ? o.display.trim() : "";
+  if (!original && !thumbnail && !display) return null;
+  return { original, thumbnail, display };
+}
 
 function parseCategory(raw: string): ClothingCategory | null {
   return CLOTHING_CATEGORIES.includes(raw as ClothingCategory)
@@ -47,13 +61,18 @@ function parseCategory(raw: string): ClothingCategory | null {
 export function mapRowToClothingItem(row: WardrobeItemRow): ClothingItem | null {
   const category = parseCategory(row.category);
   if (!category) return null;
+  const imageRefs = parseImageRefsFromRow(row.image_refs);
+  const legacyUrl = (row.image_url ?? "").trim();
+  const displayUrl =
+    (imageRefs?.display?.trim() || legacyUrl).trim();
   return {
     id: row.id,
     name: row.name,
     category,
     colour: row.colour,
     brand: row.brand ?? "",
-    imageUrl: (row.image_url ?? "").trim(),
+    imageUrl: displayUrl,
+    imageRefs,
     tags: row.tags ?? [],
   };
 }
@@ -105,10 +124,11 @@ export async function hydrateWardrobeFromCloud(userId: string): Promise<void> {
 }
 
 export type InsertWardrobeItemCloudMeta = {
-  /** Client-generated UUID — must match the Storage object path `{userId}/{id}.*`. */
+  /** Client-generated UUID — must match the Storage object folder `{userId}/{id}/`. */
   id: string;
-  /** Persisted `image_url` (Supabase public URL or empty). */
+  /** Legacy column: canonical display URL (HTTP). */
   imageUrl: string;
+  imageRefs?: ClothingItemImageRefs | null;
 };
 
 export async function insertWardrobeItemToCloud(
@@ -118,6 +138,7 @@ export async function insertWardrobeItemToCloud(
   meta: InsertWardrobeItemCloudMeta,
 ): Promise<ClothingItem | null> {
   const image_url = persistableImageUrlForCloud(meta.imageUrl);
+  const image_refs = meta.imageRefs ?? null;
   const payload = {
     id: meta.id,
     user_id: userId,
@@ -126,6 +147,7 @@ export async function insertWardrobeItemToCloud(
     colour: input.colour,
     brand: input.brand,
     image_url,
+    image_refs,
     tags: [] as string[],
   };
   const { data, error } = await client
@@ -145,7 +167,9 @@ export async function updateWardrobeItemInCloud(
   userId: string,
   item: ClothingItem,
 ): Promise<boolean> {
-  const image_url = persistableImageUrlForCloud(item.imageUrl);
+  const display = clothingItemDisplayUri(item);
+  const image_url = persistableImageUrlForCloud(display);
+  const image_refs = item.imageRefs ?? null;
   const { error } = await client
     .from(WARDROBE_ITEMS_TABLE)
     .update({
@@ -154,6 +178,7 @@ export async function updateWardrobeItemInCloud(
       colour: item.colour,
       brand: item.brand,
       image_url,
+      image_refs,
       tags: [...item.tags],
       updated_at: new Date().toISOString(),
     })

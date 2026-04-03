@@ -1,3 +1,4 @@
+import { clothingItemDisplayUri } from "@/features/wardrobe/lib/clothing-item-images";
 import type { AddItemFormValues } from "@/features/wardrobe/types/add-item-form";
 import { createLocalWardrobeItemId } from "@/features/wardrobe/lib/local-item-id";
 import {
@@ -5,15 +6,15 @@ import {
   type CreateClothingItemInput,
 } from "@/features/wardrobe/types/clothing-item";
 
-/** Map a saved row into add-item form state (image uses existing `imageUrl` as preview URI). */
+/** Map a saved row into add-item form state (image uses display derivative as preview URI). */
 export function clothingItemToFormValues(item: ClothingItem): AddItemFormValues {
-  const uri = item.imageUrl.trim();
+  const uri = clothingItemDisplayUri(item).trim();
   return {
     name: item.name,
     category: item.category,
     colour: item.colour,
     brand: item.brand,
-    imageUri: uri.length > 0 ? item.imageUrl : null,
+    imageUri: uri.length > 0 ? clothingItemDisplayUri(item) : null,
   };
 }
 
@@ -33,6 +34,19 @@ export function applyItemFormToExistingClothingItem(
       ? input.localImageUri.trim()
       : "";
 
+  const prevDisplay = clothingItemDisplayUri(existing).trim();
+  let imageRefs = existing.imageRefs ?? null;
+
+  if (!imageUrl) {
+    imageRefs = null;
+  } else if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    if (imageUrl.trim() !== prevDisplay) {
+      imageRefs = null;
+    }
+  } else {
+    imageRefs = null;
+  }
+
   return {
     ...existing,
     name: input.name,
@@ -40,6 +54,7 @@ export function applyItemFormToExistingClothingItem(
     colour: input.colour,
     brand: input.brand,
     imageUrl,
+    imageRefs,
   };
 }
 

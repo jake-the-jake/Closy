@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { clothingItemThumbnailUri } from "@/features/wardrobe/lib/clothing-item-images";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import type { ClothingItem } from "@/features/wardrobe/types/clothing-item";
 import { media } from "@/lib/constants";
@@ -15,6 +16,7 @@ export function ClothingItemCard({ item }: ClothingItemCardProps) {
   const brandDisplay = item.brand.trim() ? item.brand : "—";
   const nameDisplay = item.name.trim() ? item.name.trim() : "Untitled piece";
   const colourDisplay = item.colour.trim() ? item.colour.trim() : "—";
+  const thumbUri = clothingItemThumbnailUri(item).trim();
 
   return (
     <Link href={{ pathname: "/item/[id]", params: { id: item.id } }} asChild>
@@ -24,9 +26,9 @@ export function ClothingItemCard({ item }: ClothingItemCardProps) {
         style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}
       >
         <View style={styles.card}>
-          {item.imageUrl.trim() ? (
+          {thumbUri ? (
             <Image
-              source={{ uri: item.imageUrl }}
+              source={{ uri: thumbUri }}
               style={styles.image}
               contentFit="cover"
               transition={media.imageTransitionMs.card}

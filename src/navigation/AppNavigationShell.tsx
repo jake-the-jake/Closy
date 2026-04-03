@@ -73,6 +73,10 @@ export function AppNavigationShell() {
                   name="published-outfit/[id]"
                   options={{ title: "Discover" }}
                 />
+                <Stack.Screen
+                  name="author/[userId]"
+                  options={{ title: "Profile" }}
+                />
               </Stack>
             </>
           </AuthGate>

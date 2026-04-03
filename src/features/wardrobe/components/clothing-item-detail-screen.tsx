@@ -6,6 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScreenContainer } from "@/components/ui/screen-container";
+import { clothingItemDisplayUri } from "@/features/wardrobe/lib/clothing-item-images";
 import { confirmDeleteWardrobeItem } from "@/features/wardrobe/lib/confirm-delete-item";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import type { ClothingItem } from "@/features/wardrobe/types/clothing-item";
@@ -106,7 +107,7 @@ export function ClothingItemDetailScreen({ item }: ClothingItemDetailScreenProps
   const brandDisplay = item.brand.trim() ? item.brand : "—";
   const colourDisplay = item.colour.trim() ? item.colour : "—";
   const titleText = item.name.trim() ? item.name.trim() : "Untitled piece";
-  const imageUri = item.imageUrl.trim();
+  const imageUri = clothingItemDisplayUri(item).trim();
   const tagList = item.tags.filter((t) => t.trim().length > 0);
 
   return (
@@ -115,7 +116,7 @@ export function ClothingItemDetailScreen({ item }: ClothingItemDetailScreenProps
         <Image
           source={{ uri: imageUri }}
           style={styles.hero}
-          contentFit="cover"
+          contentFit="contain"
           transition={media.imageTransitionMs.detail}
         />
       ) : (

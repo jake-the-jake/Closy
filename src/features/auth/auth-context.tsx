@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 
+import { upsertMyProfile } from "@/features/profile/lib/cloud-profiles";
 import { hydrateOutfitsFromCloud } from "@/features/outfits/lib/cloud-outfits";
 import { useOutfitsStore } from "@/features/outfits/state/outfits-store";
 import { hydrateWardrobeFromCloud } from "@/features/wardrobe/lib/cloud-wardrobe";
@@ -32,7 +33,7 @@ export type AuthContextValue = {
     password: string,
   ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  /** Persists `display_name` in Supabase Auth `user_metadata`. */
+  /** Persists display name in Auth `user_metadata` and `public.profiles`. */
   updateProfileDisplayName: (
     displayName: string,
   ) => Promise<{ error: Error | null }>;
@@ -160,7 +161,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         display_name: trimmed,
       },
     });
-    return { error: error ? new Error(error.message) : null };
+    if (error) {
+      return { error: new Error(error.message) };
+    }
+    const uid = fresh.user?.id;
+    if (uid) {
+      const pe = await upsertMyProfile(supabase, uid, { displayName: trimmed });
+      if (pe.error) {
+        return { error: pe.error };
+      }
+    }
+    return { error: null };
   }, []);
 
   const value = useMemo(

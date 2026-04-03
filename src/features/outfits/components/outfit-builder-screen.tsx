@@ -17,6 +17,7 @@ import { AppInput } from "@/components/ui/app-input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScreenContainer } from "@/components/ui/screen-container";
 import { findClothingItemById } from "@/features/wardrobe/data/find-clothing-item";
+import { clothingItemThumbnailUri } from "@/features/wardrobe/lib/clothing-item-images";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import {
   CLOTHING_CATEGORIES,
@@ -66,7 +67,8 @@ function SelectedTile({
     item != null
       ? item.name.trim() || "Untitled"
       : "Removed from wardrobe";
-  const hasImage = item != null && item.imageUrl.trim().length > 0;
+  const thumb = item != null ? clothingItemThumbnailUri(item).trim() : "";
+  const hasImage = thumb.length > 0;
 
   return (
     <View style={[styles.tileWrap, { width: w }, entry.item == null && styles.tileOrphan]}>
@@ -76,7 +78,7 @@ function SelectedTile({
       >
         {hasImage ? (
           <Image
-            source={{ uri: item!.imageUrl }}
+            source={{ uri: thumb }}
             style={StyleSheet.absoluteFill}
             contentFit="cover"
             transition={media.imageTransitionMs.card}
@@ -399,6 +401,7 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
           )}
           renderItem={({ item }) => {
             const on = selectedIds.includes(item.id);
+            const rowThumb = clothingItemThumbnailUri(item).trim();
             return (
               <Pressable
                 onPress={() => toggleId(item.id)}
@@ -412,9 +415,9 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
                 ]}
               >
                 <View style={styles.pickerThumbBox}>
-                  {item.imageUrl.trim() ? (
+                  {rowThumb ? (
                     <Image
-                      source={{ uri: item.imageUrl }}
+                      source={{ uri: rowThumb }}
                       style={styles.pickerThumb}
                       contentFit="cover"
                       transition={media.imageTransitionMs.card}
