@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { type Href, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAuth } from "@/features/auth";
@@ -36,10 +36,11 @@ export type PublishedOutfitFeedCardProps = {
   showAuthorAttribution?: boolean;
 };
 
-const IMAGE_W = 96;
-const AUTHOR_AVATAR = 22;
+/** Fixed square thumb — every card uses the same size for a stable grid-like rhythm. */
+const THUMB = 108;
+const AUTHOR_AVATAR = 26;
 
-export function PublishedOutfitFeedCard({
+function PublishedOutfitFeedCardInner({
   item,
   onLikeUpdated,
   showAuthorAttribution = true,
@@ -47,6 +48,7 @@ export function PublishedOutfitFeedCard({
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [likeBusy, setLikeBusy] = useState(false);
+  const likeGuardRef = useRef(false);
   const previewLine = item.snapshot.lines.find((l) => l.imageUrl.trim().length > 0);
   const imageUri = previewLine?.imageUrl.trim() ?? "";
   const authorLabel = publishedOutfitAuthorLabel(item);
@@ -74,20 +76,28 @@ export function PublishedOutfitFeedCard({
       Alert.alert("Sign in", "Sign in to like posts on Discover.");
       return;
     }
-    if (likeBusy) return;
+    if (likeGuardRef.current) return;
+    likeGuardRef.current = true;
     setLikeBusy(true);
     void (async () => {
-      const r = await discoverService.togglePublishedOutfitLike(item.id, {
-        currentlyLiked: item.likedByMe,
-      });
-      setLikeBusy(false);
-      if (r.ok) {
-        onLikeUpdated(item.id, { likeCount: r.likeCount, likedByMe: r.likedByMe });
-      } else {
-        Alert.alert("Couldn’t update like", r.errorMessage);
+      try {
+        const r = await discoverService.togglePublishedOutfitLike(item.id, {
+          currentlyLiked: item.likedByMe,
+        });
+        if (r.ok) {
+          onLikeUpdated(item.id, {
+            likeCount: r.likeCount,
+            likedByMe: r.likedByMe,
+          });
+        } else {
+          Alert.alert("Couldn’t update like", r.errorMessage);
+        }
+      } finally {
+        likeGuardRef.current = false;
+        setLikeBusy(false);
       }
     })();
-  }, [isAuthenticated, item.id, item.likedByMe, likeBusy, onLikeUpdated]);
+  }, [isAuthenticated, item.id, item.likedByMe, onLikeUpdated]);
 
   const likeA11y = item.likedByMe
     ? `Unlike, ${item.likeCount} likes`
@@ -98,22 +108,25 @@ export function PublishedOutfitFeedCard({
       <View style={styles.cardMainColumn}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Open published outfit ${item.name}`}
+          accessibilityLabel={`Open outfit: ${item.name.trim() || "Untitled outfit"}`}
+          accessibilityHint="Opens the full published outfit"
           onPress={openOutfit}
           style={({ pressed }) => [styles.cardMainRow, pressed && styles.cardMainPressed]}
         >
-          {imageUri ? (
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.cardImage}
-              contentFit="cover"
-              transition={media.imageTransitionMs.card}
-            />
-          ) : (
-            <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-              <Text style={styles.cardImagePlaceholderText}>No preview</Text>
-            </View>
-          )}
+          <View style={styles.thumbWrap}>
+            {imageUri ? (
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.thumbImage}
+                contentFit="cover"
+                transition={media.imageTransitionMs.card}
+              />
+            ) : (
+              <View style={styles.thumbPlaceholder}>
+                <Text style={styles.thumbPlaceholderText}>No preview</Text>
+              </View>
+            )}
+          </View>
           <View style={styles.cardBody}>
             <Text style={styles.cardTitle} numberOfLines={2}>
               {item.name.trim() || "Untitled outfit"}
@@ -125,13 +138,14 @@ export function PublishedOutfitFeedCard({
           </View>
         </Pressable>
         {showAuthorAttribution ? (
-          <View style={styles.cardAuthorRow}>
+          <View style={styles.cardAuthorBlock}>
             <View style={styles.cardAuthorSpacer} />
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Open profile for ${authorLabel}`}
-              accessibilityHint="Shows this creator’s public outfits on Discover"
+              accessibilityLabel={`Creator: ${authorLabel}. Open profile.`}
+              accessibilityHint="Opens this creator’s profile and their public posts"
               onPress={openAuthor}
+              hitSlop={8}
               style={({ pressed }) => [
                 styles.cardAuthorHit,
                 pressed && styles.cardAuthorHitPressed,
@@ -147,11 +161,14 @@ export function PublishedOutfitFeedCard({
                     accessibilityIgnoresInvertColors
                   />
                 ) : (
-                  <View style={styles.cardAuthorAvatarPh} />
+                  <View style={styles.cardAuthorAvatarPh} accessibilityRole="image" />
                 )}
-                <Text style={styles.cardAuthor} numberOfLines={1}>
-                  By {authorLabel}
-                </Text>
+                <View style={styles.cardAuthorTextCol}>
+                  <Text style={styles.creatorLabel}>Creator</Text>
+                  <Text style={styles.cardAuthorName} numberOfLines={1}>
+                    {authorLabel}
+                  </Text>
+                </View>
               </View>
             </Pressable>
           </View>
@@ -169,13 +186,16 @@ export function PublishedOutfitFeedCard({
         }
         onPress={onHeartPress}
         disabled={likeBusy}
+        hitSlop={4}
         style={({ pressed }) => [
           styles.cardLikeColumn,
           pressed && styles.cardLikeColumnPressed,
           likeBusy && styles.cardLikeColumnBusy,
         ]}
       >
-        <Text style={[styles.heart, item.likedByMe ? styles.heartActive : styles.heartInactive]}>
+        <Text
+          style={[styles.heart, item.likedByMe ? styles.heartActive : styles.heartInactive]}
+        >
           {item.likedByMe ? "♥" : "♡"}
         </Text>
         <Text style={styles.likeCount}>{item.likeCount}</Text>
@@ -183,6 +203,20 @@ export function PublishedOutfitFeedCard({
     </View>
   );
 }
+
+function propsEqual(
+  a: PublishedOutfitFeedCardProps,
+  b: PublishedOutfitFeedCardProps,
+): boolean {
+  if (a.item !== b.item) return false;
+  if (a.showAuthorAttribution !== b.showAuthorAttribution) return false;
+  return a.onLikeUpdated === b.onLikeUpdated;
+}
+
+export const PublishedOutfitFeedCard = memo(
+  PublishedOutfitFeedCardInner,
+  propsEqual,
+);
 
 const styles = StyleSheet.create({
   card: {
@@ -200,22 +234,33 @@ const styles = StyleSheet.create({
   },
   cardMainRow: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "center",
   },
   cardMainPressed: {
-    opacity: 0.92,
+    opacity: 0.94,
   },
-  cardImage: {
-    width: IMAGE_W,
-    minHeight: IMAGE_W,
+  thumbWrap: {
+    width: THUMB,
+    height: THUMB,
+    borderRadius: theme.radii.sm,
+    overflow: "hidden",
+    margin: theme.spacing.md,
+    marginRight: theme.spacing.sm,
     backgroundColor: theme.colors.border,
+    alignSelf: "center",
   },
-  cardImagePlaceholder: {
+  thumbImage: {
+    width: "100%",
+    height: "100%",
+  },
+  thumbPlaceholder: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xs,
+    backgroundColor: theme.colors.background,
   },
-  cardImagePlaceholderText: {
+  thumbPlaceholderText: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.textMuted,
     textAlign: "center",
@@ -223,29 +268,35 @@ const styles = StyleSheet.create({
   cardBody: {
     flex: 1,
     minWidth: 0,
-    padding: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    paddingRight: theme.spacing.sm,
     justifyContent: "center",
-    gap: theme.spacing.xs,
+    gap: 6,
   },
   cardTitle: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text,
+    lineHeight: 22,
   },
-  cardAuthorRow: {
+  cardAuthorBlock: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.border,
+    marginLeft: 0,
   },
+  /** Aligns creator row with title block (thumb margin + thumb + gap). */
   cardAuthorSpacer: {
-    width: IMAGE_W,
+    width: theme.spacing.md + THUMB + theme.spacing.sm,
   },
   cardAuthorHit: {
     flex: 1,
-    paddingHorizontal: theme.spacing.md,
-    paddingBottom: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    paddingRight: theme.spacing.md,
   },
   cardAuthorHitPressed: {
-    opacity: 0.85,
+    opacity: 0.88,
   },
   cardAuthorInner: {
     flexDirection: "row",
@@ -265,31 +316,42 @@ const styles = StyleSheet.create({
     borderRadius: AUTHOR_AVATAR / 2,
     backgroundColor: theme.colors.border,
   },
-  cardAuthor: {
+  creatorLabel: {
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginBottom: 2,
+  },
+  cardAuthorTextCol: {
     flex: 1,
     minWidth: 0,
-    fontSize: theme.typography.fontSize.caption,
+  },
+  cardAuthorName: {
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.primary,
     fontWeight: theme.typography.fontWeight.semibold,
   },
   cardMeta: {
     fontSize: theme.typography.fontSize.caption,
     color: theme.colors.textMuted,
+    lineHeight: 18,
   },
   cardLikeColumn: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.sm,
-    minWidth: 52,
+    paddingHorizontal: theme.spacing.md,
+    minWidth: 56,
     borderLeftWidth: StyleSheet.hairlineWidth,
     borderLeftColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
   },
   cardLikeColumnPressed: {
-    opacity: 0.85,
+    opacity: 0.88,
   },
   cardLikeColumnBusy: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   heart: {
     fontSize: 22,
@@ -305,6 +367,6 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.caption,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.textMuted,
-    marginTop: 2,
+    marginTop: 4,
   },
 });

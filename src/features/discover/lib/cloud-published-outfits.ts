@@ -15,6 +15,14 @@ import { supabase } from "@/lib/supabase/client";
 export const PUBLISHED_OUTFITS_TABLE = "published_outfits";
 export const PUBLISHED_OUTFIT_LIKES_TABLE = "published_outfit_likes";
 
+/** Matches `supabase/migrations/*_following_feed_rpc.sql`. */
+export const FOLLOWING_PUBLISHED_OUTFIT_IDS_RPC = "following_published_outfit_ids";
+
+/** One row from `following_published_outfit_ids` (Supabase RPC). */
+export type FollowingPublishedOutfitIdRow = {
+  outfit_id: string;
+};
+
 const FEED_SELECT = `
   *,
   published_outfit_likes(count)
@@ -202,6 +210,56 @@ export async function fetchPublishedOutfitsFeed(limit = 50): Promise<PublishedOu
   }
   const rows = (data ?? []) as PublishedOutfitRowWithLikeCount[];
   return publishedOutfitsFromFeedRows(supabase, sessionUserId, rows);
+}
+
+async function fetchPublishedOutfitsByIdsOrdered(
+  client: SupabaseClient,
+  sessionUserId: string | null,
+  idsOrdered: readonly string[],
+): Promise<PublishedOutfit[]> {
+  if (idsOrdered.length === 0) return [];
+  const { data, error } = await client
+    .from(PUBLISHED_OUTFITS_TABLE)
+    .select(FEED_SELECT)
+    .in("id", [...idsOrdered]);
+  if (error) {
+    console.warn("[Closy] Following feed row hydrate failed:", error.message);
+    return [];
+  }
+  const rawRows = (data ?? []) as PublishedOutfitRowWithLikeCount[];
+  const byId = new Map(rawRows.map((r) => [r.id, r]));
+  const orderedRows: PublishedOutfitRowWithLikeCount[] = [];
+  for (const id of idsOrdered) {
+    const row = byId.get(id);
+    if (row) orderedRows.push(row);
+  }
+  return publishedOutfitsFromFeedRows(client, sessionUserId, orderedRows);
+}
+
+/**
+ * Posts from users the current session follows, newest first (RPC + hydrate with like counts).
+ * Returns [] when signed out or Supabase unavailable.
+ */
+export async function fetchPublishedOutfitsFollowingFeed(
+  limit = 50,
+): Promise<PublishedOutfit[]> {
+  if (!supabase) return [];
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUserId = sessionData.session?.user?.id ?? null;
+  if (!sessionUserId) return [];
+
+  const { data: idRows, error } = await supabase.rpc(
+    FOLLOWING_PUBLISHED_OUTFIT_IDS_RPC,
+    { p_limit: limit },
+  );
+  if (error) {
+    console.warn("[Closy] Following feed id list failed:", error.message);
+    return [];
+  }
+  const ids = ((idRows ?? []) as FollowingPublishedOutfitIdRow[])
+    .map((r) => r.outfit_id)
+    .filter(Boolean);
+  return fetchPublishedOutfitsByIdsOrdered(supabase, sessionUserId, ids);
 }
 
 /** Public posts by `user_id` (RLS: global read on `published_outfits`). */

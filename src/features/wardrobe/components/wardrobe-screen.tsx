@@ -38,6 +38,7 @@ const COLUMN_GAP = theme.spacing.sm;
 const FAB_LIST_EXTRA_PADDING = layout.fabSize + theme.spacing.md;
 
 const ADD_ITEM_HREF = "/add-item" as Href;
+const WARDROBE_INSIGHTS_HREF = "/wardrobe-insights" as Href;
 
 export function WardrobeScreen() {
   const items = useWardrobeItems();
@@ -64,6 +65,10 @@ export function WardrobeScreen() {
     router.push(ADD_ITEM_HREF);
   }, []);
 
+  const openInsights = useCallback(() => {
+    router.push(WARDROBE_INSIGHTS_HREF);
+  }, []);
+
   const listItems = useMemo(
     () => getWardrobeListForDisplay(items, categoryFilter, sortMode),
     [items, categoryFilter, sortMode],
@@ -79,6 +84,20 @@ export function WardrobeScreen() {
             onDismissError={dismissWardrobeError}
           />
         ) : null}
+        <Pressable
+          onPress={openInsights}
+          accessibilityRole="button"
+          accessibilityLabel="Wardrobe insights and outfit ideas"
+          style={({ pressed }) => [
+            styles.insightsCard,
+            pressed && styles.insightsCardPressed,
+          ]}
+        >
+          <Text style={styles.insightsTitle}>Insights & ideas</Text>
+          <Text style={styles.insightsSub}>
+            Usage from your outfits and simple combo suggestions.
+          </Text>
+        </Pressable>
         <Text style={styles.count} accessibilityRole="header">
           {items.length === 0
             ? "0 pieces"
@@ -98,6 +117,7 @@ export function WardrobeScreen() {
       categoryFilter,
       dismissWardrobeError,
       isAuthenticated,
+      openInsights,
       items.length,
       listItems.length,
       sortMode,
@@ -255,6 +275,32 @@ const styles = StyleSheet.create({
   },
   headerBlock: {
     marginBottom: theme.spacing.xs,
+  },
+  insightsCard: {
+    marginBottom: theme.spacing.md,
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    ...Platform.select({
+      web: { cursor: "pointer" as const },
+      default: {},
+    }),
+  },
+  insightsCardPressed: {
+    opacity: 0.92,
+  },
+  insightsTitle: {
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  insightsSub: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    lineHeight: 18,
   },
   count: {
     fontSize: theme.typography.fontSize.sm,

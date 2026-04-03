@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { Platform, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { ActivityUnreadProvider } from "@/features/activity/context/activity-unread-context";
 import { AuthGate, AuthProvider } from "@/features/auth";
 import { AppPersistGate } from "@/lib/app-persist-gate";
 import { theme } from "@/theme";
@@ -17,7 +18,7 @@ export function AppNavigationShell() {
       <AuthProvider>
         <SafeAreaProvider style={styles.safeArea}>
           <AuthGate>
-            <>
+            <ActivityUnreadProvider>
               <StatusBar style="auto" />
               <Stack
                 screenOptions={{
@@ -61,6 +62,10 @@ export function AppNavigationShell() {
                   }}
                 />
                 <Stack.Screen
+                  name="wardrobe-insights"
+                  options={{ title: "Wardrobe insights" }}
+                />
+                <Stack.Screen
                   name="edit-outfit/[id]"
                   options={{
                     title: "Edit outfit",
@@ -77,8 +82,9 @@ export function AppNavigationShell() {
                   name="author/[userId]"
                   options={{ title: "Profile" }}
                 />
+                <Stack.Screen name="activity" options={{ title: "Activity" }} />
               </Stack>
-            </>
+            </ActivityUnreadProvider>
           </AuthGate>
         </SafeAreaProvider>
       </AuthProvider>

@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,11 +12,15 @@ import {
 
 import { AppButton } from "@/components/ui/app-button";
 import { ScreenContainer } from "@/components/ui/screen-container";
+import { useActivityUnread } from "@/features/activity/context/activity-unread-context";
 import { useAuth } from "@/features/auth";
 import {
   fetchPublicProfileByUserId,
   upsertMyProfile,
 } from "@/features/profile/lib/cloud-profiles";
+import type { UserFollowStats } from "@/features/social";
+import { fetchFollowStatsForUser } from "@/features/social";
+import { ProfilePublishedPostsSection } from "./profile-published-posts-section";
 import {
   buildAccountProfile,
   displayInitials,
@@ -25,6 +30,8 @@ import { supabase } from "@/lib/supabase/client";
 import { theme } from "@/theme";
 
 export function ProfileAccountView() {
+  const router = useRouter();
+  const { unreadCount } = useActivityUnread();
   const {
     user,
     isAuthenticated,
@@ -50,6 +57,31 @@ export function ProfileAccountView() {
   const [nameNotice, setNameNotice] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [myFollowStats, setMyFollowStats] = useState<UserFollowStats | null>(
+    null,
+  );
+  const [followStatsLoading, setFollowStatsLoading] = useState(false);
+  const [publishedPostsRefreshToken, setPublishedPostsRefreshToken] =
+    useState(0);
+
+  useEffect(() => {
+    if (!user?.id || !supabaseConfigured || !isAuthenticated) {
+      setMyFollowStats(null);
+      setFollowStatsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setFollowStatsLoading(true);
+    void fetchFollowStatsForUser(user.id).then((s) => {
+      if (!cancelled) {
+        setMyFollowStats(s);
+        setFollowStatsLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, supabaseConfigured, isAuthenticated]);
 
   useEffect(() => {
     if (!user?.id || !isAuthenticated) {
@@ -135,6 +167,7 @@ export function ProfileAccountView() {
       setNameNotice("Profile saved.");
       const row = await fetchPublicProfileByUserId(user.id);
       setRemoteProfile(row);
+      setPublishedPostsRefreshToken((t) => t + 1);
     } finally {
       setSaving(false);
     }
@@ -225,14 +258,26 @@ export function ProfileAccountView() {
             {draftDisplayName.trim() || baselineDisplayName}
           </Text>
           <Text style={styles.heroEmail}>{account.email ?? "No email on file"}</Text>
+          {followStatsLoading ? (
+            <View style={styles.heroFollowRow}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={styles.heroFollowStats}>Loading social stats…</Text>
+            </View>
+          ) : myFollowStats != null ? (
+            <Text style={styles.heroFollowStats}>
+              {myFollowStats.followerCount} follower
+              {myFollowStats.followerCount === 1 ? "" : "s"} ·{" "}
+              {myFollowStats.followingCount} following
+            </Text>
+          ) : null}
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Public profile</Text>
           <Text style={styles.cardHint}>
-            Your display name and photo appear on Discover when you publish
-            outfits. Stored in your Closy profile (synced with your account
-            name).
+            This is how you appear across Discover—on your posts, likes, and
+            comments. Your name stays in sync with your account when you save.
+            Use any HTTPS image URL for your photo.
           </Text>
           <Text style={styles.inputLabel}>Display name</Text>
           <TextInput
@@ -250,7 +295,7 @@ export function ProfileAccountView() {
             accessibilityLabel="Display name"
             editable={!saving}
           />
-          <Text style={styles.inputLabel}>Avatar image URL (optional)</Text>
+          <Text style={styles.inputLabel}>Avatar (optional)</Text>
           <TextInput
             value={draftAvatarUrl}
             onChangeText={(t) => {
@@ -258,7 +303,7 @@ export function ProfileAccountView() {
               if (nameError) setNameError(null);
               if (nameNotice) setNameNotice(null);
             }}
-            placeholder="https://…"
+            placeholder="https://… (public image URL)"
             placeholderTextColor={theme.colors.textMuted}
             style={styles.textField}
             autoCapitalize="none"
@@ -267,6 +312,9 @@ export function ProfileAccountView() {
             accessibilityLabel="Avatar image URL"
             editable={!saving}
           />
+          <Text style={styles.fieldFooter}>
+            Tip: use a small square image link; leave blank for initials.
+          </Text>
           {nameError ? <Text style={styles.error}>{nameError}</Text> : null}
           {nameNotice ? <Text style={styles.notice}>{nameNotice}</Text> : null}
           <AppButton
@@ -281,6 +329,40 @@ export function ProfileAccountView() {
                 ? "Saves your public name and avatar"
                 : "Change the fields above to enable saving"
             }
+          />
+        </View>
+
+        <ProfilePublishedPostsSection
+          userId={user.id}
+          supabaseConfigured={supabaseConfigured}
+          isAuthenticated={isAuthenticated}
+          refreshToken={publishedPostsRefreshToken}
+        />
+
+        <View style={styles.card}>
+          <View style={styles.cardHeadingRow}>
+            <Text style={styles.cardTitle}>Activity</Text>
+            {unreadCount > 0 ? (
+              <View
+                style={styles.activityBadge}
+                accessibilityLabel={`${unreadCount} unread`}
+              >
+                <Text style={styles.activityBadgeText}>
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+          <Text style={styles.cardHint}>
+            Likes, comments, and new followers on your account and published
+            outfits.
+          </Text>
+          <AppButton
+            label="View activity"
+            variant="secondary"
+            fullWidth
+            onPress={() => router.push("/activity")}
+            accessibilityHint="Opens your activity feed"
           />
         </View>
 
@@ -392,6 +474,22 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     textAlign: "center",
   },
+  heroFollowRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.sm,
+  },
+  heroFollowStats: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textMuted,
+    textAlign: "center",
+  },
+  fieldFooter: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    lineHeight: 18,
+  },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -400,10 +498,31 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     gap: theme.spacing.sm,
   },
+  cardHeadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.sm,
+  },
   cardTitle: {
     fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text,
+    flexShrink: 1,
+  },
+  activityBadge: {
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 6,
+    borderRadius: 11,
+    backgroundColor: theme.colors.danger,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  activityBadgeText: {
+    fontSize: theme.typography.fontSize.caption,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.surface,
   },
   cardHint: {
     fontSize: theme.typography.fontSize.caption,

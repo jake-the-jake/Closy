@@ -31,7 +31,7 @@ import { media } from "@/lib/constants";
 import { theme } from "@/theme";
 
 export type OutfitBuilderScreenProps =
-  | { mode: "create" }
+  | { mode: "create"; initialItemIds?: readonly string[] }
   | { mode: "edit"; outfitId: string };
 
 type SelectedEntry = {
@@ -138,6 +138,21 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- only reseed when switching edit target
   }, [props.mode, outfit?.id]);
 
+  const createPrefillKey =
+    props.mode === "create" &&
+    props.initialItemIds != null &&
+    props.initialItemIds.length > 0
+      ? props.initialItemIds.join("\u0001")
+      : "";
+  useLayoutEffect(() => {
+    if (props.mode !== "create") return;
+    if (createPrefillKey.length === 0) return;
+    setSelectedIds([...props.initialItemIds!]);
+    setNameError(undefined);
+    setSelectionError(undefined);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- prefill when route/search params change
+  }, [props.mode, createPrefillKey]);
+
   const selectedOrdered: SelectedEntry[] = useMemo(
     () =>
       selectedIds.map((id) => ({
@@ -206,6 +221,9 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
   const saveDisabled =
     props.mode === "create" && wardrobeItems.length === 0;
 
+  const editingOutfitId =
+    props.mode === "edit" ? props.outfitId : undefined;
+
   const handleSave = useCallback(async () => {
     const trimmed = name.trim();
     if (!trimmed) {
@@ -228,7 +246,8 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
         if (router.canGoBack()) router.back();
         else router.replace("/(tabs)/outfits" as Href);
       } else {
-        await outfitsService.updateOutfit(props.outfitId, {
+        if (editingOutfitId == null) return;
+        await outfitsService.updateOutfit(editingOutfitId, {
           name: trimmed,
           clothingItemIds: selectedIds,
         });
@@ -236,24 +255,13 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
         else
           router.replace({
             pathname: "/outfit/[id]",
-            params: { id: props.outfitId },
+            params: { id: editingOutfitId },
           } as Href);
       }
     } finally {
       setSaving(false);
     }
-  }, [name, props.mode, props.mode === "edit" ? props.outfitId : "", router, selectedIds]);
-
-  if (props.mode === "edit" && outfit == null) {
-    return (
-      <ScreenContainer scroll={false} omitTopSafeArea>
-        <EmptyState
-          title="Outfit not found"
-          description="This look may have been removed. Go back to Outfits."
-        />
-      </ScreenContainer>
-    );
-  }
+  }, [editingOutfitId, name, props.mode, router, selectedIds]);
 
   const primaryLabel = props.mode === "create" ? "Save outfit" : "Save changes";
 
@@ -373,6 +381,17 @@ export function OutfitBuilderScreen(props: OutfitBuilderScreenProps) {
     ),
     [handleSave, primaryLabel, props.mode, saveDisabled, saving],
   );
+
+  if (props.mode === "edit" && outfit == null) {
+    return (
+      <ScreenContainer scroll={false} omitTopSafeArea>
+        <EmptyState
+          title="Outfit not found"
+          description="This look may have been removed. Go back to Outfits."
+        />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer scroll={false} omitTopSafeArea style={styles.screen}>

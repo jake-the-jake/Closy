@@ -10,10 +10,8 @@ import { useAuth } from "@/features/auth";
 import { discoverService } from "@/features/discover";
 import { confirmDeleteOutfit } from "@/features/outfits/lib/confirm-delete-outfit";
 import { outfitsService } from "@/features/outfits/outfits-service";
-import {
-  buildOutfitSharePayload,
-  presentOutfitShareSheet,
-} from "@/features/social";
+import { buildOutfitSharePayload } from "@/features/outfits/sharing/outfit-share-payload";
+import { presentOutfitShareSheet } from "@/features/outfits/sharing/present-outfit-share";
 import type { Outfit } from "@/features/outfits/types/outfit";
 import { findClothingItemById } from "@/features/wardrobe/data/find-clothing-item";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
