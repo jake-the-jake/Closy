@@ -1,0 +1,14 @@
+# Target labels
+ glfw-populate
+# Source files and their labels
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/glfw-populate
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/7b68385fbbedce28368789679d57a19b/glfw-populate.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/a78a9827ca0655d52de1ce93fcb8bbfc/glfw-populate-complete.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-build.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-configure.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-download.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-install.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-mkdir.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-patch.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-test.rule
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-update.rule

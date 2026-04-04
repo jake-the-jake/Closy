@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/glfw-populate"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/7b68385fbbedce28368789679d57a19b/glfw-populate.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/a78a9827ca0655d52de1ce93fcb8bbfc/glfw-populate-complete.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-build.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-configure.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-download.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-install.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-mkdir.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-patch.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-test.rule"
+		},
+		{
+			"file" : "E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/703f109fffa3d40ba58f60f644ceb531/glfw-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"glfw-populate"
+		],
+		"name" : "glfw-populate"
+	}
+}

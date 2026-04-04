@@ -1,0 +1,3 @@
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/glfw-populate.dir
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/ALL_BUILD.dir
+E:/apps/Closy/engine/build/_deps/glfw-subbuild/CMakeFiles/ZERO_CHECK.dir

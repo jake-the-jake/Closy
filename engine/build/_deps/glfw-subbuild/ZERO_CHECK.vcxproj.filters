@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\apps\Closy\engine\build\_deps\glfw-subbuild\CMakeFiles\7b68385fbbedce28368789679d57a19b\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\apps\Closy\engine\build\_deps\glfw-subbuild\glfw-populate-prefix\tmp\glfw-populate-mkdirs.cmake">
+      <Filter>Buildsystem Input Files\glfw-populate-prefix\tmp</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{A1CA4E35-999A-3760-96CC-044880C65E6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buildsystem Input Files\glfw-populate-prefix\tmp">
+      <UniqueIdentifier>{B8DF40E6-ED6F-38BA-BBB8-13F290DDCD41}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\apps\Closy\engine\build\CMakeFiles\960ff68af3dde3c103df7114e2f62d5c\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\apps\Closy\engine\build\_deps\glfw-src\CMake\cmake_uninstall.cmake.in">
+      <Filter>Buildsystem Input Files\build\_deps\glfw-src\CMake</Filter>
+    </None>
+    <None Include="E:\apps\Closy\engine\build\_deps\glfw-src\CMake\glfw3.pc.in">
+      <Filter>Buildsystem Input Files\build\_deps\glfw-src\CMake</Filter>
+    </None>
+    <None Include="E:\apps\Closy\engine\build\_deps\glfw-src\CMake\glfw3Config.cmake.in">
+      <Filter>Buildsystem Input Files\build\_deps\glfw-src\CMake</Filter>
+    </None>
+    <None Include="E:\apps\Closy\engine\build\_deps\glfw-src\CMakeLists.txt">
+      <Filter>Buildsystem Input Files\build\_deps\glfw-src</Filter>
+    </None>
+    <None Include="E:\apps\Closy\engine\build\_deps\glfw-src\src\CMakeLists.txt">
+      <Filter>Buildsystem Input Files\build\_deps\glfw-src\src</Filter>
+    </None>
+    <None Include="E:\apps\Closy\engine\build\_deps\glm-src\CMakeLists.txt">
+      <Filter>Buildsystem Input Files\build\_deps\glm-src</Filter>
+    </None>
+    <None Include="E:\apps\Closy\engine\build\_deps\glm-src\glm\CMakeLists.txt">
+      <Filter>Buildsystem Input Files\build\_deps\glm-src\glm</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{5FCE0231-DA62-38D1-8BA5-88D58C83596F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{44E66E19-8953-3109-AAEA-EDB6294E282C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buildsystem Input Files\build\_deps\glfw-src">
+      <UniqueIdentifier>{F5E61A6C-8FBF-3490-8DCB-3FFFCD026A53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buildsystem Input Files\build\_deps\glfw-src\CMake">
+      <UniqueIdentifier>{0CA72121-D462-3A3E-A7D1-63A37F0D7B1E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buildsystem Input Files\build\_deps\glfw-src\src">
+      <UniqueIdentifier>{FA048CE6-B375-374D-9D92-5EC781EC1DEE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buildsystem Input Files\build\_deps\glm-src">
+      <UniqueIdentifier>{2F42F2D4-700D-3E2A-9F5F-E81414AE6293}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buildsystem Input Files\build\_deps\glm-src\glm">
+      <UniqueIdentifier>{4A185BAD-26A0-3195-99E1-8C38EF298B48}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

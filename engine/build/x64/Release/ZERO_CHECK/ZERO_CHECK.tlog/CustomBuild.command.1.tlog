@@ -1,0 +1,10 @@
+^E:\APPS\CLOSY\ENGINE\BUILD\CMAKEFILES\960FF68AF3DDE3C103DF7114E2F62D5C\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/apps/Closy/engine -BE:/apps/Closy/engine/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/apps/Closy/engine/build/ClosyEngine.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
