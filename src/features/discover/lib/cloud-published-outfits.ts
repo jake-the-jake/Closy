@@ -18,10 +18,55 @@ export const PUBLISHED_OUTFIT_LIKES_TABLE = "published_outfit_likes";
 /** Matches `supabase/migrations/*_following_feed_rpc.sql`. */
 export const FOLLOWING_PUBLISHED_OUTFIT_IDS_RPC = "following_published_outfit_ids";
 
+/** Matches `supabase/migrations/*_for_you_feed_rpc.sql`. */
+export const FOR_YOU_PUBLISHED_OUTFIT_IDS_RPC = "for_you_published_outfit_ids";
+
+export const FOR_YOU_FEED_SIGNALS_RPC = "for_you_feed_signals";
+
 /** One row from `following_published_outfit_ids` (Supabase RPC). */
 export type FollowingPublishedOutfitIdRow = {
   outfit_id: string;
 };
+
+/** One row from `for_you_published_outfit_ids` (Supabase RPC). */
+export type ForYouPublishedOutfitIdRow = {
+  outfit_id: string;
+};
+
+/** JSON from `for_you_feed_signals` (Supabase RPC). */
+export type ForYouFeedSignalsRow = {
+  follows: number;
+  likes: number;
+  comments: number;
+  wardrobePieces: number;
+};
+
+function parseForYouSignals(raw: unknown): ForYouFeedSignalsRow | null {
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const follows = typeof o.follows === "number" ? o.follows : Number(o.follows);
+  const likes = typeof o.likes === "number" ? o.likes : Number(o.likes);
+  const comments =
+    typeof o.comments === "number" ? o.comments : Number(o.comments);
+  const wardrobePieces =
+    typeof o.wardrobePieces === "number"
+      ? o.wardrobePieces
+      : Number(o.wardrobePieces);
+  if (
+    !Number.isFinite(follows) ||
+    !Number.isFinite(likes) ||
+    !Number.isFinite(comments) ||
+    !Number.isFinite(wardrobePieces)
+  ) {
+    return null;
+  }
+  return {
+    follows: Math.max(0, Math.floor(follows)),
+    likes: Math.max(0, Math.floor(likes)),
+    comments: Math.max(0, Math.floor(comments)),
+    wardrobePieces: Math.max(0, Math.floor(wardrobePieces)),
+  };
+}
 
 const FEED_SELECT = `
   *,
@@ -260,6 +305,46 @@ export async function fetchPublishedOutfitsFollowingFeed(
     .map((r) => r.outfit_id)
     .filter(Boolean);
   return fetchPublishedOutfitsByIdsOrdered(supabase, sessionUserId, ids);
+}
+
+/**
+ * Personalized Discover ordering via RPC; hydrates like counts and profiles.
+ * Returns [] when signed out or Supabase unavailable.
+ */
+export async function fetchPublishedOutfitsForYouFeed(
+  limit = 50,
+): Promise<PublishedOutfit[]> {
+  if (!supabase) return [];
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUserId = sessionData.session?.user?.id ?? null;
+  if (!sessionUserId) return [];
+
+  const { data: idRows, error } = await supabase.rpc(
+    FOR_YOU_PUBLISHED_OUTFIT_IDS_RPC,
+    { p_limit: limit },
+  );
+  if (error) {
+    console.warn("[Closy] For You feed id list failed:", error.message);
+    return [];
+  }
+  const ids = ((idRows ?? []) as ForYouPublishedOutfitIdRow[])
+    .map((r) => r.outfit_id)
+    .filter(Boolean);
+  return fetchPublishedOutfitsByIdsOrdered(supabase, sessionUserId, ids);
+}
+
+/** Counts for UX (weak personalization hint). Null when signed out or RPC fails. */
+export async function fetchForYouPersonalizationSignals(): Promise<ForYouFeedSignalsRow | null> {
+  if (!supabase) return null;
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session?.user?.id) return null;
+
+  const { data, error } = await supabase.rpc(FOR_YOU_FEED_SIGNALS_RPC);
+  if (error) {
+    console.warn("[Closy] For You signals failed:", error.message);
+    return null;
+  }
+  return parseForYouSignals(data);
 }
 
 /** Public posts by `user_id` (RLS: global read on `published_outfits`). */

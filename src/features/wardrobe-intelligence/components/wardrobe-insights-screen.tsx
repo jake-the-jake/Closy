@@ -16,12 +16,17 @@ import { useOutfitsStore } from "@/features/outfits/state/outfits-store";
 import { clothingItemThumbnailUri } from "@/features/wardrobe/lib/clothing-item-images";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import type { ClothingItem } from "@/features/wardrobe/types/clothing-item";
+import { CLOTHING_CATEGORIES } from "@/features/wardrobe/types/clothing-item";
 import { useWardrobeItems } from "@/features/wardrobe/wardrobe-service";
+import { formatRelativeDay } from "@/lib/format-relative-day";
 import { media } from "@/lib/constants";
 import { theme } from "@/theme";
 
+import { analyzeClosetGaps } from "../closet-gap-analysis";
+import type { ClosetCategoryCounts } from "../closet-gap-types";
 import {
   computeItemUsageStats,
+  getLeastUsedItems,
   getMostUsedItems,
   getNotUsedRecentlyItems,
 } from "../compute-item-usage";
@@ -29,8 +34,15 @@ import { buildSimpleOutfitSuggestions } from "../simple-suggestions";
 
 const STALE_DAYS = 30;
 const MOST_USED_LIMIT = 6;
+const LEAST_USED_LIMIT = 6;
 const STALE_PREVIEW_LIMIT = 10;
 const THUMB = 44;
+
+function formatCategoryCountsLine(counts: ClosetCategoryCounts): string {
+  return CLOTHING_CATEGORIES.map(
+    (cat) => `${formatCategoryLabel(cat)} ${counts[cat]}`,
+  ).join(" · ");
+}
 
 function ItemRow({
   item,
@@ -134,6 +146,11 @@ export function WardrobeInsightsScreen() {
     [items, usage],
   );
 
+  const leastUsed = useMemo(
+    () => getLeastUsedItems(items, usage, LEAST_USED_LIMIT),
+    [items, usage],
+  );
+
   const notRecent = useMemo(
     () => getNotUsedRecentlyItems(items, usage, STALE_DAYS),
     [items, usage],
@@ -143,6 +160,8 @@ export function WardrobeInsightsScreen() {
     () => buildSimpleOutfitSuggestions(items, outfits),
     [items, outfits],
   );
+
+  const closetGaps = useMemo(() => analyzeClosetGaps(items), [items]);
 
   const openItem = (id: string) => {
     router.push({ pathname: "/item/[id]", params: { id } } as Href);
@@ -170,9 +189,35 @@ export function WardrobeInsightsScreen() {
           own closet.
         </Text>
 
+        <Text style={styles.sectionTitle}>Closet balance</Text>
+        <Text style={styles.sectionHint}>
+          Category counts and plain rules—hints only, not a professional wardrobe audit.
+        </Text>
+        {closetGaps.totalPieces === 0 ? (
+          <Text style={styles.emptyLine}>
+            Add wardrobe pieces to see gap hints here.
+          </Text>
+        ) : (
+          <>
+            <Text style={styles.countsLine}>{formatCategoryCountsLine(closetGaps.counts)}</Text>
+            {closetGaps.balanceNote != null ? (
+              <View style={styles.gapPositiveCard}>
+                <Text style={styles.gapPositiveText}>{closetGaps.balanceNote}</Text>
+              </View>
+            ) : null}
+            {closetGaps.insights.map((ins) => (
+              <View key={ins.id} style={styles.gapCard}>
+                <Text style={styles.gapTitle}>{ins.title}</Text>
+                <Text style={styles.gapDetail}>{ins.detail}</Text>
+              </View>
+            ))}
+          </>
+        )}
+
         <Text style={styles.sectionTitle}>Most used</Text>
         <Text style={styles.sectionHint}>
-          Pieces that appear in the most outfits you have saved.
+          Pieces that appear in the most saved outfits (each save or edit counts
+          for that outfit’s timestamp).
         </Text>
         {mostUsed.length === 0 ? (
           <Text style={styles.emptyLine}>
@@ -191,10 +236,33 @@ export function WardrobeInsightsScreen() {
           </View>
         )}
 
+        <Text style={styles.sectionTitle}>Least used</Text>
+        <Text style={styles.sectionHint}>
+          Among pieces that show up in at least one saved outfit, those in the
+          fewest outfits (alphabetical tie-break).
+        </Text>
+        {leastUsed.length === 0 ? (
+          <Text style={styles.emptyLine}>
+            Nothing to rank yet—once several items appear in outfits, low counts
+            show here.
+          </Text>
+        ) : (
+          <View style={styles.card}>
+            {leastUsed.map(({ item, outfitCount }) => (
+              <ItemRow
+                key={item.id}
+                item={item}
+                subtitle={`In ${outfitCount} ${outfitCount === 1 ? "outfit" : "outfits"} · ${formatCategoryLabel(item.category)}`}
+                onPress={() => openItem(item.id)}
+              />
+            ))}
+          </View>
+        )}
+
         <Text style={styles.sectionTitle}>Not used recently</Text>
         <Text style={styles.sectionHint}>
-          No outfit saved in the last {STALE_DAYS} days, or never used in an
-          outfit.
+          No outfit activity in the last {STALE_DAYS} days (save or edit), or
+          never in a saved outfit.
         </Text>
         {notRecent.length === 0 ? (
           <Text style={styles.emptyLine}>
@@ -259,17 +327,6 @@ export function WardrobeInsightsScreen() {
   );
 }
 
-function formatRelativeDay(ts: number): string {
-  const d = Math.floor((Date.now() - ts) / 86_400_000);
-  if (d <= 0) return "today";
-  if (d === 1) return "yesterday";
-  if (d < 14) return `${d} days ago`;
-  const weeks = Math.floor(d / 7);
-  if (weeks < 8) return `${weeks} wk ago`;
-  const months = Math.floor(d / 30);
-  return `${months} mo ago`;
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -309,6 +366,44 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontStyle: "italic",
     lineHeight: 20,
+  },
+  countsLine: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    lineHeight: 20,
+    marginBottom: theme.spacing.sm,
+  },
+  gapPositiveCard: {
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  gapPositiveText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text,
+    lineHeight: 20,
+  },
+  gapCard: {
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.xs,
+  },
+  gapTitle: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  gapDetail: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    lineHeight: 18,
   },
   card: {
     borderRadius: theme.radii.md,

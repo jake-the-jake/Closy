@@ -7,6 +7,11 @@ export type Outfit = {
   /** Preserves the order the user selected items in the builder. */
   clothingItemIds: readonly string[];
   createdAt: number;
+  /**
+   * Last time name or pieces changed (create or edit). Omitted on older persisted rows
+   * (treated as `createdAt` when rolling up usage).
+   */
+  updatedAt?: number;
 };
 
 export type CreateOutfitInput = {

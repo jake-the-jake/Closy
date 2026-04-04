@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect, useMemo } from "react";
 import { Image } from "expo-image";
 import { type Href, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -6,11 +6,14 @@ import { useNavigation } from "@react-navigation/native";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScreenContainer } from "@/components/ui/screen-container";
+import { useOutfitsStore } from "@/features/outfits/state/outfits-store";
+import { computeItemOutfitUsage } from "@/features/wardrobe-intelligence/compute-item-usage";
 import { clothingItemDisplayUri } from "@/features/wardrobe/lib/clothing-item-images";
 import { confirmDeleteWardrobeItem } from "@/features/wardrobe/lib/confirm-delete-item";
 import { formatCategoryLabel } from "@/features/wardrobe/lib/format-category";
 import type { ClothingItem } from "@/features/wardrobe/types/clothing-item";
 import { wardrobeService } from "@/features/wardrobe/wardrobe-service";
+import { formatRelativeDay } from "@/lib/format-relative-day";
 import { media } from "@/lib/constants";
 import { theme } from "@/theme";
 
@@ -30,6 +33,11 @@ function DetailField({ label, value }: { label: string; value: string }) {
 export function ClothingItemDetailScreen({ item }: ClothingItemDetailScreenProps) {
   const navigation = useNavigation();
   const router = useRouter();
+  const outfits = useOutfitsStore((s) => s.outfits);
+  const outfitUsage = useMemo(() => {
+    if (item == null) return null;
+    return computeItemOutfitUsage(item.id, outfits);
+  }, [item, outfits]);
 
   const openEdit = useCallback(() => {
     if (!item) return;
@@ -138,6 +146,23 @@ export function ClothingItemDetailScreen({ item }: ClothingItemDetailScreenProps
           <DetailField label="Brand" value={brandDisplay} />
         </View>
 
+        {outfitUsage != null ? (
+          <View style={styles.usageBlock}>
+            <DetailField
+              label="Saved outfit usage"
+              value={
+                outfitUsage.outfitCount === 0
+                  ? "Not in any saved outfit yet."
+                  : `${outfitUsage.outfitCount} saved ${outfitUsage.outfitCount === 1 ? "outfit" : "outfits"} · last activity ${formatRelativeDay(outfitUsage.lastUsedAt!)}`
+              }
+            />
+            <Text style={styles.usageFootnote}>
+              Counts when an outfit that includes this piece is saved or edited in
+              Closy—not real-world wears.
+            </Text>
+          </View>
+        ) : null}
+
         <View style={styles.tagsSection}>
           <Text style={styles.tagsHeading}>Tags</Text>
           {tagList.length > 0 ? (
@@ -204,6 +229,14 @@ const styles = StyleSheet.create({
   },
   fields: {
     gap: theme.spacing.md,
+  },
+  usageBlock: {
+    gap: theme.spacing.xs,
+  },
+  usageFootnote: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    lineHeight: 18,
   },
   field: {
     gap: theme.spacing.xs,

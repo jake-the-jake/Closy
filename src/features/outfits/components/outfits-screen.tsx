@@ -19,6 +19,7 @@ import { useRemoteSyncStore } from "@/lib/sync";
 import { theme } from "@/theme";
 
 const CREATE_OUTFIT_HREF = "/create-outfit" as Href;
+const SUGGEST_OUTFIT_HREF = "/suggest-outfit" as Href;
 
 export function OutfitsScreen() {
   const navigation = useNavigation();
@@ -51,19 +52,38 @@ export function OutfitsScreen() {
   }, [navigation, openCreate]);
 
   const listHeader = useMemo(
-    () =>
-      supabaseConfigured && isAuthenticated ? (
-        <RemoteSyncNotice
-          snapshot={outfitsSync}
-          domain="outfits"
-          onDismissError={dismissOutfitsError}
-        />
-      ) : null,
+    () => (
+      <View>
+        {supabaseConfigured && isAuthenticated ? (
+          <RemoteSyncNotice
+            snapshot={outfitsSync}
+            domain="outfits"
+            onDismissError={dismissOutfitsError}
+          />
+        ) : null}
+        <Pressable
+          onPress={() => router.push(SUGGEST_OUTFIT_HREF)}
+          accessibilityRole="button"
+          accessibilityLabel="Suggest an outfit from your wardrobe"
+          style={({ pressed }) => [
+            styles.suggestCard,
+            pressed && styles.suggestCardPressed,
+          ]}
+        >
+          <Text style={styles.suggestTitle}>Suggest an outfit</Text>
+          <Text style={styles.suggestSub}>
+            Choose an occasion (office, gym, date night, weather…); we rank looks
+            from your items only. Save or tweak in the builder.
+          </Text>
+        </Pressable>
+      </View>
+    ),
     [
       dismissOutfitsError,
       isAuthenticated,
       outfitsSync,
       supabaseConfigured,
+      router,
     ],
   );
 
@@ -201,5 +221,28 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.primary,
+  },
+  suggestCard: {
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  suggestCardPressed: {
+    opacity: 0.92,
+  },
+  suggestTitle: {
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  suggestSub: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    lineHeight: 18,
   },
 });

@@ -12,12 +12,15 @@ import {
 import {
   deletePublishedOutfitForAuthor,
   fetchPublishedOutfitById,
+  fetchForYouPersonalizationSignals,
   fetchPublishedOutfitsFeed,
   fetchPublishedOutfitsFollowingFeed,
   fetchPublishedOutfitsForAuthor as fetchPublishedOutfitsForAuthorFromCloud,
+  fetchPublishedOutfitsForYouFeed,
   insertPublishedOutfit,
   togglePublishedOutfitLike as applyPublishedOutfitLikeToggle,
   type DeletePublishedOutfitResult,
+  type ForYouFeedSignalsRow,
   type TogglePublishedOutfitLikeResult,
 } from "@/features/discover/lib/cloud-published-outfits";
 import type { PublishedOutfit } from "@/features/discover/types/published-outfit";
@@ -40,6 +43,12 @@ export type FollowingFeedResult = {
   items: PublishedOutfit[];
   /** People the signed-in user follows (for empty-state copy). */
   followedUserCount: number;
+};
+
+export type ForYouFeedResult = {
+  items: PublishedOutfit[];
+  /** Null when signed out or signals RPC failed. */
+  signals: ForYouFeedSignalsRow | null;
 };
 
 export const discoverService = {
@@ -66,6 +75,26 @@ export const discoverService = {
     const followedUserCount = error ? 0 : (count ?? 0);
     const items = await fetchPublishedOutfitsFollowingFeed(limit);
     return { items, followedUserCount };
+  },
+
+  /**
+   * For You: ranked Discover posts for the signed-in user (RPC). Requires session.
+   * See `supabase/migrations/*_for_you_feed_rpc.sql` for the explicit scoring recipe.
+   */
+  async fetchForYouFeed(limit = 50): Promise<ForYouFeedResult> {
+    const client = supabase;
+    if (!client) {
+      return { items: [], signals: null };
+    }
+    const userId = await getAuthedUserId();
+    if (!userId) {
+      return { items: [], signals: null };
+    }
+    const [signals, items] = await Promise.all([
+      fetchForYouPersonalizationSignals(),
+      fetchPublishedOutfitsForYouFeed(limit),
+    ]);
+    return { items, signals };
   },
 
   async fetchPublishedById(id: string): Promise<PublishedOutfit | null> {

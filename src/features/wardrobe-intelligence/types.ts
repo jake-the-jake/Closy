@@ -1,14 +1,22 @@
 import type { ClothingItem } from "@/features/wardrobe/types/clothing-item";
 
-/** Per-item rollups derived from saved outfits (no separate “last worn” column yet). */
+/**
+ * Per-item rollups derived from saved outfits only (not real-world wear tracking).
+ * `lastUsedAt` is the latest outfit **activity** timestamp: see `outfitActivityTimestamp`.
+ */
 export type ItemUsageStats = {
   itemId: string;
   outfitCount: number;
-  /** Latest `Outfit.createdAt` among outfits that include this item, or null if never used. */
+  /** Latest outfit activity among outfits that include this item, or null if never used. */
   lastUsedAt: number | null;
 };
 
 export type MostUsedRow = {
+  item: ClothingItem;
+  outfitCount: number;
+};
+
+export type LeastUsedRow = {
   item: ClothingItem;
   outfitCount: number;
 };

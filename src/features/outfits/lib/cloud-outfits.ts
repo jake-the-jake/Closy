@@ -30,11 +30,14 @@ export type OutfitRow = {
 
 export function mapRowToOutfit(row: OutfitRow): Outfit {
   const ids = row.clothing_item_ids ?? [];
+  const createdAt = new Date(row.created_at).getTime();
+  const updatedRaw = new Date(row.updated_at).getTime();
   return {
     id: row.id,
     name: row.name,
     clothingItemIds: [...ids],
-    createdAt: new Date(row.created_at).getTime(),
+    createdAt,
+    updatedAt: Number.isFinite(updatedRaw) ? updatedRaw : createdAt,
   };
 }
 

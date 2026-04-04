@@ -8,6 +8,7 @@ export type {
   DeletePublishedOutfitResult,
   FetchPublishedOutfitCommentsResult,
   FollowingFeedResult,
+  ForYouFeedResult,
   PostCommentResult,
   TogglePublishedOutfitLikeResult,
 } from "./discover-service";
@@ -16,9 +17,16 @@ export { PUBLISHED_OUTFIT_COMMENT_BODY_MAX_LEN } from "./lib/cloud-published-out
 export { publishedOutfitAuthorLabel } from "./lib/published-outfit-attribution";
 export {
   FOLLOWING_PUBLISHED_OUTFIT_IDS_RPC,
+  FOR_YOU_FEED_SIGNALS_RPC,
+  FOR_YOU_PUBLISHED_OUTFIT_IDS_RPC,
   fetchPublishedOutfitsFollowingFeed,
+  fetchPublishedOutfitsForYouFeed,
 } from "./lib/cloud-published-outfits";
-export type { FollowingPublishedOutfitIdRow } from "./lib/cloud-published-outfits";
+export type {
+  FollowingPublishedOutfitIdRow,
+  ForYouFeedSignalsRow,
+  ForYouPublishedOutfitIdRow,
+} from "./lib/cloud-published-outfits";
 export type {
   PublishedOutfit,
   PublishedOutfitSnapshot,

@@ -1,7 +1,12 @@
 import type { Outfit } from "@/features/outfits/types/outfit";
 import type { ClothingItem } from "@/features/wardrobe/types/clothing-item";
 
-import type { ItemUsageStats, MostUsedRow } from "./types";
+import type { ItemUsageStats, LeastUsedRow, MostUsedRow } from "./types";
+
+/** Best signal we have for “this outfit touched this item”: create or last edit. */
+export function outfitActivityTimestamp(outfit: Outfit): number {
+  return Math.max(outfit.createdAt, outfit.updatedAt ?? outfit.createdAt);
+}
 
 function compareItemsByDisplayName(a: ClothingItem, b: ClothingItem): number {
   const an = (a.name.trim().toLowerCase() || a.id) as string;
@@ -28,7 +33,7 @@ export function computeItemUsageStats(
     });
   }
   for (const outfit of outfits) {
-    const t = outfit.createdAt;
+    const t = outfitActivityTimestamp(outfit);
     for (const id of outfit.clothingItemIds) {
       const row = map.get(id);
       if (row == null) continue;
@@ -56,6 +61,47 @@ export function getMostUsedItems(
     return compareItemsByDisplayName(a.item, b.item);
   });
   return rows.slice(0, Math.max(0, limit));
+}
+
+/**
+ * Items that appear in at least one saved outfit, fewest outfits first (stable tie-break).
+ */
+export function getLeastUsedItems(
+  items: readonly ClothingItem[],
+  stats: ReadonlyMap<string, ItemUsageStats>,
+  limit: number,
+): LeastUsedRow[] {
+  const rows: LeastUsedRow[] = [];
+  for (const item of items) {
+    const n = stats.get(item.id)?.outfitCount ?? 0;
+    if (n > 0) rows.push({ item, outfitCount: n });
+  }
+  rows.sort((a, b) => {
+    if (a.outfitCount !== b.outfitCount) return a.outfitCount - b.outfitCount;
+    return compareItemsByDisplayName(a.item, b.item);
+  });
+  return rows.slice(0, Math.max(0, limit));
+}
+
+/**
+ * Roll up usage for one item without building the full wardrobe map.
+ */
+export function computeItemOutfitUsage(
+  itemId: string,
+  outfits: readonly Outfit[],
+): ItemUsageStats {
+  const row: ItemUsageStats = {
+    itemId,
+    outfitCount: 0,
+    lastUsedAt: null,
+  };
+  for (const outfit of outfits) {
+    if (!outfit.clothingItemIds.includes(itemId)) continue;
+    row.outfitCount += 1;
+    const t = outfitActivityTimestamp(outfit);
+    row.lastUsedAt = row.lastUsedAt == null ? t : Math.max(row.lastUsedAt, t);
+  }
+  return row;
 }
 
 /**

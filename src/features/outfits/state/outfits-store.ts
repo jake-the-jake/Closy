@@ -59,11 +59,13 @@ export const useOutfitsStore = create<OutfitsState>()(
       ingestOutfit: (outfit) =>
         set((s) => ({ outfits: [outfit, ...s.outfits] })),
       addOutfit: (input) => {
+        const now = Date.now();
         const outfit: Outfit = {
           id: createLocalOutfitId(),
           name: input.name.trim(),
           clothingItemIds: [...input.clothingItemIds],
-          createdAt: Date.now(),
+          createdAt: now,
+          updatedAt: now,
         };
         set((s) => ({ outfits: [outfit, ...s.outfits] }));
         return outfit;
@@ -76,6 +78,7 @@ export const useOutfitsStore = create<OutfitsState>()(
                   ...o,
                   name: input.name.trim(),
                   clothingItemIds: [...input.clothingItemIds],
+                  updatedAt: Date.now(),
                 }
               : o,
           ),
