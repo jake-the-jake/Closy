@@ -13,6 +13,10 @@ function routeAllowsSignedOutOnly(segments: readonly string[]): boolean {
   return segments.some((s) => AUTH_ROUTE_SEGMENTS.has(s));
 }
 
+function routeBypassesAuthInDev(segments: readonly string[]): boolean {
+  return __DEV__ && segments.some((s) => s === "dev-avatar-preview");
+}
+
 type AuthGateProps = {
   children: ReactNode;
 };
@@ -36,8 +40,9 @@ export function AuthGate({ children }: AuthGateProps) {
     if (!rootNavigation?.key) return;
 
     const onAuthFlowOnly = routeAllowsSignedOutOnly(segments);
+    const devBypass = routeBypassesAuthInDev(segments);
 
-    if (!user && !onAuthFlowOnly) {
+    if (!user && !onAuthFlowOnly && !devBypass) {
       router.replace("/sign-in" as Href);
       return;
     }

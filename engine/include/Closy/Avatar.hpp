@@ -5,6 +5,7 @@
 #include <Closy/ClothingTag.hpp>
 #include <Closy/Transform.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <array>
 #include <cstddef>
@@ -61,6 +62,15 @@ public:
   Mesh* bodyMesh() const { return legacyBodyMesh_; }
 
   void addClothing(Mesh* mesh, ClothingTag tag = ClothingTag::Generic, float uniformScale = 1.f);
+  void addClothing(Mesh* mesh, ClothingTag tag, float uniformScale, const glm::vec3& tintRgb);
+  /** Explicit anchor (bone index) and offset from that bone; uniformScale scales local after. */
+  void addClothing(Mesh* mesh, ClothingTag tag, int anchorBoneIndex,
+                   const glm::mat4& localFromAnchor, float uniformScale = 1.f);
+  void addClothing(Mesh* mesh, ClothingTag tag, int anchorBoneIndex,
+                    const glm::mat4& localFromAnchor, float uniformScale,
+                    const glm::vec3& tintRgb);
+  /** Mid-torso / upper-pelvis focus in world space for camera framing. */
+  glm::vec3 focusPointWorld() const;
   bool removeClothing(const Mesh* mesh);
   void clearClothing();
 
@@ -85,6 +95,19 @@ public:
   bool showSkeletonDebug() const { return showSkeletonDebug_; }
 
   static constexpr int boneCount() { return kAvatarBodyPartCount; }
+
+  /** Optional tweak helper: trouser leg mesh bind in leg-bone space (uniform inflate). */
+  static glm::mat4 clothingBindTrousersLeg(float uniformScale = 1.f) {
+    const float u = uniformScale > 0.f ? uniformScale : 1.f;
+    return glm::scale(glm::mat4(1.f), glm::vec3(1.06f * u, 1.04f * u, 1.06f * u));
+  }
+
+  /** Shirt sleeve proxy in arm-bone space; negative X scale on `rightArm` matches rig mirroring. */
+  static glm::mat4 clothingBindShirtSleeve(float uniformScale = 1.f, bool rightArm = false) {
+    const float u = uniformScale > 0.f ? uniformScale : 1.f;
+    const float sx = (rightArm ? -1.07f : 1.07f) * u;
+    return glm::scale(glm::mat4(1.f), glm::vec3(sx, 1.05f * u, 1.07f * u));
+  }
 
 private:
   void buildMinimalSkeleton_();

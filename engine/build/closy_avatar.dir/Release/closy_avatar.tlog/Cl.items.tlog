@@ -2,4 +2,5 @@ E:\apps\Closy\engine\src\Avatar.cpp;E:\apps\Closy\engine\build\closy_avatar.dir\
 E:\apps\Closy\engine\src\AvatarPose.cpp;E:\apps\Closy\engine\build\closy_avatar.dir\Release\AvatarPose.obj
 E:\apps\Closy\engine\src\Mesh.cpp;E:\apps\Closy\engine\build\closy_avatar.dir\Release\Mesh.obj
 E:\apps\Closy\engine\src\Scene.cpp;E:\apps\Closy\engine\build\closy_avatar.dir\Release\Scene.obj
-E:\apps\Closy\engine\src\gl_procs.cpp;E:\apps\Closy\engine\build\closy_avatar.dir\Release\gl_procs.obj
+E:\apps\Closy\engine\src\avatar_demo_outfit.cpp;E:\apps\Closy\engine\build\closy_avatar.dir\Release\avatar_demo_outfit.obj
+E:\apps\Closy\engine\src\outfit_builder.cpp;E:\apps\Closy\engine\build\closy_avatar.dir\Release\outfit_builder.obj

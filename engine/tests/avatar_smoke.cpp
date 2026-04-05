@@ -2,6 +2,7 @@
 #include <Closy/AvatarPose.hpp>
 #include <Closy/Mesh.hpp>
 #include <Closy/Scene.hpp>
+#include <Closy/avatar_demo_outfit.hpp>
 
 #include <cassert>
 #include <cstdio>
@@ -12,7 +13,8 @@ int main() {
 
   assert(closy::Avatar::boneCount() == 7);
   assert(avatar->bones().size() == static_cast<std::size_t>(closy::Avatar::boneCount()));
-  assert(avatar->rigMeshes()[static_cast<std::size_t>(closy::AvatarBodyPart::Pelvis)] != nullptr);
+  assert(avatar->rigMeshes()[static_cast<std::size_t>(closy::AvatarBodyPart::Pelvis)] !=
+         nullptr);
   assert(avatar->bodyMesh() == nullptr);
 
   const closy::AvatarPosePreset presets[] = {
@@ -25,21 +27,17 @@ int main() {
     avatar->setPosePreset(pr);
     assert(avatar->posePreset() == pr);
     avatar->update();
+    (void)avatar->focusPointWorld();
   }
 
-  closy::Mesh* shirt = scene.takeMesh(closy::Mesh::createShirtProxy());
-  closy::Mesh* trousers = scene.takeMesh(closy::Mesh::createTrousersProxy());
-  avatar->addClothing(shirt, closy::ClothingTag::Shirt, 1.03f);
-  avatar->addClothing(trousers, closy::ClothingTag::Trousers, 1.02f);
+  closy::attachDemoOutfit(scene, avatar);
   avatar->update();
-
-  assert(avatar->removeClothing(shirt));
-  assert(avatar->removeClothing(trousers));
   avatar->clearClothing();
 
   closy::Mesh* cube = scene.takeMesh(closy::Mesh::createUnitCube());
   avatar->addClothing(cube, closy::ClothingTag::Generic, 1.f);
   assert(avatar->removeClothing(cube));
+  avatar->clearClothing();
 
   std::printf("avatar_smoke: ok (%s)\n", closy::avatarPosePresetLabel(avatar->posePreset()));
   return 0;

@@ -125,21 +125,43 @@ std::unique_ptr<Mesh> Mesh::createMannequin() {
   return m;
 }
 
-std::unique_ptr<Mesh> Mesh::createShirtProxy() {
+std::unique_ptr<Mesh> Mesh::createShirtTorsoProxy() {
   auto m = std::make_unique<Mesh>();
-  // Spine-local: clearer shoulders + torso block
+  // Spine-local: slightly larger than skin; centers nudged −Z so shell wraps chest/back evenly
   appendCube(m->interleavedVertices, m->indices,
-             box(0.40f, 0.56f, 0.26f, {0.f, 0.30f, 0.01f}));
+             box(0.44f, 0.56f, 0.30f, {0.f, 0.28f, -0.02f}));
   appendCube(m->interleavedVertices, m->indices,
-             box(0.50f, 0.14f, 0.16f, {0.26f, 0.44f, 0.f}));
+             box(0.50f, 0.14f, 0.26f, {0.f, 0.48f, -0.02f}));
+  return m;
+}
+
+std::unique_ptr<Mesh> Mesh::createShirtSleeveProxy() {
+  auto m = std::make_unique<Mesh>();
+  // Arm-local: same layout as body arm capsule (extends +X from shoulder)
   appendCube(m->interleavedVertices, m->indices,
-             box(0.50f, 0.14f, 0.16f, {-0.26f, 0.44f, 0.f}));
+             box(0.76f, 0.18f, 0.18f, {0.38f, 0.01f, 0.f}));
+  return m;
+}
+
+std::unique_ptr<Mesh> Mesh::createTrousersHipProxy() {
+  auto m = std::make_unique<Mesh>();
+  // Root / pelvis–local: waist and upper seat only (legs use leg–anchored meshes)
+  appendCube(m->interleavedVertices, m->indices,
+             box(0.40f, 0.13f, 0.27f, {0.f, -0.01f, 0.f}));
+  return m;
+}
+
+std::unique_ptr<Mesh> Mesh::createTrousersLegProxy() {
+  auto m = std::make_unique<Mesh>();
+  // Leg-bone local: same layout as body leg part (extends −Y from hip joint)
+  appendCube(m->interleavedVertices, m->indices,
+             box(0.17f, 0.76f, 0.16f, {0.f, -0.38f, 0.f}));
   return m;
 }
 
 std::unique_ptr<Mesh> Mesh::createTrousersProxy() {
   auto m = std::make_unique<Mesh>();
-  // Root-local: seat + legs + waist band
+  // Legacy fused mesh (root-local): hip + both legs
   appendCube(m->interleavedVertices, m->indices,
              box(0.38f, 0.12f, 0.26f, {0.f, -0.02f, 0.f}));
   appendCube(m->interleavedVertices, m->indices,

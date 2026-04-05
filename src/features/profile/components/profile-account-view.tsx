@@ -339,6 +339,22 @@ export function ProfileAccountView() {
           refreshToken={publishedPostsRefreshToken}
         />
 
+        {__DEV__ ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Developer</Text>
+            <Text style={styles.cardHint}>
+              Native avatar export bridge: JSON → avatar_export → PNG preview.
+            </Text>
+            <AppButton
+              label="Avatar preview (dev)"
+              variant="secondary"
+              fullWidth
+              onPress={() => router.push("/dev-avatar-preview")}
+              accessibilityHint="Opens experimental avatar render pipeline"
+            />
+          </View>
+        ) : null}
+
         <View style={styles.card}>
           <View style={styles.cardHeadingRow}>
             <Text style={styles.cardTitle}>Activity</Text>

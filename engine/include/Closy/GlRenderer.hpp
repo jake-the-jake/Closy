@@ -1,10 +1,9 @@
 #pragma once
 
 #include <Closy/Renderer.hpp>
+#include <Closy/gl_procs.hpp>
 
 #include <unordered_map>
-
-struct GlProcs;
 
 namespace closy {
 

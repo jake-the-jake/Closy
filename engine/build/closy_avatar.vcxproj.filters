@@ -13,7 +13,10 @@
     <ClCompile Include="E:\apps\Closy\engine\src\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\apps\Closy\engine\src\gl_procs.cpp">
+    <ClCompile Include="E:\apps\Closy\engine\src\avatar_demo_outfit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\apps\Closy\engine\src\outfit_builder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

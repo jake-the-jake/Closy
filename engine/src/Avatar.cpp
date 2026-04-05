@@ -25,7 +25,45 @@ int clampBoneIndex(int idx) {
   return std::clamp(idx, 0, kAvatarBodyPartCount - 1);
 }
 
+glm::vec3 tintForClothingTag(ClothingTag tag) {
+  switch (tag) {
+  case ClothingTag::Shirt:
+    return {0.42f, 0.52f, 0.82f};
+  case ClothingTag::Trousers:
+    return {0.34f, 0.38f, 0.48f};
+  case ClothingTag::Shoes:
+    return {0.20f, 0.17f, 0.15f};
+  default:
+    return {0.55f, 0.55f, 0.58f};
+  }
+}
+
+glm::mat4 defaultShirtLocal(float uniformScale) {
+  const float u = uniformScale > 0.f ? uniformScale : 1.f;
+  return glm::translate(glm::mat4(1.f), glm::vec3(0.f, -0.03f, -0.02f)) *
+         glm::scale(glm::mat4(1.f), glm::vec3(1.06f * u, 1.06f * u, 1.08f * u));
+}
+
+glm::mat4 defaultTrousersHipLocal(float uniformScale) {
+  const float u = uniformScale > 0.f ? uniformScale : 1.f;
+  return glm::translate(glm::mat4(1.f), glm::vec3(0.f, -0.03f, 0.f)) *
+         glm::scale(glm::mat4(1.f), glm::vec3(1.05f * u, 1.04f * u, 1.06f * u));
+}
+
+glm::mat4 defaultTrousersLegLocal(float uniformScale) {
+  const float u = uniformScale > 0.f ? uniformScale : 1.f;
+  return glm::scale(glm::mat4(1.f), glm::vec3(1.06f * u, 1.04f * u, 1.06f * u));
+}
+
 } // namespace
+
+glm::vec3 Avatar::focusPointWorld() const {
+  if (bones_.size() < static_cast<std::size_t>(kAvatarBodyPartCount))
+    return transform_.position;
+  const int spIdx = static_cast<int>(AvatarBoneId::Spine);
+  const glm::mat4& sp = bones_[static_cast<std::size_t>(spIdx)].worldTransform;
+  return glm::vec3(sp * glm::vec4(0.f, 0.24f, 0.02f, 1.f));
+}
 
 Avatar::Avatar() { buildMinimalSkeleton_(); }
 
@@ -133,40 +171,70 @@ ClothingLayer Avatar::makeClothingDefaults_(Mesh* mesh, ClothingTag tag,
   L.mesh = mesh;
   L.tag = tag;
   const float u = uniformScale > 0.f ? uniformScale : 1.f;
-  const glm::mat4 Us = glm::scale(glm::mat4(1.f), glm::vec3(u));
-
   switch (tag) {
   case ClothingTag::Shirt:
-    L.anchorBoneIndex = kSpine;
-    L.localFromAnchor =
-        glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.02f, 0.02f)) *
-        glm::scale(glm::mat4(1.f), glm::vec3(1.06f, 1.05f, 1.08f)) * Us;
-    L.tintRgb = glm::vec3(0.42f, 0.52f, 0.82f);
+    L.anchorBoneIndex = static_cast<int>(AvatarBoneId::Spine);
+    L.localFromAnchor = defaultShirtLocal(u);
     break;
   case ClothingTag::Trousers:
-    L.anchorBoneIndex = kRoot;
-    L.localFromAnchor =
-        glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 0.f)) *
-        glm::scale(glm::mat4(1.f), glm::vec3(1.04f, 1.03f, 1.05f)) * Us;
-    L.tintRgb = glm::vec3(0.34f, 0.38f, 0.48f);
+    // Hip / waist band only when using createTrousersHipProxy; add leg pieces via
+    // addClothing(..., LeftLeg/RightLeg, ...).
+    L.anchorBoneIndex = static_cast<int>(AvatarBoneId::Root);
+    L.localFromAnchor = defaultTrousersHipLocal(u);
     break;
   case ClothingTag::Shoes:
-    L.anchorBoneIndex = kRoot;
-    L.localFromAnchor = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 0.f)) * Us;
-    L.tintRgb = glm::vec3(0.20f, 0.17f, 0.15f);
+    L.anchorBoneIndex = static_cast<int>(AvatarBoneId::Root);
+    L.localFromAnchor =
+        glm::translate(glm::mat4(1.f), glm::vec3(0.f, -0.88f, 0.05f)) *
+        glm::scale(glm::mat4(1.f), glm::vec3(0.48f * u, 0.08f * u, 0.32f * u));
     break;
   default:
-    L.anchorBoneIndex = kRoot;
-    L.localFromAnchor = Us;
-    L.tintRgb = glm::vec3(0.55f, 0.55f, 0.58f);
+    L.anchorBoneIndex = static_cast<int>(AvatarBoneId::Root);
+    L.localFromAnchor = glm::scale(glm::mat4(1.f), glm::vec3(u));
     break;
   }
+  L.tintRgb = tintForClothingTag(tag);
   return L;
 }
 
 void Avatar::addClothing(Mesh* mesh, ClothingTag tag, float uniformScale) {
   if (mesh == nullptr) return;
   clothing_.push_back(makeClothingDefaults_(mesh, tag, uniformScale));
+}
+
+void Avatar::addClothing(Mesh* mesh, ClothingTag tag, float uniformScale,
+                         const glm::vec3& tintRgb) {
+  if (mesh == nullptr) return;
+  ClothingLayer L = makeClothingDefaults_(mesh, tag, uniformScale);
+  L.tintRgb = tintRgb;
+  clothing_.push_back(L);
+}
+
+void Avatar::addClothing(Mesh* mesh, ClothingTag tag, int anchorBoneIndex,
+                         const glm::mat4& localFromAnchor, float uniformScale) {
+  if (mesh == nullptr) return;
+  ClothingLayer L{};
+  L.mesh = mesh;
+  L.tag = tag;
+  L.anchorBoneIndex = anchorBoneIndex;
+  const float u = uniformScale > 0.f ? uniformScale : 1.f;
+  L.localFromAnchor = localFromAnchor * glm::scale(glm::mat4(1.f), glm::vec3(u));
+  L.tintRgb = tintForClothingTag(tag);
+  clothing_.push_back(L);
+}
+
+void Avatar::addClothing(Mesh* mesh, ClothingTag tag, int anchorBoneIndex,
+                         const glm::mat4& localFromAnchor, float uniformScale,
+                         const glm::vec3& tintRgb) {
+  if (mesh == nullptr) return;
+  ClothingLayer L{};
+  L.mesh = mesh;
+  L.tag = tag;
+  L.anchorBoneIndex = anchorBoneIndex;
+  const float u = uniformScale > 0.f ? uniformScale : 1.f;
+  L.localFromAnchor = localFromAnchor * glm::scale(glm::mat4(1.f), glm::vec3(u));
+  L.tintRgb = tintRgb;
+  clothing_.push_back(L);
 }
 
 bool Avatar::removeClothing(const Mesh* mesh) {
@@ -216,7 +284,7 @@ void Avatar::render(Renderer& renderer, const glm::mat4& view,
   renderClothingLayers_(renderer, view, projection);
 
   if (showSkeletonDebug_) {
-    const glm::vec4 lineRgb(0.15f, 0.95f, 0.35f, 1.f);
+    const glm::vec4 lineRgb(1.f, 0.95f, 0.12f, 1.f);
     for (std::size_t i = 0; i < bones_.size(); ++i) {
       const Bone& b = bones_[i];
       if (b.parentIndex < 0) continue;

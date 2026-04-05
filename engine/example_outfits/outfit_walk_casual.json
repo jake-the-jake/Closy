@@ -1,0 +1,11 @@
+{
+  "pose": "walk",
+  "width": 1024,
+  "height": 1024,
+  "camera": "three_quarter",
+  "items": [
+    { "slot": "top", "type": "shirt", "color": [0.85, 0.35, 0.32] },
+    { "slot": "bottom", "type": "trousers", "color": [0.28, 0.32, 0.38] },
+    { "slot": "shoes", "type": "shoes", "color": [0.65, 0.64, 0.62] }
+  ]
+}

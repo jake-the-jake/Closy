@@ -34,6 +34,10 @@ yarn-error.*
 .env
 .env*.local
 
+# Avatar export pipeline (requests/renders are reproducible)
+/generated/avatar_requests/*.json
+/generated/avatar_renders/*.png
+
 # typescript
 *.tsbuildinfo
 

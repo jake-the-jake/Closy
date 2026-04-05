@@ -1,0 +1,10 @@
+{
+  "pose": "relaxed",
+  "width": 1024,
+  "height": 1024,
+  "camera": "three_quarter",
+  "items": [
+    { "slot": "top", "type": "jumper" },
+    { "slot": "bottom", "type": "trousers" }
+  ]
+}

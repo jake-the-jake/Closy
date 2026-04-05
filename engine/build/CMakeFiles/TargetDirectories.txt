@@ -1,6 +1,8 @@
 E:/apps/Closy/engine/build/CMakeFiles/closy_avatar.dir
 E:/apps/Closy/engine/build/CMakeFiles/avatar_smoke.dir
+E:/apps/Closy/engine/build/CMakeFiles/closy_gl.dir
 E:/apps/Closy/engine/build/CMakeFiles/avatar_viewport.dir
+E:/apps/Closy/engine/build/CMakeFiles/avatar_export.dir
 E:/apps/Closy/engine/build/CMakeFiles/INSTALL.dir
 E:/apps/Closy/engine/build/CMakeFiles/ALL_BUILD.dir
 E:/apps/Closy/engine/build/CMakeFiles/ZERO_CHECK.dir

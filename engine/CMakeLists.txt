@@ -9,7 +9,8 @@ add_library(closy_avatar STATIC
   src/AvatarPose.cpp
   src/Mesh.cpp
   src/Scene.cpp
-  src/gl_procs.cpp
+  src/avatar_demo_outfit.cpp
+  src/outfit_builder.cpp
 )
 
 target_include_directories(closy_avatar
@@ -30,6 +31,22 @@ target_link_libraries(closy_avatar PUBLIC glm::glm)
 add_executable(avatar_smoke tests/avatar_smoke.cpp)
 target_link_libraries(avatar_smoke PRIVATE closy_avatar)
 
+add_library(closy_gl STATIC
+  src/gl_procs.cpp
+  src/GlRenderer.cpp
+  src/OffscreenCapture.cpp
+  src/write_png.cpp
+)
+
+target_include_directories(closy_gl
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+)
+
+target_link_libraries(closy_gl PUBLIC closy_avatar glm::glm)
+
 option(CLOSY_BUILD_AVATAR_DEMO "Build OpenGL + GLFW viewport demo" ON)
 
 if(CLOSY_BUILD_AVATAR_DEMO)
@@ -43,15 +60,26 @@ if(CLOSY_BUILD_AVATAR_DEMO)
   set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(glfw)
 
-  add_executable(avatar_viewport examples/avatar_viewport.cpp src/GlRenderer.cpp)
-  target_include_directories(avatar_viewport PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-  target_link_libraries(avatar_viewport PRIVATE closy_avatar glfw)
+  add_executable(avatar_viewport examples/avatar_viewport.cpp)
+  target_link_libraries(avatar_viewport PRIVATE closy_gl glfw)
+
+  add_executable(avatar_export
+    examples/avatar_export.cpp
+    examples/outfit_json_parse.cpp
+  )
+  target_include_directories(avatar_export PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+  )
+  target_link_libraries(avatar_export PRIVATE closy_gl glfw)
 
   if(WIN32)
     target_link_libraries(avatar_viewport PRIVATE opengl32)
+    target_link_libraries(avatar_export PRIVATE opengl32)
   elseif(APPLE)
     target_link_libraries(avatar_viewport PRIVATE "-framework OpenGL")
+    target_link_libraries(avatar_export PRIVATE "-framework OpenGL")
   else()
     target_link_libraries(avatar_viewport PRIVATE OpenGL)
+    target_link_libraries(avatar_export PRIVATE OpenGL)
   endif()
 endif()

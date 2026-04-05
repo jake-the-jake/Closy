@@ -33,8 +33,14 @@ public:
   /** Legacy fused mannequin (single draw); kept for compatibility. */
   static std::unique_ptr<Mesh> createMannequin();
 
-  /** Clothing proxies authored in anchor-local space (spine / root). */
-  static std::unique_ptr<Mesh> createShirtProxy();
+  /** Torso / jumper shell only — anchor to spine (sleeves use `createShirtSleeveProxy` on arms). */
+  static std::unique_ptr<Mesh> createShirtTorsoProxy();
+  /** One sleeve — anchor to LeftArm or RightArm; geometry matches +X arm axis (mirror for right). */
+  static std::unique_ptr<Mesh> createShirtSleeveProxy();
+  /** Waist/hip band only — anchor to pelvis/root bone. */
+  static std::unique_ptr<Mesh> createTrousersHipProxy();
+  /** One leg sleeve — anchor to LeftLeg or RightLeg bone; geometry in leg-local axes. */
+  static std::unique_ptr<Mesh> createTrousersLegProxy();
   static std::unique_ptr<Mesh> createTrousersProxy();
   static std::unique_ptr<Mesh> createShoesProxy();
 };

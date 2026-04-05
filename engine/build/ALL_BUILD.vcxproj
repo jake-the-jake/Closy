@@ -173,6 +173,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
+    <ProjectReference Include="E:\apps\Closy\engine\build\avatar_export.vcxproj">
+      <Project>{013395B5-1D01-30C5-B5D3-8BB633518954}</Project>
+      <Name>avatar_export</Name>
+    </ProjectReference>
     <ProjectReference Include="E:\apps\Closy\engine\build\avatar_smoke.vcxproj">
       <Project>{D9B46EB6-7B34-3AC7-9D4E-AFE177DFAF25}</Project>
       <Name>avatar_smoke</Name>
@@ -184,6 +188,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ProjectReference Include="E:\apps\Closy\engine\build\closy_avatar.vcxproj">
       <Project>{7FBBB52A-8C72-3048-A548-C0068CD2D509}</Project>
       <Name>closy_avatar</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\apps\Closy\engine\build\closy_gl.vcxproj">
+      <Project>{F0D5D9D7-A82B-33E2-A6A2-CA8CB459F8CE}</Project>
+      <Name>closy_gl</Name>
     </ProjectReference>
     <ProjectReference Include="E:\apps\Closy\engine\build\_deps\glfw-build\src\glfw.vcxproj">
       <Project>{3C41599F-37B5-39BC-9AA7-B155FBDD6941}</Project>

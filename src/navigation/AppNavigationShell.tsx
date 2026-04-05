@@ -87,6 +87,10 @@ export function AppNavigationShell() {
                   options={{ title: "Profile" }}
                 />
                 <Stack.Screen name="activity" options={{ title: "Activity" }} />
+                <Stack.Screen
+                  name="dev-avatar-preview"
+                  options={{ title: "Avatar preview (dev)" }}
+                />
               </Stack>
             </ActivityUnreadProvider>
           </AuthGate>

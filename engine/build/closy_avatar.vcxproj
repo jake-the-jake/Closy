@@ -269,7 +269,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="E:\apps\Closy\engine\src\AvatarPose.cpp" />
     <ClCompile Include="E:\apps\Closy\engine\src\Mesh.cpp" />
     <ClCompile Include="E:\apps\Closy\engine\src\Scene.cpp" />
-    <ClCompile Include="E:\apps\Closy\engine\src\gl_procs.cpp" />
+    <ClCompile Include="E:\apps\Closy\engine\src\avatar_demo_outfit.cpp" />
+    <ClCompile Include="E:\apps\Closy\engine\src\outfit_builder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="E:\apps\Closy\engine\build\ZERO_CHECK.vcxproj">

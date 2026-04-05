@@ -1,10 +1,9 @@
 #include <Closy/GlRenderer.hpp>
 #include <Closy/Mesh.hpp>
+#include <Closy/gl_procs.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include "gl_procs.hpp"
 
 #include <cstdint>
 #include <cstdio>
@@ -209,13 +208,15 @@ void GlRenderer::drawLine(const glm::vec3& aWorld, const glm::vec3& bWorld,
   gl_.uniformMatrix4fv(lineLocMvp_, 1, kGL_FALSE_U8, glm::value_ptr(mvp));
   gl_.uniform4fv(lineLocColor_, 1, glm::value_ptr(rgba));
 
-  gl_.lineWidth(2.f);
+  gl_.lineWidth(4.f);
+  gl_.disable(kGL_DEPTH_TEST);
   gl_.bindVertexArray(lineVao_);
   gl_.bindBuffer(kGL_ARRAY_BUFFER, lineVbo_);
   gl_.bufferData(kGL_ARRAY_BUFFER, static_cast<std::ptrdiff_t>(sizeof(verts)), verts,
                  kGL_STATIC_DRAW);
   gl_.drawArrays(kGL_LINES, 0, 2);
   gl_.bindVertexArray(0);
+  gl_.enable(kGL_DEPTH_TEST);
 }
 
 void GlRenderer::beginFrame(const glm::vec4& clearRgbDepth) {

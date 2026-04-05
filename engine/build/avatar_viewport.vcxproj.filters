@@ -4,9 +4,6 @@
     <ClCompile Include="E:\apps\Closy\engine\examples\avatar_viewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\apps\Closy\engine\src\GlRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="E:\apps\Closy\engine\CMakeLists.txt" />

@@ -1,5 +1,5 @@
 /**
- * Avatar demo: orbit (LMB drag), poses 1–4, B skeleton, R reset camera, Esc quit.
+ * Avatar demo: orbit (LMB drag), poses 1–4, B skeleton, R camera, Esc quit.
  */
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -9,10 +9,10 @@
 #include <Closy/GlRenderer.hpp>
 #include <Closy/Mesh.hpp>
 #include <Closy/Scene.hpp>
+#include <Closy/avatar_demo_outfit.hpp>
+#include <Closy/gl_procs.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
-
-#include "../src/gl_procs.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -21,13 +21,14 @@
 namespace {
 
 struct OrbitCam {
-  static constexpr float kYaw0 = 0.35f;
-  static constexpr float kPitch0 = 0.2f;
-  static constexpr float kDist0 = 4.2f;
+  static constexpr float kYaw0 = 0.52f;
+  static constexpr float kPitch0 = 0.13f;
+  /** Far enough to frame ~2m character + leg swing in 45° FOV. */
+  static constexpr float kDist0 = 5.75f;
   float yaw = kYaw0;
   float pitch = kPitch0;
   float dist = kDist0;
-  glm::vec3 target{0.f, 1.f, 0.f};
+  glm::vec3 target{0.f, 0.48f, 0.f};
 
   glm::mat4 view() const {
     const float x = std::cos(yaw) * std::cos(pitch) * dist;
@@ -48,7 +49,7 @@ struct AppState {
   OrbitCam cam;
   closy::Avatar* avatar = nullptr;
   GLFWwindow* window = nullptr;
-  bool showSkel = true;
+  bool showSkel = false;
   bool dragging = false;
   double lastX = 0;
   double lastY = 0;
@@ -65,7 +66,7 @@ void onCursor(GLFWwindow* w, double x, double y) {
     if (app->dragging) {
       app->cam.yaw += static_cast<float>(x - app->lastX) * 0.005f;
       app->cam.pitch += static_cast<float>(y - app->lastY) * 0.005f;
-      app->cam.pitch = std::clamp(app->cam.pitch, -1.3f, 1.3f);
+      app->cam.pitch = std::clamp(app->cam.pitch, -1.35f, 1.35f);
     }
     app->dragging = true;
   } else {
@@ -122,22 +123,21 @@ int main() {
   closy::Scene scene;
   closy::Avatar* avatar = scene.spawnAvatar();
 
-  closy::Mesh* shirt = scene.takeMesh(closy::Mesh::createShirtProxy());
-  closy::Mesh* trousers = scene.takeMesh(closy::Mesh::createTrousersProxy());
-  avatar->addClothing(shirt, closy::ClothingTag::Shirt, 1.03f);
-  avatar->addClothing(trousers, closy::ClothingTag::Trousers, 1.02f);
+  closy::attachDemoOutfit(scene, avatar);
 
   AppState app{};
   app.avatar = avatar;
   app.window = window;
-  app.showSkel = true;
+  app.showSkel = false;
   avatar->setShowSkeletonDebug(app.showSkel);
   glfwSetWindowUserPointer(window, &app);
   glfwSetCursorPosCallback(window, onCursor);
 
   std::fprintf(stdout,
-               "[closy] Controls: 1–4 pose | B skeleton | R camera | drag LMB orbit | Esc "
-               "quit\n");
+               "[closy] Controls: 1–4 pose | B skeleton debug | R camera reset | LMB drag "
+               "orbit | Esc quit\n");
+  std::fprintf(stdout,
+               "[closy] Skeleton overlay: depth off — bright yellow lines on top of mesh\n");
 
   while (!glfwWindowShouldClose(window)) {
     int fbW = 0, fbH = 0;
@@ -151,6 +151,7 @@ int main() {
 
     renderer.beginFrame();
     scene.update();
+    app.cam.target = app.avatar->focusPointWorld();
     scene.render(renderer, app.cam.view(), proj);
     renderer.endFrame();
 
@@ -171,6 +172,8 @@ int main() {
     if (keyEdge(GLFW_KEY_B, bWas)) {
       app.showSkel = !app.showSkel;
       app.avatar->setShowSkeletonDebug(app.showSkel);
+      std::fprintf(stdout, "[closy] Skeleton debug: %s\n",
+                   app.showSkel ? "ON" : "OFF");
     }
 
     static int k1 = GLFW_RELEASE, k2 = GLFW_RELEASE, k3 = GLFW_RELEASE, k4 = GLFW_RELEASE;
@@ -186,7 +189,7 @@ int main() {
     static int rWas = GLFW_RELEASE;
     if (keyEdge(GLFW_KEY_R, rWas)) {
       app.cam.reset();
-      std::fprintf(stdout, "[closy] Camera reset\n");
+      std::fprintf(stdout, "[closy] Camera reset (orbit focus follows avatar torso)\n");
     }
   }
 

@@ -1,4 +1,4 @@
-#include "gl_procs.hpp"
+#include <Closy/gl_procs.hpp>
 
 #include <cstdio>
 
@@ -21,8 +21,8 @@ void* getp(LoadFn load, const char* name) {
 #define ASSIGN(field, Name, Type)                                                     \
   do {                                                                                \
     g.field = reinterpret_cast<Type>(getp(load, #Name));                             \
-    if (g.field == nullptr) {                                                        \
-      std::fprintf(stderr, "[closy] Missing GL: %s\n", #Name);                       \
+    if (g.field == nullptr) {                                                         \
+      std::fprintf(stderr, "[closy] Missing GL: %s\n", #Name);                        \
       return false;                                                                   \
     }                                                                                 \
   } while (0)
@@ -36,7 +36,9 @@ bool closyLoadGlProcs(GlProcs& g, void* (*getProc)(const char*)) {
   ASSIGN(clear, glClear, decltype(g.clear));
   ASSIGN(viewport, glViewport, decltype(g.viewport));
   ASSIGN(enable, glEnable, decltype(g.enable));
+  ASSIGN(disable, glDisable, decltype(g.disable));
   ASSIGN(depthFunc, glDepthFunc, decltype(g.depthFunc));
+  ASSIGN(pixelStorei, glPixelStorei, decltype(g.pixelStorei));
 
   g.polygonMode = reinterpret_cast<decltype(g.polygonMode)>(getp(load, "glPolygonMode"));
   g.lineWidth = reinterpret_cast<decltype(g.lineWidth)>(getp(load, "glLineWidth"));
@@ -71,6 +73,24 @@ bool closyLoadGlProcs(GlProcs& g, void* (*getProc)(const char*)) {
   ASSIGN(uniform4fv, glUniform4fv, decltype(g.uniform4fv));
   ASSIGN(deleteVertexArrays, glDeleteVertexArrays, decltype(g.deleteVertexArrays));
   ASSIGN(deleteBuffers, glDeleteBuffers, decltype(g.deleteBuffers));
+
+  ASSIGN(genFramebuffers, glGenFramebuffers, decltype(g.genFramebuffers));
+  ASSIGN(bindFramebuffer, glBindFramebuffer, decltype(g.bindFramebuffer));
+  ASSIGN(deleteFramebuffers, glDeleteFramebuffers, decltype(g.deleteFramebuffers));
+  ASSIGN(checkFramebufferStatus, glCheckFramebufferStatus, decltype(g.checkFramebufferStatus));
+  ASSIGN(framebufferTexture2D, glFramebufferTexture2D, decltype(g.framebufferTexture2D));
+  ASSIGN(framebufferRenderbuffer, glFramebufferRenderbuffer,
+       decltype(g.framebufferRenderbuffer));
+  ASSIGN(genRenderbuffers, glGenRenderbuffers, decltype(g.genRenderbuffers));
+  ASSIGN(bindRenderbuffer, glBindRenderbuffer, decltype(g.bindRenderbuffer));
+  ASSIGN(renderbufferStorage, glRenderbufferStorage, decltype(g.renderbufferStorage));
+  ASSIGN(deleteRenderbuffers, glDeleteRenderbuffers, decltype(g.deleteRenderbuffers));
+  ASSIGN(genTextures, glGenTextures, decltype(g.genTextures));
+  ASSIGN(bindTexture, glBindTexture, decltype(g.bindTexture));
+  ASSIGN(texImage2D, glTexImage2D, decltype(g.texImage2D));
+  ASSIGN(texParameteri, glTexParameteri, decltype(g.texParameteri));
+  ASSIGN(deleteTextures, glDeleteTextures, decltype(g.deleteTextures));
+  ASSIGN(readPixels, glReadPixels, decltype(g.readPixels));
 
 #undef ASSIGN
 
