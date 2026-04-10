@@ -1,7 +1,10 @@
 import Constants from "expo-constants";
 import { NativeModules, Platform } from "react-native";
 
-import { renderRelativePathForRenderId } from "./contract";
+import {
+  clippingStatsRelativePathForRenderId,
+  renderRelativePathForRenderId,
+} from "./contract";
 
 const DEFAULT_SERVE_PORT = "3000";
 
@@ -38,6 +41,14 @@ export function getAvatarRenderHttpUrl(renderId: string): string | null {
   const base = getDevAvatarRenderBaseUrl();
   if (!base) return null;
   const rel = renderRelativePathForRenderId(renderId).replace(/\\/g, "/");
+  return `${base}/${rel}`;
+}
+
+/** Optional companion to clipping hotspot PNG (404 until host export writes it). */
+export function getAvatarClippingStatsHttpUrl(renderId: string): string | null {
+  const base = getDevAvatarRenderBaseUrl();
+  if (!base) return null;
+  const rel = clippingStatsRelativePathForRenderId(renderId).replace(/\\/g, "/");
   return `${base}/${rel}`;
 }
 

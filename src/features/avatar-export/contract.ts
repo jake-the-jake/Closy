@@ -5,6 +5,7 @@
  * - Input:  one JSON file per render under `generated/avatar_requests/{renderId}.json`
  *          (same schema the engine accepts: pose, width, height, camera, items[]).
  * - Output: one PNG under `generated/avatar_renders/{renderId}.png`
+ *          For clipping hotspot exports, also `{renderId}_clipping_stats.json` (band histograms).
  * - Invoke: `npm run closy:avatar-export -- <renderId>`
  *           (from repo root; resolves `avatar_export` inside `scripts/closy-avatar-export.mjs`).
  *
@@ -17,7 +18,11 @@
  *   `{base}/generated/avatar_renders/{renderId}.png` instead of `file://` host paths.
  * - `EXPO_PUBLIC_AVATAR_RENDER_SERVE_PORT` — optional; default `3000` when inferring base URL from
  *   the Metro bundle host (LAN IP / `10.0.2.2` on emulator).
- * - Optional `closy.debug` on export JSON — dev-only view flags (`showBodyOnly`, etc.); engine may ignore.
+ * - Optional `closy.debug` — `debugMode` / `showOverlay` / `showSilhouette` / `showClipping` drive exporter
+ *   passes (`normal`, `overlay`, `silhouette`, `clipping`); clipping supports `clippingThreshold`,
+ *   `clippingVisualization`, `showBaseRenderUnderlay`. Unknown keys are ignored.
+ * - Optional `closy.fit` — `global` { offset[], scale[], inflate }, `regions` { torso, sleeves, waist,
+ *   hem }, plus legacy flat keys. Omitted keys use engine defaults.
  */
 
 export const AVATAR_EXPORT_CONTRACT_VERSION = 1 as const;
@@ -51,4 +56,10 @@ export function requestRelativePathForRenderId(renderId: string): string {
 
 export function renderRelativePathForRenderId(renderId: string): string {
   return joinPathSegments(AVATAR_RENDERS_DIR, renderFilenameForRenderId(renderId));
+}
+
+/** Clipping stats JSON next to PNG (`foo.png` → `foo_clipping_stats.json`). */
+export function clippingStatsRelativePathForRenderId(renderId: string): string {
+  const safe = renderId.replace(/[/\\]/g, "_");
+  return joinPathSegments(AVATAR_RENDERS_DIR, `${safe}_clipping_stats.json`);
 }

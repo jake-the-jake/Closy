@@ -18,13 +18,60 @@ export type AvatarEngineOutfitItem = {
  * Engine / `avatar_export` may ignore until implemented — keeps contract backward-compatible.
  */
 export type AvatarExportDebugFlags = {
+  /** Explicit engine hint; silhouette wins over overlay if both flags appear. */
+  debugMode?: "normal" | "overlay" | "silhouette" | "clipping";
+  /** Shortcut for `debugMode: "clipping"` when `debugMode` omitted. */
+  showClipping?: boolean;
   showBodyOnly?: boolean;
   showGarmentOnly?: boolean;
   showOverlay?: boolean;
   showSilhouette?: boolean;
+  /** Optional 0–1 for future alpha blending in exporter (currently unused). */
+  overlayOpacity?: number;
   showWireframe?: boolean;
   showSkeleton?: boolean;
+  /** Luminance gate (0–1) for white silhouette masks in clipping mode. */
+  clippingThreshold?: number;
+  clippingVisualization?: "hotspot" | "binary";
+  /** Composite overlay-style RGB under clipping diagnostic in the engine. */
+  showBaseRenderUnderlay?: boolean;
 };
+
+export type FitGlobalExport = {
+  offset?: [number, number, number];
+  scale?: [number, number, number];
+  inflate?: number;
+};
+
+export type FitRegionsExport = {
+  torso?: { offsetZ?: number; inflate?: number; scaleY?: number };
+  sleeves?: { offset?: [number, number, number]; inflate?: number };
+  waist?: { offsetZ?: number; tighten?: number };
+  hem?: { offsetY?: number };
+};
+
+/**
+ * `closy.fit`: nested `global` / `regions` (preferred) plus legacy flat keys (still parsed by engine).
+ */
+export type AvatarExportFit = {
+  global?: FitGlobalExport;
+  regions?: FitRegionsExport;
+  offsetX?: number;
+  offsetY?: number;
+  offsetZ?: number;
+  scaleX?: number;
+  scaleY?: number;
+  scaleZ?: number;
+  inflate?: number;
+  shrinkwrapStrength?: number;
+  bodyOffsetBias?: number;
+  torsoOffsetZ?: number;
+  sleeveOffset?: number;
+  waistAdjust?: number;
+};
+
+/** @deprecated Use `AvatarExportFit`. */
+export type AvatarExportFitAdjust = AvatarExportFit;
 
 export type AvatarExportRequest = {
   renderId: string;
@@ -35,6 +82,8 @@ export type AvatarExportRequest = {
     requestRelativePath: string;
     /** Dev-only; optional visualisation hints for native exporter (staged). */
     debug?: AvatarExportDebugFlags;
+    /** Dev-only; garment fit (see engine `OutfitGarmentFitAdjust`). */
+    fit?: AvatarExportFit;
   };
 };
 

@@ -4,6 +4,9 @@
     <ClCompile Include="E:\apps\Closy\engine\examples\avatar_export.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\apps\Closy\engine\examples\clipping_hotspot_export.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="E:\apps\Closy\engine\examples\outfit_json_parse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

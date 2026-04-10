@@ -27,12 +27,21 @@ import { AppButton } from "@/components/ui/app-button";
 import { ScreenContainer } from "@/components/ui/screen-container";
 
 import {
+  CLIPPING_HOTSPOT_DEFAULTS,
+  DEFAULT_GARMENT_FIT_STATE,
+  FIT_ADJUST_PRESETS,
   FIT_DEBUG_MODE_LABELS,
   buildAvatarExportRequest,
   buildNpmAvatarRequestCommand,
   buildNpmCliCommand,
   canUseCacheDirectoryForExport,
+  cloneFitState,
+  fetchClippingStatsV1,
   fitDebugModeToExportFlags,
+  fitStateToExportPatch,
+  fitStatesEqual,
+  garmentFitFromLegacyFlat,
+  getAvatarClippingStatsHttpUrl,
   getAvatarRenderHttpUrl,
   getClosyRepoRoot,
   getDevAvatarRenderBaseUrl,
@@ -43,8 +52,14 @@ import {
   requestRelativePathForRenderId,
   runAvatarExport,
   saveAvatarExportRequest,
+  suggestionsFromChecklistTagIds,
+  suggestionsFromClippingStats,
   type AvatarOutfitLike,
+  type ClippingStatsV1,
   type FitDebugViewMode,
+  type FitSuggestion,
+  type GarmentFitState,
+  type LegacyGarmentFitAdjustState,
   type SaveAvatarRequestResult,
 } from "@/features/avatar-export";
 import { runAvatarExportMock } from "@/features/avatar-export/runner/avatarExportRunner.mock";
@@ -71,6 +86,10 @@ type SessionRenderEntry = {
   pose: PoseKey;
   preset: PresetKey;
   fitDebugMode: FitDebugViewMode;
+  garmentFit?: GarmentFitState;
+  /** Pre–region-aware history entries. */
+  fitAdjust?: LegacyGarmentFitAdjustState;
+  checklistTags?: string[];
   createdAt: number;
   thumbnailUri: string | null;
 };
@@ -80,20 +99,90 @@ type LoadSnapshot = {
   pose: PoseKey;
   preset: PresetKey;
   fitDebugMode: FitDebugViewMode;
+  garmentFit: GarmentFitState;
+};
+
+type FitRegionTab = "global" | "torso" | "sleeves" | "waist" | "hem";
+
+const FIT_REGION_LABELS: Record<FitRegionTab, string> = {
+  global: "Global",
+  torso: "Torso",
+  sleeves: "Sleeves",
+  waist: "Waist",
+  hem: "Hem",
 };
 
 type CompareLayout = "off" | "toggle" | "side" | "onion";
 
+type FitSliderRowProps = {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  disabled?: boolean;
+};
+
+function FitSliderRow({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+  disabled,
+}: FitSliderRowProps) {
+  const clamp = (v: number) =>
+    Math.min(max, Math.max(min, Math.round(v / step) * step));
+  return (
+    <View style={styles.fitRow}>
+      <Text style={styles.fitRowLabel} numberOfLines={2}>
+        {label}
+      </Text>
+      <Pressable
+        disabled={disabled}
+        onPress={() => onChange(clamp(value - step))}
+        style={({ pressed }) => [
+          styles.fitStepBtn,
+          pressed && styles.fitStepBtnPressed,
+        ]}
+      >
+        <Text style={styles.fitStepTxt}>−</Text>
+      </Pressable>
+      <Text style={styles.fitRowValue}>{value.toFixed(3)}</Text>
+      <Pressable
+        disabled={disabled}
+        onPress={() => onChange(clamp(value + step))}
+        style={({ pressed }) => [
+          styles.fitStepBtn,
+          pressed && styles.fitStepBtnPressed,
+        ]}
+      >
+        <Text style={styles.fitStepTxt}>+</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 type RenderAnnotation = { notes: string; tags: string[] };
 
 const FIT_ISSUE_DEFS = [
-  { id: "torso_forward", label: "Torso too far forward", region: "tops" },
-  { id: "clipping_back", label: "Clipping at back", region: "tops" },
-  { id: "sleeves_ok", label: "Sleeves OK", region: "tops" },
-  { id: "neckline_offset", label: "Neckline offset", region: "tops" },
-  { id: "hem_high", label: "Hem too high", region: "bottoms" },
-  { id: "hem_low", label: "Hem too low", region: "bottoms" },
-  { id: "waist_mismatch", label: "Waist mismatch", region: "bottoms" },
+  { id: "torso_alignment", label: "Torso alignment", region: "upper" },
+  { id: "chest_clipping", label: "Chest clipping", region: "upper" },
+  { id: "back_clipping", label: "Back clipping", region: "upper" },
+  { id: "shoulder_alignment", label: "Shoulder alignment", region: "upper" },
+  { id: "torso_forward", label: "Torso too far forward", region: "upper" },
+  { id: "clipping_back", label: "Clipping at back", region: "upper" },
+  { id: "neckline_offset", label: "Neckline offset", region: "upper" },
+  { id: "sleeve_fit", label: "Sleeve fit", region: "arms" },
+  { id: "armpit_clipping", label: "Armpit clipping", region: "arms" },
+  { id: "sleeves_ok", label: "Sleeves OK", region: "arms" },
+  { id: "waist_fit", label: "Waist fit", region: "lower" },
+  { id: "hem_alignment", label: "Hem alignment", region: "lower" },
+  { id: "hem_high", label: "Hem too high", region: "lower" },
+  { id: "hem_low", label: "Hem too low", region: "lower" },
+  { id: "waist_mismatch", label: "Waist mismatch", region: "lower" },
   { id: "pose_specific", label: "Pose-specific failure", region: "both" },
 ] as const;
 
@@ -129,7 +218,7 @@ const PHASE_COPY: Record<DevAvatarPreviewPhase, string> = {
   render_not_found:
     "Render not found — timeout or bad URL; fix export/serve, retry refresh.",
   stale_render:
-    "Stale — pose, preset, or debug mode changed since this image loaded. Rebuild or refresh.",
+    "Stale — pose, preset, debug mode, or fit controls changed since this image loaded. Rebuild or refresh.",
   unsupported_debug_mode:
     "Debug view not wired in engine — JSON still includes closy.debug; exporter may ignore.",
   render_failed: "Failed — see error below.",
@@ -174,6 +263,14 @@ function rehydrateFromHistory(entry: SaveAvatarRequestResult): {
   };
 }
 
+function garmentFitForSessionEntry(
+  entry: SessionRenderEntry,
+): GarmentFitState | null {
+  if (entry.garmentFit) return entry.garmentFit;
+  if (entry.fitAdjust) return garmentFitFromLegacyFlat(entry.fitAdjust);
+  return null;
+}
+
 export function AvatarPreviewDevScreen() {
   const router = useRouter();
   const [pose, setPose] = useState<PoseKey>("relaxed");
@@ -201,6 +298,13 @@ export function AvatarPreviewDevScreen() {
   const [devPhase, setDevPhase] = useState<DevAvatarPreviewPhase>("idle");
   const [fitDebugMode, setFitDebugMode] =
     useState<FitDebugViewMode>("normal");
+  const [garmentFit, setGarmentFit] = useState<GarmentFitState>(
+    DEFAULT_GARMENT_FIT_STATE,
+  );
+  const [fitRegion, setFitRegion] = useState<FitRegionTab>("global");
+  const [lastClippingStats, setLastClippingStats] =
+    useState<ClippingStatsV1 | null>(null);
+  const [reuseRenderId, setReuseRenderId] = useState(false);
   const [loadSnapshot, setLoadSnapshot] = useState<LoadSnapshot | null>(null);
   const [annotations, setAnnotations] = useState<
     Record<string, RenderAnnotation>
@@ -228,6 +332,20 @@ export function AvatarPreviewDevScreen() {
   useEffect(() => {
     lastSavedRef.current = lastSaved;
   }, [lastSaved]);
+
+  useEffect(() => {
+    if (!lastSaved) return;
+    const id = lastSaved.renderId;
+    const ann = annotations[id];
+    if (!ann) return;
+    setSessionHistory((h) =>
+      h.map((e) =>
+        e.saved.renderId === id
+          ? { ...e, checklistTags: [...ann.tags] }
+          : e,
+      ),
+    );
+  }, [annotations, lastSaved?.renderId]);
 
   const repoRoot = useMemo(() => getClosyRepoRoot(), []);
   const renderBaseUrl = useMemo(() => getDevAvatarRenderBaseUrl(), []);
@@ -275,14 +393,29 @@ export function AvatarPreviewDevScreen() {
     return (
       loadSnapshot.pose !== pose ||
       loadSnapshot.preset !== preset ||
-      loadSnapshot.fitDebugMode !== fitDebugMode
+      loadSnapshot.fitDebugMode !== fitDebugMode ||
+      !fitStatesEqual(loadSnapshot.garmentFit, garmentFit)
     );
-  }, [imageUri, lastSaved, loadSnapshot, pose, preset, fitDebugMode]);
+  }, [imageUri, lastSaved, loadSnapshot, pose, preset, fitDebugMode, garmentFit]);
 
   const currentAnnotation: RenderAnnotation = useMemo(() => {
     if (!lastSaved) return { notes: "", tags: [] };
     return annotations[lastSaved.renderId] ?? { notes: "", tags: [] };
   }, [annotations, lastSaved]);
+
+  const fitSuggestions = useMemo(() => {
+    const fromStats = suggestionsFromClippingStats(lastClippingStats);
+    const fromChk = suggestionsFromChecklistTagIds(currentAnnotation.tags);
+    const seen = new Set(fromStats.map((x) => x.id));
+    const out = [...fromStats];
+    for (const s of fromChk) {
+      if (!seen.has(s.id)) {
+        seen.add(s.id);
+        out.push(s);
+      }
+    }
+    return out;
+  }, [lastClippingStats, currentAnnotation.tags]);
 
   useEffect(() => {
     const wired =
@@ -311,7 +444,8 @@ export function AvatarPreviewDevScreen() {
     const changed =
       loadSnapshot.pose !== pose ||
       loadSnapshot.preset !== preset ||
-      loadSnapshot.fitDebugMode !== fitDebugMode;
+      loadSnapshot.fitDebugMode !== fitDebugMode ||
+      !fitStatesEqual(loadSnapshot.garmentFit, garmentFit);
     if (changed) {
       setDevPhase((ph) =>
         ph === "render_loaded" || ph === "stale_render"
@@ -325,6 +459,7 @@ export function AvatarPreviewDevScreen() {
     pose,
     preset,
     fitDebugMode,
+    garmentFit,
     imageUri,
     lastSaved?.renderId,
     loadSnapshot,
@@ -403,22 +538,31 @@ export function AvatarPreviewDevScreen() {
       saved: SaveAvatarRequestResult,
       snapshotOverride?: Pick<
         LoadSnapshot,
-        "pose" | "preset" | "fitDebugMode"
+        "pose" | "preset" | "fitDebugMode" | "garmentFit"
       >,
     ) => {
       const base = uri.split("?")[0];
       setImageUri(base);
       setImageCacheBust(Date.now());
       setLastSuccessAt(new Date().toLocaleString());
+      const mode = snapshotOverride?.fitDebugMode ?? fitDebugMode;
       setLoadSnapshot({
         renderId: saved.renderId,
         pose: snapshotOverride?.pose ?? pose,
         preset: snapshotOverride?.preset ?? preset,
-        fitDebugMode: snapshotOverride?.fitDebugMode ?? fitDebugMode,
+        fitDebugMode: mode,
+        garmentFit: cloneFitState(snapshotOverride?.garmentFit ?? garmentFit),
       });
       setSessionHistory((h) => patchSessionThumbnail(h, saved.renderId, base));
+      if (mode === "clipping_hotspot") {
+        void fetchClippingStatsV1(saved.renderId, getAvatarClippingStatsHttpUrl).then(
+          setLastClippingStats,
+        );
+      } else {
+        setLastClippingStats(null);
+      }
     },
-    [pose, preset, fitDebugMode],
+    [pose, preset, fitDebugMode, garmentFit],
   );
 
   /* Auto-poll HTTP when enabled; stops when render loads or toggle off. */
@@ -557,15 +701,21 @@ export function AvatarPreviewDevScreen() {
     setLoadSnapshot(null);
     setDevPhase("idle");
     try {
+      const renderIdToUse =
+        reuseRenderId && lastSavedRef.current != null
+          ? lastSavedRef.current.renderId
+          : `dev_${preset}_${pose}_${Date.now()}`;
       const outfit = PRESETS[preset];
       const debug = fitDebugModeToExportFlags(fitDebugMode);
+      const fitPatch = fitStateToExportPatch(garmentFit);
       const request = buildAvatarExportRequest(outfit, {
         pose,
         width: 1024,
         height: 1024,
         camera: "three_quarter",
-        renderId: `dev_${preset}_${pose}_${Date.now()}`,
+        renderId: renderIdToUse,
         debug,
+        ...(fitPatch != null ? { fit: fitPatch } : {}),
       });
       const saved = await saveAvatarExportRequest(request);
       setLastSaved(saved);
@@ -574,6 +724,7 @@ export function AvatarPreviewDevScreen() {
         pose,
         preset,
         fitDebugMode,
+        garmentFit: cloneFitState(garmentFit),
         createdAt: Date.now(),
         thumbnailUri: null,
       };
@@ -610,7 +761,15 @@ export function AvatarPreviewDevScreen() {
     } finally {
       setBusy(false);
     }
-  }, [applyPersistedExportResult, fitDebugMode, pose, preset, repoRoot]);
+  }, [
+    applyPersistedExportResult,
+    garmentFit,
+    fitDebugMode,
+    pose,
+    preset,
+    repoRoot,
+    reuseRenderId,
+  ]);
 
   const onRefreshRenderHttp = useCallback(async () => {
     if (lastSaved == null) {
@@ -673,6 +832,20 @@ export function AvatarPreviewDevScreen() {
     setPose(entry.pose);
     setPreset(entry.preset);
     setFitDebugMode(entry.fitDebugMode);
+    setGarmentFit(
+      entry.garmentFit
+        ? cloneFitState(entry.garmentFit)
+        : entry.fitAdjust
+          ? garmentFitFromLegacyFlat(entry.fitAdjust)
+          : DEFAULT_GARMENT_FIT_STATE,
+    );
+    setAnnotations((a) => ({
+      ...a,
+      [saved.renderId]: {
+        notes: a[saved.renderId]?.notes ?? "",
+        tags: [...(entry.checklistTags ?? [])],
+      },
+    }));
     setLastJsonPreview(saved.jsonForEngine);
     setCliExportHint(cliExport);
     setCliRequestHint(cliRequest);
@@ -684,6 +857,11 @@ export function AvatarPreviewDevScreen() {
         pose: entry.pose,
         preset: entry.preset,
         fitDebugMode: entry.fitDebugMode,
+        garmentFit: entry.garmentFit
+          ? cloneFitState(entry.garmentFit)
+          : entry.fitAdjust
+            ? garmentFitFromLegacyFlat(entry.fitAdjust)
+            : DEFAULT_GARMENT_FIT_STATE,
       });
       setDevPhase("render_loaded");
     } else {
@@ -704,10 +882,12 @@ export function AvatarPreviewDevScreen() {
     setImageUri(null);
     setImageCacheBust(null);
     try {
+      const fitPatch = fitStateToExportPatch(garmentFit);
       const request = buildAvatarExportRequest(PRESETS.casual, {
         pose: "relaxed",
         renderId: `mock_${Date.now()}`,
         debug: fitDebugModeToExportFlags(fitDebugMode),
+        ...(fitPatch != null ? { fit: fitPatch } : {}),
       });
       const saved = await saveAvatarExportRequest(request);
       setLastSaved(saved);
@@ -716,6 +896,7 @@ export function AvatarPreviewDevScreen() {
         pose: "relaxed",
         preset: "casual",
         fitDebugMode,
+        garmentFit: cloneFitState(garmentFit),
         createdAt: Date.now(),
         thumbnailUri: null,
       };
@@ -738,7 +919,12 @@ export function AvatarPreviewDevScreen() {
       );
       const result = await runAvatarExportMock(saved);
       if (result.ok && result.variant === "image") {
-        afterRenderReady(result.imageUri, saved);
+        afterRenderReady(result.imageUri, saved, {
+          pose: "relaxed",
+          preset: "casual",
+          fitDebugMode,
+          garmentFit: cloneFitState(garmentFit),
+        });
         setDevPhase("render_loaded");
         setStatus("Mock image (no native binary).");
       }
@@ -748,7 +934,7 @@ export function AvatarPreviewDevScreen() {
     } finally {
       setBusy(false);
     }
-  }, [afterRenderReady, fitDebugMode]);
+  }, [afterRenderReady, garmentFit, fitDebugMode]);
 
   const refreshBlocked =
     lastSaved == null || busy || busyPoll || autoPollLoopOn;
@@ -841,7 +1027,10 @@ export function AvatarPreviewDevScreen() {
         <Text style={styles.section}>Fit debug view mode</Text>
         <Text style={styles.debugNote}>
           Modes map to optional <Text style={styles.mono}>closy.debug</Text> in export JSON.
-          Only <Text style={styles.mono}>normal</Text> is wired in the engine today; others are staged.
+          Engine-wired today: <Text style={styles.mono}>normal</Text>,{" "}
+          <Text style={styles.mono}>overlay</Text>, <Text style={styles.mono}>silhouette</Text>,{" "}
+          <Text style={styles.mono}>clipping</Text> (hotspot composite). Body/garment-only, wireframe,
+          and skeleton are staged in JSON only.
         </Text>
         <ScrollView
           horizontal
@@ -877,16 +1066,90 @@ export function AvatarPreviewDevScreen() {
           })}
         </ScrollView>
         <Text style={styles.diagnosticsLine}>
-          Engine support: {debugWired ? "current mode" : "off for this mode — PNG may match normal until exporter reads flags"}
+          Engine support:{" "}
+          {debugWired
+            ? "current mode"
+            : "off for this mode — PNG may match normal until exporter reads flags"}
         </Text>
+        {fitDebugMode === "clipping_hotspot" ? (
+          <Text style={styles.clippingHelp}>
+            Clipping hotspot (approx.): <Text style={styles.boldMuted}>red</Text> = strong silhouette
+            overlap (likely penetration or tangled projection in this view).{" "}
+            <Text style={styles.boldMuted}>yellow</Text> = near-contact band at silhouette edge.
+            Muted blues/greens = body-only vs garment-only. Not physically exact — compare poses and
+            cameras to see pose-specific vs systematic issues.
+          </Text>
+        ) : null}
 
         <Text style={styles.section}>Render metadata</Text>
         <View style={styles.diagnostics}>
           <Text style={styles.diagnosticsLine}>
-            debug mode: {fitDebugMode} {debugWired ? "(wired)" : "(staged)"}
+            UI debug mode: {fitDebugMode}{" "}
+            {FIT_DEBUG_MODE_LABELS[fitDebugMode]}
+            {debugWired ? "" : " (staged — engine may ignore)"}
           </Text>
           <Text style={styles.diagnosticsLine}>
+            JSON{" "}
+            <Text style={styles.mono}>debugMode</Text>:{" "}
+            {fitDebugMode === "normal"
+              ? "—"
+              : fitDebugMode === "overlay"
+                ? "overlay"
+                : fitDebugMode === "silhouette"
+                  ? "silhouette"
+                  : fitDebugMode === "clipping_hotspot"
+                    ? "clipping"
+                    : "(other flags only)"}
+          </Text>
+          <Text style={styles.diagnosticsLine}>
+            exporter pipeline:{" "}
+            {fitDebugMode === "clipping_hotspot"
+              ? "clipping hotspot (multi-pass composite)"
+              : fitDebugMode === "normal"
+                ? "standard"
+                : debugWired
+                  ? `single contrast pass (${fitDebugMode})`
+                  : "normal (flags not wired)"}
+          </Text>
+          {fitDebugMode === "overlay" ? (
+            <Text style={styles.diagnosticsLine}>
+              overlay look: blue body + orange garment
+            </Text>
+          ) : null}
+          {fitDebugMode === "silhouette" ? (
+            <Text style={styles.diagnosticsLine}>
+              silhouette look: dark body + yellow garment
+            </Text>
+          ) : null}
+          {fitDebugMode === "clipping_hotspot" ? (
+            <>
+              <Text style={styles.diagnosticsLine}>
+                clipping visualization: {CLIPPING_HOTSPOT_DEFAULTS.clippingVisualization}{" "}
+                (change via JSON / future UI; <Text style={styles.mono}>binary</Text> = white overlap
+                only)
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                clipping threshold: {CLIPPING_HOTSPOT_DEFAULTS.clippingThreshold}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                base underlay:{" "}
+                {CLIPPING_HOTSPOT_DEFAULTS.showBaseRenderUnderlay ? "on (overlay)" : "off"}
+              </Text>
+            </>
+          ) : null}
+          <Text style={styles.diagnosticsLine}>
             pose: {pose} · preset: {preset}
+          </Text>
+          <Text style={styles.diagnosticsLine}>
+            fit global — offset [{garmentFit.global.offset.map((n) => n.toFixed(3)).join(", ")}]
+            scale [{garmentFit.global.scale.map((n) => n.toFixed(3)).join(", ")}] · inflate{" "}
+            {garmentFit.global.inflate.toFixed(3)}
+          </Text>
+          <Text style={styles.diagnosticsLine}>
+            regions — torso Z {garmentFit.regions.torso.offsetZ.toFixed(3)} · sleeves inflate{" "}
+            {garmentFit.regions.sleeves.inflate.toFixed(3)} · waist tighten{" "}
+            {garmentFit.regions.waist.tighten.toFixed(3)} · hem Y{" "}
+            {garmentFit.regions.hem.offsetY.toFixed(3)}
           </Text>
           <Text style={styles.diagnosticsLine}>
             renderId: {lastSaved?.renderId ?? "—"}
@@ -909,6 +1172,467 @@ export function AvatarPreviewDevScreen() {
           <Text style={styles.diagnosticsLine}>
             image may be stale: {mayBeStale || devPhase === "stale_render" ? "yes — rebuild or refresh" : imageUri ? "low if controls unchanged" : "—"}
           </Text>
+        </View>
+
+        <Text style={styles.section}>Fit debug workflow</Text>
+        <View style={styles.workflowBox}>
+          {[
+            "Build request → overlay or clipping hotspot render",
+            "Check silhouette mismatch (body vs garment)",
+            "Inspect clipping heatmap (red overlap)",
+            "Use fit suggestions + checklist, then region sliders",
+            "Re-render and compare in session history",
+          ].map((step, i) => (
+            <Text key={step} style={styles.workflowStep}>
+              {i + 1}. {step}
+            </Text>
+          ))}
+        </View>
+
+        <Text style={styles.section}>Garment fit (dev)</Text>
+        <Text style={styles.debugNote}>
+          Optional <Text style={styles.mono}>closy.fit</Text> with{" "}
+          <Text style={styles.mono}>global</Text> then <Text style={styles.mono}>regions</Text> (
+          torso / sleeves / waist / hem). Engine applies base bind → global → region overrides.
+          Clipping hotspot + <Text style={styles.mono}>_clipping_stats.json</Text> feed suggestions.
+        </Text>
+        <View style={styles.fitPanel}>
+          <View style={[styles.row, styles.fitPresetWrap]}>
+            <AppButton
+              label="Reset fit"
+              variant="secondary"
+              onPress={() => setGarmentFit(FIT_ADJUST_PRESETS.reset())}
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
+            <AppButton
+              label="Tight"
+              variant="secondary"
+              onPress={() => setGarmentFit(FIT_ADJUST_PRESETS.tight_fit())}
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
+            <AppButton
+              label="Loose"
+              variant="secondary"
+              onPress={() => setGarmentFit(FIT_ADJUST_PRESETS.loose_fit())}
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
+            <AppButton
+              label="Inflate test"
+              variant="secondary"
+              onPress={() => setGarmentFit(FIT_ADJUST_PRESETS.inflate_test())}
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
+            <AppButton
+              label="Back −Z"
+              variant="secondary"
+              onPress={() =>
+                setGarmentFit((prev) => FIT_ADJUST_PRESETS.offset_back(prev))
+              }
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
+            <AppButton
+              label="Forward +Z"
+              variant="secondary"
+              onPress={() =>
+                setGarmentFit((prev) => FIT_ADJUST_PRESETS.offset_forward(prev))
+              }
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
+          </View>
+          <Text style={styles.fitSubnote}>Adjust region</Text>
+          <View style={[styles.row, styles.fitPresetWrap]}>
+            {(
+              ["global", "torso", "sleeves", "waist", "hem"] as FitRegionTab[]
+            ).map((r) => (
+              <AppButton
+                key={r}
+                label={FIT_REGION_LABELS[r]}
+                variant={fitRegion === r ? "primary" : "secondary"}
+                onPress={() => setFitRegion(r)}
+                disabled={busy || busyPoll || autoPollLoopOn}
+              />
+            ))}
+          </View>
+          {fitRegion === "global" ? (
+            <>
+              <FitSliderRow
+                label="Offset X"
+                value={garmentFit.global.offset[0]}
+                min={-0.15}
+                max={0.15}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.global.offset[0] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Offset Y"
+                value={garmentFit.global.offset[1]}
+                min={-0.15}
+                max={0.15}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.global.offset[1] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Offset Z (back / forward)"
+                value={garmentFit.global.offset[2]}
+                min={-0.15}
+                max={0.15}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.global.offset[2] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Scale X"
+                value={garmentFit.global.scale[0]}
+                min={0.85}
+                max={1.2}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.global.scale[0] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Scale Y"
+                value={garmentFit.global.scale[1]}
+                min={0.85}
+                max={1.2}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.global.scale[1] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Scale Z"
+                value={garmentFit.global.scale[2]}
+                min={0.85}
+                max={1.2}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.global.scale[2] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Inflate (uniform scale bump)"
+                value={garmentFit.global.inflate}
+                min={-0.08}
+                max={0.15}
+                step={0.005}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.global.inflate = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Body bias Z (legacy flat)"
+                value={garmentFit.legacy.bodyOffsetBias}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.legacy.bodyOffsetBias = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Shrinkwrap strength"
+                value={garmentFit.legacy.shrinkwrapStrength}
+                min={0}
+                max={1}
+                step={0.05}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.legacy.shrinkwrapStrength = v;
+                    return c;
+                  })
+                }
+              />
+            </>
+          ) : null}
+          {fitRegion === "torso" ? (
+            <>
+              <FitSliderRow
+                label="Torso offset Z"
+                value={garmentFit.regions.torso.offsetZ}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.torso.offsetZ = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Torso inflate"
+                value={garmentFit.regions.torso.inflate}
+                min={-0.06}
+                max={0.12}
+                step={0.005}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.torso.inflate = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Torso scale Y"
+                value={garmentFit.regions.torso.scaleY}
+                min={0.92}
+                max={1.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.torso.scaleY = v;
+                    return c;
+                  })
+                }
+              />
+            </>
+          ) : null}
+          {fitRegion === "sleeves" ? (
+            <>
+              <FitSliderRow
+                label="Sleeves offset X"
+                value={garmentFit.regions.sleeves.offset[0]}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.sleeves.offset[0] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Sleeves offset Y"
+                value={garmentFit.regions.sleeves.offset[1]}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.sleeves.offset[1] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Sleeves offset Z"
+                value={garmentFit.regions.sleeves.offset[2]}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.sleeves.offset[2] = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Sleeves inflate"
+                value={garmentFit.regions.sleeves.inflate}
+                min={-0.06}
+                max={0.12}
+                step={0.005}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.sleeves.inflate = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Legacy sleeve Y (flat export)"
+                value={garmentFit.legacy.sleeveOffsetY}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.legacy.sleeveOffsetY = v;
+                    return c;
+                  })
+                }
+              />
+            </>
+          ) : null}
+          {fitRegion === "waist" ? (
+            <>
+              <FitSliderRow
+                label="Waist offset Z"
+                value={garmentFit.regions.waist.offsetZ}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.waist.offsetZ = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Waist tighten"
+                value={garmentFit.regions.waist.tighten}
+                min={0}
+                max={0.35}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.regions.waist.tighten = v;
+                    return c;
+                  })
+                }
+              />
+              <FitSliderRow
+                label="Legacy waist / hip Y"
+                value={garmentFit.legacy.waistAdjustY}
+                min={-0.08}
+                max={0.08}
+                step={0.01}
+                disabled={busy || busyPoll || autoPollLoopOn}
+                onChange={(v) =>
+                  setGarmentFit((s) => {
+                    const c = cloneFitState(s);
+                    c.legacy.waistAdjustY = v;
+                    return c;
+                  })
+                }
+              />
+            </>
+          ) : null}
+          {fitRegion === "hem" ? (
+            <FitSliderRow
+              label="Hem offset Y"
+              value={garmentFit.regions.hem.offsetY}
+              min={-0.08}
+              max={0.08}
+              step={0.01}
+              disabled={busy || busyPoll || autoPollLoopOn}
+              onChange={(v) =>
+                setGarmentFit((s) => {
+                  const c = cloneFitState(s);
+                  c.regions.hem.offsetY = v;
+                  return c;
+                })
+              }
+            />
+          ) : null}
+        </View>
+
+        <Text style={styles.section}>Fit suggestions</Text>
+        <Text style={styles.debugNote}>
+          Rule-based hints from clipping stats (after clipping hotspot render) and from checklist
+          tags below. Applying updates sliders immediately.
+        </Text>
+        <View style={styles.fitPanel}>
+          <AppButton
+            label="Apply all suggestions"
+            variant="secondary"
+            disabled={
+              busy ||
+              busyPoll ||
+              autoPollLoopOn ||
+              fitSuggestions.length === 0
+            }
+            onPress={() =>
+              setGarmentFit((prev) => {
+                let c = cloneFitState(prev);
+                for (const s of fitSuggestions) c = s.apply(c);
+                return c;
+              })
+            }
+          />
+          {fitSuggestions.length === 0 ? (
+            <Text style={styles.fitSubnote}>
+              No suggestions yet — run clipping hotspot and ensure{" "}
+              <Text style={styles.mono}>_clipping_stats.json</Text> is served, or tick checklist
+              issues.
+            </Text>
+          ) : (
+            fitSuggestions.map((s: FitSuggestion) => (
+              <View key={s.id} style={styles.suggestionRow}>
+                <Text style={styles.suggestionMessage}>{s.message}</Text>
+                <Text style={styles.suggestionDetail}>{s.detail}</Text>
+                <AppButton
+                  label="Apply"
+                  variant="secondary"
+                  disabled={busy || busyPoll || autoPollLoopOn}
+                  onPress={() =>
+                    setGarmentFit((prev) => s.apply(cloneFitState(prev)))
+                  }
+                />
+              </View>
+            ))
+          )}
         </View>
 
         <Text style={styles.section}>Quick copy</Text>
@@ -980,8 +1704,16 @@ export function AvatarPreviewDevScreen() {
                       <Text style={styles.historyThumbEmpty}>—</Text>
                     )}
                   </View>
-                  <Text style={styles.historyMeta} numberOfLines={2}>
+                  <Text style={styles.historyMeta} numberOfLines={4}>
                     {h.pose} · {h.preset}
+                    {"\n"}
+                    {FIT_DEBUG_MODE_LABELS[h.fitDebugMode]}
+                    {"\n"}
+                    {(() => {
+                      const gf = garmentFitForSessionEntry(h);
+                      if (!gf) return "fit —";
+                      return `gz ${gf.global.offset[2].toFixed(2)} · torsoZ ${gf.regions.torso.offsetZ.toFixed(2)} · inf ${gf.global.inflate.toFixed(2)}`;
+                    })()}
                   </Text>
                   <Text style={styles.historyId} numberOfLines={1}>
                     {h.saved.renderId.length > 20
@@ -999,16 +1731,19 @@ export function AvatarPreviewDevScreen() {
 
         <Text style={styles.section}>Fit issue checklist (session notes)</Text>
         <Text style={styles.debugNote}>
-          In-memory only per renderId. Use for consistent fit reviews (tops / bottoms).
+          In-memory only per renderId. Grouped for systematic reviews; tags also feed fit
+          suggestions above.
         </Text>
-        {(["tops", "bottoms", "both"] as const).map((region) => (
+        {(["upper", "arms", "lower", "both"] as const).map((region) => (
           <View key={region} style={styles.checklistRegion}>
             <Text style={styles.checklistRegionTitle}>
-              {region === "tops"
-                ? "Tops / upper"
-                : region === "bottoms"
-                  ? "Bottoms"
-                  : "General"}
+              {region === "upper"
+                ? "Upper body"
+                : region === "arms"
+                  ? "Arms"
+                  : region === "lower"
+                    ? "Lower body"
+                    : "General"}
             </Text>
             <View style={styles.row}>
               {FIT_ISSUE_DEFS.filter((d) => d.region === region).map((d) => {
@@ -1333,13 +2068,31 @@ export function AvatarPreviewDevScreen() {
         </View>
 
         <Text style={styles.debugNote}>
-          Change pose or preset, then build again for a new renderId (same outfit preset + fit debug). Run host export, then Refresh render.
+          Adjust fit sliders, pick debug mode (e.g. clipping), then build. Run host export → Refresh
+          render. Enable reuse when you want the same renderId/path for faster PNG overwrite
+          iteration.
         </Text>
+        <View style={styles.autoPollRow}>
+          <Text style={styles.autoPollLabel}>Reuse renderId (same PNG path)</Text>
+          <Switch
+            value={reuseRenderId}
+            onValueChange={setReuseRenderId}
+            disabled={busy || busyPoll || autoPollLoopOn || lastSaved == null}
+          />
+        </View>
+        {lastSaved == null ? (
+          <Text style={styles.debugNote}>
+            After the first successful build, you can enable reuse to overwrite the same request JSON
+            and export path.
+          </Text>
+        ) : null}
         <AppButton
           label={
-            Platform.OS === "web"
-              ? "Build request (new renderId)"
-              : "Build / rebuild request (new renderId)"
+            reuseRenderId
+              ? "Build / rebuild request (reuse renderId)"
+              : Platform.OS === "web"
+                ? "Build request (new renderId)"
+                : "Build / rebuild request (new renderId)"
           }
           onPress={() => void onGenerate()}
           loading={busy}
@@ -1523,6 +2276,90 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.caption,
     color: theme.colors.textMuted,
     lineHeight: 18,
+  },
+  clippingHelp: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.text,
+    lineHeight: 20,
+    paddingVertical: theme.spacing.xs,
+  },
+  boldMuted: {
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  fitPanel: {
+    padding: theme.spacing.sm,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: 8,
+  },
+  fitPresetWrap: {
+    flexWrap: "wrap",
+    marginBottom: theme.spacing.xs,
+  },
+  fitRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+  },
+  fitRowLabel: {
+    flex: 1,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text,
+  },
+  fitRowValue: {
+    minWidth: 52,
+    fontSize: theme.typography.fontSize.sm,
+    fontVariant: ["tabular-nums"],
+    color: theme.colors.primary,
+    textAlign: "center",
+  },
+  fitStepBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.border,
+  },
+  fitStepBtnPressed: { opacity: 0.75 },
+  fitStepTxt: {
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  fitSubnote: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    marginTop: theme.spacing.xs,
+  },
+  workflowBox: {
+    padding: theme.spacing.sm,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: 6,
+  },
+  workflowStep: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.text,
+    lineHeight: 18,
+  },
+  suggestionRow: {
+    gap: 6,
+    paddingVertical: theme.spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  suggestionMessage: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text,
+  },
+  suggestionDetail: {
+    fontSize: theme.typography.fontSize.caption,
+    fontFamily: Platform.select({ web: "monospace", default: "monospace" }),
+    color: theme.colors.textMuted,
   },
   diagnostics: {
     padding: theme.spacing.sm,

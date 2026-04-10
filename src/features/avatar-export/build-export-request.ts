@@ -7,6 +7,7 @@ import type {
   AvatarEngineOutfitFile,
   AvatarEngineOutfitItem,
   AvatarExportDebugFlags,
+  AvatarExportFit,
   AvatarExportRequest,
   AvatarOutfitLike,
 } from "./types";
@@ -23,6 +24,8 @@ export type BuildAvatarExportOptions = {
    * Prefer `fitDebugModeToExportFlags` from `avatar-fit-debug.ts` when using the preview screen modes.
    */
   debug?: AvatarExportDebugFlags;
+  /** Dev-only; written under `closy.fit` when non-empty. */
+  fit?: AvatarExportFit;
 };
 
 function pushItem(items: AvatarEngineOutfitItem[], slotLike: AvatarEngineOutfitItem) {
@@ -81,6 +84,9 @@ export function buildAvatarExportRequest(
   if (options.debug != null && Object.keys(options.debug).length > 0) {
     closy.debug = options.debug;
   }
+  if (options.fit != null && Object.keys(options.fit).length > 0) {
+    closy.fit = options.fit;
+  }
 
   return {
     renderId,
@@ -97,6 +103,9 @@ export function serializeAvatarExportRequestForDisk(request: AvatarExportRequest
   const closy: Record<string, unknown> = { ...request.closy };
   if (request.closy.debug == null) {
     delete closy.debug;
+  }
+  if (request.closy.fit == null || Object.keys(request.closy.fit).length === 0) {
+    delete closy.fit;
   }
   const payload = {
     ...request.engine,

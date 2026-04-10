@@ -18,7 +18,10 @@
 #include <Closy/outfit_json_io.hpp>
 #include <Closy/write_png.hpp>
 
+#include "clipping_hotspot_export.hpp"
+
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/vec4.hpp>
 
 #include <cstdio>
 #include <cstdlib>
@@ -69,6 +72,45 @@ bool parsePose(const char* s, closy::AvatarPosePreset& out) {
 
 bool parsePoseStringLoose(const std::string& str, closy::AvatarPosePreset& out) {
   return parsePose(str.c_str(), out);
+}
+
+/** `{base}.png` → `{base}_clipping_stats.json` */
+bool clippingStatsJsonPathNextToPng(const char* pngPath, char* outBuf, std::size_t outCap) {
+  if (pngPath == nullptr || outBuf == nullptr || outCap < 32) return false;
+  const char* dot = std::strrchr(pngPath, '.');
+  const std::size_t baseLen =
+      dot ? static_cast<std::size_t>(dot - pngPath) : std::strlen(pngPath);
+  static const char kSuff[] = "_clipping_stats.json";
+  if (baseLen + sizeof(kSuff) > outCap) return false;
+  std::memcpy(outBuf, pngPath, baseLen);
+  std::memcpy(outBuf + baseLen, kSuff, sizeof(kSuff));
+  return true;
+}
+
+glm::vec4 clearColorForDebugRender(closy::OutfitDebugRenderMode m) {
+  switch (m) {
+  case closy::OutfitDebugRenderMode::Silhouette:
+    return {0.10f, 0.10f, 0.12f, 1.f};
+  case closy::OutfitDebugRenderMode::Overlay:
+    return {0.05f, 0.055f, 0.07f, 1.f};
+  case closy::OutfitDebugRenderMode::ClippingHotspot:
+    return {0.02f, 0.02f, 0.025f, 1.f};
+  default:
+    return {0.08f, 0.09f, 0.11f, 1.f};
+  }
+}
+
+const char* debugRenderLabel(closy::OutfitDebugRenderMode m) {
+  switch (m) {
+  case closy::OutfitDebugRenderMode::Overlay:
+    return "overlay";
+  case closy::OutfitDebugRenderMode::Silhouette:
+    return "silhouette";
+  case closy::OutfitDebugRenderMode::ClippingHotspot:
+    return "clipping";
+  default:
+    return "normal";
+  }
 }
 
 bool parseCameraCli(const char* s, closy::AvatarExportCameraPreset& out) {
@@ -249,8 +291,22 @@ int main(int argc, char** argv) {
   closy::Scene scene;
   closy::Avatar* avatar = scene.spawnAvatar();
   closy::buildOutfitFromDescription(scene, *avatar, outfitDesc);
+  avatar->setGarmentFitAdjust(outfitDesc.garmentFit);
 
-  const glm::vec4 clearColor(0.08f, 0.09f, 0.11f, 1.f);
+  const bool clippingHotspot =
+      outfitDesc.debugRender == closy::OutfitDebugRenderMode::ClippingHotspot;
+  if (!clippingHotspot) {
+    avatar->setDebugRenderMode(outfitDesc.debugRender);
+    if (outfitDesc.debugRender != closy::OutfitDebugRenderMode::Normal) {
+      std::printf("[closy] Debug render: %s (body vs garment contrast pass)\n",
+                  debugRenderLabel(outfitDesc.debugRender));
+    }
+  } else {
+    std::printf("[closy] Debug render: %s (screen-space silhouette overlap heuristic)\n",
+                debugRenderLabel(outfitDesc.debugRender));
+  }
+
+  const glm::vec4 clearColor = clearColorForDebugRender(outfitDesc.debugRender);
   bool allOk = true;
 
   if (opt.allPoses) {
@@ -269,10 +325,22 @@ int main(int argc, char** argv) {
         allOk = false;
         break;
       }
-      if (!exportOnePose(glp, renderer, scene, avatar, pathBuf, width, height, pr, yaw, pitch,
-                         clearColor))
+      if (clippingHotspot) {
+        char statsPath[512]{};
+        clippingStatsJsonPathNextToPng(pathBuf, statsPath, sizeof(statsPath));
+        if (!closy::exportClippingHotspotPng(glp, renderer, scene, avatar, pathBuf, width, height,
+                                            pr, yaw, pitch, outfitDesc, statsPath))
+          allOk = false;
+      } else if (!exportOnePose(glp, renderer, scene, avatar, pathBuf, width, height, pr, yaw,
+                                pitch, clearColor)) {
         allOk = false;
+      }
     }
+  } else if (clippingHotspot) {
+    char statsPath[512]{};
+    clippingStatsJsonPathNextToPng(opt.outPath, statsPath, sizeof(statsPath));
+    allOk = closy::exportClippingHotspotPng(glp, renderer, scene, avatar, opt.outPath, width, height,
+                                            pose, yaw, pitch, outfitDesc, statsPath);
   } else {
     allOk = exportOnePose(glp, renderer, scene, avatar, opt.outPath, width, height, pose, yaw,
                           pitch, clearColor);

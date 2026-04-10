@@ -65,10 +65,12 @@ if(CLOSY_BUILD_AVATAR_DEMO)
 
   add_executable(avatar_export
     examples/avatar_export.cpp
+    examples/clipping_hotspot_export.cpp
     examples/outfit_json_parse.cpp
   )
   target_include_directories(avatar_export PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+    ${CMAKE_CURRENT_SOURCE_DIR}/examples
   )
   target_link_libraries(avatar_export PRIVATE closy_gl glfw)
 

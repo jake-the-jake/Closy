@@ -248,12 +248,67 @@ bool Avatar::removeClothing(const Mesh* mesh) {
 
 void Avatar::clearClothing() { clothing_.clear(); }
 
+glm::mat4 Avatar::garmentFitMatrix_(const ClothingLayer& layer) const {
+  const OutfitGarmentFitAdjust& f = garmentFit_;
+  glm::vec3 off = f.globalOffset;
+  off.z += f.bodyOffsetBias;
+
+  const float gInf = std::max(-0.45f, f.globalInflate);
+  glm::vec3 sc = f.globalScale * (1.f + gInf);
+
+  const int spine = static_cast<int>(AvatarBoneId::Spine);
+  const int root = static_cast<int>(AvatarBoneId::Root);
+  const int leftArm = static_cast<int>(AvatarBoneId::LeftArm);
+  const int rightArm = static_cast<int>(AvatarBoneId::RightArm);
+  const int leftLeg = static_cast<int>(AvatarBoneId::LeftLeg);
+  const int rightLeg = static_cast<int>(AvatarBoneId::RightLeg);
+
+  if (layer.tag == ClothingTag::Shirt && layer.anchorBoneIndex == spine) {
+    const float tInf = std::max(-0.45f, f.torsoInflate);
+    off.z += f.torsoOffsetZ + f.legacyTorsoOffsetZ;
+    off.y += f.hemOffsetY;
+    sc *= glm::vec3(1.f + tInf, (1.f + tInf) * std::max(0.04f, f.torsoScaleY), 1.f + tInf);
+  }
+  if (layer.tag == ClothingTag::Shirt &&
+      (layer.anchorBoneIndex == leftArm || layer.anchorBoneIndex == rightArm)) {
+    glm::vec3 so = f.sleevesOffset;
+    so.y += f.legacySleeveOffsetY;
+    off += so;
+    sc *= (1.f + std::max(-0.45f, f.sleevesInflate));
+  }
+  if (layer.tag == ClothingTag::Trousers && layer.anchorBoneIndex == root) {
+    off.z += f.waistOffsetZ;
+    off.y += f.legacyWaistAdjustY;
+    const float wt = std::clamp(f.waistTighten, 0.f, 0.5f);
+    const float w = 1.f - 0.6f * wt;
+    sc.x *= w;
+    sc.z *= w;
+  }
+  if (layer.tag == ClothingTag::Trousers &&
+      (layer.anchorBoneIndex == leftLeg || layer.anchorBoneIndex == rightLeg)) {
+    off.y += f.hemOffsetY;
+  }
+
+  sc = glm::max(sc, glm::vec3(0.04f));
+  glm::mat4 M(1.f);
+  M = glm::translate(M, off);
+  M = M * glm::scale(glm::mat4(1.f), sc);
+  return M;
+}
+
 void Avatar::renderBodyParts_(Renderer& renderer, const glm::mat4& view,
                               const glm::mat4& projection) {
   const glm::vec3 skin(0.84f, 0.79f, 0.73f);
+  const glm::vec3 bodyOverlay(0.18f, 0.52f, 0.96f);
+  const glm::vec3 bodySilhouette(0.04f, 0.05f, 0.08f);
+  glm::vec3 bodyRgb = skin;
+  if (debugRenderMode_ == OutfitDebugRenderMode::Overlay)
+    bodyRgb = bodyOverlay;
+  else if (debugRenderMode_ == OutfitDebugRenderMode::Silhouette)
+    bodyRgb = bodySilhouette;
   for (int i = 0; i < kAvatarBodyPartCount; ++i) {
     if (bodyMeshes_[static_cast<std::size_t>(i)] == nullptr) continue;
-    renderer.setMeshColor(skin);
+    renderer.setMeshColor(bodyRgb);
     renderer.renderMesh(*bodyMeshes_[static_cast<std::size_t>(i)], bones_[static_cast<std::size_t>(i)].worldTransform,
                         view, projection);
   }
@@ -261,11 +316,32 @@ void Avatar::renderBodyParts_(Renderer& renderer, const glm::mat4& view,
 
 void Avatar::renderClothingLayers_(Renderer& renderer, const glm::mat4& view,
                                    const glm::mat4& projection) {
+  const glm::vec3 garmentOverlay(0.96f, 0.38f, 0.16f);
+  const glm::vec3 garmentSilhouette(0.98f, 0.92f, 0.14f);
   for (const ClothingLayer& layer : clothing_) {
     if (layer.mesh == nullptr) continue;
     const int ai = clampBoneIndex(layer.anchorBoneIndex);
-    const glm::mat4 model = bones_[static_cast<std::size_t>(ai)].worldTransform * layer.localFromAnchor;
-    renderer.setMeshColor(layer.tintRgb);
+    const glm::mat4 model = bones_[static_cast<std::size_t>(ai)].worldTransform * layer.localFromAnchor *
+                            garmentFitMatrix_(layer);
+    glm::vec3 rgb = layer.tintRgb;
+    if (debugRenderMode_ == OutfitDebugRenderMode::Overlay)
+      rgb = garmentOverlay;
+    else if (debugRenderMode_ == OutfitDebugRenderMode::Silhouette)
+      rgb = garmentSilhouette;
+    renderer.setMeshColor(rgb);
+    renderer.renderMesh(*layer.mesh, model, view, projection);
+  }
+}
+
+void Avatar::renderClothingFlatWhite_(Renderer& renderer, const glm::mat4& view,
+                                      const glm::mat4& projection) {
+  const glm::vec3 w(1.f, 1.f, 1.f);
+  for (const ClothingLayer& layer : clothing_) {
+    if (layer.mesh == nullptr) continue;
+    const int ai = clampBoneIndex(layer.anchorBoneIndex);
+    const glm::mat4 model = bones_[static_cast<std::size_t>(ai)].worldTransform * layer.localFromAnchor *
+                            garmentFitMatrix_(layer);
+    renderer.setMeshColor(w);
     renderer.renderMesh(*layer.mesh, model, view, projection);
   }
 }
@@ -273,6 +349,26 @@ void Avatar::renderClothingLayers_(Renderer& renderer, const glm::mat4& view,
 void Avatar::render(Renderer& renderer, const glm::mat4& view,
                     const glm::mat4& projection) {
   const glm::mat4 root = transform_.toMat4();
+
+  if (clippingMaskPass_ == ClippingMaskPass::BodyWhite) {
+    const glm::vec3 w(1.f, 1.f, 1.f);
+    if (useRigMeshes_) {
+      for (int i = 0; i < kAvatarBodyPartCount; ++i) {
+        if (bodyMeshes_[static_cast<std::size_t>(i)] == nullptr) continue;
+        renderer.setMeshColor(w);
+        renderer.renderMesh(*bodyMeshes_[static_cast<std::size_t>(i)],
+                            bones_[static_cast<std::size_t>(i)].worldTransform, view, projection);
+      }
+    } else if (legacyBodyMesh_ != nullptr) {
+      renderer.setMeshColor(w);
+      renderer.renderMesh(*legacyBodyMesh_, root, view, projection);
+    }
+    return;
+  }
+  if (clippingMaskPass_ == ClippingMaskPass::GarmentWhite) {
+    renderClothingFlatWhite_(renderer, view, projection);
+    return;
+  }
 
   if (useRigMeshes_) {
     renderBodyParts_(renderer, view, projection);

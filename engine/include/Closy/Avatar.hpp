@@ -3,6 +3,7 @@
 #include <Closy/AvatarPose.hpp>
 #include <Closy/Bone.hpp>
 #include <Closy/ClothingTag.hpp>
+#include <Closy/outfit_description.hpp>
 #include <Closy/Transform.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -51,6 +52,9 @@ struct ClothingLayer {
 
 class Avatar {
 public:
+  /** When active, `render` emits only a flat white body or garment mask (black background). */
+  enum class ClippingMaskPass { Off, BodyWhite, GarmentWhite };
+
   Avatar();
 
   /** Assign one sub-mesh per body part (meshes live in bone-local authoring space). */
@@ -94,6 +98,17 @@ public:
   void setShowSkeletonDebug(bool v) { showSkeletonDebug_ = v; }
   bool showSkeletonDebug() const { return showSkeletonDebug_; }
 
+  /** Dev export: overlay / silhouette contrast modes (see `OutfitDebugRenderMode`). */
+  void setDebugRenderMode(OutfitDebugRenderMode m) { debugRenderMode_ = m; }
+  OutfitDebugRenderMode debugRenderMode() const { return debugRenderMode_; }
+
+  void setClippingMaskPass(ClippingMaskPass p) { clippingMaskPass_ = p; }
+  ClippingMaskPass clippingMaskPass() const { return clippingMaskPass_; }
+
+  /** Dev: post-bind garment transform from export JSON `closy.fit`. */
+  void setGarmentFitAdjust(const OutfitGarmentFitAdjust& f) { garmentFit_ = f; }
+  const OutfitGarmentFitAdjust& garmentFitAdjust() const { return garmentFit_; }
+
   static constexpr int boneCount() { return kAvatarBodyPartCount; }
 
   /** Optional tweak helper: trouser leg mesh bind in leg-bone space (uniform inflate). */
@@ -119,6 +134,9 @@ private:
                         const glm::mat4& projection);
   void renderClothingLayers_(Renderer& renderer, const glm::mat4& view,
                              const glm::mat4& projection);
+  void renderClothingFlatWhite_(Renderer& renderer, const glm::mat4& view,
+                                const glm::mat4& projection);
+  glm::mat4 garmentFitMatrix_(const ClothingLayer& layer) const;
 
   std::array<Mesh*, kAvatarBodyPartCount> bodyMeshes_{};
   Mesh* legacyBodyMesh_ = nullptr;
@@ -131,6 +149,9 @@ private:
   std::array<glm::mat4, kAvatarBodyPartCount> poseLocal_{};
   AvatarPosePreset currentPose_ = AvatarPosePreset::TPose;
   bool showSkeletonDebug_ = false;
+  OutfitDebugRenderMode debugRenderMode_ = OutfitDebugRenderMode::Normal;
+  ClippingMaskPass clippingMaskPass_ = ClippingMaskPass::Off;
+  OutfitGarmentFitAdjust garmentFit_{};
 };
 
 } // namespace closy

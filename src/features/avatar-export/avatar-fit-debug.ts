@@ -10,16 +10,25 @@ export type FitDebugViewMode =
   | "garment_only"
   | "overlay"
   | "silhouette"
+  | "clipping_hotspot"
   | "wireframe"
   | "skeleton";
+
+/** Defaults baked into dev UI + request JSON for clipping hotspot until sliders exist. */
+export const CLIPPING_HOTSPOT_DEFAULTS = {
+  clippingThreshold: 0.35,
+  clippingVisualization: "hotspot" as const,
+  showBaseRenderUnderlay: true,
+};
 
 /** If false, the mode is still written into `closy.debug` but the engine likely renders like `normal`. */
 export const FIT_DEBUG_MODE_ENGINE_WIRED: Record<FitDebugViewMode, boolean> = {
   normal: true,
   body_only: false,
   garment_only: false,
-  overlay: false,
-  silhouette: false,
+  overlay: true,
+  silhouette: true,
+  clipping_hotspot: true,
   wireframe: false,
   skeleton: false,
 };
@@ -30,6 +39,7 @@ export const FIT_DEBUG_MODE_LABELS: Record<FitDebugViewMode, string> = {
   garment_only: "Garment only",
   overlay: "Overlay",
   silhouette: "Silhouette compare",
+  clipping_hotspot: "Clipping hotspot",
   wireframe: "Wireframe",
   skeleton: "Skeleton",
 };
@@ -40,6 +50,7 @@ const ORDER: FitDebugViewMode[] = [
   "garment_only",
   "overlay",
   "silhouette",
+  "clipping_hotspot",
   "wireframe",
   "skeleton",
 ];
@@ -63,9 +74,19 @@ export function fitDebugModeToExportFlags(
       break;
     case "overlay":
       flags.showOverlay = true;
+      flags.debugMode = "overlay";
+      flags.overlayOpacity = 0.55;
       break;
     case "silhouette":
       flags.showSilhouette = true;
+      flags.debugMode = "silhouette";
+      break;
+    case "clipping_hotspot":
+      flags.debugMode = "clipping";
+      flags.showClipping = true;
+      flags.clippingThreshold = CLIPPING_HOTSPOT_DEFAULTS.clippingThreshold;
+      flags.clippingVisualization = CLIPPING_HOTSPOT_DEFAULTS.clippingVisualization;
+      flags.showBaseRenderUnderlay = CLIPPING_HOTSPOT_DEFAULTS.showBaseRenderUnderlay;
       break;
     case "wireframe":
       flags.showWireframe = true;
