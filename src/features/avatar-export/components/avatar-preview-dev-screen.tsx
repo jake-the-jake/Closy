@@ -31,14 +31,11 @@ import {
   DEFAULT_GARMENT_FIT_STATE,
   FIT_ADJUST_PRESETS,
   FIT_DEBUG_MODE_LABELS,
-  buildAvatarExportRequest,
   buildNpmAvatarRequestCommand,
   buildNpmCliCommand,
   canUseCacheDirectoryForExport,
   cloneFitState,
   fetchClippingStatsV1,
-  fitDebugModeToExportFlags,
-  fitStateToExportPatch,
   fitStatesEqual,
   garmentFitFromLegacyFlat,
   getAvatarClippingStatsHttpUrl,
@@ -54,7 +51,6 @@ import {
   saveAvatarExportRequest,
   suggestionsFromChecklistTagIds,
   suggestionsFromClippingStats,
-  type AvatarOutfitLike,
   type ClippingStatsV1,
   type FitDebugViewMode,
   type FitSuggestion,
@@ -62,12 +58,29 @@ import {
   type LegacyGarmentFitAdjustState,
   type SaveAvatarRequestResult,
 } from "@/features/avatar-export";
+import {
+  DEV_AVATAR_PRESETS as PRESETS,
+  type DevAvatarPoseKey as PoseKey,
+  type DevAvatarPresetKey as PresetKey,
+} from "@/features/avatar-export/dev-avatar-shared";
 import { runAvatarExportMock } from "@/features/avatar-export/runner/avatarExportRunner.mock";
+import {
+  analyzeRuntimeClipping,
+  AvatarViewportLive,
+  buildExportRequestFromAvatarScene,
+  getAvatarRuntimeAssetUrls,
+  LIVE_VIEWPORT_SHADING_LABELS,
+  listLiveViewportShadingModes,
+  runPoseStressTest,
+  stabilizeFitAcrossPoses,
+  stressReportToSnapshotMeta,
+  suggestionsFromLiveHeuristics,
+  suggestionsFromRuntimeClipping,
+  useAvatarSceneStore,
+  type GarmentFitRegionKey,
+  type LiveViewportShadingMode,
+} from "@/features/avatar-viewport";
 import { theme } from "@/theme";
-
-type PoseKey = "relaxed" | "walk" | "tpose" | "apose";
-
-type PresetKey = "default" | "navy" | "casual";
 
 export type DevAvatarPreviewPhase =
   | "idle"
@@ -102,9 +115,7 @@ type LoadSnapshot = {
   garmentFit: GarmentFitState;
 };
 
-type FitRegionTab = "global" | "torso" | "sleeves" | "waist" | "hem";
-
-const FIT_REGION_LABELS: Record<FitRegionTab, string> = {
+const FIT_REGION_LABELS: Record<GarmentFitRegionKey, string> = {
   global: "Global",
   torso: "Torso",
   sleeves: "Sleeves",
@@ -186,21 +197,7 @@ const FIT_ISSUE_DEFS = [
   { id: "pose_specific", label: "Pose-specific failure", region: "both" },
 ] as const;
 
-const PRESETS: Record<PresetKey, AvatarOutfitLike> = {
-  default: {
-    top: { kind: "jumper" },
-    bottom: { kind: "trousers" },
-  },
-  navy: {
-    top: { kind: "jumper", color: [0.12, 0.18, 0.42] },
-    bottom: { kind: "trousers", color: [0.15, 0.16, 0.2] },
-  },
-  casual: {
-    top: { kind: "shirt", color: [0.85, 0.35, 0.32] },
-    bottom: { kind: "trousers", color: [0.28, 0.32, 0.38] },
-    shoes: { kind: "shoes", color: [0.65, 0.64, 0.62] },
-  },
-};
+const LIVE_QUICK_TAGS = ["torso better", "sleeves fixed", "waist still off"] as const;
 
 const MAX_RENDER_HISTORY = 10;
 const AUTO_POLL_INTERVAL_MS = 1800;
@@ -273,8 +270,78 @@ function garmentFitForSessionEntry(
 
 export function AvatarPreviewDevScreen() {
   const router = useRouter();
-  const [pose, setPose] = useState<PoseKey>("relaxed");
-  const [preset, setPreset] = useState<PresetKey>("default");
+  const pose = useAvatarSceneStore((s) => s.pose);
+  const setPose = useAvatarSceneStore((s) => s.setPose);
+  const presetKey = useAvatarSceneStore((s) => s.presetKey);
+  const setPresetKey = useAvatarSceneStore((s) => s.setPresetKey);
+  const garmentFit = useAvatarSceneStore((s) => s.garmentFit);
+  const setGarmentFit = useAvatarSceneStore((s) => s.setGarmentFit);
+  const patchGarmentFit = useAvatarSceneStore((s) => s.patchGarmentFit);
+  const liveViewportShading = useAvatarSceneStore((s) => s.liveViewportShading);
+  const setLiveViewportShading = useAvatarSceneStore((s) => s.setLiveViewportShading);
+  const offlineFitDebugMode = useAvatarSceneStore((s) => s.offlineFitDebugMode);
+  const setOfflineFitDebugMode = useAvatarSceneStore((s) => s.setOfflineFitDebugMode);
+  const hydrateScene = useAvatarSceneStore((s) => s.hydrateScene);
+  const liveFitActiveRegion = useAvatarSceneStore((s) => s.liveFitActiveRegion);
+  const setLiveFitActiveRegion = useAvatarSceneStore(
+    (s) => s.setLiveFitActiveRegion,
+  );
+  const liveFitBaseline = useAvatarSceneStore((s) => s.liveFitBaseline);
+  const liveFitShowBaseline = useAvatarSceneStore((s) => s.liveFitShowBaseline);
+  const captureLiveFitBaseline = useAvatarSceneStore(
+    (s) => s.captureLiveFitBaseline,
+  );
+  const clearLiveFitBaseline = useAvatarSceneStore((s) => s.clearLiveFitBaseline);
+  const toggleLiveFitBaselineCompare = useAvatarSceneStore(
+    (s) => s.toggleLiveFitBaselineCompare,
+  );
+  const pushLiveFitSnapshot = useAvatarSceneStore((s) => s.pushLiveFitSnapshot);
+  const restoreLiveFitSnapshot = useAvatarSceneStore(
+    (s) => s.restoreLiveFitSnapshot,
+  );
+  const removeLiveFitSnapshot = useAvatarSceneStore(
+    (s) => s.removeLiveFitSnapshot,
+  );
+  const clearLiveFitSnapshots = useAvatarSceneStore(
+    (s) => s.clearLiveFitSnapshots,
+  );
+  const liveFitSnapshots = useAvatarSceneStore((s) => s.liveFitSnapshots);
+  const liveFitQuickTags = useAvatarSceneStore((s) => s.liveFitQuickTags);
+  const addLiveFitQuickTag = useAvatarSceneStore((s) => s.addLiveFitQuickTag);
+  const clearLiveFitQuickTags = useAvatarSceneStore(
+    (s) => s.clearLiveFitQuickTags,
+  );
+  const liveFitLastSuggestionId = useAvatarSceneStore(
+    (s) => s.liveFitLastSuggestionId,
+  );
+  const setLiveFitLastSuggestionId = useAvatarSceneStore(
+    (s) => s.setLiveFitLastSuggestionId,
+  );
+  const liveFitLastSuggestionSource = useAvatarSceneStore(
+    (s) => s.liveFitLastSuggestionSource,
+  );
+  const setLiveFitLastSuggestionSource = useAvatarSceneStore(
+    (s) => s.setLiveFitLastSuggestionSource,
+  );
+  const liveClipOverlay = useAvatarSceneStore((s) => s.liveClipOverlay);
+  const setLiveClipOverlay = useAvatarSceneStore((s) => s.setLiveClipOverlay);
+  const lastPoseStressReport = useAvatarSceneStore((s) => s.lastPoseStressReport);
+  const setLastPoseStressReport = useAvatarSceneStore(
+    (s) => s.setLastPoseStressReport,
+  );
+  const stressTestHighlightPose = useAvatarSceneStore(
+    (s) => s.stressTestHighlightPose,
+  );
+  const setStressTestHighlightPose = useAvatarSceneStore(
+    (s) => s.setStressTestHighlightPose,
+  );
+  const resetLiveFitRegionToDefault = useAvatarSceneStore(
+    (s) => s.resetLiveFitRegionToDefault,
+  );
+
+  const [stressTestBusy, setStressTestBusy] = useState(false);
+  const [stabilizeBusy, setStabilizeBusy] = useState(false);
+
   const [busy, setBusy] = useState(false);
   const [busyPoll, setBusyPoll] = useState(false);
   const [autoPoll, setAutoPoll] = useState(false);
@@ -296,14 +363,9 @@ export function AvatarPreviewDevScreen() {
   const [lastFetchSummary, setLastFetchSummary] = useState<string | null>(null);
   const [lastSuccessAt, setLastSuccessAt] = useState<string | null>(null);
   const [devPhase, setDevPhase] = useState<DevAvatarPreviewPhase>("idle");
-  const [fitDebugMode, setFitDebugMode] =
-    useState<FitDebugViewMode>("normal");
-  const [garmentFit, setGarmentFit] = useState<GarmentFitState>(
-    DEFAULT_GARMENT_FIT_STATE,
-  );
-  const [fitRegion, setFitRegion] = useState<FitRegionTab>("global");
   const [lastClippingStats, setLastClippingStats] =
     useState<ClippingStatsV1 | null>(null);
+  const [devMainTab, setDevMainTab] = useState<"live" | "offline">("live");
   const [reuseRenderId, setReuseRenderId] = useState(false);
   const [loadSnapshot, setLoadSnapshot] = useState<LoadSnapshot | null>(null);
   const [annotations, setAnnotations] = useState<
@@ -383,8 +445,8 @@ export function AvatarPreviewDevScreen() {
     Platform.OS === "android" && repoIsWindowsHostPath;
 
   const debugWired = useMemo(
-    () => isFitDebugModeEngineWired(fitDebugMode),
-    [fitDebugMode],
+    () => isFitDebugModeEngineWired(offlineFitDebugMode),
+    [offlineFitDebugMode],
   );
 
   const mayBeStale = useMemo(() => {
@@ -392,34 +454,83 @@ export function AvatarPreviewDevScreen() {
     if (loadSnapshot.renderId !== lastSaved.renderId) return false;
     return (
       loadSnapshot.pose !== pose ||
-      loadSnapshot.preset !== preset ||
-      loadSnapshot.fitDebugMode !== fitDebugMode ||
+      loadSnapshot.preset !== presetKey ||
+      loadSnapshot.fitDebugMode !== offlineFitDebugMode ||
       !fitStatesEqual(loadSnapshot.garmentFit, garmentFit)
     );
-  }, [imageUri, lastSaved, loadSnapshot, pose, preset, fitDebugMode, garmentFit]);
+  }, [imageUri, lastSaved, loadSnapshot, pose, presetKey, offlineFitDebugMode, garmentFit]);
 
   const currentAnnotation: RenderAnnotation = useMemo(() => {
     if (!lastSaved) return { notes: "", tags: [] };
     return annotations[lastSaved.renderId] ?? { notes: "", tags: [] };
   }, [annotations, lastSaved]);
 
+  const garmentFitForViewport =
+    liveFitShowBaseline && liveFitBaseline != null
+      ? liveFitBaseline
+      : garmentFit;
+
+  const runtimeAssetUrls = useMemo(() => getAvatarRuntimeAssetUrls(), []);
+
+  const runtimeClipReport = useMemo(
+    () =>
+      analyzeRuntimeClipping({
+        garmentFit: garmentFitForViewport,
+        pose,
+        hasRuntimeBodyGltf: !!runtimeAssetUrls.bodyGltfUrl,
+        hasRuntimeTopGltf: !!runtimeAssetUrls.topGltfUrl,
+        hasRuntimeBottomGltf: !!runtimeAssetUrls.bottomGltfUrl,
+      }),
+    [
+      garmentFitForViewport,
+      pose,
+      runtimeAssetUrls.bodyGltfUrl,
+      runtimeAssetUrls.topGltfUrl,
+      runtimeAssetUrls.bottomGltfUrl,
+    ],
+  );
+
+  const runtimeClipFlags = useMemo(
+    () => ({
+      hasRuntimeBodyGltf: !!runtimeAssetUrls.bodyGltfUrl,
+      hasRuntimeTopGltf: !!runtimeAssetUrls.topGltfUrl,
+      hasRuntimeBottomGltf: !!runtimeAssetUrls.bottomGltfUrl,
+    }),
+    [
+      runtimeAssetUrls.bodyGltfUrl,
+      runtimeAssetUrls.topGltfUrl,
+      runtimeAssetUrls.bottomGltfUrl,
+    ],
+  );
+
   const fitSuggestions = useMemo(() => {
+    const fromLive = suggestionsFromLiveHeuristics(
+      garmentFit,
+      liveViewportShading,
+    );
+    const fromRuntime = suggestionsFromRuntimeClipping(runtimeClipReport);
     const fromStats = suggestionsFromClippingStats(lastClippingStats);
     const fromChk = suggestionsFromChecklistTagIds(currentAnnotation.tags);
-    const seen = new Set(fromStats.map((x) => x.id));
-    const out = [...fromStats];
-    for (const s of fromChk) {
-      if (!seen.has(s.id)) {
-        seen.add(s.id);
-        out.push(s);
-      }
+    const seen = new Set<string>();
+    const out: FitSuggestion[] = [];
+    for (const s of [...fromLive, ...fromRuntime, ...fromStats, ...fromChk]) {
+      if (seen.has(s.id)) continue;
+      seen.add(s.id);
+      out.push(s);
     }
     return out;
-  }, [lastClippingStats, currentAnnotation.tags]);
+  }, [
+    garmentFit,
+    liveViewportShading,
+    runtimeClipReport,
+    lastClippingStats,
+    currentAnnotation.tags,
+  ]);
 
   useEffect(() => {
     const wired =
-      fitDebugMode === "normal" || isFitDebugModeEngineWired(fitDebugMode);
+      offlineFitDebugMode === "normal" ||
+      isFitDebugModeEngineWired(offlineFitDebugMode);
     if (wired) {
       setDevPhase((ph) =>
         ph === "unsupported_debug_mode" ? "idle" : ph,
@@ -436,15 +547,15 @@ export function AvatarPreviewDevScreen() {
       ];
       return allow.includes(ph) ? "unsupported_debug_mode" : ph;
     });
-  }, [fitDebugMode]);
+  }, [offlineFitDebugMode]);
 
   useEffect(() => {
     if (!imageUri || !lastSaved || !loadSnapshot) return;
     if (loadSnapshot.renderId !== lastSaved.renderId) return;
     const changed =
       loadSnapshot.pose !== pose ||
-      loadSnapshot.preset !== preset ||
-      loadSnapshot.fitDebugMode !== fitDebugMode ||
+      loadSnapshot.preset !== presetKey ||
+      loadSnapshot.fitDebugMode !== offlineFitDebugMode ||
       !fitStatesEqual(loadSnapshot.garmentFit, garmentFit);
     if (changed) {
       setDevPhase((ph) =>
@@ -457,8 +568,8 @@ export function AvatarPreviewDevScreen() {
     }
   }, [
     pose,
-    preset,
-    fitDebugMode,
+    presetKey,
+    offlineFitDebugMode,
     garmentFit,
     imageUri,
     lastSaved?.renderId,
@@ -545,11 +656,11 @@ export function AvatarPreviewDevScreen() {
       setImageUri(base);
       setImageCacheBust(Date.now());
       setLastSuccessAt(new Date().toLocaleString());
-      const mode = snapshotOverride?.fitDebugMode ?? fitDebugMode;
+      const mode = snapshotOverride?.fitDebugMode ?? offlineFitDebugMode;
       setLoadSnapshot({
         renderId: saved.renderId,
         pose: snapshotOverride?.pose ?? pose,
-        preset: snapshotOverride?.preset ?? preset,
+        preset: snapshotOverride?.preset ?? presetKey,
         fitDebugMode: mode,
         garmentFit: cloneFitState(snapshotOverride?.garmentFit ?? garmentFit),
       });
@@ -562,7 +673,7 @@ export function AvatarPreviewDevScreen() {
         setLastClippingStats(null);
       }
     },
-    [pose, preset, fitDebugMode, garmentFit],
+    [pose, presetKey, offlineFitDebugMode, garmentFit],
   );
 
   /* Auto-poll HTTP when enabled; stops when render loads or toggle off. */
@@ -704,26 +815,17 @@ export function AvatarPreviewDevScreen() {
       const renderIdToUse =
         reuseRenderId && lastSavedRef.current != null
           ? lastSavedRef.current.renderId
-          : `dev_${preset}_${pose}_${Date.now()}`;
-      const outfit = PRESETS[preset];
-      const debug = fitDebugModeToExportFlags(fitDebugMode);
-      const fitPatch = fitStateToExportPatch(garmentFit);
-      const request = buildAvatarExportRequest(outfit, {
-        pose,
-        width: 1024,
-        height: 1024,
-        camera: "three_quarter",
+          : `dev_${presetKey}_${pose}_${Date.now()}`;
+      const request = buildExportRequestFromAvatarScene(useAvatarSceneStore.getState(), {
         renderId: renderIdToUse,
-        debug,
-        ...(fitPatch != null ? { fit: fitPatch } : {}),
       });
       const saved = await saveAvatarExportRequest(request);
       setLastSaved(saved);
       const entry: SessionRenderEntry = {
         saved,
         pose,
-        preset,
-        fitDebugMode,
+        preset: presetKey,
+        fitDebugMode: offlineFitDebugMode,
         garmentFit: cloneFitState(garmentFit),
         createdAt: Date.now(),
         thumbnailUri: null,
@@ -764,9 +866,9 @@ export function AvatarPreviewDevScreen() {
   }, [
     applyPersistedExportResult,
     garmentFit,
-    fitDebugMode,
+    offlineFitDebugMode,
     pose,
-    preset,
+    presetKey,
     repoRoot,
     reuseRenderId,
   ]);
@@ -829,16 +931,19 @@ export function AvatarPreviewDevScreen() {
   const selectHistoryEntry = useCallback((entry: SessionRenderEntry) => {
     const { saved, cliRequest, cliExport } = rehydrateFromHistory(entry.saved);
     setLastSaved(saved);
-    setPose(entry.pose);
-    setPreset(entry.preset);
-    setFitDebugMode(entry.fitDebugMode);
-    setGarmentFit(
+    useAvatarSceneStore.getState().setLiveFitShowBaseline(false);
+    const gf: GarmentFitState =
       entry.garmentFit
         ? cloneFitState(entry.garmentFit)
         : entry.fitAdjust
           ? garmentFitFromLegacyFlat(entry.fitAdjust)
-          : DEFAULT_GARMENT_FIT_STATE,
-    );
+          : cloneFitState(DEFAULT_GARMENT_FIT_STATE);
+    hydrateScene({
+      pose: entry.pose,
+      presetKey: entry.preset,
+      offlineFitDebugMode: entry.fitDebugMode,
+      garmentFit: gf,
+    });
     setAnnotations((a) => ({
       ...a,
       [saved.renderId]: {
@@ -873,7 +978,61 @@ export function AvatarPreviewDevScreen() {
         saved.hostRepoWriteSkipped ? "host_handoff_needed" : "request_built",
       );
     }
-  }, [afterRenderReady]);
+  }, [afterRenderReady, hydrateScene]);
+
+  const applyLastSuggestionAgain = useCallback(() => {
+    const id = useAvatarSceneStore.getState().liveFitLastSuggestionId;
+    if (id == null) return;
+    const sug = fitSuggestions.find((x) => x.id === id);
+    if (sug) {
+      patchGarmentFit((prev) => sug.apply(cloneFitState(prev)));
+      setLiveFitLastSuggestionSource(sug.suggestionSource ?? "unknown");
+    }
+  }, [fitSuggestions, patchGarmentFit, setLiveFitLastSuggestionSource]);
+
+  const runStressTestFit = useCallback(() => {
+    setStressTestBusy(true);
+    try {
+      const r = runPoseStressTest(garmentFit, runtimeClipFlags);
+      setLastPoseStressReport(r);
+      setStressTestHighlightPose(r.worstPose);
+      setStatus(
+        `Stress test: stability ${r.overallStabilityScore} · worst pose ${r.worstPose ?? "—"}`,
+      );
+    } finally {
+      setStressTestBusy(false);
+    }
+  }, [
+    garmentFit,
+    runtimeClipFlags,
+    setLastPoseStressReport,
+    setStressTestHighlightPose,
+  ]);
+
+  const runStabilizeFit = useCallback(() => {
+    setStabilizeBusy(true);
+    try {
+      const out = stabilizeFitAcrossPoses(garmentFit, runtimeClipFlags);
+      setLastPoseStressReport(out.finalReport);
+      setStressTestHighlightPose(out.finalReport.worstPose);
+      if (out.iterations > 0) {
+        patchGarmentFit(() => out.fit);
+      }
+      setStatus(
+        out.iterations === 0
+          ? `Already stable: score ${out.finalReport.overallStabilityScore}`
+          : `Stabilized: ${out.iterations} step(s), stability ${out.finalReport.overallStabilityScore}`,
+      );
+    } finally {
+      setStabilizeBusy(false);
+    }
+  }, [
+    garmentFit,
+    runtimeClipFlags,
+    patchGarmentFit,
+    setLastPoseStressReport,
+    setStressTestHighlightPose,
+  ]);
 
   const onMock = useCallback(async () => {
     setBusy(true);
@@ -882,21 +1041,22 @@ export function AvatarPreviewDevScreen() {
     setImageUri(null);
     setImageCacheBust(null);
     try {
-      const fitPatch = fitStateToExportPatch(garmentFit);
-      const request = buildAvatarExportRequest(PRESETS.casual, {
-        pose: "relaxed",
-        renderId: `mock_${Date.now()}`,
-        debug: fitDebugModeToExportFlags(fitDebugMode),
-        ...(fitPatch != null ? { fit: fitPatch } : {}),
-      });
+      const request = buildExportRequestFromAvatarScene(
+        {
+          ...useAvatarSceneStore.getState(),
+          pose: "relaxed",
+          presetKey: "casual",
+        },
+        { renderId: `mock_${Date.now()}` },
+      );
       const saved = await saveAvatarExportRequest(request);
       setLastSaved(saved);
       const entry: SessionRenderEntry = {
         saved,
         pose: "relaxed",
         preset: "casual",
-        fitDebugMode,
-        garmentFit: cloneFitState(garmentFit),
+        fitDebugMode: useAvatarSceneStore.getState().offlineFitDebugMode,
+        garmentFit: cloneFitState(useAvatarSceneStore.getState().garmentFit),
         createdAt: Date.now(),
         thumbnailUri: null,
       };
@@ -922,8 +1082,8 @@ export function AvatarPreviewDevScreen() {
         afterRenderReady(result.imageUri, saved, {
           pose: "relaxed",
           preset: "casual",
-          fitDebugMode,
-          garmentFit: cloneFitState(garmentFit),
+          fitDebugMode: useAvatarSceneStore.getState().offlineFitDebugMode,
+          garmentFit: cloneFitState(useAvatarSceneStore.getState().garmentFit),
         });
         setDevPhase("render_loaded");
         setStatus("Mock image (no native binary).");
@@ -934,7 +1094,7 @@ export function AvatarPreviewDevScreen() {
     } finally {
       setBusy(false);
     }
-  }, [afterRenderReady, garmentFit, fitDebugMode]);
+  }, [afterRenderReady]);
 
   const refreshBlocked =
     lastSaved == null || busy || busyPoll || autoPollLoopOn;
@@ -1018,183 +1178,595 @@ export function AvatarPreviewDevScreen() {
         <Text style={styles.title}>Avatar preview (dev)</Text>
         <Text style={styles.devBadge}>Dev / debug only — not shown in production flows.</Text>
 
-        <View style={styles.phaseBox}>
-          <Text style={styles.phaseTitle}>State</Text>
-          <Text style={[styles.phasePill, styles.mono]}>{devPhase}</Text>
-          <Text style={styles.phaseText}>{PHASE_COPY[devPhase]}</Text>
+        <View style={styles.mainTabRow}>
+          <AppButton
+            label="Live 3D (mainline)"
+            variant={devMainTab === "live" ? "primary" : "secondary"}
+            onPress={() => setDevMainTab("live")}
+          />
+          <AppButton
+            label="Offline debug render"
+            variant={devMainTab === "offline" ? "primary" : "secondary"}
+            onPress={() => setDevMainTab("offline")}
+          />
         </View>
-
-        <Text style={styles.section}>Fit debug view mode</Text>
         <Text style={styles.debugNote}>
-          Modes map to optional <Text style={styles.mono}>closy.debug</Text> in export JSON.
-          Engine-wired today: <Text style={styles.mono}>normal</Text>,{" "}
-          <Text style={styles.mono}>overlay</Text>, <Text style={styles.mono}>silhouette</Text>,{" "}
-          <Text style={styles.mono}>clipping</Text> (hotspot composite). Body/garment-only, wireframe,
-          and skeleton are staged in JSON only.
+          {devMainTab === "live"
+            ? "Primary path: in-app WebGL. Body / top / bottom can load GLBs via EXPO_PUBLIC_AVATAR_RUNTIME_*_GLTF_URL (see .env.example); unset slots stay proxy geometry. Offline PNG stays the regression / clipping tool."
+            : "Secondary path: host request JSON → CLI `avatar_export` → HTTP PNG. Use for clipping hotspot, high-res stills, and engine-identical review."}
         </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.modeChipsRow}
-        >
-          {listFitDebugModes().map((m) => {
-            const wired = isFitDebugModeEngineWired(m);
-            const selected = fitDebugMode === m;
-            return (
-              <Pressable
-                key={m}
-                onPress={() => setFitDebugMode(m)}
-                disabled={busy || busyPoll || autoPollLoopOn}
-                style={({ pressed }) => [
-                  styles.modeChip,
-                  selected && styles.modeChipSelected,
-                  pressed && styles.modeChipPressed,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.modeChipLabel,
-                    selected && styles.modeChipLabelSelected,
-                  ]}
-                  numberOfLines={2}
-                >
-                  {FIT_DEBUG_MODE_LABELS[m]}
-                  {!wired && m !== "normal" ? "\n(not wired)" : ""}
+
+        {devMainTab === "offline" ? (
+          <>
+            <View style={styles.phaseBox}>
+              <Text style={styles.phaseTitle}>Offline pipeline state</Text>
+              <Text style={[styles.phasePill, styles.mono]}>{devPhase}</Text>
+              <Text style={styles.phaseText}>{PHASE_COPY[devPhase]}</Text>
+            </View>
+
+            <Text style={styles.section}>Offline — engine debug view mode</Text>
+            <Text style={styles.debugNote}>
+              Modes map to optional <Text style={styles.mono}>closy.debug</Text> in export JSON.
+              Engine-wired today: <Text style={styles.mono}>normal</Text>,{" "}
+              <Text style={styles.mono}>overlay</Text>, <Text style={styles.mono}>silhouette</Text>,{" "}
+              <Text style={styles.mono}>clipping</Text> (hotspot composite). Body/garment-only, wireframe,
+              and skeleton are staged in JSON only.
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.modeChipsRow}
+            >
+              {listFitDebugModes().map((m) => {
+                const wired = isFitDebugModeEngineWired(m);
+                const selected = offlineFitDebugMode === m;
+                return (
+                  <Pressable
+                    key={m}
+                    onPress={() => setOfflineFitDebugMode(m)}
+                    disabled={busy || busyPoll || autoPollLoopOn}
+                    style={({ pressed }) => [
+                      styles.modeChip,
+                      selected && styles.modeChipSelected,
+                      pressed && styles.modeChipPressed,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.modeChipLabel,
+                        selected && styles.modeChipLabelSelected,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {FIT_DEBUG_MODE_LABELS[m]}
+                      {!wired && m !== "normal" ? "\n(not wired)" : ""}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+            <Text style={styles.diagnosticsLine}>
+              Engine support:{" "}
+              {debugWired
+                ? "current mode"
+                : "off for this mode — PNG may match normal until exporter reads flags"}
+            </Text>
+            {offlineFitDebugMode === "clipping_hotspot" ? (
+              <Text style={styles.clippingHelp}>
+                Clipping hotspot (approx.): <Text style={styles.boldMuted}>red</Text> = strong silhouette
+                overlap (likely penetration or tangled projection in this view).{" "}
+                <Text style={styles.boldMuted}>yellow</Text> = near-contact band at silhouette edge.
+                Muted blues/greens = body-only vs garment-only. Not physically exact — compare poses and
+                cameras to see pose-specific vs systematic issues.
+              </Text>
+            ) : null}
+
+            <Text style={styles.section}>Offline — render metadata</Text>
+            <View style={styles.diagnostics}>
+              <Text style={styles.diagnosticsLine}>
+                UI debug mode: {offlineFitDebugMode}{" "}
+                {FIT_DEBUG_MODE_LABELS[offlineFitDebugMode]}
+                {debugWired ? "" : " (staged — engine may ignore)"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                JSON{" "}
+                <Text style={styles.mono}>debugMode</Text>:{" "}
+                {offlineFitDebugMode === "normal"
+                  ? "—"
+                  : offlineFitDebugMode === "overlay"
+                    ? "overlay"
+                    : offlineFitDebugMode === "silhouette"
+                      ? "silhouette"
+                      : offlineFitDebugMode === "clipping_hotspot"
+                        ? "clipping"
+                        : "(other flags only)"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                exporter pipeline:{" "}
+                {offlineFitDebugMode === "clipping_hotspot"
+                  ? "clipping hotspot (multi-pass composite)"
+                  : offlineFitDebugMode === "normal"
+                    ? "standard"
+                    : debugWired
+                      ? `single contrast pass (${offlineFitDebugMode})`
+                      : "normal (flags not wired)"}
+              </Text>
+              {offlineFitDebugMode === "overlay" ? (
+                <Text style={styles.diagnosticsLine}>
+                  overlay look: blue body + orange garment
                 </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-        <Text style={styles.diagnosticsLine}>
-          Engine support:{" "}
-          {debugWired
-            ? "current mode"
-            : "off for this mode — PNG may match normal until exporter reads flags"}
-        </Text>
-        {fitDebugMode === "clipping_hotspot" ? (
-          <Text style={styles.clippingHelp}>
-            Clipping hotspot (approx.): <Text style={styles.boldMuted}>red</Text> = strong silhouette
-            overlap (likely penetration or tangled projection in this view).{" "}
-            <Text style={styles.boldMuted}>yellow</Text> = near-contact band at silhouette edge.
-            Muted blues/greens = body-only vs garment-only. Not physically exact — compare poses and
-            cameras to see pose-specific vs systematic issues.
-          </Text>
+              ) : null}
+              {offlineFitDebugMode === "silhouette" ? (
+                <Text style={styles.diagnosticsLine}>
+                  silhouette look: dark body + yellow garment
+                </Text>
+              ) : null}
+              {offlineFitDebugMode === "clipping_hotspot" ? (
+                <>
+                  <Text style={styles.diagnosticsLine}>
+                    clipping visualization: {CLIPPING_HOTSPOT_DEFAULTS.clippingVisualization}{" "}
+                    (change via JSON / future UI; <Text style={styles.mono}>binary</Text> = white overlap
+                    only)
+                  </Text>
+                  <Text style={styles.diagnosticsLine}>
+                    clipping threshold: {CLIPPING_HOTSPOT_DEFAULTS.clippingThreshold}
+                  </Text>
+                  <Text style={styles.diagnosticsLine}>
+                    base underlay:{" "}
+                    {CLIPPING_HOTSPOT_DEFAULTS.showBaseRenderUnderlay ? "on (overlay)" : "off"}
+                  </Text>
+                </>
+              ) : null}
+              <Text style={styles.diagnosticsLine}>
+                pose: {pose} · preset: {presetKey}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                fit global — offset [{garmentFit.global.offset.map((n) => n.toFixed(3)).join(", ")}]
+                scale [{garmentFit.global.scale.map((n) => n.toFixed(3)).join(", ")}] · inflate{" "}
+                {garmentFit.global.inflate.toFixed(3)}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                regions — torso Z {garmentFit.regions.torso.offsetZ.toFixed(3)} · sleeves inflate{" "}
+                {garmentFit.regions.sleeves.inflate.toFixed(3)} · waist tighten{" "}
+                {garmentFit.regions.waist.tighten.toFixed(3)} · hem Y{" "}
+                {garmentFit.regions.hem.offsetY.toFixed(3)}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                renderId: {lastSaved?.renderId ?? "—"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                request path: {expectedRequestRel ?? "—"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                expected render: {expectedRenderRel ?? "—"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                HTTP render URL: {resolvedRenderUrl ?? "—"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                last poll / probe: {lastFetchSummary ?? "—"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                last success: {lastSuccessAt ?? "—"}
+              </Text>
+              <Text style={styles.diagnosticsLine}>
+                image may be stale: {mayBeStale || devPhase === "stale_render" ? "yes — rebuild or refresh" : imageUri ? "low if controls unchanged" : "—"}
+              </Text>
+            </View>
+          </>
         ) : null}
 
-        <Text style={styles.section}>Render metadata</Text>
-        <View style={styles.diagnostics}>
-          <Text style={styles.diagnosticsLine}>
-            UI debug mode: {fitDebugMode}{" "}
-            {FIT_DEBUG_MODE_LABELS[fitDebugMode]}
-            {debugWired ? "" : " (staged — engine may ignore)"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            JSON{" "}
-            <Text style={styles.mono}>debugMode</Text>:{" "}
-            {fitDebugMode === "normal"
-              ? "—"
-              : fitDebugMode === "overlay"
-                ? "overlay"
-                : fitDebugMode === "silhouette"
-                  ? "silhouette"
-                  : fitDebugMode === "clipping_hotspot"
-                    ? "clipping"
-                    : "(other flags only)"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            exporter pipeline:{" "}
-            {fitDebugMode === "clipping_hotspot"
-              ? "clipping hotspot (multi-pass composite)"
-              : fitDebugMode === "normal"
-                ? "standard"
-                : debugWired
-                  ? `single contrast pass (${fitDebugMode})`
-                  : "normal (flags not wired)"}
-          </Text>
-          {fitDebugMode === "overlay" ? (
-            <Text style={styles.diagnosticsLine}>
-              overlay look: blue body + orange garment
+        {devMainTab === "live" ? (
+          <>
+            <Text style={styles.section}>Live 3D viewport</Text>
+            <Text style={styles.debugNote}>
+              Three.js scene in-app (not a static PNG).{" "}
+              <Text style={styles.boldMuted}>Clipping hotspot</Text> (Offline) stays the detailed validator;
+              use runtime clip overlay + suggestions for fast iteration here.
             </Text>
-          ) : null}
-          {fitDebugMode === "silhouette" ? (
-            <Text style={styles.diagnosticsLine}>
-              silhouette look: dark body + yellow garment
+            <AvatarViewportLive
+              pose={pose}
+              preset={presetKey}
+              garmentFit={garmentFitForViewport}
+              liveShading={liveViewportShading}
+              compareActive={liveFitShowBaseline && liveFitBaseline != null}
+              clipOverlayEnabled={liveClipOverlay}
+            />
+            <View style={[styles.row, styles.clipOverlayRow]}>
+              <Text style={styles.fitSubnote}>Runtime clip overlay</Text>
+              <Text style={styles.clipOverlayHint} numberOfLines={2}>
+                Yellow ≈ near · red-orange ≈ likely overlap (proxy spheres; not engine PNG).
+              </Text>
+              <Switch
+                value={liveClipOverlay}
+                onValueChange={setLiveClipOverlay}
+                accessibilityLabel="Toggle runtime clipping highlight on garments"
+              />
+            </View>
+            <Text style={styles.clipSummary} selectable>
+              clip proxy — torso {runtimeClipReport.torso.severity} (
+              {runtimeClipReport.torso.penetration.toFixed(3)}) · sleeves{" "}
+              {runtimeClipReport.sleeves.severity} (
+              {runtimeClipReport.sleeves.penetration.toFixed(3)}) · waist{" "}
+              {runtimeClipReport.waist.severity} (
+              {runtimeClipReport.waist.penetration.toFixed(3)}) · hem{" "}
+              {runtimeClipReport.hem.severity} ({runtimeClipReport.hem.penetration.toFixed(3)})
             </Text>
-          ) : null}
-          {fitDebugMode === "clipping_hotspot" ? (
-            <>
-              <Text style={styles.diagnosticsLine}>
-                clipping visualization: {CLIPPING_HOTSPOT_DEFAULTS.clippingVisualization}{" "}
-                (change via JSON / future UI; <Text style={styles.mono}>binary</Text> = white overlap
-                only)
-              </Text>
-              <Text style={styles.diagnosticsLine}>
-                clipping threshold: {CLIPPING_HOTSPOT_DEFAULTS.clippingThreshold}
-              </Text>
-              <Text style={styles.diagnosticsLine}>
-                base underlay:{" "}
-                {CLIPPING_HOTSPOT_DEFAULTS.showBaseRenderUnderlay ? "on (overlay)" : "off"}
-              </Text>
-            </>
-          ) : null}
-          <Text style={styles.diagnosticsLine}>
-            pose: {pose} · preset: {preset}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            fit global — offset [{garmentFit.global.offset.map((n) => n.toFixed(3)).join(", ")}]
-            scale [{garmentFit.global.scale.map((n) => n.toFixed(3)).join(", ")}] · inflate{" "}
-            {garmentFit.global.inflate.toFixed(3)}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            regions — torso Z {garmentFit.regions.torso.offsetZ.toFixed(3)} · sleeves inflate{" "}
-            {garmentFit.regions.sleeves.inflate.toFixed(3)} · waist tighten{" "}
-            {garmentFit.regions.waist.tighten.toFixed(3)} · hem Y{" "}
-            {garmentFit.regions.hem.offsetY.toFixed(3)}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            renderId: {lastSaved?.renderId ?? "—"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            request path: {expectedRequestRel ?? "—"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            expected render: {expectedRenderRel ?? "—"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            HTTP render URL: {resolvedRenderUrl ?? "—"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            last poll / probe: {lastFetchSummary ?? "—"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            last success: {lastSuccessAt ?? "—"}
-          </Text>
-          <Text style={styles.diagnosticsLine}>
-            image may be stale: {mayBeStale || devPhase === "stale_render" ? "yes — rebuild or refresh" : imageUri ? "low if controls unchanged" : "—"}
-          </Text>
-        </View>
+            <Text style={styles.section}>Live viewport shading</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.modeChipsRow}
+            >
+              {listLiveViewportShadingModes().map((m) => {
+                const selected = liveViewportShading === m;
+                return (
+                  <Pressable
+                    key={m}
+                    onPress={() => setLiveViewportShading(m)}
+                    style={({ pressed }) => [
+                      styles.modeChip,
+                      selected && styles.modeChipSelected,
+                      pressed && styles.modeChipPressed,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.modeChipLabel,
+                        selected && styles.modeChipLabelSelected,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {LIVE_VIEWPORT_SHADING_LABELS[m]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
 
-        <Text style={styles.section}>Fit debug workflow</Text>
-        <View style={styles.workflowBox}>
-          {[
-            "Build request → overlay or clipping hotspot render",
-            "Check silhouette mismatch (body vs garment)",
-            "Inspect clipping heatmap (red overlap)",
-            "Use fit suggestions + checklist, then region sliders",
-            "Re-render and compare in session history",
-          ].map((step, i) => (
-            <Text key={step} style={styles.workflowStep}>
-              {i + 1}. {step}
-            </Text>
+            <Text style={styles.section}>Live fitting workstation</Text>
+            <View style={[styles.fitPanel, styles.liveWorkstationBox]}>
+              <Text style={styles.workstationLoop}>
+                1. Pick a region · 2. Use live shading to read silhouette · 3. Tweak sliders
+                or Apply suggestions · 4. Set baseline and compare before/after · 5. Save snapshots ·
+                6. Use Offline only for clipping PNG / engine checks
+              </Text>
+              {liveFitShowBaseline && liveFitBaseline != null ? (
+                <Text style={styles.liveCompareBanner}>
+                  Showing saved baseline (before). Tap “Show current” to return to the editable fit.
+                </Text>
+              ) : null}
+              <Text style={styles.fitSubnote}>Editing region</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.modeChipsRow}
+              >
+                {(
+                  ["global", "torso", "sleeves", "waist", "hem"] as const
+                ).map((r) => {
+                  const on = liveFitActiveRegion === r;
+                  return (
+                    <Pressable
+                      key={r}
+                      onPress={() => {
+                        setLiveFitActiveRegion(r);
+                        useAvatarSceneStore.getState().setLiveFitShowBaseline(false);
+                      }}
+                      disabled={busy || busyPoll || autoPollLoopOn}
+                      style={({ pressed }) => [
+                        styles.liveRegionPill,
+                        on && styles.liveRegionPillActive,
+                        pressed && styles.modeChipPressed,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.liveRegionPillText,
+                          on && styles.liveRegionPillTextActive,
+                        ]}
+                      >
+                        {FIT_REGION_LABELS[r]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+              <View style={[styles.row, styles.fitPresetWrap]}>
+                <AppButton
+                  label="Set baseline (before)"
+                  variant="secondary"
+                  onPress={() => {
+                    captureLiveFitBaseline();
+                    setStatus("Baseline saved — use Compare to view it on the avatar.");
+                  }}
+                  disabled={busy || busyPoll || autoPollLoopOn}
+                />
+                <AppButton
+                  label={
+                    liveFitShowBaseline ? "Show current (after)" : "Show baseline"
+                  }
+                  variant="secondary"
+                  onPress={() => toggleLiveFitBaselineCompare()}
+                  disabled={liveFitBaseline == null || busy || busyPoll || autoPollLoopOn}
+                />
+                <AppButton
+                  label="Clear baseline"
+                  variant="secondary"
+                  onPress={() => clearLiveFitBaseline()}
+                  disabled={liveFitBaseline == null || busy || busyPoll || autoPollLoopOn}
+                />
+              </View>
+              <View style={[styles.row, styles.fitPresetWrap]}>
+                <AppButton
+                  label="Save snapshot"
+                  variant="secondary"
+                  onPress={() => {
+                    pushLiveFitSnapshot();
+                    setStatus("Fit snapshot saved (in-memory this session).");
+                  }}
+                  disabled={busy || busyPoll || autoPollLoopOn}
+                />
+                <AppButton
+                  label="Mark improved"
+                  variant="secondary"
+                  onPress={() => {
+                    pushLiveFitSnapshot("improved");
+                    setStatus("Tagged snapshot: improved.");
+                  }}
+                  disabled={busy || busyPoll || autoPollLoopOn}
+                />
+                <AppButton
+                  label="Clear snapshots"
+                  variant="secondary"
+                  onPress={() => clearLiveFitSnapshots()}
+                  disabled={liveFitSnapshots.length === 0}
+                />
+              </View>
+              {liveFitSnapshots.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.snapshotStrip}
+                >
+                  {liveFitSnapshots.map((sn) => (
+                    <View key={sn.id} style={styles.snapshotCard}>
+                      <Pressable
+                        onPress={() => {
+                          restoreLiveFitSnapshot(sn.id);
+                          setStatus(`Restored snapshot ${sn.label ?? sn.id.slice(0, 12)}…`);
+                        }}
+                        disabled={busy || busyPoll || autoPollLoopOn}
+                        style={({ pressed }) => [
+                          styles.snapshotTap,
+                          pressed && styles.modeChipPressed,
+                        ]}
+                      >
+                        <Text style={styles.snapshotMeta} numberOfLines={4}>
+                          {sn.label
+                            ? `${sn.label}\n`
+                            : ""}
+                          {new Date(sn.createdAt).toLocaleTimeString()} · {sn.pose} · {sn.presetKey}
+                          {sn.stressTest ? (
+                            <>
+                              {"\n"}
+                              stress {sn.stressTest.overallStabilityScore}
+                              {sn.stressTest.allPosesPass ? " ✓" : ""}
+                            </>
+                          ) : null}
+                        </Text>
+                      </Pressable>
+                      <AppButton
+                        label="Del"
+                        variant="ghost"
+                        onPress={() => removeLiveFitSnapshot(sn.id)}
+                        disabled={busy || busyPoll || autoPollLoopOn}
+                      />
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : null}
+              <Text style={styles.fitSubnote}>Quick tags (session notes)</Text>
+              <View style={[styles.row, styles.fitPresetWrap]}>
+                {LIVE_QUICK_TAGS.map((tag) => (
+                  <AppButton
+                    key={tag}
+                    label={tag}
+                    variant={
+                      liveFitQuickTags.includes(tag) ? "primary" : "secondary"
+                    }
+                    onPress={() => addLiveFitQuickTag(tag)}
+                    disabled={busy || busyPoll || autoPollLoopOn}
+                  />
+                ))}
+                <AppButton
+                  label="Clear tags"
+                  variant="secondary"
+                  onPress={() => clearLiveFitQuickTags()}
+                  disabled={liveFitQuickTags.length === 0}
+                />
+              </View>
+              <View style={[styles.row, styles.fitPresetWrap]}>
+                <AppButton
+                  label={`Reset ${FIT_REGION_LABELS[liveFitActiveRegion]}`}
+                  variant="secondary"
+                  onPress={() => resetLiveFitRegionToDefault(liveFitActiveRegion)}
+                  disabled={busy || busyPoll || autoPollLoopOn}
+                />
+                <AppButton
+                  label="Apply last suggestion again"
+                  variant="secondary"
+                  onPress={applyLastSuggestionAgain}
+                  disabled={
+                    liveFitLastSuggestionId == null ||
+                    busy ||
+                    busyPoll ||
+                    autoPollLoopOn
+                  }
+                />
+              </View>
+              <Text style={styles.fitSubnote}>Multi-pose stress (proxy clipping)</Text>
+              <Text style={styles.stressHint}>
+                Evaluates current fit on relaxed / walk / tpose / apose. Stabilize applies small
+                bounded tweaks (rule-based, max 5 rounds).
+              </Text>
+              <View style={[styles.row, styles.fitPresetWrap]}>
+                <AppButton
+                  label="Stress test fit"
+                  variant="secondary"
+                  onPress={runStressTestFit}
+                  disabled={
+                    busy ||
+                    busyPoll ||
+                    autoPollLoopOn ||
+                    stressTestBusy ||
+                    stabilizeBusy
+                  }
+                />
+                <AppButton
+                  label="Stabilize fit"
+                  variant="secondary"
+                  onPress={runStabilizeFit}
+                  disabled={
+                    busy ||
+                    busyPoll ||
+                    autoPollLoopOn ||
+                    stressTestBusy ||
+                    stabilizeBusy
+                  }
+                />
+                <AppButton
+                  label="Jump worst pose"
+                  variant="secondary"
+                  onPress={() => {
+                    const w = lastPoseStressReport?.worstPose;
+                    if (w) {
+                      setPose(w);
+                      setStressTestHighlightPose(w);
+                      setStatus(`Pose → ${w} (lowest stress score).`);
+                    }
+                  }}
+                  disabled={
+                    lastPoseStressReport?.worstPose == null ||
+                    busy ||
+                    busyPoll ||
+                    autoPollLoopOn
+                  }
+                />
+                <AppButton
+                  label="Save + stress meta"
+                  variant="secondary"
+                  onPress={() => {
+                    if (!lastPoseStressReport) {
+                      setStatus("Run stress test first.");
+                      return;
+                    }
+                    pushLiveFitSnapshot(
+                      "stress",
+                      stressReportToSnapshotMeta(lastPoseStressReport),
+                    );
+                    setStatus("Snapshot saved with stress-test summary.");
+                  }}
+                  disabled={
+                    lastPoseStressReport == null ||
+                    busy ||
+                    busyPoll ||
+                    autoPollLoopOn
+                  }
+                />
+              </View>
+              {lastPoseStressReport ? (
+                <View style={styles.stressResultBox}>
+                  <Text style={styles.stressScoreLine}>
+                    Overall stability {lastPoseStressReport.overallStabilityScore}
+                    {lastPoseStressReport.allPosesPass ? " · all pass" : ""}
+                  </Text>
+                  {lastPoseStressReport.worstRegion ? (
+                    <Text style={styles.stressWorstLine}>
+                      Weakest region: {lastPoseStressReport.worstRegion} (medium+ count{" "}
+                      {lastPoseStressReport.regionFailCounts[lastPoseStressReport.worstRegion]})
+                    </Text>
+                  ) : null}
+                  {lastPoseStressReport.poses.map((pr) => (
+                    <Text
+                      key={pr.pose}
+                      style={[
+                        styles.stressPoseLine,
+                        pr.pose === lastPoseStressReport.worstPose &&
+                          styles.stressPoseWorst,
+                      ]}
+                      selectable
+                    >
+                      {pr.pose}: {pr.pass ? "pass" : "fail"} · score {pr.stabilityScore} · torso{" "}
+                      {pr.regions.torso.level} · sleeves {pr.regions.sleeves.level} · waist{" "}
+                      {pr.regions.waist.level} · hem {pr.regions.hem.level}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+          </>
+        ) : null}
+
+        <Text style={styles.section}>Pose</Text>
+        <View style={styles.row}>
+          {(["relaxed", "walk", "tpose", "apose"] as const).map((p) => (
+            <AppButton
+              key={p}
+              label={
+                stressTestHighlightPose === p
+                  ? `${p} · stress`
+                  : p
+              }
+              variant={pose === p ? "primary" : "secondary"}
+              onPress={() => {
+                setPose(p);
+                setStressTestHighlightPose(null);
+              }}
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
           ))}
         </View>
+
+        <Text style={styles.section}>Outfit preset</Text>
+        <View style={styles.row}>
+          {(["default", "navy", "casual"] as const).map((p) => (
+            <AppButton
+              key={p}
+              label={p}
+              variant={presetKey === p ? "primary" : "secondary"}
+              onPress={() => setPresetKey(p)}
+              disabled={busy || busyPoll || autoPollLoopOn}
+            />
+          ))}
+        </View>
+
+        {devMainTab !== "live" ? (
+          <>
+            <Text style={styles.section}>Fit debug workflow</Text>
+            <View style={styles.workflowBox}>
+              {[
+                "Tune in live 3D — or offline: build clipping / overlay export",
+                "Check silhouette mismatch (body vs garment)",
+                "Inspect offline clipping heatmap (red overlap) when needed",
+                "Use fit suggestions + checklist, then region sliders",
+                "Re-render offline and compare in session history",
+              ].map((step, i) => (
+                <Text key={step} style={styles.workflowStep}>
+                  {i + 1}. {step}
+                </Text>
+              ))}
+            </View>
+          </>
+        ) : null}
 
         <Text style={styles.section}>Garment fit (dev)</Text>
         <Text style={styles.debugNote}>
           Optional <Text style={styles.mono}>closy.fit</Text> with{" "}
           <Text style={styles.mono}>global</Text> then <Text style={styles.mono}>regions</Text> (
-          torso / sleeves / waist / hem). Engine applies base bind → global → region overrides.
-          Clipping hotspot + <Text style={styles.mono}>_clipping_stats.json</Text> feed suggestions.
+          torso / sleeves / waist / hem). Live tab: region pills live in the workstation above.
+          Live heuristics + (when available) clipping stats merge in suggestions below. Engine PNG
+          uses the same shared store values.
         </Text>
         <View style={styles.fitPanel}>
           <View style={[styles.row, styles.fitPresetWrap]}>
@@ -1226,7 +1798,7 @@ export function AvatarPreviewDevScreen() {
               label="Back −Z"
               variant="secondary"
               onPress={() =>
-                setGarmentFit((prev) => FIT_ADJUST_PRESETS.offset_back(prev))
+                patchGarmentFit((prev) => FIT_ADJUST_PRESETS.offset_back(prev))
               }
               disabled={busy || busyPoll || autoPollLoopOn}
             />
@@ -1234,26 +1806,39 @@ export function AvatarPreviewDevScreen() {
               label="Forward +Z"
               variant="secondary"
               onPress={() =>
-                setGarmentFit((prev) => FIT_ADJUST_PRESETS.offset_forward(prev))
+                patchGarmentFit((prev) => FIT_ADJUST_PRESETS.offset_forward(prev))
               }
               disabled={busy || busyPoll || autoPollLoopOn}
             />
           </View>
-          <Text style={styles.fitSubnote}>Adjust region</Text>
-          <View style={[styles.row, styles.fitPresetWrap]}>
-            {(
-              ["global", "torso", "sleeves", "waist", "hem"] as FitRegionTab[]
-            ).map((r) => (
-              <AppButton
-                key={r}
-                label={FIT_REGION_LABELS[r]}
-                variant={fitRegion === r ? "primary" : "secondary"}
-                onPress={() => setFitRegion(r)}
-                disabled={busy || busyPoll || autoPollLoopOn}
-              />
-            ))}
-          </View>
-          {fitRegion === "global" ? (
+          {devMainTab !== "live" ? (
+            <>
+              <Text style={styles.fitSubnote}>Adjust region</Text>
+              <View style={[styles.row, styles.fitPresetWrap]}>
+                {(
+                  ["global", "torso", "sleeves", "waist", "hem"] as const
+                ).map((r) => (
+                  <AppButton
+                    key={r}
+                    label={FIT_REGION_LABELS[r]}
+                    variant={liveFitActiveRegion === r ? "primary" : "secondary"}
+                    onPress={() => {
+                      setLiveFitActiveRegion(r);
+                      useAvatarSceneStore.getState().setLiveFitShowBaseline(false);
+                    }}
+                    disabled={busy || busyPoll || autoPollLoopOn}
+                  />
+                ))}
+              </View>
+            </>
+          ) : (
+            <Text style={styles.fitSubnote}>
+              Sliders for:{" "}
+              <Text style={styles.boldMuted}>{FIT_REGION_LABELS[liveFitActiveRegion]}</Text> — switch
+              region in the Live fitting workstation.
+            </Text>
+          )}
+          {liveFitActiveRegion === "global" ? (
             <>
               <FitSliderRow
                 label="Offset X"
@@ -1263,7 +1848,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.global.offset[0] = v;
                     return c;
@@ -1278,7 +1863,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.global.offset[1] = v;
                     return c;
@@ -1293,7 +1878,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.global.offset[2] = v;
                     return c;
@@ -1308,7 +1893,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.global.scale[0] = v;
                     return c;
@@ -1323,7 +1908,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.global.scale[1] = v;
                     return c;
@@ -1338,7 +1923,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.global.scale[2] = v;
                     return c;
@@ -1353,7 +1938,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.005}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.global.inflate = v;
                     return c;
@@ -1368,7 +1953,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.legacy.bodyOffsetBias = v;
                     return c;
@@ -1383,7 +1968,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.05}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.legacy.shrinkwrapStrength = v;
                     return c;
@@ -1392,7 +1977,7 @@ export function AvatarPreviewDevScreen() {
               />
             </>
           ) : null}
-          {fitRegion === "torso" ? (
+          {liveFitActiveRegion === "torso" ? (
             <>
               <FitSliderRow
                 label="Torso offset Z"
@@ -1402,7 +1987,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.torso.offsetZ = v;
                     return c;
@@ -1417,7 +2002,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.005}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.torso.inflate = v;
                     return c;
@@ -1432,7 +2017,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.torso.scaleY = v;
                     return c;
@@ -1441,7 +2026,7 @@ export function AvatarPreviewDevScreen() {
               />
             </>
           ) : null}
-          {fitRegion === "sleeves" ? (
+          {liveFitActiveRegion === "sleeves" ? (
             <>
               <FitSliderRow
                 label="Sleeves offset X"
@@ -1451,7 +2036,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.sleeves.offset[0] = v;
                     return c;
@@ -1466,7 +2051,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.sleeves.offset[1] = v;
                     return c;
@@ -1481,7 +2066,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.sleeves.offset[2] = v;
                     return c;
@@ -1496,7 +2081,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.005}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.sleeves.inflate = v;
                     return c;
@@ -1511,7 +2096,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.legacy.sleeveOffsetY = v;
                     return c;
@@ -1520,7 +2105,7 @@ export function AvatarPreviewDevScreen() {
               />
             </>
           ) : null}
-          {fitRegion === "waist" ? (
+          {liveFitActiveRegion === "waist" ? (
             <>
               <FitSliderRow
                 label="Waist offset Z"
@@ -1530,7 +2115,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.waist.offsetZ = v;
                     return c;
@@ -1545,7 +2130,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.regions.waist.tighten = v;
                     return c;
@@ -1560,7 +2145,7 @@ export function AvatarPreviewDevScreen() {
                 step={0.01}
                 disabled={busy || busyPoll || autoPollLoopOn}
                 onChange={(v) =>
-                  setGarmentFit((s) => {
+                  patchGarmentFit((s) => {
                     const c = cloneFitState(s);
                     c.legacy.waistAdjustY = v;
                     return c;
@@ -1569,7 +2154,7 @@ export function AvatarPreviewDevScreen() {
               />
             </>
           ) : null}
-          {fitRegion === "hem" ? (
+          {liveFitActiveRegion === "hem" ? (
             <FitSliderRow
               label="Hem offset Y"
               value={garmentFit.regions.hem.offsetY}
@@ -1578,7 +2163,7 @@ export function AvatarPreviewDevScreen() {
               step={0.01}
               disabled={busy || busyPoll || autoPollLoopOn}
               onChange={(v) =>
-                setGarmentFit((s) => {
+                patchGarmentFit((s) => {
                   const c = cloneFitState(s);
                   c.regions.hem.offsetY = v;
                   return c;
@@ -1590,8 +2175,10 @@ export function AvatarPreviewDevScreen() {
 
         <Text style={styles.section}>Fit suggestions</Text>
         <Text style={styles.debugNote}>
-          Rule-based hints from clipping stats (after clipping hotspot render) and from checklist
-          tags below. Applying updates sliders immediately.
+          Rule-based hints: <Text style={styles.boldMuted}>live heuristics</Text>,{" "}
+          <Text style={styles.boldMuted}>runtime clip proxy</Text> (sphere overlap in the rig — see Live
+          tab toggle), <Text style={styles.boldMuted}>offline clipping stats</Text> after a hotspot PNG,
+          and checklist tags. Apply updates the shared garment fit immediately.
         </Text>
         <View style={styles.fitPanel}>
           <AppButton
@@ -1603,38 +2190,64 @@ export function AvatarPreviewDevScreen() {
               autoPollLoopOn ||
               fitSuggestions.length === 0
             }
-            onPress={() =>
-              setGarmentFit((prev) => {
+            onPress={() => {
+              patchGarmentFit((prev) => {
                 let c = cloneFitState(prev);
                 for (const s of fitSuggestions) c = s.apply(c);
                 return c;
-              })
-            }
+              });
+              const last = fitSuggestions[fitSuggestions.length - 1];
+              setLiveFitLastSuggestionId(last?.id ?? null);
+              setLiveFitLastSuggestionSource(last?.suggestionSource ?? "mixed");
+              useAvatarSceneStore.getState().setLiveFitShowBaseline(false);
+            }}
           />
           {fitSuggestions.length === 0 ? (
             <Text style={styles.fitSubnote}>
-              No suggestions yet — run clipping hotspot and ensure{" "}
-              <Text style={styles.mono}>_clipping_stats.json</Text> is served, or tick checklist
-              issues.
+              No suggestions — nudge sliders into extreme ranges for live hints, or run a clipping
+              hotspot export (Offline) and refresh stats.
             </Text>
           ) : (
             fitSuggestions.map((s: FitSuggestion) => (
               <View key={s.id} style={styles.suggestionRow}>
                 <Text style={styles.suggestionMessage}>{s.message}</Text>
                 <Text style={styles.suggestionDetail}>{s.detail}</Text>
+                {s.suggestionSource ? (
+                  <Text style={styles.suggestionSource}>{s.suggestionSource}</Text>
+                ) : null}
                 <AppButton
                   label="Apply"
                   variant="secondary"
                   disabled={busy || busyPoll || autoPollLoopOn}
-                  onPress={() =>
-                    setGarmentFit((prev) => s.apply(cloneFitState(prev)))
-                  }
+                  onPress={() => {
+                    patchGarmentFit((prev) => s.apply(cloneFitState(prev)));
+                    setLiveFitLastSuggestionId(s.id);
+                    setLiveFitLastSuggestionSource(s.suggestionSource ?? "unknown");
+                    useAvatarSceneStore.getState().setLiveFitShowBaseline(false);
+                  }}
                 />
               </View>
             ))
           )}
+          {liveFitLastSuggestionId ? (
+            <Text style={styles.fitSubnote} selectable>
+              Last applied suggestion: {liveFitLastSuggestionId}
+              {liveFitLastSuggestionSource
+                ? ` · source ${liveFitLastSuggestionSource}`
+                : ""}
+            </Text>
+          ) : null}
         </View>
 
+        {devMainTab === "live" ? (
+          <Text style={styles.debugNote}>
+            PNG preview, session thumbnails, host CLI commands, and the per-render checklist live in
+            the <Text style={styles.boldMuted}>Offline debug render</Text> tab.
+          </Text>
+        ) : null}
+
+        {devMainTab === "offline" ? (
+          <>
         <Text style={styles.section}>Quick copy</Text>
         <View style={styles.copyGrid}>
           <AppButton
@@ -2041,35 +2654,9 @@ export function AvatarPreviewDevScreen() {
           </Text>
         </View>
 
-        <Text style={styles.section}>Pose</Text>
-        <View style={styles.row}>
-          {(["relaxed", "walk", "tpose", "apose"] as const).map((p) => (
-            <AppButton
-              key={p}
-              label={p}
-              variant={pose === p ? "primary" : "secondary"}
-              onPress={() => setPose(p)}
-              disabled={busy || busyPoll || autoPollLoopOn}
-            />
-          ))}
-        </View>
-
-        <Text style={styles.section}>Outfit preset</Text>
-        <View style={styles.row}>
-          {(["default", "navy", "casual"] as const).map((p) => (
-            <AppButton
-              key={p}
-              label={p}
-              variant={preset === p ? "primary" : "secondary"}
-              onPress={() => setPreset(p)}
-              disabled={busy || busyPoll || autoPollLoopOn}
-            />
-          ))}
-        </View>
-
         <Text style={styles.debugNote}>
-          Adjust fit sliders, pick debug mode (e.g. clipping), then build. Run host export → Refresh
-          render. Enable reuse when you want the same renderId/path for faster PNG overwrite
+          Adjust fit sliders, pick offline debug mode (e.g. clipping), then build. Run host export →
+          Refresh render. Enable reuse when you want the same renderId/path for faster PNG overwrite
           iteration.
         </Text>
         <View style={styles.autoPollRow}>
@@ -2188,6 +2775,8 @@ export function AvatarPreviewDevScreen() {
             </View>
           </View>
         ) : null}
+          </>
+        ) : null}
 
         {warnings.length > 0 ? (
           <View style={styles.warningsBox}>
@@ -2232,6 +2821,11 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.caption,
     color: theme.colors.textMuted,
     fontStyle: "italic",
+  },
+  mainTabRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.sm,
   },
   phaseBox: {
     padding: theme.spacing.sm,
@@ -2294,6 +2888,123 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
     gap: 8,
+  },
+  liveWorkstationBox: {
+    borderColor: theme.colors.primary,
+    borderWidth: 1,
+    backgroundColor: theme.colors.surface,
+  },
+  clipOverlayRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
+  },
+  clipOverlayHint: {
+    flex: 1,
+    minWidth: 120,
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    lineHeight: 15,
+  },
+  clipSummary: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: theme.colors.text,
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  stressHint: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    lineHeight: 16,
+    marginBottom: theme.spacing.xs,
+  },
+  stressResultBox: {
+    marginTop: theme.spacing.xs,
+    padding: theme.spacing.xs,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: 4,
+  },
+  stressScoreLine: {
+    fontSize: 12,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  stressWorstLine: {
+    fontSize: 11,
+    color: theme.colors.primary,
+    lineHeight: 16,
+  },
+  stressPoseLine: {
+    fontSize: 10,
+    fontFamily: "monospace",
+    color: theme.colors.textMuted,
+    lineHeight: 15,
+  },
+  stressPoseWorst: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+  },
+  workstationLoop: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.text,
+    lineHeight: 20,
+  },
+  liveCompareBanner: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+    lineHeight: 18,
+  },
+  liveRegionPill: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    marginRight: theme.spacing.xs,
+  },
+  liveRegionPillActive: {
+    borderColor: theme.colors.primary,
+    borderWidth: 2,
+    backgroundColor: theme.colors.surface,
+  },
+  liveRegionPillText: {
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    fontWeight: theme.typography.fontWeight.medium,
+  },
+  liveRegionPillTextActive: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+  },
+  snapshotStrip: {
+    flexDirection: "row",
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.xs,
+  },
+  snapshotCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    maxWidth: 200,
+    padding: 6,
+    borderRadius: theme.radii.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  snapshotTap: { flex: 1, minWidth: 0 },
+  snapshotMeta: {
+    fontSize: 10,
+    color: theme.colors.textMuted,
+    fontFamily: Platform.select({ web: "monospace", default: "monospace" }),
   },
   fitPresetWrap: {
     flexWrap: "wrap",
@@ -2360,6 +3071,11 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.caption,
     fontFamily: Platform.select({ web: "monospace", default: "monospace" }),
     color: theme.colors.textMuted,
+  },
+  suggestionSource: {
+    fontSize: 10,
+    color: theme.colors.primary,
+    fontFamily: Platform.select({ web: "monospace", default: "monospace" }),
   },
   diagnostics: {
     padding: theme.spacing.sm,

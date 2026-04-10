@@ -20,7 +20,15 @@ export type FitSuggestion = {
   /** Human-readable delta for diagnostics. */
   detail: string;
   apply: (s: GarmentFitState) => GarmentFitState;
+  /** Provenance for dev diagnostics (live vs offline checklist, etc.). */
+  suggestionSource?: SuggestionSource;
 };
+
+export type SuggestionSource =
+  | "live_heuristic"
+  | "offline_clip_stats"
+  | "checklist"
+  | "runtime_clip";
 
 const STEP_Z = 0.02;
 const STEP_TORSO = 0.02;
@@ -85,6 +93,7 @@ export function suggestionsFromClippingStats(
       id: "clip_upper_torso_back",
       message: "Upper band shows heavy overlap — try nudging shirt torso back",
       detail: `regions.torso.offsetZ −${STEP_TORSO}`,
+      suggestionSource: "offline_clip_stats",
       apply: (s) => bumpTorsoZ(s, -STEP_TORSO),
     });
   }
@@ -93,6 +102,7 @@ export function suggestionsFromClippingStats(
       id: "clip_mid_waist",
       message: "Mid band overlap — try loosening waist / shifting hip piece",
       detail: `waist tighten −${STEP_TIGHTEN}, waist.offsetZ +${STEP_Z}`,
+      suggestionSource: "offline_clip_stats",
       apply: bumpWaistLoosen,
     });
   }
@@ -101,6 +111,7 @@ export function suggestionsFromClippingStats(
       id: "clip_lower_hem",
       message: "Lower band overlap — hem / trouser legs may be penetrating",
       detail: `regions.hem.offsetY +${STEP_HEM}`,
+      suggestionSource: "offline_clip_stats",
       apply: (s) => bumpHemY(s, STEP_HEM),
     });
   }
@@ -109,6 +120,7 @@ export function suggestionsFromClippingStats(
       id: "clip_left_dominant",
       message: "Left half shows more overlap (view-dependent) — try small global Z tweak",
       detail: `global.offsetZ +${STEP_Z}`,
+      suggestionSource: "offline_clip_stats",
       apply: (s) => bumpGlobalZ(s, STEP_Z),
     });
   } else if (right > left * 1.35 && right > 0.03) {
@@ -116,6 +128,7 @@ export function suggestionsFromClippingStats(
       id: "clip_right_dominant",
       message: "Right half shows more overlap — try small global Z tweak the other way",
       detail: `global.offsetZ −${STEP_Z}`,
+      suggestionSource: "offline_clip_stats",
       apply: (s) => bumpGlobalZ(s, -STEP_Z),
     });
   }
@@ -124,6 +137,7 @@ export function suggestionsFromClippingStats(
       id: "clip_sleeve_near_upper",
       message: "Tight yellow rim in upper band — slight sleeve inflate",
       detail: `regions.sleeves.inflate +${STEP_INFL}`,
+      suggestionSource: "offline_clip_stats",
       apply: (s) => bumpSleeveInfl(s, STEP_INFL),
     });
   }
@@ -264,6 +278,7 @@ export function suggestionsFromChecklistTagIds(tagIds: string[]): FitSuggestion[
       id: s.id,
       message: s.message,
       detail: s.detail,
+      suggestionSource: "checklist",
       apply: s.apply,
     });
   }

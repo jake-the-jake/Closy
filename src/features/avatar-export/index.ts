@@ -46,6 +46,7 @@ export {
 export {
   type ClippingStatsV1,
   type FitSuggestion,
+  type SuggestionSource,
   fetchClippingStatsV1,
   suggestionsFromChecklistTagIds,
   suggestionsFromClippingStats,
