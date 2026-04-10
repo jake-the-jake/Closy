@@ -10,6 +10,11 @@ import { toExpoFileUri } from "./paths";
 import { getClosyRepoRoot } from "./repo-root";
 import type { AvatarExportRequest, SaveAvatarRequestResult } from "./types";
 
+/** Android/iOS cannot reliably write or read the developer's host repo tree (e.g. `E:/apps/Closy`). */
+function skipDirectHostRepoWrite(): boolean {
+  return Platform.OS === "android" || Platform.OS === "ios";
+}
+
 async function writeRepoRequest(
   repoRoot: string,
   renderId: string,
@@ -54,9 +59,9 @@ async function writeCacheRequest(
 }
 
 /**
- * Persists export request JSON: **repo first** (`generated/avatar_requests/`), then **cache**
- * on native when `cacheDirectory` exists. Web skips cache entirely.
- * At least one successful write is enough for a usable handoff to the CLI.
+ * Persists export request JSON.
+ * - **Web:** writes to `generated/avatar_requests/` under `EXPO_PUBLIC_CLOSY_REPO_ROOT` when set.
+ * - **Android/iOS:** never writes to the host repo path; saves to app cache only, then use host CLI handoff.
  */
 export async function saveAvatarExportRequest(
   request: AvatarExportRequest,
@@ -64,11 +69,27 @@ export async function saveAvatarExportRequest(
   const json = serializeAvatarExportRequestForDisk(request);
   const warnings: string[] = [];
   const repoRoot = getClosyRepoRoot();
+  const hostRepoWriteSkipped = skipDirectHostRepoWrite();
+
+  const expectedHostRequestPathDisplay =
+    repoRoot != null
+      ? joinPathSegments(repoRoot, requestRelativePathForRenderId(request.renderId))
+      : null;
 
   let repoRequestFileUri: string | null = null;
   let repoWriteSucceeded = false;
 
-  if (repoRoot != null) {
+  if (hostRepoWriteSkipped) {
+    if (repoRoot != null) {
+      warnings.push(
+        "Android/iOS cannot write your PC repo path. The request JSON is in app cache — use Share/Copy JSON, then on Windows run `npm run closy:avatar-request`, then `npm run closy:avatar-export`, serve the repo (`npx serve .`), and load the PNG over HTTP on the dev screen.",
+      );
+    } else {
+      warnings.push(
+        "EXPO_PUBLIC_CLOSY_REPO_ROOT is not loaded. Set it for path hints; JSON is still saved to app cache when possible.",
+      );
+    }
+  } else if (repoRoot != null) {
     const repoResult = await writeRepoRequest(
       repoRoot,
       request.renderId,
@@ -78,12 +99,12 @@ export async function saveAvatarExportRequest(
     repoWriteSucceeded = repoResult.ok;
     if (!repoResult.ok) {
       warnings.push(
-        `Could not write to generated/avatar_requests/${request.renderId}.json${repoResult.detail ? `: ${repoResult.detail}` : ""}.`,
+        `Could not write to ${requestRelativePathForRenderId(request.renderId)}${repoResult.detail ? `: ${repoResult.detail}` : ""}.`,
       );
     }
   } else {
     warnings.push(
-      "EXPO_PUBLIC_CLOSY_REPO_ROOT is not loaded. Set it in .env and restart Expo so the app can write generated/avatar_requests/.",
+      "EXPO_PUBLIC_CLOSY_REPO_ROOT is not loaded. Set it in .env and restart Expo for repo-relative writes (web).",
     );
   }
 
@@ -91,23 +112,18 @@ export async function saveAvatarExportRequest(
   let cacheWriteSucceeded = false;
 
   if (Platform.OS === "web") {
-    /* intentional — no app cache for export bridge on web */
+    /* no app cache on web */
   } else if (FileSystem.cacheDirectory == null) {
-    if (repoWriteSucceeded) {
-      warnings.push(
-        "App cache is unavailable (normal on some sandboxes); the request is only under the repo path.",
-      );
-    }
+    warnings.push(
+      "App cache directory is unavailable; could not store a local copy of the request JSON.",
+    );
   } else {
     const cacheResult = await writeCacheRequest(request.renderId, json);
     cacheRequestFileUri = cacheResult.uri;
     cacheWriteSucceeded = cacheResult.ok;
     if (!cacheResult.ok) {
-      const suffix = repoWriteSucceeded
-        ? " Request file is still in generated/avatar_requests if repo write succeeded."
-        : "";
       warnings.push(
-        `Could not copy request to app cache${cacheResult.detail ? ` (${cacheResult.detail})` : ""}.${suffix}`,
+        `Could not save request to app cache${cacheResult.detail ? ` (${cacheResult.detail})` : ""}.`,
       );
     }
   }
@@ -120,6 +136,8 @@ export async function saveAvatarExportRequest(
     repoWriteSucceeded,
     cacheWriteSucceeded,
     repoRootUsed: repoRoot,
+    hostRepoWriteSkipped,
+    expectedHostRequestPathDisplay,
     warnings,
   };
 }

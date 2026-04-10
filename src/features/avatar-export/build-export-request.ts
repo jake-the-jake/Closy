@@ -6,6 +6,7 @@ import {
 import type {
   AvatarEngineOutfitFile,
   AvatarEngineOutfitItem,
+  AvatarExportDebugFlags,
   AvatarExportRequest,
   AvatarOutfitLike,
 } from "./types";
@@ -17,6 +18,11 @@ export type BuildAvatarExportOptions = {
   camera?: string;
   /** Defaults to `outfit_${Date.now()}`. */
   renderId?: string;
+  /**
+   * Dev-only optional flags under `closy.debug`.
+   * Prefer `fitDebugModeToExportFlags` from `avatar-fit-debug.ts` when using the preview screen modes.
+   */
+  debug?: AvatarExportDebugFlags;
 };
 
 function pushItem(items: AvatarEngineOutfitItem[], slotLike: AvatarEngineOutfitItem) {
@@ -67,22 +73,34 @@ export function buildAvatarExportRequest(
     items,
   };
 
+  const closy: AvatarExportRequest["closy"] = {
+    contractVersion: AVATAR_EXPORT_CONTRACT_VERSION,
+    expectedOutputRelativePath: renderRelativePathForRenderId(renderId),
+    requestRelativePath: requestRelativePathForRenderId(renderId),
+  };
+  if (options.debug != null && Object.keys(options.debug).length > 0) {
+    closy.debug = options.debug;
+  }
+
   return {
     renderId,
     engine,
-    closy: {
-      contractVersion: AVATAR_EXPORT_CONTRACT_VERSION,
-      expectedOutputRelativePath: renderRelativePathForRenderId(renderId),
-      requestRelativePath: requestRelativePathForRenderId(renderId),
-    },
+    closy,
   };
 }
 
-/** JSON string passed to `avatar_export` (includes `closy` meta; engine ignores unknown keys). */
+/**
+ * JSON string passed to `avatar_export` (includes `closy` meta and optional `closy.debug`;
+ * engine ignores keys it does not understand).
+ */
 export function serializeAvatarExportRequestForDisk(request: AvatarExportRequest): string {
+  const closy: Record<string, unknown> = { ...request.closy };
+  if (request.closy.debug == null) {
+    delete closy.debug;
+  }
   const payload = {
     ...request.engine,
-    closy: request.closy,
+    closy,
   };
   return `${JSON.stringify(payload, null, 2)}\n`;
 }

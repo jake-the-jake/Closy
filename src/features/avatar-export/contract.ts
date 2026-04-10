@@ -12,6 +12,12 @@
  * - `EXPO_PUBLIC_CLOSY_REPO_ROOT` — absolute path to repo root so the app can read/write
  *   the same `generated/` tree (desktop/dev; may fail on device sandboxes).
  * - `EXPO_PUBLIC_AVATAR_EXPORT_MOCK=1` — `runAvatarExport` succeeds with a placeholder image.
+ * - `EXPO_PUBLIC_AVATAR_RENDER_BASE_URL` — dev: base URL where the repo root is served over HTTP
+ *   (e.g. `http://192.168.1.253:3000` after `npx serve .`); Android loads
+ *   `{base}/generated/avatar_renders/{renderId}.png` instead of `file://` host paths.
+ * - `EXPO_PUBLIC_AVATAR_RENDER_SERVE_PORT` — optional; default `3000` when inferring base URL from
+ *   the Metro bundle host (LAN IP / `10.0.2.2` on emulator).
+ * - Optional `closy.debug` on export JSON — dev-only view flags (`showBodyOnly`, etc.); engine may ignore.
  */
 
 export const AVATAR_EXPORT_CONTRACT_VERSION = 1 as const;
