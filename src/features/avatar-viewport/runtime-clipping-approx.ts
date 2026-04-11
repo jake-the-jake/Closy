@@ -11,19 +11,18 @@
 
 import * as THREE from "three";
 
-import type { GarmentFitState } from "@/features/avatar-export";
+import {
+  bodySceneAnchorsFromShape,
+  DEFAULT_BODY_SHAPE,
+  deriveBodyRigMetrics,
+  type BodyShapeParams,
+  type GarmentFitState,
+} from "@/features/avatar-export";
 import type { DevAvatarPoseKey } from "@/features/avatar-export/dev-avatar-shared";
 
-/** Same as `AVATAR_RIG_ANCHORS` in `avatar-procedural-scene.tsx` — keep in sync. */
-const RIG = {
-  pelvisY: 0.98,
-  chestY: 1.15,
-  shoulderY: 1.34,
-  shoulderHalf: 0.188,
-  headY: 1.52,
-  pantsProxyHemY: 0.56,
-  gltfTopMountY: 1.12,
-} as const;
+import { poseAngles } from "./avatar-pose-angles";
+
+const DEFAULT_BODY_METRICS = deriveBodyRigMetrics(DEFAULT_BODY_SHAPE);
 
 export type RuntimeClipSeverity = "clear" | "near" | "clip";
 
@@ -46,6 +45,8 @@ export type RuntimeClippingAnalyzeInput = {
   hasRuntimeBodyGltf: boolean;
   hasRuntimeTopGltf: boolean;
   hasRuntimeBottomGltf: boolean;
+  /** When omitted, uses `DEFAULT_BODY_SHAPE` (matches legacy single-body rig). */
+  bodyShape?: BodyShapeParams;
 };
 
 /** Mirror `avatar-procedural-scene` FIT_VIS — update together. */
@@ -58,53 +59,6 @@ const FIT_VIS = {
   sleevePosMul: 1.75,
   globalGarmentInflate: 1.85,
 } as const;
-
-function poseAngles(pose: DevAvatarPoseKey) {
-  switch (pose) {
-    case "relaxed":
-      return {
-        laz: 0.12,
-        raz: -0.12,
-        lax: 0.48,
-        rax: 0.48,
-        laxz: 0.02,
-        llx: 0.04,
-        rlx: -0.06,
-      };
-    case "walk":
-      return {
-        laz: 0.38,
-        raz: -0.38,
-        lax: 0.36,
-        rax: 0.36,
-        laxz: 0.1,
-        llx: 0.28,
-        rlx: -0.32,
-      };
-    case "tpose":
-      return {
-        laz: 1.38,
-        raz: -1.38,
-        lax: 0,
-        rax: 0,
-        laxz: 0,
-        llx: 0,
-        rlx: 0,
-      };
-    case "apose":
-      return {
-        laz: 0.55,
-        raz: -0.55,
-        lax: 0,
-        rax: 0,
-        laxz: 0,
-        llx: 0,
-        rlx: 0,
-      };
-    default:
-      return { laz: 0, raz: 0, lax: 0, rax: 0, laxz: 0, llx: 0, rlx: 0 };
-  }
-}
 
 const _v = new THREE.Vector3();
 const _e = new THREE.Euler();
@@ -168,8 +122,30 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
   const g = fit.global;
   const r = fit.regions;
   const ang = poseAngles(pose);
+  const bodyShape = input.bodyShape ?? DEFAULT_BODY_SHAPE;
+  const sceneRig = bodySceneAnchorsFromShape(bodyShape);
   const { pelvisY, chestY, shoulderY, shoulderHalf, pantsProxyHemY, gltfTopMountY } =
-    RIG;
+    sceneRig;
+  const metrics = sceneRig.metrics;
+
+  const torsoBodyR =
+    0.162 * (metrics.torsoCapsuleRadius / DEFAULT_BODY_METRICS.torsoCapsuleRadius);
+  const armBodyRrad =
+    0.098 * (metrics.upperArmCapsule[0] / DEFAULT_BODY_METRICS.upperArmCapsule[0]);
+  const pelvisW = Math.max(metrics.pelvisBox[0], metrics.pelvisBox[2]);
+  const defPelvisW = Math.max(
+    DEFAULT_BODY_METRICS.pelvisBox[0],
+    DEFAULT_BODY_METRICS.pelvisBox[2],
+  );
+  const pelvisR = 0.154 * (pelvisW / defPelvisW);
+  const pantsHipR =
+    0.198 * (metrics.pelvisBox[0] / DEFAULT_BODY_METRICS.pelvisBox[0]);
+  const legBodyRrad =
+    0.104 * (metrics.upperLegCapsule[0] / DEFAULT_BODY_METRICS.upperLegCapsule[0]);
+  const legGarR =
+    0.118 * (metrics.upperLegCapsule[0] / DEFAULT_BODY_METRICS.upperLegCapsule[0]);
+  const thighGarmentX =
+    0.09 * (metrics.pelvisBox[0] / DEFAULT_BODY_METRICS.pelvisBox[0]);
 
   const inf = g.inflate;
   const inflVis = inf * FIT_VIS.globalGarmentInflate;
@@ -230,13 +206,12 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
     .multiplyMatrices(mBody, mTopAnchor)
     .multiply(mShirtLocal);
   const torsoBody = transformPoint(mBody, 0, chestY, 0);
-  const torsoBodyR = 0.162 * bodyBias;
   const shirtC = transformPoint(mGarmentTopChain, 0, 0, 0);
   const penTorso = spherePenetration(
     torsoBody.x,
     torsoBody.y,
     torsoBody.z,
-    torsoBodyR,
+    torsoBodyR * bodyBias,
     shirtC.x,
     shirtC.y,
     shirtC.z,
@@ -274,12 +249,15 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
   const sleeveOffY = -0.04 + spy * 0.25;
   const sleeveOffZ = spz * 0.3;
 
-  const slCentL = transformPoint(mArmL, 0.15, sleeveOffY, sleeveOffZ);
-  const slCentR = transformPoint(mArmR, -0.15, sleeveOffY, sleeveOffZ);
+  const sleeveProbeX =
+    0.15 * (metrics.armMeshOffsetX / DEFAULT_BODY_METRICS.armMeshOffsetX);
+  const slCentL = transformPoint(mArmL, sleeveProbeX, sleeveOffY, sleeveOffZ);
+  const slCentR = transformPoint(mArmR, -sleeveProbeX, sleeveOffY, sleeveOffZ);
 
-  const armBodyL = transformPoint(mArmL, 0.14, -0.14, 0);
-  const armBodyR = transformPoint(mArmR, -0.14, -0.14, 0);
-  const armBodyRrad = 0.098 * bodyBias;
+  const armProbeY = -0.4 * metrics.upperArmCapsule[1];
+  const armBodyL = transformPoint(mArmL, metrics.armMeshOffsetX, armProbeY, 0);
+  const armBodyR = transformPoint(mArmR, -metrics.armMeshOffsetX, armProbeY, 0);
+  const armBodyRradScaled = armBodyRrad * bodyBias;
 
   let penSleeve =
     input.hasRuntimeTopGltf
@@ -288,7 +266,7 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
             armBodyL.x,
             armBodyL.y,
             armBodyL.z,
-            armBodyRrad,
+            armBodyRradScaled,
             shirtC.x,
             shirtC.y,
             shirtC.z,
@@ -298,7 +276,7 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
             armBodyR.x,
             armBodyR.y,
             armBodyR.z,
-            armBodyRrad,
+            armBodyRradScaled,
             shirtC.x,
             shirtC.y,
             shirtC.z,
@@ -310,7 +288,7 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
             armBodyL.x,
             armBodyL.y,
             armBodyL.z,
-            armBodyRrad,
+            armBodyRradScaled,
             slCentL.x,
             slCentL.y,
             slCentL.z,
@@ -320,7 +298,7 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
             armBodyR.x,
             armBodyR.y,
             armBodyR.z,
-            armBodyRrad,
+            armBodyRradScaled,
             slCentR.x,
             slCentR.y,
             slCentR.z,
@@ -340,15 +318,14 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
 
   const hemY = r.hem.offsetY;
   const pelvisC = transformPoint(mBody, 0, pelvisY, 0);
-  const pelvisR = 0.154 * bodyBias;
+  const pelvisRScaled = pelvisR * bodyBias;
 
   const pantsHipC = transformPoint(mBottom, 0, pantsProxyHemY + hemY, 0);
-  const pantsHipR = 0.198;
   const penWaist = spherePenetration(
     pelvisC.x,
     pelvisC.y,
     pelvisC.z,
-    pelvisR,
+    pelvisRScaled,
     pantsHipC.x,
     pantsHipC.y,
     pantsHipC.z,
@@ -356,27 +333,33 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
   );
 
   const legGy = pantsProxyHemY - 0.34 + hemY;
-  const legGarR = 0.118;
+  const thighDrop = 0.45 * metrics.upperLegCapsule[1];
   const mPelvis = matT(0, pelvisY, 0);
   const mLegBindL = new THREE.Matrix4()
-    .multiplyMatrices(matT(0.075, -0.06, 0), matRx(ang.llx))
-    .multiply(matT(0.02, -0.2, 0));
+    .multiplyMatrices(
+      matT(metrics.legGroupOffsetX, metrics.hipPitchLocalY, 0),
+      matRx(ang.llx),
+    )
+    .multiply(matT(metrics.legMeshOffsetX, -thighDrop, 0));
   const mLegBindR = new THREE.Matrix4()
-    .multiplyMatrices(matT(-0.075, -0.06, 0), matRx(ang.rlx))
-    .multiply(matT(-0.02, -0.2, 0));
+    .multiplyMatrices(
+      matT(-metrics.legGroupOffsetX, metrics.hipPitchLocalY, 0),
+      matRx(ang.rlx),
+    )
+    .multiply(matT(-metrics.legMeshOffsetX, -thighDrop, 0));
   const mLegLW = new THREE.Matrix4().multiplyMatrices(mBody, mPelvis).multiply(mLegBindL);
   const mLegRW = new THREE.Matrix4().multiplyMatrices(mBody, mPelvis).multiply(mLegBindR);
   const legBodyLy = transformPoint(mLegLW, 0, 0, 0);
   const legBodyRy = transformPoint(mLegRW, 0, 0, 0);
-  const legBodyRrad = 0.104 * bodyBias;
-  const gLegL = transformPoint(mBottom, 0.09, legGy, 0);
-  const gLegR = transformPoint(mBottom, -0.09, legGy, 0);
+  const legBodyRradScaled = legBodyRrad * bodyBias;
+  const gLegL = transformPoint(mBottom, thighGarmentX, legGy, 0);
+  const gLegR = transformPoint(mBottom, -thighGarmentX, legGy, 0);
 
   const penHemL = spherePenetration(
     legBodyLy.x,
     legBodyLy.y,
     legBodyLy.z,
-    legBodyRrad,
+    legBodyRradScaled,
     gLegL.x,
     gLegL.y,
     gLegL.z,
@@ -386,7 +369,7 @@ export function analyzeRuntimeClipping(input: RuntimeClippingAnalyzeInput): Runt
     legBodyRy.x,
     legBodyRy.y,
     legBodyRy.z,
-    legBodyRrad,
+    legBodyRradScaled,
     gLegR.x,
     gLegR.y,
     gLegR.z,

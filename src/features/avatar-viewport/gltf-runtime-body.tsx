@@ -1,14 +1,46 @@
 import { useLoader } from "@react-three/fiber/native";
-import { Component, type ErrorInfo, type ReactNode, useLayoutEffect, useMemo } from "react";
+import {
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+  use,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import * as THREE from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-import type { GarmentFitState } from "@/features/avatar-export";
+import {
+  DEFAULT_BODY_SHAPE,
+  deriveBodyRigMetrics,
+  type BodyRigMetrics,
+  type BodyShapeParams,
+  type GarmentFitState,
+} from "@/features/avatar-export";
 import type { DevAvatarPoseKey } from "@/features/avatar-export/dev-avatar-shared";
 
-import { deformGarmentObject3D, type GarmentDeformProfile } from "./garment-deformation";
+import { applySkinnedBodyFallbackMaterials } from "./gltf-body-fallback-materials";
+import { loadBundledGltfModule } from "./gltf-bundled-load";
+import { poseAngles } from "./avatar-pose-angles";
+import {
+  deformGarmentObject3D,
+  type GarmentDeformProfile,
+  type GarmentPoseSkinningParams,
+} from "./garment-deformation";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
+import { alignSkinnedRootToPelvisMetric } from "./skinned-body-placement";
+import {
+  applySkinnedPoseToBones,
+  applySkinnedShapeScales,
+  captureSkeletonRestQuats,
+  captureSkeletonRestScales,
+  findFirstSkinnedMesh,
+  resolveSkinnedBodyBones,
+  type ResolvedSkinnedBones,
+  type SkinnedPoseBias,
+} from "./skinned-body-pose";
 
 type MatBaseline = {
   color: THREE.Color;
@@ -131,39 +163,242 @@ type PreparedGltf = {
   baseline: Map<THREE.MeshStandardMaterial, MatBaseline>;
 };
 
-function usePreparedGltf(url: string, gltf: GLTF, normalizeY: number): PreparedGltf {
+function usePreparedGltf(
+  cacheKey: string,
+  gltf: GLTF,
+  normalizeY: number,
+  metrics: BodyRigMetrics,
+  applyPelvisAlign: boolean,
+  /** Bundled / Expo: replace GLB materials so no GPU texture sampling from embedded maps. */
+  applyUntexturedFallbackMaterials: boolean,
+): PreparedGltf {
   return useMemo(() => {
     const root = gltf.scene.clone(true);
     normalizeRootToHeight(root, normalizeY);
+    if (applyPelvisAlign) alignSkinnedRootToPelvisMetric(root, metrics);
+    if (applyUntexturedFallbackMaterials) applySkinnedBodyFallbackMaterials(root);
     const baseline = buildMaterialBaseline(root);
     return { scene: root, baseline };
-  }, [gltf, url, normalizeY]);
+  }, [gltf, cacheKey, normalizeY, metrics, applyPelvisAlign, applyUntexturedFallbackMaterials]);
 }
 
-type GltfRuntimeBodyProps = {
-  url: string;
+type SkinnedBindCache = {
+  sceneId: string;
+  shapeKey: string;
+  restQuat: Map<string, THREE.Quaternion>;
+  restScale: Map<string, THREE.Vector3>;
+  bones: ResolvedSkinnedBones;
+};
+
+function resetSkeletonToRest(
+  skeleton: THREE.Skeleton,
+  restQuat: Map<string, THREE.Quaternion>,
+  restScale: Map<string, THREE.Vector3>,
+) {
+  for (const bone of skeleton.bones) {
+    const rq = restQuat.get(bone.name);
+    if (rq) bone.quaternion.copy(rq);
+    const rs = restScale.get(bone.name);
+    if (rs) bone.scale.copy(rs);
+  }
+}
+
+function bodyShapeKey(b: BodyShapeParams): string {
+  return `${b.height},${b.shoulderWidth},${b.chest},${b.waist},${b.hips},${b.armThickness},${b.legThickness},${b.torsoLength},${b.build}`;
+}
+
+function useSkinnedBodyLayout(
+  scene: THREE.Object3D,
+  baseline: Map<THREE.MeshStandardMaterial, MatBaseline>,
+  pose: DevAvatarPoseKey,
+  liveShading: LiveViewportShadingMode,
+  m: BodyRigMetrics,
+  bodyShape: BodyShapeParams,
+  enableSkinnedRig: boolean,
+  poseBias: SkinnedPoseBias | undefined,
+  onSceneReady: (() => void) | undefined,
+) {
+  const ang = useMemo(() => poseAngles(pose), [pose]);
+  const skinnedCacheRef = useRef<SkinnedBindCache | null>(null);
+  const sk = useMemo(() => bodyShapeKey(bodyShape), [bodyShape]);
+
+  useLayoutEffect(() => {
+    const skinned = findFirstSkinnedMesh(scene);
+    const euler = poseRootEulerApprox(pose);
+
+    if (!enableSkinnedRig || !skinned?.skeleton) {
+      scene.rotation.set(euler[0], euler[1], euler[2]);
+      applyLiveShadingToGltfMaterials(scene, liveShading, "body", baseline);
+      scene.updateMatrixWorld(true);
+      onSceneReady?.();
+      return;
+    }
+
+    const skeleton = skinned.skeleton;
+    const sid = `${scene.uuid}:${skinned.uuid}`;
+    let cache = skinnedCacheRef.current;
+    if (!cache || cache.sceneId !== sid || cache.shapeKey !== sk) {
+      cache = {
+        sceneId: sid,
+        shapeKey: sk,
+        restQuat: captureSkeletonRestQuats(skeleton),
+        restScale: captureSkeletonRestScales(skeleton),
+        bones: resolveSkinnedBodyBones(skeleton),
+      };
+      skinnedCacheRef.current = cache;
+    }
+
+    resetSkeletonToRest(skeleton, cache.restQuat, cache.restScale);
+    applySkinnedShapeScales(cache.bones, cache.restScale, m);
+    applySkinnedPoseToBones(cache.bones, cache.restQuat, ang, poseBias);
+
+    scene.rotation.set(euler[0], euler[1], euler[2]);
+    applyLiveShadingToGltfMaterials(scene, liveShading, "body", baseline);
+    scene.updateMatrixWorld(true);
+    onSceneReady?.();
+  }, [
+    scene,
+    pose,
+    liveShading,
+    baseline,
+    ang,
+    m,
+    enableSkinnedRig,
+    poseBias,
+    onSceneReady,
+    sk,
+  ]);
+}
+
+type GltfRuntimeBodyShared = {
   pose: DevAvatarPoseKey;
   liveShading: LiveViewportShadingMode;
+  bodyShape?: BodyShapeParams;
+  enableSkinnedRig?: boolean;
+  /** Extra pose deltas for skinned bind vs procedural rig. */
+  poseBias?: SkinnedPoseBias;
+  onSceneReady?: () => void;
+};
+
+/** Bundled module: Android-safe parse path (no `file://` in GLTFLoader). */
+export function GltfRuntimeBodyFromBundledModule({
+  bundledAssetModule,
+  pose,
+  liveShading,
+  bodyShape = DEFAULT_BODY_SHAPE,
+  enableSkinnedRig = true,
+  poseBias,
+  onSceneReady,
+}: GltfRuntimeBodyShared & { bundledAssetModule: number }) {
+  const gltf = use(useMemo(() => loadBundledGltfModule(bundledAssetModule), [bundledAssetModule]));
+  const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShape]);
+  const { scene, baseline } = usePreparedGltf(
+    `bundled:${bundledAssetModule}`,
+    gltf,
+    m.gltfNormalizeY,
+    m,
+    true,
+    true,
+  );
+  const [sx, sy, sz] = m.gltfBodyScale;
+  useSkinnedBodyLayout(
+    scene,
+    baseline,
+    pose,
+    liveShading,
+    m,
+    bodyShape,
+    enableSkinnedRig ?? true,
+    poseBias,
+    onSceneReady,
+  );
+
+  return (
+    <group scale={[sx, sy, sz]}>
+      <primitive object={scene} />
+    </group>
+  );
+}
+
+/** Remote / https body URL — `useLoader` is fine for http(s). */
+export function GltfRuntimeBodyFromUrl({
+  url,
+  pose,
+  liveShading,
+  bodyShape = DEFAULT_BODY_SHAPE,
+  enableSkinnedRig = true,
+  poseBias,
+  onSceneReady,
+}: GltfRuntimeBodyShared & { url: string }) {
+  const gltf = useLoader(GLTFLoader, url);
+  const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShape]);
+  const { scene, baseline } = usePreparedGltf(
+    url,
+    gltf,
+    m.gltfNormalizeY,
+    m,
+    true,
+    false,
+  );
+  const [sx, sy, sz] = m.gltfBodyScale;
+  useSkinnedBodyLayout(
+    scene,
+    baseline,
+    pose,
+    liveShading,
+    m,
+    bodyShape,
+    enableSkinnedRig ?? true,
+    poseBias,
+    onSceneReady,
+  );
+
+  return (
+    <group scale={[sx, sy, sz]}>
+      <primitive object={scene} />
+    </group>
+  );
+}
+
+export type GltfRuntimeBodyProps = GltfRuntimeBodyShared & {
+  /** Remote GLB URL (https / reachable). Ignored when `bundledAssetModule` is set. */
+  url?: string | null;
+  /** Metro `require()` module id — load via `parse` (Android-safe; no `file://` in loader). */
+  bundledAssetModule?: number | null;
 };
 
 /**
- * Loads an optional runtime GLB (non-Draco for first pass). Normalizes height ~1.85m,
- * applies coarse root rotation per pose, and live shading. Skeletal poses are staged later.
+ * Prefer `bundledAssetModule` when set so Android never uses `file://` URIs with GLTFLoader.
+ * Otherwise loads `url`.
  */
-export function GltfRuntimeBody({ url, pose, liveShading }: GltfRuntimeBodyProps) {
-  const gltf = useLoader(GLTFLoader, url);
-  const { scene, baseline } = usePreparedGltf(url, gltf, 1.85);
-
-  useLayoutEffect(() => {
-    const euler = poseRootEulerApprox(pose);
-    scene.rotation.set(euler[0], euler[1], euler[2]);
-    applyLiveShadingToGltfMaterials(scene, liveShading, "body", baseline);
-    scene.traverse((o) => {
-      if (o instanceof THREE.Mesh) o.updateMatrixWorld(true);
-    });
-  }, [scene, pose, liveShading, baseline]);
-
-  return <primitive object={scene} />;
+export function GltfRuntimeBody(props: GltfRuntimeBodyProps) {
+  if (props.bundledAssetModule != null) {
+    return (
+      <GltfRuntimeBodyFromBundledModule
+        bundledAssetModule={props.bundledAssetModule}
+        pose={props.pose}
+        liveShading={props.liveShading}
+        bodyShape={props.bodyShape}
+        enableSkinnedRig={props.enableSkinnedRig}
+        poseBias={props.poseBias}
+        onSceneReady={props.onSceneReady}
+      />
+    );
+  }
+  if (props.url) {
+    return (
+      <GltfRuntimeBodyFromUrl
+        url={props.url}
+        pose={props.pose}
+        liveShading={props.liveShading}
+        bodyShape={props.bodyShape}
+        enableSkinnedRig={props.enableSkinnedRig}
+        poseBias={props.poseBias}
+        onSceneReady={props.onSceneReady}
+      />
+    );
+  }
+  return null;
 }
 
 type GltfRuntimeGarmentProps = {
@@ -174,13 +409,15 @@ type GltfRuntimeGarmentProps = {
   /** Shared live fit; drives regional vertex deformation (see `garment-deformation.ts`). */
   garmentFit: GarmentFitState;
   deformProfile: GarmentDeformProfile;
+  /** CPU pose follow (weighted arm/thigh deltas) before regional fit. */
+  garmentPoseSkin?: GarmentPoseSkinningParams | null;
   /** Runtime clipping overlay emissive add (garment materials only). */
   clipEmissiveAdd?: THREE.Color;
 };
 
 /**
  * Static garment GLB under a parent group that already applies fit offsets.
- * Pipeline: base placement + parent transforms → regional mesh deformation → live shading.
+ * Pipeline: base placement + parent transforms → pose skinning → regional fit → live shading.
  */
 export function GltfRuntimeGarment({
   url,
@@ -188,13 +425,19 @@ export function GltfRuntimeGarment({
   normalizeHeight = 0.48,
   garmentFit,
   deformProfile,
+  garmentPoseSkin = null,
   clipEmissiveAdd,
 }: GltfRuntimeGarmentProps) {
   const gltf = useLoader(GLTFLoader, url);
-  const { scene, baseline } = usePreparedGltf(url, gltf, normalizeHeight);
+  const { scene, baseline } = useMemo(() => {
+    const root = gltf.scene.clone(true);
+    normalizeRootToHeight(root, normalizeHeight);
+    const bl = buildMaterialBaseline(root);
+    return { scene: root, baseline: bl };
+  }, [gltf, url, normalizeHeight]);
 
   useLayoutEffect(() => {
-    deformGarmentObject3D(scene, garmentFit, deformProfile);
+    deformGarmentObject3D(scene, garmentFit, deformProfile, garmentPoseSkin ?? undefined);
     applyLiveShadingToGltfMaterials(
       scene,
       liveShading,
@@ -205,14 +448,30 @@ export function GltfRuntimeGarment({
     scene.traverse((o) => {
       if (o instanceof THREE.Mesh) o.updateMatrixWorld(true);
     });
-  }, [scene, liveShading, baseline, garmentFit, deformProfile, clipEmissiveAdd]);
+  }, [
+    scene,
+    liveShading,
+    baseline,
+    garmentFit,
+    deformProfile,
+    garmentPoseSkin,
+    clipEmissiveAdd,
+  ]);
 
   return <primitive object={scene} />;
 }
 
-type EBProps = { children: ReactNode; fallback: ReactNode };
+type EBProps = {
+  children: ReactNode;
+  fallback: ReactNode;
+  /** Dev / diagnostics: runtime GLB load or parse failed. */
+  onLoadError?: (message: string) => void;
+};
 
 type EBState = { hasError: boolean };
+
+/** Dedupe console noise when the same GLTF error re-triggers (e.g. strict mode / remounts). */
+const gltfErrorBoundaryLogged = new Set<string>();
 
 export class GltfErrorBoundary extends Component<EBProps, EBState> {
   constructor(props: EBProps) {
@@ -226,8 +485,13 @@ export class GltfErrorBoundary extends Component<EBProps, EBState> {
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
     if (__DEV__) {
-      console.warn("[AvatarViewport] GLTF fallback:", error.message, info.componentStack);
+      const key = error.message.slice(0, 240);
+      if (!gltfErrorBoundaryLogged.has(key)) {
+        gltfErrorBoundaryLogged.add(key);
+        console.warn("[AvatarViewport] GLTF fallback:", error.message, info.componentStack);
+      }
     }
+    this.props.onLoadError?.(error.message);
   }
 
   override render() {

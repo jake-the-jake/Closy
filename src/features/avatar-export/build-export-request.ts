@@ -3,6 +3,7 @@ import {
   renderRelativePathForRenderId,
   requestRelativePathForRenderId,
 } from "./contract";
+import type { AvatarExportBodyShape } from "./body-shape-state";
 import type {
   AvatarEngineOutfitFile,
   AvatarEngineOutfitItem,
@@ -26,6 +27,8 @@ export type BuildAvatarExportOptions = {
   debug?: AvatarExportDebugFlags;
   /** Dev-only; written under `closy.fit` when non-empty. */
   fit?: AvatarExportFit;
+  /** Dev-only; written under `closy.bodyShape` when non-empty. */
+  bodyShape?: AvatarExportBodyShape;
 };
 
 function pushItem(items: AvatarEngineOutfitItem[], slotLike: AvatarEngineOutfitItem) {
@@ -86,6 +89,9 @@ export function buildAvatarExportRequest(
   }
   if (options.fit != null && Object.keys(options.fit).length > 0) {
     closy.fit = options.fit;
+  }
+  if (options.bodyShape != null && Object.keys(options.bodyShape).length > 0) {
+    closy.bodyShape = options.bodyShape;
   }
 
   return {

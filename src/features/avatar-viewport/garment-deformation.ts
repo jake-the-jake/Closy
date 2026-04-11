@@ -1,24 +1,44 @@
 /**
- * Live garment pipeline (reads shared `GarmentFitState` only):
+ * Live garment pipeline (shared `GarmentFitState` + optional pose skinning):
  *
- * 1. **Base placement** — Anchor groups (`garment_top_anchor`, `garment_bottom_anchor`, arm binds),
+ * 1. **Body shape** — Parent rig / `BodySceneAnchors` (outside this file).
+ * 2. **Base placement** — Anchor groups (`garment_top_anchor`, `garment_bottom_anchor`, arm binds),
  *    canonical procedural layout, GLTF height normalization on load.
- * 2. **Global fit transform** — Parent `avatar_world_fit` translation + scale
+ * 3. **Global fit transform** — Parent `avatar_world_fit` translation + scale
  *    (`global.offset`, `global.scale`, `global.inflate` amplification).
- * 3. **Region-aware deformation** — This module: per-vertex displacement from smooth masks
- *    (torso / sleeves / waist / hem) in **mesh local space** after 1–2, so shape adapts without
- *    only sliding the whole mesh.
- * 4. **Live shading** — `applyLiveShadingToGltfMaterials` (opacity/tint), separate from geometry.
+ * 4. **Pose follow (optional)** — Weighted upper-arm / thigh rigid deltas in mesh space
+ *    (`garment-rig-pose.ts`), bind = relaxed.
+ * 5. **Region-aware fit** — Per-vertex displacement from smooth masks (torso / sleeves / waist / hem)
+ *    in **mesh local space**; masks use **rest** positions, displacements apply on **pose-corrected** base.
+ * 6. **Live shading** — `applyLiveShadingToGltfMaterials` (opacity/tint), separate from geometry.
  *
- * No cloth physics; CPU vertex push with rest-pose caching. Suitable for dev/mobile first pass.
+ * No cloth physics; CPU vertex push with rest-pose caching.
  */
 
 import * as THREE from "three";
 
 import type { GarmentFitState } from "@/features/avatar-export";
 
+import {
+  applyBottomGarmentPoseSkinning,
+  applySleeveGarmentPoseSkinning,
+  applyTopGarmentPoseSkinning,
+  type GarmentPoseSkinningParams,
+} from "./garment-rig-pose";
+
 const _v = new THREE.Vector3();
 const _box = new THREE.Box3();
+
+let _poseScratch: Float32Array = new Float32Array(0);
+
+function ensurePoseScratch(len: number): Float32Array {
+  if (_poseScratch.length < len) {
+    _poseScratch = new Float32Array(Math.max(len, 4096));
+  }
+  return _poseScratch;
+}
+
+export type { GarmentPoseSkinningParams };
 
 export type GarmentDeformProfile = "top" | "bottom" | "sleeve";
 
@@ -71,10 +91,18 @@ export function forgetGarmentRest(geometry: THREE.BufferGeometry) {
 export function applyTopGarmentDeformation(
   geometry: THREE.BufferGeometry,
   fit: GarmentFitState,
+  poseSkin?: GarmentPoseSkinningParams | null,
 ) {
   const rest = getOrCaptureGarmentRest(geometry);
   const pos = geometry.attributes.position.array as Float32Array;
   const { positions: bases, min, max, size } = rest;
+
+  const posed = poseSkin
+    ? ensurePoseScratch(pos.length)
+    : null;
+  if (poseSkin && posed) {
+    applyTopGarmentPoseSkinning(bases, posed, min, max, size, poseSkin);
+  }
 
   const cx = (min.x + max.x) * 0.5;
   const cz = (min.z + max.z) * 0.5;
@@ -85,6 +113,10 @@ export function applyTopGarmentDeformation(
   const g = fit.global;
 
   for (let i = 0; i < pos.length; i += 3) {
+    const px = posed ? posed[i] : bases[i];
+    const py = posed ? posed[i + 1] : bases[i + 1];
+    const pz = posed ? posed[i + 2] : bases[i + 2];
+
     const ox = bases[i];
     const oy = bases[i + 1];
     const oz = bases[i + 2];
@@ -144,9 +176,9 @@ export function applyTopGarmentDeformation(
     }
     dy += g.inflate * sy * 0.12 * (ny - 0.5) * 2;
 
-    pos[i] = ox + dx;
-    pos[i + 1] = oy + dy;
-    pos[i + 2] = oz + dz;
+    pos[i] = px + dx;
+    pos[i + 1] = py + dy;
+    pos[i + 2] = pz + dz;
   }
 
   geometry.attributes.position.needsUpdate = true;
@@ -157,10 +189,18 @@ export function applyTopGarmentDeformation(
 export function applyBottomGarmentDeformation(
   geometry: THREE.BufferGeometry,
   fit: GarmentFitState,
+  poseSkin?: GarmentPoseSkinningParams | null,
 ) {
   const rest = getOrCaptureGarmentRest(geometry);
   const pos = geometry.attributes.position.array as Float32Array;
   const { positions: bases, min, max, size } = rest;
+
+  const posed = poseSkin
+    ? ensurePoseScratch(pos.length)
+    : null;
+  if (poseSkin && posed) {
+    applyBottomGarmentPoseSkinning(bases, posed, min, max, size, poseSkin);
+  }
 
   const cx = (min.x + max.x) * 0.5;
   const cz = (min.z + max.z) * 0.5;
@@ -170,6 +210,10 @@ export function applyBottomGarmentDeformation(
   const g = fit.global;
 
   for (let i = 0; i < pos.length; i += 3) {
+    const px = posed ? posed[i] : bases[i];
+    const py = posed ? posed[i + 1] : bases[i + 1];
+    const pz = posed ? posed[i + 2] : bases[i + 2];
+
     const ox = bases[i];
     const oy = bases[i + 1];
     const oz = bases[i + 2];
@@ -207,9 +251,9 @@ export function applyBottomGarmentDeformation(
       dz += (oz - cz) * gk * (wLeg + wWaist * 0.5);
     }
 
-    pos[i] = ox + dx;
-    pos[i + 1] = oy + dy;
-    pos[i + 2] = oz + dz;
+    pos[i] = px + dx;
+    pos[i + 1] = py + dy;
+    pos[i + 2] = pz + dz;
   }
 
   geometry.attributes.position.needsUpdate = true;
@@ -220,10 +264,28 @@ export function applyBottomGarmentDeformation(
 export function applySleeveGarmentDeformation(
   geometry: THREE.BufferGeometry,
   fit: GarmentFitState,
+  poseSkin?: GarmentPoseSkinningParams | null,
+  sleeveSide?: 1 | -1,
 ) {
   const rest = getOrCaptureGarmentRest(geometry);
   const pos = geometry.attributes.position.array as Float32Array;
   const { positions: bases, min, max, size } = rest;
+
+  const posed =
+    poseSkin && sleeveSide
+      ? ensurePoseScratch(pos.length)
+      : null;
+  if (poseSkin && sleeveSide && posed) {
+    applySleeveGarmentPoseSkinning(
+      bases,
+      posed,
+      min,
+      max,
+      size,
+      sleeveSide,
+      poseSkin,
+    );
+  }
 
   const cy = (min.y + max.y) * 0.5;
   const cz = (min.z + max.z) * 0.5;
@@ -233,6 +295,10 @@ export function applySleeveGarmentDeformation(
   const r = fit.regions;
 
   for (let i = 0; i < pos.length; i += 3) {
+    const px = posed ? posed[i] : bases[i];
+    const py = posed ? posed[i + 1] : bases[i + 1];
+    const pz = posed ? posed[i + 2] : bases[i + 2];
+
     const ox = bases[i];
     const oy = bases[i + 1];
     const oz = bases[i + 2];
@@ -263,9 +329,9 @@ export function applySleeveGarmentDeformation(
     dy += r.sleeves.offset[1] * sy * 0.9 * w;
     dz += r.sleeves.offset[2] * sy * 0.9 * w;
 
-    pos[i] = ox + dx;
-    pos[i + 1] = oy + dy;
-    pos[i + 2] = oz + dz;
+    pos[i] = px + dx;
+    pos[i + 1] = py + dy;
+    pos[i + 2] = pz + dz;
   }
 
   geometry.attributes.position.needsUpdate = true;
@@ -276,16 +342,18 @@ export function applyGarmentDeformationForProfile(
   geometry: THREE.BufferGeometry,
   fit: GarmentFitState,
   profile: GarmentDeformProfile,
+  poseSkin?: GarmentPoseSkinningParams | null,
+  sleeveSide?: 1 | -1,
 ) {
   switch (profile) {
     case "top":
-      applyTopGarmentDeformation(geometry, fit);
+      applyTopGarmentDeformation(geometry, fit, poseSkin);
       break;
     case "bottom":
-      applyBottomGarmentDeformation(geometry, fit);
+      applyBottomGarmentDeformation(geometry, fit, poseSkin);
       break;
     case "sleeve":
-      applySleeveGarmentDeformation(geometry, fit);
+      applySleeveGarmentDeformation(geometry, fit, poseSkin, sleeveSide);
       break;
     default:
       break;
@@ -297,24 +365,25 @@ export function deformGarmentObject3D(
   root: THREE.Object3D,
   fit: GarmentFitState,
   profile: GarmentDeformProfile,
+  poseSkin?: GarmentPoseSkinningParams | null,
 ) {
   root.updateMatrixWorld(true);
   root.traverse((o) => {
     if (!(o instanceof THREE.Mesh) || !o.geometry) return;
     const g = o.geometry;
     if (!g.attributes?.position) return;
-    applyGarmentDeformationForProfile(g, fit, profile);
+    applyGarmentDeformationForProfile(g, fit, profile, poseSkin);
   });
 }
 
 export function deformationSummary(profile: GarmentDeformProfile): string {
   switch (profile) {
     case "top":
-      return "torso+sleeve+hem masks (local)";
+      return "pose LBS (arms) + torso+sleeve+hem masks";
     case "bottom":
-      return "waist+leg+hem masks (local)";
+      return "pose LBS (thighs) + waist+leg+hem masks";
     case "sleeve":
-      return "sleeve radial+offset (local)";
+      return "arm hierarchy + radial fit (no extra CPU pose)";
     default:
       return "off";
   }

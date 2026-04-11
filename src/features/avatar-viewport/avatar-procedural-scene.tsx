@@ -4,17 +4,26 @@ import * as THREE from "three";
 
 import type { GarmentFitState } from "@/features/avatar-export";
 import {
+  bodySceneAnchorsFromShape,
+  DEFAULT_BODY_SHAPE,
+  type BodySceneAnchors,
+  type BodyShapeParams,
+} from "@/features/avatar-export";
+import {
   DEV_AVATAR_PRESETS,
   type DevAvatarPoseKey,
   type DevAvatarPresetKey,
   presetGarmentColors,
 } from "@/features/avatar-export/dev-avatar-shared";
 
+import { poseAngles, type PoseAngleSet } from "./avatar-pose-angles";
 import {
   applySleeveGarmentDeformation,
   applyTopGarmentDeformation,
   deformGarmentObject3D,
+  type GarmentPoseSkinningParams,
 } from "./garment-deformation";
+import { GARMENT_POSE_BIND_POSE } from "./garment-rig-pose";
 import {
   GltfErrorBoundary,
   GltfRuntimeBody,
@@ -27,25 +36,18 @@ const SKIN_DIM = new THREE.Color(0xa07850);
 
 /**
  * Scene-space anchors (meters-ish, ~1.78m footprint). Ground y=0; rig built upward.
- * Garments and GLTF placeholders should use these instead of magic numbers.
+ * Synced with `bodySceneAnchorsFromShape(DEFAULT_BODY_SHAPE)` — do not hand-edit.
  */
+const _DEFAULT_SCENE_RIG = bodySceneAnchorsFromShape(DEFAULT_BODY_SHAPE);
 export const AVATAR_RIG_ANCHORS = {
-  /** Hip / pelvis center */
-  pelvisY: 0.98,
-  /** Torso (chest) capsule center */
-  chestY: 1.15,
-  /** Shoulder joint height */
-  shoulderY: 1.34,
-  /** Half shoulder span (left shoulder at +x) */
-  shoulderHalf: 0.188,
-  /** Head center */
-  headY: 1.52,
-  /** Hem / pant top proxy anchor (below pelvis, standing on ground plane) */
-  pantsProxyHemY: 0.56,
-  /** GLB top mesh mount under chest garment group */
-  gltfTopMountY: 1.12,
-  /** GLB bottom mount relative to waist garment group */
-  gltfBottomMountY: 0.44,
+  pelvisY: _DEFAULT_SCENE_RIG.pelvisY,
+  chestY: _DEFAULT_SCENE_RIG.chestY,
+  shoulderY: _DEFAULT_SCENE_RIG.shoulderY,
+  shoulderHalf: _DEFAULT_SCENE_RIG.shoulderHalf,
+  headY: _DEFAULT_SCENE_RIG.headY,
+  pantsProxyHemY: _DEFAULT_SCENE_RIG.pantsProxyHemY,
+  gltfTopMountY: _DEFAULT_SCENE_RIG.gltfTopMountY,
+  gltfBottomMountY: _DEFAULT_SCENE_RIG.gltfBottomMountY,
 } as const;
 
 /** Live fit UX: amplify region sliders so changes read clearly in-viewport. */
@@ -84,59 +86,12 @@ export function CameraRig({
   return null;
 }
 
-/**
- * Pose joint targets (radians). Left/right arm Z rotations are opposite signs at the shoulder;
- * right upper-arm local flex uses negated rax so elbows mirror in world space.
- */
-export function poseAngles(pose: DevAvatarPoseKey) {
-  switch (pose) {
-    case "relaxed":
-      return {
-        laz: 0.12,
-        raz: -0.12,
-        lax: 0.48,
-        rax: 0.48,
-        laxz: 0.02,
-        llx: 0.04,
-        rlx: -0.06,
-      };
-    case "walk":
-      return {
-        laz: 0.38,
-        raz: -0.38,
-        lax: 0.36,
-        rax: 0.36,
-        laxz: 0.1,
-        llx: 0.28,
-        rlx: -0.32,
-      };
-    case "tpose":
-      return {
-        laz: 1.38,
-        raz: -1.38,
-        lax: 0,
-        rax: 0,
-        laxz: 0,
-        llx: 0,
-        rlx: 0,
-      };
-    case "apose":
-      return {
-        laz: 0.55,
-        raz: -0.55,
-        lax: 0,
-        rax: 0,
-        laxz: 0,
-        llx: 0,
-        rlx: 0,
-      };
-    default:
-      return { laz: 0, raz: 0, lax: 0, rax: 0, laxz: 0, llx: 0, rlx: 0 };
-  }
-}
+export { poseAngles } from "./avatar-pose-angles";
 
 type RigMaterialProps = {
-  ang: ReturnType<typeof poseAngles>;
+  rig: BodySceneAnchors;
+  ang: PoseAngleSet;
+  garmentPoseSkin: GarmentPoseSkinningParams;
   bodyColor: THREE.Color;
   bodyOpacity: number;
   bodyEmissive: THREE.Color;
@@ -159,6 +114,7 @@ function GarmentSleeveProxyMesh({
   topEmissive,
   clipEmissiveAdd,
   sleeveS,
+  sleeveRadius,
   spx,
   spy,
   spz,
@@ -171,6 +127,7 @@ function GarmentSleeveProxyMesh({
   topEmissive: THREE.Color;
   clipEmissiveAdd?: THREE.Color | null;
   sleeveS: number;
+  sleeveRadius: number;
   spx: number;
   spy: number;
   spz: number;
@@ -179,6 +136,7 @@ function GarmentSleeveProxyMesh({
   useLayoutEffect(() => {
     const m = meshRef.current;
     if (!m?.geometry) return;
+    /** Pose is already applied by parent arm groups; only regional fit here. */
     applySleeveGarmentDeformation(m.geometry, garmentFit);
   }, [garmentFit]);
   const sleeveEmissive = useMemo(() => {
@@ -193,7 +151,7 @@ function GarmentSleeveProxyMesh({
       rotation={[0, 0, zRot]}
       castShadow
     >
-      <capsuleGeometry args={[0.075 * sleeveS, 0.34, 8, 16]} />
+      <capsuleGeometry args={[sleeveRadius * sleeveS, 0.34, 8, 16]} />
       <meshStandardMaterial
         color={topColor}
         transparent
@@ -207,6 +165,8 @@ function GarmentSleeveProxyMesh({
 
 /** Shirt torso only (sleeves follow arms inside `ProceduralRigBody`). */
 function ShirtTorsoProxy({
+  rig,
+  garmentPoseSkin,
   topColor,
   shirtOpacity,
   topEmissive,
@@ -214,6 +174,8 @@ function ShirtTorsoProxy({
   garmentFit,
   inflateK,
 }: {
+  rig: BodySceneAnchors;
+  garmentPoseSkin: GarmentPoseSkinningParams;
   topColor: THREE.Color;
   shirtOpacity: number;
   topEmissive: THREE.Color;
@@ -225,16 +187,27 @@ function ShirtTorsoProxy({
   useLayoutEffect(() => {
     const m = meshRef.current;
     if (!m?.geometry) return;
-    applyTopGarmentDeformation(m.geometry, garmentFit);
-  }, [garmentFit]);
+    applyTopGarmentDeformation(m.geometry, garmentFit, garmentPoseSkin);
+  }, [garmentFit, garmentPoseSkin]);
   const shirtEmissive = useMemo(() => {
     const e = topEmissive.clone();
     if (clipEmissiveAdd) e.add(clipEmissiveAdd);
     return e;
   }, [topEmissive, clipEmissiveAdd]);
+  const chestK = rig.metrics.torsoCapsuleRadius / 0.114;
+  const shirtY = rig.chestY + rig.metrics.torsoCapsuleLength * 0.07;
   return (
-    <mesh ref={meshRef} position={[0, AVATAR_RIG_ANCHORS.chestY, 0]} castShadow>
-      <boxGeometry args={[0.48 * inflateK, 0.36 * inflateK, 0.3 * inflateK, 10, 10, 10]} />
+    <mesh ref={meshRef} position={[0, shirtY, 0]} castShadow>
+      <boxGeometry
+        args={[
+          0.48 * inflateK * chestK,
+          0.36 * inflateK * chestK,
+          0.3 * inflateK * chestK,
+          10,
+          10,
+          10,
+        ]}
+      />
       <meshStandardMaterial
         color={topColor}
         transparent
@@ -247,6 +220,8 @@ function ShirtTorsoProxy({
 }
 
 function PantsGarmentProxies({
+  rig,
+  garmentPoseSkin,
   bottomColor,
   pantOpacity,
   bottomEmissive,
@@ -254,6 +229,8 @@ function PantsGarmentProxies({
   hemYOffset,
   garmentFit,
 }: {
+  rig: BodySceneAnchors;
+  garmentPoseSkin: GarmentPoseSkinningParams;
   bottomColor: THREE.Color;
   pantOpacity: number;
   bottomEmissive: THREE.Color;
@@ -261,13 +238,16 @@ function PantsGarmentProxies({
   hemYOffset: number;
   garmentFit: GarmentFitState;
 }) {
-  const y = AVATAR_RIG_ANCHORS.pantsProxyHemY;
+  const y = rig.pantsProxyHemY;
+  const hipK = rig.metrics.pelvisBox[0] / 0.262;
+  const legRK = rig.metrics.upperLegCapsule[0] / 0.066;
+  const thighX = 0.09 * hipK;
   const groupRef = useRef<THREE.Group>(null);
   useLayoutEffect(() => {
     const root = groupRef.current;
     if (!root) return;
-    deformGarmentObject3D(root, garmentFit, "bottom");
-  }, [garmentFit]);
+    deformGarmentObject3D(root, garmentFit, "bottom", garmentPoseSkin);
+  }, [garmentFit, garmentPoseSkin]);
   const pantsEmissive = useMemo(() => {
     const e = bottomEmissive.clone();
     if (clipEmissiveAdd) e.add(clipEmissiveAdd);
@@ -276,7 +256,7 @@ function PantsGarmentProxies({
   return (
     <group ref={groupRef}>
       <mesh position={[0, y + hemYOffset, 0]}>
-        <boxGeometry args={[0.33, 0.46, 0.26, 10, 12, 8]} />
+        <boxGeometry args={[0.33 * hipK, 0.46, 0.26 * hipK, 10, 12, 8]} />
         <meshStandardMaterial
           color={bottomColor}
           transparent
@@ -285,8 +265,8 @@ function PantsGarmentProxies({
           roughness={0.7}
         />
       </mesh>
-      <mesh position={[0.09, y - 0.34 + hemYOffset, 0]}>
-        <capsuleGeometry args={[0.085, 0.48, 8, 16]} />
+      <mesh position={[thighX, y - 0.34 + hemYOffset, 0]}>
+        <capsuleGeometry args={[0.085 * legRK, 0.48, 8, 16]} />
         <meshStandardMaterial
           color={bottomColor}
           transparent
@@ -294,8 +274,8 @@ function PantsGarmentProxies({
           emissive={pantsEmissive}
         />
       </mesh>
-      <mesh position={[-0.09, y - 0.34 + hemYOffset, 0]}>
-        <capsuleGeometry args={[0.085, 0.48, 8, 16]} />
+      <mesh position={[-thighX, y - 0.34 + hemYOffset, 0]}>
+        <capsuleGeometry args={[0.085 * legRK, 0.48, 8, 16]} />
         <meshStandardMaterial
           color={bottomColor}
           transparent
@@ -307,27 +287,60 @@ function PantsGarmentProxies({
   );
 }
 
-function RigDebugAnchors() {
+function RigDebugAnchors({ rig }: { rig: BodySceneAnchors }) {
   const m = 0.028;
-  const mk = (color: string, pos: [number, number, number]) => (
-    <mesh key={`${pos.join(",")}`} position={pos}>
+  const M = rig.metrics;
+  const [, , neckH] = M.neckCylinder;
+  const neckMidY = M.neckBaseY + neckH * 0.5;
+  const hipY = rig.pelvisY + M.hipPitchLocalY;
+  const mk = (color: string, pos: [number, number, number], key: string) => (
+    <mesh key={key} position={pos}>
       <sphereGeometry args={[m, 8, 8]} />
       <meshBasicMaterial color={color} depthTest={false} />
     </mesh>
   );
   return (
     <group>
-      {mk("#22c55e", [0, AVATAR_RIG_ANCHORS.pelvisY, 0])}
-      {mk("#3b82f6", [0, AVATAR_RIG_ANCHORS.chestY, 0])}
-      {mk("#eab308", [AVATAR_RIG_ANCHORS.shoulderHalf, AVATAR_RIG_ANCHORS.shoulderY, 0])}
-      {mk("#eab308", [-AVATAR_RIG_ANCHORS.shoulderHalf, AVATAR_RIG_ANCHORS.shoulderY, 0])}
-      {mk("#f97316", [0, AVATAR_RIG_ANCHORS.headY, 0])}
+      {mk("#22c55e", [0, rig.pelvisY, 0], "pelvis")}
+      {mk("#84cc16", [0, M.pelvisTopY, 0], "pelvis_top")}
+      {mk("#06b6d4", [M.legGroupOffsetX, hipY, 0], "hip_l")}
+      {mk("#06b6d4", [-M.legGroupOffsetX, hipY, 0], "hip_r")}
+      {mk("#3b82f6", [0, rig.chestY, 0], "torso")}
+      {mk("#38bdf8", [0, M.torsoBotY, 0], "torso_bot")}
+      {mk("#a855f7", [0, neckMidY, 0], "neck")}
+      {mk("#eab308", [rig.shoulderHalf, rig.shoulderY, 0], "sh_l")}
+      {mk("#eab308", [-rig.shoulderHalf, rig.shoulderY, 0], "sh_r")}
+      {mk("#f97316", [0, rig.headY, 0], "head")}
+    </group>
+  );
+}
+
+/** Dev: garment pose / skinning influence pivots (shoulders + hips). */
+function GarmentRigDebugOverlay({ rig }: { rig: BodySceneAnchors }) {
+  const M = rig.metrics;
+  const hipY = rig.pelvisY + M.hipPitchLocalY;
+  const pts: [string, [number, number, number]][] = [
+    ["g_l_shoulder", [rig.shoulderHalf, rig.shoulderY, 0]],
+    ["g_r_shoulder", [-rig.shoulderHalf, rig.shoulderY, 0]],
+    ["g_l_hip", [M.legGroupOffsetX, hipY, 0]],
+    ["g_r_hip", [-M.legGroupOffsetX, hipY, 0]],
+  ];
+  return (
+    <group name="garment_rig_debug">
+      {pts.map(([id, pos]) => (
+        <mesh key={id} position={pos}>
+          <sphereGeometry args={[0.024, 7, 7]} />
+          <meshBasicMaterial color="#db2777" depthTest={false} />
+        </mesh>
+      ))}
     </group>
   );
 }
 
 /** Sleeve proxies matching arm pose when the skin body is GLTF (no procedural arms). */
 function SleeveGarmentPair({
+  rig,
+  sleeveRadius,
   ang,
   shirtOpacity,
   topColor,
@@ -338,6 +351,7 @@ function SleeveGarmentPair({
   garmentFit,
 }: Pick<
   RigMaterialProps,
+  | "rig"
   | "ang"
   | "shirtOpacity"
   | "topColor"
@@ -346,8 +360,8 @@ function SleeveGarmentPair({
   | "sleeveS"
   | "sleevePos"
   | "garmentFit"
->) {
-  const { shoulderY, shoulderHalf } = AVATAR_RIG_ANCHORS;
+> & { sleeveRadius: number }) {
+  const { shoulderY, shoulderHalf } = rig;
   const spx = sleevePos[0] * FIT_VIS.sleevePosMul;
   const spy = sleevePos[1] * FIT_VIS.sleevePosMul;
   const spz = sleevePos[2] * FIT_VIS.sleevePosMul;
@@ -369,6 +383,7 @@ function SleeveGarmentPair({
               topEmissive={topEmissive}
               clipEmissiveAdd={clipEmissiveSleeve}
               sleeveS={sleeveS}
+              sleeveRadius={sleeveRadius}
               spx={spx}
               spy={spy}
               spz={spz}
@@ -391,6 +406,7 @@ function SleeveGarmentPair({
               topEmissive={topEmissive}
               clipEmissiveAdd={clipEmissiveSleeve}
               sleeveS={sleeveS}
+              sleeveRadius={sleeveRadius}
               spx={spx}
               spy={spy}
               spz={spz}
@@ -410,6 +426,7 @@ function SleeveGarmentPair({
  *    ├─ arms (+ sleeve proxies parented to shoulders)
  */
 function ProceduralRigBody({
+  rig,
   ang,
   bodyColor,
   bodyOpacity,
@@ -423,7 +440,30 @@ function ProceduralRigBody({
   sleevePos,
   garmentFit,
 }: RigMaterialProps) {
-  const { pelvisY, chestY, shoulderY, shoulderHalf, headY } = AVATAR_RIG_ANCHORS;
+  const { pelvisY, chestY, shoulderY, shoulderHalf, headY } = rig;
+  const M = rig.metrics;
+  const [neckRt, neckRb, neckH] = M.neckCylinder;
+  const sleeveRadius = M.upperArmCapsule[0];
+  const [legRad, thighLen] = M.upperLegCapsule;
+  const [shinRad, shinLen] = M.shinCapsule;
+  const [armRad, upperArmLen] = M.upperArmCapsule;
+  const [foreRad, foreLen] = M.forearmCapsule;
+  const neckCenterY = M.neckBaseY + neckH * 0.5;
+
+  const { torsoBotY, pelvisTopY } = M;
+  const lumbarGap = torsoBotY - pelvisTopY;
+  const torsoPelvisOverlap = pelvisTopY - torsoBotY;
+
+  const thighMeshY = -0.45 * thighLen;
+  const kneeY = -0.9 * thighLen;
+  const shinMeshY = -0.42 * shinLen;
+  const kneeFlexL = -ang.llx * 0.52;
+  const kneeFlexR = -ang.rlx * 0.52;
+
+  const upperArmY = -0.4 * upperArmLen;
+  const elbowY = -0.82 * upperArmLen;
+  const forearmY = -0.38 * foreLen;
+
   const matProps = (opacity: number, roughness = 0.62) => ({
     color: bodyColor,
     transparent: liveShading !== "overlay_style",
@@ -438,59 +478,130 @@ function ProceduralRigBody({
 
   return (
     <group name="avatar_procedural_rig">
-      {/* ——— Pelvis & upper legs (thighs) ——— */}
-      <group name="pelvis" position={[0, pelvisY, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.27, 0.2, 0.2]} />
+      <group name="pelvis_root" position={[0, pelvisY, 0]}>
+        <mesh castShadow name="pelvis_mesh">
+          <boxGeometry args={M.pelvisBox} />
           <meshStandardMaterial {...matProps(bodyOpacity)} />
         </mesh>
-        <group name="leg_upper_l" position={[0.075, -0.06, 0]} rotation={[ang.llx, 0, 0]}>
-          <mesh position={[0.02, -0.2, 0]} castShadow>
-            <capsuleGeometry args={[0.072, 0.4, 4, 10]} />
+
+        <group
+          name="hip_l"
+          position={[M.legGroupOffsetX, M.hipPitchLocalY, 0]}
+          rotation={[ang.llx, 0, 0]}
+        >
+          <mesh position={[M.legMeshOffsetX, thighMeshY, 0]} castShadow name="thigh_l">
+            <capsuleGeometry args={[legRad, thighLen, 4, 10]} />
             <meshStandardMaterial {...matProps(bodyOpacity)} />
           </mesh>
+          <group
+            name="knee_l"
+            position={[M.legMeshOffsetX, kneeY, 0]}
+            rotation={[kneeFlexL, 0, 0]}
+          >
+            <mesh position={[0, shinMeshY, 0]} castShadow name="shin_l">
+              <capsuleGeometry args={[shinRad, shinLen, 4, 10]} />
+              <meshStandardMaterial {...matProps(bodyOpacity)} />
+            </mesh>
+          </group>
         </group>
-        <group name="leg_upper_r" position={[-0.075, -0.06, 0]} rotation={[ang.rlx, 0, 0]}>
-          <mesh position={[-0.02, -0.2, 0]} castShadow>
-            <capsuleGeometry args={[0.072, 0.4, 4, 10]} />
+
+        <group
+          name="hip_r"
+          position={[-M.legGroupOffsetX, M.hipPitchLocalY, 0]}
+          rotation={[ang.rlx, 0, 0]}
+        >
+          <mesh position={[-M.legMeshOffsetX, thighMeshY, 0]} castShadow name="thigh_r">
+            <capsuleGeometry args={[legRad, thighLen, 4, 10]} />
             <meshStandardMaterial {...matProps(bodyOpacity)} />
           </mesh>
+          <group
+            name="knee_r"
+            position={[-M.legMeshOffsetX, kneeY, 0]}
+            rotation={[kneeFlexR, 0, 0]}
+          >
+            <mesh position={[0, shinMeshY, 0]} castShadow name="shin_r">
+              <capsuleGeometry args={[shinRad, shinLen, 4, 10]} />
+              <meshStandardMaterial {...matProps(bodyOpacity)} />
+            </mesh>
+          </group>
         </group>
       </group>
 
-      {/* ——— Torso (chest / abdomen) ——— */}
-      <group name="torso" position={[0, chestY, 0]}>
-        <mesh castShadow>
-          <capsuleGeometry args={[0.12, 0.34, 6, 12]} />
+      {lumbarGap > 0.004 ? (
+        <mesh
+          position={[0, (pelvisTopY + torsoBotY) * 0.5, 0]}
+          castShadow
+          name="lumbar_bridge"
+        >
+          <cylinderGeometry
+            args={[
+              M.torsoCapsuleRadius * 0.74,
+              M.pelvisBox[0] * 0.36,
+              lumbarGap,
+              10,
+            ]}
+          />
+          <meshStandardMaterial {...matProps(bodyOpacity, 0.66)} />
+        </mesh>
+      ) : null}
+      {torsoPelvisOverlap > 0.003 ? (
+        <mesh
+          position={[0, (pelvisTopY + torsoBotY) * 0.5, 0]}
+          castShadow
+          name="waist_blend"
+        >
+          <cylinderGeometry
+            args={[
+              M.torsoCapsuleRadius * 0.82,
+              Math.min(M.pelvisBox[0], M.pelvisBox[2]) * 0.44,
+              torsoPelvisOverlap + 0.01,
+              10,
+            ]}
+          />
+          <meshStandardMaterial {...matProps(bodyOpacity, 0.68)} />
+        </mesh>
+      ) : null}
+
+      <group name="spine_torso" position={[0, chestY, 0]}>
+        <mesh castShadow name="torso_capsule">
+          <capsuleGeometry args={[M.torsoCapsuleRadius, M.torsoCapsuleLength, 6, 12]} />
           <meshStandardMaterial {...matProps(bodyOpacity, 0.64)} />
         </mesh>
       </group>
 
-      {/* ——— Neck stub (visual bridge) ——— */}
-      <mesh position={[0, (chestY + headY) * 0.52, 0]} castShadow>
-        <cylinderGeometry args={[0.07, 0.09, 0.1, 10]} />
+      <mesh position={[0, neckCenterY, 0]} castShadow name="neck_stub">
+        <cylinderGeometry args={[neckRt, neckRb, neckH, 10]} />
         <meshStandardMaterial {...matProps(bodyOpacity)} />
       </mesh>
 
-      {/* ——— Head ——— */}
       <group name="head" position={[0, headY, 0]}>
-        <mesh castShadow>
-          <sphereGeometry args={[0.11, 14, 14]} />
+        <mesh castShadow name="head_sphere">
+          <sphereGeometry args={[M.headRadius, 14, 14]} />
           <meshStandardMaterial {...matProps(bodyOpacity, 0.52)} />
         </mesh>
       </group>
 
-      {/* ——— Arms: mirrored shoulder swing (right uses -laxz on X); right elbow -rax on Z ——— */}
       <group
-        name="arm_l_bind"
+        name="shoulder_l"
         position={[shoulderHalf, shoulderY, 0]}
         rotation={[ang.laxz, 0, ang.laz]}
       >
-        <group rotation={[0, 0, ang.lax]}>
-          <mesh position={[0.14, -0.065, 0]} castShadow>
-            <capsuleGeometry args={[0.054, 0.4, 4, 8]} />
+        <group name="upper_arm_l" rotation={[0, 0, ang.lax]}>
+          <mesh position={[M.armMeshOffsetX, upperArmY, 0]} castShadow name="humerus_l">
+            <capsuleGeometry args={[armRad, upperArmLen, 4, 8]} />
             <meshStandardMaterial {...matProps(bodyOpacity)} />
           </mesh>
+          <group
+            name="forearm_l"
+            position={[M.armMeshOffsetX, elbowY, 0]}
+            rotation={[0, 0, ang.lax * 0.32]}
+          >
+            <mesh position={[0, forearmY, 0]} castShadow name="radius_l">
+              <capsuleGeometry args={[foreRad, foreLen, 4, 8]} />
+              <meshStandardMaterial {...matProps(bodyOpacity)} />
+            </mesh>
+          </group>
+          {/* Sleeve after forearm so garment proxy sorts above skin */}
           <group position={[spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
             <GarmentSleeveProxyMesh
               garmentFit={garmentFit}
@@ -501,6 +612,7 @@ function ProceduralRigBody({
               topEmissive={topEmissive}
               clipEmissiveAdd={clipEmissiveSleeve}
               sleeveS={sleeveS}
+              sleeveRadius={sleeveRadius}
               spx={spx}
               spy={spy}
               spz={spz}
@@ -510,15 +622,25 @@ function ProceduralRigBody({
       </group>
 
       <group
-        name="arm_r_bind"
+        name="shoulder_r"
         position={[-shoulderHalf, shoulderY, 0]}
         rotation={[-ang.laxz, 0, ang.raz]}
       >
-        <group rotation={[0, 0, -ang.rax]}>
-          <mesh position={[-0.14, -0.065, 0]} castShadow>
-            <capsuleGeometry args={[0.054, 0.4, 4, 8]} />
+        <group name="upper_arm_r" rotation={[0, 0, -ang.rax]}>
+          <mesh position={[-M.armMeshOffsetX, upperArmY, 0]} castShadow name="humerus_r">
+            <capsuleGeometry args={[armRad, upperArmLen, 4, 8]} />
             <meshStandardMaterial {...matProps(bodyOpacity)} />
           </mesh>
+          <group
+            name="forearm_r"
+            position={[-M.armMeshOffsetX, elbowY, 0]}
+            rotation={[0, 0, -ang.rax * 0.32]}
+          >
+            <mesh position={[0, forearmY, 0]} castShadow name="radius_r">
+              <capsuleGeometry args={[foreRad, foreLen, 4, 8]} />
+              <meshStandardMaterial {...matProps(bodyOpacity)} />
+            </mesh>
+          </group>
           <group position={[-spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
             <GarmentSleeveProxyMesh
               garmentFit={garmentFit}
@@ -529,6 +651,7 @@ function ProceduralRigBody({
               topEmissive={topEmissive}
               clipEmissiveAdd={clipEmissiveSleeve}
               sleeveS={sleeveS}
+              sleeveRadius={sleeveRadius}
               spx={spx}
               spy={spy}
               spz={spz}
@@ -545,7 +668,9 @@ export function AvatarProceduralScene({
   preset,
   garmentFit,
   liveShading,
+  bodyShape = DEFAULT_BODY_SHAPE,
   runtimeBodyGltfUrl = null,
+  runtimeBodyBundledModule = null,
   runtimeTopGltfUrl = null,
   runtimeBottomGltfUrl = null,
   includeSceneLights = true,
@@ -553,22 +678,46 @@ export function AvatarProceduralScene({
   clipEmissiveTop = null,
   clipEmissiveBottom = null,
   clipEmissiveSleeve = null,
+  showGarmentRigDebug = false,
+  bodyOnlyGarments = false,
+  onRuntimeBodyLoadError,
+  onRuntimeBodyLoaded,
 }: {
   pose: DevAvatarPoseKey;
   preset: DevAvatarPresetKey;
   garmentFit: GarmentFitState;
   liveShading: LiveViewportShadingMode;
+  /** Parametric body drives procedural mesh, clipping proxies, and approximate GLB body scale. */
+  bodyShape?: BodyShapeParams;
   runtimeBodyGltfUrl?: string | null;
+  /** Bundled body: Metro module id; loaded via `GLTFLoader.parse` (no `file://`). */
+  runtimeBodyBundledModule?: number | null;
   runtimeTopGltfUrl?: string | null;
   runtimeBottomGltfUrl?: string | null;
   includeSceneLights?: boolean;
   /** Dev: small spheres at pelvis, chest, shoulders, head (depthTest off). */
   showRigDebug?: boolean;
+  /** Dev: magenta spheres at garment pose / skinning pivots (shoulders, hips). */
+  showGarmentRigDebug?: boolean;
   /** Runtime clipping overlay: emissive add for shirt / GLB top. */
   clipEmissiveTop?: THREE.Color | null;
   clipEmissiveBottom?: THREE.Color | null;
   clipEmissiveSleeve?: THREE.Color | null;
+  /** Dev: hide garment proxies + GLB garments for body inspection. */
+  bodyOnlyGarments?: boolean;
+  onRuntimeBodyLoadError?: (message: string) => void;
+  onRuntimeBodyLoaded?: () => void;
 }) {
+  const rig = useMemo(() => bodySceneAnchorsFromShape(bodyShape), [bodyShape]);
+  const garmentPoseSkin = useMemo<GarmentPoseSkinningParams>(
+    () => ({
+      rig,
+      angBind: poseAngles(GARMENT_POSE_BIND_POSE),
+      angPose: poseAngles(pose),
+    }),
+    [rig, pose],
+  );
+  const sleeveRadius = rig.metrics.upperArmCapsule[0];
   const ang = poseAngles(pose);
   const colors = presetGarmentColors(preset);
   const showShoes = DEV_AVATAR_PRESETS[preset].shoes != null;
@@ -603,7 +752,12 @@ export function AvatarProceduralScene({
   let bottomEmissive = new THREE.Color(0, 0, 0);
   let bodyEmissive = new THREE.Color(0, 0, 0);
 
-  if (liveShading === "body_focus") {
+  if (bodyOnlyGarments) {
+    shirtOpacity = 0;
+    pantOpacity = 0;
+    shoeOpacity = 0;
+    bodyOpacity = 1;
+  } else if (liveShading === "body_focus") {
     shirtOpacity = 0.32;
     pantOpacity = 0.32;
     shoeOpacity = 0.4;
@@ -640,7 +794,9 @@ export function AvatarProceduralScene({
   const shirtInfl = 1 + r.torso.inflate * 2.2;
 
   const rigMat: RigMaterialProps = {
+    rig,
     ang,
+    garmentPoseSkin,
     bodyColor,
     bodyOpacity,
     bodyEmissive,
@@ -670,32 +826,31 @@ export function AvatarProceduralScene({
           scale={bodyAnchorScale}
           name="avatar_torso_region_fit"
         >
-          {showRigDebug ? <RigDebugAnchors /> : null}
+          {showRigDebug ? <RigDebugAnchors rig={rig} /> : null}
+          {showGarmentRigDebug ? <GarmentRigDebugOverlay rig={rig} /> : null}
 
-          {runtimeBodyGltfUrl ? (
+          {runtimeBodyBundledModule != null || runtimeBodyGltfUrl ? (
             <GltfErrorBoundary
-              key={runtimeBodyGltfUrl}
+              key={String(runtimeBodyBundledModule ?? runtimeBodyGltfUrl ?? "")}
               fallback={<ProceduralRigBody {...rigMat} />}
+              onLoadError={onRuntimeBodyLoadError}
             >
               <Suspense fallback={<ProceduralRigBody {...rigMat} />}>
-                <group position={[0, 0.04, 0]} name="gltf_body_align_lift">
+                <group position={[0, 0, 0]} name="gltf_body_root">
                   <GltfRuntimeBody
                     url={runtimeBodyGltfUrl}
+                    bundledAssetModule={runtimeBodyBundledModule}
                     pose={pose}
                     liveShading={liveShading}
+                    bodyShape={bodyShape}
+                    onSceneReady={onRuntimeBodyLoaded}
                   />
                 </group>
               </Suspense>
-              {!runtimeTopGltfUrl ? (
+              {!bodyOnlyGarments && !runtimeTopGltfUrl ? (
                 <SleeveGarmentPair
-                  ang={ang}
-                  shirtOpacity={shirtOpacity}
-                  topColor={topColor}
-                  topEmissive={topEmissive}
-                  clipEmissiveSleeve={clipEmissiveSleeve}
-                  sleeveS={sleeveS}
-                  sleevePos={sleevePos}
-                  garmentFit={garmentFit}
+                  {...rigMat}
+                  sleeveRadius={sleeveRadius}
                 />
               ) : null}
             </GltfErrorBoundary>
@@ -704,6 +859,7 @@ export function AvatarProceduralScene({
           )}
 
           {/* Top: torso hull (sleeves ride on arms inside procedural rig) */}
+          {!bodyOnlyGarments ? (
           <group
             name="garment_top_anchor"
             position={[0, tz * 0.18, tz * 0.35]}
@@ -714,6 +870,8 @@ export function AvatarProceduralScene({
                 key={runtimeTopGltfUrl}
                 fallback={
                   <ShirtTorsoProxy
+                    rig={rig}
+                    garmentPoseSkin={garmentPoseSkin}
                     topColor={topColor}
                     shirtOpacity={shirtOpacity}
                     topEmissive={topEmissive}
@@ -726,6 +884,8 @@ export function AvatarProceduralScene({
                 <Suspense
                   fallback={
                     <ShirtTorsoProxy
+                      rig={rig}
+                      garmentPoseSkin={garmentPoseSkin}
                       topColor={topColor}
                       shirtOpacity={shirtOpacity}
                       topEmissive={topEmissive}
@@ -735,13 +895,14 @@ export function AvatarProceduralScene({
                     />
                   }
                 >
-                  <group position={[0, AVATAR_RIG_ANCHORS.gltfTopMountY, 0]}>
+                  <group position={[0, rig.gltfTopMountY, 0]}>
                     <GltfRuntimeGarment
                       url={runtimeTopGltfUrl}
                       liveShading={liveShading}
                       normalizeHeight={0.44}
                       garmentFit={garmentFit}
                       deformProfile="top"
+                      garmentPoseSkin={garmentPoseSkin}
                       clipEmissiveAdd={clipEmissiveTop ?? undefined}
                     />
                   </group>
@@ -749,6 +910,8 @@ export function AvatarProceduralScene({
               </GltfErrorBoundary>
             ) : (
               <ShirtTorsoProxy
+                rig={rig}
+                garmentPoseSkin={garmentPoseSkin}
                 topColor={topColor}
                 shirtOpacity={shirtOpacity}
                 topEmissive={topEmissive}
@@ -758,7 +921,9 @@ export function AvatarProceduralScene({
               />
             )}
           </group>
+          ) : null}
 
+          {!bodyOnlyGarments ? (
           <group
             name="garment_bottom_anchor"
             position={[
@@ -777,6 +942,8 @@ export function AvatarProceduralScene({
                 key={runtimeBottomGltfUrl}
                 fallback={
                   <PantsGarmentProxies
+                    rig={rig}
+                    garmentPoseSkin={garmentPoseSkin}
                     bottomColor={bottomColor}
                     pantOpacity={pantOpacity}
                     bottomEmissive={bottomEmissive}
@@ -789,6 +956,8 @@ export function AvatarProceduralScene({
                 <Suspense
                   fallback={
                     <PantsGarmentProxies
+                      rig={rig}
+                      garmentPoseSkin={garmentPoseSkin}
                       bottomColor={bottomColor}
                       pantOpacity={pantOpacity}
                       bottomEmissive={bottomEmissive}
@@ -798,13 +967,14 @@ export function AvatarProceduralScene({
                     />
                   }
                 >
-                  <group position={[0, AVATAR_RIG_ANCHORS.gltfBottomMountY + r.hem.offsetY, 0]}>
+                  <group position={[0, rig.gltfBottomMountY + r.hem.offsetY, 0]}>
                     <GltfRuntimeGarment
                       url={runtimeBottomGltfUrl}
                       liveShading={liveShading}
                       normalizeHeight={0.52}
                       garmentFit={garmentFit}
                       deformProfile="bottom"
+                      garmentPoseSkin={garmentPoseSkin}
                       clipEmissiveAdd={clipEmissiveBottom ?? undefined}
                     />
                   </group>
@@ -812,6 +982,8 @@ export function AvatarProceduralScene({
               </GltfErrorBoundary>
             ) : (
               <PantsGarmentProxies
+                rig={rig}
+                garmentPoseSkin={garmentPoseSkin}
                 bottomColor={bottomColor}
                 pantOpacity={pantOpacity}
                 bottomEmissive={bottomEmissive}
@@ -821,8 +993,9 @@ export function AvatarProceduralScene({
               />
             )}
           </group>
+          ) : null}
 
-          {showShoes ? (
+          {showShoes && !bodyOnlyGarments ? (
             <group position={[0, r.hem.offsetY * 0.45, 0]} name="shoes_proxy">
               <mesh position={[0.09, 0.04, 0.04]}>
                 <boxGeometry args={[0.12, 0.08, 0.22]} />

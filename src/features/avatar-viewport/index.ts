@@ -5,6 +5,14 @@ export {
   AvatarProceduralScene,
   poseAngles,
 } from "./avatar-procedural-scene";
+export type { PoseAngleSet } from "./avatar-pose-angles";
+export type { GarmentPoseSkinningParams } from "./garment-deformation";
+export {
+  GARMENT_POSE_BIND_POSE,
+  armChainMatrix,
+  thighSkinMatrix,
+  upperArmSkinMatrix,
+} from "./garment-rig-pose";
 export {
   listLiveViewportShadingModes,
   LIVE_VIEWPORT_SHADING_LABELS,

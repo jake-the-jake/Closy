@@ -32,6 +32,23 @@ export {
   type BuildAvatarExportOptions,
 } from "./build-export-request";
 export {
+  BODY_SHAPE_PRESETS,
+  BODY_SHAPE_PRESET_LABELS,
+  bodySceneAnchorsFromShape,
+  BODY_SHAPE_REF_METRICS,
+  cloneBodyShape,
+  bodyShapeToExportPatch,
+  bodyShapesEqual,
+  DEFAULT_BODY_SHAPE,
+  deriveBodyRigMetrics,
+  mergeExportBodyShapeIntoBodyShape,
+  type AvatarExportBodyShape,
+  type BodyRigMetrics,
+  type BodySceneAnchors,
+  type BodyShapeParams,
+  type BodyShapePresetId,
+} from "./body-shape-state";
+export {
   cloneFitState,
   DEFAULT_GARMENT_FIT_STATE,
   FIT_ADJUST_PRESETS,

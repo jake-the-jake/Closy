@@ -9,8 +9,10 @@ import {
 import { runOnJS } from "react-native-reanimated";
 
 import {
+  DEFAULT_BODY_SHAPE,
   DEFAULT_GARMENT_FIT_STATE,
   fitStatesEqual,
+  type BodyShapeParams,
   type GarmentFitState,
 } from "@/features/avatar-export";
 import type {
@@ -20,6 +22,7 @@ import type {
 import { AppButton } from "@/components/ui/app-button";
 import { theme } from "@/theme";
 
+import { BUNDLED_SKINNED_BODY_GLTF } from "./bundled-body-asset";
 import { AvatarProceduralScene, CameraRig } from "./avatar-procedural-scene";
 import { deformationSummary } from "./garment-deformation";
 import {
@@ -49,6 +52,15 @@ export type AvatarViewportLiveProps = {
   compareActive?: boolean;
   /** Dev: tint garments by runtime clipping proxy (sphere overlap). */
   clipOverlayEnabled?: boolean;
+  /** Shared parametric body (viewport mesh + clip proxies). */
+  bodyShape?: BodyShapeParams;
+  /**
+   * Dev: use procedural capsule/box body instead of bundled skinned GLB (or env body URL).
+   * Does not override `EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY=1` (both force procedural).
+   */
+  useProceduralBody?: boolean;
+  /** Dev: hide garment proxies/GLBs so the body mesh is visible alone. */
+  bodyOnlyGarments?: boolean;
 };
 
 type Orbit = { theta: number; phi: number; radius: number };
@@ -64,6 +76,16 @@ const SHOW_DEFORM_DEBUG =
   __DEV__ &&
   typeof process.env.EXPO_PUBLIC_AVATAR_DEFORM_DEBUG === "string" &&
   process.env.EXPO_PUBLIC_AVATAR_DEFORM_DEBUG === "1";
+
+const SHOW_GARMENT_RIG_DEBUG =
+  __DEV__ &&
+  typeof process.env.EXPO_PUBLIC_AVATAR_GARMENT_RIG_DEBUG === "string" &&
+  process.env.EXPO_PUBLIC_AVATAR_GARMENT_RIG_DEBUG === "1";
+
+/** Set to `1` to force the procedural capsule/box body; default uses bundled skinned GLB. */
+const FORCE_PROCEDURAL_BODY =
+  typeof process.env.EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY === "string" &&
+  process.env.EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY === "1";
 
 const PHI_MIN = 0.15;
 const PHI_MAX = 1.55;
@@ -96,6 +118,9 @@ export function AvatarViewportLive({
   runtimeAssets,
   compareActive = false,
   clipOverlayEnabled = false,
+  bodyShape = DEFAULT_BODY_SHAPE,
+  useProceduralBody = false,
+  bodyOnlyGarments = false,
 }: AvatarViewportLiveProps) {
   const [cam, setCam] = useState<Orbit>(() => ({ ...DEFAULT_ORBIT }));
   const camRef = useRef(cam);
@@ -258,28 +283,135 @@ export function AvatarViewportLive({
 
   const fitIsNonDefault = !fitStatesEqual(garmentFit, DEFAULT_GARMENT_FIT_STATE);
 
+  const [skinnedBodyLoadStatus, setSkinnedBodyLoadStatus] = useState<
+    "idle" | "pending" | "loaded" | "failed"
+  >("idle");
+  const skinnedBodyLoadErrLogged = useRef<string | null>(null);
+
+  const envRuntimeUrls = useMemo(() => getAvatarRuntimeAssetUrls(), []);
+
+  const runtimeBodyBundledModule = useMemo(() => {
+    if (FORCE_PROCEDURAL_BODY || useProceduralBody) return null;
+    if (runtimeAssets?.bodyGltfUrl != null) return null;
+    if (envRuntimeUrls.bodyGltfUrl != null) return null;
+    return BUNDLED_SKINNED_BODY_GLTF;
+  }, [useProceduralBody, runtimeAssets?.bodyGltfUrl, envRuntimeUrls.bodyGltfUrl]);
+
   const resolvedRuntime = useMemo(() => {
     const env = getAvatarRuntimeAssetUrls();
+    let bodyGltfUrl: string | null = null;
+    const procedural = FORCE_PROCEDURAL_BODY || useProceduralBody;
+    if (!procedural && runtimeBodyBundledModule == null) {
+      bodyGltfUrl = runtimeAssets?.bodyGltfUrl ?? env.bodyGltfUrl ?? null;
+    }
     return {
-      bodyGltfUrl: runtimeAssets?.bodyGltfUrl ?? env.bodyGltfUrl,
+      bodyGltfUrl,
       topGltfUrl: runtimeAssets?.topGltfUrl ?? env.topGltfUrl,
       bottomGltfUrl: runtimeAssets?.bottomGltfUrl ?? env.bottomGltfUrl,
     } satisfies AvatarRuntimeAssetUrls;
-  }, [runtimeAssets]);
+  }, [runtimeAssets, useProceduralBody, runtimeBodyBundledModule]);
 
-  const runtimeSummary = useMemo(
-    () => runtimeAssetSummary(resolvedRuntime),
-    [resolvedRuntime],
-  );
+  const onRuntimeBodyLoaded = useCallback(() => {
+    setSkinnedBodyLoadStatus("loaded");
+  }, []);
+
+  const onRuntimeBodyLoadError = useCallback((message: string) => {
+    setSkinnedBodyLoadStatus("failed");
+    if (__DEV__) {
+      const key = message.slice(0, 240);
+      if (skinnedBodyLoadErrLogged.current !== key) {
+        skinnedBodyLoadErrLogged.current = key;
+        console.warn("[AvatarViewportLive] skinned body load failed:", message);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    skinnedBodyLoadErrLogged.current = null;
+    if (runtimeBodyBundledModule != null) {
+      setSkinnedBodyLoadStatus("pending");
+    } else if (resolvedRuntime.bodyGltfUrl) {
+      setSkinnedBodyLoadStatus("pending");
+    } else {
+      setSkinnedBodyLoadStatus("idle");
+    }
+  }, [runtimeBodyBundledModule, resolvedRuntime.bodyGltfUrl]);
+
+  const skinnedBodyPathActive =
+    runtimeBodyBundledModule != null || resolvedRuntime.bodyGltfUrl != null;
+  /** First paint is `idle` before `useEffect` sets `pending`; show pending in diagnostics. */
+  const bodyLoadForUi =
+    skinnedBodyPathActive && skinnedBodyLoadStatus === "idle"
+      ? "pending"
+      : skinnedBodyLoadStatus;
+
+  const runtimeSummary = useMemo(() => {
+    const base = runtimeAssetSummary(resolvedRuntime);
+    const loadTag = skinnedBodyPathActive ? ` · body load: ${bodyLoadForUi}` : "";
+    if (FORCE_PROCEDURAL_BODY || useProceduralBody) {
+      return `${base} · body=procedural(forced)${loadTag}`;
+    }
+    if (runtimeBodyBundledModule != null) {
+      if (skinnedBodyLoadStatus === "failed") {
+        return `${base} · body=procedural(fallback)${loadTag} · skinned mesh unavailable`;
+      }
+      return `${base} · body=skinned(bundled, fallback-material)${loadTag}`;
+    }
+    if (resolvedRuntime.bodyGltfUrl != null) {
+      const envB = getAvatarRuntimeAssetUrls().bodyGltfUrl;
+      const src =
+        runtimeAssets?.bodyGltfUrl != null
+          ? "external(runtimeAssets)"
+          : resolvedRuntime.bodyGltfUrl === envB
+            ? "external(env)"
+            : "external(url)";
+      return `${base} · body=skinned(${src}, textured)${loadTag}`;
+    }
+    return `${base} · body=procedural(default)${loadTag}`;
+  }, [
+    resolvedRuntime,
+    runtimeBodyBundledModule,
+    useProceduralBody,
+    skinnedBodyLoadStatus,
+    bodyLoadForUi,
+    skinnedBodyPathActive,
+    runtimeAssets?.bodyGltfUrl,
+  ]);
+
+  useEffect(() => {
+    if (!__DEV__) return;
+    const parts: string[] = [];
+    if (FORCE_PROCEDURAL_BODY) parts.push("EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY=1");
+    if (useProceduralBody) parts.push("useProceduralBody");
+    if (runtimeBodyBundledModule != null) {
+      parts.push("bundled=strip-embedded-textures+parse+fallback-material");
+    }
+    if (resolvedRuntime.bodyGltfUrl) {
+      const u = resolvedRuntime.bodyGltfUrl;
+      parts.push(u.length > 88 ? `bodyUrl=${u.slice(0, 88)}…` : `bodyUrl=${u}`);
+    } else if (!runtimeBodyBundledModule) {
+      parts.push("bodyUrl=(none)");
+    }
+    parts.push(`loadStatus=${bodyLoadForUi}`);
+    console.log("[AvatarViewportLive] body source:", parts.join(" | "));
+  }, [
+    resolvedRuntime.bodyGltfUrl,
+    runtimeBodyBundledModule,
+    useProceduralBody,
+    skinnedBodyLoadStatus,
+    bodyLoadForUi,
+  ]);
 
   const runtimeClipReport = useMemo(
     () =>
       analyzeRuntimeClipping({
         garmentFit,
         pose,
-        hasRuntimeBodyGltf: !!resolvedRuntime.bodyGltfUrl,
+        hasRuntimeBodyGltf:
+          !!resolvedRuntime.bodyGltfUrl || runtimeBodyBundledModule != null,
         hasRuntimeTopGltf: !!resolvedRuntime.topGltfUrl,
         hasRuntimeBottomGltf: !!resolvedRuntime.bottomGltfUrl,
+        bodyShape,
       }),
     [
       garmentFit,
@@ -287,6 +419,8 @@ export function AvatarViewportLive({
       resolvedRuntime.bodyGltfUrl,
       resolvedRuntime.topGltfUrl,
       resolvedRuntime.bottomGltfUrl,
+      runtimeBodyBundledModule,
+      bodyShape,
     ],
   );
 
@@ -337,6 +471,9 @@ export function AvatarViewportLive({
       lines.push(`bottom proxy: ${deformationSummary("bottom")}`);
     }
     lines.push(`sleeves: ${deformationSummary("sleeve")} (capsules)`);
+    lines.push(
+      `garment rig: CPU LBS-style pose (bind=relaxed) + regional fit · rig dbg ${SHOW_GARMENT_RIG_DEBUG ? "on" : "off"}`,
+    );
     return lines;
   }, [resolvedRuntime.bottomGltfUrl, resolvedRuntime.topGltfUrl]);
 
@@ -361,13 +498,19 @@ export function AvatarViewportLive({
               preset={preset}
               garmentFit={garmentFit}
               liveShading={liveShading}
+              bodyShape={bodyShape}
               runtimeBodyGltfUrl={resolvedRuntime.bodyGltfUrl}
+              runtimeBodyBundledModule={runtimeBodyBundledModule}
               runtimeTopGltfUrl={resolvedRuntime.topGltfUrl}
               runtimeBottomGltfUrl={resolvedRuntime.bottomGltfUrl}
               showRigDebug={SHOW_RIG_DEBUG}
+              showGarmentRigDebug={SHOW_GARMENT_RIG_DEBUG}
               clipEmissiveTop={clipEmissiveTop}
               clipEmissiveBottom={clipEmissiveBottom}
               clipEmissiveSleeve={clipEmissiveSleeve}
+              bodyOnlyGarments={bodyOnlyGarments}
+              onRuntimeBodyLoadError={onRuntimeBodyLoadError}
+              onRuntimeBodyLoaded={onRuntimeBodyLoaded}
             />
           </Suspense>
         </Canvas>

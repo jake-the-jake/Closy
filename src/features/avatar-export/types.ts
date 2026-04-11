@@ -1,3 +1,5 @@
+import type { AvatarExportBodyShape } from "./body-shape-state";
+
 /** Subset written to disk for `avatar_export --outfit` (engine schema). */
 export type AvatarEngineOutfitFile = {
   pose: string;
@@ -84,6 +86,11 @@ export type AvatarExportRequest = {
     debug?: AvatarExportDebugFlags;
     /** Dev-only; garment fit (see engine `OutfitGarmentFitAdjust`). */
     fit?: AvatarExportFit;
+    /**
+     * Dev-only; parametric body multipliers for future engine parity.
+     * Live viewport uses this today; native exporter may ignore until wired.
+     */
+    bodyShape?: AvatarExportBodyShape;
   };
 };
 

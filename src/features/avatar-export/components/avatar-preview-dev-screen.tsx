@@ -27,7 +27,11 @@ import { AppButton } from "@/components/ui/app-button";
 import { ScreenContainer } from "@/components/ui/screen-container";
 
 import {
+  BODY_SHAPE_PRESET_LABELS,
+  BODY_SHAPE_PRESETS,
+  bodyShapesEqual,
   CLIPPING_HOTSPOT_DEFAULTS,
+  DEFAULT_BODY_SHAPE,
   DEFAULT_GARMENT_FIT_STATE,
   FIT_ADJUST_PRESETS,
   FIT_DEBUG_MODE_LABELS,
@@ -57,6 +61,8 @@ import {
   type GarmentFitState,
   type LegacyGarmentFitAdjustState,
   type SaveAvatarRequestResult,
+  type BodyShapeParams,
+  type BodyShapePresetId,
 } from "@/features/avatar-export";
 import {
   DEV_AVATAR_PRESETS as PRESETS,
@@ -122,6 +128,25 @@ const FIT_REGION_LABELS: Record<GarmentFitRegionKey, string> = {
   waist: "Waist",
   hem: "Hem",
 };
+
+/** Bounds aligned with `deriveBodyRigMetrics` clamps (multipliers ~1). */
+const BODY_SHAPE_SLIDERS: {
+  key: keyof BodyShapeParams;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+}[] = [
+  { key: "height", label: "Height", min: 0.88, max: 1.12, step: 0.02 },
+  { key: "shoulderWidth", label: "Shoulder width", min: 0.82, max: 1.22, step: 0.02 },
+  { key: "chest", label: "Chest", min: 0.82, max: 1.25, step: 0.02 },
+  { key: "waist", label: "Waist", min: 0.82, max: 1.2, step: 0.02 },
+  { key: "hips", label: "Hips", min: 0.82, max: 1.28, step: 0.02 },
+  { key: "armThickness", label: "Arm thickness", min: 0.82, max: 1.25, step: 0.02 },
+  { key: "legThickness", label: "Leg thickness", min: 0.82, max: 1.25, step: 0.02 },
+  { key: "torsoLength", label: "Torso length", min: 0.88, max: 1.15, step: 0.02 },
+  { key: "build", label: "Build / mass", min: 0.88, max: 1.15, step: 0.02 },
+];
 
 type CompareLayout = "off" | "toggle" | "side" | "onion";
 
@@ -338,9 +363,16 @@ export function AvatarPreviewDevScreen() {
   const resetLiveFitRegionToDefault = useAvatarSceneStore(
     (s) => s.resetLiveFitRegionToDefault,
   );
+  const bodyShape = useAvatarSceneStore((s) => s.bodyShape);
+  const patchBodyShape = useAvatarSceneStore((s) => s.patchBodyShape);
+  const resetBodyShape = useAvatarSceneStore((s) => s.resetBodyShape);
 
   const [stressTestBusy, setStressTestBusy] = useState(false);
   const [stabilizeBusy, setStabilizeBusy] = useState(false);
+  /** Live tab: procedural body vs default bundled skinned GLB. */
+  const [liveViewportUseProceduralBody, setLiveViewportUseProceduralBody] =
+    useState(false);
+  const [liveBodyOnlyGarments, setLiveBodyOnlyGarments] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [busyPoll, setBusyPoll] = useState(false);
@@ -480,6 +512,7 @@ export function AvatarPreviewDevScreen() {
         hasRuntimeBodyGltf: !!runtimeAssetUrls.bodyGltfUrl,
         hasRuntimeTopGltf: !!runtimeAssetUrls.topGltfUrl,
         hasRuntimeBottomGltf: !!runtimeAssetUrls.bottomGltfUrl,
+        bodyShape,
       }),
     [
       garmentFitForViewport,
@@ -487,6 +520,7 @@ export function AvatarPreviewDevScreen() {
       runtimeAssetUrls.bodyGltfUrl,
       runtimeAssetUrls.topGltfUrl,
       runtimeAssetUrls.bottomGltfUrl,
+      bodyShape,
     ],
   );
 
@@ -495,11 +529,13 @@ export function AvatarPreviewDevScreen() {
       hasRuntimeBodyGltf: !!runtimeAssetUrls.bodyGltfUrl,
       hasRuntimeTopGltf: !!runtimeAssetUrls.topGltfUrl,
       hasRuntimeBottomGltf: !!runtimeAssetUrls.bottomGltfUrl,
+      bodyShape,
     }),
     [
       runtimeAssetUrls.bodyGltfUrl,
       runtimeAssetUrls.topGltfUrl,
       runtimeAssetUrls.bottomGltfUrl,
+      bodyShape,
     ],
   );
 
@@ -1369,9 +1405,34 @@ export function AvatarPreviewDevScreen() {
               preset={presetKey}
               garmentFit={garmentFitForViewport}
               liveShading={liveViewportShading}
+              bodyShape={bodyShape}
               compareActive={liveFitShowBaseline && liveFitBaseline != null}
               clipOverlayEnabled={liveClipOverlay}
+              useProceduralBody={liveViewportUseProceduralBody}
+              bodyOnlyGarments={liveBodyOnlyGarments}
             />
+            <View style={[styles.row, styles.clipOverlayRow]}>
+              <Text style={styles.fitSubnote}>Body only (no garments)</Text>
+              <Text style={styles.clipOverlayHint} numberOfLines={2}>
+                Hides shirt, pants, sleeves, shoes — inspect skinned body silhouette.
+              </Text>
+              <Switch
+                value={liveBodyOnlyGarments}
+                onValueChange={setLiveBodyOnlyGarments}
+                accessibilityLabel="Toggle body-only mode without garment proxies"
+              />
+            </View>
+            <View style={[styles.row, styles.clipOverlayRow]}>
+              <Text style={styles.fitSubnote}>Procedural body</Text>
+              <Text style={styles.clipOverlayHint} numberOfLines={2}>
+                Off = bundled skinned mesh (default). On = capsule/box fallback for rig compare.
+              </Text>
+              <Switch
+                value={liveViewportUseProceduralBody}
+                onValueChange={setLiveViewportUseProceduralBody}
+                accessibilityLabel="Toggle procedural body instead of skinned GLB"
+              />
+            </View>
             <View style={[styles.row, styles.clipOverlayRow]}>
               <Text style={styles.fitSubnote}>Runtime clip overlay</Text>
               <Text style={styles.clipOverlayHint} numberOfLines={2}>
@@ -1423,6 +1484,72 @@ export function AvatarPreviewDevScreen() {
                 );
               })}
             </ScrollView>
+
+            <Text style={styles.section}>Body shape (parametric)</Text>
+            <Text style={styles.debugNote}>
+              Multipliers drive the procedural body, runtime clip proxies, and stress-test
+              evaluation.{" "}
+              <Text style={styles.boldMuted}>
+                Changing body shape changes garment interaction
+              </Text>{" "}
+              (torso, sleeves, waist, hem), not only the mesh silhouette.
+            </Text>
+            <View style={styles.bodyShapeActions}>
+              <AppButton label="Reset body" variant="secondary" onPress={resetBodyShape} />
+              <Text style={styles.bodyShapeDefaultHint} selectable>
+                default:{" "}
+                {bodyShapesEqual(bodyShape, DEFAULT_BODY_SHAPE) ? "yes" : "custom"}
+              </Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.modeChipsRow}
+            >
+              {(Object.keys(BODY_SHAPE_PRESETS) as BodyShapePresetId[]).map((id) => {
+                const preset = BODY_SHAPE_PRESETS[id];
+                const matches = bodyShapesEqual(bodyShape, preset);
+                return (
+                  <Pressable
+                    key={id}
+                    onPress={() => patchBodyShape(() => ({ ...preset }))}
+                    style={({ pressed }) => [
+                      styles.modeChip,
+                      matches && styles.modeChipSelected,
+                      pressed && styles.modeChipPressed,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.modeChipLabel,
+                        matches && styles.modeChipLabelSelected,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {BODY_SHAPE_PRESET_LABELS[id]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+            <View style={[styles.fitPanel, styles.bodyShapeSliders]}>
+              {BODY_SHAPE_SLIDERS.map((row) => (
+                <FitSliderRow
+                  key={row.key}
+                  label={row.label}
+                  value={bodyShape[row.key]}
+                  min={row.min}
+                  max={row.max}
+                  step={row.step}
+                  onChange={(v) =>
+                    patchBodyShape((b) => ({
+                      ...b,
+                      [row.key]: v,
+                    }))
+                  }
+                />
+              ))}
+            </View>
 
             <Text style={styles.section}>Live fitting workstation</Text>
             <View style={[styles.fitPanel, styles.liveWorkstationBox]}>
@@ -2893,6 +3020,22 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
     borderWidth: 1,
     backgroundColor: theme.colors.surface,
+  },
+  bodyShapeActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+  },
+  bodyShapeDefaultHint: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: theme.colors.textMuted,
+  },
+  bodyShapeSliders: {
+    marginBottom: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
   },
   clipOverlayRow: {
     flexDirection: "row",

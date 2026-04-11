@@ -5,6 +5,8 @@
 
 import {
   cloneGarmentFitState,
+  DEFAULT_BODY_SHAPE,
+  type BodyShapeParams,
   type GarmentFitState,
 } from "@/features/avatar-export";
 import type { DevAvatarPoseKey } from "@/features/avatar-export/dev-avatar-shared";
@@ -32,6 +34,8 @@ export type RuntimeClippingFlags = {
   hasRuntimeBodyGltf: boolean;
   hasRuntimeTopGltf: boolean;
   hasRuntimeBottomGltf: boolean;
+  /** Same body as live viewport / export; defaults to reference shape when omitted. */
+  bodyShape?: BodyShapeParams;
 };
 
 const REGION_KEYS: StressRegionKey[] = ["torso", "sleeves", "waist", "hem"];
@@ -100,10 +104,12 @@ function evaluatePose(
   pose: DevAvatarPoseKey,
   flags: RuntimeClippingFlags,
 ): PoseStressPoseResult {
+  const { bodyShape, ...clipFlags } = flags;
   const clipping = analyzeRuntimeClipping({
     garmentFit,
     pose,
-    ...flags,
+    ...clipFlags,
+    bodyShape: bodyShape ?? DEFAULT_BODY_SHAPE,
   });
 
   const regions = {

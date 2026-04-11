@@ -8,5 +8,10 @@ declare namespace NodeJS {
     /** When "1", `runAvatarExport` returns a placeholder image without the native binary. */
     EXPO_PUBLIC_AVATAR_EXPORT_MOCK?: string;
     EXPO_PUBLIC_AVATAR_EXPORT_MOCK_URI?: string;
+    /** When "1", live viewport uses procedural body only (skip bundled skinned GLB). */
+    EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY?: string;
+    EXPO_PUBLIC_AVATAR_RUNTIME_BODY_GLTF_URL?: string;
+    EXPO_PUBLIC_AVATAR_RUNTIME_TOP_GLTF_URL?: string;
+    EXPO_PUBLIC_AVATAR_RUNTIME_BOTTOM_GLTF_URL?: string;
   }
 }

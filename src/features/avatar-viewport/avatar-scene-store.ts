@@ -2,8 +2,11 @@ import { create } from "zustand";
 
 import type { FitDebugViewMode } from "@/features/avatar-export";
 import {
+  cloneBodyShape,
   cloneFitState,
+  DEFAULT_BODY_SHAPE,
   DEFAULT_GARMENT_FIT_STATE,
+  type BodyShapeParams,
   type GarmentFitState,
 } from "@/features/avatar-export";
 import type { AvatarOutfitLike } from "@/features/avatar-export/types";
@@ -33,6 +36,7 @@ export const DEFAULT_AVATAR_SCENE_STATE: AvatarSceneState = {
   presetKey: "default",
   outfitOverride: null,
   garmentFit: cloneFitState(DEFAULT_GARMENT_FIT_STATE),
+  bodyShape: cloneBodyShape(DEFAULT_BODY_SHAPE),
   liveViewportShading: "normal",
   offlineFitDebugMode: "normal",
 };
@@ -43,6 +47,9 @@ type AvatarSceneActions = {
   setOutfitOverride: (outfit: AvatarOutfitLike | null) => void;
   setGarmentFit: (garmentFit: GarmentFitState) => void;
   patchGarmentFit: (fn: (prev: GarmentFitState) => GarmentFitState) => void;
+  setBodyShape: (bodyShape: BodyShapeParams) => void;
+  patchBodyShape: (fn: (prev: BodyShapeParams) => BodyShapeParams) => void;
+  resetBodyShape: () => void;
   setLiveViewportShading: (mode: LiveViewportShadingMode) => void;
   setOfflineFitDebugMode: (mode: FitDebugViewMode) => void;
   hydrateScene: (partial: Partial<AvatarSceneState>) => void;
@@ -112,6 +119,14 @@ export const useAvatarSceneStore = create<AvatarSceneStore>((set, get) => ({
       liveFitShowBaseline: false,
     })),
 
+  setBodyShape: (bodyShape) => set({ bodyShape: cloneBodyShape(bodyShape) }),
+
+  patchBodyShape: (fn) =>
+    set((s) => ({ bodyShape: cloneBodyShape(fn(s.bodyShape)) })),
+
+  resetBodyShape: () =>
+    set({ bodyShape: cloneBodyShape(DEFAULT_BODY_SHAPE) }),
+
   setLiveViewportShading: (liveViewportShading) => set({ liveViewportShading }),
 
   setOfflineFitDebugMode: (offlineFitDebugMode) => set({ offlineFitDebugMode }),
@@ -153,6 +168,7 @@ export const useAvatarSceneStore = create<AvatarSceneStore>((set, get) => ({
       pose: s.pose,
       presetKey: s.presetKey,
       garmentFit: cloneFitState(s.garmentFit),
+      bodyShape: cloneBodyShape(s.bodyShape),
       liveViewportShading: s.liveViewportShading,
       liveFitActiveRegion: s.liveFitActiveRegion,
       ...(stressTest ? { stressTest } : {}),
@@ -174,6 +190,7 @@ export const useAvatarSceneStore = create<AvatarSceneStore>((set, get) => ({
       pose: e.pose,
       presetKey: e.presetKey,
       garmentFit: cloneFitState(e.garmentFit),
+      bodyShape: cloneBodyShape(e.bodyShape ?? DEFAULT_BODY_SHAPE),
       liveViewportShading: e.liveViewportShading,
       liveFitActiveRegion: e.liveFitActiveRegion,
       liveFitShowBaseline: false,

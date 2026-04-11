@@ -1,4 +1,8 @@
-import type { FitDebugViewMode, GarmentFitState } from "@/features/avatar-export";
+import type {
+  BodyShapeParams,
+  FitDebugViewMode,
+  GarmentFitState,
+} from "@/features/avatar-export";
 import type { AvatarOutfitLike } from "@/features/avatar-export/types";
 
 import type {
@@ -25,6 +29,8 @@ export type AvatarSceneState = {
   outfitOverride: AvatarOutfitLike | null;
   /** Region-aware fit; same object serializes to `closy.fit` for export. */
   garmentFit: GarmentFitState;
+  /** Parametric body (live + clipping + stress test + optional export `closy.bodyShape`). */
+  bodyShape: BodyShapeParams;
   /** Live WebGL debug look (not written to PNG JSON unless we mirror later). */
   liveViewportShading: LiveViewportShadingMode;
   /** Host `avatar_export` debug flags (`closy.debug`). */
@@ -34,7 +40,13 @@ export type AvatarSceneState = {
 /** Serializable snapshot for session history / compare (offline render metadata). */
 export type AvatarSceneSnapshot = Pick<
   AvatarSceneState,
-  "pose" | "presetKey" | "garmentFit" | "liveViewportShading" | "offlineFitDebugMode" | "outfitOverride"
+  | "pose"
+  | "presetKey"
+  | "garmentFit"
+  | "bodyShape"
+  | "liveViewportShading"
+  | "offlineFitDebugMode"
+  | "outfitOverride"
 >;
 
 /** In-memory live fitting snapshot (dev workstation); not sent to exporter JSON. */
@@ -45,6 +57,8 @@ export type LiveFitSessionSnapshot = {
   pose: DevAvatarPoseKey;
   presetKey: DevAvatarPresetKey;
   garmentFit: GarmentFitState;
+  /** Present on new snapshots; older in-memory entries may omit. */
+  bodyShape?: BodyShapeParams;
   liveViewportShading: LiveViewportShadingMode;
   liveFitActiveRegion: GarmentFitRegionKey;
   /** When saved from stress-test / stabilize flow (optional). */

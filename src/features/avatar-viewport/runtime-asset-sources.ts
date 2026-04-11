@@ -7,7 +7,9 @@
  * - EXPO_PUBLIC_AVATAR_RUNTIME_BOTTOM_GLTF_URL
  *
  * URLs must be reachable from the device (https) or `file://` where supported.
- * When unset, the viewport uses procedural proxies for that slot.
+ * When unset, the viewport uses procedural proxies for that slot — **except** the body slot,
+ * which defaults to the bundled skinned human GLB (`src/assets/models/cesium-man.glb`) unless
+ * `EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY=1`.
  */
 export type AvatarRuntimeAssetUrls = {
   bodyGltfUrl: string | null;

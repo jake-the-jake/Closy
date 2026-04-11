@@ -1,4 +1,5 @@
 import {
+  bodyShapeToExportPatch,
   buildAvatarExportRequest,
   fitDebugModeToExportFlags,
   fitStateToExportPatch,
@@ -21,6 +22,7 @@ export function avatarSceneToBuildOptions(
 ): BuildAvatarExportOptions {
   const fitPatch = fitStateToExportPatch(state.garmentFit);
   const debug = fitDebugModeToExportFlags(state.offlineFitDebugMode);
+  const bodyShapePatch = bodyShapeToExportPatch(state.bodyShape);
   return {
     pose: state.pose,
     width: 1024,
@@ -28,6 +30,7 @@ export function avatarSceneToBuildOptions(
     camera: "three_quarter",
     ...(debug != null && Object.keys(debug).length > 0 ? { debug } : {}),
     ...(fitPatch != null ? { fit: fitPatch } : {}),
+    ...(bodyShapePatch != null ? { bodyShape: bodyShapePatch } : {}),
     ...extra,
   };
 }
