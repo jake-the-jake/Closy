@@ -80,6 +80,41 @@ function resolveBone(
 
 export type ResolvedSkinnedBones = Partial<Record<keyof SkinnedBodyBoneMap, THREE.Bone>>;
 
+/** Minimum bones needed for a believable full-body pose on the skinned mesh. */
+const POSE_CRITICAL_SLOTS: (keyof SkinnedBodyBoneMap)[] = [
+  "legL_hip",
+  "legR_hip",
+  "legL_knee",
+  "legR_knee",
+  "armL_shoulder",
+  "armL_upper",
+  "armR_shoulder",
+  "armR_upper",
+];
+
+export const SKINNED_POSE_CRITICAL_SLOT_COUNT = POSE_CRITICAL_SLOTS.length;
+
+export function countCriticalMappedBones(bones: ResolvedSkinnedBones): number {
+  let n = 0;
+  for (const k of POSE_CRITICAL_SLOTS) {
+    if (bones[k]) n++;
+  }
+  return n;
+}
+
+export type SkinnedBoneMapStatus = "mapped" | "partial" | "fallback";
+
+export function classifySkinnedBoneMap(bones: ResolvedSkinnedBones): SkinnedBoneMapStatus {
+  const n = countCriticalMappedBones(bones);
+  if (n >= POSE_CRITICAL_SLOTS.length) return "mapped";
+  if (n >= 5) return "partial";
+  return "fallback";
+}
+
+export function countMappedSkinnedBones(bones: ResolvedSkinnedBones): number {
+  return (Object.keys(bones) as (keyof SkinnedBodyBoneMap)[]).filter((k) => !!bones[k]).length;
+}
+
 export function resolveSkinnedBodyBones(
   skeleton: THREE.Skeleton,
   map: SkinnedBodyBoneMap = CESIUM_MAN_BONE_MAP,
@@ -169,6 +204,20 @@ export function applySkinnedPoseToBones(
   if (Ras) setBoneDelta(Ras, rest, -ang.laxz + shoulderDrop, ang.raz, 0);
   if (Rau) setBoneDelta(Rau, rest, 0, 0, -ang.rax);
   if (Raf) setBoneDelta(Raf, rest, 0, 0, -ang.rax * elbowZ);
+
+  const spineRx = ang.spineRx ?? 0;
+  const spineUpperRx = ang.spineUpperRx ?? 0;
+  const neckRx = ang.neckRx ?? 0;
+  const twistY = ang.spineTwistY ?? 0;
+
+  const sl = bones.spineLower;
+  const su = bones.spineUpper;
+  const n1 = bones.neck1;
+  const n2 = bones.neck2;
+  if (sl) setBoneDelta(sl, rest, spineRx * 0.55 + 0.012, twistY * 0.35, 0);
+  if (su) setBoneDelta(su, rest, spineUpperRx * 0.65 + spineRx * 0.2, twistY * 0.45, 0);
+  if (n1) setBoneDelta(n1, rest, neckRx * 0.5 + spineUpperRx * 0.15, twistY * 0.2, 0);
+  if (n2) setBoneDelta(n2, rest, neckRx * 0.35, twistY * 0.12, 0);
 }
 
 /**

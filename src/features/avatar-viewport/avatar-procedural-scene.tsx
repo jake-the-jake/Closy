@@ -29,6 +29,7 @@ import {
   GltfRuntimeBody,
   GltfRuntimeGarment,
 } from "./gltf-runtime-body";
+import type { GarmentAnchorFitDebug, SkinnedRigPoseReport } from "./live-viewport-debug-types";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 
 const SKIN = new THREE.Color(0xd4a574);
@@ -60,6 +61,15 @@ const FIT_VIS = {
   sleevePosMul: 1.75,
   globalGarmentInflate: 1.85,
 } as const;
+
+/** When a skinned GLB body is active, nudge garment anchors toward the posed mesh vs pure proxy math. */
+const SKINNED_GARMENT_TOP_ANCHOR_Y = 0.052;
+const SKINNED_GARMENT_BOTTOM_Y = 0.018;
+const SKINNED_SLEEVE_SHOULDER_Y = -0.024;
+
+function skinnedSleeveShoulderYOffset(ang: PoseAngleSet): number {
+  return SKINNED_SLEEVE_SHOULDER_Y + 0.014 * (Math.abs(ang.laz) + Math.abs(ang.raz));
+}
 
 type Orbit = { theta: number; phi: number; radius: number };
 
@@ -349,6 +359,7 @@ function SleeveGarmentPair({
   sleeveS,
   sleevePos,
   garmentFit,
+  skinnedRuntimeBody = false,
 }: Pick<
   RigMaterialProps,
   | "rig"
@@ -360,8 +371,9 @@ function SleeveGarmentPair({
   | "sleeveS"
   | "sleevePos"
   | "garmentFit"
-> & { sleeveRadius: number }) {
+> & { sleeveRadius: number; skinnedRuntimeBody?: boolean }) {
   const { shoulderY, shoulderHalf } = rig;
+  const shoulderDy = skinnedRuntimeBody ? skinnedSleeveShoulderYOffset(ang) : 0;
   const spx = sleevePos[0] * FIT_VIS.sleevePosMul;
   const spy = sleevePos[1] * FIT_VIS.sleevePosMul;
   const spz = sleevePos[2] * FIT_VIS.sleevePosMul;
@@ -369,7 +381,7 @@ function SleeveGarmentPair({
   return (
     <group name="sleeve_garment_pair_gltf_body">
       <group
-        position={[shoulderHalf, shoulderY, 0]}
+        position={[shoulderHalf, shoulderY + shoulderDy, 0]}
         rotation={[ang.laxz, 0, ang.laz]}
       >
         <group rotation={[0, 0, ang.lax]}>
@@ -392,7 +404,7 @@ function SleeveGarmentPair({
         </group>
       </group>
       <group
-        position={[-shoulderHalf, shoulderY, 0]}
+        position={[-shoulderHalf, shoulderY + shoulderDy, 0]}
         rotation={[-ang.laxz, 0, ang.raz]}
       >
         <group rotation={[0, 0, -ang.rax]}>
@@ -680,8 +692,12 @@ export function AvatarProceduralScene({
   clipEmissiveSleeve = null,
   showGarmentRigDebug = false,
   bodyOnlyGarments = false,
+  /** Dev: hide body mesh entirely (inspect floating garments / GLB garments). */
+  garmentOnlyViewport = false,
   onRuntimeBodyLoadError,
   onRuntimeBodyLoaded,
+  onSkinnedRigPoseReport,
+  onGarmentAnchorsDebug,
 }: {
   pose: DevAvatarPoseKey;
   preset: DevAvatarPresetKey;
@@ -705,8 +721,11 @@ export function AvatarProceduralScene({
   clipEmissiveSleeve?: THREE.Color | null;
   /** Dev: hide garment proxies + GLB garments for body inspection. */
   bodyOnlyGarments?: boolean;
+  garmentOnlyViewport?: boolean;
   onRuntimeBodyLoadError?: (message: string) => void;
   onRuntimeBodyLoaded?: () => void;
+  onSkinnedRigPoseReport?: (r: SkinnedRigPoseReport) => void;
+  onGarmentAnchorsDebug?: (d: GarmentAnchorFitDebug) => void;
 }) {
   const rig = useMemo(() => bodySceneAnchorsFromShape(bodyShape), [bodyShape]);
   const garmentPoseSkin = useMemo<GarmentPoseSkinningParams>(
@@ -793,6 +812,45 @@ export function AvatarProceduralScene({
 
   const shirtInfl = 1 + r.torso.inflate * 2.2;
 
+  const skinnedAnchorsActive =
+    !garmentOnlyViewport &&
+    (runtimeBodyBundledModule != null || runtimeBodyGltfUrl != null);
+  const showBodyMesh = !garmentOnlyViewport;
+  const hideGarments = bodyOnlyGarments;
+
+  const topAnchorY = tz * 0.18 + (skinnedAnchorsActive ? SKINNED_GARMENT_TOP_ANCHOR_Y : 0);
+  const topAnchorZ = tz * 0.35;
+  const bottomAnchorY =
+    garmentFit.legacy.waistAdjustY + (skinnedAnchorsActive ? SKINNED_GARMENT_BOTTOM_Y : 0);
+  const bottomAnchorZ = r.waist.offsetZ * FIT_VIS.waistOffsetZ;
+
+  useLayoutEffect(() => {
+    onGarmentAnchorsDebug?.({
+      bodyAnchorPos: [...bodyAnchorPos] as [number, number, number],
+      bodyAnchorScale: [...bodyAnchorScale] as [number, number, number],
+      topAnchorLocal: [0, topAnchorY, topAnchorZ],
+      bottomAnchorLocal: [0, bottomAnchorY, bottomAnchorZ],
+      waistTighten: r.waist.tighten,
+      hemOffsetY: r.hem.offsetY,
+      legacyWaistAdjustY: garmentFit.legacy.waistAdjustY,
+      torsoOffsetZ: tz,
+      skinnedBodyActive: skinnedAnchorsActive,
+    });
+  }, [
+    onGarmentAnchorsDebug,
+    bodyAnchorPos,
+    bodyAnchorScale,
+    topAnchorY,
+    topAnchorZ,
+    bottomAnchorY,
+    bottomAnchorZ,
+    r.waist.tighten,
+    r.hem.offsetY,
+    garmentFit.legacy.waistAdjustY,
+    tz,
+    skinnedAnchorsActive,
+  ]);
+
   const rigMat: RigMaterialProps = {
     rig,
     ang,
@@ -829,7 +887,7 @@ export function AvatarProceduralScene({
           {showRigDebug ? <RigDebugAnchors rig={rig} /> : null}
           {showGarmentRigDebug ? <GarmentRigDebugOverlay rig={rig} /> : null}
 
-          {runtimeBodyBundledModule != null || runtimeBodyGltfUrl ? (
+          {showBodyMesh && (runtimeBodyBundledModule != null || runtimeBodyGltfUrl) ? (
             <GltfErrorBoundary
               key={String(runtimeBodyBundledModule ?? runtimeBodyGltfUrl ?? "")}
               fallback={<ProceduralRigBody {...rigMat} />}
@@ -844,25 +902,27 @@ export function AvatarProceduralScene({
                     liveShading={liveShading}
                     bodyShape={bodyShape}
                     onSceneReady={onRuntimeBodyLoaded}
+                    onRigPoseReport={onSkinnedRigPoseReport}
                   />
                 </group>
               </Suspense>
-              {!bodyOnlyGarments && !runtimeTopGltfUrl ? (
+              {!hideGarments && !runtimeTopGltfUrl ? (
                 <SleeveGarmentPair
                   {...rigMat}
                   sleeveRadius={sleeveRadius}
+                  skinnedRuntimeBody
                 />
               ) : null}
             </GltfErrorBoundary>
-          ) : (
+          ) : showBodyMesh ? (
             <ProceduralRigBody {...rigMat} />
-          )}
+          ) : null}
 
           {/* Top: torso hull (sleeves ride on arms inside procedural rig) */}
-          {!bodyOnlyGarments ? (
+          {!hideGarments ? (
           <group
             name="garment_top_anchor"
-            position={[0, tz * 0.18, tz * 0.35]}
+            position={[0, topAnchorY, topAnchorZ]}
             scale={[shirtInfl, 1 + r.torso.inflate * 1.2, shirtInfl]}
           >
             {runtimeTopGltfUrl ? (
@@ -923,14 +983,10 @@ export function AvatarProceduralScene({
           </group>
           ) : null}
 
-          {!bodyOnlyGarments ? (
+          {!hideGarments ? (
           <group
             name="garment_bottom_anchor"
-            position={[
-              0,
-              garmentFit.legacy.waistAdjustY,
-              r.waist.offsetZ * FIT_VIS.waistOffsetZ,
-            ]}
+            position={[0, bottomAnchorY, bottomAnchorZ]}
             scale={[
               1 - r.waist.tighten * 0.48,
               1 - r.waist.tighten * 0.32,
@@ -995,7 +1051,7 @@ export function AvatarProceduralScene({
           </group>
           ) : null}
 
-          {showShoes && !bodyOnlyGarments ? (
+          {showShoes && !hideGarments ? (
             <group position={[0, r.hem.offsetY * 0.45, 0]} name="shoes_proxy">
               <mesh position={[0.09, 0.04, 0.04]}>
                 <boxGeometry args={[0.12, 0.08, 0.22]} />

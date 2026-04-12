@@ -84,6 +84,7 @@ import {
   suggestionsFromRuntimeClipping,
   useAvatarSceneStore,
   type GarmentFitRegionKey,
+  type LiveViewportPoseFitDebug,
   type LiveViewportShadingMode,
 } from "@/features/avatar-viewport";
 import { theme } from "@/theme";
@@ -373,6 +374,20 @@ export function AvatarPreviewDevScreen() {
   const [liveViewportUseProceduralBody, setLiveViewportUseProceduralBody] =
     useState(false);
   const [liveBodyOnlyGarments, setLiveBodyOnlyGarments] = useState(false);
+  const [liveGarmentOnlyViewport, setLiveGarmentOnlyViewport] = useState(false);
+  const [livePoseFitDebug, setLivePoseFitDebug] = useState<LiveViewportPoseFitDebug | null>(
+    null,
+  );
+
+  const setLiveBodyOnlyGarmentsSafe = useCallback((v: boolean) => {
+    setLiveBodyOnlyGarments(v);
+    if (v) setLiveGarmentOnlyViewport(false);
+  }, []);
+
+  const setLiveGarmentOnlyViewportSafe = useCallback((v: boolean) => {
+    setLiveGarmentOnlyViewport(v);
+    if (v) setLiveBodyOnlyGarments(false);
+  }, []);
 
   const [busy, setBusy] = useState(false);
   const [busyPoll, setBusyPoll] = useState(false);
@@ -1410,6 +1425,8 @@ export function AvatarPreviewDevScreen() {
               clipOverlayEnabled={liveClipOverlay}
               useProceduralBody={liveViewportUseProceduralBody}
               bodyOnlyGarments={liveBodyOnlyGarments}
+              garmentOnlyViewport={liveGarmentOnlyViewport}
+              onLiveViewportPoseFitDebug={setLivePoseFitDebug}
             />
             <View style={[styles.row, styles.clipOverlayRow]}>
               <Text style={styles.fitSubnote}>Body only (no garments)</Text>
@@ -1418,10 +1435,74 @@ export function AvatarPreviewDevScreen() {
               </Text>
               <Switch
                 value={liveBodyOnlyGarments}
-                onValueChange={setLiveBodyOnlyGarments}
+                onValueChange={setLiveBodyOnlyGarmentsSafe}
                 accessibilityLabel="Toggle body-only mode without garment proxies"
               />
             </View>
+            <View style={[styles.row, styles.clipOverlayRow]}>
+              <Text style={styles.fitSubnote}>Garment only (no body)</Text>
+              <Text style={styles.clipOverlayHint} numberOfLines={2}>
+                Hides skinned / procedural body — inspect garments vs empty anchor space.
+              </Text>
+              <Switch
+                value={liveGarmentOnlyViewport}
+                onValueChange={setLiveGarmentOnlyViewportSafe}
+                accessibilityLabel="Toggle garment-only viewport without body mesh"
+              />
+            </View>
+            <Text style={styles.section}>Pose / fit sync (live)</Text>
+            {livePoseFitDebug ? (
+              <View style={styles.poseFitDebugBox}>
+                <Text style={styles.poseFitDebugLine} selectable>
+                  pose token: body={livePoseFitDebug.pose} · garment={livePoseFitDebug.pose}{" "}
+                  {livePoseFitDebug.garmentPoseMatchesBody ? "(match)" : "(mismatch)"}
+                </Text>
+                <Text style={styles.poseFitDebugLine} selectable>
+                  body pose active:{" "}
+                  {livePoseFitDebug.skinned?.bodyPoseApplied === true
+                    ? "yes (bones)"
+                    : livePoseFitDebug.skinned
+                      ? "no"
+                      : "n/a"}{" "}
+                  · bone map: {livePoseFitDebug.skinned?.boneMapStatus ?? "—"}
+                </Text>
+                <Text style={styles.poseFitDebugLine} selectable>
+                  garment pose: CPU bind vs {livePoseFitDebug.pose} (shared poseAngles)
+                </Text>
+                {livePoseFitDebug.anchors ? (
+                  <>
+                    <Text style={styles.poseFitDebugLine} selectable>
+                      torso anchor (body): [{livePoseFitDebug.anchors.bodyAnchorPos
+                        .map((n) => n.toFixed(3))
+                        .join(", ")}] · scale [{livePoseFitDebug.anchors.bodyAnchorScale
+                        .map((n) => n.toFixed(3))
+                        .join(", ")}]
+                    </Text>
+                    <Text style={styles.poseFitDebugLine} selectable>
+                      top local: [{livePoseFitDebug.anchors.topAnchorLocal
+                        .map((n) => n.toFixed(3))
+                        .join(", ")}] · bottom local: [
+                      {livePoseFitDebug.anchors.bottomAnchorLocal.map((n) => n.toFixed(3)).join(", ")}
+                      ]
+                    </Text>
+                    <Text style={styles.poseFitDebugLine} selectable>
+                      waist tighten {livePoseFitDebug.anchors.waistTighten.toFixed(3)} · hem Y{" "}
+                      {livePoseFitDebug.anchors.hemOffsetY.toFixed(3)} · legacy waist Y{" "}
+                      {livePoseFitDebug.anchors.legacyWaistAdjustY.toFixed(3)} · torsoOffZ{" "}
+                      {livePoseFitDebug.anchors.torsoOffsetZ.toFixed(3)} · skinned reseat{" "}
+                      {livePoseFitDebug.anchors.skinnedBodyActive ? "on" : "off"}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={styles.poseFitDebugLine}>anchors: (pending)</Text>
+                )}
+                <Text style={styles.poseFitDebugLine} selectable>
+                  fit preset: {presetKey} (viewport garmentFit)
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.debugNote}>Pose / fit panel: waiting for first viewport frame…</Text>
+            )}
             <View style={[styles.row, styles.clipOverlayRow]}>
               <Text style={styles.fitSubnote}>Procedural body</Text>
               <Text style={styles.clipOverlayHint} numberOfLines={2}>
@@ -3057,6 +3138,22 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: 16,
     marginTop: 4,
+  },
+  poseFitDebugBox: {
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.xs,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: 4,
+  },
+  poseFitDebugLine: {
+    fontSize: 10,
+    fontFamily: "monospace",
+    color: theme.colors.text,
+    lineHeight: 14,
   },
   stressHint: {
     fontSize: 11,

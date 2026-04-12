@@ -14,6 +14,11 @@ export function poseAngles(pose: DevAvatarPoseKey) {
         laxz: 0.02,
         llx: 0.04,
         rlx: -0.06,
+        /** Torso / spine forward flex (radians) for skinned spine bones. */
+        spineRx: 0.04,
+        spineUpperRx: 0.025,
+        neckRx: -0.02,
+        spineTwistY: 0,
       };
     case "walk":
       return {
@@ -24,6 +29,10 @@ export function poseAngles(pose: DevAvatarPoseKey) {
         laxz: 0.1,
         llx: 0.28,
         rlx: -0.32,
+        spineRx: 0.11,
+        spineUpperRx: 0.08,
+        neckRx: -0.04,
+        spineTwistY: 0.12,
       };
     case "tpose":
       return {
@@ -34,6 +43,10 @@ export function poseAngles(pose: DevAvatarPoseKey) {
         laxz: 0,
         llx: 0,
         rlx: 0,
+        spineRx: 0,
+        spineUpperRx: 0,
+        neckRx: 0,
+        spineTwistY: 0,
       };
     case "apose":
       return {
@@ -44,9 +57,25 @@ export function poseAngles(pose: DevAvatarPoseKey) {
         laxz: 0,
         llx: 0,
         rlx: 0,
+        spineRx: 0.02,
+        spineUpperRx: 0.015,
+        neckRx: -0.015,
+        spineTwistY: 0,
       };
     default:
-      return { laz: 0, raz: 0, lax: 0, rax: 0, laxz: 0, llx: 0, rlx: 0 };
+      return {
+        laz: 0,
+        raz: 0,
+        lax: 0,
+        rax: 0,
+        laxz: 0,
+        llx: 0,
+        rlx: 0,
+        spineRx: 0,
+        spineUpperRx: 0,
+        neckRx: 0,
+        spineTwistY: 0,
+      };
   }
 }
 

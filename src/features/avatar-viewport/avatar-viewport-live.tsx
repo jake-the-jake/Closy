@@ -25,6 +25,7 @@ import { theme } from "@/theme";
 import { BUNDLED_SKINNED_BODY_GLTF } from "./bundled-body-asset";
 import { AvatarProceduralScene, CameraRig } from "./avatar-procedural-scene";
 import { deformationSummary } from "./garment-deformation";
+import type { LiveViewportPoseFitDebug } from "./live-viewport-debug-types";
 import {
   analyzeRuntimeClipping,
   clipSeverityToEmissive,
@@ -61,6 +62,10 @@ export type AvatarViewportLiveProps = {
   useProceduralBody?: boolean;
   /** Dev: hide garment proxies/GLBs so the body mesh is visible alone. */
   bodyOnlyGarments?: boolean;
+  /** Dev: hide body mesh; show garments only (isolates garment vs body alignment). */
+  garmentOnlyViewport?: boolean;
+  /** Dev: pose / skinned rig / garment anchor snapshot for preview panel. */
+  onLiveViewportPoseFitDebug?: (d: LiveViewportPoseFitDebug) => void;
 };
 
 type Orbit = { theta: number; phi: number; radius: number };
@@ -121,6 +126,8 @@ export function AvatarViewportLive({
   bodyShape = DEFAULT_BODY_SHAPE,
   useProceduralBody = false,
   bodyOnlyGarments = false,
+  garmentOnlyViewport = false,
+  onLiveViewportPoseFitDebug,
 }: AvatarViewportLiveProps) {
   const [cam, setCam] = useState<Orbit>(() => ({ ...DEFAULT_ORBIT }));
   const camRef = useRef(cam);
@@ -287,6 +294,10 @@ export function AvatarViewportLive({
     "idle" | "pending" | "loaded" | "failed"
   >("idle");
   const skinnedBodyLoadErrLogged = useRef<string | null>(null);
+  const [skinnedPoseReport, setSkinnedPoseReport] =
+    useState<LiveViewportPoseFitDebug["skinned"]>(null);
+  const [garmentAnchorsDbg, setGarmentAnchorsDbg] =
+    useState<LiveViewportPoseFitDebug["anchors"]>(null);
 
   const envRuntimeUrls = useMemo(() => getAvatarRuntimeAssetUrls(), []);
 
@@ -314,6 +325,49 @@ export function AvatarViewportLive({
   const onRuntimeBodyLoaded = useCallback(() => {
     setSkinnedBodyLoadStatus("loaded");
   }, []);
+
+  const onSkinnedRigPoseReport = useCallback(
+    (r: NonNullable<LiveViewportPoseFitDebug["skinned"]>) => {
+      setSkinnedPoseReport(r);
+    },
+    [],
+  );
+
+  const onGarmentAnchorsDebug = useCallback(
+    (d: NonNullable<LiveViewportPoseFitDebug["anchors"]>) => {
+      setGarmentAnchorsDbg(d);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const noSkinnedRuntime =
+      FORCE_PROCEDURAL_BODY ||
+      useProceduralBody ||
+      (runtimeBodyBundledModule == null && !resolvedRuntime.bodyGltfUrl);
+    if (noSkinnedRuntime || garmentOnlyViewport) setSkinnedPoseReport(null);
+  }, [
+    useProceduralBody,
+    runtimeBodyBundledModule,
+    resolvedRuntime.bodyGltfUrl,
+    garmentOnlyViewport,
+  ]);
+
+  useEffect(() => {
+    onLiveViewportPoseFitDebug?.({
+      pose,
+      preset,
+      garmentPoseMatchesBody: true,
+      skinned: skinnedPoseReport,
+      anchors: garmentAnchorsDbg,
+    });
+  }, [
+    pose,
+    preset,
+    skinnedPoseReport,
+    garmentAnchorsDbg,
+    onLiveViewportPoseFitDebug,
+  ]);
 
   const onRuntimeBodyLoadError = useCallback((message: string) => {
     setSkinnedBodyLoadStatus("failed");
@@ -509,8 +563,11 @@ export function AvatarViewportLive({
               clipEmissiveBottom={clipEmissiveBottom}
               clipEmissiveSleeve={clipEmissiveSleeve}
               bodyOnlyGarments={bodyOnlyGarments}
+              garmentOnlyViewport={garmentOnlyViewport}
               onRuntimeBodyLoadError={onRuntimeBodyLoadError}
               onRuntimeBodyLoaded={onRuntimeBodyLoaded}
+              onSkinnedRigPoseReport={onSkinnedRigPoseReport}
+              onGarmentAnchorsDebug={onGarmentAnchorsDebug}
             />
           </Suspense>
         </Canvas>
@@ -537,6 +594,22 @@ export function AvatarViewportLive({
           <Text style={styles.debugLine} selectable>
             runtime: {runtimeSummary}
           </Text>
+          <Text style={styles.debugLine} selectable>
+            body pose:{" "}
+            {skinnedPoseReport
+              ? skinnedPoseReport.bodyPoseApplied
+                ? "applied (skinned bones)"
+                : "not applied (root euler / no skeleton)"
+              : "n/a (no skinned body)"}{" "}
+            · pose={pose} · bone map:{" "}
+            {skinnedPoseReport?.boneMapStatus ?? "—"} (
+            {skinnedPoseReport?.criticalMapped ?? "?"}/{skinnedPoseReport?.criticalTotal ?? "?"})
+          </Text>
+          {pose === "walk" ? (
+            <Text style={styles.debugSub} selectable>
+              walk stress: use clip overlay + proxy severities above for shoulder / torso / hem drift
+            </Text>
+          ) : null}
           {deformDebugLines
             ? deformDebugLines.map((line, i) => (
                 <Text key={`def:${i}:${line}`} style={styles.debugLine} selectable>

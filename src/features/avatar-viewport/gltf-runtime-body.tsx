@@ -1,4 +1,4 @@
-import { useLoader } from "@react-three/fiber/native";
+import { useFrame, useLoader } from "@react-three/fiber/native";
 import {
   Component,
   type ErrorInfo,
@@ -31,13 +31,18 @@ import {
 } from "./garment-deformation";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 import { alignSkinnedRootToPelvisMetric } from "./skinned-body-placement";
+import type { SkinnedRigPoseReport } from "./live-viewport-debug-types";
 import {
   applySkinnedPoseToBones,
   applySkinnedShapeScales,
   captureSkeletonRestQuats,
   captureSkeletonRestScales,
+  classifySkinnedBoneMap,
+  countCriticalMappedBones,
+  countMappedSkinnedBones,
   findFirstSkinnedMesh,
   resolveSkinnedBodyBones,
+  SKINNED_POSE_CRITICAL_SLOT_COUNT,
   type ResolvedSkinnedBones,
   type SkinnedPoseBias,
 } from "./skinned-body-pose";
@@ -207,6 +212,26 @@ function bodyShapeKey(b: BodyShapeParams): string {
   return `${b.height},${b.shoulderWidth},${b.chest},${b.waist},${b.hips},${b.armThickness},${b.legThickness},${b.torsoLength},${b.build}`;
 }
 
+/** expo-gl / RN: ensure boneTexture / boneMatrices refresh every frame after CPU pose. */
+function SkinnedSkeletonFrameUpdater({
+  scene,
+  enabled,
+}: {
+  scene: THREE.Object3D;
+  enabled: boolean;
+}) {
+  const skinnedRef = useRef<THREE.SkinnedMesh | null>(null);
+  useLayoutEffect(() => {
+    skinnedRef.current = findFirstSkinnedMesh(scene);
+  }, [scene]);
+  useFrame(() => {
+    if (!enabled) return;
+    const sm = skinnedRef.current;
+    if (sm?.skeleton) sm.skeleton.update();
+  });
+  return null;
+}
+
 function useSkinnedBodyLayout(
   scene: THREE.Object3D,
   baseline: Map<THREE.MeshStandardMaterial, MatBaseline>,
@@ -217,6 +242,7 @@ function useSkinnedBodyLayout(
   enableSkinnedRig: boolean,
   poseBias: SkinnedPoseBias | undefined,
   onSceneReady: (() => void) | undefined,
+  onRigPoseReport: ((r: SkinnedRigPoseReport) => void) | undefined,
 ) {
   const ang = useMemo(() => poseAngles(pose), [pose]);
   const skinnedCacheRef = useRef<SkinnedBindCache | null>(null);
@@ -230,6 +256,14 @@ function useSkinnedBodyLayout(
       scene.rotation.set(euler[0], euler[1], euler[2]);
       applyLiveShadingToGltfMaterials(scene, liveShading, "body", baseline);
       scene.updateMatrixWorld(true);
+      onRigPoseReport?.({
+        activePose: pose,
+        bodyPoseApplied: false,
+        boneMapStatus: "fallback",
+        mappedBoneSlots: 0,
+        criticalMapped: 0,
+        criticalTotal: SKINNED_POSE_CRITICAL_SLOT_COUNT,
+      });
       onSceneReady?.();
       return;
     }
@@ -255,6 +289,19 @@ function useSkinnedBodyLayout(
     scene.rotation.set(euler[0], euler[1], euler[2]);
     applyLiveShadingToGltfMaterials(scene, liveShading, "body", baseline);
     scene.updateMatrixWorld(true);
+
+    const boneMapStatus = classifySkinnedBoneMap(cache.bones);
+    const criticalMapped = countCriticalMappedBones(cache.bones);
+    const bodyPoseApplied =
+      enableSkinnedRig && boneMapStatus !== "fallback" && criticalMapped >= 5;
+    onRigPoseReport?.({
+      activePose: pose,
+      bodyPoseApplied,
+      boneMapStatus,
+      mappedBoneSlots: countMappedSkinnedBones(cache.bones),
+      criticalMapped,
+      criticalTotal: SKINNED_POSE_CRITICAL_SLOT_COUNT,
+    });
     onSceneReady?.();
   }, [
     scene,
@@ -266,6 +313,7 @@ function useSkinnedBodyLayout(
     enableSkinnedRig,
     poseBias,
     onSceneReady,
+    onRigPoseReport,
     sk,
   ]);
 }
@@ -278,6 +326,8 @@ type GltfRuntimeBodyShared = {
   /** Extra pose deltas for skinned bind vs procedural rig. */
   poseBias?: SkinnedPoseBias;
   onSceneReady?: () => void;
+  /** Dev: skinned bone pose / map status for live diagnostics. */
+  onRigPoseReport?: (r: SkinnedRigPoseReport) => void;
 };
 
 /** Bundled module: Android-safe parse path (no `file://` in GLTFLoader). */
@@ -289,6 +339,7 @@ export function GltfRuntimeBodyFromBundledModule({
   enableSkinnedRig = true,
   poseBias,
   onSceneReady,
+  onRigPoseReport,
 }: GltfRuntimeBodyShared & { bundledAssetModule: number }) {
   const gltf = use(useMemo(() => loadBundledGltfModule(bundledAssetModule), [bundledAssetModule]));
   const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShape]);
@@ -311,12 +362,16 @@ export function GltfRuntimeBodyFromBundledModule({
     enableSkinnedRig ?? true,
     poseBias,
     onSceneReady,
+    onRigPoseReport,
   );
 
   return (
-    <group scale={[sx, sy, sz]}>
-      <primitive object={scene} />
-    </group>
+    <>
+      <SkinnedSkeletonFrameUpdater scene={scene} enabled={enableSkinnedRig ?? true} />
+      <group scale={[sx, sy, sz]}>
+        <primitive object={scene} />
+      </group>
+    </>
   );
 }
 
@@ -329,6 +384,7 @@ export function GltfRuntimeBodyFromUrl({
   enableSkinnedRig = true,
   poseBias,
   onSceneReady,
+  onRigPoseReport,
 }: GltfRuntimeBodyShared & { url: string }) {
   const gltf = useLoader(GLTFLoader, url);
   const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShape]);
@@ -351,12 +407,16 @@ export function GltfRuntimeBodyFromUrl({
     enableSkinnedRig ?? true,
     poseBias,
     onSceneReady,
+    onRigPoseReport,
   );
 
   return (
-    <group scale={[sx, sy, sz]}>
-      <primitive object={scene} />
-    </group>
+    <>
+      <SkinnedSkeletonFrameUpdater scene={scene} enabled={enableSkinnedRig ?? true} />
+      <group scale={[sx, sy, sz]}>
+        <primitive object={scene} />
+      </group>
+    </>
   );
 }
 
@@ -382,6 +442,7 @@ export function GltfRuntimeBody(props: GltfRuntimeBodyProps) {
         enableSkinnedRig={props.enableSkinnedRig}
         poseBias={props.poseBias}
         onSceneReady={props.onSceneReady}
+        onRigPoseReport={props.onRigPoseReport}
       />
     );
   }
@@ -395,6 +456,7 @@ export function GltfRuntimeBody(props: GltfRuntimeBodyProps) {
         enableSkinnedRig={props.enableSkinnedRig}
         poseBias={props.poseBias}
         onSceneReady={props.onSceneReady}
+        onRigPoseReport={props.onRigPoseReport}
       />
     );
   }
