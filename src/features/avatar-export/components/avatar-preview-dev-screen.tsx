@@ -84,6 +84,7 @@ import {
   suggestionsFromRuntimeClipping,
   useAvatarSceneStore,
   type GarmentFitRegionKey,
+  type GarmentAttachmentSnapshot,
   type LiveViewportPoseFitDebug,
   type LiveViewportShadingMode,
 } from "@/features/avatar-viewport";
@@ -129,6 +130,39 @@ const FIT_REGION_LABELS: Record<GarmentFitRegionKey, string> = {
   waist: "Waist",
   hem: "Hem",
 };
+
+function fmtVec3(t: [number, number, number]): string {
+  return t.map((n) => n.toFixed(3)).join(", ");
+}
+
+const ATTACH_DEBUG_LINE = {
+  fontSize: 10,
+  fontFamily: "monospace" as const,
+  color: theme.colors.text,
+  lineHeight: 14,
+};
+
+function AttachmentDebugReadout({ snap }: { snap: GarmentAttachmentSnapshot }) {
+  return (
+    <>
+      <Text style={ATTACH_DEBUG_LINE} selectable>
+        attach source: {snap.source}
+      </Text>
+      <Text style={ATTACH_DEBUG_LINE} selectable>
+        shL [{fmtVec3(snap.shoulderL)}] · shR [{fmtVec3(snap.shoulderR)}]
+      </Text>
+      <Text style={ATTACH_DEBUG_LINE} selectable>
+        chest [{fmtVec3(snap.chest)}] · pelvis [{fmtVec3(snap.pelvisTop)}] · hipMid [{fmtVec3(snap.hipMid)}]
+      </Text>
+      <Text style={ATTACH_DEBUG_LINE} selectable>
+        anchor top [{fmtVec3(snap.topAnchor)}] · bottom [{fmtVec3(snap.bottomAnchor)}]
+      </Text>
+      <Text style={ATTACH_DEBUG_LINE} selectable>
+        sleeve pivot L [{fmtVec3(snap.leftSleevePivot)}] · R [{fmtVec3(snap.rightSleevePivot)}]
+      </Text>
+    </>
+  );
+}
 
 /** Bounds aligned with `deriveBodyRigMetrics` clamps (multipliers ~1). */
 const BODY_SHAPE_SLIDERS: {
@@ -378,6 +412,7 @@ export function AvatarPreviewDevScreen() {
   const [livePoseFitDebug, setLivePoseFitDebug] = useState<LiveViewportPoseFitDebug | null>(
     null,
   );
+  const [liveGarmentAttachDebug, setLiveGarmentAttachDebug] = useState(false);
 
   const setLiveBodyOnlyGarmentsSafe = useCallback((v: boolean) => {
     setLiveBodyOnlyGarments(v);
@@ -1427,6 +1462,7 @@ export function AvatarPreviewDevScreen() {
               bodyOnlyGarments={liveBodyOnlyGarments}
               garmentOnlyViewport={liveGarmentOnlyViewport}
               onLiveViewportPoseFitDebug={setLivePoseFitDebug}
+              garmentAttachmentDebug={liveGarmentAttachDebug}
             />
             <View style={[styles.row, styles.clipOverlayRow]}>
               <Text style={styles.fitSubnote}>Body only (no garments)</Text>
@@ -1448,6 +1484,17 @@ export function AvatarPreviewDevScreen() {
                 value={liveGarmentOnlyViewport}
                 onValueChange={setLiveGarmentOnlyViewportSafe}
                 accessibilityLabel="Toggle garment-only viewport without body mesh"
+              />
+            </View>
+            <View style={[styles.row, styles.clipOverlayRow]}>
+              <Text style={styles.fitSubnote}>Garment attach debug</Text>
+              <Text style={styles.clipOverlayHint} numberOfLines={2}>
+                Spheres in canvas at bone-derived L/R shoulder, chest, pelvis, hip mid (torso region space).
+              </Text>
+              <Switch
+                value={liveGarmentAttachDebug}
+                onValueChange={setLiveGarmentAttachDebug}
+                accessibilityLabel="Toggle garment bone attachment debug markers"
               />
             </View>
             <Text style={styles.section}>Pose / fit sync (live)</Text>
@@ -1499,6 +1546,11 @@ export function AvatarPreviewDevScreen() {
                 <Text style={styles.poseFitDebugLine} selectable>
                   fit preset: {presetKey} (viewport garmentFit)
                 </Text>
+                {livePoseFitDebug.attachment ? (
+                  <AttachmentDebugReadout snap={livePoseFitDebug.attachment} />
+                ) : (
+                  <Text style={styles.poseFitDebugLine}>attachment: (no skinned driver)</Text>
+                )}
               </View>
             ) : (
               <Text style={styles.debugNote}>Pose / fit panel: waiting for first viewport frame…</Text>

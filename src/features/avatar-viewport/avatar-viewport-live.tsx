@@ -25,7 +25,10 @@ import { theme } from "@/theme";
 import { BUNDLED_SKINNED_BODY_GLTF } from "./bundled-body-asset";
 import { AvatarProceduralScene, CameraRig } from "./avatar-procedural-scene";
 import { deformationSummary } from "./garment-deformation";
-import type { LiveViewportPoseFitDebug } from "./live-viewport-debug-types";
+import type {
+  GarmentAttachmentSnapshot,
+  LiveViewportPoseFitDebug,
+} from "./live-viewport-debug-types";
 import {
   analyzeRuntimeClipping,
   clipSeverityToEmissive,
@@ -66,6 +69,8 @@ export type AvatarViewportLiveProps = {
   garmentOnlyViewport?: boolean;
   /** Dev: pose / skinned rig / garment anchor snapshot for preview panel. */
   onLiveViewportPoseFitDebug?: (d: LiveViewportPoseFitDebug) => void;
+  /** Dev: show bone attachment markers (spheres) in the canvas. */
+  garmentAttachmentDebug?: boolean;
 };
 
 type Orbit = { theta: number; phi: number; radius: number };
@@ -128,6 +133,7 @@ export function AvatarViewportLive({
   bodyOnlyGarments = false,
   garmentOnlyViewport = false,
   onLiveViewportPoseFitDebug,
+  garmentAttachmentDebug = false,
 }: AvatarViewportLiveProps) {
   const [cam, setCam] = useState<Orbit>(() => ({ ...DEFAULT_ORBIT }));
   const camRef = useRef(cam);
@@ -298,6 +304,9 @@ export function AvatarViewportLive({
     useState<LiveViewportPoseFitDebug["skinned"]>(null);
   const [garmentAnchorsDbg, setGarmentAnchorsDbg] =
     useState<LiveViewportPoseFitDebug["anchors"]>(null);
+  const [attachmentSnapshot, setAttachmentSnapshot] = useState<GarmentAttachmentSnapshot | null>(
+    null,
+  );
 
   const envRuntimeUrls = useMemo(() => getAvatarRuntimeAssetUrls(), []);
 
@@ -340,12 +349,19 @@ export function AvatarViewportLive({
     [],
   );
 
+  const onGarmentAttachmentSnapshot = useCallback((s: GarmentAttachmentSnapshot) => {
+    setAttachmentSnapshot(s);
+  }, []);
+
   useEffect(() => {
     const noSkinnedRuntime =
       FORCE_PROCEDURAL_BODY ||
       useProceduralBody ||
       (runtimeBodyBundledModule == null && !resolvedRuntime.bodyGltfUrl);
-    if (noSkinnedRuntime || garmentOnlyViewport) setSkinnedPoseReport(null);
+    if (noSkinnedRuntime || garmentOnlyViewport) {
+      setSkinnedPoseReport(null);
+      setAttachmentSnapshot(null);
+    }
   }, [
     useProceduralBody,
     runtimeBodyBundledModule,
@@ -354,18 +370,24 @@ export function AvatarViewportLive({
   ]);
 
   useEffect(() => {
+    if (garmentOnlyViewport || bodyOnlyGarments) setAttachmentSnapshot(null);
+  }, [garmentOnlyViewport, bodyOnlyGarments]);
+
+  useEffect(() => {
     onLiveViewportPoseFitDebug?.({
       pose,
       preset,
       garmentPoseMatchesBody: true,
       skinned: skinnedPoseReport,
       anchors: garmentAnchorsDbg,
+      attachment: attachmentSnapshot,
     });
   }, [
     pose,
     preset,
     skinnedPoseReport,
     garmentAnchorsDbg,
+    attachmentSnapshot,
     onLiveViewportPoseFitDebug,
   ]);
 
@@ -568,6 +590,8 @@ export function AvatarViewportLive({
               onRuntimeBodyLoaded={onRuntimeBodyLoaded}
               onSkinnedRigPoseReport={onSkinnedRigPoseReport}
               onGarmentAnchorsDebug={onGarmentAnchorsDebug}
+              garmentAttachmentDebug={garmentAttachmentDebug}
+              onGarmentAttachmentSnapshot={onGarmentAttachmentSnapshot}
             />
           </Suspense>
         </Canvas>
@@ -608,6 +632,13 @@ export function AvatarViewportLive({
           {pose === "walk" ? (
             <Text style={styles.debugSub} selectable>
               walk stress: use clip overlay + proxy severities above for shoulder / torso / hem drift
+            </Text>
+          ) : null}
+          {attachmentSnapshot ? (
+            <Text style={styles.debugLine} selectable>
+              garment attach: {attachmentSnapshot.source} · top Y {attachmentSnapshot.topAnchor[1].toFixed(3)} ·
+              sleeves L/R Y {attachmentSnapshot.leftSleevePivot[1].toFixed(2)} /{" "}
+              {attachmentSnapshot.rightSleevePivot[1].toFixed(2)}
             </Text>
           ) : null}
           {deformDebugLines

@@ -28,10 +28,25 @@ export type GarmentAnchorFitDebug = {
   skinnedBodyActive: boolean;
 };
 
+/** Resolved garment attachment (torso region space) from skinned bones or rig fallback. */
+export type GarmentAttachmentSnapshot = {
+  shoulderL: [number, number, number];
+  shoulderR: [number, number, number];
+  chest: [number, number, number];
+  pelvisTop: [number, number, number];
+  hipMid: [number, number, number];
+  source: "skinned_bones" | "rig_fallback";
+  topAnchor: [number, number, number];
+  bottomAnchor: [number, number, number];
+  leftSleevePivot: [number, number, number];
+  rightSleevePivot: [number, number, number];
+};
+
 export type LiveViewportPoseFitDebug = {
   pose: DevAvatarPoseKey;
   preset: DevAvatarPresetKey;
   garmentPoseMatchesBody: boolean;
   skinned: SkinnedRigPoseReport | null;
   anchors: GarmentAnchorFitDebug | null;
+  attachment?: GarmentAttachmentSnapshot | null;
 };
