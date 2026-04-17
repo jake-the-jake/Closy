@@ -40,7 +40,8 @@ export const DEFAULT_AVATAR_VIEWPORT_NAV: AvatarViewportNavSettings = {
   invertOrbitY: false,
   orbitSensitivity: 1,
   zoomSensitivity: 1,
-  damping: 0.2,
+  /** Lower = snappier orbit response (still smoothed when gesture idle). */
+  damping: 0.11,
   minRadius: 1.45,
   maxRadius: 8,
   targetYOffset: 0,
@@ -56,5 +57,31 @@ export const DEFAULT_AVATAR_VIEWPORT_NAV: AvatarViewportNavSettings = {
 export function mergeAvatarViewportNav(
   partial?: Partial<AvatarViewportNavSettings> | null,
 ): AvatarViewportNavSettings {
-  return { ...DEFAULT_AVATAR_VIEWPORT_NAV, ...partial };
+  const m = { ...DEFAULT_AVATAR_VIEWPORT_NAV, ...partial };
+  const minR = Number.isFinite(m.minRadius) ? m.minRadius : DEFAULT_AVATAR_VIEWPORT_NAV.minRadius;
+  const maxR = Number.isFinite(m.maxRadius) ? m.maxRadius : DEFAULT_AVATAR_VIEWPORT_NAV.maxRadius;
+  const polarMin = Number.isFinite(m.polarMin) ? m.polarMin : DEFAULT_AVATAR_VIEWPORT_NAV.polarMin;
+  const polarMax = Number.isFinite(m.polarMax) ? m.polarMax : DEFAULT_AVATAR_VIEWPORT_NAV.polarMax;
+  const saneMin = Math.min(6, Math.max(0.85, minR));
+  const saneMax = Math.max(saneMin + 0.05, Math.min(14, Math.max(1.6, maxR)));
+  const sanePolarMin = Math.min(1.2, Math.max(0.04, polarMin));
+  const sanePolarMax = Math.max(sanePolarMin + 0.02, Math.min(1.58, polarMax));
+  return {
+    ...m,
+    orbitSensitivity: Math.min(2.5, Math.max(0.35, m.orbitSensitivity || 1)),
+    zoomSensitivity: Math.min(2.2, Math.max(0.4, m.zoomSensitivity || 1)),
+    damping: Math.min(0.65, Math.max(0.05, m.damping || DEFAULT_AVATAR_VIEWPORT_NAV.damping)),
+    targetYOffset: Math.min(0.6, Math.max(-0.6, m.targetYOffset || 0)),
+    yawSpeedMultiplier: Math.min(2.4, Math.max(0.35, m.yawSpeedMultiplier || 1)),
+    orbitPitchRadPerPx: Math.min(0.02, Math.max(0.001, m.orbitPitchRadPerPx || 0.0062)),
+    orbitYawRadPerPx: Math.min(0.02, Math.max(0.001, m.orbitYawRadPerPx || 0.0065)),
+    minRadius: saneMin,
+    maxRadius: saneMax,
+    polarMin: sanePolarMin,
+    polarMax: sanePolarMax,
+    enablePan: !!m.enablePan,
+    enableRoll: !!m.enableRoll,
+    invertOrbitX: !!m.invertOrbitX,
+    invertOrbitY: !!m.invertOrbitY,
+  };
 }

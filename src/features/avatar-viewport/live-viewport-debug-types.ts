@@ -42,6 +42,40 @@ export type GarmentAttachmentSnapshot = {
   rightSleevePivot: [number, number, number];
 };
 
+/** Throttled world-space snapshot from the live GL canvas (dev / framing proof). */
+export type LiveViewportSceneDiagnostics = {
+  bodyLoaded: boolean;
+  bodyRootWorld: [number, number, number];
+  boundsCenter: [number, number, number];
+  boundsSize: [number, number, number];
+  cameraPosition: [number, number, number];
+  cameraTarget: [number, number, number];
+  distTargetToBodyCenter: number;
+  /** Rough: body center in front of camera and within a plausible framing band. */
+  framedHeuristic: boolean;
+  skeletonRootWorld: [number, number, number] | null;
+};
+
+/** Live body path + intent (dev diagnostics; avoids silent bundled↔procedural drift). */
+export type LiveViewportBodySourceDebug = {
+  /** What the viewport is actually drawing for the body mesh. */
+  active:
+    | "bundled_skinned"
+    | "external_skinned_url"
+    | "procedural_user"
+    | "procedural_env_forced"
+    | "procedural_fallback_error"
+    | "procedural_scene_default";
+  /** User-facing intent from props (before runtime failure fallback). */
+  userIntent: "bundled_or_url" | "procedural";
+  reason:
+    | "default_bundled"
+    | "user_procedural_toggle"
+    | "env_force_procedural"
+    | "runtime_url_override"
+    | "skinned_load_failed_fallback";
+};
+
 export type LiveViewportPoseFitDebug = {
   pose: DevAvatarPoseKey;
   preset: DevAvatarPresetKey;
@@ -49,4 +83,21 @@ export type LiveViewportPoseFitDebug = {
   skinned: SkinnedRigPoseReport | null;
   anchors: GarmentAnchorFitDebug | null;
   attachment?: GarmentAttachmentSnapshot | null;
+  bodySource?: LiveViewportBodySourceDebug | null;
+  /** Dev workstation: startup baseline + camera generation from preview screen. */
+  startup?: {
+    visibleBaselineApplied: boolean;
+    viewportBaselineNonce: number;
+    combinedViewOk: boolean;
+    cameraFramedHint: boolean;
+  } | null;
+  visibility?: {
+    mode: "combined" | "body_only" | "garment_only" | "invalid";
+    bodyVisible: boolean;
+    garmentsVisible: boolean;
+    safeDefaultActive: boolean;
+    cameraTargetValid: boolean;
+  };
+  /** Present when dev scene inspect is enabled (throttled, not every React frame). */
+  scene?: LiveViewportSceneDiagnostics | null;
 };

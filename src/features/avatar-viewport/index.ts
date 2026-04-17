@@ -1,8 +1,14 @@
-export { AvatarViewportLive, type AvatarViewportLiveProps } from "./avatar-viewport-live";
+export {
+  AvatarViewportLive,
+  type AvatarViewportDevSceneInspect,
+  type AvatarViewportLiveProps,
+} from "./avatar-viewport-live";
 export type {
   GarmentAnchorFitDebug,
   GarmentAttachmentSnapshot,
+  LiveViewportBodySourceDebug,
   LiveViewportPoseFitDebug,
+  LiveViewportSceneDiagnostics,
   SkinnedRigPoseReport,
 } from "./live-viewport-debug-types";
 export {

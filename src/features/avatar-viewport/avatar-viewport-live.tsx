@@ -35,7 +35,9 @@ import {
 import { deformationSummary } from "./garment-deformation";
 import type {
   GarmentAttachmentSnapshot,
+  LiveViewportBodySourceDebug,
   LiveViewportPoseFitDebug,
+  LiveViewportSceneDiagnostics,
 } from "./live-viewport-debug-types";
 import {
   analyzeRuntimeClipping,
@@ -51,6 +53,14 @@ import {
   runtimeAssetSummary,
   type AvatarRuntimeAssetUrls,
 } from "./runtime-asset-sources";
+
+export type AvatarViewportDevSceneInspect = {
+  enabled: boolean;
+  showMarkers: boolean;
+  debugBrightBody: boolean;
+  /** Increment (e.g. button) to snap camera to measured body bounds. */
+  manualFrameBoundsNonce: number;
+};
 
 export type AvatarViewportLiveProps = {
   pose: DevAvatarPoseKey;
@@ -85,6 +95,14 @@ export type AvatarViewportLiveProps = {
   layout?: "standalone" | "workbench";
   /** Increment from parent to snap camera to defaults without remounting. */
   cameraResetNonce?: number;
+  /** Ask parent to restore a guaranteed visible baseline. */
+  onRequestVisibleBaseline?: (reason: string) => void;
+  /** Dev workbench: scene-space markers, bounds framing, bright-body visibility proof. */
+  devSceneInspect?: AvatarViewportDevSceneInspect;
+  /** Set true from preview after `useLayoutEffect` baseline so diagnostics know startup ordering. */
+  viewportBaselineReady?: boolean;
+  /** Baseline / camera-reset generation from preview (diagnostics). */
+  viewportBaselineNonce?: number;
 };
 
 const DEFAULT_ORBIT: OrbitSpherical = { theta: 0.48, phi: 1.02, radius: 3.55 };
@@ -144,6 +162,10 @@ export function AvatarViewportLive({
   navSettings,
   layout = "standalone",
   cameraResetNonce = 0,
+  onRequestVisibleBaseline,
+  devSceneInspect,
+  viewportBaselineReady = false,
+  viewportBaselineNonce = 0,
 }: AvatarViewportLiveProps) {
   const navMerged = useMemo(() => mergeAvatarViewportNav(navSettings ?? undefined), [navSettings]);
   const navRef = useRef(navMerged);
@@ -152,6 +174,9 @@ export function AvatarViewportLive({
   const desiredRef = useRef<OrbitSpherical>({ ...DEFAULT_ORBIT });
   const smoothRef = useRef<OrbitSpherical>({ ...DEFAULT_ORBIT });
   const targetPanRef = useRef({ x: 0, z: 0 });
+  const targetBaseRef = useRef<[number, number, number]>([...TARGET]);
+  /** Workbench: true while pan/pinch gesture is active — CameraRig snaps smooth→desired for responsiveness. */
+  const orbitGestureActiveRef = useRef(false);
 
   const panBaseRef = useRef<OrbitSpherical>({ ...DEFAULT_ORBIT });
   const panBasePanRef = useRef({ x: 0, z: 0 });
@@ -159,6 +184,9 @@ export function AvatarViewportLive({
   const mountedRef = useRef(true);
   const lastGestureLog = useRef(0);
   const lastResetNonce = useRef(cameraResetNonce);
+  const [safeDefaultActive, setSafeDefaultActive] = useState(false);
+  const [cameraTargetValid, setCameraTargetValid] = useState(true);
+  const visibilityGuardedRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -174,7 +202,36 @@ export function AvatarViewportLive({
     desiredRef.current = sanitizeOrbit(o, o, navRef.current);
     smoothRef.current = { ...desiredRef.current };
     targetPanRef.current = { x: 0, z: 0 };
+    targetBaseRef.current = [...TARGET];
+    setSafeDefaultActive(false);
+    setCameraTargetValid(true);
   }, [cameraResetNonce]);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    const prev = desiredRef.current;
+    const next = sanitizeOrbit(prev, prev, nav);
+    const corrected =
+      Math.abs(next.phi - prev.phi) > 1e-4 ||
+      Math.abs(next.radius - prev.radius) > 1e-4;
+    const targetOk = Number.isFinite(nav.targetYOffset) && Math.abs(nav.targetYOffset) <= 0.6;
+    setCameraTargetValid(targetOk);
+    if (corrected || !targetOk) {
+      desiredRef.current = next;
+      smoothRef.current = sanitizeOrbit(smoothRef.current, next, nav);
+      if (!targetOk) {
+        targetBaseRef.current = [...TARGET];
+      }
+      if (__DEV__) {
+        console.log("[AvatarViewport] nav clamp / target check", {
+          corrected,
+          targetOk,
+          resetLookTarget: !targetOk,
+        });
+      }
+      setSafeDefaultActive(!targetOk);
+    }
+  }, [navMerged]);
 
   const applyDesired = useCallback((updater: (d: OrbitSpherical) => OrbitSpherical) => {
     const prev = desiredRef.current;
@@ -191,6 +248,7 @@ export function AvatarViewportLive({
 
   const panBeginJS = useCallback(() => {
     panBaseRef.current = { ...desiredRef.current };
+    orbitGestureActiveRef.current = true;
     if (__DEV__) {
       console.log("[AvatarViewport] pan begin", { base: { ...panBaseRef.current } });
     }
@@ -216,10 +274,13 @@ export function AvatarViewportLive({
       phi: cur.phi + dPitch,
       radius: b.radius,
     }));
-    logThrottle("[AvatarViewport] pan update");
-  }, [applyDesired, logThrottle]);
+    if (layout !== "workbench") {
+      logThrottle("[AvatarViewport] pan update");
+    }
+  }, [applyDesired, logThrottle, layout]);
 
   const panEndJS = useCallback(() => {
+    orbitGestureActiveRef.current = false;
     if (__DEV__) console.log("[AvatarViewport] pan end");
   }, []);
 
@@ -242,6 +303,7 @@ export function AvatarViewportLive({
 
   const pinchBeginJS = useCallback(() => {
     pinchRadius0Ref.current = desiredRef.current.radius;
+    orbitGestureActiveRef.current = true;
     if (__DEV__) {
       console.log("[AvatarViewport] pinch begin", {
         radius0: pinchRadius0Ref.current,
@@ -260,10 +322,13 @@ export function AvatarViewportLive({
       ...c,
       radius: raw,
     }));
-    logThrottle("[AvatarViewport] pinch update");
-  }, [applyDesired, logThrottle]);
+    if (layout !== "workbench") {
+      logThrottle("[AvatarViewport] pinch update");
+    }
+  }, [applyDesired, logThrottle, layout]);
 
   const pinchEndJS = useCallback(() => {
+    orbitGestureActiveRef.current = false;
     if (__DEV__) console.log("[AvatarViewport] pinch end");
   }, []);
 
@@ -353,11 +418,28 @@ export function AvatarViewportLive({
     });
   }, [pose, preset, garmentFit, liveShading]);
 
+  useEffect(() => {
+    const bodyVisible = !garmentOnlyViewport;
+    const garmentsVisible = !bodyOnlyGarments;
+    if (bodyVisible || garmentsVisible) {
+      visibilityGuardedRef.current = false;
+      return;
+    }
+    if (visibilityGuardedRef.current) return;
+    visibilityGuardedRef.current = true;
+    setSafeDefaultActive(true);
+    if (__DEV__) {
+      console.log("[AvatarViewport] visibility reset -> safe default framing");
+    }
+    onRequestVisibleBaseline?.("both_body_and_garments_hidden");
+  }, [bodyOnlyGarments, garmentOnlyViewport, onRequestVisibleBaseline]);
+
   const resetCamera = () => {
     const o = { ...DEFAULT_ORBIT };
     desiredRef.current = sanitizeOrbit(o, o, navRef.current);
     smoothRef.current = { ...desiredRef.current };
     targetPanRef.current = { x: 0, z: 0 };
+    targetBaseRef.current = [...TARGET];
     if (__DEV__) console.log("[AvatarViewport] reset cam (press)");
   };
   const zoomIn = () => {
@@ -378,6 +460,8 @@ export function AvatarViewportLive({
   const [skinnedBodyLoadStatus, setSkinnedBodyLoadStatus] = useState<
     "idle" | "pending" | "loaded" | "failed"
   >("idle");
+  const [bodyLoadGeneration, setBodyLoadGeneration] = useState(0);
+  const bodyReadyEmittedRef = useRef(false);
   const skinnedBodyLoadErrLogged = useRef<string | null>(null);
   const [skinnedPoseReport, setSkinnedPoseReport] =
     useState<LiveViewportPoseFitDebug["skinned"]>(null);
@@ -414,8 +498,67 @@ export function AvatarViewportLive({
     } satisfies AvatarRuntimeAssetUrls;
   }, [runtimeAssets, useProceduralBody, runtimeBodyBundledModule]);
 
+  const bodyAssetKey = useMemo(
+    () => `${runtimeBodyBundledModule ?? ""}|${resolvedRuntime.bodyGltfUrl ?? ""}`,
+    [runtimeBodyBundledModule, resolvedRuntime.bodyGltfUrl],
+  );
+
+  useEffect(() => {
+    bodyReadyEmittedRef.current = false;
+    setBodyLoadGeneration(0);
+  }, [bodyAssetKey]);
+
+  const [sceneDiagnostics, setSceneDiagnostics] = useState<LiveViewportSceneDiagnostics | null>(
+    null,
+  );
+  const lastSceneDiagJson = useRef("");
+  const handleSceneDiagnostics = useCallback((d: LiveViewportSceneDiagnostics) => {
+    const j = JSON.stringify(d);
+    if (j === lastSceneDiagJson.current) return;
+    lastSceneDiagJson.current = j;
+    setSceneDiagnostics(d);
+  }, []);
+
+  useEffect(() => {
+    if (!devSceneInspect?.enabled) {
+      lastSceneDiagJson.current = "";
+      setSceneDiagnostics(null);
+    }
+  }, [devSceneInspect?.enabled]);
+
+  const sceneSpaceDebug = useMemo(() => {
+    if (!__DEV__ || !devSceneInspect?.enabled || layout !== "workbench") return null;
+    return {
+      enabled: true,
+      showMarkers: devSceneInspect.showMarkers,
+      debugBrightBody: devSceneInspect.debugBrightBody,
+      bodyLoadGeneration,
+      manualFrameBoundsNonce: devSceneInspect.manualFrameBoundsNonce,
+      onSceneDiagnostics: handleSceneDiagnostics,
+      orbit: {
+        desiredRef,
+        smoothRef,
+        navRef,
+        targetBaseRef,
+        targetPanRef,
+      },
+    };
+  }, [
+    devSceneInspect?.enabled,
+    devSceneInspect?.showMarkers,
+    devSceneInspect?.debugBrightBody,
+    devSceneInspect?.manualFrameBoundsNonce,
+    layout,
+    bodyLoadGeneration,
+    handleSceneDiagnostics,
+  ]);
+
   const onRuntimeBodyLoaded = useCallback(() => {
     setSkinnedBodyLoadStatus("loaded");
+    if (!bodyReadyEmittedRef.current) {
+      bodyReadyEmittedRef.current = true;
+      setBodyLoadGeneration((g) => g + 1);
+    }
   }, []);
 
   const onSkinnedRigPoseReport = useCallback(
@@ -445,6 +588,54 @@ export function AvatarViewportLive({
     setAttachmentSnapshot(s);
   }, []);
 
+  const skinnedBodyPathActive =
+    runtimeBodyBundledModule != null || resolvedRuntime.bodyGltfUrl != null;
+  const bodyLoadForUi =
+    skinnedBodyPathActive && skinnedBodyLoadStatus === "idle"
+      ? "pending"
+      : skinnedBodyLoadStatus;
+
+  const bodySourceDebug = useMemo((): LiveViewportBodySourceDebug | null => {
+    if (!__DEV__) return null;
+    const userIntent: LiveViewportBodySourceDebug["userIntent"] =
+      useProceduralBody || FORCE_PROCEDURAL_BODY ? "procedural" : "bundled_or_url";
+
+    let reason: LiveViewportBodySourceDebug["reason"] = "default_bundled";
+    if (FORCE_PROCEDURAL_BODY) reason = "env_force_procedural";
+    else if (useProceduralBody) reason = "user_procedural_toggle";
+    else if (runtimeAssets?.bodyGltfUrl != null || envRuntimeUrls.bodyGltfUrl != null) {
+      reason = "runtime_url_override";
+    }
+
+    let active: LiveViewportBodySourceDebug["active"];
+    if (FORCE_PROCEDURAL_BODY) {
+      active = "procedural_env_forced";
+    } else if (useProceduralBody) {
+      active = "procedural_user";
+    } else if (
+      skinnedBodyLoadStatus === "failed" &&
+      (runtimeBodyBundledModule != null || resolvedRuntime.bodyGltfUrl != null)
+    ) {
+      active = "procedural_fallback_error";
+      reason = "skinned_load_failed_fallback";
+    } else if (resolvedRuntime.bodyGltfUrl) {
+      active = "external_skinned_url";
+    } else if (runtimeBodyBundledModule != null) {
+      active = "bundled_skinned";
+    } else {
+      active = "procedural_scene_default";
+    }
+
+    return { active, userIntent, reason };
+  }, [
+    useProceduralBody,
+    runtimeAssets?.bodyGltfUrl,
+    envRuntimeUrls.bodyGltfUrl,
+    runtimeBodyBundledModule,
+    resolvedRuntime.bodyGltfUrl,
+    skinnedBodyLoadStatus,
+  ]);
+
   useEffect(() => {
     const noSkinnedRuntime =
       FORCE_PROCEDURAL_BODY ||
@@ -472,6 +663,16 @@ export function AvatarViewportLive({
 
   useEffect(() => {
     if (!onLiveViewportPoseFitDebug) return;
+    const bodyVisible = !garmentOnlyViewport;
+    const garmentsVisible = !bodyOnlyGarments;
+    const mode =
+      bodyVisible && garmentsVisible
+        ? "combined"
+        : bodyVisible
+          ? "body_only"
+          : garmentsVisible
+            ? "garment_only"
+            : "invalid";
     const payload: LiveViewportPoseFitDebug = {
       pose,
       preset,
@@ -479,6 +680,24 @@ export function AvatarViewportLive({
       skinned: skinnedPoseReport,
       anchors: garmentAnchorsDbg,
       attachment: attachmentSnapshot,
+      bodySource: layout === "workbench" ? bodySourceDebug : null,
+      startup:
+        layout === "workbench"
+          ? {
+              visibleBaselineApplied: viewportBaselineReady,
+              viewportBaselineNonce,
+              combinedViewOk: mode === "combined",
+              cameraFramedHint: sceneDiagnostics?.framedHeuristic ?? false,
+            }
+          : null,
+      visibility: {
+        mode,
+        bodyVisible,
+        garmentsVisible,
+        safeDefaultActive,
+        cameraTargetValid,
+      },
+      scene: devSceneInspect?.enabled ? sceneDiagnostics : null,
     };
     const j = JSON.stringify(payload);
     if (j === lastLivePoseFitJson.current) return;
@@ -490,6 +709,16 @@ export function AvatarViewportLive({
     skinnedPoseReport,
     garmentAnchorsDbg,
     attachmentSnapshot,
+    bodyOnlyGarments,
+    garmentOnlyViewport,
+    safeDefaultActive,
+    cameraTargetValid,
+    devSceneInspect?.enabled,
+    sceneDiagnostics,
+    layout,
+    bodySourceDebug,
+    viewportBaselineReady,
+    viewportBaselineNonce,
     onLiveViewportPoseFitDebug,
   ]);
 
@@ -514,14 +743,6 @@ export function AvatarViewportLive({
       setSkinnedBodyLoadStatus("idle");
     }
   }, [runtimeBodyBundledModule, resolvedRuntime.bodyGltfUrl]);
-
-  const skinnedBodyPathActive =
-    runtimeBodyBundledModule != null || resolvedRuntime.bodyGltfUrl != null;
-  /** First paint is `idle` before `useEffect` sets `pending`; show pending in diagnostics. */
-  const bodyLoadForUi =
-    skinnedBodyPathActive && skinnedBodyLoadStatus === "idle"
-      ? "pending"
-      : skinnedBodyLoadStatus;
 
   const runtimeSummary = useMemo(() => {
     const base = runtimeAssetSummary(resolvedRuntime);
@@ -689,8 +910,9 @@ export function AvatarViewportLive({
               desiredRef={desiredRef}
               smoothRef={smoothRef}
               navRef={navRef}
-              targetBase={TARGET}
+              targetBaseRef={targetBaseRef}
               targetPanRef={targetPanRef}
+              orbitGestureActiveRef={layout === "workbench" ? orbitGestureActiveRef : undefined}
             />
             <AvatarProceduralScene
               pose={pose}
@@ -715,6 +937,7 @@ export function AvatarViewportLive({
               onGarmentAnchorsDebug={onGarmentAnchorsDebug}
               garmentAttachmentDebug={garmentAttachmentDebug}
               onGarmentAttachmentSnapshot={onGarmentAttachmentSnapshot}
+              sceneSpaceDebug={sceneSpaceDebug}
             />
           </Suspense>
         </Canvas>
@@ -725,6 +948,11 @@ export function AvatarViewportLive({
             collapsable={false}
           />
         </GestureDetector>
+        {bodyLoadForUi === "pending" ? (
+          <View style={styles.loadingOverlay}>
+            <Text style={styles.loadingText}>loading body...</Text>
+          </View>
+        ) : null}
       </View>
 
       {__DEV__ && !isWorkbench ? (
@@ -823,6 +1051,22 @@ const styles = StyleSheet.create({
   touchOverlay: {
     zIndex: 1,
     backgroundColor: "transparent",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    left: 8,
+    top: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: theme.radii.sm,
+    backgroundColor: "rgba(20,20,20,0.55)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  loadingText: {
+    color: "#f5f5f5",
+    fontSize: 10,
+    fontFamily: "monospace",
   },
   debugBox: {
     padding: theme.spacing.xs,

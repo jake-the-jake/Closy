@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -74,6 +75,7 @@ import { runAvatarExportMock } from "@/features/avatar-export/runner/avatarExpor
 import {
   analyzeRuntimeClipping,
   AvatarViewportLive,
+  type AvatarViewportDevSceneInspect,
   buildExportRequestFromAvatarScene,
   getAvatarRuntimeAssetUrls,
   LIVE_VIEWPORT_SHADING_LABELS,
@@ -358,6 +360,7 @@ export function AvatarPreviewDevScreen() {
   const garmentFit = useAvatarSceneStore((s) => s.garmentFit);
   const setGarmentFit = useAvatarSceneStore((s) => s.setGarmentFit);
   const patchGarmentFit = useAvatarSceneStore((s) => s.patchGarmentFit);
+  const resetGarmentFit = useAvatarSceneStore((s) => s.resetGarmentFit);
   const liveViewportShading = useAvatarSceneStore((s) => s.liveViewportShading);
   const setLiveViewportShading = useAvatarSceneStore((s) => s.setLiveViewportShading);
   const offlineFitDebugMode = useAvatarSceneStore((s) => s.offlineFitDebugMode);
@@ -434,6 +437,26 @@ export function AvatarPreviewDevScreen() {
     null,
   );
   const [liveGarmentAttachDebug, setLiveGarmentAttachDebug] = useState(false);
+  const [liveSceneInspectEnabled, setLiveSceneInspectEnabled] = useState(true);
+  const [liveSceneMarkers, setLiveSceneMarkers] = useState(true);
+  const [liveSceneBrightBody, setLiveSceneBrightBody] = useState(false);
+  const [manualFrameBoundsNonce, setManualFrameBoundsNonce] = useState(0);
+  const [viewportBaselineReady, setViewportBaselineReady] = useState(false);
+
+  const devSceneInspect = useMemo<AvatarViewportDevSceneInspect>(
+    () => ({
+      enabled: liveSceneInspectEnabled,
+      showMarkers: liveSceneMarkers,
+      debugBrightBody: liveSceneBrightBody,
+      manualFrameBoundsNonce,
+    }),
+    [
+      liveSceneInspectEnabled,
+      liveSceneMarkers,
+      liveSceneBrightBody,
+      manualFrameBoundsNonce,
+    ],
+  );
 
   const setLiveBodyOnlyGarmentsSafe = useCallback((v: boolean) => {
     setLiveBodyOnlyGarments(v);
@@ -476,6 +499,48 @@ export function AvatarPreviewDevScreen() {
   const viewportNav = useAvatarSceneStore((s) => s.viewportNav);
   const patchViewportNav = useAvatarSceneStore((s) => s.patchViewportNav);
   const resetViewportNav = useAvatarSceneStore((s) => s.resetViewportNav);
+  const resetVisibleBaseline = useCallback(
+    (reason: "first_open" | "manual" | "guard") => {
+      setPose("relaxed");
+      setPresetKey("default");
+      setLiveViewportShading("normal");
+      setLiveBodyOnlyGarments(false);
+      setLiveGarmentOnlyViewport(false);
+      setLiveGarmentAttachDebug(false);
+      setLiveClipOverlay(false);
+      setLiveViewportUseProceduralBody(false);
+      setLiveSceneInspectEnabled(true);
+      setLiveSceneMarkers(true);
+      setLiveSceneBrightBody(false);
+      setManualFrameBoundsNonce(0);
+      setLiveFitActiveRegion("global");
+      clearLiveFitBaseline();
+      resetGarmentFit();
+      resetViewportNav();
+      setCamResetNonce((n) => n + 1);
+      if (reason !== "first_open") {
+        setStatus(
+          reason === "guard"
+            ? "Viewport visibility reset -> safe default framing."
+            : "Reset visible baseline applied.",
+        );
+      }
+    },
+    [
+      resetViewportNav,
+      resetGarmentFit,
+      clearLiveFitBaseline,
+      setLiveFitActiveRegion,
+      setLiveClipOverlay,
+      setLiveViewportShading,
+      setPose,
+      setPresetKey,
+    ],
+  );
+  useLayoutEffect(() => {
+    resetVisibleBaseline("first_open");
+    setViewportBaselineReady(true);
+  }, [resetVisibleBaseline]);
   const [reuseRenderId, setReuseRenderId] = useState(false);
   const [loadSnapshot, setLoadSnapshot] = useState<LoadSnapshot | null>(null);
   const [annotations, setAnnotations] = useState<
@@ -1332,6 +1397,10 @@ export function AvatarPreviewDevScreen() {
                 layout="workbench"
                 navSettings={viewportNav}
                 cameraResetNonce={camResetNonce}
+                onRequestVisibleBaseline={() => resetVisibleBaseline("guard")}
+                devSceneInspect={__DEV__ ? devSceneInspect : undefined}
+                viewportBaselineReady={viewportBaselineReady}
+                viewportBaselineNonce={camResetNonce}
               />
             </View>
             <ScrollView
@@ -1443,6 +1512,11 @@ export function AvatarPreviewDevScreen() {
                       label="Reset camera"
                       variant="secondary"
                       onPress={() => setCamResetNonce((n) => n + 1)}
+                    />
+                    <AppButton
+                      label="Reset visible baseline"
+                      variant="secondary"
+                      onPress={() => resetVisibleBaseline("manual")}
                     />
                   </View>
                 </>
@@ -1674,6 +1748,56 @@ export function AvatarPreviewDevScreen() {
                             : "n/a"}{" "}
                         · map {livePoseFitDebug.skinned?.boneMapStatus ?? "—"}
                       </Text>
+                      <Text style={styles.poseFitDebugLine} selectable>
+                        visible mode: {livePoseFitDebug.visibility?.mode ?? "—"} · body{" "}
+                        {livePoseFitDebug.visibility?.bodyVisible ? "yes" : "no"} · garments{" "}
+                        {livePoseFitDebug.visibility?.garmentsVisible ? "yes" : "no"}
+                      </Text>
+                      <Text style={styles.poseFitDebugLine} selectable>
+                        safe default active:{" "}
+                        {livePoseFitDebug.visibility?.safeDefaultActive ? "yes" : "no"} · camera target valid:{" "}
+                        {livePoseFitDebug.visibility?.cameraTargetValid ? "yes" : "no"}
+                      </Text>
+                      {livePoseFitDebug.startup ? (
+                        <>
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            startup baseline:{" "}
+                            {livePoseFitDebug.startup.visibleBaselineApplied ? "ready" : "no"} · nonce{" "}
+                            {livePoseFitDebug.startup.viewportBaselineNonce} · combined{" "}
+                            {livePoseFitDebug.startup.combinedViewOk ? "ok" : "no"} · cam framed hint{" "}
+                            {livePoseFitDebug.startup.cameraFramedHint ? "yes" : "no"}
+                          </Text>
+                        </>
+                      ) : null}
+                      {livePoseFitDebug.bodySource ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          body source: {livePoseFitDebug.bodySource.active} · intent{" "}
+                          {livePoseFitDebug.bodySource.userIntent} · reason {livePoseFitDebug.bodySource.reason}
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.scene ? (
+                        <>
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            scene body loaded: {livePoseFitDebug.scene.bodyLoaded ? "yes" : "no"} · framed
+                            (heuristic): {livePoseFitDebug.scene.framedHeuristic ? "yes" : "no"}
+                          </Text>
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            body root [{fmtVec3(livePoseFitDebug.scene.bodyRootWorld)}] · bounds c [
+                            {fmtVec3(livePoseFitDebug.scene.boundsCenter)}] · size [
+                            {fmtVec3(livePoseFitDebug.scene.boundsSize)}]
+                          </Text>
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            cam pos [{fmtVec3(livePoseFitDebug.scene.cameraPosition)}] · target [
+                            {fmtVec3(livePoseFitDebug.scene.cameraTarget)}] · dist target→body{" "}
+                            {livePoseFitDebug.scene.distTargetToBodyCenter.toFixed(3)}
+                          </Text>
+                          {livePoseFitDebug.scene.skeletonRootWorld ? (
+                            <Text style={styles.poseFitDebugLine} selectable>
+                              skeleton root [{fmtVec3(livePoseFitDebug.scene.skeletonRootWorld)}]
+                            </Text>
+                          ) : null}
+                        </>
+                      ) : null}
                       {livePoseFitDebug.attachment ? (
                         <AttachmentDebugReadout snap={livePoseFitDebug.attachment} />
                       ) : (
@@ -1683,6 +1807,39 @@ export function AvatarPreviewDevScreen() {
                   ) : (
                     <Text style={styles.debugNote}>Waiting for first frame…</Text>
                   )}
+                  <Text style={styles.fitSubnote}>Scene space inspect (viewport)</Text>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.poseFitDebugLine}>Enable</Text>
+                    <Switch
+                      value={liveSceneInspectEnabled}
+                      onValueChange={setLiveSceneInspectEnabled}
+                      accessibilityLabel="Scene space inspect"
+                    />
+                  </View>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.poseFitDebugLine}>In-canvas markers + grid</Text>
+                    <Switch
+                      value={liveSceneMarkers}
+                      onValueChange={setLiveSceneMarkers}
+                      disabled={!liveSceneInspectEnabled}
+                      accessibilityLabel="Scene markers"
+                    />
+                  </View>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.poseFitDebugLine}>Debug bright body material</Text>
+                    <Switch
+                      value={liveSceneBrightBody}
+                      onValueChange={setLiveSceneBrightBody}
+                      disabled={!liveSceneInspectEnabled}
+                      accessibilityLabel="Bright body material"
+                    />
+                  </View>
+                  <AppButton
+                    label="Frame avatar bounds"
+                    variant="secondary"
+                    onPress={() => setManualFrameBoundsNonce((n) => n + 1)}
+                    disabled={!liveSceneInspectEnabled}
+                  />
                   <View style={[styles.row, styles.clipOverlayRow]}>
                     <Text style={styles.fitSubnote}>Runtime clip overlay</Text>
                     <Switch

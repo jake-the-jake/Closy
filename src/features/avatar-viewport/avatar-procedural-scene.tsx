@@ -34,8 +34,13 @@ import {
 import type {
   GarmentAnchorFitDebug,
   GarmentAttachmentSnapshot,
+  LiveViewportSceneDiagnostics,
   SkinnedRigPoseReport,
 } from "./live-viewport-debug-types";
+import {
+  ViewportSceneSpaceDebug,
+  type SceneSpaceDebugOrbitBindings,
+} from "./avatar-viewport-scene-debug";
 import { SkinnedGarmentAttachmentDriver } from "./skinned-garment-attachment-driver";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 import type { AvatarViewportNavSettings } from "./avatar-viewport-nav-settings";
@@ -89,14 +94,18 @@ export function CameraRig({
   desiredRef,
   smoothRef,
   navRef,
-  targetBase,
+  targetBaseRef,
   targetPanRef,
+  orbitGestureActiveRef,
 }: {
   desiredRef: RefObject<OrbitSpherical>;
   smoothRef: RefObject<OrbitSpherical>;
   navRef: RefObject<AvatarViewportNavSettings>;
-  targetBase: [number, number, number];
+  /** Mutable look-at base (world); framing tools rewrite this while pan adds delta on top. */
+  targetBaseRef: RefObject<[number, number, number]>;
   targetPanRef: RefObject<{ x: number; z: number }>;
+  /** When true (during pan/pinch), snap smoothed orbit to desired for low-latency interaction. */
+  orbitGestureActiveRef?: RefObject<boolean>;
 }) {
   const { camera, clock } = useThree();
   const target = useMemo(() => new THREE.Vector3(), []);
@@ -106,7 +115,8 @@ export function CameraRig({
     const d = desiredRef.current;
     const s = smoothRef.current;
     const dt = Math.min(clock.getDelta(), 0.08);
-    const k = 1 - Math.exp(-nav.damping * 14 * dt);
+    const gesture = orbitGestureActiveRef?.current === true;
+    const k = gesture ? 1 : 1 - Math.exp(-nav.damping * 14 * dt);
 
     s.theta = lerpAngleShortest(s.theta, d.theta, k);
     s.phi = THREE.MathUtils.lerp(s.phi, d.phi, k);
@@ -116,11 +126,8 @@ export function CameraRig({
     s.radius = Math.min(nav.maxRadius, Math.max(nav.minRadius, s.radius));
 
     const pan = targetPanRef.current;
-    target.set(
-      targetBase[0] + pan.x,
-      targetBase[1] + nav.targetYOffset,
-      targetBase[2] + pan.z,
-    );
+    const tb = targetBaseRef.current ?? [0, 1.12, 0];
+    target.set(tb[0] + pan.x, tb[1] + nav.targetYOffset, tb[2] + pan.z);
 
     const { theta, phi, radius } = s;
     const x = target.x + radius * Math.sin(phi) * Math.cos(theta);
@@ -779,6 +786,7 @@ export function AvatarProceduralScene({
   onGarmentAnchorsDebug,
   garmentAttachmentDebug = false,
   onGarmentAttachmentSnapshot,
+  sceneSpaceDebug = null,
 }: {
   pose: DevAvatarPoseKey;
   preset: DevAvatarPresetKey;
@@ -810,8 +818,19 @@ export function AvatarProceduralScene({
   /** Dev: show spheres at bone-derived attachment points (requires skinned body + garments). */
   garmentAttachmentDebug?: boolean;
   onGarmentAttachmentSnapshot?: (s: GarmentAttachmentSnapshot) => void;
+  /** Dev (workbench): in-canvas bounds/markers, framing, throttled scene diagnostics. */
+  sceneSpaceDebug?: {
+    enabled: boolean;
+    showMarkers: boolean;
+    debugBrightBody: boolean;
+    bodyLoadGeneration: number;
+    manualFrameBoundsNonce: number;
+    onSceneDiagnostics?: (d: LiveViewportSceneDiagnostics) => void;
+    orbit: SceneSpaceDebugOrbitBindings;
+  } | null;
 }) {
   const torsoRegionFitRef = useRef<THREE.Group>(null);
+  const avatarWorldFitRef = useRef<THREE.Group>(null);
   const bodyRootRef = useRef<THREE.Group>(null);
   const leftSleevePivotRef = useRef<THREE.Group>(null);
   const rightSleevePivotRef = useRef<THREE.Group>(null);
@@ -998,7 +1017,21 @@ export function AvatarProceduralScene({
         </>
       ) : null}
 
-      <group position={worldOff} scale={[gsx, gsy, gsz]} name="avatar_world_fit">
+      {sceneSpaceDebug?.enabled ? (
+        <ViewportSceneSpaceDebug
+          enabled
+          showMarkers={sceneSpaceDebug.showMarkers}
+          bodyRootRef={bodyRootRef}
+          avatarWorldFitRef={avatarWorldFitRef}
+          torsoRegionFitRef={torsoRegionFitRef}
+          orbit={sceneSpaceDebug.orbit}
+          bodyLoadGeneration={sceneSpaceDebug.bodyLoadGeneration}
+          manualFrameBoundsNonce={sceneSpaceDebug.manualFrameBoundsNonce}
+          onDiagnostics={sceneSpaceDebug.onSceneDiagnostics}
+        />
+      ) : null}
+
+      <group ref={avatarWorldFitRef} position={worldOff} scale={[gsx, gsy, gsz]} name="avatar_world_fit">
         <group
           ref={torsoRegionFitRef}
           position={bodyAnchorPos}
@@ -1022,6 +1055,7 @@ export function AvatarProceduralScene({
                     pose={pose}
                     liveShading={liveShading}
                     bodyShape={bodyShape}
+                    debugForceBrightMaterial={!!sceneSpaceDebug?.debugBrightBody}
                     onSceneReady={onRuntimeBodyLoaded}
                     onRigPoseReport={onSkinnedRigPoseReport}
                   />
@@ -1040,7 +1074,9 @@ export function AvatarProceduralScene({
               ) : null}
             </GltfErrorBoundary>
           ) : showBodyMesh ? (
-            <ProceduralRigBody {...rigMat} />
+            <group ref={bodyRootRef} name="procedural_body_root">
+              <ProceduralRigBody {...rigMat} />
+            </group>
           ) : null}
 
           {/* Top: torso hull (sleeves ride on arms inside procedural rig) */}
