@@ -38,6 +38,7 @@ export {
   BODY_SHAPE_REF_METRICS,
   cloneBodyShape,
   bodyShapeToExportPatch,
+  bodyShapeParamsKey,
   bodyShapesEqual,
   DEFAULT_BODY_SHAPE,
   deriveBodyRigMetrics,

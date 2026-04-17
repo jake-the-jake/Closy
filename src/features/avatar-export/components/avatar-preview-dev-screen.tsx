@@ -20,6 +20,7 @@ import {
   Switch,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -83,6 +84,7 @@ import {
   suggestionsFromLiveHeuristics,
   suggestionsFromRuntimeClipping,
   useAvatarSceneStore,
+  type AvatarViewportNavSettings,
   type GarmentFitRegionKey,
   type GarmentAttachmentSnapshot,
   type LiveViewportPoseFitDebug,
@@ -258,6 +260,25 @@ const FIT_ISSUE_DEFS = [
 ] as const;
 
 const LIVE_QUICK_TAGS = ["torso better", "sleeves fixed", "waist still off"] as const;
+
+type LiveWorkbenchTabId =
+  | "view"
+  | "body"
+  | "garments"
+  | "fit"
+  | "debug"
+  | "stress"
+  | "nav";
+
+const LIVE_WORKBENCH_TABS: { id: LiveWorkbenchTabId; label: string }[] = [
+  { id: "view", label: "View" },
+  { id: "body", label: "Body" },
+  { id: "garments", label: "Garments" },
+  { id: "fit", label: "Fit" },
+  { id: "debug", label: "Debug" },
+  { id: "stress", label: "Stress" },
+  { id: "nav", label: "Nav" },
+];
 
 const MAX_RENDER_HISTORY = 10;
 const AUTO_POLL_INTERVAL_MS = 1800;
@@ -448,6 +469,13 @@ export function AvatarPreviewDevScreen() {
   const [lastClippingStats, setLastClippingStats] =
     useState<ClippingStatsV1 | null>(null);
   const [devMainTab, setDevMainTab] = useState<"live" | "offline">("live");
+  const [liveWorkbenchTab, setLiveWorkbenchTab] = useState<LiveWorkbenchTabId>("view");
+  const [camResetNonce, setCamResetNonce] = useState(0);
+  const { height: windowHeight } = useWindowDimensions();
+  const liveViewportH = Math.round(Math.min(420, Math.max(256, windowHeight * 0.34)));
+  const viewportNav = useAvatarSceneStore((s) => s.viewportNav);
+  const patchViewportNav = useAvatarSceneStore((s) => s.patchViewportNav);
+  const resetViewportNav = useAvatarSceneStore((s) => s.resetViewportNav);
   const [reuseRenderId, setReuseRenderId] = useState(false);
   const [loadSnapshot, setLoadSnapshot] = useState<LoadSnapshot | null>(null);
   const [annotations, setAnnotations] = useState<
@@ -1257,10 +1285,8 @@ export function AvatarPreviewDevScreen() {
 
   return (
     <ScreenContainer scroll={false} omitTopSafeArea style={styles.root}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-      >
+      <View style={styles.flexPage}>
+        <View style={styles.headerBlock}>
         <Text style={styles.title}>Avatar preview (dev)</Text>
         <Text style={styles.devBadge}>Dev / debug only — not shown in production flows.</Text>
 
@@ -1268,7 +1294,10 @@ export function AvatarPreviewDevScreen() {
           <AppButton
             label="Live 3D (mainline)"
             variant={devMainTab === "live" ? "primary" : "secondary"}
-            onPress={() => setDevMainTab("live")}
+            onPress={() => {
+              setDevMainTab("live");
+              setLiveWorkbenchTab("view");
+            }}
           />
           <AppButton
             label="Offline debug render"
@@ -1281,7 +1310,666 @@ export function AvatarPreviewDevScreen() {
             ? "Primary path: in-app WebGL. Body / top / bottom can load GLBs via EXPO_PUBLIC_AVATAR_RUNTIME_*_GLTF_URL (see .env.example); unset slots stay proxy geometry. Offline PNG stays the regression / clipping tool."
             : "Secondary path: host request JSON → CLI `avatar_export` → HTTP PNG. Use for clipping hotspot, high-res stills, and engine-identical review."}
         </Text>
+        </View>
 
+        {devMainTab === "live" ? (
+          <View style={styles.liveWorkbenchColumn}>
+            <View style={[styles.viewportPinned, { height: liveViewportH + 22 }]}>
+              <AvatarViewportLive
+                pose={pose}
+                preset={presetKey}
+                garmentFit={garmentFitForViewport}
+                liveShading={liveViewportShading}
+                bodyShape={bodyShape}
+                height={liveViewportH}
+                compareActive={liveFitShowBaseline && liveFitBaseline != null}
+                clipOverlayEnabled={liveClipOverlay}
+                useProceduralBody={liveViewportUseProceduralBody}
+                bodyOnlyGarments={liveBodyOnlyGarments}
+                garmentOnlyViewport={liveGarmentOnlyViewport}
+                onLiveViewportPoseFitDebug={setLivePoseFitDebug}
+                garmentAttachmentDebug={liveGarmentAttachDebug}
+                layout="workbench"
+                navSettings={viewportNav}
+                cameraResetNonce={camResetNonce}
+              />
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.liveSubTabBar}
+            >
+              {LIVE_WORKBENCH_TABS.map((tab) => {
+                const on = liveWorkbenchTab === tab.id;
+                return (
+                  <Pressable
+                    key={tab.id}
+                    onPress={() => setLiveWorkbenchTab(tab.id)}
+                    style={({ pressed }) => [
+                      styles.liveSubTabChip,
+                      on && styles.liveSubTabChipActive,
+                      pressed && styles.modeChipPressed,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.liveSubTabChipTxt,
+                        on && styles.liveSubTabChipTxtActive,
+                      ]}
+                    >
+                      {tab.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+            <ScrollView
+              style={[styles.liveWorkbenchPanel, { maxHeight: windowHeight * 0.38 }]}
+              contentContainerStyle={styles.liveWorkbenchPanelInner}
+              keyboardShouldPersistTaps="handled"
+            >
+              {liveWorkbenchTab === "view" ? (
+                <>
+                  <Text style={styles.section}>View</Text>
+                  <Text style={styles.debugNote}>
+                    Shading + pose + visibility. Camera uses damped target-orbit (see Nav tab).
+                  </Text>
+                  <Text style={styles.fitSubnote}>Live viewport shading</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.modeChipsRow}
+                  >
+                    {listLiveViewportShadingModes().map((m) => {
+                      const selected = liveViewportShading === m;
+                      return (
+                        <Pressable
+                          key={m}
+                          onPress={() => setLiveViewportShading(m)}
+                          style={({ pressed }) => [
+                            styles.modeChip,
+                            selected && styles.modeChipSelected,
+                            pressed && styles.modeChipPressed,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.modeChipLabel,
+                              selected && styles.modeChipLabelSelected,
+                            ]}
+                            numberOfLines={2}
+                          >
+                            {LIVE_VIEWPORT_SHADING_LABELS[m]}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                  <Text style={styles.fitSubnote}>Pose</Text>
+                  <View style={styles.row}>
+                    {(["relaxed", "walk", "tpose", "apose"] as const).map((p) => (
+                      <AppButton
+                        key={p}
+                        label={
+                          stressTestHighlightPose === p ? `${p} · stress` : p
+                        }
+                        variant={pose === p ? "primary" : "secondary"}
+                        onPress={() => {
+                          setPose(p);
+                          setStressTestHighlightPose(null);
+                        }}
+                        disabled={busy || busyPoll || autoPollLoopOn}
+                      />
+                    ))}
+                  </View>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Body only</Text>
+                    <Switch
+                      value={liveBodyOnlyGarments}
+                      onValueChange={setLiveBodyOnlyGarmentsSafe}
+                      accessibilityLabel="Body only"
+                    />
+                  </View>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Garment only</Text>
+                    <Switch
+                      value={liveGarmentOnlyViewport}
+                      onValueChange={setLiveGarmentOnlyViewportSafe}
+                      accessibilityLabel="Garment only"
+                    />
+                  </View>
+                  <View style={[styles.row, styles.fitPresetWrap]}>
+                    <AppButton
+                      label="Reset camera"
+                      variant="secondary"
+                      onPress={() => setCamResetNonce((n) => n + 1)}
+                    />
+                  </View>
+                </>
+              ) : null}
+              {liveWorkbenchTab === "body" ? (
+                <>
+                  <Text style={styles.section}>Body</Text>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Procedural body</Text>
+                    <Switch
+                      value={liveViewportUseProceduralBody}
+                      onValueChange={setLiveViewportUseProceduralBody}
+                      accessibilityLabel="Procedural body"
+                    />
+                  </View>
+                  <Text style={styles.fitSubnote}>Body shape presets</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.modeChipsRow}
+                  >
+                    {(Object.keys(BODY_SHAPE_PRESETS) as BodyShapePresetId[]).map((id) => {
+                      const preset = BODY_SHAPE_PRESETS[id];
+                      const matches = bodyShapesEqual(bodyShape, preset);
+                      return (
+                        <Pressable
+                          key={id}
+                          onPress={() => patchBodyShape(() => ({ ...preset }))}
+                          style={({ pressed }) => [
+                            styles.modeChip,
+                            matches && styles.modeChipSelected,
+                            pressed && styles.modeChipPressed,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.modeChipLabel,
+                              matches && styles.modeChipLabelSelected,
+                            ]}
+                            numberOfLines={2}
+                          >
+                            {BODY_SHAPE_PRESET_LABELS[id]}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                  <View style={styles.bodyShapeActions}>
+                    <AppButton label="Reset body" variant="secondary" onPress={resetBodyShape} />
+                  </View>
+                  <View style={[styles.fitPanel, styles.bodyShapeSliders]}>
+                    {BODY_SHAPE_SLIDERS.map((row) => (
+                      <FitSliderRow
+                        key={row.key}
+                        label={row.label}
+                        value={bodyShape[row.key]}
+                        min={row.min}
+                        max={row.max}
+                        step={row.step}
+                        onChange={(v) =>
+                          patchBodyShape((b) => ({
+                            ...b,
+                            [row.key]: v,
+                          }))
+                        }
+                      />
+                    ))}
+                  </View>
+                </>
+              ) : null}
+              {liveWorkbenchTab === "garments" ? (
+                <>
+                  <Text style={styles.section}>Garments</Text>
+                  <Text style={styles.fitSubnote}>Outfit preset</Text>
+                  <View style={styles.row}>
+                    {(["default", "navy", "casual"] as const).map((p) => (
+                      <AppButton
+                        key={p}
+                        label={p}
+                        variant={presetKey === p ? "primary" : "secondary"}
+                        onPress={() => setPresetKey(p)}
+                        disabled={busy || busyPoll || autoPollLoopOn}
+                      />
+                    ))}
+                  </View>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Garment attach debug</Text>
+                    <Switch
+                      value={liveGarmentAttachDebug}
+                      onValueChange={setLiveGarmentAttachDebug}
+                      accessibilityLabel="Garment attach debug"
+                    />
+                  </View>
+                </>
+              ) : null}
+              {liveWorkbenchTab === "fit" ? (
+                <>
+                  <Text style={styles.section}>Fit</Text>
+                  <View style={[styles.fitPanel, styles.liveWorkstationBox]}>
+                    <Text style={styles.workstationLoop}>
+                      Region → baseline / compare → snapshots (see Stress tab for multi-pose).
+                    </Text>
+                    {liveFitShowBaseline && liveFitBaseline != null ? (
+                      <Text style={styles.liveCompareBanner}>
+                        Showing saved baseline (before).
+                      </Text>
+                    ) : null}
+                    <Text style={styles.fitSubnote}>Editing region</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.modeChipsRow}
+                    >
+                      {(["global", "torso", "sleeves", "waist", "hem"] as const).map((r) => {
+                        const on = liveFitActiveRegion === r;
+                        return (
+                          <Pressable
+                            key={r}
+                            onPress={() => {
+                              setLiveFitActiveRegion(r);
+                              useAvatarSceneStore.getState().setLiveFitShowBaseline(false);
+                            }}
+                            disabled={busy || busyPoll || autoPollLoopOn}
+                            style={({ pressed }) => [
+                              styles.liveRegionPill,
+                              on && styles.liveRegionPillActive,
+                              pressed && styles.modeChipPressed,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.liveRegionPillText,
+                                on && styles.liveRegionPillTextActive,
+                              ]}
+                            >
+                              {FIT_REGION_LABELS[r]}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                    <View style={[styles.row, styles.fitPresetWrap]}>
+                      <AppButton
+                        label="Set baseline"
+                        variant="secondary"
+                        onPress={() => {
+                          captureLiveFitBaseline();
+                          setStatus("Baseline saved.");
+                        }}
+                        disabled={busy || busyPoll || autoPollLoopOn}
+                      />
+                      <AppButton
+                        label={liveFitShowBaseline ? "Show current" : "Show baseline"}
+                        variant="secondary"
+                        onPress={() => toggleLiveFitBaselineCompare()}
+                        disabled={liveFitBaseline == null || busy || busyPoll || autoPollLoopOn}
+                      />
+                      <AppButton
+                        label="Clear baseline"
+                        variant="secondary"
+                        onPress={() => clearLiveFitBaseline()}
+                        disabled={liveFitBaseline == null || busy || busyPoll || autoPollLoopOn}
+                      />
+                    </View>
+                    <View style={[styles.row, styles.fitPresetWrap]}>
+                      <AppButton
+                        label="Save snapshot"
+                        variant="secondary"
+                        onPress={() => {
+                          pushLiveFitSnapshot();
+                          setStatus("Snapshot saved.");
+                        }}
+                        disabled={busy || busyPoll || autoPollLoopOn}
+                      />
+                      <AppButton
+                        label="Clear snapshots"
+                        variant="secondary"
+                        onPress={() => clearLiveFitSnapshots()}
+                        disabled={liveFitSnapshots.length === 0}
+                      />
+                    </View>
+                    <Text style={styles.fitSubnote}>Quick tags</Text>
+                    <View style={[styles.row, styles.fitPresetWrap]}>
+                      {LIVE_QUICK_TAGS.map((tag) => (
+                        <AppButton
+                          key={tag}
+                          label={tag}
+                          variant={liveFitQuickTags.includes(tag) ? "primary" : "secondary"}
+                          onPress={() => addLiveFitQuickTag(tag)}
+                          disabled={busy || busyPoll || autoPollLoopOn}
+                        />
+                      ))}
+                    </View>
+                    <View style={[styles.row, styles.fitPresetWrap]}>
+                      <AppButton
+                        label={`Reset ${FIT_REGION_LABELS[liveFitActiveRegion]}`}
+                        variant="secondary"
+                        onPress={() => resetLiveFitRegionToDefault(liveFitActiveRegion)}
+                        disabled={busy || busyPoll || autoPollLoopOn}
+                      />
+                      <AppButton
+                        label="Apply last suggestion"
+                        variant="secondary"
+                        onPress={applyLastSuggestionAgain}
+                        disabled={
+                          liveFitLastSuggestionId == null || busy || busyPoll || autoPollLoopOn
+                        }
+                      />
+                    </View>
+                  </View>
+                  <Text style={styles.debugNote}>
+                    Garment region sliders & suggestions: use the{" "}
+                    <Text style={styles.boldMuted}>Garment fit</Text> section in this scroll (below) —
+                    it stays shared with Offline exports.
+                  </Text>
+                </>
+              ) : null}
+              {liveWorkbenchTab === "debug" ? (
+                <>
+                  <Text style={styles.section}>Debug</Text>
+                  {livePoseFitDebug ? (
+                    <View style={styles.poseFitDebugBox}>
+                      <Text style={styles.poseFitDebugLine} selectable>
+                        body pose:{" "}
+                        {livePoseFitDebug.skinned?.bodyPoseApplied === true
+                          ? "bones"
+                          : livePoseFitDebug.skinned
+                            ? "no"
+                            : "n/a"}{" "}
+                        · map {livePoseFitDebug.skinned?.boneMapStatus ?? "—"}
+                      </Text>
+                      {livePoseFitDebug.attachment ? (
+                        <AttachmentDebugReadout snap={livePoseFitDebug.attachment} />
+                      ) : (
+                        <Text style={styles.poseFitDebugLine}>attachment: (none)</Text>
+                      )}
+                    </View>
+                  ) : (
+                    <Text style={styles.debugNote}>Waiting for first frame…</Text>
+                  )}
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Runtime clip overlay</Text>
+                    <Switch
+                      value={liveClipOverlay}
+                      onValueChange={setLiveClipOverlay}
+                      accessibilityLabel="Clip overlay"
+                    />
+                  </View>
+                  <Text style={styles.clipSummary} selectable>
+                    clip proxy — torso {runtimeClipReport.torso.severity} · sleeves{" "}
+                    {runtimeClipReport.sleeves.severity} · waist {runtimeClipReport.waist.severity} · hem{" "}
+                    {runtimeClipReport.hem.severity}
+                  </Text>
+                </>
+              ) : null}
+              {liveWorkbenchTab === "stress" ? (
+                <>
+                  <Text style={styles.section}>Stress / snapshots</Text>
+                  {liveFitSnapshots.length > 0 ? (
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.snapshotStrip}
+                    >
+                      {liveFitSnapshots.map((sn) => (
+                        <View key={sn.id} style={styles.snapshotCard}>
+                          <Pressable
+                            onPress={() => {
+                              restoreLiveFitSnapshot(sn.id);
+                              setStatus(`Restored ${sn.label ?? sn.id.slice(0, 10)}`);
+                            }}
+                            disabled={busy || busyPoll || autoPollLoopOn}
+                            style={({ pressed }) => [
+                              styles.snapshotTap,
+                              pressed && styles.modeChipPressed,
+                            ]}
+                          >
+                            <Text style={styles.snapshotMeta} numberOfLines={3}>
+                              {sn.label ? `${sn.label}\n` : ""}
+                              {sn.pose} · {sn.presetKey}
+                            </Text>
+                          </Pressable>
+                          <AppButton
+                            label="Del"
+                            variant="ghost"
+                            onPress={() => removeLiveFitSnapshot(sn.id)}
+                            disabled={busy || busyPoll || autoPollLoopOn}
+                          />
+                        </View>
+                      ))}
+                    </ScrollView>
+                  ) : null}
+                  <Text style={styles.stressHint}>
+                    Multi-pose stress + stabilize (same as previous workstation block).
+                  </Text>
+                  <View style={[styles.row, styles.fitPresetWrap]}>
+                    <AppButton
+                      label="Stress test fit"
+                      variant="secondary"
+                      onPress={runStressTestFit}
+                      disabled={
+                        busy || busyPoll || autoPollLoopOn || stressTestBusy || stabilizeBusy
+                      }
+                    />
+                    <AppButton
+                      label="Stabilize fit"
+                      variant="secondary"
+                      onPress={runStabilizeFit}
+                      disabled={
+                        busy || busyPoll || autoPollLoopOn || stressTestBusy || stabilizeBusy
+                      }
+                    />
+                    <AppButton
+                      label="Jump worst pose"
+                      variant="secondary"
+                      onPress={() => {
+                        const w = lastPoseStressReport?.worstPose;
+                        if (w) {
+                          setPose(w);
+                          setStressTestHighlightPose(w);
+                          setStatus(`Pose → ${w}`);
+                        }
+                      }}
+                      disabled={
+                        lastPoseStressReport?.worstPose == null ||
+                        busy ||
+                        busyPoll ||
+                        autoPollLoopOn
+                      }
+                    />
+                    <AppButton
+                      label="Save + stress meta"
+                      variant="secondary"
+                      onPress={() => {
+                        if (!lastPoseStressReport) {
+                          setStatus("Run stress test first.");
+                          return;
+                        }
+                        pushLiveFitSnapshot(
+                          "stress",
+                          stressReportToSnapshotMeta(lastPoseStressReport),
+                        );
+                        setStatus("Snapshot with stress meta.");
+                      }}
+                      disabled={
+                        lastPoseStressReport == null || busy || busyPoll || autoPollLoopOn
+                      }
+                    />
+                  </View>
+                  {lastPoseStressReport ? (
+                    <View style={styles.stressResultBox}>
+                      <Text style={styles.stressScoreLine}>
+                        Stability {lastPoseStressReport.overallStabilityScore}
+                        {lastPoseStressReport.allPosesPass ? " · all pass" : ""}
+                      </Text>
+                      {lastPoseStressReport.poses.map((pr) => (
+                        <Text key={pr.pose} style={styles.stressPoseLine} selectable>
+                          {pr.pose}: {pr.pass ? "pass" : "fail"} · {pr.stabilityScore}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                </>
+              ) : null}
+              {liveWorkbenchTab === "nav" ? (
+                <>
+                  <Text style={styles.section}>Navigation</Text>
+                  <Text style={styles.debugNote}>
+                    Damped orbit around target. Defaults tuned for avatar inspection.
+                  </Text>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Invert orbit X</Text>
+                    <Switch
+                      value={viewportNav.invertOrbitX}
+                      onValueChange={(v) =>
+                        patchViewportNav((n) => ({ ...n, invertOrbitX: v }))
+                      }
+                    />
+                  </View>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Invert orbit Y</Text>
+                    <Switch
+                      value={viewportNav.invertOrbitY}
+                      onValueChange={(v) =>
+                        patchViewportNav((n) => ({ ...n, invertOrbitY: v }))
+                      }
+                    />
+                  </View>
+                  <View style={[styles.row, styles.clipOverlayRow]}>
+                    <Text style={styles.fitSubnote}>Two-finger pan target</Text>
+                    <Switch
+                      value={viewportNav.enablePan}
+                      onValueChange={(v) =>
+                        patchViewportNav((n) => ({ ...n, enablePan: v }))
+                      }
+                    />
+                  </View>
+                  <FitSliderRow
+                    label="Orbit sensitivity"
+                    value={viewportNav.orbitSensitivity}
+                    min={0.5}
+                    max={2}
+                    step={0.05}
+                    onChange={(v) => patchViewportNav((n) => ({ ...n, orbitSensitivity: v }))}
+                  />
+                  <FitSliderRow
+                    label="Zoom sensitivity"
+                    value={viewportNav.zoomSensitivity}
+                    min={0.55}
+                    max={1.65}
+                    step={0.05}
+                    onChange={(v) => patchViewportNav((n) => ({ ...n, zoomSensitivity: v }))}
+                  />
+                  <FitSliderRow
+                    label="Damping"
+                    value={viewportNav.damping}
+                    min={0.08}
+                    max={0.42}
+                    step={0.02}
+                    onChange={(v) => patchViewportNav((n) => ({ ...n, damping: v }))}
+                  />
+                  <FitSliderRow
+                    label="Min zoom (radius)"
+                    value={viewportNav.minRadius}
+                    min={0.9}
+                    max={4}
+                    step={0.05}
+                    onChange={(v) =>
+                      patchViewportNav((n) => ({
+                        ...n,
+                        minRadius: Math.min(v, n.maxRadius - 0.05),
+                      }))
+                    }
+                  />
+                  <FitSliderRow
+                    label="Max zoom (radius)"
+                    value={viewportNav.maxRadius}
+                    min={2}
+                    max={14}
+                    step={0.1}
+                    onChange={(v) =>
+                      patchViewportNav((n) => ({
+                        ...n,
+                        maxRadius: Math.max(v, n.minRadius + 0.05),
+                      }))
+                    }
+                  />
+                  <FitSliderRow
+                    label="Target Y offset"
+                    value={viewportNav.targetYOffset}
+                    min={-0.25}
+                    max={0.35}
+                    step={0.02}
+                    onChange={(v) => patchViewportNav((n) => ({ ...n, targetYOffset: v }))}
+                  />
+                  <FitSliderRow
+                    label="Polar min"
+                    value={viewportNav.polarMin}
+                    min={0.05}
+                    max={1.2}
+                    step={0.02}
+                    onChange={(v) =>
+                      patchViewportNav((n) => ({
+                        ...n,
+                        polarMin: Math.min(v, n.polarMax - 0.02),
+                      }))
+                    }
+                  />
+                  <FitSliderRow
+                    label="Polar max"
+                    value={viewportNav.polarMax}
+                    min={0.35}
+                    max={1.58}
+                    step={0.02}
+                    onChange={(v) =>
+                      patchViewportNav((n) => ({
+                        ...n,
+                        polarMax: Math.max(v, n.polarMin + 0.02),
+                      }))
+                    }
+                  />
+                  <FitSliderRow
+                    label="Yaw speed ×"
+                    value={viewportNav.yawSpeedMultiplier}
+                    min={0.6}
+                    max={1.8}
+                    step={0.05}
+                    onChange={(v) =>
+                      patchViewportNav((n) => ({ ...n, yawSpeedMultiplier: v }))
+                    }
+                  />
+                  <FitSliderRow
+                    label="Pitch rad/px"
+                    value={viewportNav.orbitPitchRadPerPx}
+                    min={0.003}
+                    max={0.012}
+                    step={0.0002}
+                    onChange={(v) =>
+                      patchViewportNav((n) => ({ ...n, orbitPitchRadPerPx: v }))
+                    }
+                  />
+                  <FitSliderRow
+                    label="Yaw rad/px"
+                    value={viewportNav.orbitYawRadPerPx}
+                    min={0.003}
+                    max={0.012}
+                    step={0.0002}
+                    onChange={(v) =>
+                      patchViewportNav((n) => ({ ...n, orbitYawRadPerPx: v }))
+                    }
+                  />
+                  <AppButton
+                    label="Reset nav defaults"
+                    variant="secondary"
+                    onPress={() => resetViewportNav()}
+                  />
+                </>
+              ) : null}
+            </ScrollView>
+          </View>
+        ) : null}
+
+        <ScrollView
+          style={styles.flexScroll}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+        >
         {devMainTab === "offline" ? (
           <>
             <View style={styles.phaseBox}>
@@ -1442,532 +2130,8 @@ export function AvatarPreviewDevScreen() {
           </>
         ) : null}
 
-        {devMainTab === "live" ? (
-          <>
-            <Text style={styles.section}>Live 3D viewport</Text>
-            <Text style={styles.debugNote}>
-              Three.js scene in-app (not a static PNG).{" "}
-              <Text style={styles.boldMuted}>Clipping hotspot</Text> (Offline) stays the detailed validator;
-              use runtime clip overlay + suggestions for fast iteration here.
-            </Text>
-            <AvatarViewportLive
-              pose={pose}
-              preset={presetKey}
-              garmentFit={garmentFitForViewport}
-              liveShading={liveViewportShading}
-              bodyShape={bodyShape}
-              compareActive={liveFitShowBaseline && liveFitBaseline != null}
-              clipOverlayEnabled={liveClipOverlay}
-              useProceduralBody={liveViewportUseProceduralBody}
-              bodyOnlyGarments={liveBodyOnlyGarments}
-              garmentOnlyViewport={liveGarmentOnlyViewport}
-              onLiveViewportPoseFitDebug={setLivePoseFitDebug}
-              garmentAttachmentDebug={liveGarmentAttachDebug}
-            />
-            <View style={[styles.row, styles.clipOverlayRow]}>
-              <Text style={styles.fitSubnote}>Body only (no garments)</Text>
-              <Text style={styles.clipOverlayHint} numberOfLines={2}>
-                Hides shirt, pants, sleeves, shoes — inspect skinned body silhouette.
-              </Text>
-              <Switch
-                value={liveBodyOnlyGarments}
-                onValueChange={setLiveBodyOnlyGarmentsSafe}
-                accessibilityLabel="Toggle body-only mode without garment proxies"
-              />
-            </View>
-            <View style={[styles.row, styles.clipOverlayRow]}>
-              <Text style={styles.fitSubnote}>Garment only (no body)</Text>
-              <Text style={styles.clipOverlayHint} numberOfLines={2}>
-                Hides skinned / procedural body — inspect garments vs empty anchor space.
-              </Text>
-              <Switch
-                value={liveGarmentOnlyViewport}
-                onValueChange={setLiveGarmentOnlyViewportSafe}
-                accessibilityLabel="Toggle garment-only viewport without body mesh"
-              />
-            </View>
-            <View style={[styles.row, styles.clipOverlayRow]}>
-              <Text style={styles.fitSubnote}>Garment attach debug</Text>
-              <Text style={styles.clipOverlayHint} numberOfLines={2}>
-                Spheres in canvas at bone-derived L/R shoulder, chest, pelvis, hip mid (torso region space).
-              </Text>
-              <Switch
-                value={liveGarmentAttachDebug}
-                onValueChange={setLiveGarmentAttachDebug}
-                accessibilityLabel="Toggle garment bone attachment debug markers"
-              />
-            </View>
-            <Text style={styles.section}>Pose / fit sync (live)</Text>
-            {livePoseFitDebug ? (
-              <View style={styles.poseFitDebugBox}>
-                <Text style={styles.poseFitDebugLine} selectable>
-                  pose token: body={livePoseFitDebug.pose} · garment={livePoseFitDebug.pose}{" "}
-                  {livePoseFitDebug.garmentPoseMatchesBody ? "(match)" : "(mismatch)"}
-                </Text>
-                <Text style={styles.poseFitDebugLine} selectable>
-                  body pose active:{" "}
-                  {livePoseFitDebug.skinned?.bodyPoseApplied === true
-                    ? "yes (bones)"
-                    : livePoseFitDebug.skinned
-                      ? "no"
-                      : "n/a"}{" "}
-                  · bone map: {livePoseFitDebug.skinned?.boneMapStatus ?? "—"}
-                </Text>
-                <Text style={styles.poseFitDebugLine} selectable>
-                  garment pose: CPU bind vs {livePoseFitDebug.pose} (shared poseAngles)
-                </Text>
-                {livePoseFitDebug.anchors ? (
-                  <>
-                    <Text style={styles.poseFitDebugLine} selectable>
-                      torso anchor (body): [{livePoseFitDebug.anchors.bodyAnchorPos
-                        .map((n) => n.toFixed(3))
-                        .join(", ")}] · scale [{livePoseFitDebug.anchors.bodyAnchorScale
-                        .map((n) => n.toFixed(3))
-                        .join(", ")}]
-                    </Text>
-                    <Text style={styles.poseFitDebugLine} selectable>
-                      top local: [{livePoseFitDebug.anchors.topAnchorLocal
-                        .map((n) => n.toFixed(3))
-                        .join(", ")}] · bottom local: [
-                      {livePoseFitDebug.anchors.bottomAnchorLocal.map((n) => n.toFixed(3)).join(", ")}
-                      ]
-                    </Text>
-                    <Text style={styles.poseFitDebugLine} selectable>
-                      waist tighten {livePoseFitDebug.anchors.waistTighten.toFixed(3)} · hem Y{" "}
-                      {livePoseFitDebug.anchors.hemOffsetY.toFixed(3)} · legacy waist Y{" "}
-                      {livePoseFitDebug.anchors.legacyWaistAdjustY.toFixed(3)} · torsoOffZ{" "}
-                      {livePoseFitDebug.anchors.torsoOffsetZ.toFixed(3)} · skinned reseat{" "}
-                      {livePoseFitDebug.anchors.skinnedBodyActive ? "on" : "off"}
-                    </Text>
-                  </>
-                ) : (
-                  <Text style={styles.poseFitDebugLine}>anchors: (pending)</Text>
-                )}
-                <Text style={styles.poseFitDebugLine} selectable>
-                  fit preset: {presetKey} (viewport garmentFit)
-                </Text>
-                {livePoseFitDebug.attachment ? (
-                  <AttachmentDebugReadout snap={livePoseFitDebug.attachment} />
-                ) : (
-                  <Text style={styles.poseFitDebugLine}>attachment: (no skinned driver)</Text>
-                )}
-              </View>
-            ) : (
-              <Text style={styles.debugNote}>Pose / fit panel: waiting for first viewport frame…</Text>
-            )}
-            <View style={[styles.row, styles.clipOverlayRow]}>
-              <Text style={styles.fitSubnote}>Procedural body</Text>
-              <Text style={styles.clipOverlayHint} numberOfLines={2}>
-                Off = bundled skinned mesh (default). On = capsule/box fallback for rig compare.
-              </Text>
-              <Switch
-                value={liveViewportUseProceduralBody}
-                onValueChange={setLiveViewportUseProceduralBody}
-                accessibilityLabel="Toggle procedural body instead of skinned GLB"
-              />
-            </View>
-            <View style={[styles.row, styles.clipOverlayRow]}>
-              <Text style={styles.fitSubnote}>Runtime clip overlay</Text>
-              <Text style={styles.clipOverlayHint} numberOfLines={2}>
-                Yellow ≈ near · red-orange ≈ likely overlap (proxy spheres; not engine PNG).
-              </Text>
-              <Switch
-                value={liveClipOverlay}
-                onValueChange={setLiveClipOverlay}
-                accessibilityLabel="Toggle runtime clipping highlight on garments"
-              />
-            </View>
-            <Text style={styles.clipSummary} selectable>
-              clip proxy — torso {runtimeClipReport.torso.severity} (
-              {runtimeClipReport.torso.penetration.toFixed(3)}) · sleeves{" "}
-              {runtimeClipReport.sleeves.severity} (
-              {runtimeClipReport.sleeves.penetration.toFixed(3)}) · waist{" "}
-              {runtimeClipReport.waist.severity} (
-              {runtimeClipReport.waist.penetration.toFixed(3)}) · hem{" "}
-              {runtimeClipReport.hem.severity} ({runtimeClipReport.hem.penetration.toFixed(3)})
-            </Text>
-            <Text style={styles.section}>Live viewport shading</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.modeChipsRow}
-            >
-              {listLiveViewportShadingModes().map((m) => {
-                const selected = liveViewportShading === m;
-                return (
-                  <Pressable
-                    key={m}
-                    onPress={() => setLiveViewportShading(m)}
-                    style={({ pressed }) => [
-                      styles.modeChip,
-                      selected && styles.modeChipSelected,
-                      pressed && styles.modeChipPressed,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.modeChipLabel,
-                        selected && styles.modeChipLabelSelected,
-                      ]}
-                      numberOfLines={2}
-                    >
-                      {LIVE_VIEWPORT_SHADING_LABELS[m]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-
-            <Text style={styles.section}>Body shape (parametric)</Text>
-            <Text style={styles.debugNote}>
-              Multipliers drive the procedural body, runtime clip proxies, and stress-test
-              evaluation.{" "}
-              <Text style={styles.boldMuted}>
-                Changing body shape changes garment interaction
-              </Text>{" "}
-              (torso, sleeves, waist, hem), not only the mesh silhouette.
-            </Text>
-            <View style={styles.bodyShapeActions}>
-              <AppButton label="Reset body" variant="secondary" onPress={resetBodyShape} />
-              <Text style={styles.bodyShapeDefaultHint} selectable>
-                default:{" "}
-                {bodyShapesEqual(bodyShape, DEFAULT_BODY_SHAPE) ? "yes" : "custom"}
-              </Text>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.modeChipsRow}
-            >
-              {(Object.keys(BODY_SHAPE_PRESETS) as BodyShapePresetId[]).map((id) => {
-                const preset = BODY_SHAPE_PRESETS[id];
-                const matches = bodyShapesEqual(bodyShape, preset);
-                return (
-                  <Pressable
-                    key={id}
-                    onPress={() => patchBodyShape(() => ({ ...preset }))}
-                    style={({ pressed }) => [
-                      styles.modeChip,
-                      matches && styles.modeChipSelected,
-                      pressed && styles.modeChipPressed,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.modeChipLabel,
-                        matches && styles.modeChipLabelSelected,
-                      ]}
-                      numberOfLines={2}
-                    >
-                      {BODY_SHAPE_PRESET_LABELS[id]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-            <View style={[styles.fitPanel, styles.bodyShapeSliders]}>
-              {BODY_SHAPE_SLIDERS.map((row) => (
-                <FitSliderRow
-                  key={row.key}
-                  label={row.label}
-                  value={bodyShape[row.key]}
-                  min={row.min}
-                  max={row.max}
-                  step={row.step}
-                  onChange={(v) =>
-                    patchBodyShape((b) => ({
-                      ...b,
-                      [row.key]: v,
-                    }))
-                  }
-                />
-              ))}
-            </View>
-
-            <Text style={styles.section}>Live fitting workstation</Text>
-            <View style={[styles.fitPanel, styles.liveWorkstationBox]}>
-              <Text style={styles.workstationLoop}>
-                1. Pick a region · 2. Use live shading to read silhouette · 3. Tweak sliders
-                or Apply suggestions · 4. Set baseline and compare before/after · 5. Save snapshots ·
-                6. Use Offline only for clipping PNG / engine checks
-              </Text>
-              {liveFitShowBaseline && liveFitBaseline != null ? (
-                <Text style={styles.liveCompareBanner}>
-                  Showing saved baseline (before). Tap “Show current” to return to the editable fit.
-                </Text>
-              ) : null}
-              <Text style={styles.fitSubnote}>Editing region</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.modeChipsRow}
-              >
-                {(
-                  ["global", "torso", "sleeves", "waist", "hem"] as const
-                ).map((r) => {
-                  const on = liveFitActiveRegion === r;
-                  return (
-                    <Pressable
-                      key={r}
-                      onPress={() => {
-                        setLiveFitActiveRegion(r);
-                        useAvatarSceneStore.getState().setLiveFitShowBaseline(false);
-                      }}
-                      disabled={busy || busyPoll || autoPollLoopOn}
-                      style={({ pressed }) => [
-                        styles.liveRegionPill,
-                        on && styles.liveRegionPillActive,
-                        pressed && styles.modeChipPressed,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.liveRegionPillText,
-                          on && styles.liveRegionPillTextActive,
-                        ]}
-                      >
-                        {FIT_REGION_LABELS[r]}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-              <View style={[styles.row, styles.fitPresetWrap]}>
-                <AppButton
-                  label="Set baseline (before)"
-                  variant="secondary"
-                  onPress={() => {
-                    captureLiveFitBaseline();
-                    setStatus("Baseline saved — use Compare to view it on the avatar.");
-                  }}
-                  disabled={busy || busyPoll || autoPollLoopOn}
-                />
-                <AppButton
-                  label={
-                    liveFitShowBaseline ? "Show current (after)" : "Show baseline"
-                  }
-                  variant="secondary"
-                  onPress={() => toggleLiveFitBaselineCompare()}
-                  disabled={liveFitBaseline == null || busy || busyPoll || autoPollLoopOn}
-                />
-                <AppButton
-                  label="Clear baseline"
-                  variant="secondary"
-                  onPress={() => clearLiveFitBaseline()}
-                  disabled={liveFitBaseline == null || busy || busyPoll || autoPollLoopOn}
-                />
-              </View>
-              <View style={[styles.row, styles.fitPresetWrap]}>
-                <AppButton
-                  label="Save snapshot"
-                  variant="secondary"
-                  onPress={() => {
-                    pushLiveFitSnapshot();
-                    setStatus("Fit snapshot saved (in-memory this session).");
-                  }}
-                  disabled={busy || busyPoll || autoPollLoopOn}
-                />
-                <AppButton
-                  label="Mark improved"
-                  variant="secondary"
-                  onPress={() => {
-                    pushLiveFitSnapshot("improved");
-                    setStatus("Tagged snapshot: improved.");
-                  }}
-                  disabled={busy || busyPoll || autoPollLoopOn}
-                />
-                <AppButton
-                  label="Clear snapshots"
-                  variant="secondary"
-                  onPress={() => clearLiveFitSnapshots()}
-                  disabled={liveFitSnapshots.length === 0}
-                />
-              </View>
-              {liveFitSnapshots.length > 0 ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.snapshotStrip}
-                >
-                  {liveFitSnapshots.map((sn) => (
-                    <View key={sn.id} style={styles.snapshotCard}>
-                      <Pressable
-                        onPress={() => {
-                          restoreLiveFitSnapshot(sn.id);
-                          setStatus(`Restored snapshot ${sn.label ?? sn.id.slice(0, 12)}…`);
-                        }}
-                        disabled={busy || busyPoll || autoPollLoopOn}
-                        style={({ pressed }) => [
-                          styles.snapshotTap,
-                          pressed && styles.modeChipPressed,
-                        ]}
-                      >
-                        <Text style={styles.snapshotMeta} numberOfLines={4}>
-                          {sn.label
-                            ? `${sn.label}\n`
-                            : ""}
-                          {new Date(sn.createdAt).toLocaleTimeString()} · {sn.pose} · {sn.presetKey}
-                          {sn.stressTest ? (
-                            <>
-                              {"\n"}
-                              stress {sn.stressTest.overallStabilityScore}
-                              {sn.stressTest.allPosesPass ? " ✓" : ""}
-                            </>
-                          ) : null}
-                        </Text>
-                      </Pressable>
-                      <AppButton
-                        label="Del"
-                        variant="ghost"
-                        onPress={() => removeLiveFitSnapshot(sn.id)}
-                        disabled={busy || busyPoll || autoPollLoopOn}
-                      />
-                    </View>
-                  ))}
-                </ScrollView>
-              ) : null}
-              <Text style={styles.fitSubnote}>Quick tags (session notes)</Text>
-              <View style={[styles.row, styles.fitPresetWrap]}>
-                {LIVE_QUICK_TAGS.map((tag) => (
-                  <AppButton
-                    key={tag}
-                    label={tag}
-                    variant={
-                      liveFitQuickTags.includes(tag) ? "primary" : "secondary"
-                    }
-                    onPress={() => addLiveFitQuickTag(tag)}
-                    disabled={busy || busyPoll || autoPollLoopOn}
-                  />
-                ))}
-                <AppButton
-                  label="Clear tags"
-                  variant="secondary"
-                  onPress={() => clearLiveFitQuickTags()}
-                  disabled={liveFitQuickTags.length === 0}
-                />
-              </View>
-              <View style={[styles.row, styles.fitPresetWrap]}>
-                <AppButton
-                  label={`Reset ${FIT_REGION_LABELS[liveFitActiveRegion]}`}
-                  variant="secondary"
-                  onPress={() => resetLiveFitRegionToDefault(liveFitActiveRegion)}
-                  disabled={busy || busyPoll || autoPollLoopOn}
-                />
-                <AppButton
-                  label="Apply last suggestion again"
-                  variant="secondary"
-                  onPress={applyLastSuggestionAgain}
-                  disabled={
-                    liveFitLastSuggestionId == null ||
-                    busy ||
-                    busyPoll ||
-                    autoPollLoopOn
-                  }
-                />
-              </View>
-              <Text style={styles.fitSubnote}>Multi-pose stress (proxy clipping)</Text>
-              <Text style={styles.stressHint}>
-                Evaluates current fit on relaxed / walk / tpose / apose. Stabilize applies small
-                bounded tweaks (rule-based, max 5 rounds).
-              </Text>
-              <View style={[styles.row, styles.fitPresetWrap]}>
-                <AppButton
-                  label="Stress test fit"
-                  variant="secondary"
-                  onPress={runStressTestFit}
-                  disabled={
-                    busy ||
-                    busyPoll ||
-                    autoPollLoopOn ||
-                    stressTestBusy ||
-                    stabilizeBusy
-                  }
-                />
-                <AppButton
-                  label="Stabilize fit"
-                  variant="secondary"
-                  onPress={runStabilizeFit}
-                  disabled={
-                    busy ||
-                    busyPoll ||
-                    autoPollLoopOn ||
-                    stressTestBusy ||
-                    stabilizeBusy
-                  }
-                />
-                <AppButton
-                  label="Jump worst pose"
-                  variant="secondary"
-                  onPress={() => {
-                    const w = lastPoseStressReport?.worstPose;
-                    if (w) {
-                      setPose(w);
-                      setStressTestHighlightPose(w);
-                      setStatus(`Pose → ${w} (lowest stress score).`);
-                    }
-                  }}
-                  disabled={
-                    lastPoseStressReport?.worstPose == null ||
-                    busy ||
-                    busyPoll ||
-                    autoPollLoopOn
-                  }
-                />
-                <AppButton
-                  label="Save + stress meta"
-                  variant="secondary"
-                  onPress={() => {
-                    if (!lastPoseStressReport) {
-                      setStatus("Run stress test first.");
-                      return;
-                    }
-                    pushLiveFitSnapshot(
-                      "stress",
-                      stressReportToSnapshotMeta(lastPoseStressReport),
-                    );
-                    setStatus("Snapshot saved with stress-test summary.");
-                  }}
-                  disabled={
-                    lastPoseStressReport == null ||
-                    busy ||
-                    busyPoll ||
-                    autoPollLoopOn
-                  }
-                />
-              </View>
-              {lastPoseStressReport ? (
-                <View style={styles.stressResultBox}>
-                  <Text style={styles.stressScoreLine}>
-                    Overall stability {lastPoseStressReport.overallStabilityScore}
-                    {lastPoseStressReport.allPosesPass ? " · all pass" : ""}
-                  </Text>
-                  {lastPoseStressReport.worstRegion ? (
-                    <Text style={styles.stressWorstLine}>
-                      Weakest region: {lastPoseStressReport.worstRegion} (medium+ count{" "}
-                      {lastPoseStressReport.regionFailCounts[lastPoseStressReport.worstRegion]})
-                    </Text>
-                  ) : null}
-                  {lastPoseStressReport.poses.map((pr) => (
-                    <Text
-                      key={pr.pose}
-                      style={[
-                        styles.stressPoseLine,
-                        pr.pose === lastPoseStressReport.worstPose &&
-                          styles.stressPoseWorst,
-                      ]}
-                      selectable
-                    >
-                      {pr.pose}: {pr.pass ? "pass" : "fail"} · score {pr.stabilityScore} · torso{" "}
-                      {pr.regions.torso.level} · sleeves {pr.regions.sleeves.level} · waist{" "}
-                      {pr.regions.waist.level} · hem {pr.regions.hem.level}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
-            </View>
-          </>
-        ) : null}
-
+        {devMainTab !== "live" ? (
+        <>
         <Text style={styles.section}>Pose</Text>
         <View style={styles.row}>
           {(["relaxed", "walk", "tpose", "apose"] as const).map((p) => (
@@ -1987,7 +2151,11 @@ export function AvatarPreviewDevScreen() {
             />
           ))}
         </View>
+        </>
+        ) : null}
 
+        {devMainTab !== "live" ? (
+        <>
         <Text style={styles.section}>Outfit preset</Text>
         <View style={styles.row}>
           {(["default", "navy", "casual"] as const).map((p) => (
@@ -2000,6 +2168,8 @@ export function AvatarPreviewDevScreen() {
             />
           ))}
         </View>
+        </>
+        ) : null}
 
         {devMainTab !== "live" ? (
           <>
@@ -2020,6 +2190,8 @@ export function AvatarPreviewDevScreen() {
           </>
         ) : null}
 
+        {(devMainTab !== "live" || liveWorkbenchTab === "fit") ? (
+        <>
         <Text style={styles.section}>Garment fit (dev)</Text>
         <Text style={styles.debugNote}>
           Optional <Text style={styles.mono}>closy.fit</Text> with{" "}
@@ -2498,6 +2670,8 @@ export function AvatarPreviewDevScreen() {
             </Text>
           ) : null}
         </View>
+        </>
+        ) : null}
 
         {devMainTab === "live" ? (
           <Text style={styles.debugNote}>
@@ -3058,12 +3232,73 @@ export function AvatarPreviewDevScreen() {
           fullWidth
         />
       </ScrollView>
+      </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  flexPage: {
+    flex: 1,
+    maxWidth: 560,
+    width: "100%",
+    alignSelf: "center",
+  },
+  headerBlock: {
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
+    gap: theme.spacing.sm,
+  },
+  flexScroll: {
+    flex: 1,
+    minHeight: 0,
+  },
+  liveWorkbenchColumn: {
+    paddingHorizontal: theme.spacing.md,
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+  },
+  viewportPinned: {
+    borderRadius: theme.radii.md,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.border,
+  },
+  liveSubTabBar: {
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    gap: 6,
+    paddingVertical: 4,
+  },
+  liveSubTabChip: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 6,
+    borderRadius: theme.radii.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  liveSubTabChipActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.surface,
+  },
+  liveSubTabChipTxt: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.textMuted,
+  },
+  liveSubTabChipTxtActive: {
+    color: theme.colors.primary,
+  },
+  liveWorkbenchPanel: {
+    minHeight: 80,
+  },
+  liveWorkbenchPanelInner: {
+    paddingBottom: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
   scroll: {
     padding: theme.spacing.md,
     paddingBottom: theme.spacing.xl,

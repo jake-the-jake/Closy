@@ -1,11 +1,12 @@
 import { useFrame, useThree } from "@react-three/fiber/native";
-import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
+import { Suspense, useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import type { RefObject } from "react";
 import * as THREE from "three";
 
 import type { GarmentFitState } from "@/features/avatar-export";
 import {
   bodySceneAnchorsFromShape,
+  bodyShapeParamsKey,
   DEFAULT_BODY_SHAPE,
   type BodySceneAnchors,
   type BodyShapeParams,
@@ -37,6 +38,7 @@ import type {
 } from "./live-viewport-debug-types";
 import { SkinnedGarmentAttachmentDriver } from "./skinned-garment-attachment-driver";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
+import type { AvatarViewportNavSettings } from "./avatar-viewport-nav-settings";
 
 const SKIN = new THREE.Color(0xd4a574);
 const SKIN_DIM = new THREE.Color(0xa07850);
@@ -69,26 +71,67 @@ const FIT_VIS = {
 } as const;
 
 
-type Orbit = { theta: number; phi: number; radius: number };
+/** Spherical orbit: theta = yaw around world +Y, phi = polar from +Y, radius = distance to target. */
+export type OrbitSpherical = { theta: number; phi: number; radius: number };
 
-/** Orbits camera around `target` using spherical coords (theta=yaw, phi=polar, radius). */
+function lerpAngleShortest(from: number, to: number, t: number): number {
+  let d = to - from;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  return from + d * t;
+}
+
+/**
+ * Target-orbit camera with exponential smoothing toward `desiredRef` (mutated by gesture layer).
+ * Y-up, no roll: `camera.up` stays world Y.
+ */
 export function CameraRig({
-  orbit,
-  target,
+  desiredRef,
+  smoothRef,
+  navRef,
+  targetBase,
+  targetPanRef,
 }: {
-  orbit: Orbit;
-  target: [number, number, number];
+  desiredRef: RefObject<OrbitSpherical>;
+  smoothRef: RefObject<OrbitSpherical>;
+  navRef: RefObject<AvatarViewportNavSettings>;
+  targetBase: [number, number, number];
+  targetPanRef: RefObject<{ x: number; z: number }>;
 }) {
-  const { camera } = useThree();
-  const t = useMemo(() => new THREE.Vector3(...target), [target]);
+  const { camera, clock } = useThree();
+  const target = useMemo(() => new THREE.Vector3(), []);
 
   useFrame(() => {
-    const { theta, phi, radius } = orbit;
-    const x = t.x + radius * Math.sin(phi) * Math.cos(theta);
-    const y = t.y + radius * Math.cos(phi);
-    const z = t.z + radius * Math.sin(phi) * Math.sin(theta);
+    const nav = navRef.current;
+    const d = desiredRef.current;
+    const s = smoothRef.current;
+    const dt = Math.min(clock.getDelta(), 0.08);
+    const k = 1 - Math.exp(-nav.damping * 14 * dt);
+
+    s.theta = lerpAngleShortest(s.theta, d.theta, k);
+    s.phi = THREE.MathUtils.lerp(s.phi, d.phi, k);
+    s.radius = THREE.MathUtils.lerp(s.radius, d.radius, k);
+
+    s.phi = Math.min(nav.polarMax, Math.max(nav.polarMin, s.phi));
+    s.radius = Math.min(nav.maxRadius, Math.max(nav.minRadius, s.radius));
+
+    const pan = targetPanRef.current;
+    target.set(
+      targetBase[0] + pan.x,
+      targetBase[1] + nav.targetYOffset,
+      targetBase[2] + pan.z,
+    );
+
+    const { theta, phi, radius } = s;
+    const x = target.x + radius * Math.sin(phi) * Math.cos(theta);
+    const y = target.y + radius * Math.cos(phi);
+    const z = target.z + radius * Math.sin(phi) * Math.sin(theta);
     camera.position.set(x, y, z);
-    camera.lookAt(t);
+    camera.up.set(0, 1, 0);
+    camera.lookAt(target);
+    if (nav.enableRoll) {
+      // Rare dev toggle: keep default identity roll.
+    }
     camera.updateProjectionMatrix();
   });
   return null;
@@ -373,6 +416,8 @@ function SleeveGarmentPair({
   skinnedBoneFollow = false,
   leftSleevePivotRef,
   rightSleevePivotRef,
+  leftSleeveBoneFollowRef,
+  rightSleeveBoneFollowRef,
 }: Pick<
   RigMaterialProps,
   | "rig"
@@ -390,6 +435,9 @@ function SleeveGarmentPair({
   skinnedBoneFollow?: boolean;
   leftSleevePivotRef?: RefObject<THREE.Group | null>;
   rightSleevePivotRef?: RefObject<THREE.Group | null>;
+  /** Inner groups: additive rotation from shoulder bone world pose (weighted follow). */
+  leftSleeveBoneFollowRef?: RefObject<THREE.Group | null>;
+  rightSleeveBoneFollowRef?: RefObject<THREE.Group | null>;
 }) {
   const { shoulderY, shoulderHalf } = rig;
   const spx = sleevePos[0] * FIT_VIS.sleevePosMul;
@@ -410,6 +458,7 @@ function SleeveGarmentPair({
         position={leftPos}
         rotation={[ang.laxz, 0, ang.laz]}
       >
+        <group ref={skinnedBoneFollow ? leftSleeveBoneFollowRef : undefined}>
         <group rotation={[0, 0, ang.lax]}>
           <group position={[spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
             <GarmentSleeveProxyMesh
@@ -428,12 +477,14 @@ function SleeveGarmentPair({
             />
           </group>
         </group>
+        </group>
       </group>
       <group
         ref={skinnedBoneFollow ? rightSleevePivotRef : undefined}
         position={rightPos}
         rotation={[-ang.laxz, 0, ang.raz]}
       >
+        <group ref={skinnedBoneFollow ? rightSleeveBoneFollowRef : undefined}>
         <group rotation={[0, 0, -ang.rax]}>
           <group position={[-spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
             <GarmentSleeveProxyMesh
@@ -451,6 +502,7 @@ function SleeveGarmentPair({
               spz={spz}
             />
           </group>
+        </group>
         </group>
       </group>
     </group>
@@ -763,11 +815,15 @@ export function AvatarProceduralScene({
   const bodyRootRef = useRef<THREE.Group>(null);
   const leftSleevePivotRef = useRef<THREE.Group>(null);
   const rightSleevePivotRef = useRef<THREE.Group>(null);
+  const leftSleeveBoneFollowRef = useRef<THREE.Group>(null);
+  const rightSleeveBoneFollowRef = useRef<THREE.Group>(null);
   const topAnchorRef = useRef<THREE.Group>(null);
   const bottomAnchorRef = useRef<THREE.Group>(null);
   const attachmentMarkersRef = useRef<THREE.Group>(null);
+  const lastAnchorDebugJson = useRef("");
 
-  const rig = useMemo(() => bodySceneAnchorsFromShape(bodyShape), [bodyShape]);
+  const bodyShapeKey = bodyShapeParamsKey(bodyShape);
+  const rig = useMemo(() => bodySceneAnchorsFromShape(bodyShape), [bodyShapeKey]);
   const garmentPoseSkin = useMemo<GarmentPoseSkinningParams>(
     () => ({
       rig,
@@ -839,16 +895,19 @@ export function AvatarProceduralScene({
   ] as [number, number, number];
 
   const tz = r.torso.offsetZ;
-  const bodyAnchorPos = [
-    0,
-    tz * FIT_VIS.torsoOffsetY,
-    tz * FIT_VIS.torsoOffsetZ,
-  ] as [number, number, number];
-  const bodyAnchorScale = [
-    1 + r.torso.inflate * FIT_VIS.torsoInflateMul,
-    r.torso.scaleY * (1 + r.torso.inflate * FIT_VIS.torsoInflateYMul),
-    1 + r.torso.inflate * FIT_VIS.torsoInflateMul,
-  ] as [number, number, number];
+  const bodyAnchorPos = useMemo(
+    () => [0, tz * FIT_VIS.torsoOffsetY, tz * FIT_VIS.torsoOffsetZ] as [number, number, number],
+    [tz],
+  );
+  const bodyAnchorScale = useMemo(
+    () =>
+      [
+        1 + r.torso.inflate * FIT_VIS.torsoInflateMul,
+        r.torso.scaleY * (1 + r.torso.inflate * FIT_VIS.torsoInflateYMul),
+        1 + r.torso.inflate * FIT_VIS.torsoInflateMul,
+      ] as [number, number, number],
+    [r.torso.inflate, r.torso.scaleY],
+  );
 
   const shirtInfl = 1 + r.torso.inflate * 2.2;
 
@@ -876,18 +935,23 @@ export function AvatarProceduralScene({
   const shirtTorsoMount = attachmentDriverEnabled ? "skinned_chest" : "rig_chest";
   const pantsBottomMount = attachmentDriverEnabled ? "skinned_pelvis" : "rig";
 
-  useLayoutEffect(() => {
-    onGarmentAnchorsDebug?.({
+  const emitGarmentAnchorsDebug = useCallback(() => {
+    if (!onGarmentAnchorsDebug) return;
+    const payload = {
       bodyAnchorPos: [...bodyAnchorPos] as [number, number, number],
       bodyAnchorScale: [...bodyAnchorScale] as [number, number, number],
-      topAnchorLocal: [0, topAnchorY, topAnchorZ],
-      bottomAnchorLocal: [0, bottomAnchorY, bottomAnchorZ],
+      topAnchorLocal: [0, topAnchorY, topAnchorZ] as [number, number, number],
+      bottomAnchorLocal: [0, bottomAnchorY, bottomAnchorZ] as [number, number, number],
       waistTighten: r.waist.tighten,
       hemOffsetY: r.hem.offsetY,
       legacyWaistAdjustY: garmentFit.legacy.waistAdjustY,
       torsoOffsetZ: tz,
       skinnedBodyActive: skinnedAnchorsActive,
-    });
+    };
+    const j = JSON.stringify(payload);
+    if (j === lastAnchorDebugJson.current) return;
+    lastAnchorDebugJson.current = j;
+    onGarmentAnchorsDebug(payload);
   }, [
     onGarmentAnchorsDebug,
     bodyAnchorPos,
@@ -901,8 +965,11 @@ export function AvatarProceduralScene({
     garmentFit.legacy.waistAdjustY,
     tz,
     skinnedAnchorsActive,
-    attachmentDriverEnabled,
   ]);
+
+  useLayoutEffect(() => {
+    emitGarmentAnchorsDebug();
+  }, [emitGarmentAnchorsDebug, attachmentDriverEnabled]);
 
   const rigMat: RigMaterialProps = {
     rig,
@@ -967,6 +1034,8 @@ export function AvatarProceduralScene({
                   skinnedBoneFollow={attachmentDriverEnabled}
                   leftSleevePivotRef={leftSleevePivotRef}
                   rightSleevePivotRef={rightSleevePivotRef}
+                  leftSleeveBoneFollowRef={leftSleeveBoneFollowRef}
+                  rightSleeveBoneFollowRef={rightSleeveBoneFollowRef}
                 />
               ) : null}
             </GltfErrorBoundary>
@@ -1127,6 +1196,8 @@ export function AvatarProceduralScene({
                 torsoRegionFitRef={torsoRegionFitRef}
                 leftSleevePivotRef={leftSleevePivotRef}
                 rightSleevePivotRef={rightSleevePivotRef}
+                leftSleeveBoneFollowRef={leftSleeveBoneFollowRef}
+                rightSleeveBoneFollowRef={rightSleeveBoneFollowRef}
                 topAnchorRef={topAnchorRef}
                 bottomAnchorRef={bottomAnchorRef}
                 showMarkers={!!garmentAttachmentDebug}

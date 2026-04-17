@@ -23,7 +23,15 @@ import { AppButton } from "@/components/ui/app-button";
 import { theme } from "@/theme";
 
 import { BUNDLED_SKINNED_BODY_GLTF } from "./bundled-body-asset";
-import { AvatarProceduralScene, CameraRig } from "./avatar-procedural-scene";
+import {
+  AvatarProceduralScene,
+  CameraRig,
+  type OrbitSpherical,
+} from "./avatar-procedural-scene";
+import {
+  mergeAvatarViewportNav,
+  type AvatarViewportNavSettings,
+} from "./avatar-viewport-nav-settings";
 import { deformationSummary } from "./garment-deformation";
 import type {
   GarmentAttachmentSnapshot,
@@ -71,11 +79,15 @@ export type AvatarViewportLiveProps = {
   onLiveViewportPoseFitDebug?: (d: LiveViewportPoseFitDebug) => void;
   /** Dev: show bone attachment markers (spheres) in the canvas. */
   garmentAttachmentDebug?: boolean;
+  /** Merged with defaults; drives damped orbit + zoom (dev workstation). */
+  navSettings?: Partial<AvatarViewportNavSettings>;
+  /** `workbench`: compact chrome; parent supplies reset/zoom in tabs. */
+  layout?: "standalone" | "workbench";
+  /** Increment from parent to snap camera to defaults without remounting. */
+  cameraResetNonce?: number;
 };
 
-type Orbit = { theta: number; phi: number; radius: number };
-
-const DEFAULT_ORBIT: Orbit = { theta: 0.48, phi: 1.02, radius: 3.55 };
+const DEFAULT_ORBIT: OrbitSpherical = { theta: 0.48, phi: 1.02, radius: 3.55 };
 const TARGET: [number, number, number] = [0, 1.12, 0];
 
 const SHOW_RIG_DEBUG =
@@ -97,20 +109,15 @@ const FORCE_PROCEDURAL_BODY =
   typeof process.env.EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY === "string" &&
   process.env.EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY === "1";
 
-const PHI_MIN = 0.15;
-const PHI_MAX = 1.55;
-const R_MIN = 1.5;
-const R_MAX = 8;
-
 const LOG_THROTTLE_MS = 280;
 
-function sanitizeOrbit(o: Orbit, prev: Orbit): Orbit {
+function sanitizeOrbit(o: OrbitSpherical, prev: OrbitSpherical, nav: AvatarViewportNavSettings): OrbitSpherical {
   let { theta, phi, radius } = o;
   if (!Number.isFinite(theta)) theta = prev.theta;
   if (!Number.isFinite(phi)) phi = prev.phi;
   if (!Number.isFinite(radius)) radius = prev.radius;
-  phi = Math.min(PHI_MAX, Math.max(PHI_MIN, phi));
-  radius = Math.min(R_MAX, Math.max(R_MIN, radius));
+  phi = Math.min(nav.polarMax, Math.max(nav.polarMin, phi));
+  radius = Math.min(nav.maxRadius, Math.max(nav.minRadius, radius));
   return { theta, phi, radius };
 }
 
@@ -134,15 +141,24 @@ export function AvatarViewportLive({
   garmentOnlyViewport = false,
   onLiveViewportPoseFitDebug,
   garmentAttachmentDebug = false,
+  navSettings,
+  layout = "standalone",
+  cameraResetNonce = 0,
 }: AvatarViewportLiveProps) {
-  const [cam, setCam] = useState<Orbit>(() => ({ ...DEFAULT_ORBIT }));
-  const camRef = useRef(cam);
-  camRef.current = cam;
+  const navMerged = useMemo(() => mergeAvatarViewportNav(navSettings ?? undefined), [navSettings]);
+  const navRef = useRef(navMerged);
+  navRef.current = navMerged;
 
-  const panBaseRef = useRef<Orbit>({ ...DEFAULT_ORBIT });
+  const desiredRef = useRef<OrbitSpherical>({ ...DEFAULT_ORBIT });
+  const smoothRef = useRef<OrbitSpherical>({ ...DEFAULT_ORBIT });
+  const targetPanRef = useRef({ x: 0, z: 0 });
+
+  const panBaseRef = useRef<OrbitSpherical>({ ...DEFAULT_ORBIT });
+  const panBasePanRef = useRef({ x: 0, z: 0 });
   const pinchRadius0Ref = useRef(DEFAULT_ORBIT.radius);
   const mountedRef = useRef(true);
   const lastGestureLog = useRef(0);
+  const lastResetNonce = useRef(cameraResetNonce);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -151,12 +167,18 @@ export function AvatarViewportLive({
     };
   }, []);
 
-  const safeSetCam = useCallback((updater: Orbit | ((prev: Orbit) => Orbit)) => {
-    if (!mountedRef.current) return;
-    setCam((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
-      return sanitizeOrbit(next, prev);
-    });
+  useEffect(() => {
+    if (cameraResetNonce === lastResetNonce.current) return;
+    lastResetNonce.current = cameraResetNonce;
+    const o = { ...DEFAULT_ORBIT };
+    desiredRef.current = sanitizeOrbit(o, o, navRef.current);
+    smoothRef.current = { ...desiredRef.current };
+    targetPanRef.current = { x: 0, z: 0 };
+  }, [cameraResetNonce]);
+
+  const applyDesired = useCallback((updater: (d: OrbitSpherical) => OrbitSpherical) => {
+    const prev = desiredRef.current;
+    desiredRef.current = sanitizeOrbit(updater(prev), prev, navRef.current);
   }, []);
 
   const logThrottle = useCallback((tag: string) => {
@@ -164,11 +186,11 @@ export function AvatarViewportLive({
     const now = Date.now();
     if (now - lastGestureLog.current < LOG_THROTTLE_MS) return;
     lastGestureLog.current = now;
-    console.log(tag, { path: "runOnJS", cam: { ...camRef.current } });
+    console.log(tag, { path: "runOnJS", cam: { ...desiredRef.current } });
   }, []);
 
   const panBeginJS = useCallback(() => {
-    panBaseRef.current = { ...camRef.current };
+    panBaseRef.current = { ...desiredRef.current };
     if (__DEV__) {
       console.log("[AvatarViewport] pan begin", { base: { ...panBaseRef.current } });
     }
@@ -176,22 +198,50 @@ export function AvatarViewportLive({
 
   const panUpdateJS = useCallback((translationX: number, translationY: number) => {
     if (!Number.isFinite(translationX) || !Number.isFinite(translationY)) return;
-    if (Math.abs(translationX) > 500 || Math.abs(translationY) > 500) return;
+    if (Math.abs(translationX) > 520 || Math.abs(translationY) > 520) return;
+    const nav = navRef.current;
     const b = panBaseRef.current;
-    safeSetCam({
-      theta: b.theta - translationX * 0.0075,
-      phi: Math.min(PHI_MAX, Math.max(PHI_MIN, b.phi + translationY * 0.0075)),
+    const ix = nav.invertOrbitX ? -1 : 1;
+    const iy = nav.invertOrbitY ? -1 : 1;
+    const dYaw =
+      -translationX *
+      nav.orbitYawRadPerPx *
+      nav.orbitSensitivity *
+      nav.yawSpeedMultiplier *
+      ix;
+    const dPitch =
+      translationY * nav.orbitPitchRadPerPx * nav.orbitSensitivity * iy;
+    applyDesired((cur) => ({
+      theta: cur.theta + dYaw,
+      phi: cur.phi + dPitch,
       radius: b.radius,
-    });
+    }));
     logThrottle("[AvatarViewport] pan update");
-  }, [safeSetCam, logThrottle]);
+  }, [applyDesired, logThrottle]);
 
   const panEndJS = useCallback(() => {
     if (__DEV__) console.log("[AvatarViewport] pan end");
   }, []);
 
+  const pan2BeginJS = useCallback(() => {
+    panBasePanRef.current = { ...targetPanRef.current };
+  }, []);
+
+  const pan2UpdateJS = useCallback((translationX: number, translationY: number) => {
+    if (!navRef.current.enablePan) return;
+    if (!Number.isFinite(translationX) || !Number.isFinite(translationY)) return;
+    const b = panBasePanRef.current;
+    const k = 0.00045;
+    targetPanRef.current = {
+      x: Math.min(0.35, Math.max(-0.35, b.x - translationX * k)),
+      z: Math.min(0.35, Math.max(-0.35, b.z + translationY * k)),
+    };
+  }, []);
+
+  const pan2EndJS = useCallback(() => {}, []);
+
   const pinchBeginJS = useCallback(() => {
-    pinchRadius0Ref.current = camRef.current.radius;
+    pinchRadius0Ref.current = desiredRef.current.radius;
     if (__DEV__) {
       console.log("[AvatarViewport] pinch begin", {
         radius0: pinchRadius0Ref.current,
@@ -203,20 +253,23 @@ export function AvatarViewportLive({
     if (typeof scale !== "number" || !Number.isFinite(scale) || scale <= 0) return;
     const r0 = pinchRadius0Ref.current;
     if (!Number.isFinite(r0)) return;
-    const raw = r0 / scale;
-    safeSetCam((c) => ({
+    const nav = navRef.current;
+    const exp = 0.82 * nav.zoomSensitivity;
+    const raw = r0 * Math.pow(1 / scale, exp);
+    applyDesired((c) => ({
       ...c,
-      radius: Math.min(R_MAX, Math.max(R_MIN, raw)),
+      radius: raw,
     }));
     logThrottle("[AvatarViewport] pinch update");
-  }, [safeSetCam, logThrottle]);
+  }, [applyDesired, logThrottle]);
 
   const pinchEndJS = useCallback(() => {
     if (__DEV__) console.log("[AvatarViewport] pinch end");
   }, []);
 
   const orbitGesture = useMemo(() => {
-    const pan = Gesture.Pan()
+    const pan1 = Gesture.Pan()
+      .maxPointers(1)
       .onBegin(() => {
         "worklet";
         runOnJS(panBeginJS)();
@@ -232,6 +285,27 @@ export function AvatarViewportLive({
       .onFinalize(() => {
         "worklet";
         runOnJS(panEndJS)();
+      });
+
+    const pan2 = Gesture.Pan()
+      .minPointers(2)
+      .maxPointers(2)
+      .enabled(navMerged.enablePan)
+      .onBegin(() => {
+        "worklet";
+        runOnJS(pan2BeginJS)();
+      })
+      .onUpdate((e) => {
+        "worklet";
+        runOnJS(pan2UpdateJS)(e.translationX, e.translationY);
+      })
+      .onEnd(() => {
+        "worklet";
+        runOnJS(pan2EndJS)();
+      })
+      .onFinalize(() => {
+        "worklet";
+        runOnJS(pan2EndJS)();
       });
 
     const pinch = Gesture.Pinch()
@@ -255,14 +329,18 @@ export function AvatarViewportLive({
         runOnJS(pinchEndJS)();
       });
 
-    return Gesture.Simultaneous(pan, pinch);
+    return Gesture.Simultaneous(pan1, pan2, pinch);
   }, [
     panBeginJS,
     panUpdateJS,
     panEndJS,
+    pan2BeginJS,
+    pan2UpdateJS,
+    pan2EndJS,
     pinchBeginJS,
     pinchUpdateJS,
     pinchEndJS,
+    navMerged.enablePan,
   ]);
 
   useEffect(() => {
@@ -276,22 +354,23 @@ export function AvatarViewportLive({
   }, [pose, preset, garmentFit, liveShading]);
 
   const resetCamera = () => {
-    safeSetCam({ ...DEFAULT_ORBIT });
+    const o = { ...DEFAULT_ORBIT };
+    desiredRef.current = sanitizeOrbit(o, o, navRef.current);
+    smoothRef.current = { ...desiredRef.current };
+    targetPanRef.current = { x: 0, z: 0 };
     if (__DEV__) console.log("[AvatarViewport] reset cam (press)");
   };
   const zoomIn = () => {
-    safeSetCam((c) => ({
+    applyDesired((c) => ({
       ...c,
-      radius: Math.max(R_MIN, c.radius - 0.42),
+      radius: Math.max(navRef.current.minRadius, c.radius - 0.38),
     }));
-    if (__DEV__) console.log("[AvatarViewport] zoom + (press)", camRef.current);
   };
   const zoomOut = () => {
-    safeSetCam((c) => ({
+    applyDesired((c) => ({
       ...c,
-      radius: Math.min(R_MAX, c.radius + 0.42),
+      radius: Math.min(navRef.current.maxRadius, c.radius + 0.38),
     }));
-    if (__DEV__) console.log("[AvatarViewport] zoom − (press)", camRef.current);
   };
 
   const fitIsNonDefault = !fitStatesEqual(garmentFit, DEFAULT_GARMENT_FIT_STATE);
@@ -307,6 +386,10 @@ export function AvatarViewportLive({
   const [attachmentSnapshot, setAttachmentSnapshot] = useState<GarmentAttachmentSnapshot | null>(
     null,
   );
+  const lastSkinnedReportJson = useRef("");
+  const lastAnchorsJson = useRef("");
+  const lastAttachmentJson = useRef("");
+  const lastLivePoseFitJson = useRef("");
 
   const envRuntimeUrls = useMemo(() => getAvatarRuntimeAssetUrls(), []);
 
@@ -337,6 +420,9 @@ export function AvatarViewportLive({
 
   const onSkinnedRigPoseReport = useCallback(
     (r: NonNullable<LiveViewportPoseFitDebug["skinned"]>) => {
+      const j = JSON.stringify(r);
+      if (j === lastSkinnedReportJson.current) return;
+      lastSkinnedReportJson.current = j;
       setSkinnedPoseReport(r);
     },
     [],
@@ -344,12 +430,18 @@ export function AvatarViewportLive({
 
   const onGarmentAnchorsDebug = useCallback(
     (d: NonNullable<LiveViewportPoseFitDebug["anchors"]>) => {
+      const j = JSON.stringify(d);
+      if (j === lastAnchorsJson.current) return;
+      lastAnchorsJson.current = j;
       setGarmentAnchorsDbg(d);
     },
     [],
   );
 
   const onGarmentAttachmentSnapshot = useCallback((s: GarmentAttachmentSnapshot) => {
+    const j = JSON.stringify(s);
+    if (j === lastAttachmentJson.current) return;
+    lastAttachmentJson.current = j;
     setAttachmentSnapshot(s);
   }, []);
 
@@ -359,6 +451,8 @@ export function AvatarViewportLive({
       useProceduralBody ||
       (runtimeBodyBundledModule == null && !resolvedRuntime.bodyGltfUrl);
     if (noSkinnedRuntime || garmentOnlyViewport) {
+      lastSkinnedReportJson.current = "";
+      lastAttachmentJson.current = "";
       setSkinnedPoseReport(null);
       setAttachmentSnapshot(null);
     }
@@ -370,18 +464,26 @@ export function AvatarViewportLive({
   ]);
 
   useEffect(() => {
-    if (garmentOnlyViewport || bodyOnlyGarments) setAttachmentSnapshot(null);
+    if (garmentOnlyViewport || bodyOnlyGarments) {
+      lastAttachmentJson.current = "";
+      setAttachmentSnapshot(null);
+    }
   }, [garmentOnlyViewport, bodyOnlyGarments]);
 
   useEffect(() => {
-    onLiveViewportPoseFitDebug?.({
+    if (!onLiveViewportPoseFitDebug) return;
+    const payload: LiveViewportPoseFitDebug = {
       pose,
       preset,
       garmentPoseMatchesBody: true,
       skinned: skinnedPoseReport,
       anchors: garmentAnchorsDbg,
       attachment: attachmentSnapshot,
-    });
+    };
+    const j = JSON.stringify(payload);
+    if (j === lastLivePoseFitJson.current) return;
+    lastLivePoseFitJson.current = j;
+    onLiveViewportPoseFitDebug(payload);
   }, [
     pose,
     preset,
@@ -553,12 +655,27 @@ export function AvatarViewportLive({
     return lines;
   }, [resolvedRuntime.bottomGltfUrl, resolvedRuntime.topGltfUrl]);
 
+  const isWorkbench = layout === "workbench";
+  const [camUiTick, setCamUiTick] = useState(0);
+  useEffect(() => {
+    if (!__DEV__ || isWorkbench) return;
+    const id = setInterval(() => setCamUiTick((n) => n + 1), 220);
+    return () => clearInterval(id);
+  }, [isWorkbench]);
+  const smooth = smoothRef.current;
+  void camUiTick;
+
   return (
-    <GestureHandlerRootView style={styles.wrap}>
-      <Text style={styles.hint}>
-        Drag to orbit · pinch to zoom (both use runOnJS from the gesture worklet). Zoom ± stays
-        the most reliable path on emulators.
-      </Text>
+    <GestureHandlerRootView style={[styles.wrap, isWorkbench && styles.wrapWorkbench]}>
+      {isWorkbench ? (
+        <Text style={styles.hintCompact} numberOfLines={1}>
+          Drag orbit · pinch zoom
+        </Text>
+      ) : (
+        <Text style={styles.hint}>
+          Drag to orbit · pinch to zoom. Damped target-orbit camera; zoom ± buttons below.
+        </Text>
+      )}
       <View style={[styles.frame, { height }]}>
         <Canvas
           pointerEvents="none"
@@ -568,7 +685,13 @@ export function AvatarViewportLive({
           style={StyleSheet.absoluteFill}
         >
           <Suspense fallback={null}>
-            <CameraRig orbit={cam} target={TARGET} />
+            <CameraRig
+              desiredRef={desiredRef}
+              smoothRef={smoothRef}
+              navRef={navRef}
+              targetBase={TARGET}
+              targetPanRef={targetPanRef}
+            />
             <AvatarProceduralScene
               pose={pose}
               preset={preset}
@@ -604,10 +727,10 @@ export function AvatarViewportLive({
         </GestureDetector>
       </View>
 
-      {__DEV__ ? (
+      {__DEV__ && !isWorkbench ? (
         <View style={styles.debugBox}>
           <Text style={styles.debugLine} selectable>
-            cam r={cam.radius.toFixed(2)} θ={cam.theta.toFixed(2)} φ={cam.phi.toFixed(2)}
+            cam r={smooth.radius.toFixed(2)} θ={smooth.theta.toFixed(2)} φ={smooth.phi.toFixed(2)}
           </Text>
           <Text style={styles.debugLine} selectable>
             pose={pose} preset={preset} shade={LIVE_VIEWPORT_SHADING_LABELS[liveShading]}
@@ -661,22 +784,30 @@ export function AvatarViewportLive({
             </Text>
           ) : null}
           <Text style={styles.debugSub} selectable>
-            pan/pinch: RNGH worklet → runOnJS(setState) · no direct worklet → JS refs
+            pan/pinch: RNGH worklet → runOnJS updates desired orbit refs · damped in GL frame
           </Text>
         </View>
       ) : null}
 
-      <View style={styles.camRow}>
-        <AppButton label="Reset cam" variant="secondary" onPress={resetCamera} />
-        <AppButton label="Zoom +" variant="secondary" onPress={zoomIn} />
-        <AppButton label="Zoom −" variant="secondary" onPress={zoomOut} />
-      </View>
+      {!isWorkbench ? (
+        <View style={styles.camRow}>
+          <AppButton label="Reset cam" variant="secondary" onPress={resetCamera} />
+          <AppButton label="Zoom +" variant="secondary" onPress={zoomIn} />
+          <AppButton label="Zoom −" variant="secondary" onPress={zoomOut} />
+        </View>
+      ) : null}
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: { gap: theme.spacing.xs },
+  wrapWorkbench: { gap: 2 },
+  hintCompact: {
+    fontSize: 10,
+    color: theme.colors.textMuted,
+    fontFamily: "monospace",
+  },
   hint: {
     fontSize: theme.typography.fontSize.caption,
     color: theme.colors.textMuted,

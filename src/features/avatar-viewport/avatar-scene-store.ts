@@ -28,6 +28,11 @@ import type {
 } from "./avatar-scene-types";
 import { resetGarmentFitRegion } from "./garment-fit-region-reset";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
+import {
+  DEFAULT_AVATAR_VIEWPORT_NAV,
+  mergeAvatarViewportNav,
+  type AvatarViewportNavSettings,
+} from "./avatar-viewport-nav-settings";
 
 const MAX_LIVE_FIT_SNAPSHOTS = 14;
 
@@ -39,6 +44,7 @@ export const DEFAULT_AVATAR_SCENE_STATE: AvatarSceneState = {
   bodyShape: cloneBodyShape(DEFAULT_BODY_SHAPE),
   liveViewportShading: "normal",
   offlineFitDebugMode: "normal",
+  viewportNav: { ...DEFAULT_AVATAR_VIEWPORT_NAV },
 };
 
 type AvatarSceneActions = {
@@ -85,6 +91,9 @@ type AvatarSceneActions = {
   liveClipOverlay: boolean;
   setLiveClipOverlay: (on: boolean) => void;
   resetLiveFitRegionToDefault: (region: GarmentFitRegionKey) => void;
+
+  patchViewportNav: (fn: (prev: AvatarViewportNavSettings) => AvatarViewportNavSettings) => void;
+  resetViewportNav: () => void;
 };
 
 export type AvatarSceneStore = AvatarSceneState & AvatarSceneActions;
@@ -131,7 +140,17 @@ export const useAvatarSceneStore = create<AvatarSceneStore>((set, get) => ({
 
   setOfflineFitDebugMode: (offlineFitDebugMode) => set({ offlineFitDebugMode }),
 
-  hydrateScene: (partial) => set((s) => ({ ...s, ...partial })),
+  hydrateScene: (partial) =>
+    set((s) => {
+      const { viewportNav: vn, ...rest } = partial;
+      return {
+        ...s,
+        ...rest,
+        ...(vn != null
+          ? { viewportNav: mergeAvatarViewportNav({ ...s.viewportNav, ...vn }) }
+          : {}),
+      };
+    }),
 
   resetGarmentFit: () =>
     set({
@@ -226,4 +245,9 @@ export const useAvatarSceneStore = create<AvatarSceneStore>((set, get) => ({
       garmentFit: resetGarmentFitRegion(s.garmentFit, region),
       liveFitShowBaseline: false,
     })),
+
+  patchViewportNav: (fn) =>
+    set((s) => ({ viewportNav: mergeAvatarViewportNav(fn(s.viewportNav)) })),
+
+  resetViewportNav: () => set({ viewportNav: { ...DEFAULT_AVATAR_VIEWPORT_NAV } }),
 }));

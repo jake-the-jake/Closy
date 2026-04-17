@@ -13,17 +13,36 @@ import {
 } from "./skinned-garment-attachment";
 
 /** Sit sleeves / torso / bottoms on posed bones (parent = `avatar_torso_region_fit`). */
-const SLEEVE_Y_LOWER = -0.068;
-const SLEEVE_Z_FORWARD = 0.016;
-const TOP_CHEST_Y_LOWER = -0.11;
+const SLEEVE_Y_LOWER = -0.084;
+const SLEEVE_Z_FORWARD = 0.014;
+const TOP_CHEST_Y_LOWER = -0.132;
 const TOP_CHEST_X_BLEND = 0.82;
 const TOP_CHEST_Z_BLEND = 0.74;
-const BOTTOM_PELVIS_Y_ADD = -0.035;
+const BOTTOM_PELVIS_Y_ADD = -0.038;
 const BOTTOM_HIP_X_BLEND = 0.55;
 const BOTTOM_WAIST_Z_BLEND = 0.68;
 
+const SNAP_THROTTLE_MS = 240;
+
 function v3a(v: THREE.Vector3): [number, number, number] {
   return [v.x, v.y, v.z];
+}
+
+function snapshotKey(s: GarmentAttachmentSnapshot): string {
+  const f = (n: number) => (Math.round(n * 500) / 500).toFixed(3);
+  const t = (p: [number, number, number]) => p.map(f).join(",");
+  return [
+    s.source,
+    t(s.shoulderL),
+    t(s.shoulderR),
+    t(s.chest),
+    t(s.pelvisTop),
+    t(s.hipMid),
+    t(s.topAnchor),
+    t(s.bottomAnchor),
+    t(s.leftSleevePivot),
+    t(s.rightSleevePivot),
+  ].join("|");
 }
 
 type Props = {
@@ -37,14 +56,14 @@ type Props = {
   torsoRegionFitRef: RefObject<THREE.Group | null>;
   leftSleevePivotRef: RefObject<THREE.Group | null>;
   rightSleevePivotRef: RefObject<THREE.Group | null>;
+  leftSleeveBoneFollowRef?: RefObject<THREE.Group | null>;
+  rightSleeveBoneFollowRef?: RefObject<THREE.Group | null>;
   topAnchorRef: RefObject<THREE.Group | null>;
   bottomAnchorRef: RefObject<THREE.Group | null>;
   showMarkers: boolean;
   markersGroupRef: RefObject<THREE.Group | null>;
   onAttachmentSnapshot?: (s: GarmentAttachmentSnapshot) => void;
 };
-
-let _lastSnapMs = 0;
 
 export function SkinnedGarmentAttachmentDriver({
   enabled,
@@ -56,6 +75,8 @@ export function SkinnedGarmentAttachmentDriver({
   torsoRegionFitRef,
   leftSleevePivotRef,
   rightSleevePivotRef,
+  leftSleeveBoneFollowRef,
+  rightSleeveBoneFollowRef,
   topAnchorRef,
   bottomAnchorRef,
   showMarkers,
@@ -68,10 +89,16 @@ export function SkinnedGarmentAttachmentDriver({
       botPos: new THREE.Vector3(),
       lSleeve: new THREE.Vector3(),
       rSleeve: new THREE.Vector3(),
+      qBone: new THREE.Quaternion(),
+      qParent: new THREE.Quaternion(),
+      qRel: new THREE.Quaternion(),
+      eRel: new THREE.Euler(0, 0, 0, "XYZ"),
     }),
     [],
   );
   const lastSource = useRef<GarmentAttachmentSnapshot["source"] | null>(null);
+  const lastSnapKey = useRef("");
+  const lastSnapEmitMs = useRef(0);
 
   useFrame(() => {
     if (!enabled) return;
@@ -84,6 +111,7 @@ export function SkinnedGarmentAttachmentDriver({
     const pts: SkinnedGarmentAttachmentPoints = computed
       ? computed.points
       : rigFallbackAttachmentPoints(rig);
+    const bones = computed?.bones;
 
     const tz = torsoOffsetZ;
     const rigTopZ = tz * 0.35;
@@ -101,6 +129,35 @@ export function SkinnedGarmentAttachmentDriver({
       tmp.rSleeve.y += SLEEVE_Y_LOWER;
       tmp.rSleeve.z += SLEEVE_Z_FORWARD;
       right.position.copy(tmp.rSleeve);
+    }
+
+    const lf = leftSleeveBoneFollowRef?.current;
+    const rf = rightSleeveBoneFollowRef?.current;
+    if (bones && parent) {
+      parent.updateMatrixWorld(true);
+      if (lf && bones.armL_shoulder) {
+        bones.armL_shoulder.updateWorldMatrix(true, false);
+        bones.armL_shoulder.getWorldQuaternion(tmp.qBone);
+        parent.getWorldQuaternion(tmp.qParent);
+        tmp.qRel.copy(tmp.qParent).invert().multiply(tmp.qBone);
+        tmp.eRel.setFromQuaternion(tmp.qRel);
+        lf.rotation.set(tmp.eRel.x * 0.24, tmp.eRel.y * 0.14, tmp.eRel.z * 0.11);
+      } else if (lf) {
+        lf.rotation.set(0, 0, 0);
+      }
+      if (rf && bones.armR_shoulder) {
+        bones.armR_shoulder.updateWorldMatrix(true, false);
+        bones.armR_shoulder.getWorldQuaternion(tmp.qBone);
+        parent.getWorldQuaternion(tmp.qParent);
+        tmp.qRel.copy(tmp.qParent).invert().multiply(tmp.qBone);
+        tmp.eRel.setFromQuaternion(tmp.qRel);
+        rf.rotation.set(tmp.eRel.x * 0.24, tmp.eRel.y * 0.14, tmp.eRel.z * 0.11);
+      } else if (rf) {
+        rf.rotation.set(0, 0, 0);
+      }
+    } else {
+      lf?.rotation.set(0, 0, 0);
+      rf?.rotation.set(0, 0, 0);
     }
 
     const top = topAnchorRef.current;
@@ -137,25 +194,32 @@ export function SkinnedGarmentAttachmentDriver({
       mg.visible = false;
     }
 
-    if (onAttachmentSnapshot) {
-      const now = typeof performance !== "undefined" ? performance.now() : Date.now();
-      if (now - _lastSnapMs > 120 || source !== lastSource.current) {
-        _lastSnapMs = now;
-        lastSource.current = source;
-        onAttachmentSnapshot({
-          shoulderL: v3a(pts.shoulderL),
-          shoulderR: v3a(pts.shoulderR),
-          chest: v3a(pts.chest),
-          pelvisTop: v3a(pts.pelvisTop),
-          hipMid: v3a(pts.hipMid),
-          source,
-          topAnchor: top ? [top.position.x, top.position.y, top.position.z] : [0, 0, 0],
-          bottomAnchor: bot ? [bot.position.x, bot.position.y, bot.position.z] : [0, 0, 0],
-          leftSleevePivot: left ? [left.position.x, left.position.y, left.position.z] : [0, 0, 0],
-          rightSleevePivot: right ? [right.position.x, right.position.y, right.position.z] : [0, 0, 0],
-        });
-      }
-    }
+    if (!onAttachmentSnapshot) return;
+
+    const snap: GarmentAttachmentSnapshot = {
+      shoulderL: v3a(pts.shoulderL),
+      shoulderR: v3a(pts.shoulderR),
+      chest: v3a(pts.chest),
+      pelvisTop: v3a(pts.pelvisTop),
+      hipMid: v3a(pts.hipMid),
+      source,
+      topAnchor: top ? [top.position.x, top.position.y, top.position.z] : [0, 0, 0],
+      bottomAnchor: bot ? [bot.position.x, bot.position.y, bot.position.z] : [0, 0, 0],
+      leftSleevePivot: left ? [left.position.x, left.position.y, left.position.z] : [0, 0, 0],
+      rightSleevePivot: right ? [right.position.x, right.position.y, right.position.z] : [0, 0, 0],
+    };
+
+    const key = snapshotKey(snap);
+    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const sourceChanged = source !== lastSource.current;
+    lastSource.current = source;
+
+    if (key === lastSnapKey.current && !sourceChanged) return;
+    if (!sourceChanged && now - lastSnapEmitMs.current < SNAP_THROTTLE_MS) return;
+
+    lastSnapKey.current = key;
+    lastSnapEmitMs.current = now;
+    onAttachmentSnapshot(snap);
   }, 1);
 
   return null;

@@ -12,6 +12,7 @@ import type {
 
 import type { LiveFitStressSnapshotMeta } from "./pose-stress-test";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
+import type { AvatarViewportNavSettings } from "./avatar-viewport-nav-settings";
 
 /**
  * Single source of truth for avatar presentation: live viewport + offline export JSON.
@@ -35,6 +36,8 @@ export type AvatarSceneState = {
   liveViewportShading: LiveViewportShadingMode;
   /** Host `avatar_export` debug flags (`closy.debug`). */
   offlineFitDebugMode: FitDebugViewMode;
+  /** Live WebGL orbit / zoom tuning (dev workstation). */
+  viewportNav: AvatarViewportNavSettings;
 };
 
 /** Serializable snapshot for session history / compare (offline render metadata). */

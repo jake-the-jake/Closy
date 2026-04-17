@@ -10,7 +10,13 @@ export {
   CameraRig,
   AvatarProceduralScene,
   poseAngles,
+  type OrbitSpherical,
 } from "./avatar-procedural-scene";
+export {
+  DEFAULT_AVATAR_VIEWPORT_NAV,
+  mergeAvatarViewportNav,
+  type AvatarViewportNavSettings,
+} from "./avatar-viewport-nav-settings";
 export type { PoseAngleSet } from "./avatar-pose-angles";
 export type { GarmentPoseSkinningParams } from "./garment-deformation";
 export {

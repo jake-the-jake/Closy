@@ -66,6 +66,11 @@ export function bodyShapesEqual(a: BodyShapeParams, b: BodyShapeParams): boolean
   );
 }
 
+/** Stable string key for memoization when callers pass fresh `bodyShape` object refs. */
+export function bodyShapeParamsKey(b: BodyShapeParams): string {
+  return `${b.height},${b.shoulderWidth},${b.chest},${b.waist},${b.hips},${b.armThickness},${b.legThickness},${b.torsoLength},${b.build}`;
+}
+
 /** Serializable subset for `closy.bodyShape` in export JSON (engine may ignore). */
 export type AvatarExportBodyShape = Partial<{
   height: number;

@@ -165,8 +165,8 @@ export type SkinnedPoseBias = {
   legHipPitchBoost?: number;
 };
 
-const DEFAULT_SHOULDER_DROP = -0.17;
-const DEFAULT_LEG_HIP_BOOST = 0.065;
+const DEFAULT_SHOULDER_DROP = -0.11;
+const DEFAULT_LEG_HIP_BOOST = 0.055;
 
 /**
  * Apply pose angles consistent with `ProceduralRigBody` / `garment-rig-pose` conventions.
@@ -214,10 +214,11 @@ export function applySkinnedPoseToBones(
   const su = bones.spineUpper;
   const n1 = bones.neck1;
   const n2 = bones.neck2;
-  if (sl) setBoneDelta(sl, rest, spineRx * 0.55 + 0.012, twistY * 0.35, 0);
-  if (su) setBoneDelta(su, rest, spineUpperRx * 0.65 + spineRx * 0.2, twistY * 0.45, 0);
-  if (n1) setBoneDelta(n1, rest, neckRx * 0.5 + spineUpperRx * 0.15, twistY * 0.2, 0);
-  if (n2) setBoneDelta(n2, rest, neckRx * 0.35, twistY * 0.12, 0);
+  const spineMul = 0.82;
+  if (sl) setBoneDelta(sl, rest, spineRx * 0.55 * spineMul + 0.01, twistY * 0.32, 0);
+  if (su) setBoneDelta(su, rest, spineUpperRx * 0.62 * spineMul + spineRx * 0.18 * spineMul, twistY * 0.4, 0);
+  if (n1) setBoneDelta(n1, rest, neckRx * 0.48 + spineUpperRx * 0.12, twistY * 0.18, 0);
+  if (n2) setBoneDelta(n2, rest, neckRx * 0.32, twistY * 0.1, 0);
 }
 
 /**
@@ -231,29 +232,29 @@ export function applySkinnedShapeScales(
   ref: BodyRigMetrics = BODY_SHAPE_REF_METRICS,
 ): void {
   const spineY = THREE.MathUtils.clamp(
-    0.88 + 0.24 * (metrics.torsoCapsuleLength / ref.torsoCapsuleLength),
-    0.86,
-    1.18,
+    0.88 + 0.22 * (metrics.torsoCapsuleLength / ref.torsoCapsuleLength),
+    0.9,
+    1.12,
   );
   const chestXZ = THREE.MathUtils.clamp(
-    0.9 + 0.2 * (metrics.torsoCapsuleRadius / ref.torsoCapsuleRadius),
-    0.85,
-    1.22,
+    0.9 + 0.18 * (metrics.torsoCapsuleRadius / ref.torsoCapsuleRadius),
+    0.9,
+    1.14,
   );
   const hipW = THREE.MathUtils.clamp(
-    0.9 + 0.22 * (metrics.pelvisBox[0] / ref.pelvisBox[0]),
-    0.84,
-    1.25,
+    0.9 + 0.2 * (metrics.pelvisBox[0] / ref.pelvisBox[0]),
+    0.88,
+    1.16,
   );
   const thighT = THREE.MathUtils.clamp(
-    0.9 + 0.28 * (metrics.upperLegCapsule[0] / ref.upperLegCapsule[0]),
-    0.82,
-    1.28,
+    0.9 + 0.24 * (metrics.upperLegCapsule[0] / ref.upperLegCapsule[0]),
+    0.88,
+    1.18,
   );
   const armT = THREE.MathUtils.clamp(
-    0.9 + 0.28 * (metrics.upperArmCapsule[0] / ref.upperArmCapsule[0]),
-    0.82,
-    1.28,
+    0.9 + 0.24 * (metrics.upperArmCapsule[0] / ref.upperArmCapsule[0]),
+    0.88,
+    1.18,
   );
 
   const apply = (b: THREE.Bone | undefined, sx: number, sy: number, sz: number) => {
@@ -268,8 +269,8 @@ export function applySkinnedShapeScales(
   apply(bones.root, hipW, 1, hipW * 0.96);
   apply(bones.legL_hip, thighT, 1, thighT);
   apply(bones.legR_hip, thighT, 1, thighT);
-  apply(bones.armL_shoulder, 1, 0.9, 1);
-  apply(bones.armR_shoulder, 1, 0.9, 1);
+  apply(bones.armL_shoulder, 1, 0.97, 1);
+  apply(bones.armR_shoulder, 1, 0.97, 1);
   apply(bones.armL_upper, armT, 1, armT);
   apply(bones.armR_upper, armT, 1, armT);
 }

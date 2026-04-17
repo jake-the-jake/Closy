@@ -14,6 +14,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import {
   DEFAULT_BODY_SHAPE,
+  bodyShapeParamsKey,
   deriveBodyRigMetrics,
   type BodyRigMetrics,
   type BodyShapeParams,
@@ -208,10 +209,6 @@ function resetSkeletonToRest(
   }
 }
 
-function bodyShapeKey(b: BodyShapeParams): string {
-  return `${b.height},${b.shoulderWidth},${b.chest},${b.waist},${b.hips},${b.armThickness},${b.legThickness},${b.torsoLength},${b.build}`;
-}
-
 /** expo-gl / RN: ensure boneTexture / boneMatrices refresh every frame after CPU pose. */
 function SkinnedSkeletonFrameUpdater({
   scene,
@@ -238,7 +235,7 @@ function useSkinnedBodyLayout(
   pose: DevAvatarPoseKey,
   liveShading: LiveViewportShadingMode,
   m: BodyRigMetrics,
-  bodyShape: BodyShapeParams,
+  bodyShapeKeyStr: string,
   enableSkinnedRig: boolean,
   poseBias: SkinnedPoseBias | undefined,
   onSceneReady: (() => void) | undefined,
@@ -246,7 +243,12 @@ function useSkinnedBodyLayout(
 ) {
   const ang = useMemo(() => poseAngles(pose), [pose]);
   const skinnedCacheRef = useRef<SkinnedBindCache | null>(null);
-  const sk = useMemo(() => bodyShapeKey(bodyShape), [bodyShape]);
+  const sk = bodyShapeKeyStr;
+  const onSceneReadyRef = useRef(onSceneReady);
+  const onRigPoseReportRef = useRef(onRigPoseReport);
+  const lastRigReportJson = useRef("");
+  onSceneReadyRef.current = onSceneReady;
+  onRigPoseReportRef.current = onRigPoseReport;
 
   useLayoutEffect(() => {
     const skinned = findFirstSkinnedMesh(scene);
@@ -256,15 +258,20 @@ function useSkinnedBodyLayout(
       scene.rotation.set(euler[0], euler[1], euler[2]);
       applyLiveShadingToGltfMaterials(scene, liveShading, "body", baseline);
       scene.updateMatrixWorld(true);
-      onRigPoseReport?.({
+      const report: SkinnedRigPoseReport = {
         activePose: pose,
         bodyPoseApplied: false,
         boneMapStatus: "fallback",
         mappedBoneSlots: 0,
         criticalMapped: 0,
         criticalTotal: SKINNED_POSE_CRITICAL_SLOT_COUNT,
-      });
-      onSceneReady?.();
+      };
+      const rj = JSON.stringify(report);
+      if (rj !== lastRigReportJson.current) {
+        lastRigReportJson.current = rj;
+        onRigPoseReportRef.current?.(report);
+      }
+      onSceneReadyRef.current?.();
       return;
     }
 
@@ -294,15 +301,20 @@ function useSkinnedBodyLayout(
     const criticalMapped = countCriticalMappedBones(cache.bones);
     const bodyPoseApplied =
       enableSkinnedRig && boneMapStatus !== "fallback" && criticalMapped >= 5;
-    onRigPoseReport?.({
+    const report: SkinnedRigPoseReport = {
       activePose: pose,
       bodyPoseApplied,
       boneMapStatus,
       mappedBoneSlots: countMappedSkinnedBones(cache.bones),
       criticalMapped,
       criticalTotal: SKINNED_POSE_CRITICAL_SLOT_COUNT,
-    });
-    onSceneReady?.();
+    };
+    const rj = JSON.stringify(report);
+    if (rj !== lastRigReportJson.current) {
+      lastRigReportJson.current = rj;
+      onRigPoseReportRef.current?.(report);
+    }
+    onSceneReadyRef.current?.();
   }, [
     scene,
     pose,
@@ -312,8 +324,6 @@ function useSkinnedBodyLayout(
     m,
     enableSkinnedRig,
     poseBias,
-    onSceneReady,
-    onRigPoseReport,
     sk,
   ]);
 }
@@ -342,7 +352,8 @@ export function GltfRuntimeBodyFromBundledModule({
   onRigPoseReport,
 }: GltfRuntimeBodyShared & { bundledAssetModule: number }) {
   const gltf = use(useMemo(() => loadBundledGltfModule(bundledAssetModule), [bundledAssetModule]));
-  const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShape]);
+  const bodyShapeKeyStr = bodyShapeParamsKey(bodyShape);
+  const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShapeKeyStr]);
   const { scene, baseline } = usePreparedGltf(
     `bundled:${bundledAssetModule}`,
     gltf,
@@ -358,7 +369,7 @@ export function GltfRuntimeBodyFromBundledModule({
     pose,
     liveShading,
     m,
-    bodyShape,
+    bodyShapeKeyStr,
     enableSkinnedRig ?? true,
     poseBias,
     onSceneReady,
@@ -387,7 +398,8 @@ export function GltfRuntimeBodyFromUrl({
   onRigPoseReport,
 }: GltfRuntimeBodyShared & { url: string }) {
   const gltf = useLoader(GLTFLoader, url);
-  const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShape]);
+  const bodyShapeKeyStr = bodyShapeParamsKey(bodyShape);
+  const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShapeKeyStr]);
   const { scene, baseline } = usePreparedGltf(
     url,
     gltf,
@@ -403,7 +415,7 @@ export function GltfRuntimeBodyFromUrl({
     pose,
     liveShading,
     m,
-    bodyShape,
+    bodyShapeKeyStr,
     enableSkinnedRig ?? true,
     poseBias,
     onSceneReady,
