@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber/native";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -99,8 +99,8 @@ export type AvatarViewportLiveProps = {
   onRequestVisibleBaseline?: (reason: string) => void;
   /** Dev workbench: scene-space markers, bounds framing, bright-body visibility proof. */
   devSceneInspect?: AvatarViewportDevSceneInspect;
-  /** Set true from preview after `useLayoutEffect` baseline so diagnostics know startup ordering. */
-  viewportBaselineReady?: boolean;
+  /** Baseline request generation from preview. */
+  baselineRequestNonce?: number;
   /** Baseline / camera-reset generation from preview (diagnostics). */
   viewportBaselineNonce?: number;
 };
@@ -164,7 +164,7 @@ export function AvatarViewportLive({
   cameraResetNonce = 0,
   onRequestVisibleBaseline,
   devSceneInspect,
-  viewportBaselineReady = false,
+  baselineRequestNonce = 0,
   viewportBaselineNonce = 0,
 }: AvatarViewportLiveProps) {
   const navMerged = useMemo(() => mergeAvatarViewportNav(navSettings ?? undefined), [navSettings]);
@@ -184,8 +184,15 @@ export function AvatarViewportLive({
   const mountedRef = useRef(true);
   const lastGestureLog = useRef(0);
   const lastResetNonce = useRef(cameraResetNonce);
+  const lastBaselineRequestNonce = useRef(baselineRequestNonce);
   const [safeDefaultActive, setSafeDefaultActive] = useState(false);
   const [cameraTargetValid, setCameraTargetValid] = useState(true);
+  const [startupBaselineApplied, setStartupBaselineApplied] = useState(false);
+  const [startupRecoveryTriggered, setStartupRecoveryTriggered] = useState(false);
+  const [zoomInputMode, setZoomInputMode] = useState<
+    "idle" | "native_pinch" | "wheel_fallback" | "emulator_fallback"
+  >("idle");
+  const [sceneRefreshNonce, setSceneRefreshNonce] = useState(0);
   const visibilityGuardedRef = useRef(false);
 
   useEffect(() => {
@@ -206,6 +213,15 @@ export function AvatarViewportLive({
     setSafeDefaultActive(false);
     setCameraTargetValid(true);
   }, [cameraResetNonce]);
+
+  useEffect(() => {
+    if (baselineRequestNonce === lastBaselineRequestNonce.current) return;
+    lastBaselineRequestNonce.current = baselineRequestNonce;
+    setStartupBaselineApplied(false);
+    setStartupRecoveryTriggered(false);
+    setZoomInputMode("idle");
+    setSceneRefreshNonce(0);
+  }, [baselineRequestNonce]);
 
   useEffect(() => {
     const nav = navRef.current;
@@ -259,19 +275,21 @@ export function AvatarViewportLive({
     if (Math.abs(translationX) > 520 || Math.abs(translationY) > 520) return;
     const nav = navRef.current;
     const b = panBaseRef.current;
+    const clampedX = Math.max(-340, Math.min(340, translationX));
+    const clampedY = Math.max(-300, Math.min(300, translationY));
     const ix = nav.invertOrbitX ? -1 : 1;
     const iy = nav.invertOrbitY ? -1 : 1;
     const dYaw =
-      -translationX *
+      -clampedX *
       nav.orbitYawRadPerPx *
       nav.orbitSensitivity *
       nav.yawSpeedMultiplier *
       ix;
     const dPitch =
-      translationY * nav.orbitPitchRadPerPx * nav.orbitSensitivity * iy;
-    applyDesired((cur) => ({
-      theta: cur.theta + dYaw,
-      phi: cur.phi + dPitch,
+      clampedY * nav.orbitPitchRadPerPx * nav.orbitSensitivity * iy;
+    applyDesired(() => ({
+      theta: b.theta + dYaw,
+      phi: b.phi + dPitch,
       radius: b.radius,
     }));
     if (layout !== "workbench") {
@@ -304,6 +322,7 @@ export function AvatarViewportLive({
   const pinchBeginJS = useCallback(() => {
     pinchRadius0Ref.current = desiredRef.current.radius;
     orbitGestureActiveRef.current = true;
+    setZoomInputMode(Platform.OS === "android" ? "emulator_fallback" : "native_pinch");
     if (__DEV__) {
       console.log("[AvatarViewport] pinch begin", {
         radius0: pinchRadius0Ref.current,
@@ -316,14 +335,32 @@ export function AvatarViewportLive({
     const r0 = pinchRadius0Ref.current;
     if (!Number.isFinite(r0)) return;
     const nav = navRef.current;
-    const exp = 0.82 * nav.zoomSensitivity;
+    const exp = 1.08 * nav.zoomSensitivity;
     const raw = r0 * Math.pow(1 / scale, exp);
+    const nextRadius = Math.min(nav.maxRadius, Math.max(nav.minRadius, raw));
     applyDesired((c) => ({
       ...c,
-      radius: raw,
+      radius: nextRadius,
     }));
+    smoothRef.current.radius += (nextRadius - smoothRef.current.radius) * 0.34;
     if (layout !== "workbench") {
       logThrottle("[AvatarViewport] pinch update");
+    }
+  }, [applyDesired, logThrottle, layout]);
+
+  const wheelZoomJS = useCallback((deltaY: number) => {
+    if (!Number.isFinite(deltaY) || deltaY === 0) return;
+    setZoomInputMode("wheel_fallback");
+    const nav = navRef.current;
+    const clamped = Math.max(-180, Math.min(180, deltaY));
+    const factor = Math.exp(clamped * 0.0024 * nav.zoomSensitivity);
+    applyDesired((c) => ({
+      ...c,
+      radius: Math.min(nav.maxRadius, Math.max(nav.minRadius, c.radius * factor)),
+    }));
+    smoothRef.current.radius += (desiredRef.current.radius - smoothRef.current.radius) * 0.42;
+    if (layout !== "workbench") {
+      logThrottle("[AvatarViewport] wheel zoom");
     }
   }, [applyDesired, logThrottle, layout]);
 
@@ -506,6 +543,7 @@ export function AvatarViewportLive({
   useEffect(() => {
     bodyReadyEmittedRef.current = false;
     setBodyLoadGeneration(0);
+    setStartupBaselineApplied(false);
   }, [bodyAssetKey]);
 
   const [sceneDiagnostics, setSceneDiagnostics] = useState<LiveViewportSceneDiagnostics | null>(
@@ -519,21 +557,14 @@ export function AvatarViewportLive({
     setSceneDiagnostics(d);
   }, []);
 
-  useEffect(() => {
-    if (!devSceneInspect?.enabled) {
-      lastSceneDiagJson.current = "";
-      setSceneDiagnostics(null);
-    }
-  }, [devSceneInspect?.enabled]);
-
   const sceneSpaceDebug = useMemo(() => {
-    if (!__DEV__ || !devSceneInspect?.enabled || layout !== "workbench") return null;
+    if (!__DEV__ || layout !== "workbench") return null;
     return {
       enabled: true,
-      showMarkers: devSceneInspect.showMarkers,
-      debugBrightBody: devSceneInspect.debugBrightBody,
+      showMarkers: !!devSceneInspect?.enabled && !!devSceneInspect.showMarkers,
+      debugBrightBody: !!devSceneInspect?.enabled && !!devSceneInspect.debugBrightBody,
       bodyLoadGeneration,
-      manualFrameBoundsNonce: devSceneInspect.manualFrameBoundsNonce,
+      manualFrameBoundsNonce: devSceneInspect?.manualFrameBoundsNonce ?? 0,
       onSceneDiagnostics: handleSceneDiagnostics,
       orbit: {
         desiredRef,
@@ -544,7 +575,6 @@ export function AvatarViewportLive({
       },
     };
   }, [
-    devSceneInspect?.enabled,
     devSceneInspect?.showMarkers,
     devSceneInspect?.debugBrightBody,
     devSceneInspect?.manualFrameBoundsNonce,
@@ -626,7 +656,14 @@ export function AvatarViewportLive({
       active = "procedural_scene_default";
     }
 
-    return { active, userIntent, reason };
+    const sourceReason: LiveViewportBodySourceDebug["sourceReason"] =
+      reason === "user_procedural_toggle"
+        ? "user_toggle"
+        : reason === "skinned_load_failed_fallback"
+          ? "hard_fallback"
+          : "startup";
+
+    return { active, userIntent, sourceReason, loadStatus: bodyLoadForUi, reason };
   }, [
     useProceduralBody,
     runtimeAssets?.bodyGltfUrl,
@@ -634,6 +671,7 @@ export function AvatarViewportLive({
     runtimeBodyBundledModule,
     resolvedRuntime.bodyGltfUrl,
     skinnedBodyLoadStatus,
+    bodyLoadForUi,
   ]);
 
   useEffect(() => {
@@ -665,6 +703,20 @@ export function AvatarViewportLive({
     if (!onLiveViewportPoseFitDebug) return;
     const bodyVisible = !garmentOnlyViewport;
     const garmentsVisible = !bodyOnlyGarments;
+    const exactBaselineOk =
+      !useProceduralBody &&
+      !FORCE_PROCEDURAL_BODY &&
+      bodyVisible &&
+      garmentsVisible &&
+      !garmentAttachmentDebug &&
+      !clipOverlayEnabled &&
+      !devSceneInspect?.enabled &&
+      liveShading === "normal" &&
+      pose === "relaxed" &&
+      preset === "default";
+    const startupWarning = exactBaselineOk
+      ? null
+      : "startup deviated from sane bundled combined preview; self-recovery attempted";
     const mode =
       bodyVisible && garmentsVisible
         ? "combined"
@@ -684,10 +736,13 @@ export function AvatarViewportLive({
       startup:
         layout === "workbench"
           ? {
-              visibleBaselineApplied: viewportBaselineReady,
+              visibleBaselineApplied: startupBaselineApplied,
               viewportBaselineNonce,
               combinedViewOk: mode === "combined",
               cameraFramedHint: sceneDiagnostics?.framedHeuristic ?? false,
+              startupRecoveryTriggered,
+              exactBaselineOk,
+              warning: startupWarning,
             }
           : null,
       visibility: {
@@ -696,6 +751,9 @@ export function AvatarViewportLive({
         garmentsVisible,
         safeDefaultActive,
         cameraTargetValid,
+      },
+      interaction: {
+        zoomInputMode,
       },
       scene: devSceneInspect?.enabled ? sceneDiagnostics : null,
     };
@@ -717,9 +775,61 @@ export function AvatarViewportLive({
     sceneDiagnostics,
     layout,
     bodySourceDebug,
-    viewportBaselineReady,
+    startupBaselineApplied,
+    startupRecoveryTriggered,
     viewportBaselineNonce,
+    useProceduralBody,
+    garmentAttachmentDebug,
+    clipOverlayEnabled,
+    devSceneInspect?.enabled,
+    liveShading,
+    zoomInputMode,
     onLiveViewportPoseFitDebug,
+  ]);
+
+  useEffect(() => {
+    if (startupBaselineApplied) return;
+    if (bodyOnlyGarments || garmentOnlyViewport) return;
+    if (bodyLoadForUi === "pending") return;
+    if (!sceneDiagnostics?.bodyLoaded || !sceneDiagnostics.framedHeuristic) return;
+    setStartupBaselineApplied(true);
+  }, [
+    startupBaselineApplied,
+    bodyOnlyGarments,
+    garmentOnlyViewport,
+    bodyLoadForUi,
+    sceneDiagnostics,
+  ]);
+
+  useEffect(() => {
+    const combinedVisible = !bodyOnlyGarments && !garmentOnlyViewport;
+    const skinnedStartup =
+      !useProceduralBody &&
+      !FORCE_PROCEDURAL_BODY &&
+      skinnedBodyPathActive &&
+      bodyLoadForUi === "loaded";
+    if (startupRecoveryTriggered || !combinedVisible || !skinnedStartup) return;
+    if (!sceneDiagnostics?.bodyLoaded || !sceneDiagnostics.framedHeuristic) return;
+    setStartupRecoveryTriggered(true);
+    setSafeDefaultActive(true);
+    setSceneRefreshNonce((n) => n + 1);
+    onRequestVisibleBaseline?.("startup_self_recovery");
+    if (__DEV__) {
+      console.log("[AvatarViewport] startup self-recovery", {
+        baseline: viewportBaselineNonce,
+        bodyLoadForUi,
+      });
+    }
+  }, [
+    startupRecoveryTriggered,
+    bodyOnlyGarments,
+    garmentOnlyViewport,
+    useProceduralBody,
+    skinnedBodyPathActive,
+    bodyLoadForUi,
+    sceneDiagnostics,
+    onRequestVisibleBaseline,
+    viewportBaselineNonce,
   ]);
 
   const onRuntimeBodyLoadError = useCallback((message: string) => {
@@ -890,11 +1000,11 @@ export function AvatarViewportLive({
     <GestureHandlerRootView style={[styles.wrap, isWorkbench && styles.wrapWorkbench]}>
       {isWorkbench ? (
         <Text style={styles.hintCompact} numberOfLines={1}>
-          Drag orbit · pinch zoom
+          Drag orbit · pinch zoom · wheel/two-finger scroll fallback
         </Text>
       ) : (
         <Text style={styles.hint}>
-          Drag to orbit · pinch to zoom. Damped target-orbit camera; zoom ± buttons below.
+          Drag to orbit · pinch to zoom · wheel/two-finger scroll also zooms in dev. Damped target-orbit camera; zoom +/- buttons below.
         </Text>
       )}
       <View style={[styles.frame, { height }]}>
@@ -915,6 +1025,7 @@ export function AvatarViewportLive({
               orbitGestureActiveRef={layout === "workbench" ? orbitGestureActiveRef : undefined}
             />
             <AvatarProceduralScene
+              key={`scene:${sceneRefreshNonce}:${bodyAssetKey}`}
               pose={pose}
               preset={preset}
               garmentFit={garmentFit}
@@ -946,6 +1057,17 @@ export function AvatarViewportLive({
             style={[StyleSheet.absoluteFill, styles.touchOverlay]}
             accessibilityLabel="Orbit and pinch the avatar preview"
             collapsable={false}
+            {...(Platform.OS === "web"
+              ? ({
+                  onWheel: (event: {
+                    preventDefault?: () => void;
+                    nativeEvent?: { deltaY?: number };
+                  }) => {
+                    event.preventDefault?.();
+                    wheelZoomJS(event.nativeEvent?.deltaY ?? 0);
+                  },
+                } as object)
+              : ({} as object))}
           />
         </GestureDetector>
         {bodyLoadForUi === "pending" ? (

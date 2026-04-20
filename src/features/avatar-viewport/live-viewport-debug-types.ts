@@ -68,6 +68,9 @@ export type LiveViewportBodySourceDebug = {
     | "procedural_scene_default";
   /** User-facing intent from props (before runtime failure fallback). */
   userIntent: "bundled_or_url" | "procedural";
+  /** High-level cause for the current active body source. */
+  sourceReason: "startup" | "user_toggle" | "hard_fallback";
+  loadStatus: "idle" | "pending" | "loaded" | "failed";
   reason:
     | "default_bundled"
     | "user_procedural_toggle"
@@ -90,6 +93,9 @@ export type LiveViewportPoseFitDebug = {
     viewportBaselineNonce: number;
     combinedViewOk: boolean;
     cameraFramedHint: boolean;
+    startupRecoveryTriggered: boolean;
+    exactBaselineOk: boolean;
+    warning: string | null;
   } | null;
   visibility?: {
     mode: "combined" | "body_only" | "garment_only" | "invalid";
@@ -97,6 +103,9 @@ export type LiveViewportPoseFitDebug = {
     garmentsVisible: boolean;
     safeDefaultActive: boolean;
     cameraTargetValid: boolean;
+  };
+  interaction?: {
+    zoomInputMode: "idle" | "native_pinch" | "wheel_fallback" | "emulator_fallback";
   };
   /** Present when dev scene inspect is enabled (throttled, not every React frame). */
   scene?: LiveViewportSceneDiagnostics | null;

@@ -38,20 +38,20 @@ export type AvatarViewportNavSettings = {
 export const DEFAULT_AVATAR_VIEWPORT_NAV: AvatarViewportNavSettings = {
   invertOrbitX: false,
   invertOrbitY: false,
-  orbitSensitivity: 1,
-  zoomSensitivity: 1,
+  orbitSensitivity: 0.62,
+  zoomSensitivity: 0.82,
   /** Lower = snappier orbit response (still smoothed when gesture idle). */
-  damping: 0.11,
-  minRadius: 1.45,
-  maxRadius: 8,
+  damping: 0.095,
+  minRadius: 1.28,
+  maxRadius: 7.2,
   targetYOffset: 0,
   enablePan: false,
-  polarMin: 0.12,
-  polarMax: 1.52,
-  yawSpeedMultiplier: 1,
+  polarMin: 0.22,
+  polarMax: 1.42,
+  yawSpeedMultiplier: 0.78,
   enableRoll: false,
-  orbitPitchRadPerPx: 0.0062,
-  orbitYawRadPerPx: 0.0065,
+  orbitPitchRadPerPx: 0.0028,
+  orbitYawRadPerPx: 0.003,
 };
 
 export function mergeAvatarViewportNav(

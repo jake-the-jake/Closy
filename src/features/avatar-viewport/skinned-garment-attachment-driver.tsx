@@ -13,14 +13,14 @@ import {
 } from "./skinned-garment-attachment";
 
 /** Sit sleeves / torso / bottoms on posed bones (parent = `avatar_torso_region_fit`). */
-const SLEEVE_Y_LOWER = -0.084;
-const SLEEVE_Z_FORWARD = 0.014;
-const TOP_CHEST_Y_LOWER = -0.132;
-const TOP_CHEST_X_BLEND = 0.82;
-const TOP_CHEST_Z_BLEND = 0.74;
-const BOTTOM_PELVIS_Y_ADD = -0.038;
-const BOTTOM_HIP_X_BLEND = 0.55;
-const BOTTOM_WAIST_Z_BLEND = 0.68;
+const SLEEVE_Y_LOWER = -0.102;
+const SLEEVE_Z_FORWARD = 0.008;
+const TOP_CHEST_Y_LOWER = -0.158;
+const TOP_CHEST_X_BLEND = 0.78;
+const TOP_CHEST_Z_BLEND = 0.68;
+const BOTTOM_PELVIS_Y_ADD = -0.056;
+const BOTTOM_HIP_X_BLEND = 0.42;
+const BOTTOM_WAIST_Z_BLEND = 0.56;
 
 const SNAP_THROTTLE_MS = 240;
 

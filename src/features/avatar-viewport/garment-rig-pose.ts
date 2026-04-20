@@ -61,6 +61,32 @@ export function upperArmSkinMatrix(
   return new THREE.Matrix4().multiplyMatrices(pose, new THREE.Matrix4().copy(bind).invert());
 }
 
+function torsoChainMatrix(
+  rig: BodySceneAnchors,
+  ang: PoseAngleSet,
+): THREE.Matrix4 {
+  const torsoPitch =
+    (ang.spineRx ?? 0) * 0.44 + (ang.spineUpperRx ?? 0) * 0.62 + (ang.neckRx ?? 0) * 0.06;
+  const torsoTwist = (ang.spineTwistY ?? 0) * 0.54;
+  const torsoRoll = ((ang.laz ?? 0) + (ang.raz ?? 0)) * 0.05;
+  const pivotY = rig.chestY * 0.94 + rig.pelvisY * 0.06;
+  const tP = new THREE.Matrix4().makeTranslation(0, pivotY, 0);
+  const tN = new THREE.Matrix4().makeTranslation(0, -pivotY, 0);
+  _e.set(torsoPitch, torsoTwist, torsoRoll, "XYZ");
+  const r = new THREE.Matrix4().makeRotationFromEuler(_e);
+  return new THREE.Matrix4().multiplyMatrices(tP, r).multiply(tN);
+}
+
+export function torsoSkinMatrix(
+  rig: BodySceneAnchors,
+  angBind: PoseAngleSet,
+  angPose: PoseAngleSet,
+): THREE.Matrix4 {
+  const bind = torsoChainMatrix(rig, angBind);
+  const pose = torsoChainMatrix(rig, angPose);
+  return new THREE.Matrix4().multiplyMatrices(pose, new THREE.Matrix4().copy(bind).invert());
+}
+
 /** Hip flex delta: rotation X around thigh root (matches procedural leg groups). */
 export function thighSkinMatrix(
   side: 1 | -1,
@@ -79,6 +105,31 @@ export function thighSkinMatrix(
   const tN = new THREE.Matrix4().makeTranslation(-lx, -ly, 0);
   const rX = new THREE.Matrix4().makeRotationX(d);
   return new THREE.Matrix4().multiplyMatrices(tP, rX).multiply(tN);
+}
+
+function pelvisChainMatrix(
+  rig: BodySceneAnchors,
+  ang: PoseAngleSet,
+): THREE.Matrix4 {
+  const M = rig.metrics;
+  const pivotY = rig.pelvisY + M.hipPitchLocalY * 0.35;
+  const pitch = (ang.spineRx ?? 0) * 0.18 + (ang.spineUpperRx ?? 0) * 0.06;
+  const twist = (ang.spineTwistY ?? 0) * 0.3;
+  const tP = new THREE.Matrix4().makeTranslation(0, pivotY, 0);
+  const tN = new THREE.Matrix4().makeTranslation(0, -pivotY, 0);
+  _e.set(pitch, twist, 0, "XYZ");
+  const r = new THREE.Matrix4().makeRotationFromEuler(_e);
+  return new THREE.Matrix4().multiplyMatrices(tP, r).multiply(tN);
+}
+
+export function pelvisSkinMatrix(
+  rig: BodySceneAnchors,
+  angBind: PoseAngleSet,
+  angPose: PoseAngleSet,
+): THREE.Matrix4 {
+  const bind = pelvisChainMatrix(rig, angBind);
+  const pose = pelvisChainMatrix(rig, angPose);
+  return new THREE.Matrix4().multiplyMatrices(pose, new THREE.Matrix4().copy(bind).invert());
 }
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
@@ -130,6 +181,7 @@ export function applyTopGarmentPoseSkinning(
   size: THREE.Vector3,
   skin: GarmentPoseSkinningParams,
 ): void {
+  const mTorso = torsoSkinMatrix(skin.rig, skin.angBind, skin.angPose);
   const mL = upperArmSkinMatrix(1, skin.rig, skin.angBind, skin.angPose);
   const mR = upperArmSkinMatrix(-1, skin.rig, skin.angBind, skin.angPose);
 
@@ -147,7 +199,10 @@ export function applyTopGarmentPoseSkinning(
       continue;
     }
     _acc.set(0, 0, 0);
-    _acc.addScaledVector(_v, wTorso);
+    if (wTorso > 1e-6) {
+      _v2.copy(_v).applyMatrix4(mTorso);
+      _acc.addScaledVector(_v2, wTorso);
+    }
     if (wSL > 1e-6) {
       _v2.copy(_v).applyMatrix4(mL);
       _acc.addScaledVector(_v2, wSL);
@@ -197,6 +252,7 @@ export function applyBottomGarmentPoseSkinning(
   size: THREE.Vector3,
   skin: GarmentPoseSkinningParams,
 ): void {
+  const mPelvis = pelvisSkinMatrix(skin.rig, skin.angBind, skin.angPose);
   const mL = thighSkinMatrix(1, skin.rig, skin.angBind, skin.angPose);
   const mR = thighSkinMatrix(-1, skin.rig, skin.angBind, skin.angPose);
 
@@ -214,7 +270,10 @@ export function applyBottomGarmentPoseSkinning(
       continue;
     }
     _acc.set(0, 0, 0);
-    _acc.addScaledVector(_v, wWaist);
+    if (wWaist > 1e-6) {
+      _v2.copy(_v).applyMatrix4(mPelvis);
+      _acc.addScaledVector(_v2, wWaist);
+    }
     if (wLegL > 1e-6) {
       _v2.copy(_v).applyMatrix4(mL);
       _acc.addScaledVector(_v2, wLegL);

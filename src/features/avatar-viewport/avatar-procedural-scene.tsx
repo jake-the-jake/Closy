@@ -116,7 +116,7 @@ export function CameraRig({
     const s = smoothRef.current;
     const dt = Math.min(clock.getDelta(), 0.08);
     const gesture = orbitGestureActiveRef?.current === true;
-    const k = gesture ? 1 : 1 - Math.exp(-nav.damping * 14 * dt);
+    const k = gesture ? 0.28 : 1 - Math.exp(-nav.damping * 14 * dt);
 
     s.theta = lerpAngleShortest(s.theta, d.theta, k);
     s.phi = THREE.MathUtils.lerp(s.phi, d.phi, k);
