@@ -13,6 +13,12 @@ const zustandMiddlewareCjs = path.resolve(
   __dirname,
   "node_modules/zustand/middleware.js",
 );
+const threeRoot = path.resolve(__dirname, "node_modules/three");
+
+config.resolver.extraNodeModules = {
+  ...(config.resolver.extraNodeModules || {}),
+  three: threeRoot,
+};
 
 /**
  * Web: package exports send `zustand/middleware` to `esm/middleware.mjs`, which uses

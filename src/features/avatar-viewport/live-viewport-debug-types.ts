@@ -73,6 +73,7 @@ export type LiveViewportBodySourceDebug = {
   loadStatus: "idle" | "pending" | "loaded" | "failed";
   reason:
     | "default_bundled"
+    | "stabilized_startup_procedural"
     | "user_procedural_toggle"
     | "env_force_procedural"
     | "runtime_url_override"
@@ -82,6 +83,19 @@ export type LiveViewportBodySourceDebug = {
 export type LiveViewportPoseFitDebug = {
   pose: DevAvatarPoseKey;
   preset: DevAvatarPresetKey;
+  avatar?: {
+    activeAvatarModel: string;
+    visualAvatarSource: "GLB" | "proceduralFallback";
+    rigDetected: boolean;
+    garmentFollowMode: string;
+    garmentMode: "combined" | "body_only" | "garment_only" | "invalid";
+    jointCount: number;
+    visiblePartsCount: number;
+    poseDriver: "skinnedBones" | "proceduralFallback";
+    startupVisible: boolean;
+    proportionsVersion: string;
+    loadStatus: "idle" | "pending" | "loaded" | "failed";
+  } | null;
   garmentPoseMatchesBody: boolean;
   skinned: SkinnedRigPoseReport | null;
   anchors: GarmentAnchorFitDebug | null;
@@ -95,6 +109,8 @@ export type LiveViewportPoseFitDebug = {
     cameraFramedHint: boolean;
     startupRecoveryTriggered: boolean;
     exactBaselineOk: boolean;
+    startupVisibleBody: boolean;
+    combinedVisible: boolean;
     warning: string | null;
   } | null;
   visibility?: {
@@ -103,6 +119,10 @@ export type LiveViewportPoseFitDebug = {
     garmentsVisible: boolean;
     safeDefaultActive: boolean;
     cameraTargetValid: boolean;
+    visibleBranch: "bundled" | "procedural" | "none";
+    poseTargetBranch: "bundled" | "procedural" | "none";
+    bundledBodyMounted: boolean;
+    bundledBodyVisible: boolean;
   };
   interaction?: {
     zoomInputMode: "idle" | "native_pinch" | "wheel_fallback" | "emulator_fallback";

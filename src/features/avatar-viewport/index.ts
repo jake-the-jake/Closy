@@ -3,6 +3,12 @@ export {
   type AvatarViewportDevSceneInspect,
   type AvatarViewportLiveProps,
 } from "./avatar-viewport-live";
+export {
+  DEFAULT_STYLISED_AVATAR,
+  DEFAULT_STYLISED_AVATAR_GLTF,
+  DEFAULT_STYLISED_AVATAR_ID,
+  DEFAULT_STYLISED_AVATAR_EXPECTED_RIG,
+} from "./avatar-assets";
 export type {
   GarmentAnchorFitDebug,
   GarmentAttachmentSnapshot,

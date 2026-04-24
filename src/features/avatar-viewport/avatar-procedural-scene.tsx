@@ -41,6 +41,16 @@ import {
   ViewportSceneSpaceDebug,
   type SceneSpaceDebugOrbitBindings,
 } from "./avatar-viewport-scene-debug";
+import {
+  PROCEDURAL_HUMANOID_JOINTS,
+  HUMANOID_PROPORTIONS,
+  averageJoints,
+  buildProceduralGarmentFollowPoints,
+  buildProceduralHumanoidJointMap,
+  jointVector,
+  type ProceduralHumanoidJointMap,
+  type ProceduralHumanoidJointName,
+} from "./procedural-humanoid-v2";
 import { SkinnedGarmentAttachmentDriver } from "./skinned-garment-attachment-driver";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 import type { AvatarViewportNavSettings } from "./avatar-viewport-nav-settings";
@@ -74,6 +84,29 @@ const FIT_VIS = {
   sleevePosMul: 1.75,
   globalGarmentInflate: 1.85,
 } as const;
+
+function v3tuple(v: THREE.Vector3): [number, number, number] {
+  return [v.x, v.y, v.z];
+}
+
+function segmentFrame(from: THREE.Vector3, to: THREE.Vector3) {
+  const delta = to.clone().sub(from);
+  const length = Math.max(0.001, delta.length());
+  const center = from.clone().addScaledVector(delta, 0.5);
+  const quat = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(0, 1, 0),
+    delta.normalize(),
+  );
+  return {
+    center: v3tuple(center),
+    quaternion: [quat.x, quat.y, quat.z, quat.w] as [number, number, number, number],
+    shaftLength: Math.max(0.001, length),
+  };
+}
+
+function blendColor(base: THREE.Color, scalar: number) {
+  return base.clone().multiplyScalar(scalar);
+}
 
 
 /** Spherical orbit: theta = yaw around world +Y, phi = polar from +Y, radius = distance to target. */
@@ -149,6 +182,7 @@ export { poseAngles } from "./avatar-pose-angles";
 type RigMaterialProps = {
   rig: BodySceneAnchors;
   ang: PoseAngleSet;
+  jointMap: ProceduralHumanoidJointMap;
   garmentPoseSkin: GarmentPoseSkinningParams;
   bodyColor: THREE.Color;
   bodyOpacity: number;
@@ -163,34 +197,101 @@ type RigMaterialProps = {
   garmentFit: GarmentFitState;
 };
 
+function CapsuleBetween({
+  name,
+  start,
+  end,
+  radius,
+  color,
+  opacity = 1,
+  emissive,
+  roughness = 0.62,
+  transparent = true,
+}: {
+  name: string;
+  start: THREE.Vector3;
+  end: THREE.Vector3;
+  radius: number;
+  color: THREE.Color;
+  opacity?: number;
+  emissive?: THREE.Color;
+  roughness?: number;
+  transparent?: boolean;
+}) {
+  const frame = useMemo(() => segmentFrame(start, end), [start, end]);
+  return (
+    <mesh
+      name={name}
+      position={frame.center}
+      quaternion={frame.quaternion}
+      castShadow
+    >
+      <capsuleGeometry args={[radius, Math.max(0.001, frame.shaftLength - radius * 2), 10, 18]} />
+      <meshStandardMaterial
+        color={color}
+        transparent={transparent}
+        opacity={opacity}
+        emissive={emissive}
+        roughness={roughness}
+      />
+    </mesh>
+  );
+}
+
+function EllipsoidMesh({
+  name,
+  position,
+  scale,
+  color,
+  opacity = 1,
+  emissive,
+  roughness = 0.62,
+  transparent = true,
+}: {
+  name: string;
+  position: [number, number, number];
+  scale: [number, number, number];
+  color: THREE.Color;
+  opacity?: number;
+  emissive?: THREE.Color;
+  roughness?: number;
+  transparent?: boolean;
+}) {
+  return (
+    <mesh name={name} position={position} scale={scale} castShadow>
+      <sphereGeometry args={[1, 18, 18]} />
+      <meshStandardMaterial
+        color={color}
+        transparent={transparent}
+        opacity={opacity}
+        emissive={emissive}
+        roughness={roughness}
+      />
+    </mesh>
+  );
+}
+
 function GarmentSleeveProxyMesh({
   garmentFit,
-  side,
-  zRot,
+  start,
+  end,
   shirtOpacity,
   topColor,
   topEmissive,
   clipEmissiveAdd,
-  sleeveS,
   sleeveRadius,
-  spx,
-  spy,
-  spz,
 }: {
   garmentFit: GarmentFitState;
-  side: 1 | -1;
-  zRot: number;
+  start: THREE.Vector3;
+  end: THREE.Vector3;
   shirtOpacity: number;
   topColor: THREE.Color;
   topEmissive: THREE.Color;
   clipEmissiveAdd?: THREE.Color | null;
-  sleeveS: number;
   sleeveRadius: number;
-  spx: number;
-  spy: number;
-  spz: number;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const frame = useMemo(() => segmentFrame(start, end), [start, end]);
   useLayoutEffect(() => {
     const m = meshRef.current;
     if (!m?.geometry) return;
@@ -203,13 +304,15 @@ function GarmentSleeveProxyMesh({
     return e;
   }, [topEmissive, clipEmissiveAdd]);
   return (
-    <mesh
-      ref={meshRef}
-      position={[side * 0.15, -0.04 + spy * 0.25, spz * 0.3]}
-      rotation={[0, 0, zRot]}
-      castShadow
-    >
-      <capsuleGeometry args={[sleeveRadius * sleeveS, 0.34, 8, 16]} />
+    <mesh ref={meshRef} position={frame.center} quaternion={frame.quaternion} castShadow>
+      <capsuleGeometry
+        args={[
+          sleeveRadius,
+          Math.max(0.001, frame.shaftLength - sleeveRadius * 2),
+          8,
+          16,
+        ]}
+      />
       <meshStandardMaterial
         color={topColor}
         transparent
@@ -224,6 +327,7 @@ function GarmentSleeveProxyMesh({
 /** Shirt torso only (sleeves follow arms inside `ProceduralRigBody`). */
 function ShirtTorsoProxy({
   rig,
+  jointMap,
   garmentPoseSkin,
   topColor,
   shirtOpacity,
@@ -234,6 +338,7 @@ function ShirtTorsoProxy({
   torsoMountMode = "rig_chest",
 }: {
   rig: BodySceneAnchors;
+  jointMap: ProceduralHumanoidJointMap;
   garmentPoseSkin: GarmentPoseSkinningParams;
   topColor: THREE.Color;
   shirtOpacity: number;
@@ -255,23 +360,19 @@ function ShirtTorsoProxy({
     if (clipEmissiveAdd) e.add(clipEmissiveAdd);
     return e;
   }, [topEmissive, clipEmissiveAdd]);
-  const chestK = rig.metrics.torsoCapsuleRadius / 0.114;
-  const shirtY =
-    torsoMountMode === "skinned_chest"
-      ? rig.metrics.torsoCapsuleLength * 0.042
-      : rig.chestY + rig.metrics.torsoCapsuleLength * 0.07;
+  const P = HUMANOID_PROPORTIONS;
+  const follow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
+  const topCenter = torsoMountMode === "skinned_chest"
+    ? new THREE.Vector3(0, P.chestY - rig.chestY + 0.01, 0.01)
+    : follow.topCenter.clone().add(new THREE.Vector3(0, 0.02, 0.012));
+  const topScale = [
+    P.topShellScale[0] * inflateK,
+    P.topShellScale[1] * inflateK,
+    P.topShellScale[2] * inflateK,
+  ] as [number, number, number];
   return (
-    <mesh ref={meshRef} position={[0, shirtY, 0]} castShadow>
-      <boxGeometry
-        args={[
-          0.48 * inflateK * chestK,
-          0.36 * inflateK * chestK,
-          0.3 * inflateK * chestK,
-          10,
-          10,
-          10,
-        ]}
-      />
+    <mesh ref={meshRef} position={v3tuple(topCenter)} scale={topScale} castShadow>
+      <sphereGeometry args={[1, 16, 16]} />
       <meshStandardMaterial
         color={topColor}
         transparent
@@ -285,6 +386,7 @@ function ShirtTorsoProxy({
 
 function PantsGarmentProxies({
   rig,
+  jointMap,
   garmentPoseSkin,
   bottomColor,
   pantOpacity,
@@ -295,6 +397,7 @@ function PantsGarmentProxies({
   bottomMountMode = "rig",
 }: {
   rig: BodySceneAnchors;
+  jointMap: ProceduralHumanoidJointMap;
   garmentPoseSkin: GarmentPoseSkinningParams;
   bottomColor: THREE.Color;
   pantOpacity: number;
@@ -305,14 +408,7 @@ function PantsGarmentProxies({
   /** When parent anchor sits on skinned pelvis, use shorter proxy stack. */
   bottomMountMode?: "rig" | "skinned_pelvis";
 }) {
-  const y =
-    bottomMountMode === "skinned_pelvis"
-      ? rig.pantsProxyHemY * 0.4 + 0.035
-      : rig.pantsProxyHemY;
-  const thighDrop = bottomMountMode === "skinned_pelvis" ? -0.27 : -0.34;
-  const hipK = rig.metrics.pelvisBox[0] / 0.262;
-  const legRK = rig.metrics.upperLegCapsule[0] / 0.066;
-  const thighX = 0.09 * hipK;
+  const follow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
   const groupRef = useRef<THREE.Group>(null);
   useLayoutEffect(() => {
     const root = groupRef.current;
@@ -324,10 +420,28 @@ function PantsGarmentProxies({
     if (clipEmissiveAdd) e.add(clipEmissiveAdd);
     return e;
   }, [bottomEmissive, clipEmissiveAdd]);
+  const P = HUMANOID_PROPORTIONS;
+  const bottomCenter =
+    bottomMountMode === "skinned_pelvis"
+      ? new THREE.Vector3(0, P.pelvisY - rig.pelvisY - 0.015 + hemYOffset * 0.2, 0)
+      : follow.bottomCenter.clone().add(new THREE.Vector3(0, -0.02 + hemYOffset * 0.24, 0));
+  const shellScale = [
+    P.bottomShellScale[0],
+    P.bottomShellScale[1],
+    P.bottomShellScale[2],
+  ] as [number, number, number];
+  const thighUpperL = jointVector(jointMap, "hipL")
+    .clone()
+    .lerp(jointVector(jointMap, "kneeL"), 0.68)
+    .add(new THREE.Vector3(0.01, hemYOffset * 0.55, 0));
+  const thighUpperR = jointVector(jointMap, "hipR")
+    .clone()
+    .lerp(jointVector(jointMap, "kneeR"), 0.68)
+    .add(new THREE.Vector3(-0.01, hemYOffset * 0.55, 0));
   return (
     <group ref={groupRef}>
-      <mesh position={[0, y + hemYOffset, 0]}>
-        <boxGeometry args={[0.33 * hipK, 0.46, 0.26 * hipK, 10, 12, 8]} />
+      <mesh position={v3tuple(bottomCenter)} scale={shellScale}>
+        <sphereGeometry args={[1, 16, 16]} />
         <meshStandardMaterial
           color={bottomColor}
           transparent
@@ -336,52 +450,71 @@ function PantsGarmentProxies({
           roughness={0.7}
         />
       </mesh>
-      <mesh position={[thighX, y + thighDrop + hemYOffset, 0]}>
-        <capsuleGeometry args={[0.085 * legRK, 0.48, 8, 16]} />
-        <meshStandardMaterial
-          color={bottomColor}
-          transparent
-          opacity={pantOpacity}
-          emissive={pantsEmissive}
-        />
-      </mesh>
-      <mesh position={[-thighX, y + thighDrop + hemYOffset, 0]}>
-        <capsuleGeometry args={[0.085 * legRK, 0.48, 8, 16]} />
-        <meshStandardMaterial
-          color={bottomColor}
-          transparent
-          opacity={pantOpacity}
-          emissive={pantsEmissive}
-        />
-      </mesh>
+      <CapsuleBetween
+        name="pants_leg_l"
+        start={jointVector(jointMap, "hipL")}
+        end={thighUpperL}
+        radius={P.thighRadius * 1.06}
+        color={bottomColor}
+        opacity={pantOpacity}
+        emissive={pantsEmissive}
+        roughness={0.68}
+      />
+      <CapsuleBetween
+        name="pants_leg_r"
+        start={jointVector(jointMap, "hipR")}
+        end={thighUpperR}
+        radius={P.thighRadius * 1.06}
+        color={bottomColor}
+        opacity={pantOpacity}
+        emissive={pantsEmissive}
+        roughness={0.68}
+      />
     </group>
   );
 }
 
-function RigDebugAnchors({ rig }: { rig: BodySceneAnchors }) {
-  const m = 0.028;
-  const M = rig.metrics;
-  const [, , neckH] = M.neckCylinder;
-  const neckMidY = M.neckBaseY + neckH * 0.5;
-  const hipY = rig.pelvisY + M.hipPitchLocalY;
-  const mk = (color: string, pos: [number, number, number], key: string) => (
-    <mesh key={key} position={pos}>
-      <sphereGeometry args={[m, 8, 8]} />
-      <meshBasicMaterial color={color} depthTest={false} />
-    </mesh>
-  );
+function RigDebugAnchors({ jointMap }: { jointMap: ProceduralHumanoidJointMap }) {
+  const radius = 0.018;
+  const chainColor = new THREE.Color("#67e8f9");
+  const edges: [ProceduralHumanoidJointName, ProceduralHumanoidJointName][] = [
+    ["pelvis", "spine"],
+    ["spine", "chest"],
+    ["chest", "neck"],
+    ["neck", "head"],
+    ["chest", "shoulderL"],
+    ["shoulderL", "elbowL"],
+    ["elbowL", "wristL"],
+    ["chest", "shoulderR"],
+    ["shoulderR", "elbowR"],
+    ["elbowR", "wristR"],
+    ["pelvis", "hipL"],
+    ["hipL", "kneeL"],
+    ["kneeL", "ankleL"],
+    ["pelvis", "hipR"],
+    ["hipR", "kneeR"],
+    ["kneeR", "ankleR"],
+  ];
   return (
-    <group>
-      {mk("#22c55e", [0, rig.pelvisY, 0], "pelvis")}
-      {mk("#84cc16", [0, M.pelvisTopY, 0], "pelvis_top")}
-      {mk("#06b6d4", [M.legGroupOffsetX, hipY, 0], "hip_l")}
-      {mk("#06b6d4", [-M.legGroupOffsetX, hipY, 0], "hip_r")}
-      {mk("#3b82f6", [0, rig.chestY, 0], "torso")}
-      {mk("#38bdf8", [0, M.torsoBotY, 0], "torso_bot")}
-      {mk("#a855f7", [0, neckMidY, 0], "neck")}
-      {mk("#eab308", [rig.shoulderHalf, rig.shoulderY, 0], "sh_l")}
-      {mk("#eab308", [-rig.shoulderHalf, rig.shoulderY, 0], "sh_r")}
-      {mk("#f97316", [0, rig.headY, 0], "head")}
+    <group name="skeleton_overlay">
+      {edges.map(([from, to]) => (
+        <CapsuleBetween
+          key={`${from}-${to}`}
+          name={`skeleton_${from}_${to}`}
+          start={jointVector(jointMap, from)}
+          end={jointVector(jointMap, to)}
+          radius={0.009}
+          color={chainColor}
+          roughness={0.2}
+          emissive={chainColor.clone().multiplyScalar(0.25)}
+        />
+      ))}
+      {PROCEDURAL_HUMANOID_JOINTS.map((joint) => (
+        <mesh key={joint} position={jointMap[joint]}>
+          <sphereGeometry args={[radius, 8, 8]} />
+          <meshBasicMaterial color="#f59e0b" depthTest={false} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -457,6 +590,8 @@ function SleeveGarmentPair({
   const rightPos = skinnedBoneFollow
     ? ([0, 0, 0] as [number, number, number])
     : ([-shoulderHalf, shoulderY, 0] as [number, number, number]);
+  const upperStart = useMemo(() => new THREE.Vector3(0, 0, 0), []);
+  const upperEnd = useMemo(() => new THREE.Vector3(0, -0.26, 0.01), []);
 
   return (
     <group name="sleeve_garment_pair_gltf_body">
@@ -470,17 +605,13 @@ function SleeveGarmentPair({
           <group position={[spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
             <GarmentSleeveProxyMesh
               garmentFit={garmentFit}
-              side={1}
-              zRot={0.08}
+              start={upperStart}
+              end={upperEnd}
               shirtOpacity={shirtOpacity}
               topColor={topColor}
               topEmissive={topEmissive}
               clipEmissiveAdd={clipEmissiveSleeve}
-              sleeveS={sleeveS}
               sleeveRadius={sleeveRadius}
-              spx={spx}
-              spy={spy}
-              spz={spz}
             />
           </group>
         </group>
@@ -496,17 +627,13 @@ function SleeveGarmentPair({
           <group position={[-spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
             <GarmentSleeveProxyMesh
               garmentFit={garmentFit}
-              side={-1}
-              zRot={-0.08}
+              start={upperStart}
+              end={upperEnd}
               shirtOpacity={shirtOpacity}
               topColor={topColor}
               topEmissive={topEmissive}
               clipEmissiveAdd={clipEmissiveSleeve}
-              sleeveS={sleeveS}
               sleeveRadius={sleeveRadius}
-              spx={spx}
-              spy={spy}
-              spz={spz}
             />
           </group>
         </group>
@@ -525,7 +652,7 @@ function SleeveGarmentPair({
  */
 function ProceduralRigBody({
   rig,
-  ang,
+  jointMap,
   bodyColor,
   bodyOpacity,
   bodyEmissive,
@@ -538,30 +665,7 @@ function ProceduralRigBody({
   sleevePos,
   garmentFit,
 }: RigMaterialProps) {
-  const { pelvisY, chestY, shoulderY, shoulderHalf, headY } = rig;
-  const M = rig.metrics;
-  const [neckRt, neckRb, neckH] = M.neckCylinder;
-  const sleeveRadius = M.upperArmCapsule[0];
-  const [legRad, thighLen] = M.upperLegCapsule;
-  const [shinRad, shinLen] = M.shinCapsule;
-  const [armRad, upperArmLen] = M.upperArmCapsule;
-  const [foreRad, foreLen] = M.forearmCapsule;
-  const neckCenterY = M.neckBaseY + neckH * 0.5;
-
-  const { torsoBotY, pelvisTopY } = M;
-  const lumbarGap = torsoBotY - pelvisTopY;
-  const torsoPelvisOverlap = pelvisTopY - torsoBotY;
-
-  const thighMeshY = -0.45 * thighLen;
-  const kneeY = -0.9 * thighLen;
-  const shinMeshY = -0.42 * shinLen;
-  const kneeFlexL = -ang.llx * 0.52;
-  const kneeFlexR = -ang.rlx * 0.52;
-
-  const upperArmY = -0.4 * upperArmLen;
-  const elbowY = -0.82 * upperArmLen;
-  const forearmY = -0.38 * foreLen;
-
+  const P = HUMANOID_PROPORTIONS;
   const matProps = (opacity: number, roughness = 0.62) => ({
     color: bodyColor,
     transparent: liveShading !== "overlay_style",
@@ -570,193 +674,298 @@ function ProceduralRigBody({
     roughness,
   });
 
-  const spx = sleevePos[0] * FIT_VIS.sleevePosMul;
-  const spy = sleevePos[1] * FIT_VIS.sleevePosMul;
-  const spz = sleevePos[2] * FIT_VIS.sleevePosMul;
+  const pelvis = jointVector(jointMap, "pelvis");
+  const spine = jointVector(jointMap, "spine");
+  const chest = jointVector(jointMap, "chest");
+  const neck = jointVector(jointMap, "neck");
+  const head = jointVector(jointMap, "head");
+  const shoulderL = jointVector(jointMap, "shoulderL");
+  const shoulderR = jointVector(jointMap, "shoulderR");
+  const elbowL = jointVector(jointMap, "elbowL");
+  const elbowR = jointVector(jointMap, "elbowR");
+  const wristL = jointVector(jointMap, "wristL");
+  const wristR = jointVector(jointMap, "wristR");
+  const hipL = jointVector(jointMap, "hipL");
+  const hipR = jointVector(jointMap, "hipR");
+  const kneeL = jointVector(jointMap, "kneeL");
+  const kneeR = jointVector(jointMap, "kneeR");
+  const ankleL = jointVector(jointMap, "ankleL");
+  const ankleR = jointVector(jointMap, "ankleR");
+
+  const shoulderCapsuleColor = blendColor(bodyColor, 0.96);
+  const pelvisShellCenter = averageJoints(jointMap, "pelvis", "hipL", "hipR", "spine");
+  const torsoCenter = averageJoints(jointMap, "spine", "chest");
+  const abdomenCenter = averageJoints(jointMap, "pelvis", "spine");
+  const sleeveFollow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
+  const sleeveOffset = new THREE.Vector3(
+    sleevePos[0] * FIT_VIS.sleevePosMul * 0.18,
+    sleevePos[1] * FIT_VIS.sleevePosMul * 0.12,
+    sleevePos[2] * FIT_VIS.sleevePosMul * 0.18,
+  );
+  const sleeveUpperL = sleeveFollow.topLeftShoulder.clone().add(sleeveOffset);
+  const sleeveUpperLEnd = sleeveFollow.sleeveUpperL
+    .clone()
+    .add(sleeveOffset)
+    .lerp(sleeveFollow.sleeveLowerL, 0.22);
+  const sleeveLowerL = sleeveFollow.sleeveUpperL.clone().add(sleeveOffset);
+  const sleeveLowerLEnd = sleeveFollow.sleeveLowerL.clone().add(sleeveOffset);
+  const sleeveUpperR = sleeveFollow.topRightShoulder.clone().add(sleeveOffset);
+  const sleeveUpperREnd = sleeveFollow.sleeveUpperR
+    .clone()
+    .add(sleeveOffset)
+    .lerp(sleeveFollow.sleeveLowerR, 0.22);
+  const sleeveLowerR = sleeveFollow.sleeveUpperR.clone().add(sleeveOffset);
+  const sleeveLowerREnd = sleeveFollow.sleeveLowerR.clone().add(sleeveOffset);
 
   return (
     <group name="avatar_procedural_rig">
-      <group name="pelvis_root" position={[0, pelvisY, 0]}>
-        <mesh castShadow name="pelvis_mesh">
-          <boxGeometry args={M.pelvisBox} />
-          <meshStandardMaterial {...matProps(bodyOpacity)} />
-        </mesh>
+      <EllipsoidMesh
+        name="pelvis_shell"
+        position={v3tuple(pelvisShellCenter)}
+        scale={[P.pelvisWidth * 0.5, P.pelvisHeight * 0.5, P.pelvisDepth * 0.5]}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.68}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="spine_segment"
+        start={pelvis}
+        end={spine}
+        radius={P.abdomenWidth * 0.19}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.68}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="abdomen_shell"
+        position={v3tuple(abdomenCenter)}
+        scale={[P.abdomenWidth * 0.5, P.abdomenHeight * 0.5, P.abdomenDepth * 0.5]}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.66}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="torso_shell"
+        position={v3tuple(torsoCenter)}
+        scale={[P.chestWidth * 0.5, P.chestHeight * 0.5, P.chestDepth * 0.5]}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.62}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="neck_segment"
+        start={chest}
+        end={neck}
+        radius={P.neckRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.56}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="head_shell"
+        position={v3tuple(head)}
+        scale={[
+          P.headRadius * P.headScale[0],
+          P.headRadius * P.headScale[1],
+          P.headRadius * P.headScale[2],
+        ]}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.5}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="shoulder_cap_l"
+        position={jointMap.shoulderL}
+        scale={P.shoulderCapScale}
+        color={shoulderCapsuleColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.6}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="shoulder_cap_r"
+        position={jointMap.shoulderR}
+        scale={P.shoulderCapScale}
+        color={shoulderCapsuleColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.6}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="upper_arm_l"
+        start={shoulderL}
+        end={elbowL}
+        radius={P.upperArmRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="forearm_l"
+        start={elbowL}
+        end={wristL}
+        radius={P.forearmRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="hand_l"
+        position={jointMap.wristL}
+        scale={P.handScale}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.58}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="upper_arm_r"
+        start={shoulderR}
+        end={elbowR}
+        radius={P.upperArmRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="forearm_r"
+        start={elbowR}
+        end={wristR}
+        radius={P.forearmRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="hand_r"
+        position={jointMap.wristR}
+        scale={P.handScale}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.58}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="thigh_l"
+        start={hipL}
+        end={kneeL}
+        radius={P.thighRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="calf_l"
+        start={kneeL}
+        end={ankleL}
+        radius={P.calfRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="foot_l"
+        position={[jointMap.ankleL[0] + 0.018, jointMap.ankleL[1] - 0.038, jointMap.ankleL[2] + 0.052]}
+        scale={P.footScale}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.6}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="thigh_r"
+        start={hipR}
+        end={kneeR}
+        radius={P.thighRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <CapsuleBetween
+        name="calf_r"
+        start={kneeR}
+        end={ankleR}
+        radius={P.calfRadius}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        transparent={liveShading !== "overlay_style"}
+      />
+      <EllipsoidMesh
+        name="foot_r"
+        position={[jointMap.ankleR[0] - 0.018, jointMap.ankleR[1] - 0.038, jointMap.ankleR[2] + 0.052]}
+        scale={P.footScale}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.6}
+        transparent={liveShading !== "overlay_style"}
+      />
 
-        <group
-          name="hip_l"
-          position={[M.legGroupOffsetX, M.hipPitchLocalY, 0]}
-          rotation={[ang.llx, 0, 0]}
-        >
-          <mesh position={[M.legMeshOffsetX, thighMeshY, 0]} castShadow name="thigh_l">
-            <capsuleGeometry args={[legRad, thighLen, 4, 10]} />
-            <meshStandardMaterial {...matProps(bodyOpacity)} />
-          </mesh>
-          <group
-            name="knee_l"
-            position={[M.legMeshOffsetX, kneeY, 0]}
-            rotation={[kneeFlexL, 0, 0]}
-          >
-            <mesh position={[0, shinMeshY, 0]} castShadow name="shin_l">
-              <capsuleGeometry args={[shinRad, shinLen, 4, 10]} />
-              <meshStandardMaterial {...matProps(bodyOpacity)} />
-            </mesh>
-          </group>
-        </group>
-
-        <group
-          name="hip_r"
-          position={[-M.legGroupOffsetX, M.hipPitchLocalY, 0]}
-          rotation={[ang.rlx, 0, 0]}
-        >
-          <mesh position={[-M.legMeshOffsetX, thighMeshY, 0]} castShadow name="thigh_r">
-            <capsuleGeometry args={[legRad, thighLen, 4, 10]} />
-            <meshStandardMaterial {...matProps(bodyOpacity)} />
-          </mesh>
-          <group
-            name="knee_r"
-            position={[-M.legMeshOffsetX, kneeY, 0]}
-            rotation={[kneeFlexR, 0, 0]}
-          >
-            <mesh position={[0, shinMeshY, 0]} castShadow name="shin_r">
-              <capsuleGeometry args={[shinRad, shinLen, 4, 10]} />
-              <meshStandardMaterial {...matProps(bodyOpacity)} />
-            </mesh>
-          </group>
-        </group>
-      </group>
-
-      {lumbarGap > 0.004 ? (
-        <mesh
-          position={[0, (pelvisTopY + torsoBotY) * 0.5, 0]}
-          castShadow
-          name="lumbar_bridge"
-        >
-          <cylinderGeometry
-            args={[
-              M.torsoCapsuleRadius * 0.74,
-              M.pelvisBox[0] * 0.36,
-              lumbarGap,
-              10,
-            ]}
-          />
-          <meshStandardMaterial {...matProps(bodyOpacity, 0.66)} />
-        </mesh>
-      ) : null}
-      {torsoPelvisOverlap > 0.003 ? (
-        <mesh
-          position={[0, (pelvisTopY + torsoBotY) * 0.5, 0]}
-          castShadow
-          name="waist_blend"
-        >
-          <cylinderGeometry
-            args={[
-              M.torsoCapsuleRadius * 0.82,
-              Math.min(M.pelvisBox[0], M.pelvisBox[2]) * 0.44,
-              torsoPelvisOverlap + 0.01,
-              10,
-            ]}
-          />
-          <meshStandardMaterial {...matProps(bodyOpacity, 0.68)} />
-        </mesh>
-      ) : null}
-
-      <group name="spine_torso" position={[0, chestY, 0]}>
-        <mesh castShadow name="torso_capsule">
-          <capsuleGeometry args={[M.torsoCapsuleRadius, M.torsoCapsuleLength, 6, 12]} />
-          <meshStandardMaterial {...matProps(bodyOpacity, 0.64)} />
-        </mesh>
-      </group>
-
-      <mesh position={[0, neckCenterY, 0]} castShadow name="neck_stub">
-        <cylinderGeometry args={[neckRt, neckRb, neckH, 10]} />
-        <meshStandardMaterial {...matProps(bodyOpacity)} />
-      </mesh>
-
-      <group name="head" position={[0, headY, 0]}>
-        <mesh castShadow name="head_sphere">
-          <sphereGeometry args={[M.headRadius, 14, 14]} />
-          <meshStandardMaterial {...matProps(bodyOpacity, 0.52)} />
-        </mesh>
-      </group>
-
-      <group
-        name="shoulder_l"
-        position={[shoulderHalf, shoulderY, 0]}
-        rotation={[ang.laxz, 0, ang.laz]}
-      >
-        <group name="upper_arm_l" rotation={[0, 0, ang.lax]}>
-          <mesh position={[M.armMeshOffsetX, upperArmY, 0]} castShadow name="humerus_l">
-            <capsuleGeometry args={[armRad, upperArmLen, 4, 8]} />
-            <meshStandardMaterial {...matProps(bodyOpacity)} />
-          </mesh>
-          <group
-            name="forearm_l"
-            position={[M.armMeshOffsetX, elbowY, 0]}
-            rotation={[0, 0, ang.lax * 0.32]}
-          >
-            <mesh position={[0, forearmY, 0]} castShadow name="radius_l">
-              <capsuleGeometry args={[foreRad, foreLen, 4, 8]} />
-              <meshStandardMaterial {...matProps(bodyOpacity)} />
-            </mesh>
-          </group>
-          {/* Sleeve after forearm so garment proxy sorts above skin */}
-          <group position={[spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
-            <GarmentSleeveProxyMesh
-              garmentFit={garmentFit}
-              side={1}
-              zRot={0.08}
-              shirtOpacity={shirtOpacity}
-              topColor={topColor}
-              topEmissive={topEmissive}
-              clipEmissiveAdd={clipEmissiveSleeve}
-              sleeveS={sleeveS}
-              sleeveRadius={sleeveRadius}
-              spx={spx}
-              spy={spy}
-              spz={spz}
-            />
-          </group>
-        </group>
-      </group>
-
-      <group
-        name="shoulder_r"
-        position={[-shoulderHalf, shoulderY, 0]}
-        rotation={[-ang.laxz, 0, ang.raz]}
-      >
-        <group name="upper_arm_r" rotation={[0, 0, -ang.rax]}>
-          <mesh position={[-M.armMeshOffsetX, upperArmY, 0]} castShadow name="humerus_r">
-            <capsuleGeometry args={[armRad, upperArmLen, 4, 8]} />
-            <meshStandardMaterial {...matProps(bodyOpacity)} />
-          </mesh>
-          <group
-            name="forearm_r"
-            position={[-M.armMeshOffsetX, elbowY, 0]}
-            rotation={[0, 0, -ang.rax * 0.32]}
-          >
-            <mesh position={[0, forearmY, 0]} castShadow name="radius_r">
-              <capsuleGeometry args={[foreRad, foreLen, 4, 8]} />
-              <meshStandardMaterial {...matProps(bodyOpacity)} />
-            </mesh>
-          </group>
-          <group position={[-spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
-            <GarmentSleeveProxyMesh
-              garmentFit={garmentFit}
-              side={-1}
-              zRot={-0.08}
-              shirtOpacity={shirtOpacity}
-              topColor={topColor}
-              topEmissive={topEmissive}
-              clipEmissiveAdd={clipEmissiveSleeve}
-              sleeveS={sleeveS}
-              sleeveRadius={sleeveRadius}
-              spx={spx}
-              spy={spy}
-              spz={spz}
-            />
-          </group>
-        </group>
-      </group>
+      <GarmentSleeveProxyMesh
+        garmentFit={garmentFit}
+        start={sleeveUpperL}
+        end={sleeveUpperLEnd}
+        shirtOpacity={shirtOpacity}
+        topColor={topColor}
+        topEmissive={topEmissive}
+        clipEmissiveAdd={clipEmissiveSleeve}
+        sleeveRadius={P.upperArmRadius * 1.12 * sleeveS}
+      />
+      <GarmentSleeveProxyMesh
+        garmentFit={garmentFit}
+        start={sleeveLowerL}
+        end={sleeveLowerLEnd}
+        shirtOpacity={shirtOpacity}
+        topColor={topColor}
+        topEmissive={topEmissive}
+        clipEmissiveAdd={clipEmissiveSleeve}
+        sleeveRadius={P.forearmRadius * 1.12 * sleeveS}
+      />
+      <GarmentSleeveProxyMesh
+        garmentFit={garmentFit}
+        start={sleeveUpperR}
+        end={sleeveUpperREnd}
+        shirtOpacity={shirtOpacity}
+        topColor={topColor}
+        topEmissive={topEmissive}
+        clipEmissiveAdd={clipEmissiveSleeve}
+        sleeveRadius={P.upperArmRadius * 1.12 * sleeveS}
+      />
+      <GarmentSleeveProxyMesh
+        garmentFit={garmentFit}
+        start={sleeveLowerR}
+        end={sleeveLowerREnd}
+        shirtOpacity={shirtOpacity}
+        topColor={topColor}
+        topEmissive={topEmissive}
+        clipEmissiveAdd={clipEmissiveSleeve}
+        sleeveRadius={P.forearmRadius * 1.12 * sleeveS}
+      />
     </group>
   );
 }
@@ -853,6 +1062,7 @@ export function AvatarProceduralScene({
   );
   const sleeveRadius = rig.metrics.upperArmCapsule[0];
   const ang = poseAngles(pose);
+  const jointMap = useMemo(() => buildProceduralHumanoidJointMap(rig, ang), [rig, ang]);
   const colors = presetGarmentColors(preset);
   const showShoes = DEV_AVATAR_PRESETS[preset].shoes != null;
 
@@ -993,6 +1203,7 @@ export function AvatarProceduralScene({
   const rigMat: RigMaterialProps = {
     rig,
     ang,
+    jointMap,
     garmentPoseSkin,
     bodyColor,
     bodyOpacity,
@@ -1038,7 +1249,7 @@ export function AvatarProceduralScene({
           scale={bodyAnchorScale}
           name="avatar_torso_region_fit"
         >
-          {showRigDebug ? <RigDebugAnchors rig={rig} /> : null}
+          {showRigDebug ? <RigDebugAnchors jointMap={jointMap} /> : null}
           {showGarmentRigDebug ? <GarmentRigDebugOverlay rig={rig} /> : null}
 
           {showBodyMesh && (runtimeBodyBundledModule != null || runtimeBodyGltfUrl) ? (
@@ -1093,6 +1304,7 @@ export function AvatarProceduralScene({
                 fallback={
                   <ShirtTorsoProxy
                     rig={rig}
+                    jointMap={jointMap}
                     garmentPoseSkin={garmentPoseSkin}
                     topColor={topColor}
                     shirtOpacity={shirtOpacity}
@@ -1108,6 +1320,7 @@ export function AvatarProceduralScene({
                   fallback={
                     <ShirtTorsoProxy
                       rig={rig}
+                      jointMap={jointMap}
                       garmentPoseSkin={garmentPoseSkin}
                       topColor={topColor}
                       shirtOpacity={shirtOpacity}
@@ -1135,6 +1348,7 @@ export function AvatarProceduralScene({
             ) : (
               <ShirtTorsoProxy
                 rig={rig}
+                jointMap={jointMap}
                 garmentPoseSkin={garmentPoseSkin}
                 topColor={topColor}
                 shirtOpacity={shirtOpacity}
@@ -1165,6 +1379,7 @@ export function AvatarProceduralScene({
                 fallback={
                   <PantsGarmentProxies
                     rig={rig}
+                    jointMap={jointMap}
                     garmentPoseSkin={garmentPoseSkin}
                     bottomColor={bottomColor}
                     pantOpacity={pantOpacity}
@@ -1180,6 +1395,7 @@ export function AvatarProceduralScene({
                   fallback={
                     <PantsGarmentProxies
                       rig={rig}
+                      jointMap={jointMap}
                       garmentPoseSkin={garmentPoseSkin}
                       bottomColor={bottomColor}
                       pantOpacity={pantOpacity}
@@ -1207,6 +1423,7 @@ export function AvatarProceduralScene({
             ) : (
               <PantsGarmentProxies
                 rig={rig}
+                jointMap={jointMap}
                 garmentPoseSkin={garmentPoseSkin}
                 bottomColor={bottomColor}
                 pantOpacity={pantOpacity}

@@ -22,12 +22,20 @@ import type {
 import { AppButton } from "@/components/ui/app-button";
 import { theme } from "@/theme";
 
-import { BUNDLED_SKINNED_BODY_GLTF } from "./bundled-body-asset";
+import { DEFAULT_STYLISED_AVATAR } from "./avatar-assets";
 import {
   AvatarProceduralScene,
   CameraRig,
   type OrbitSpherical,
 } from "./avatar-procedural-scene";
+import {
+  PROCEDURAL_AVATAR_MODEL_ID,
+  PROCEDURAL_GARMENT_FOLLOW_MODE,
+  PROCEDURAL_HUMANOID_BODY_PART_COUNT,
+  PROCEDURAL_HUMANOID_GARMENT_PART_COUNT,
+  PROCEDURAL_HUMANOID_JOINT_COUNT,
+  PROCEDURAL_PROPORTIONS_VERSION,
+} from "./procedural-humanoid-v2";
 import {
   mergeAvatarViewportNav,
   type AvatarViewportNavSettings,
@@ -99,14 +107,20 @@ export type AvatarViewportLiveProps = {
   onRequestVisibleBaseline?: (reason: string) => void;
   /** Dev workbench: scene-space markers, bounds framing, bright-body visibility proof. */
   devSceneInspect?: AvatarViewportDevSceneInspect;
+  /** Dev: skeleton / joint overlay for the procedural mannequin. */
+  showSkeletonOverlay?: boolean;
+  /** Dev: garment anchor / fit overlay. */
+  showFitDebugOverlay?: boolean;
+  /** Dev stabilization: procedural branch is intentionally the startup owner. */
+  stabilizedProceduralStartup?: boolean;
   /** Baseline request generation from preview. */
   baselineRequestNonce?: number;
   /** Baseline / camera-reset generation from preview (diagnostics). */
   viewportBaselineNonce?: number;
 };
 
-const DEFAULT_ORBIT: OrbitSpherical = { theta: 0.48, phi: 1.02, radius: 3.55 };
-const TARGET: [number, number, number] = [0, 1.12, 0];
+const DEFAULT_ORBIT: OrbitSpherical = { theta: 0.64, phi: 1.08, radius: 3.78 };
+const TARGET: [number, number, number] = [0, 1.06, 0];
 
 const SHOW_RIG_DEBUG =
   typeof process.env.EXPO_PUBLIC_AVATAR_VIEWPORT_RIG_DEBUG === "string" &&
@@ -164,6 +178,9 @@ export function AvatarViewportLive({
   cameraResetNonce = 0,
   onRequestVisibleBaseline,
   devSceneInspect,
+  showSkeletonOverlay = false,
+  showFitDebugOverlay = false,
+  stabilizedProceduralStartup = false,
   baselineRequestNonce = 0,
   viewportBaselineNonce = 0,
 }: AvatarViewportLiveProps) {
@@ -518,7 +535,7 @@ export function AvatarViewportLive({
     if (FORCE_PROCEDURAL_BODY || useProceduralBody) return null;
     if (runtimeAssets?.bodyGltfUrl != null) return null;
     if (envRuntimeUrls.bodyGltfUrl != null) return null;
-    return BUNDLED_SKINNED_BODY_GLTF;
+    return DEFAULT_STYLISED_AVATAR.bundledAssetModule;
   }, [useProceduralBody, runtimeAssets?.bodyGltfUrl, envRuntimeUrls.bodyGltfUrl]);
 
   const resolvedRuntime = useMemo(() => {
@@ -632,7 +649,11 @@ export function AvatarViewportLive({
 
     let reason: LiveViewportBodySourceDebug["reason"] = "default_bundled";
     if (FORCE_PROCEDURAL_BODY) reason = "env_force_procedural";
-    else if (useProceduralBody) reason = "user_procedural_toggle";
+    else if (useProceduralBody) {
+      reason = stabilizedProceduralStartup
+        ? "stabilized_startup_procedural"
+        : "user_procedural_toggle";
+    }
     else if (runtimeAssets?.bodyGltfUrl != null || envRuntimeUrls.bodyGltfUrl != null) {
       reason = "runtime_url_override";
     }
@@ -666,6 +687,7 @@ export function AvatarViewportLive({
     return { active, userIntent, sourceReason, loadStatus: bodyLoadForUi, reason };
   }, [
     useProceduralBody,
+    stabilizedProceduralStartup,
     runtimeAssets?.bodyGltfUrl,
     envRuntimeUrls.bodyGltfUrl,
     runtimeBodyBundledModule,
@@ -703,11 +725,48 @@ export function AvatarViewportLive({
     if (!onLiveViewportPoseFitDebug) return;
     const bodyVisible = !garmentOnlyViewport;
     const garmentsVisible = !bodyOnlyGarments;
-    const exactBaselineOk =
+    const bundledBodyMounted =
+      bodyVisible &&
       !useProceduralBody &&
       !FORCE_PROCEDURAL_BODY &&
-      bodyVisible &&
-      garmentsVisible &&
+      runtimeBodyBundledModule != null &&
+      bodyLoadForUi === "loaded";
+    const bundledBodyVisible =
+      bundledBodyMounted &&
+      bodySourceDebug?.active === "bundled_skinned";
+    const visibleBranch: "bundled" | "procedural" | "none" =
+      !bodyVisible
+        ? "none"
+        : bundledBodyVisible
+          ? "bundled"
+          : bodySourceDebug?.active === "procedural_user" ||
+              bodySourceDebug?.active === "procedural_env_forced" ||
+              bodySourceDebug?.active === "procedural_fallback_error" ||
+              bodySourceDebug?.active === "procedural_scene_default"
+            ? "procedural"
+            : "none";
+    const poseTargetBranch = visibleBranch;
+    const startupVisibleBody = visibleBranch !== "none";
+    const combinedVisible = bodyVisible && garmentsVisible;
+    const visiblePartsCount =
+      (bodyVisible ? PROCEDURAL_HUMANOID_BODY_PART_COUNT : 0) +
+      (garmentsVisible ? PROCEDURAL_HUMANOID_GARMENT_PART_COUNT : 0);
+    const visualAvatarSource: "GLB" | "proceduralFallback" =
+      visibleBranch === "bundled" ? "GLB" : "proceduralFallback";
+    const rigDetected =
+      !!skinnedPoseReport &&
+      (skinnedPoseReport.bodyPoseApplied || skinnedPoseReport.criticalMapped > 0);
+    const poseDriver: "skinnedBones" | "proceduralFallback" =
+      visualAvatarSource === "GLB" && rigDetected ? "skinnedBones" : "proceduralFallback";
+    const exactBaselineOk =
+      combinedVisible &&
+      (stabilizedProceduralStartup
+        ? visibleBranch === "procedural"
+        : !useProceduralBody &&
+          !FORCE_PROCEDURAL_BODY &&
+          bundledBodyVisible) &&
+      !showSkeletonOverlay &&
+      !showFitDebugOverlay &&
       !garmentAttachmentDebug &&
       !clipOverlayEnabled &&
       !devSceneInspect?.enabled &&
@@ -716,7 +775,9 @@ export function AvatarViewportLive({
       preset === "default";
     const startupWarning = exactBaselineOk
       ? null
-      : "startup deviated from sane bundled combined preview; self-recovery attempted";
+      : stabilizedProceduralStartup
+        ? "startup deviated from stabilized procedural combined preview"
+        : "startup deviated from sane bundled combined preview; self-recovery attempted";
     const mode =
       bodyVisible && garmentsVisible
         ? "combined"
@@ -728,6 +789,19 @@ export function AvatarViewportLive({
     const payload: LiveViewportPoseFitDebug = {
       pose,
       preset,
+      avatar: {
+        activeAvatarModel: PROCEDURAL_AVATAR_MODEL_ID,
+        visualAvatarSource,
+        rigDetected,
+        garmentFollowMode: PROCEDURAL_GARMENT_FOLLOW_MODE,
+        garmentMode: mode,
+        jointCount: PROCEDURAL_HUMANOID_JOINT_COUNT,
+        visiblePartsCount,
+        poseDriver,
+        startupVisible: startupVisibleBody,
+        proportionsVersion: PROCEDURAL_PROPORTIONS_VERSION,
+        loadStatus: bodyLoadForUi,
+      },
       garmentPoseMatchesBody: true,
       skinned: skinnedPoseReport,
       anchors: garmentAnchorsDbg,
@@ -742,6 +816,8 @@ export function AvatarViewportLive({
               cameraFramedHint: sceneDiagnostics?.framedHeuristic ?? false,
               startupRecoveryTriggered,
               exactBaselineOk,
+              startupVisibleBody,
+              combinedVisible,
               warning: startupWarning,
             }
           : null,
@@ -751,6 +827,10 @@ export function AvatarViewportLive({
         garmentsVisible,
         safeDefaultActive,
         cameraTargetValid,
+        visibleBranch,
+        poseTargetBranch,
+        bundledBodyMounted,
+        bundledBodyVisible,
       },
       interaction: {
         zoomInputMode,
@@ -779,6 +859,11 @@ export function AvatarViewportLive({
     startupRecoveryTriggered,
     viewportBaselineNonce,
     useProceduralBody,
+    stabilizedProceduralStartup,
+    runtimeBodyBundledModule,
+    bodyLoadForUi,
+    showSkeletonOverlay,
+    showFitDebugOverlay,
     garmentAttachmentDebug,
     clipOverlayEnabled,
     devSceneInspect?.enabled,
@@ -858,7 +943,12 @@ export function AvatarViewportLive({
     const base = runtimeAssetSummary(resolvedRuntime);
     const loadTag = skinnedBodyPathActive ? ` · body load: ${bodyLoadForUi}` : "";
     if (FORCE_PROCEDURAL_BODY || useProceduralBody) {
-      return `${base} · body=procedural(forced)${loadTag}`;
+      const mode = FORCE_PROCEDURAL_BODY
+        ? "forced"
+        : stabilizedProceduralStartup
+          ? "stabilized-startup"
+          : "user";
+      return `${base} · body=procedural(${mode})${loadTag}`;
     }
     if (runtimeBodyBundledModule != null) {
       if (skinnedBodyLoadStatus === "failed") {
@@ -881,6 +971,7 @@ export function AvatarViewportLive({
     resolvedRuntime,
     runtimeBodyBundledModule,
     useProceduralBody,
+    stabilizedProceduralStartup,
     skinnedBodyLoadStatus,
     bodyLoadForUi,
     skinnedBodyPathActive,
@@ -1035,8 +1126,8 @@ export function AvatarViewportLive({
               runtimeBodyBundledModule={runtimeBodyBundledModule}
               runtimeTopGltfUrl={resolvedRuntime.topGltfUrl}
               runtimeBottomGltfUrl={resolvedRuntime.bottomGltfUrl}
-              showRigDebug={SHOW_RIG_DEBUG}
-              showGarmentRigDebug={SHOW_GARMENT_RIG_DEBUG}
+              showRigDebug={SHOW_RIG_DEBUG || showSkeletonOverlay}
+              showGarmentRigDebug={SHOW_GARMENT_RIG_DEBUG || showFitDebugOverlay}
               clipEmissiveTop={clipEmissiveTop}
               clipEmissiveBottom={clipEmissiveBottom}
               clipEmissiveSleeve={clipEmissiveSleeve}

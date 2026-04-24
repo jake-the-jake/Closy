@@ -231,8 +231,11 @@ function SkinnedSkeletonFrameUpdater({
 
 function ensureBodyMeshesDrawable(root: THREE.Object3D) {
   root.traverse((o) => {
+    o.visible = true;
+    o.matrixAutoUpdate = true;
     if (o instanceof THREE.Mesh || o instanceof THREE.SkinnedMesh) {
       o.visible = true;
+      o.frustumCulled = false;
       const s = o.scale;
       if (
         !Number.isFinite(s.x) ||
@@ -241,6 +244,13 @@ function ensureBodyMeshesDrawable(root: THREE.Object3D) {
         s.x * s.x + s.y * s.y + s.z * s.z < 1e-24
       ) {
         o.scale.set(1, 1, 1);
+      }
+      if (Array.isArray(o.material)) {
+        for (const m of o.material) {
+          m.needsUpdate = true;
+        }
+      } else if (o.material) {
+        o.material.needsUpdate = true;
       }
     }
   });

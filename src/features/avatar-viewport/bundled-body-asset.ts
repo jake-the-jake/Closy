@@ -1,13 +1,5 @@
 /**
- * Bundled skinned human base mesh: Khronos glTF Sample Models — `CesiumMan`
- * (see sample repo license; use in accordance with that license in shipped apps).
- *
- * **Repo path (Metro must resolve this from inside `src/`):**
- * `src/assets/models/cesium-man.glb`
- *
- * Default live body when no `EXPO_PUBLIC_AVATAR_RUNTIME_BODY_GLTF_URL` is set and
- * `EXPO_PUBLIC_AVATAR_USE_PROCEDURAL_BODY` is not `1`.
- *
- * Relative to this file: `src/features/avatar-viewport/` → `../../assets/models/`.
+ * Back-compat export for the default bundled stylised avatar path.
+ * Prefer importing from `avatar-assets.ts` for new work.
  */
-export const BUNDLED_SKINNED_BODY_GLTF = require("../../assets/models/cesium-man.glb");
+export { DEFAULT_STYLISED_AVATAR_GLTF as BUNDLED_SKINNED_BODY_GLTF } from "./avatar-assets";
