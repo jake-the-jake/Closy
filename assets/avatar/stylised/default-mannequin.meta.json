@@ -1,0 +1,8 @@
+{
+  "id": "default-stylised-mannequin",
+  "asset": "default-mannequin.glb",
+  "present": false,
+  "targetHeightMeters": 1.78,
+  "orientation": "Y-up, facing +Z",
+  "notes": "The app currently uses assets/models/avatar/default-stylised-avatar.glb as the bundled stylised slot until this convention receives a dedicated mannequin GLB."
+}

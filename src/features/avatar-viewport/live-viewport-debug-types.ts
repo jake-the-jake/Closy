@@ -13,6 +13,12 @@ export type SkinnedRigPoseReport = {
   /** How many of the critical limb/torso slots are mapped. */
   criticalMapped: number;
   criticalTotal: number;
+  meshCount?: number;
+  materialCount?: number;
+  boneCount?: number;
+  boundsHeight?: number;
+  rigTypeGuess?: string;
+  rigConfidence?: number;
 };
 
 /** Snapshot of garment anchor groups under `avatar_torso_region_fit` (dev). */
@@ -56,10 +62,29 @@ export type LiveViewportSceneDiagnostics = {
   skeletonRootWorld: [number, number, number] | null;
 };
 
+export type AvatarRenderAudit = {
+  activeRenderBranchName: string;
+  mountedAvatarRoot: boolean;
+  totalMeshCount: number;
+  visibleMeshCount: number;
+  gltfTotalMeshCount: number;
+  gltfVisibleMeshCount: number;
+  firstMeshWorldPosition: [number, number, number] | null;
+  firstMeshScale: [number, number, number] | null;
+  firstMeshMaterialOpacity: number | null;
+  firstMeshMaterialTransparent: boolean | null;
+  safetyFallbackReason: string | null;
+  cameraPosition?: [number, number, number];
+  cameraTarget?: [number, number, number];
+  cameraRadius?: number;
+};
+
 /** Live body path + intent (dev diagnostics; avoids silent bundled↔procedural drift). */
 export type LiveViewportBodySourceDebug = {
   /** What the viewport is actually drawing for the body mesh. */
   active:
+    | "realistic_glb"
+    | "stylised_glb"
     | "bundled_skinned"
     | "external_skinned_url"
     | "procedural_user"
@@ -67,7 +92,7 @@ export type LiveViewportBodySourceDebug = {
     | "procedural_fallback_error"
     | "procedural_scene_default";
   /** User-facing intent from props (before runtime failure fallback). */
-  userIntent: "bundled_or_url" | "procedural";
+  userIntent: "auto" | "realistic_glb" | "stylised_glb" | "procedural";
   /** High-level cause for the current active body source. */
   sourceReason: "startup" | "user_toggle" | "hard_fallback";
   loadStatus: "idle" | "pending" | "loaded" | "failed";
@@ -77,7 +102,11 @@ export type LiveViewportBodySourceDebug = {
     | "user_procedural_toggle"
     | "env_force_procedural"
     | "runtime_url_override"
-    | "skinned_load_failed_fallback";
+    | "skinned_load_failed_fallback"
+    | "avatar_source_manager";
+  debugLabel?: string;
+  fallbackReason?: string;
+  errorReason?: string | null;
 };
 
 export type LiveViewportPoseFitDebug = {
@@ -90,11 +119,20 @@ export type LiveViewportPoseFitDebug = {
     garmentFollowMode: string;
     garmentMode: "combined" | "body_only" | "garment_only" | "invalid";
     jointCount: number;
+    anchorsCount: number;
     visiblePartsCount: number;
+    garmentAnchors: "ok" | "missing";
+    currentQualityPreset: string;
     poseDriver: "skinnedBones" | "proceduralFallback";
     startupVisible: boolean;
     proportionsVersion: string;
     loadStatus: "idle" | "pending" | "loaded" | "failed";
+    avatarSource?: string;
+    fallbackReason?: string;
+    meshCount?: number;
+    materialCount?: number;
+    boneCount?: number;
+    boundsHeight?: number;
   } | null;
   garmentPoseMatchesBody: boolean;
   skinned: SkinnedRigPoseReport | null;
@@ -103,16 +141,23 @@ export type LiveViewportPoseFitDebug = {
   bodySource?: LiveViewportBodySourceDebug | null;
   /** Dev workstation: startup baseline + camera generation from preview screen. */
   startup?: {
-    visibleBaselineApplied: boolean;
-    viewportBaselineNonce: number;
+    sceneReady: boolean;
     combinedViewOk: boolean;
     cameraFramedHint: boolean;
-    startupRecoveryTriggered: boolean;
     exactBaselineOk: boolean;
     startupVisibleBody: boolean;
     combinedVisible: boolean;
+    visibleMeshCount: number;
+    bodyGroupVisible: boolean;
+    garmentGroupVisible: boolean;
+    activeTab: string;
+    cleanMode: boolean;
+    renderSafe: boolean;
+    lastSceneError: string | null;
+    startupReason: string;
     warning: string | null;
   } | null;
+  renderAudit?: AvatarRenderAudit | null;
   visibility?: {
     mode: "combined" | "body_only" | "garment_only" | "invalid";
     bodyVisible: boolean;

@@ -6,7 +6,8 @@ export type LiveViewportShadingMode =
   | "normal"
   | "body_focus"
   | "garment_focus"
-  | "overlay_style";
+  | "overlay_style"
+  | "overlay_debug";
 
 export const LIVE_VIEWPORT_SHADING_LABELS: Record<LiveViewportShadingMode, string> =
   {
@@ -14,8 +15,9 @@ export const LIVE_VIEWPORT_SHADING_LABELS: Record<LiveViewportShadingMode, strin
     body_focus: "Body focus",
     garment_focus: "Garment focus",
     overlay_style: "Overlay (debug)",
+    overlay_debug: "Overlay debug",
   };
 
 export function listLiveViewportShadingModes(): LiveViewportShadingMode[] {
-  return ["normal", "body_focus", "garment_focus", "overlay_style"];
+  return ["normal", "body_focus", "garment_focus", "overlay_debug"];
 }

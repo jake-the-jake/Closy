@@ -1,0 +1,8 @@
+{
+  "id": "default-realistic-avatar",
+  "asset": "default-avatar.glb",
+  "present": false,
+  "targetHeightMeters": 1.78,
+  "orientation": "Y-up, facing +Z",
+  "notes": "Drop the production/generated realistic GLB beside this metadata file when available."
+}

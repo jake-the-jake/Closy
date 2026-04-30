@@ -16,12 +16,13 @@ import type { PoseAngleSet } from "./avatar-pose-angles";
  * - later cloth simulation or learned garment deformation
  * - later native renderer or server-side avatar generation
  */
-export const PROCEDURAL_AVATAR_MODEL_ID = "proceduralHumanoidV3" as const;
+export const PROCEDURAL_AVATAR_MODEL_ID = "proceduralMannequinV5" as const;
 export const PROCEDURAL_GARMENT_FOLLOW_MODE = "weightedJointBlendV1" as const;
-export const PROCEDURAL_PROPORTIONS_VERSION = "mannequin_v1" as const;
+export const PROCEDURAL_PROPORTIONS_VERSION = "fashion_mannequin_v5" as const;
 export const PROCEDURAL_HUMANOID_JOINTS = [
   "pelvis",
   "spine",
+  "waist",
   "chest",
   "neck",
   "head",
@@ -31,12 +32,15 @@ export const PROCEDURAL_HUMANOID_JOINTS = [
   "shoulderR",
   "elbowR",
   "wristR",
+  "hips",
   "hipL",
   "kneeL",
   "ankleL",
+  "footL",
   "hipR",
   "kneeR",
   "ankleR",
+  "footR",
 ] as const;
 
 export type ProceduralHumanoidJointName = (typeof PROCEDURAL_HUMANOID_JOINTS)[number];
@@ -46,49 +50,54 @@ export type ProceduralHumanoidJointMap = Record<
 >;
 
 export const PROCEDURAL_HUMANOID_JOINT_COUNT = PROCEDURAL_HUMANOID_JOINTS.length;
-export const PROCEDURAL_HUMANOID_BODY_PART_COUNT = 19;
-export const PROCEDURAL_HUMANOID_GARMENT_PART_COUNT = 8;
+export const PROCEDURAL_HUMANOID_BODY_PART_COUNT = 36;
+export const PROCEDURAL_HUMANOID_GARMENT_PART_COUNT = 10;
 
 export const HUMANOID_PROPORTIONS = {
   version: PROCEDURAL_PROPORTIONS_VERSION,
-  totalHeight: 1.78,
+  totalHeight: 1.8,
   groundY: 0,
-  headRadius: 0.118,
-  headScale: [1, 1.08, 0.98] as [number, number, number],
-  neckRadius: 0.046,
-  shoulderHalf: 0.242,
-  hipHalf: 0.156,
-  chestY: 1.33,
-  neckY: 1.49,
-  headY: 1.645,
-  shoulderY: 1.435,
-  spineY: 1.16,
-  pelvisY: 0.95,
-  hipY: 0.915,
-  kneeY: 0.5,
-  ankleY: 0.095,
-  chestWidth: 0.33,
-  chestDepth: 0.2,
-  chestHeight: 0.245,
-  abdomenWidth: 0.265,
-  abdomenDepth: 0.17,
-  abdomenHeight: 0.205,
-  pelvisWidth: 0.305,
-  pelvisDepth: 0.195,
-  pelvisHeight: 0.16,
-  shoulderCapScale: [0.072, 0.055, 0.06] as [number, number, number],
-  upperArmLength: 0.355,
-  forearmLength: 0.305,
-  upperArmRadius: 0.05,
-  forearmRadius: 0.041,
-  thighLength: 0.44,
-  calfLength: 0.42,
-  thighRadius: 0.078,
-  calfRadius: 0.058,
-  handScale: [0.05, 0.072, 0.04] as [number, number, number],
-  footScale: [0.08, 0.038, 0.17] as [number, number, number],
-  topShellScale: [0.36, 0.29, 0.22] as [number, number, number],
-  bottomShellScale: [0.31, 0.23, 0.2] as [number, number, number],
+  headRadius: 0.088,
+  headScale: [0.9, 1.22, 0.88] as [number, number, number],
+  neckRadius: 0.029,
+  shoulderHalf: 0.232,
+  hipHalf: 0.145,
+  chestY: 1.335,
+  neckY: 1.535,
+  headY: 1.688,
+  shoulderY: 1.412,
+  spineY: 1.19,
+  waistY: 1.065,
+  pelvisY: 0.895,
+  hipY: 0.862,
+  kneeY: 0.462,
+  ankleY: 0.074,
+  footY: 0.03,
+  chestWidth: 0.318,
+  chestDepth: 0.152,
+  chestHeight: 0.305,
+  waistWidth: 0.195,
+  waistDepth: 0.116,
+  waistHeight: 0.165,
+  abdomenWidth: 0.218,
+  abdomenDepth: 0.125,
+  abdomenHeight: 0.235,
+  pelvisWidth: 0.276,
+  pelvisDepth: 0.148,
+  pelvisHeight: 0.142,
+  shoulderCapScale: [0.052, 0.038, 0.042] as [number, number, number],
+  upperArmLength: 0.382,
+  forearmLength: 0.326,
+  upperArmRadius: 0.032,
+  forearmRadius: 0.027,
+  thighLength: 0.428,
+  calfLength: 0.4,
+  thighRadius: 0.049,
+  calfRadius: 0.037,
+  handScale: [0.032, 0.06, 0.026] as [number, number, number],
+  footScale: [0.054, 0.026, 0.145] as [number, number, number],
+  topShellScale: [0.326, 0.318, 0.168] as [number, number, number],
+  bottomShellScale: [0.274, 0.15, 0.148] as [number, number, number],
 } as const;
 
 function rotateOffset(
@@ -122,13 +131,14 @@ export function buildProceduralHumanoidJointMap(
   const P = HUMANOID_PROPORTIONS;
 
   const pelvis = new THREE.Vector3(0, P.pelvisY, 0);
-  const spine = new THREE.Vector3(0, P.spineY, 0.008 + ang.spineRx * 0.03);
-  const chest = new THREE.Vector3(0, P.chestY, 0.018 + ang.spineUpperRx * 0.04);
-  const neck = new THREE.Vector3(0, P.neckY, 0.028 + ang.neckRx * 0.025);
-  const head = new THREE.Vector3(0, P.headY, 0.04 + ang.neckRx * 0.025);
+  const waist = new THREE.Vector3(0, P.waistY, 0.004 + ang.spineRx * 0.02);
+  const spine = new THREE.Vector3(0, P.spineY, 0.006 + ang.spineRx * 0.026);
+  const chest = new THREE.Vector3(0, P.chestY, 0.012 + ang.spineUpperRx * 0.035);
+  const neck = new THREE.Vector3(0, P.neckY, 0.018 + ang.neckRx * 0.022);
+  const head = new THREE.Vector3(0, P.headY, 0.026 + ang.neckRx * 0.024);
 
-  const shoulderL = new THREE.Vector3(P.shoulderHalf, P.shoulderY, 0.012);
-  const shoulderR = new THREE.Vector3(-P.shoulderHalf, P.shoulderY, 0.012);
+  const shoulderL = new THREE.Vector3(P.shoulderHalf, P.shoulderY, 0.006);
+  const shoulderR = new THREE.Vector3(-P.shoulderHalf, P.shoulderY, 0.006);
 
   const elbowL = shoulderL
     .clone()
@@ -172,6 +182,7 @@ export function buildProceduralHumanoidJointMap(
     );
   const hipL = new THREE.Vector3(P.hipHalf, P.hipY, 0);
   const hipR = new THREE.Vector3(-P.hipHalf, P.hipY, 0);
+  const hips = average(pelvis, hipL, hipR);
   const kneeL = hipL
     .clone()
     .add(
@@ -202,10 +213,13 @@ export function buildProceduralHumanoidJointMap(
         -0.01,
       ),
     );
+  const footL = ankleL.clone().add(new THREE.Vector3(0.018, P.footY - ankleL.y, 0.075));
+  const footR = ankleR.clone().add(new THREE.Vector3(-0.018, P.footY - ankleR.y, 0.075));
 
   return {
     pelvis: asTuple(pelvis),
     spine: asTuple(spine),
+    waist: asTuple(waist),
     chest: asTuple(chest),
     neck: asTuple(neck),
     head: asTuple(head),
@@ -215,12 +229,15 @@ export function buildProceduralHumanoidJointMap(
     shoulderR: asTuple(shoulderR),
     elbowR: asTuple(elbowR),
     wristR: asTuple(wristR),
+    hips: asTuple(hips),
     hipL: asTuple(hipL),
     kneeL: asTuple(kneeL),
     ankleL: asTuple(ankleL),
+    footL: asTuple(footL),
     hipR: asTuple(hipR),
     kneeR: asTuple(kneeR),
     ankleR: asTuple(ankleR),
+    footR: asTuple(footR),
   };
 }
 
@@ -262,7 +279,7 @@ function blendJoints(
 
 /**
  * Garment follow weights:
- * - top shell: chest dominant, spine secondary, pelvis stabilizer
+ * - top shell: chest dominant, spine secondary, waist stabilizer
  * - sleeves: shoulder dominant, elbow secondary, wrist stabilizer
  * - bottoms: pelvis dominant, hips secondary, knees stabilizer
  */
@@ -271,8 +288,8 @@ export function buildProceduralGarmentFollowPoints(
 ) {
   const topCenter = blendJoints(jointMap, [
     { joint: "chest", weight: 0.52 },
-    { joint: "spine", weight: 0.28 },
-    { joint: "pelvis", weight: 0.2 },
+    { joint: "spine", weight: 0.3 },
+    { joint: "waist", weight: 0.18 },
   ]);
   const topLeftShoulder = blendJoints(jointMap, [
     { joint: "shoulderL", weight: 0.72 },
@@ -305,10 +322,12 @@ export function buildProceduralGarmentFollowPoints(
     { joint: "wristR", weight: 0.4 },
   ]);
   const bottomCenter = blendJoints(jointMap, [
-    { joint: "pelvis", weight: 0.56 },
+    { joint: "waist", weight: 0.2 },
+    { joint: "hips", weight: 0.22 },
+    { joint: "pelvis", weight: 0.22 },
     { joint: "hipL", weight: 0.16 },
     { joint: "hipR", weight: 0.16 },
-    { joint: "spine", weight: 0.12 },
+    { joint: "spine", weight: 0.04 },
   ]);
   const bottomLegL = blendJoints(jointMap, [
     { joint: "hipL", weight: 0.52 },

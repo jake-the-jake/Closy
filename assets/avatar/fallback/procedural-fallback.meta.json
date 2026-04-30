@@ -1,0 +1,5 @@
+{
+  "id": "procedural-mannequin-fallback",
+  "source": "src/features/avatar-viewport/procedural-humanoid-v2.ts",
+  "purpose": "Emergency visible startup fallback when realistic/stylised GLB assets are missing or fail to load."
+}

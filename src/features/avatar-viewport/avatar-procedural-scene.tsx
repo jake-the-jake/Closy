@@ -32,6 +32,7 @@ import {
   GltfRuntimeGarment,
 } from "./gltf-runtime-body";
 import type {
+  AvatarRenderAudit,
   GarmentAnchorFitDebug,
   GarmentAttachmentSnapshot,
   LiveViewportSceneDiagnostics,
@@ -51,12 +52,13 @@ import {
   type ProceduralHumanoidJointMap,
   type ProceduralHumanoidJointName,
 } from "./procedural-humanoid-v2";
+import { buildFitProxiesFromAnchors, type AvatarAnchorMap } from "./avatar-anchors";
 import { SkinnedGarmentAttachmentDriver } from "./skinned-garment-attachment-driver";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 import type { AvatarViewportNavSettings } from "./avatar-viewport-nav-settings";
 
-const SKIN = new THREE.Color(0xd4a574);
-const SKIN_DIM = new THREE.Color(0xa07850);
+const SKIN = new THREE.Color(0xdcc2a8);
+const SKIN_DIM = new THREE.Color(0xb39073);
 
 /**
  * Scene-space anchors (meters-ish, ~1.78m footprint). Ground y=0; rig built upward.
@@ -87,6 +89,76 @@ const FIT_VIS = {
 
 function v3tuple(v: THREE.Vector3): [number, number, number] {
   return [v.x, v.y, v.z];
+}
+
+function toVec3Array(
+  value: THREE.Vector3 | readonly number[] | null | undefined,
+  fallback: [number, number, number] = [0, 0, 0],
+): [number, number, number] {
+  if (value instanceof THREE.Vector3) {
+    return [
+      Number.isFinite(value.x) ? value.x : fallback[0],
+      Number.isFinite(value.y) ? value.y : fallback[1],
+      Number.isFinite(value.z) ? value.z : fallback[2],
+    ];
+  }
+  const x = value?.[0];
+  const y = value?.[1];
+  const z = value?.[2];
+  return [
+    typeof x === "number" && Number.isFinite(x) ? x : fallback[0],
+    typeof y === "number" && Number.isFinite(y) ? y : fallback[1],
+    typeof z === "number" && Number.isFinite(z) ? z : fallback[2],
+  ];
+}
+
+function toScaleArray(
+  value: THREE.Vector3 | readonly number[] | null | undefined,
+  fallback: [number, number, number] = [1, 1, 1],
+): [number, number, number] {
+  const s = toVec3Array(value, fallback);
+  return [
+    Math.abs(s[0]) > 1e-6 ? s[0] : fallback[0],
+    Math.abs(s[1]) > 1e-6 ? s[1] : fallback[1],
+    Math.abs(s[2]) > 1e-6 ? s[2] : fallback[2],
+  ];
+}
+
+function toEulerArray(
+  value: THREE.Euler | readonly number[] | null | undefined,
+  fallback: [number, number, number] = [0, 0, 0],
+): [number, number, number] {
+  if (value instanceof THREE.Euler) {
+    return [
+      Number.isFinite(value.x) ? value.x : fallback[0],
+      Number.isFinite(value.y) ? value.y : fallback[1],
+      Number.isFinite(value.z) ? value.z : fallback[2],
+    ];
+  }
+  return toVec3Array(value, fallback);
+}
+
+function toQuaternionArray(
+  value: THREE.Quaternion | readonly number[] | null | undefined,
+): [number, number, number, number] {
+  if (value instanceof THREE.Quaternion) {
+    return [
+      Number.isFinite(value.x) ? value.x : 0,
+      Number.isFinite(value.y) ? value.y : 0,
+      Number.isFinite(value.z) ? value.z : 0,
+      Number.isFinite(value.w) ? value.w : 1,
+    ];
+  }
+  const x = value?.[0];
+  const y = value?.[1];
+  const z = value?.[2];
+  const w = value?.[3];
+  return [
+    typeof x === "number" && Number.isFinite(x) ? x : 0,
+    typeof y === "number" && Number.isFinite(y) ? y : 0,
+    typeof z === "number" && Number.isFinite(z) ? z : 0,
+    typeof w === "number" && Number.isFinite(w) ? w : 1,
+  ];
 }
 
 function segmentFrame(from: THREE.Vector3, to: THREE.Vector3) {
@@ -197,6 +269,159 @@ type RigMaterialProps = {
   garmentFit: GarmentFitState;
 };
 
+type StartupVisibilityReport = {
+  sceneReady: boolean;
+  visibleMeshCount: number;
+  bodyGroupVisible: boolean;
+  garmentGroupVisible: boolean;
+  startupReason: string;
+  renderAudit?: AvatarRenderAudit | null;
+};
+
+function isDrawableMesh(o: THREE.Object3D): o is THREE.Mesh | THREE.SkinnedMesh {
+  const flags = o as { isMesh?: boolean; isSkinnedMesh?: boolean };
+  return flags.isMesh === true || flags.isSkinnedMesh === true;
+}
+
+function materialList(o: THREE.Mesh | THREE.SkinnedMesh): THREE.Material[] {
+  const material = o.material;
+  if (Array.isArray(material)) return material.filter(Boolean);
+  return material ? [material] : [];
+}
+
+function firstMaterialSnapshot(o: THREE.Mesh | THREE.SkinnedMesh): {
+  opacity: number | null;
+  transparent: boolean | null;
+} {
+  const mat = materialList(o)[0] as
+    | (THREE.Material & { opacity?: number; transparent?: boolean })
+    | undefined;
+  return {
+    opacity: typeof mat?.opacity === "number" && Number.isFinite(mat.opacity) ? mat.opacity : null,
+    transparent: typeof mat?.transparent === "boolean" ? mat.transparent : null,
+  };
+}
+
+function repairDrawableHierarchy(
+  root: THREE.Object3D | null | undefined,
+  countRoot: THREE.Object3D | null | undefined = root,
+): number {
+  if (!root) return 0;
+  let visibleMeshCount = 0;
+  root.visible = true;
+  root.matrixAutoUpdate = true;
+  root.scale.set(
+    Number.isFinite(root.scale.x) && Math.abs(root.scale.x) > 1e-6 ? root.scale.x : 1,
+    Number.isFinite(root.scale.y) && Math.abs(root.scale.y) > 1e-6 ? root.scale.y : 1,
+    Number.isFinite(root.scale.z) && Math.abs(root.scale.z) > 1e-6 ? root.scale.z : 1,
+  );
+  root.traverse((o) => {
+    o.visible = true;
+    o.matrixAutoUpdate = true;
+    if (!Number.isFinite(o.scale.x) || Math.abs(o.scale.x) <= 1e-6) o.scale.x = 1;
+    if (!Number.isFinite(o.scale.y) || Math.abs(o.scale.y) <= 1e-6) o.scale.y = 1;
+    if (!Number.isFinite(o.scale.z) || Math.abs(o.scale.z) <= 1e-6) o.scale.z = 1;
+    if (isDrawableMesh(o)) {
+      if (!countRoot || o === countRoot || isDescendantOf(o, countRoot)) visibleMeshCount += 1;
+      o.visible = true;
+      o.frustumCulled = false;
+      if (!o.material) {
+        o.material = new THREE.MeshStandardMaterial({
+          color: 0xdcc2a8,
+          roughness: 0.88,
+          metalness: 0,
+        });
+      }
+      for (const mat of materialList(o)) {
+        if (!mat) continue;
+        if ("transparent" in mat && "opacity" in mat) {
+          mat.transparent = false;
+          mat.opacity = 1;
+        }
+        if ("depthWrite" in mat) mat.depthWrite = true;
+        if ("depthTest" in mat) mat.depthTest = true;
+        if ("side" in mat) mat.side = THREE.DoubleSide;
+        if ("needsUpdate" in mat) mat.needsUpdate = true;
+      }
+    }
+  });
+  root.updateMatrixWorld(true);
+  return visibleMeshCount;
+}
+
+function isDescendantOf(o: THREE.Object3D, root: THREE.Object3D): boolean {
+  let p: THREE.Object3D | null = o;
+  while (p) {
+    if (p === root) return true;
+    p = p.parent;
+  }
+  return false;
+}
+
+function countDrawableMeshes(root: THREE.Object3D | null | undefined): {
+  total: number;
+  visible: number;
+  first: THREE.Mesh | THREE.SkinnedMesh | null;
+} {
+  if (!root) return { total: 0, visible: 0, first: null };
+  let total = 0;
+  let visible = 0;
+  let first: THREE.Mesh | THREE.SkinnedMesh | null = null;
+  root.traverse((o) => {
+    if (!isDrawableMesh(o)) return;
+    total += 1;
+    if (o.visible) visible += 1;
+    first ??= o;
+  });
+  return { total, visible, first };
+}
+
+function auditDrawableHierarchy({
+  root,
+  gltfRoot,
+  activeRenderBranchName,
+  safetyFallbackReason,
+}: {
+  root: THREE.Object3D | null | undefined;
+  gltfRoot: THREE.Object3D | null | undefined;
+  activeRenderBranchName: string;
+  safetyFallbackReason: string | null;
+}): AvatarRenderAudit {
+  repairDrawableHierarchy(root);
+  const total = countDrawableMeshes(root);
+  const gltf = countDrawableMeshes(gltfRoot);
+  const firstWorld = new THREE.Vector3();
+  const firstScale = new THREE.Vector3();
+  let firstMeshWorldPosition: [number, number, number] | null = null;
+  let firstMeshScale: [number, number, number] | null = null;
+  let firstMeshMaterialOpacity: number | null = null;
+  let firstMeshMaterialTransparent: boolean | null = null;
+
+  if (total.first) {
+    total.first.getWorldPosition(firstWorld);
+    total.first.getWorldScale(firstScale);
+    firstMeshWorldPosition = v3tuple(firstWorld);
+    firstMeshScale = v3tuple(firstScale);
+    const mat = firstMaterialSnapshot(total.first);
+    firstMeshMaterialOpacity = mat.opacity;
+    firstMeshMaterialTransparent = mat.transparent;
+  }
+
+  return {
+    activeRenderBranchName,
+    mountedAvatarRoot: !!root,
+    totalMeshCount: total.total,
+    visibleMeshCount: total.visible,
+    gltfTotalMeshCount: gltf.total,
+    gltfVisibleMeshCount: gltf.visible,
+    firstMeshWorldPosition,
+    firstMeshScale,
+    firstMeshMaterialOpacity,
+    firstMeshMaterialTransparent,
+    safetyFallbackReason,
+  };
+}
+
 function CapsuleBetween({
   name,
   start,
@@ -222,11 +447,11 @@ function CapsuleBetween({
   return (
     <mesh
       name={name}
-      position={frame.center}
-      quaternion={frame.quaternion}
+      position={toVec3Array(frame.center)}
+      quaternion={toQuaternionArray(frame.quaternion)}
       castShadow
     >
-      <capsuleGeometry args={[radius, Math.max(0.001, frame.shaftLength - radius * 2), 10, 18]} />
+      <capsuleGeometry args={[radius, Math.max(0.001, frame.shaftLength - radius * 2), 12, 22]} />
       <meshStandardMaterial
         color={color}
         transparent={transparent}
@@ -242,6 +467,7 @@ function EllipsoidMesh({
   name,
   position,
   scale,
+  rotation,
   color,
   opacity = 1,
   emissive,
@@ -251,6 +477,7 @@ function EllipsoidMesh({
   name: string;
   position: [number, number, number];
   scale: [number, number, number];
+  rotation?: [number, number, number];
   color: THREE.Color;
   opacity?: number;
   emissive?: THREE.Color;
@@ -258,8 +485,66 @@ function EllipsoidMesh({
   transparent?: boolean;
 }) {
   return (
-    <mesh name={name} position={position} scale={scale} castShadow>
-      <sphereGeometry args={[1, 18, 18]} />
+    <mesh
+      name={name}
+      position={toVec3Array(position)}
+      rotation={toEulerArray(rotation)}
+      scale={toScaleArray(scale)}
+      castShadow
+    >
+      <sphereGeometry args={[1, 22, 18]} />
+      <meshStandardMaterial
+        color={color}
+        transparent={transparent}
+        opacity={opacity}
+        emissive={emissive}
+        roughness={roughness}
+      />
+    </mesh>
+  );
+}
+
+function TaperedSectionMesh({
+  name,
+  center,
+  height,
+  topWidth,
+  bottomWidth,
+  depth,
+  color,
+  opacity = 1,
+  emissive,
+  roughness = 0.72,
+  transparent = true,
+}: {
+  name: string;
+  center: THREE.Vector3;
+  height: number;
+  topWidth: number;
+  bottomWidth: number;
+  depth: number;
+  color: THREE.Color;
+  opacity?: number;
+  emissive?: THREE.Color;
+  roughness?: number;
+  transparent?: boolean;
+}) {
+  return (
+    <mesh
+      name={name}
+      position={toVec3Array(center)}
+      scale={toScaleArray([1, 1, depth / Math.max(0.001, (topWidth + bottomWidth) * 0.5)])}
+      castShadow
+    >
+      <cylinderGeometry
+        args={[
+          Math.max(0.001, topWidth * 0.5),
+          Math.max(0.001, bottomWidth * 0.5),
+          Math.max(0.001, height),
+          32,
+          3,
+        ]}
+      />
       <meshStandardMaterial
         color={color}
         transparent={transparent}
@@ -304,13 +589,18 @@ function GarmentSleeveProxyMesh({
     return e;
   }, [topEmissive, clipEmissiveAdd]);
   return (
-    <mesh ref={meshRef} position={frame.center} quaternion={frame.quaternion} castShadow>
+    <mesh
+      ref={meshRef}
+      position={toVec3Array(frame.center)}
+      quaternion={toQuaternionArray(frame.quaternion)}
+      castShadow
+    >
       <capsuleGeometry
         args={[
           sleeveRadius,
           Math.max(0.001, frame.shaftLength - sleeveRadius * 2),
-          8,
-          16,
+          10,
+          20,
         ]}
       />
       <meshStandardMaterial
@@ -363,24 +653,60 @@ function ShirtTorsoProxy({
   const P = HUMANOID_PROPORTIONS;
   const follow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
   const topCenter = torsoMountMode === "skinned_chest"
-    ? new THREE.Vector3(0, P.chestY - rig.chestY + 0.01, 0.01)
-    : follow.topCenter.clone().add(new THREE.Vector3(0, 0.02, 0.012));
-  const topScale = [
-    P.topShellScale[0] * inflateK,
-    P.topShellScale[1] * inflateK,
-    P.topShellScale[2] * inflateK,
-  ] as [number, number, number];
+    ? new THREE.Vector3(0, P.chestY - rig.chestY - 0.045, 0.01)
+    : follow.topCenter.clone().add(new THREE.Vector3(0, -0.036, 0.012));
+  const shirtHeight = P.topShellScale[1] * 1.28 * inflateK;
+  const shoulderWidth = P.chestWidth * 1.08 * inflateK;
+  const hemWidth = P.waistWidth * 1.18 * inflateK;
+  const shirtDepth = P.chestDepth * 1.18 * inflateK;
+  const collarY = topCenter.y + shirtHeight * 0.45;
+  const shoulderSeamY = topCenter.y + shirtHeight * 0.35;
+  const seamL = follow.topLeftShoulder.clone().lerp(new THREE.Vector3(-0.028, shoulderSeamY, 0.03), 0.18);
+  const seamR = follow.topRightShoulder.clone().lerp(new THREE.Vector3(0.028, shoulderSeamY, 0.03), 0.18);
   return (
-    <mesh ref={meshRef} position={v3tuple(topCenter)} scale={topScale} castShadow>
-      <sphereGeometry args={[1, 16, 16]} />
-      <meshStandardMaterial
+    <group name="shirt_torso_proxy">
+      <mesh
+        ref={meshRef}
+        name="shirt_torso_shell"
+        position={toVec3Array(topCenter)}
+        scale={toScaleArray([1, 1, shirtDepth / Math.max(0.001, (shoulderWidth + hemWidth) * 0.5)])}
+        castShadow
+      >
+        <cylinderGeometry args={[shoulderWidth * 0.5, hemWidth * 0.5, shirtHeight, 32, 3]} />
+        <meshStandardMaterial
+          color={topColor}
+          transparent
+          opacity={shirtOpacity}
+          emissive={shirtEmissive}
+          roughness={0.82}
+        />
+      </mesh>
+      <mesh
+        name="shirt_neck_opening"
+        position={toVec3Array([0, collarY, 0.035])}
+        rotation={toEulerArray([Math.PI / 2, 0, 0])}
+        scale={toScaleArray([1.04, 0.58, 1])}
+      >
+        <torusGeometry args={[0.058, 0.006, 10, 32]} />
+        <meshStandardMaterial
+          color={topColor}
+          transparent
+          opacity={shirtOpacity}
+          emissive={shirtEmissive}
+          roughness={0.86}
+        />
+      </mesh>
+      <CapsuleBetween
+        name="shirt_shoulder_line"
+        start={seamL}
+        end={seamR}
+        radius={0.012}
         color={topColor}
-        transparent
         opacity={shirtOpacity}
         emissive={shirtEmissive}
-        roughness={0.72}
+        roughness={0.86}
       />
-    </mesh>
+    </group>
   );
 }
 
@@ -423,38 +749,42 @@ function PantsGarmentProxies({
   const P = HUMANOID_PROPORTIONS;
   const bottomCenter =
     bottomMountMode === "skinned_pelvis"
-      ? new THREE.Vector3(0, P.pelvisY - rig.pelvisY - 0.015 + hemYOffset * 0.2, 0)
-      : follow.bottomCenter.clone().add(new THREE.Vector3(0, -0.02 + hemYOffset * 0.24, 0));
-  const shellScale = [
-    P.bottomShellScale[0],
-    P.bottomShellScale[1],
-    P.bottomShellScale[2],
-  ] as [number, number, number];
+      ? new THREE.Vector3(0, P.pelvisY - rig.pelvisY - 0.03 + hemYOffset * 0.2, 0.002)
+      : follow.bottomCenter.clone().add(new THREE.Vector3(0, -0.044 + hemYOffset * 0.2, 0.002));
+  const waistWidth = P.waistWidth * 1.18;
+  const hipWidth = P.pelvisWidth * 1.03;
+  const pantsDepth = P.pelvisDepth * 1.1;
+  const pantsRise = P.bottomShellScale[1] * 1.02;
   const thighUpperL = jointVector(jointMap, "hipL")
     .clone()
-    .lerp(jointVector(jointMap, "kneeL"), 0.68)
-    .add(new THREE.Vector3(0.01, hemYOffset * 0.55, 0));
+    .lerp(jointVector(jointMap, "ankleL"), 0.9)
+    .add(new THREE.Vector3(0.006, hemYOffset * 0.5, 0));
   const thighUpperR = jointVector(jointMap, "hipR")
     .clone()
-    .lerp(jointVector(jointMap, "kneeR"), 0.68)
-    .add(new THREE.Vector3(-0.01, hemYOffset * 0.55, 0));
+    .lerp(jointVector(jointMap, "ankleR"), 0.9)
+    .add(new THREE.Vector3(-0.006, hemYOffset * 0.5, 0));
   return (
     <group ref={groupRef}>
-      <mesh position={v3tuple(bottomCenter)} scale={shellScale}>
-        <sphereGeometry args={[1, 16, 16]} />
+      <mesh
+        name="pants_waist_hip_shell"
+        position={toVec3Array(bottomCenter)}
+        scale={toScaleArray([1, 1, pantsDepth / Math.max(0.001, (waistWidth + hipWidth) * 0.5)])}
+        castShadow
+      >
+        <cylinderGeometry args={[waistWidth * 0.5, hipWidth * 0.5, pantsRise, 32, 3]} />
         <meshStandardMaterial
           color={bottomColor}
           transparent
           opacity={pantOpacity}
           emissive={pantsEmissive}
-          roughness={0.7}
+          roughness={0.82}
         />
       </mesh>
       <CapsuleBetween
         name="pants_leg_l"
         start={jointVector(jointMap, "hipL")}
         end={thighUpperL}
-        radius={P.thighRadius * 1.06}
+        radius={P.thighRadius * 0.98}
         color={bottomColor}
         opacity={pantOpacity}
         emissive={pantsEmissive}
@@ -464,7 +794,7 @@ function PantsGarmentProxies({
         name="pants_leg_r"
         start={jointVector(jointMap, "hipR")}
         end={thighUpperR}
-        radius={P.thighRadius * 1.06}
+        radius={P.thighRadius * 0.98}
         color={bottomColor}
         opacity={pantOpacity}
         emissive={pantsEmissive}
@@ -479,6 +809,7 @@ function RigDebugAnchors({ jointMap }: { jointMap: ProceduralHumanoidJointMap })
   const chainColor = new THREE.Color("#67e8f9");
   const edges: [ProceduralHumanoidJointName, ProceduralHumanoidJointName][] = [
     ["pelvis", "spine"],
+    ["spine", "waist"],
     ["spine", "chest"],
     ["chest", "neck"],
     ["neck", "head"],
@@ -488,12 +819,15 @@ function RigDebugAnchors({ jointMap }: { jointMap: ProceduralHumanoidJointMap })
     ["chest", "shoulderR"],
     ["shoulderR", "elbowR"],
     ["elbowR", "wristR"],
-    ["pelvis", "hipL"],
+    ["pelvis", "hips"],
+    ["hips", "hipL"],
     ["hipL", "kneeL"],
     ["kneeL", "ankleL"],
-    ["pelvis", "hipR"],
+    ["ankleL", "footL"],
+    ["hips", "hipR"],
     ["hipR", "kneeR"],
     ["kneeR", "ankleR"],
+    ["ankleR", "footR"],
   ];
   return (
     <group name="skeleton_overlay">
@@ -510,7 +844,7 @@ function RigDebugAnchors({ jointMap }: { jointMap: ProceduralHumanoidJointMap })
         />
       ))}
       {PROCEDURAL_HUMANOID_JOINTS.map((joint) => (
-        <mesh key={joint} position={jointMap[joint]}>
+        <mesh key={joint} position={toVec3Array(jointMap[joint])}>
           <sphereGeometry args={[radius, 8, 8]} />
           <meshBasicMaterial color="#f59e0b" depthTest={false} />
         </mesh>
@@ -519,24 +853,92 @@ function RigDebugAnchors({ jointMap }: { jointMap: ProceduralHumanoidJointMap })
   );
 }
 
-/** Dev: garment pose / skinning influence pivots (shoulders + hips). */
-function GarmentRigDebugOverlay({ rig }: { rig: BodySceneAnchors }) {
-  const M = rig.metrics;
-  const hipY = rig.pelvisY + M.hipPitchLocalY;
+/** Dev: garment anchor pivots from the shared mannequin map. */
+function GarmentRigDebugOverlay({ jointMap }: { jointMap: ProceduralHumanoidJointMap }) {
   const pts: [string, [number, number, number]][] = [
-    ["g_l_shoulder", [rig.shoulderHalf, rig.shoulderY, 0]],
-    ["g_r_shoulder", [-rig.shoulderHalf, rig.shoulderY, 0]],
-    ["g_l_hip", [M.legGroupOffsetX, hipY, 0]],
-    ["g_r_hip", [-M.legGroupOffsetX, hipY, 0]],
+    ["g_chest", jointMap.chest],
+    ["g_waist", jointMap.waist],
+    ["g_hips", jointMap.hips],
+    ["g_l_shoulder", jointMap.shoulderL],
+    ["g_r_shoulder", jointMap.shoulderR],
+    ["g_l_hip", jointMap.hipL],
+    ["g_r_hip", jointMap.hipR],
   ];
   return (
     <group name="garment_rig_debug">
       {pts.map(([id, pos]) => (
-        <mesh key={id} position={pos}>
+        <mesh key={id} position={toVec3Array(pos)}>
           <sphereGeometry args={[0.024, 7, 7]} />
           <meshBasicMaterial color="#db2777" depthTest={false} />
         </mesh>
       ))}
+    </group>
+  );
+}
+
+function anchorMapFromProceduralJoints(
+  jointMap: ProceduralHumanoidJointMap,
+): AvatarAnchorMap {
+  return {
+    head: jointMap.head,
+    neck: jointMap.neck,
+    chest: jointMap.chest,
+    waist: jointMap.waist,
+    hips: jointMap.hips,
+    shoulderL: jointMap.shoulderL,
+    elbowL: jointMap.elbowL,
+    wristL: jointMap.wristL,
+    shoulderR: jointMap.shoulderR,
+    elbowR: jointMap.elbowR,
+    wristR: jointMap.wristR,
+    thighL: jointMap.hipL,
+    kneeL: jointMap.kneeL,
+    ankleL: jointMap.ankleL,
+    footL: jointMap.footL,
+    thighR: jointMap.hipR,
+    kneeR: jointMap.kneeR,
+    ankleR: jointMap.ankleR,
+    footR: jointMap.footR,
+  };
+}
+
+function FitProxyDebugOverlay({ jointMap }: { jointMap: ProceduralHumanoidJointMap }) {
+  const proxies = useMemo(
+    () => buildFitProxiesFromAnchors(anchorMapFromProceduralJoints(jointMap)),
+    [jointMap],
+  );
+  const color = new THREE.Color("#38bdf8");
+  const emissive = new THREE.Color("#075985");
+  return (
+    <group name="fit_proxy_debug_overlay">
+      {proxies.map((proxy) =>
+        proxy.kind === "ellipsoid" ? (
+          <EllipsoidMesh
+            key={proxy.name}
+            name={proxy.name}
+            position={toVec3Array(proxy.center)}
+            scale={toScaleArray(proxy.radius)}
+            color={color}
+            opacity={0.18}
+            emissive={emissive}
+            roughness={0.9}
+            transparent
+          />
+        ) : (
+          <CapsuleBetween
+            key={proxy.name}
+            name={proxy.name}
+            start={new THREE.Vector3(...proxy.start)}
+            end={new THREE.Vector3(...proxy.end)}
+            radius={proxy.radius}
+            color={color}
+            opacity={0.22}
+            emissive={emissive}
+            roughness={0.9}
+            transparent
+          />
+        ),
+      )}
     </group>
   );
 }
@@ -597,12 +999,12 @@ function SleeveGarmentPair({
     <group name="sleeve_garment_pair_gltf_body">
       <group
         ref={skinnedBoneFollow ? leftSleevePivotRef : undefined}
-        position={leftPos}
-        rotation={[ang.laxz, 0, ang.laz]}
+        position={toVec3Array(leftPos)}
+        rotation={toEulerArray([ang.laxz, 0, ang.laz])}
       >
         <group ref={skinnedBoneFollow ? leftSleeveBoneFollowRef : undefined}>
-        <group rotation={[0, 0, ang.lax]}>
-          <group position={[spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
+        <group rotation={toEulerArray([0, 0, ang.lax])}>
+          <group position={toVec3Array([spx, spy, spz])} scale={toScaleArray([sleeveS, sleeveS, sleeveS])}>
             <GarmentSleeveProxyMesh
               garmentFit={garmentFit}
               start={upperStart}
@@ -619,12 +1021,12 @@ function SleeveGarmentPair({
       </group>
       <group
         ref={skinnedBoneFollow ? rightSleevePivotRef : undefined}
-        position={rightPos}
-        rotation={[-ang.laxz, 0, ang.raz]}
+        position={toVec3Array(rightPos)}
+        rotation={toEulerArray([-ang.laxz, 0, ang.raz])}
       >
         <group ref={skinnedBoneFollow ? rightSleeveBoneFollowRef : undefined}>
-        <group rotation={[0, 0, -ang.rax]}>
-          <group position={[-spx, spy, spz]} scale={[sleeveS, sleeveS, sleeveS]}>
+        <group rotation={toEulerArray([0, 0, -ang.rax])}>
+          <group position={toVec3Array([-spx, spy, spz])} scale={toScaleArray([sleeveS, sleeveS, sleeveS])}>
             <GarmentSleeveProxyMesh
               garmentFit={garmentFit}
               start={upperStart}
@@ -666,9 +1068,10 @@ function ProceduralRigBody({
   garmentFit,
 }: RigMaterialProps) {
   const P = HUMANOID_PROPORTIONS;
+  const overlayDebug = liveShading === "overlay_style" || liveShading === "overlay_debug";
   const matProps = (opacity: number, roughness = 0.62) => ({
     color: bodyColor,
-    transparent: liveShading !== "overlay_style",
+    transparent: !overlayDebug,
     opacity,
     emissive: bodyEmissive,
     roughness,
@@ -676,6 +1079,7 @@ function ProceduralRigBody({
 
   const pelvis = jointVector(jointMap, "pelvis");
   const spine = jointVector(jointMap, "spine");
+  const waist = jointVector(jointMap, "waist");
   const chest = jointVector(jointMap, "chest");
   const neck = jointVector(jointMap, "neck");
   const head = jointVector(jointMap, "head");
@@ -685,17 +1089,22 @@ function ProceduralRigBody({
   const elbowR = jointVector(jointMap, "elbowR");
   const wristL = jointVector(jointMap, "wristL");
   const wristR = jointVector(jointMap, "wristR");
+  const hips = jointVector(jointMap, "hips");
   const hipL = jointVector(jointMap, "hipL");
   const hipR = jointVector(jointMap, "hipR");
   const kneeL = jointVector(jointMap, "kneeL");
   const kneeR = jointVector(jointMap, "kneeR");
   const ankleL = jointVector(jointMap, "ankleL");
   const ankleR = jointVector(jointMap, "ankleR");
+  const footL = jointVector(jointMap, "footL");
+  const footR = jointVector(jointMap, "footR");
 
   const shoulderCapsuleColor = blendColor(bodyColor, 0.96);
-  const pelvisShellCenter = averageJoints(jointMap, "pelvis", "hipL", "hipR", "spine");
+  const jointBlendColor = blendColor(bodyColor, 0.985);
+  const pelvisShellCenter = averageJoints(jointMap, "pelvis", "hipL", "hipR");
   const torsoCenter = averageJoints(jointMap, "spine", "chest");
-  const abdomenCenter = averageJoints(jointMap, "pelvis", "spine");
+  const abdomenCenter = averageJoints(jointMap, "waist", "spine", "pelvis");
+  const neckBase = chest.clone().lerp(neck, 0.48);
   const sleeveFollow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
   const sleeveOffset = new THREE.Vector3(
     sleevePos[0] * FIT_VIS.sleevePosMul * 0.18,
@@ -721,89 +1130,116 @@ function ProceduralRigBody({
     <group name="avatar_procedural_rig">
       <EllipsoidMesh
         name="pelvis_shell"
-        position={v3tuple(pelvisShellCenter)}
-        scale={[P.pelvisWidth * 0.5, P.pelvisHeight * 0.5, P.pelvisDepth * 0.5]}
+        position={toVec3Array(pelvisShellCenter)}
+        scale={toScaleArray([P.pelvisWidth * 0.5, P.pelvisHeight * 0.42, P.pelvisDepth * 0.5])}
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        roughness={0.68}
-        transparent={liveShading !== "overlay_style"}
+        roughness={0.78}
+        transparent={!overlayDebug}
+      />
+      <TaperedSectionMesh
+        name="abdomen_shell"
+        center={abdomenCenter}
+        height={Math.max(0.001, spine.y - pelvis.y)}
+        topWidth={P.waistWidth}
+        bottomWidth={P.pelvisWidth * 0.86}
+        depth={P.waistDepth * 1.03}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.78}
+        transparent={!overlayDebug}
+      />
+      <TaperedSectionMesh
+        name="torso_shell"
+        center={torsoCenter}
+        height={Math.max(0.001, chest.y - waist.y)}
+        topWidth={P.chestWidth}
+        bottomWidth={P.waistWidth}
+        depth={P.chestDepth}
+        color={bodyColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.76}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
-        name="spine_segment"
-        start={pelvis}
-        end={spine}
-        radius={P.abdomenWidth * 0.19}
-        color={bodyColor}
+        name="shoulder_bridge"
+        start={shoulderL.clone().lerp(chest, 0.12)}
+        end={shoulderR.clone().lerp(chest, 0.12)}
+        radius={0.024}
+        color={shoulderCapsuleColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        roughness={0.68}
-        transparent={liveShading !== "overlay_style"}
+        roughness={0.76}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
-        name="abdomen_shell"
-        position={v3tuple(abdomenCenter)}
-        scale={[P.abdomenWidth * 0.5, P.abdomenHeight * 0.5, P.abdomenDepth * 0.5]}
-        color={bodyColor}
+        name="waist_blend"
+        position={toVec3Array(waist)}
+        scale={toScaleArray([P.waistWidth * 0.46, P.waistHeight * 0.18, P.waistDepth * 0.5])}
+        color={jointBlendColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        roughness={0.66}
-        transparent={liveShading !== "overlay_style"}
+        roughness={0.8}
+        transparent={!overlayDebug}
       />
-      <EllipsoidMesh
-        name="torso_shell"
-        position={v3tuple(torsoCenter)}
-        scale={[P.chestWidth * 0.5, P.chestHeight * 0.5, P.chestDepth * 0.5]}
-        color={bodyColor}
+      <CapsuleBetween
+        name="hip_bridge"
+        start={hipL.clone().lerp(hips, 0.1)}
+        end={hipR.clone().lerp(hips, 0.1)}
+        radius={0.032}
+        color={jointBlendColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        roughness={0.62}
-        transparent={liveShading !== "overlay_style"}
+        roughness={0.78}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="neck_segment"
-        start={chest}
+        start={neckBase}
         end={neck}
         radius={P.neckRadius}
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.56}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
         name="head_shell"
-        position={v3tuple(head)}
-        scale={[
+        position={toVec3Array(head)}
+        scale={toScaleArray([
           P.headRadius * P.headScale[0],
           P.headRadius * P.headScale[1],
           P.headRadius * P.headScale[2],
-        ]}
+        ])}
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.5}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
         name="shoulder_cap_l"
-        position={jointMap.shoulderL}
-        scale={P.shoulderCapScale}
+        position={toVec3Array(jointMap.shoulderL)}
+        scale={toScaleArray(P.shoulderCapScale)}
         color={shoulderCapsuleColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.6}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
         name="shoulder_cap_r"
-        position={jointMap.shoulderR}
-        scale={P.shoulderCapScale}
+        position={toVec3Array(jointMap.shoulderR)}
+        scale={toScaleArray(P.shoulderCapScale)}
         color={shoulderCapsuleColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.6}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="upper_arm_l"
@@ -813,7 +1249,7 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="forearm_l"
@@ -823,17 +1259,27 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="elbow_blend_l"
+        position={toVec3Array(jointMap.elbowL)}
+        scale={toScaleArray([P.upperArmRadius * 1.08, P.upperArmRadius * 0.88, P.upperArmRadius * 1.02])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.74}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
         name="hand_l"
-        position={jointMap.wristL}
-        scale={P.handScale}
+        position={toVec3Array(jointMap.wristL)}
+        scale={toScaleArray(P.handScale)}
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.58}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="upper_arm_r"
@@ -843,7 +1289,7 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="forearm_r"
@@ -853,17 +1299,27 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="elbow_blend_r"
+        position={toVec3Array(jointMap.elbowR)}
+        scale={toScaleArray([P.upperArmRadius * 1.08, P.upperArmRadius * 0.88, P.upperArmRadius * 1.02])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.74}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
         name="hand_r"
-        position={jointMap.wristR}
-        scale={P.handScale}
+        position={toVec3Array(jointMap.wristR)}
+        scale={toScaleArray(P.handScale)}
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.58}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="thigh_l"
@@ -873,7 +1329,7 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="calf_l"
@@ -883,17 +1339,48 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="hip_blend_l"
+        position={toVec3Array(jointMap.hipL)}
+        scale={toScaleArray([P.thighRadius * 1.22, P.thighRadius * 0.88, P.thighRadius * 1.04])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.76}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="knee_blend_l"
+        position={toVec3Array(jointMap.kneeL)}
+        scale={toScaleArray([P.thighRadius * 0.92, P.thighRadius * 0.72, P.thighRadius * 0.84])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.78}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="ankle_blend_l"
+        position={toVec3Array(jointMap.ankleL)}
+        scale={toScaleArray([P.calfRadius * 0.82, P.calfRadius * 0.62, P.calfRadius * 0.72])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.78}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
         name="foot_l"
-        position={[jointMap.ankleL[0] + 0.018, jointMap.ankleL[1] - 0.038, jointMap.ankleL[2] + 0.052]}
-        scale={P.footScale}
+        position={toVec3Array(footL)}
+        rotation={toEulerArray([0, -0.08, 0.045])}
+        scale={toScaleArray(P.footScale)}
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.6}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="thigh_r"
@@ -903,7 +1390,7 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
       <CapsuleBetween
         name="calf_r"
@@ -913,17 +1400,48 @@ function ProceduralRigBody({
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="hip_blend_r"
+        position={toVec3Array(jointMap.hipR)}
+        scale={toScaleArray([P.thighRadius * 1.22, P.thighRadius * 0.88, P.thighRadius * 1.04])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.76}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="knee_blend_r"
+        position={toVec3Array(jointMap.kneeR)}
+        scale={toScaleArray([P.thighRadius * 0.92, P.thighRadius * 0.72, P.thighRadius * 0.84])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.78}
+        transparent={!overlayDebug}
+      />
+      <EllipsoidMesh
+        name="ankle_blend_r"
+        position={toVec3Array(jointMap.ankleR)}
+        scale={toScaleArray([P.calfRadius * 0.82, P.calfRadius * 0.62, P.calfRadius * 0.72])}
+        color={jointBlendColor}
+        opacity={bodyOpacity}
+        emissive={bodyEmissive}
+        roughness={0.78}
+        transparent={!overlayDebug}
       />
       <EllipsoidMesh
         name="foot_r"
-        position={[jointMap.ankleR[0] - 0.018, jointMap.ankleR[1] - 0.038, jointMap.ankleR[2] + 0.052]}
-        scale={P.footScale}
+        position={toVec3Array(footR)}
+        rotation={toEulerArray([0, 0.08, -0.045])}
+        scale={toScaleArray(P.footScale)}
         color={bodyColor}
         opacity={bodyOpacity}
         emissive={bodyEmissive}
         roughness={0.6}
-        transparent={liveShading !== "overlay_style"}
+        transparent={!overlayDebug}
       />
 
       <GarmentSleeveProxyMesh
@@ -995,6 +1513,9 @@ export function AvatarProceduralScene({
   onGarmentAnchorsDebug,
   garmentAttachmentDebug = false,
   onGarmentAttachmentSnapshot,
+  onStartupVisibilityReport,
+  startupLoadGeneration = 0,
+  showVisualSanityMarker = false,
   sceneSpaceDebug = null,
 }: {
   pose: DevAvatarPoseKey;
@@ -1027,6 +1548,10 @@ export function AvatarProceduralScene({
   /** Dev: show spheres at bone-derived attachment points (requires skinned body + garments). */
   garmentAttachmentDebug?: boolean;
   onGarmentAttachmentSnapshot?: (s: GarmentAttachmentSnapshot) => void;
+  onStartupVisibilityReport?: (r: StartupVisibilityReport) => void;
+  startupLoadGeneration?: number;
+  /** Dev: chest-height proof-of-render marker under the same Canvas scene root. */
+  showVisualSanityMarker?: boolean;
   /** Dev (workbench): in-canvas bounds/markers, framing, throttled scene diagnostics. */
   sceneSpaceDebug?: {
     enabled: boolean;
@@ -1041,6 +1566,7 @@ export function AvatarProceduralScene({
   const torsoRegionFitRef = useRef<THREE.Group>(null);
   const avatarWorldFitRef = useRef<THREE.Group>(null);
   const bodyRootRef = useRef<THREE.Group>(null);
+  const gltfBodyRootRef = useRef<THREE.Group>(null);
   const leftSleevePivotRef = useRef<THREE.Group>(null);
   const rightSleevePivotRef = useRef<THREE.Group>(null);
   const leftSleeveBoneFollowRef = useRef<THREE.Group>(null);
@@ -1048,7 +1574,9 @@ export function AvatarProceduralScene({
   const topAnchorRef = useRef<THREE.Group>(null);
   const bottomAnchorRef = useRef<THREE.Group>(null);
   const attachmentMarkersRef = useRef<THREE.Group>(null);
+  const garmentRootRef = useRef<THREE.Group>(null);
   const lastAnchorDebugJson = useRef("");
+  const lastStartupReportJson = useRef("");
 
   const bodyShapeKey = bodyShapeParamsKey(bodyShape);
   const rig = useMemo(() => bodySceneAnchorsFromShape(bodyShape), [bodyShapeKey]);
@@ -1108,7 +1636,7 @@ export function AvatarProceduralScene({
   } else if (liveShading === "garment_focus") {
     bodyOpacity = 0.28;
     bodyColor = SKIN_DIM.clone();
-  } else if (liveShading === "overlay_style") {
+  } else if (liveShading === "overlay_style" || liveShading === "overlay_debug") {
     bodyColor = new THREE.Color(0.2, 0.35, 0.85);
     topColor.set(0.95, 0.45, 0.12);
     bottomColor.set(0.85, 0.42, 0.1);
@@ -1200,6 +1728,81 @@ export function AvatarProceduralScene({
     emitGarmentAnchorsDebug();
   }, [emitGarmentAnchorsDebug, attachmentDriverEnabled]);
 
+  useLayoutEffect(() => {
+    if (!onStartupVisibilityReport) return;
+    const bodyGroup = bodyRootRef.current;
+    const gltfGroup = gltfBodyRootRef.current;
+    const garmentGroup = garmentRootRef.current;
+    const runtimeBodyActive = runtimeBodyBundledModule != null || runtimeBodyGltfUrl != null;
+    const activeRenderBranchName =
+      runtimeBodyBundledModule != null
+        ? "stylised_glb"
+        : runtimeBodyGltfUrl != null
+          ? "realistic_glb"
+          : "procedural_fallback";
+    const initialRenderAudit = showBodyMesh
+      ? auditDrawableHierarchy({
+          root: bodyGroup,
+          gltfRoot: gltfGroup,
+          activeRenderBranchName,
+          safetyFallbackReason: null,
+        })
+      : null;
+    const safetyFallbackReason =
+      runtimeBodyActive &&
+      startupLoadGeneration > 0 &&
+      (initialRenderAudit?.gltfVisibleMeshCount ?? 0) <= 0
+        ? runtimeBodyBundledModule != null
+          ? "stylised_glb_loaded_but_no_visible_meshes"
+          : "realistic_glb_loaded_but_no_visible_meshes"
+        : null;
+    const renderAudit =
+      initialRenderAudit && safetyFallbackReason
+        ? { ...initialRenderAudit, safetyFallbackReason }
+        : initialRenderAudit;
+    const bodyMeshCount = renderAudit?.visibleMeshCount ?? 0;
+    const garmentMeshCount = !hideGarments ? repairDrawableHierarchy(garmentGroup) : 0;
+    if (__DEV__ && showVisualSanityMarker && bodyMeshCount <= 0) {
+      const bounds = new THREE.Box3();
+      if (bodyGroup) bounds.setFromObject(bodyGroup);
+      console.log("[AvatarViewport] sanity marker active but avatar body has no visible meshes", {
+        showBodyMesh,
+        hideGarments,
+        bodyBoundsMin: bounds.min.toArray(),
+        bodyBoundsMax: bounds.max.toArray(),
+      });
+    }
+    const payload: StartupVisibilityReport = {
+      sceneReady: (showBodyMesh ? bodyMeshCount > 0 : true) && (!hideGarments ? garmentMeshCount > 0 : true),
+      visibleMeshCount: bodyMeshCount + garmentMeshCount,
+      bodyGroupVisible: showBodyMesh ? !!bodyGroup?.visible : false,
+      garmentGroupVisible: !hideGarments ? !!garmentGroup?.visible : false,
+      startupReason: safetyFallbackReason
+        ? safetyFallbackReason
+        : runtimeBodyActive
+          ? startupLoadGeneration > 0
+            ? "skinned_attached"
+            : "skinned_waiting_attach"
+          : "procedural_fallback_attached",
+      renderAudit,
+    };
+    const json = JSON.stringify(payload);
+    if (json === lastStartupReportJson.current) return;
+    lastStartupReportJson.current = json;
+    onStartupVisibilityReport(payload);
+  }, [
+    onStartupVisibilityReport,
+    showBodyMesh,
+    hideGarments,
+    startupLoadGeneration,
+    runtimeBodyBundledModule,
+    runtimeBodyGltfUrl,
+    pose,
+    liveShading,
+    garmentFit,
+    showVisualSanityMarker,
+  ]);
+
   const rigMat: RigMaterialProps = {
     rig,
     ang,
@@ -1222,10 +1825,19 @@ export function AvatarProceduralScene({
     <>
       {includeSceneLights ? (
         <>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[4, 10, 6]} intensity={0.9} />
-          <directionalLight position={[-3, 4, -4]} intensity={0.35} />
+          <ambientLight intensity={0.42} />
+          <hemisphereLight args={[0xfff4e6, 0xd5c4b0, 0.55]} />
+          <directionalLight position={[3.8, 7.5, 4.8]} intensity={0.95} castShadow />
+          <directionalLight position={[-3, 3.5, -3.5]} intensity={0.28} />
+          <directionalLight position={[0, 2.4, -4]} intensity={0.18} />
         </>
+      ) : null}
+
+      {showVisualSanityMarker ? (
+        <mesh position={toVec3Array([0, 1.22, 0.18])} name="viewport_sanity_marker">
+          <boxGeometry args={[0.08, 0.08, 0.08]} />
+          <meshStandardMaterial color="#22c55e" emissive="#14532d" />
+        </mesh>
       ) : null}
 
       {sceneSpaceDebug?.enabled ? (
@@ -1242,61 +1854,79 @@ export function AvatarProceduralScene({
         />
       ) : null}
 
-      <group ref={avatarWorldFitRef} position={worldOff} scale={[gsx, gsy, gsz]} name="avatar_world_fit">
+      <group
+        ref={avatarWorldFitRef}
+        position={toVec3Array(worldOff)}
+        scale={toScaleArray([gsx, gsy, gsz])}
+        name="avatar_world_fit"
+      >
         <group
           ref={torsoRegionFitRef}
-          position={bodyAnchorPos}
-          scale={bodyAnchorScale}
+          position={toVec3Array(bodyAnchorPos)}
+          scale={toScaleArray(bodyAnchorScale)}
           name="avatar_torso_region_fit"
         >
           {showRigDebug ? <RigDebugAnchors jointMap={jointMap} /> : null}
-          {showGarmentRigDebug ? <GarmentRigDebugOverlay rig={rig} /> : null}
+          {showGarmentRigDebug ? <GarmentRigDebugOverlay jointMap={jointMap} /> : null}
+          {showGarmentRigDebug ? <FitProxyDebugOverlay jointMap={jointMap} /> : null}
 
-          {showBodyMesh && (runtimeBodyBundledModule != null || runtimeBodyGltfUrl) ? (
-            <GltfErrorBoundary
-              key={String(runtimeBodyBundledModule ?? runtimeBodyGltfUrl ?? "")}
-              fallback={<ProceduralRigBody {...rigMat} />}
-              onLoadError={onRuntimeBodyLoadError}
-            >
-              <Suspense fallback={<ProceduralRigBody {...rigMat} />}>
-                <group ref={bodyRootRef} position={[0, 0, 0]} name="gltf_body_root">
-                  <GltfRuntimeBody
-                    url={runtimeBodyGltfUrl}
-                    bundledAssetModule={runtimeBodyBundledModule}
-                    pose={pose}
-                    liveShading={liveShading}
-                    bodyShape={bodyShape}
-                    debugForceBrightMaterial={!!sceneSpaceDebug?.debugBrightBody}
-                    onSceneReady={onRuntimeBodyLoaded}
-                    onRigPoseReport={onSkinnedRigPoseReport}
-                  />
-                </group>
-              </Suspense>
-              {!hideGarments && !runtimeTopGltfUrl ? (
-                <SleeveGarmentPair
-                  {...rigMat}
-                  sleeveRadius={sleeveRadius}
-                  skinnedBoneFollow={attachmentDriverEnabled}
-                  leftSleevePivotRef={leftSleevePivotRef}
-                  rightSleevePivotRef={rightSleevePivotRef}
-                  leftSleeveBoneFollowRef={leftSleeveBoneFollowRef}
-                  rightSleeveBoneFollowRef={rightSleeveBoneFollowRef}
-                />
+          {showBodyMesh ? (
+            <group ref={bodyRootRef} name="avatar_body_root">
+              <group name="procedural_body_root">
+                <ProceduralRigBody {...rigMat} />
+              </group>
+              {runtimeBodyBundledModule != null || runtimeBodyGltfUrl ? (
+                <GltfErrorBoundary
+                  key={String(runtimeBodyBundledModule ?? runtimeBodyGltfUrl ?? "")}
+                  fallback={null}
+                  onLoadError={onRuntimeBodyLoadError}
+                >
+                  <Suspense fallback={null}>
+                    <group
+                      ref={gltfBodyRootRef}
+                      position={toVec3Array([0, 0, 0])}
+                      name="gltf_body_overlay_root"
+                    >
+                      <GltfRuntimeBody
+                        url={runtimeBodyGltfUrl}
+                        bundledAssetModule={runtimeBodyBundledModule}
+                        pose={pose}
+                        liveShading={liveShading}
+                        bodyShape={bodyShape}
+                        debugForceBrightMaterial={!!sceneSpaceDebug?.debugBrightBody}
+                        onSceneReady={onRuntimeBodyLoaded}
+                        onRigPoseReport={onSkinnedRigPoseReport}
+                      />
+                    </group>
+                  </Suspense>
+                </GltfErrorBoundary>
               ) : null}
-            </GltfErrorBoundary>
-          ) : showBodyMesh ? (
-            <group ref={bodyRootRef} name="procedural_body_root">
-              <ProceduralRigBody {...rigMat} />
             </group>
+          ) : null}
+
+          {showBodyMesh &&
+          !hideGarments &&
+          !runtimeTopGltfUrl &&
+          (runtimeBodyBundledModule != null || runtimeBodyGltfUrl) ? (
+            <SleeveGarmentPair
+              {...rigMat}
+              sleeveRadius={sleeveRadius}
+              skinnedBoneFollow={attachmentDriverEnabled}
+              leftSleevePivotRef={leftSleevePivotRef}
+              rightSleevePivotRef={rightSleevePivotRef}
+              leftSleeveBoneFollowRef={leftSleeveBoneFollowRef}
+              rightSleeveBoneFollowRef={rightSleeveBoneFollowRef}
+            />
           ) : null}
 
           {/* Top: torso hull (sleeves ride on arms inside procedural rig) */}
           {!hideGarments ? (
+          <group ref={garmentRootRef} name="garment_root">
           <group
             ref={topAnchorRef}
             name="garment_top_anchor"
-            position={[0, topAnchorY, topAnchorZ]}
-            scale={[shirtInfl, 1 + r.torso.inflate * 1.2, shirtInfl]}
+            position={toVec3Array([0, topAnchorY, topAnchorZ])}
+            scale={toScaleArray([shirtInfl, 1 + r.torso.inflate * 1.2, shirtInfl])}
           >
             {runtimeTopGltfUrl ? (
               <GltfErrorBoundary
@@ -1332,7 +1962,7 @@ export function AvatarProceduralScene({
                     />
                   }
                 >
-                  <group position={[0, rig.gltfTopMountY, 0]}>
+                  <group position={toVec3Array([0, rig.gltfTopMountY, 0])}>
                     <GltfRuntimeGarment
                       url={runtimeTopGltfUrl}
                       liveShading={liveShading}
@@ -1360,18 +1990,16 @@ export function AvatarProceduralScene({
               />
             )}
           </group>
-          ) : null}
 
-          {!hideGarments ? (
           <group
             ref={bottomAnchorRef}
             name="garment_bottom_anchor"
-            position={[0, bottomAnchorY, bottomAnchorZ]}
-            scale={[
+            position={toVec3Array([0, bottomAnchorY, bottomAnchorZ])}
+            scale={toScaleArray([
               1 - r.waist.tighten * 0.48,
               1 - r.waist.tighten * 0.32,
               1 - r.waist.tighten * 0.26,
-            ]}
+            ])}
           >
             {runtimeBottomGltfUrl ? (
               <GltfErrorBoundary
@@ -1407,7 +2035,7 @@ export function AvatarProceduralScene({
                     />
                   }
                 >
-                  <group position={[0, rig.gltfBottomMountY + r.hem.offsetY, 0]}>
+                  <group position={toVec3Array([0, rig.gltfBottomMountY + r.hem.offsetY, 0])}>
                     <GltfRuntimeGarment
                       url={runtimeBottomGltfUrl}
                       liveShading={liveShading}
@@ -1435,6 +2063,7 @@ export function AvatarProceduralScene({
               />
             )}
           </group>
+          </group>
           ) : null}
 
           {attachmentDriverEnabled ? (
@@ -1459,7 +2088,7 @@ export function AvatarProceduralScene({
               />
               <group ref={attachmentMarkersRef}>
                 {["#22c55e", "#3b82f6", "#eab308", "#22d3ee", "#db2777"].map((color, i) => (
-                  <mesh key={i} position={[0, 0, 0]}>
+                  <mesh key={i} position={toVec3Array([0, 0, 0])}>
                     <sphereGeometry args={[0.016, 6, 6]} />
                     <meshBasicMaterial color={color} depthTest={false} />
                   </mesh>
@@ -1469,23 +2098,31 @@ export function AvatarProceduralScene({
           ) : null}
 
           {showShoes && !hideGarments ? (
-            <group position={[0, r.hem.offsetY * 0.45, 0]} name="shoes_proxy">
-              <mesh position={[0.09, 0.04, 0.04]}>
-                <boxGeometry args={[0.12, 0.08, 0.22]} />
+            <group position={toVec3Array([0, r.hem.offsetY * 0.35, 0])} name="shoes_proxy">
+              <mesh
+                position={toVec3Array(jointMap.footL)}
+                rotation={toEulerArray([0, -0.08, 0.045])}
+                scale={toScaleArray([1, 1, 1.08])}
+              >
+                <boxGeometry args={[0.11, 0.052, 0.19]} />
                 <meshStandardMaterial
                   color={shoeColor}
                   transparent
                   opacity={shoeOpacity}
-                  roughness={0.45}
+                  roughness={0.78}
                 />
               </mesh>
-              <mesh position={[-0.09, 0.04, 0.04]}>
-                <boxGeometry args={[0.12, 0.08, 0.22]} />
+              <mesh
+                position={toVec3Array(jointMap.footR)}
+                rotation={toEulerArray([0, 0.08, -0.045])}
+                scale={toScaleArray([1, 1, 1.08])}
+              >
+                <boxGeometry args={[0.11, 0.052, 0.19]} />
                 <meshStandardMaterial
                   color={shoeColor}
                   transparent
                   opacity={shoeOpacity}
-                  roughness={0.45}
+                  roughness={0.78}
                 />
               </mesh>
             </group>

@@ -8,8 +8,11 @@ export {
   DEFAULT_STYLISED_AVATAR_GLTF,
   DEFAULT_STYLISED_AVATAR_ID,
   DEFAULT_STYLISED_AVATAR_EXPECTED_RIG,
+  REALISTIC_AVATAR_ASSET_SLOT,
+  STYLISED_AVATAR_ASSET_SLOT,
 } from "./avatar-assets";
 export type {
+  AvatarRenderAudit,
   GarmentAnchorFitDebug,
   GarmentAttachmentSnapshot,
   LiveViewportBodySourceDebug,
@@ -63,6 +66,35 @@ export {
   runtimeAssetSummary,
   type AvatarRuntimeAssetUrls,
 } from "./runtime-asset-sources";
+export {
+  avatarSourceLoadStateLabel,
+  resolveAvatarSource,
+  type AvatarResolvedSource,
+  type AvatarSourceLoadState,
+  type AvatarSourcePreference,
+  type AvatarSourceType,
+} from "./avatar-source-manager";
+export {
+  AVATAR_ANCHOR_NAMES,
+  buildFitProxiesFromAnchors,
+  resolveAvatarAnchors,
+  type AvatarAnchorMap,
+  type AvatarAnchorName,
+  type AvatarAnchorResolveReport,
+  type AvatarFitProxy,
+} from "./avatar-anchors";
+export {
+  AVATAR_RIG_SLOTS,
+  inspectAvatarRig,
+  type AvatarRigInspection,
+  type AvatarRigSlot,
+  type AvatarRigTypeGuess,
+} from "./avatar-rig-inspector";
+export {
+  normalizeAvatarRoot,
+  type AvatarNormalizeOptions,
+  type AvatarNormalizeReport,
+} from "./avatar-normalize";
 export {
   GltfErrorBoundary,
   GltfRuntimeBody,

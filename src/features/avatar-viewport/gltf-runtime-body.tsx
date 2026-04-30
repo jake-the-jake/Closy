@@ -25,6 +25,8 @@ import type { DevAvatarPoseKey } from "@/features/avatar-export/dev-avatar-share
 import { applySkinnedBodyFallbackMaterials } from "./gltf-body-fallback-materials";
 import { loadBundledGltfModule } from "./gltf-bundled-load";
 import { poseAngles } from "./avatar-pose-angles";
+import { normalizeAvatarRoot, type AvatarNormalizeReport } from "./avatar-normalize";
+import { inspectAvatarRig, type AvatarRigInspection } from "./avatar-rig-inspector";
 import {
   deformGarmentObject3D,
   type GarmentDeformProfile,
@@ -55,6 +57,22 @@ type MatBaseline = {
   opacity: number;
 };
 
+type AvatarGltfStats = {
+  normalizeReport: AvatarNormalizeReport;
+  rigInspection: AvatarRigInspection;
+  meshCount: number;
+  materialCount: number;
+};
+
+function isMeshLike(o: THREE.Object3D): o is THREE.Mesh | THREE.SkinnedMesh {
+  const flags = o as { isMesh?: boolean; isSkinnedMesh?: boolean };
+  return flags.isMesh === true || flags.isSkinnedMesh === true;
+}
+
+function isStandardMaterialLike(m: THREE.Material): m is THREE.MeshStandardMaterial {
+  return m instanceof THREE.MeshStandardMaterial || (m as { isMeshStandardMaterial?: boolean }).isMeshStandardMaterial === true;
+}
+
 export function poseRootEulerApprox(pose: DevAvatarPoseKey): [number, number, number] {
   switch (pose) {
     case "tpose":
@@ -73,16 +91,38 @@ export function poseRootEulerApprox(pose: DevAvatarPoseKey): [number, number, nu
 function collectStandardMaterials(root: THREE.Object3D): THREE.MeshStandardMaterial[] {
   const out: THREE.MeshStandardMaterial[] = [];
   root.traverse((o) => {
-    if (!(o instanceof THREE.Mesh)) return;
+    if (!isMeshLike(o)) return;
     if (Array.isArray(o.material)) {
       for (const m of o.material) {
-        if (m instanceof THREE.MeshStandardMaterial) out.push(m);
+        if (m && isStandardMaterialLike(m)) out.push(m);
       }
-    } else if (o.material instanceof THREE.MeshStandardMaterial) {
+    } else if (o.material && isStandardMaterialLike(o.material)) {
       out.push(o.material);
     }
   });
   return out;
+}
+
+function countMeshes(root: THREE.Object3D): number {
+  let count = 0;
+  root.traverse((o) => {
+    if (isMeshLike(o)) count += 1;
+  });
+  return count;
+}
+
+function countMaterials(root: THREE.Object3D): number {
+  const materials = new Set<THREE.Material>();
+  root.traverse((o) => {
+    if (!isMeshLike(o)) return;
+    const mat = o.material;
+    if (Array.isArray(mat)) {
+      for (const m of mat) if (m) materials.add(m);
+    } else if (mat) {
+      materials.add(mat);
+    }
+  });
+  return materials.size;
 }
 
 function buildMaterialBaseline(
@@ -132,6 +172,7 @@ export function applyLiveShadingToGltfMaterials(
         }
         break;
       case "overlay_style":
+      case "overlay_debug":
         m.transparent = true;
         m.opacity = 0.92;
         if (scope === "body") {
@@ -153,20 +194,10 @@ export function applyLiveShadingToGltfMaterials(
   }
 }
 
-function normalizeRootToHeight(r: THREE.Object3D, targetY: number) {
-  const box = new THREE.Box3().setFromObject(r);
-  const size = box.getSize(new THREE.Vector3());
-  if (size.y > 1e-5) {
-    const sc = targetY / size.y;
-    r.scale.setScalar(sc);
-    box.setFromObject(r);
-    r.position.set(0, -box.min.y, 0);
-  }
-}
-
 type PreparedGltf = {
   scene: THREE.Object3D;
   baseline: Map<THREE.MeshStandardMaterial, MatBaseline>;
+  stats: AvatarGltfStats;
 };
 
 function usePreparedGltf(
@@ -180,11 +211,26 @@ function usePreparedGltf(
 ): PreparedGltf {
   return useMemo(() => {
     const root = gltf.scene.clone(true);
-    normalizeRootToHeight(root, normalizeY);
+    const normalizeReport = normalizeAvatarRoot(root, {
+      targetHeight: normalizeY,
+      centerXZ: true,
+      groundY: 0,
+    });
     if (applyPelvisAlign) alignSkinnedRootToPelvisMetric(root, metrics);
     if (applyUntexturedFallbackMaterials) applySkinnedBodyFallbackMaterials(root);
+    ensureBodyMeshesDrawable(root);
     const baseline = buildMaterialBaseline(root);
-    return { scene: root, baseline };
+    const rigInspection = inspectAvatarRig(root);
+    return {
+      scene: root,
+      baseline,
+      stats: {
+        normalizeReport,
+        rigInspection,
+        meshCount: countMeshes(root),
+        materialCount: countMaterials(root),
+      },
+    };
   }, [gltf, cacheKey, normalizeY, metrics, applyPelvisAlign, applyUntexturedFallbackMaterials]);
 }
 
@@ -233,7 +279,7 @@ function ensureBodyMeshesDrawable(root: THREE.Object3D) {
   root.traverse((o) => {
     o.visible = true;
     o.matrixAutoUpdate = true;
-    if (o instanceof THREE.Mesh || o instanceof THREE.SkinnedMesh) {
+    if (isMeshLike(o)) {
       o.visible = true;
       o.frustumCulled = false;
       const s = o.scale;
@@ -245,15 +291,33 @@ function ensureBodyMeshesDrawable(root: THREE.Object3D) {
       ) {
         o.scale.set(1, 1, 1);
       }
+      if (!o.material) {
+        o.material = new THREE.MeshStandardMaterial({
+          color: 0xdcc2a8,
+          roughness: 0.88,
+          metalness: 0,
+        });
+      }
       if (Array.isArray(o.material)) {
         for (const m of o.material) {
+          m.depthWrite = true;
+          m.depthTest = true;
+          m.opacity = 1;
+          m.transparent = false;
+          m.side = THREE.DoubleSide;
           m.needsUpdate = true;
         }
       } else if (o.material) {
+        o.material.depthWrite = true;
+        o.material.depthTest = true;
+        o.material.opacity = 1;
+        o.material.transparent = false;
+        o.material.side = THREE.DoubleSide;
         o.material.needsUpdate = true;
       }
     }
   });
+  root.updateMatrixWorld(true);
 }
 
 function applyDebugBrightBodyMaterials(root: THREE.Object3D) {
@@ -269,7 +333,7 @@ function applyDebugBrightBodyMaterials(root: THREE.Object3D) {
     m.needsUpdate = true;
   }
   root.traverse((o) => {
-    if (o instanceof THREE.SkinnedMesh || o instanceof THREE.Mesh) {
+    if (isMeshLike(o)) {
       o.frustumCulled = false;
     }
   });
@@ -286,6 +350,7 @@ function useSkinnedBodyLayout(
   poseBias: SkinnedPoseBias | undefined,
   onSceneReady: (() => void) | undefined,
   onRigPoseReport: ((r: SkinnedRigPoseReport) => void) | undefined,
+  stats: AvatarGltfStats,
   debugForceBrightMaterial?: boolean,
 ) {
   const invalidate = useThree((st) => st.invalidate);
@@ -316,6 +381,12 @@ function useSkinnedBodyLayout(
           mappedBoneSlots: 0,
           criticalMapped: 0,
           criticalTotal: SKINNED_POSE_CRITICAL_SLOT_COUNT,
+          meshCount: stats.meshCount,
+          materialCount: stats.materialCount,
+          boneCount: stats.rigInspection.boneCount,
+          boundsHeight: stats.normalizeReport.height,
+          rigTypeGuess: stats.rigInspection.rigTypeGuess,
+          rigConfidence: stats.rigInspection.confidence,
         };
         const rj = JSON.stringify(report);
         if (rj !== lastRigReportJson.current) {
@@ -361,6 +432,12 @@ function useSkinnedBodyLayout(
         mappedBoneSlots: countMappedSkinnedBones(cache.bones),
         criticalMapped,
         criticalTotal: SKINNED_POSE_CRITICAL_SLOT_COUNT,
+        meshCount: stats.meshCount,
+        materialCount: stats.materialCount,
+        boneCount: stats.rigInspection.boneCount,
+        boundsHeight: stats.normalizeReport.height,
+        rigTypeGuess: stats.rigInspection.rigTypeGuess,
+        rigConfidence: stats.rigInspection.confidence,
       };
       const rj = JSON.stringify(report);
       if (rj !== lastRigReportJson.current) {
@@ -382,6 +459,7 @@ function useSkinnedBodyLayout(
     poseBias,
     sk,
     debugForceBrightMaterial,
+    stats,
     invalidate,
   ]);
 }
@@ -415,13 +493,13 @@ export function GltfRuntimeBodyFromBundledModule({
   const gltf = use(useMemo(() => loadBundledGltfModule(bundledAssetModule), [bundledAssetModule]));
   const bodyShapeKeyStr = bodyShapeParamsKey(bodyShape);
   const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShapeKeyStr]);
-  const { scene, baseline } = usePreparedGltf(
+  const { scene, baseline, stats } = usePreparedGltf(
     `bundled:${bundledAssetModule}`,
     gltf,
     m.gltfNormalizeY,
     m,
     true,
-    true,
+    false,
   );
   const [sx, sy, sz] = m.gltfBodyScale;
   useSkinnedBodyLayout(
@@ -435,6 +513,7 @@ export function GltfRuntimeBodyFromBundledModule({
     poseBias,
     onSceneReady,
     onRigPoseReport,
+    stats,
     debugForceBrightMaterial,
   );
 
@@ -463,7 +542,7 @@ export function GltfRuntimeBodyFromUrl({
   const gltf = useLoader(GLTFLoader, url);
   const bodyShapeKeyStr = bodyShapeParamsKey(bodyShape);
   const m = useMemo(() => deriveBodyRigMetrics(bodyShape), [bodyShapeKeyStr]);
-  const { scene, baseline } = usePreparedGltf(
+  const { scene, baseline, stats } = usePreparedGltf(
     url,
     gltf,
     m.gltfNormalizeY,
@@ -483,6 +562,7 @@ export function GltfRuntimeBodyFromUrl({
     poseBias,
     onSceneReady,
     onRigPoseReport,
+    stats,
     debugForceBrightMaterial,
   );
 
@@ -571,7 +651,11 @@ export function GltfRuntimeGarment({
   const gltf = useLoader(GLTFLoader, url);
   const { scene, baseline } = useMemo(() => {
     const root = gltf.scene.clone(true);
-    normalizeRootToHeight(root, normalizeHeight);
+    normalizeAvatarRoot(root, {
+      targetHeight: normalizeHeight,
+      centerXZ: true,
+      groundY: 0,
+    });
     const bl = buildMaterialBaseline(root);
     return { scene: root, baseline: bl };
   }, [gltf, url, normalizeHeight]);
@@ -586,7 +670,7 @@ export function GltfRuntimeGarment({
       clipEmissiveAdd,
     );
     scene.traverse((o) => {
-      if (o instanceof THREE.Mesh) o.updateMatrixWorld(true);
+      if (isMeshLike(o)) o.updateMatrixWorld(true);
     });
   }, [
     scene,

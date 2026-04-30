@@ -87,6 +87,7 @@ import {
   suggestionsFromRuntimeClipping,
   useAvatarSceneStore,
   type AvatarViewportNavSettings,
+  type AvatarSourcePreference,
   type GarmentFitRegionKey,
   type GarmentAttachmentSnapshot,
   type LiveViewportPoseFitDebug,
@@ -276,7 +277,7 @@ type LiveVisualPresetId =
   | "clean_mannequin"
   | "fit_debug"
   | "skeleton"
-  | "garment_test";
+  | "debug";
 
 const LIVE_WORKBENCH_TABS: { id: LiveWorkbenchTabId; label: string }[] = [
   { id: "view", label: "View" },
@@ -289,10 +290,17 @@ const LIVE_WORKBENCH_TABS: { id: LiveWorkbenchTabId; label: string }[] = [
 ];
 
 const LIVE_VISUAL_PRESETS: { id: LiveVisualPresetId; label: string }[] = [
-  { id: "clean_mannequin", label: "Clean mannequin" },
-  { id: "fit_debug", label: "Fit debug" },
+  { id: "clean_mannequin", label: "Clean" },
+  { id: "fit_debug", label: "Fit" },
   { id: "skeleton", label: "Skeleton" },
-  { id: "garment_test", label: "Garment test" },
+  { id: "debug", label: "Debug" },
+];
+
+const LIVE_AVATAR_SOURCE_OPTIONS: { id: AvatarSourcePreference; label: string }[] = [
+  { id: "auto", label: "Auto" },
+  { id: "realistic_glb", label: "Realistic GLB" },
+  { id: "stylised_glb", label: "Stylised GLB" },
+  { id: "procedural_fallback", label: "Procedural fallback" },
 ];
 
 const MAX_RENDER_HISTORY = 10;
@@ -461,8 +469,8 @@ export function AvatarPreviewDevScreen() {
 
   const [stressTestBusy, setStressTestBusy] = useState(false);
   const [stabilizeBusy, setStabilizeBusy] = useState(false);
-  /** Default to the bundled stylised GLB and fall back to the procedural mannequin on failure. */
-  const liveViewportUseProceduralBody = false;
+  const [liveAvatarSourcePreference, setLiveAvatarSourcePreference] =
+    useState<AvatarSourcePreference>("auto");
   const [liveBodyOnlyGarments, setLiveBodyOnlyGarments] = useState(false);
   const [liveGarmentOnlyViewport, setLiveGarmentOnlyViewport] = useState(false);
   const [liveSkeletonOverlay, setLiveSkeletonOverlay] = useState(false);
@@ -478,7 +486,6 @@ export function AvatarPreviewDevScreen() {
   const [liveSceneBrightBody, setLiveSceneBrightBody] = useState(false);
   const [manualFrameBoundsNonce, setManualFrameBoundsNonce] = useState(0);
   const [viewportBaselineNonce, setViewportBaselineNonce] = useState(0);
-  const [startupRecoveryConsumed, setStartupRecoveryConsumed] = useState(false);
 
   const devSceneInspect = useMemo<AvatarViewportDevSceneInspect>(
     () => ({
@@ -529,9 +536,11 @@ export function AvatarPreviewDevScreen() {
           setLiveFitDebugOverlay(true);
           setLiveGarmentAttachDebug(true);
           setLiveClipOverlay(true);
+          setLiveSceneInspectEnabled(false);
+          setLiveSceneMarkers(false);
           break;
         case "skeleton":
-          setLiveViewportShading("normal");
+          setLiveViewportShading("garment_focus");
           setLiveBodyOnlyGarments(false);
           setLiveGarmentOnlyViewport(false);
           setLiveSkeletonOverlay(true);
@@ -539,14 +548,16 @@ export function AvatarPreviewDevScreen() {
           setLiveGarmentAttachDebug(false);
           setLiveClipOverlay(false);
           break;
-        case "garment_test":
-          setLiveViewportShading("garment_focus");
+        case "debug":
+          setLiveViewportShading("overlay_debug");
           setLiveBodyOnlyGarments(false);
           setLiveGarmentOnlyViewport(false);
-          setLiveSkeletonOverlay(false);
+          setLiveSkeletonOverlay(true);
           setLiveFitDebugOverlay(true);
-          setLiveGarmentAttachDebug(false);
-          setLiveClipOverlay(false);
+          setLiveGarmentAttachDebug(true);
+          setLiveClipOverlay(true);
+          setLiveSceneInspectEnabled(true);
+          setLiveSceneMarkers(true);
           break;
         default:
           break;
@@ -599,6 +610,7 @@ export function AvatarPreviewDevScreen() {
       setLiveVisualPreset("clean_mannequin");
       setLiveViewportShading("normal");
       setOfflineFitDebugMode("normal");
+      setLiveAvatarSourcePreference("auto");
       setLiveBodyOnlyGarments(false);
       setLiveGarmentOnlyViewport(false);
       setLiveSkeletonOverlay(false);
@@ -614,14 +626,13 @@ export function AvatarPreviewDevScreen() {
       resetBodyShape();
       setGarmentFit(cloneFitState(DEFAULT_PREVIEW_GARMENT_FIT));
       resetViewportNav();
-      if (reason !== "guard") setStartupRecoveryConsumed(false);
       setViewportBaselineNonce((n) => n + 1);
       setCamResetNonce((n) => n + 1);
       if (reason !== "first_open") {
       setStatus(
           reason === "guard"
             ? "Viewport visibility reset -> sane default preview."
-            : "Reset mannequin baseline applied.",
+            : "Startup preview baseline restored.",
         );
       }
     },
@@ -1490,7 +1501,7 @@ export function AvatarPreviewDevScreen() {
                 height={liveViewportH}
                 compareActive={liveFitShowBaseline && liveFitBaseline != null}
                 clipOverlayEnabled={liveClipOverlay}
-                useProceduralBody={liveViewportUseProceduralBody}
+                avatarSourcePreference={liveAvatarSourcePreference}
                 bodyOnlyGarments={liveBodyOnlyGarments}
                 garmentOnlyViewport={liveGarmentOnlyViewport}
                 showSkeletonOverlay={liveSkeletonOverlay}
@@ -1500,21 +1511,10 @@ export function AvatarPreviewDevScreen() {
                 layout="workbench"
                 navSettings={viewportNav}
                 cameraResetNonce={camResetNonce}
-                onRequestVisibleBaseline={(reason) => {
-                  if (reason === "startup_self_recovery" && startupRecoveryConsumed) {
-                    return;
-                  }
-                  if (reason === "startup_self_recovery") {
-                    setStartupRecoveryConsumed(true);
-                  }
-                  resetVisibleBaseline("guard");
-                  if (reason === "startup_self_recovery") {
-                    setStatus("Startup blank-state recovery triggered -> restoring sane default preview.");
-                  }
-                }}
                 devSceneInspect={__DEV__ ? devSceneInspect : undefined}
-                baselineRequestNonce={viewportBaselineNonce}
                 viewportBaselineNonce={viewportBaselineNonce}
+                activeTab={liveWorkbenchTab}
+                cleanMode={liveVisualPreset === "clean_mannequin"}
               />
             </View>
             <ScrollView
@@ -1636,38 +1636,42 @@ export function AvatarPreviewDevScreen() {
                       />
                     ))}
                   </View>
-                  <View style={[styles.row, styles.clipOverlayRow]}>
-                    <Text style={styles.fitSubnote}>Body only</Text>
-                    <Switch
-                      value={liveBodyOnlyGarments}
-                      onValueChange={setLiveBodyOnlyGarmentsSafe}
-                      accessibilityLabel="Body only"
-                    />
-                  </View>
-                  <View style={[styles.row, styles.clipOverlayRow]}>
-                    <Text style={styles.fitSubnote}>Garment only</Text>
-                    <Switch
-                      value={liveGarmentOnlyViewport}
-                      onValueChange={setLiveGarmentOnlyViewportSafe}
-                      accessibilityLabel="Garment only"
-                    />
-                  </View>
-                  <View style={[styles.row, styles.clipOverlayRow]}>
-                    <Text style={styles.fitSubnote}>Skeleton overlay</Text>
-                    <Switch
-                      value={liveSkeletonOverlay}
-                      onValueChange={setLiveSkeletonOverlay}
-                      accessibilityLabel="Skeleton overlay"
-                    />
-                  </View>
-                  <View style={[styles.row, styles.clipOverlayRow]}>
-                    <Text style={styles.fitSubnote}>Fit debug overlay</Text>
-                    <Switch
-                      value={liveFitDebugOverlay}
-                      onValueChange={setLiveFitDebugOverlay}
-                      accessibilityLabel="Fit debug overlay"
-                    />
-                  </View>
+                  {liveVisualPreset === "debug" ? (
+                    <>
+                      <View style={[styles.row, styles.clipOverlayRow]}>
+                        <Text style={styles.fitSubnote}>Body only</Text>
+                        <Switch
+                          value={liveBodyOnlyGarments}
+                          onValueChange={setLiveBodyOnlyGarmentsSafe}
+                          accessibilityLabel="Body only"
+                        />
+                      </View>
+                      <View style={[styles.row, styles.clipOverlayRow]}>
+                        <Text style={styles.fitSubnote}>Garment only</Text>
+                        <Switch
+                          value={liveGarmentOnlyViewport}
+                          onValueChange={setLiveGarmentOnlyViewportSafe}
+                          accessibilityLabel="Garment only"
+                        />
+                      </View>
+                      <View style={[styles.row, styles.clipOverlayRow]}>
+                        <Text style={styles.fitSubnote}>Skeleton overlay</Text>
+                        <Switch
+                          value={liveSkeletonOverlay}
+                          onValueChange={setLiveSkeletonOverlay}
+                          accessibilityLabel="Skeleton overlay"
+                        />
+                      </View>
+                      <View style={[styles.row, styles.clipOverlayRow]}>
+                        <Text style={styles.fitSubnote}>Fit debug overlay</Text>
+                        <Switch
+                          value={liveFitDebugOverlay}
+                          onValueChange={setLiveFitDebugOverlay}
+                          accessibilityLabel="Fit debug overlay"
+                        />
+                      </View>
+                    </>
+                  ) : null}
                   <View style={[styles.row, styles.fitPresetWrap]}>
                     <AppButton
                       label="Reset camera"
@@ -1675,7 +1679,7 @@ export function AvatarPreviewDevScreen() {
                       onPress={() => setCamResetNonce((n) => n + 1)}
                     />
                     <AppButton
-                      label="Reset mannequin baseline"
+                      label="Restore startup preview"
                       variant="secondary"
                       onPress={() => resetVisibleBaseline("manual")}
                     />
@@ -1686,8 +1690,57 @@ export function AvatarPreviewDevScreen() {
                 <>
                   <Text style={styles.section}>Body</Text>
                   <Text style={styles.debugNote}>
-                    Dev preview now prefers the bundled stylised GLB and falls back to the procedural mannequin if the body asset fails.
+                    Deterministic avatar source selection. Auto tries a realistic GLB URL, then the bundled stylised GLB, then the procedural fallback without requiring a toggle.
                   </Text>
+                  <Text style={styles.fitSubnote}>Avatar source</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.modeChipsRow}
+                  >
+                    {LIVE_AVATAR_SOURCE_OPTIONS.map((sourceOption) => {
+                      const selected = liveAvatarSourcePreference === sourceOption.id;
+                      return (
+                        <Pressable
+                          key={sourceOption.id}
+                          onPress={() => {
+                            setLiveAvatarSourcePreference(sourceOption.id);
+                            setViewportBaselineNonce((n) => n + 1);
+                          }}
+                          style={({ pressed }) => [
+                            styles.modeChip,
+                            selected && styles.modeChipSelected,
+                            pressed && styles.modeChipPressed,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.modeChipLabel,
+                              selected && styles.modeChipLabelSelected,
+                            ]}
+                            numberOfLines={2}
+                          >
+                            {sourceOption.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                  <Text style={styles.debugNote}>
+                    GLB failures keep the fallback visible. Use Debug quality to inspect source status, bounds, mesh/material counts, and fallback reason.
+                  </Text>
+                  <View style={styles.bodyShapeActions}>
+                    <AppButton
+                      label="Reload avatar"
+                      variant="secondary"
+                      onPress={() => setViewportBaselineNonce((n) => n + 1)}
+                    />
+                    <AppButton
+                      label="Reset camera"
+                      variant="secondary"
+                      onPress={() => setCamResetNonce((n) => n + 1)}
+                    />
+                  </View>
                   <Text style={styles.fitSubnote}>Body shape presets</Text>
                   <ScrollView
                     horizontal
@@ -1914,6 +1967,18 @@ export function AvatarPreviewDevScreen() {
                           {livePoseFitDebug.avatar.loadStatus}
                         </Text>
                       ) : null}
+                      {livePoseFitDebug.avatar ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          avatarSource: {livePoseFitDebug.avatar.avatarSource ?? "n/a"} · fallback{" "}
+                          {livePoseFitDebug.avatar.fallbackReason ?? "none"} · meshes{" "}
+                          {livePoseFitDebug.avatar.meshCount ?? "n/a"} · materials{" "}
+                          {livePoseFitDebug.avatar.materialCount ?? "n/a"} · bones{" "}
+                          {livePoseFitDebug.avatar.boneCount ?? "n/a"} · boundsH{" "}
+                          {typeof livePoseFitDebug.avatar.boundsHeight === "number"
+                            ? livePoseFitDebug.avatar.boundsHeight.toFixed(2)
+                            : "n/a"}
+                        </Text>
+                      ) : null}
                       <Text style={styles.poseFitDebugLine} selectable>
                         body pose:{" "}
                         {livePoseFitDebug.skinned?.bodyPoseApplied === true
@@ -1945,9 +2010,8 @@ export function AvatarPreviewDevScreen() {
                       {livePoseFitDebug.startup ? (
                         <>
                           <Text style={styles.poseFitDebugLine} selectable>
-                            startup baseline:{" "}
-                            {livePoseFitDebug.startup.visibleBaselineApplied ? "ready" : "no"} · nonce{" "}
-                            {livePoseFitDebug.startup.viewportBaselineNonce} · combined{" "}
+                            startup ready:{" "}
+                            {livePoseFitDebug.startup.sceneReady ? "yes" : "no"} · combined{" "}
                             {livePoseFitDebug.startup.combinedViewOk ? "ok" : "no"} · cam framed hint{" "}
                             {livePoseFitDebug.startup.cameraFramedHint ? "yes" : "no"}
                           </Text>
@@ -1957,13 +2021,60 @@ export function AvatarPreviewDevScreen() {
                             {livePoseFitDebug.startup.combinedVisible ? "yes" : "no"}
                           </Text>
                           <Text style={styles.poseFitDebugLine} selectable>
-                            startup recovery:{" "}
-                            {livePoseFitDebug.startup.startupRecoveryTriggered ? "yes" : "no"} · exact baseline{" "}
+                            visible meshes: {livePoseFitDebug.startup.visibleMeshCount} · body group{" "}
+                            {livePoseFitDebug.startup.bodyGroupVisible ? "yes" : "no"} · garment group{" "}
+                            {livePoseFitDebug.startup.garmentGroupVisible ? "yes" : "no"}
+                          </Text>
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            active tab: {livePoseFitDebug.startup.activeTab} · clean mode{" "}
+                            {livePoseFitDebug.startup.cleanMode ? "yes" : "no"} · reason{" "}
+                            {livePoseFitDebug.startup.startupReason} · exact baseline{" "}
                             {livePoseFitDebug.startup.exactBaselineOk ? "yes" : "no"}
+                          </Text>
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            renderSafe: {livePoseFitDebug.startup.renderSafe ? "true" : "false"} | lastSceneError{" "}
+                            {livePoseFitDebug.startup.lastSceneError ?? "none"}
                           </Text>
                           {livePoseFitDebug.startup.warning ? (
                             <Text style={styles.poseFitDebugLine} selectable>
                               warning: {livePoseFitDebug.startup.warning}
+                            </Text>
+                          ) : null}
+                        </>
+                      ) : null}
+                      {livePoseFitDebug.renderAudit ? (
+                        <>
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            render branch: {livePoseFitDebug.renderAudit.activeRenderBranchName} · root mounted{" "}
+                            {livePoseFitDebug.renderAudit.mountedAvatarRoot ? "yes" : "no"} · meshes{" "}
+                            {livePoseFitDebug.renderAudit.visibleMeshCount}/
+                            {livePoseFitDebug.renderAudit.totalMeshCount} · gltf{" "}
+                            {livePoseFitDebug.renderAudit.gltfVisibleMeshCount}/
+                            {livePoseFitDebug.renderAudit.gltfTotalMeshCount}
+                          </Text>
+                          {livePoseFitDebug.renderAudit.firstMeshWorldPosition ? (
+                            <Text style={styles.poseFitDebugLine} selectable>
+                              first mesh pos [{fmtVec3(livePoseFitDebug.renderAudit.firstMeshWorldPosition)}] · scale [
+                              {fmtVec3(livePoseFitDebug.renderAudit.firstMeshScale ?? [0, 0, 0])}] · mat opacity{" "}
+                              {livePoseFitDebug.renderAudit.firstMeshMaterialOpacity?.toFixed(2) ?? "n/a"} · transparent{" "}
+                              {livePoseFitDebug.renderAudit.firstMeshMaterialTransparent == null
+                                ? "n/a"
+                                : livePoseFitDebug.renderAudit.firstMeshMaterialTransparent
+                                  ? "yes"
+                                  : "no"}
+                            </Text>
+                          ) : null}
+                          {livePoseFitDebug.renderAudit.cameraPosition &&
+                          livePoseFitDebug.renderAudit.cameraTarget ? (
+                            <Text style={styles.poseFitDebugLine} selectable>
+                              render cam pos [{fmtVec3(livePoseFitDebug.renderAudit.cameraPosition)}] · target [
+                              {fmtVec3(livePoseFitDebug.renderAudit.cameraTarget)}] · radius{" "}
+                              {livePoseFitDebug.renderAudit.cameraRadius?.toFixed(2) ?? "n/a"}
+                            </Text>
+                          ) : null}
+                          {livePoseFitDebug.renderAudit.safetyFallbackReason ? (
+                            <Text style={styles.poseFitDebugLine} selectable>
+                              render fallback: {livePoseFitDebug.renderAudit.safetyFallbackReason}
                             </Text>
                           ) : null}
                         </>
@@ -1974,6 +2085,9 @@ export function AvatarPreviewDevScreen() {
                           {livePoseFitDebug.bodySource.userIntent} · source reason{" "}
                           {livePoseFitDebug.bodySource.sourceReason} · detail{" "}
                           {livePoseFitDebug.bodySource.reason} · load {livePoseFitDebug.bodySource.loadStatus}
+                          {livePoseFitDebug.bodySource.errorReason
+                            ? ` · error ${livePoseFitDebug.bodySource.errorReason}`
+                            : ""}
                         </Text>
                       ) : null}
                       {livePoseFitDebug.interaction ? (

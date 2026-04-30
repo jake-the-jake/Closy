@@ -15,6 +15,7 @@ const zustandMiddlewareCjs = path.resolve(
 );
 const threeRoot = path.resolve(__dirname, "node_modules/three");
 
+/** Keep avatar preview on one canonical Three.js module instance. */
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
   three: threeRoot,
