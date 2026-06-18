@@ -21,50 +21,39 @@ import {
 } from "@/features/avatar-export/dev-avatar-shared";
 import { theme } from "@/theme";
 
-import type { AvatarSourcePreference } from "./avatarSourceResolver";
+import {
+  getAvatarSourceOptionsForRoute,
+  type AvatarSourcePreference,
+  type AvatarSourceRouteOption,
+} from "./avatarSourceResolver";
 import { AvatarViewportLive } from "./avatar-viewport-live";
 import type { LiveViewportPoseFitDebug } from "./live-viewport-debug-types";
 
-type UserAvatarStyle = "auto_avatar" | "stylised_asset";
-
 const POSES: DevAvatarPoseKey[] = ["relaxed", "walk", "tpose", "apose"];
-
-const AVATAR_STYLES: {
-  id: UserAvatarStyle;
-  label: string;
-  description: string;
-  source: AvatarSourcePreference;
-  accent: string;
-}[] = [
-  {
-    id: "auto_avatar",
-    label: "Best available avatar",
-    description: "Uses the best local asset and falls back safely if it is invalid.",
-    source: "best",
-    accent: "#d9b48f",
-  },
-  {
-    id: "stylised_asset",
-    label: "Stylised asset",
-    description: "Uses the bundled GLB slot when available, with automatic fallback.",
-    source: "stylised",
-    accent: "#9bbbd3",
-  },
-];
+const USER_AVATAR_SOURCE_OPTIONS = getAvatarSourceOptionsForRoute("user");
 
 export function AvatarExperienceScreen() {
   const { height } = useWindowDimensions();
   const [pose, setPose] = useState<DevAvatarPoseKey>("relaxed");
   const [preset, setPreset] = useState<DevAvatarPresetKey>("default");
-  const [avatarStyle, setAvatarStyle] = useState<UserAvatarStyle>("auto_avatar");
+  const [avatarSourcePreference, setAvatarSourcePreference] = useState<AvatarSourcePreference>(
+    USER_AVATAR_SOURCE_OPTIONS.defaultPreference,
+  );
   const [cameraResetNonce, setCameraResetNonce] = useState(0);
   const [debugOpen, setDebugOpen] = useState(false);
   const [debug, setDebug] = useState<LiveViewportPoseFitDebug | null>(null);
 
   const viewportHeight = Math.min(520, Math.max(360, height * 0.52));
   const garmentFit = useMemo(() => cloneFitState(DEFAULT_GARMENT_FIT_STATE), []);
-  const avatarSourcePreference =
-    AVATAR_STYLES.find((style) => style.id === avatarStyle)?.source ?? "best";
+  const userAvatarSourceOptions = USER_AVATAR_SOURCE_OPTIONS.options.filter(
+    (sourceOption) => !sourceOption.disabled,
+  );
+  const selectedAvatarSource =
+    userAvatarSourceOptions.find(
+      (sourceOption) => sourceOption.preference === avatarSourcePreference,
+    ) ?? userAvatarSourceOptions[0];
+  const resolvedAvatarSourcePreference =
+    selectedAvatarSource?.preference ?? USER_AVATAR_SOURCE_OPTIONS.defaultPreference;
 
   return (
     <ScreenContainer scroll omitTopSafeArea style={styles.screen}>
@@ -86,7 +75,7 @@ export function AvatarExperienceScreen() {
             liveShading="normal"
             bodyShape={DEFAULT_BODY_SHAPE}
             height={viewportHeight}
-            avatarSourcePreference={avatarSourcePreference}
+            avatarSourcePreference={resolvedAvatarSourcePreference}
             avatarRouteMode="user"
             layout="workbench"
             cameraResetNonce={cameraResetNonce}
@@ -121,16 +110,16 @@ export function AvatarExperienceScreen() {
             ))}
           </View>
 
-          {AVATAR_STYLES.length > 1 ? (
+          {userAvatarSourceOptions.length > 1 ? (
             <>
               <Text style={styles.sectionTitle}>Avatar style</Text>
               <View style={styles.styleGrid}>
-                {AVATAR_STYLES.map((style) => (
+                {userAvatarSourceOptions.map((style) => (
                   <StyleCard
                     key={style.id}
                     styleOption={style}
-                    selected={avatarStyle === style.id}
-                    onPress={() => setAvatarStyle(style.id)}
+                    selected={avatarSourcePreference === style.preference}
+                    onPress={() => setAvatarSourcePreference(style.preference)}
                   />
                 ))}
               </View>
@@ -179,6 +168,12 @@ export function AvatarExperienceScreen() {
                   {debug?.bodySource?.assetAvailability ?? "n/a"}
                 </Text>
                 <Text style={styles.devLine}>
+                  audit meshes={debug?.avatar?.meshCount ?? "n/a"} visible=
+                  {debug?.avatar?.visibleMeshCount ?? "n/a"} skinned=
+                  {debug?.avatar?.skinnedMeshCount ?? "n/a"} materialSafety=
+                  {debug?.avatar?.materialSafetyStatus ?? "n/a"}
+                </Text>
+                <Text style={styles.devLine}>
                   branch={debug?.renderAudit?.activeRenderBranchName ?? "n/a"} fallback=
                   {debug?.renderAudit?.safetyFallbackReason ??
                     debug?.bodySource?.errorReason ??
@@ -203,7 +198,7 @@ function StyleCard({
   selected,
   onPress,
 }: {
-  styleOption: (typeof AVATAR_STYLES)[number];
+  styleOption: AvatarSourceRouteOption;
   selected: boolean;
   onPress: () => void;
 }) {
@@ -218,7 +213,7 @@ function StyleCard({
         pressed && styles.pressed,
       ]}
     >
-      <View style={[styles.styleSwatch, { backgroundColor: styleOption.accent }]} />
+      <View style={styles.styleSwatch} />
       <View style={styles.styleCopy}>
         <Text style={[styles.styleTitle, selected && styles.styleTitleSelected]}>
           {styleOption.label}
@@ -336,6 +331,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: theme.radii.md,
+    backgroundColor: "#d9b48f",
   },
   styleCopy: {
     flex: 1,

@@ -75,6 +75,7 @@ type AvatarGltfStats = {
   sceneChildCount: number;
   worldScale: [number, number, number];
   animationCount: number;
+  materialSafetyStatus?: "mobile_safe" | "mobile_sanitized";
   assetFailureReason: string | null;
 };
 
@@ -216,6 +217,7 @@ function usePreparedGltf(
       gltf,
       normalizeReport,
       materialTextureCount: materialReport.textureCount,
+      materialSafetyStatus: materialReport.materialSafetyStatus,
     });
     return {
       scene: root,
@@ -235,6 +237,7 @@ function usePreparedGltf(
         sceneChildCount: audit.sceneChildCount,
         worldScale: audit.worldScale,
         animationCount: audit.animationCount,
+        materialSafetyStatus: audit.materialSafetyStatus,
         assetFailureReason: audit.failureReason,
       },
     };
@@ -399,6 +402,7 @@ function useSkinnedBodyLayout(
           sceneChildCount: stats.sceneChildCount,
           worldScale: stats.worldScale,
           animationCount: stats.animationCount,
+          materialSafetyStatus: stats.materialSafetyStatus,
           boneCount: stats.rigInspection.boneCount,
           boundsHeight: stats.normalizeReport.height,
           rigTypeGuess: stats.rigInspection.rigTypeGuess,
@@ -460,6 +464,7 @@ function useSkinnedBodyLayout(
         sceneChildCount: stats.sceneChildCount,
         worldScale: stats.worldScale,
         animationCount: stats.animationCount,
+        materialSafetyStatus: stats.materialSafetyStatus,
         boneCount: stats.rigInspection.boneCount,
         boundsHeight: stats.normalizeReport.height,
         rigTypeGuess: stats.rigInspection.rigTypeGuess,

@@ -904,6 +904,12 @@ export function AvatarViewportLive({
         resolvedAvatarSource.resolvedUri != null
           ? "runtime_url_override"
           : "production_avatar";
+    } else if (resolvedAvatarRouteSource.activeSource === "realistic-avatar") {
+      active = "realistic_glb";
+      reason =
+        resolvedAvatarSource.resolvedUri != null
+          ? "runtime_url_override"
+          : "realistic_avatar";
     } else if (resolvedAvatarSource.sourceType === "stylised_glb") {
       active = "stylised_glb";
     } else {
@@ -1087,6 +1093,7 @@ export function AvatarViewportLive({
         sceneChildCount: skinnedPoseReport?.sceneChildCount,
         worldScale: skinnedPoseReport?.worldScale,
         animationCount: skinnedPoseReport?.animationCount,
+        materialSafetyStatus: skinnedPoseReport?.materialSafetyStatus,
         boneCount: skinnedPoseReport?.boneCount,
         boundsHeight: skinnedPoseReport?.boundsHeight,
         assetFailureReason: skinnedPoseReport?.assetFailureReason,
@@ -1404,7 +1411,8 @@ export function AvatarViewportLive({
                 runtimeBodyGltfUrl={resolvedRuntime.bodyGltfUrl}
                 runtimeBodyBundledModule={runtimeBodyBundledModule}
                 runtimeBodySourceType={
-                  resolvedAvatarRouteSource.activeSource === "production-avatar"
+                  resolvedAvatarRouteSource.activeSource === "production-avatar" ||
+                  resolvedAvatarRouteSource.activeSource === "realistic-avatar"
                     ? "production_avatar"
                     : resolvedAvatarRouteSource.activeSource === "stylised-avatar"
                       ? "stylised_avatar"

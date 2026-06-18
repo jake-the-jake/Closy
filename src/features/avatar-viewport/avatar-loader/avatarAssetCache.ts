@@ -38,6 +38,9 @@ export async function loadPreparedAvatarAsset(
         gltf: loaded.gltf,
         normalizeReport,
         materialTextureCount: materialReport.textureCount,
+        assetId: manifest.id,
+        sourcePreference: manifest.kind,
+        materialSafetyStatus: materialReport.materialSafetyStatus,
       });
       return { manifest, gltf: loaded.gltf, scene, audit };
     })();

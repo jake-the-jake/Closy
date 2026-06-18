@@ -2,6 +2,8 @@ import { THREE, type GLTF } from "../three";
 import type { AvatarNormalizeReport } from "../avatar-normalize";
 
 export type AvatarAssetAudit = {
+  assetId?: string;
+  sourcePreference?: string;
   meshCount: number;
   visibleMeshCount: number;
   skinnedMeshCount: number;
@@ -21,6 +23,8 @@ export type AvatarAssetAudit = {
     center: [number, number, number];
   };
   normalizedScale: number;
+  materialSafetyStatus?: "mobile_safe" | "mobile_sanitized";
+  validity: "valid" | "invalid";
   failureReason: string | null;
 };
 
@@ -70,6 +74,9 @@ export function auditAvatarObject3D(
     gltf?: GLTF;
     normalizeReport?: AvatarNormalizeReport;
     materialTextureCount?: number;
+    assetId?: string;
+    sourcePreference?: string;
+    materialSafetyStatus?: "mobile_safe" | "mobile_sanitized";
   } = {},
 ): AvatarAssetAudit {
   const materials = new Set<THREE.Material>();
@@ -107,6 +114,8 @@ export function auditAvatarObject3D(
         : null;
 
   return {
+    assetId: options.assetId,
+    sourcePreference: options.sourcePreference,
     meshCount,
     visibleMeshCount,
     skinnedMeshCount,
@@ -126,6 +135,8 @@ export function auditAvatarObject3D(
       center: tuple(center),
     },
     normalizedScale: options.normalizeReport?.scaleApplied ?? 1,
+    materialSafetyStatus: options.materialSafetyStatus,
+    validity: failureReason == null ? "valid" : "invalid",
     failureReason,
   };
 }

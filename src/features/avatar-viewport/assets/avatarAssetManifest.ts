@@ -2,6 +2,7 @@ import { DEFAULT_STYLISED_AVATAR_GLTF } from "../avatar-assets";
 
 export type AvatarAssetKind =
   | "production-rigged-avatar"
+  | "realistic-rigged-avatar"
   | "stylised-rigged-avatar"
   | "procedural-fallback";
 
@@ -73,7 +74,7 @@ const HUMANOID_OPTIONAL_BONES = [
 export const AVATAR_ASSET_MANIFESTS = {
   productionAvatar: {
     id: "productionAvatar",
-    label: "Production polished avatar",
+    label: "Production Avatar",
     kind: "production-rigged-avatar",
     localModule: DEFAULT_STYLISED_AVATAR_GLTF,
     scale: 1,
@@ -127,6 +128,34 @@ export const AVATAR_ASSET_MANIFESTS = {
     missingReason:
       "No separate stylised_avatar.glb has been added yet. The current bundled GLB is reserved as the Production Avatar bridge.",
     canonicalAssetPath: "assets/models/avatar/stylised/stylised_avatar.glb",
+  },
+  realisticAvatar: {
+    id: "realisticAvatar",
+    label: "Future realistic avatar",
+    kind: "realistic-rigged-avatar",
+    scale: 1,
+    expectedHeightMeters: 1.78,
+    skeleton: {
+      requiredBones: HUMANOID_REQUIRED_BONES,
+      optionalBones: HUMANOID_OPTIONAL_BONES,
+      namingProfile: "custom",
+    },
+    materials: {
+      skin: ["Skin", "Body", "Face"],
+      hair: ["Hair"],
+      eyes: ["Eye", "Cornea"],
+      clothing: ["Cloth", "Outfit", "Garment"],
+    },
+    mobileBudget: {
+      maxTriangles: 70_000,
+      maxTextureSize: 2048,
+      maxBones: 96,
+      maxDrawCalls: 12,
+    },
+    status: "missing",
+    missingReason:
+      "Future realistic/scan/ZeroOne slot is not bundled yet. This must not override the available Production Avatar bridge.",
+    canonicalAssetPath: "assets/models/avatar/realistic/realistic_avatar.glb",
   },
   fallbackMannequin: {
     id: "fallbackMannequin",

@@ -12,10 +12,16 @@ import {
 } from "../assets/avatarAssetManifest";
 import type { AvatarRuntimeAssetUrls } from "../runtime-asset-sources";
 
-export type AvatarSourcePreference = "best" | "production" | "stylised" | "fallback";
+export type AvatarSourcePreference =
+  | "best"
+  | "production"
+  | "realistic"
+  | "stylised"
+  | "fallback";
 
 export type AvatarSelectedSourceType =
   | "production-avatar"
+  | "realistic-avatar"
   | "stylised-avatar"
   | "fallback-mannequin";
 
@@ -31,6 +37,7 @@ export type AvatarSourceResolution = {
     effectivePreference: AvatarSourcePreference;
     assetAvailability: string;
     productionAvailability: string;
+    realisticAvailability: string;
     stylisedAvailability: string;
     fallbackReason: string;
     loadState: AvatarSourceLoadState;
@@ -55,12 +62,17 @@ const SOURCE_OPTIONS: readonly {
   {
     id: "best",
     label: "Best available",
-    description: "Production Avatar first, then Stylised Avatar, then emergency fallback.",
+    description: "Production Avatar first, then valid future GLB slots, then emergency fallback.",
   },
   {
     id: "production",
     label: "Production Avatar",
     description: "Current working rigged GLB asset path used by product startup.",
+  },
+  {
+    id: "realistic",
+    label: "Realistic Avatar",
+    description: "Future high-quality scan/ZeroOne GLB slot; disabled until populated.",
   },
   {
     id: "stylised",
@@ -78,6 +90,7 @@ export const AVATAR_SOURCE_OPTIONS = SOURCE_OPTIONS;
 
 function sourceTypeFor(assetId: AvatarAssetManifestId): AvatarSelectedSourceType {
   if (assetId === "productionAvatar") return "production-avatar";
+  if (assetId === "realisticAvatar") return "realistic-avatar";
   if (assetId === "stylisedAvatar") return "stylised-avatar";
   return "fallback-mannequin";
 }
@@ -120,6 +133,7 @@ function buildDiagnostics(
     effectivePreference,
     assetAvailability: avatarAssetAvailabilityLabel(selectedAsset),
     productionAvailability: avatarAssetAvailabilityLabel(getAvatarAssetManifest("productionAvatar")),
+    realisticAvailability: avatarAssetAvailabilityLabel(getAvatarAssetManifest("realisticAvatar")),
     stylisedAvailability: avatarAssetAvailabilityLabel(getAvatarAssetManifest("stylisedAvatar")),
     fallbackReason: legacySource.fallbackReason,
     loadState: legacySource.loadState,
@@ -158,6 +172,37 @@ function resolveProduction(
         : "production_bundled_bridge",
     isFallback: false,
     diagnostics: buildDiagnostics(requestedPreference, "production", selectedAsset, legacySource),
+  };
+}
+
+function resolveRealistic(
+  requestedPreference: AvatarSourcePreference,
+  context: ResolveAvatarSourceContext,
+): AvatarSourceResolution | null {
+  const selectedAssetId = "realisticAvatar";
+  const selectedAsset = getAvatarAssetManifest(selectedAssetId);
+  if (selectedAsset.status !== "available" || (selectedAsset.localModule == null && !selectedAsset.uri)) {
+    return null;
+  }
+  const legacySource = resolveLegacyAvatarSource({
+    preference: "realistic_glb",
+    runtimeAssets: selectedAsset.uri ? { ...context.runtimeAssets, bodyGltfUrl: selectedAsset.uri } : context.runtimeAssets,
+    envRuntimeUrls: context.envRuntimeUrls,
+    productionBundledAssetModule: selectedAsset.localModule ?? null,
+    forceProcedural: context.forceProcedural,
+    failedSourceType: context.failedSourceType,
+    loadState: context.loadState,
+    errorReason: context.errorReason,
+  });
+  if (legacySource.usingProceduralFallback) return null;
+  return {
+    selectedAsset,
+    selectedAssetId,
+    selectedSourceType: sourceTypeFor(selectedAssetId),
+    legacySource,
+    reason: selectedAsset.uri ? "realistic_avatar_uri" : "realistic_avatar_bundled",
+    isFallback: false,
+    diagnostics: buildDiagnostics(requestedPreference, "realistic", selectedAsset, legacySource),
   };
 }
 
@@ -205,6 +250,13 @@ export function resolveAvatarSource(
     );
   }
 
+  if (preference === "realistic") {
+    return (
+      resolveRealistic(preference, context) ??
+      fallbackResolution(preference, context, "realistic_asset_missing_or_invalid")
+    );
+  }
+
   if (preference === "stylised") {
     return (
       resolveStylised(preference, context) ??
@@ -214,6 +266,7 @@ export function resolveAvatarSource(
 
   return (
     resolveProduction(preference, context) ??
+    resolveRealistic(preference, context) ??
     resolveStylised(preference, context) ??
     fallbackResolution(preference, context, "no_valid_glb_avatar_available")
   );

@@ -79,6 +79,7 @@ export {
 export {
   avatarSourceLoadStateLabel,
   AVATAR_SOURCE_OPTIONS,
+  getAvatarSourceOptionsForRoute,
   resolveAvatarSourceForRoute,
   resolveAvatarSource,
   type AvatarResolvedSource,
@@ -86,6 +87,8 @@ export {
   type AvatarRouteActiveSource,
   type AvatarRouteMode,
   type AvatarSourceOption,
+  type AvatarSourceRouteOption,
+  type AvatarSourceRouteOptions,
   type AvatarSourceLoadState,
   type AvatarSourcePreference,
   type AvatarSourceType,
@@ -148,6 +151,21 @@ export {
   type AvatarMaterialNormalizeReport,
   type AvatarMaterialRole,
 } from "./materials/avatarPbrMaterials";
+export {
+  LOCAL_PLACEHOLDER_ZEROONE_AVATAR_BRIDGE,
+  type ZeroOneAvatarBridge,
+  type ZeroOneAvatarBridgeMode,
+  type ZeroOneAvatarCamera,
+  type ZeroOneAvatarRequest,
+  type ZeroOneAvatarResult,
+  type ZeroOneFitDiagnostics,
+  type ZeroOneGarmentSource,
+  type ZeroOneOutfitItem,
+  type ZeroOneRenderQuality,
+  type ZeroOneRequestedOutput,
+  type ZeroOneSimulationMetadata,
+  type ZeroOneTargetPlatform,
+} from "./zeroone/zerooneAvatarTypes";
 export {
   computeAvatarBodyLandmarks,
   type AvatarBodyLandmarks,

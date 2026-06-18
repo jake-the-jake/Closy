@@ -6,9 +6,10 @@ Closy Avatar Preview now treats procedural geometry as an emergency fallback, no
 
 The avatar source manager resolves one deterministic body source:
 
-1. `realistic_glb`: the internal slot for a future polished/high-quality avatar GLB.
-2. `stylised_glb`: the bundled stylised mannequin GLB slot.
-3. `procedural_fallback`: the safe procedural mannequin when no GLB is available or a GLB fails.
+1. `productionAvatar`: the best working bundled/product avatar path. This currently uses `assets/models/avatar/default-stylised-avatar.glb` as the bridge asset until `production/production_avatar.glb` is populated.
+2. `realisticAvatar`: a future polished/high-quality scan or ZeroOne-generated GLB slot. Missing realistic assets must not override a valid production avatar.
+3. `stylisedAvatar`: an optional alternate stylised GLB slot. It is hidden from users when missing.
+4. `procedural_fallback`: the safe procedural mannequin when no GLB can render or a GLB fails validation.
 
 The viewport keeps the procedural fallback available during GLB loading so startup never opens blank.
 
@@ -16,14 +17,14 @@ The viewport keeps the procedural fallback available during GLB loading so start
 
 Preferred asset convention:
 
-- `assets/avatar/realistic/default-avatar.glb`
-- `assets/avatar/realistic/default-avatar.meta.json`
-- `assets/avatar/stylised/default-mannequin.glb`
-- `assets/avatar/stylised/default-mannequin.meta.json`
+- `assets/models/avatar/production/production_avatar.glb`
+- `assets/models/avatar/realistic/realistic_avatar.glb`
+- `assets/models/avatar/stylised/stylised_avatar.glb`
+- optional metadata beside each future asset
 
 Current bridge:
 
-- `assets/models/avatar/default-stylised-avatar.glb` is still used as the bundled stylised slot until a dedicated file is placed in the new convention.
+- `assets/models/avatar/default-stylised-avatar.glb` is still used as the Production Avatar bridge until a dedicated production file is placed in the new convention.
 
 ## GLB Export Requirements
 

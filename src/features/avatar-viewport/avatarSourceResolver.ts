@@ -5,6 +5,13 @@ import {
   type AvatarSourcePreference,
   type AvatarSourceResolution,
 } from "./avatar-source/resolveAvatarSource";
+export {
+  getAvatarSourceOptionsForRoute,
+  type AvatarSourceRouteMode,
+  type AvatarSourceRouteOption,
+  type AvatarSourceRouteOptionId,
+  type AvatarSourceRouteOptions,
+} from "./avatar-source/getAvatarSourceOptionsForRoute";
 import { avatarSourceLoadStateLabel } from "./avatar-source-manager";
 import type {
   AvatarResolvedSource,
@@ -66,9 +73,9 @@ export function resolveAvatarSourceForRoute(
     bodyUrl: resolution.legacySource.resolvedUri,
     loadIntent:
       input.preference === "best"
-        ? `${input.routeMode}_best_production_then_stylised_then_fallback`
+        ? `${input.routeMode}_best_production_then_realistic_then_stylised_then_fallback`
         : "explicit_source_selection",
-    visibleByDefault: input.routeMode === "user" || resolution.isFallback,
+    visibleByDefault: true,
     displayLabel: resolution.selectedAsset.label,
     fallbackReason: resolution.legacySource.fallbackReason,
     assetManifestId: resolution.selectedAssetId,

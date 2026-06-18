@@ -24,6 +24,7 @@ export type SkinnedRigPoseReport = {
   sceneChildCount?: number;
   worldScale?: [number, number, number];
   animationCount?: number;
+  materialSafetyStatus?: "mobile_safe" | "mobile_sanitized";
   boneCount?: number;
   boundsHeight?: number;
   rigTypeGuess?: string;
@@ -113,7 +114,7 @@ export type LiveViewportBodySourceDebug = {
     | "procedural_fallback_error"
     | "procedural_scene_default";
   /** User-facing intent from props (before runtime failure fallback). */
-  userIntent: "best" | "production" | "stylised" | "fallback";
+  userIntent: "best" | "production" | "realistic" | "stylised" | "fallback";
   /** High-level cause for the current active body source. */
   sourceReason: "startup" | "user_toggle" | "hard_fallback";
   loadStatus: "idle" | "pending" | "loaded" | "failed";
@@ -124,6 +125,7 @@ export type LiveViewportBodySourceDebug = {
     | "env_force_procedural"
     | "runtime_url_override"
     | "production_avatar"
+    | "realistic_avatar"
     | "skinned_load_failed_fallback"
     | "avatar_source_manager";
   debugLabel?: string;
@@ -133,7 +135,7 @@ export type LiveViewportBodySourceDebug = {
   resolvedLabel?: string;
   loadIntent?: string;
   visibleByDefault?: boolean;
-  effectivePreference?: "best" | "production" | "stylised" | "fallback";
+  effectivePreference?: "best" | "production" | "realistic" | "stylised" | "fallback";
   assetManifestId?: string;
   assetAvailability?: string;
 };
@@ -169,6 +171,7 @@ export type LiveViewportPoseFitDebug = {
     sceneChildCount?: number;
     worldScale?: [number, number, number];
     animationCount?: number;
+    materialSafetyStatus?: "mobile_safe" | "mobile_sanitized";
     boneCount?: number;
     boundsHeight?: number;
     assetFailureReason?: string | null;

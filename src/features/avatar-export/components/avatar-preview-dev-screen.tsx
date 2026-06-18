@@ -74,10 +74,10 @@ import {
 import { runAvatarExportMock } from "@/features/avatar-export/runner/avatarExportRunner.mock";
 import {
   analyzeRuntimeClipping,
-  AVATAR_SOURCE_OPTIONS,
   AvatarViewportLive,
   type AvatarViewportDevSceneInspect,
   buildExportRequestFromAvatarScene,
+  getAvatarSourceOptionsForRoute,
   getAvatarRuntimeAssetUrls,
   LIVE_VIEWPORT_SHADING_LABELS,
   listLiveViewportShadingModes,
@@ -290,6 +290,8 @@ const LIVE_WORKBENCH_TABS: { id: LiveWorkbenchTabId; label: string }[] = [
   { id: "stress", label: "Stress" },
   { id: "nav", label: "Nav" },
 ];
+
+const DEV_AVATAR_SOURCE_OPTIONS = getAvatarSourceOptionsForRoute("dev");
 
 const LIVE_VISUAL_PRESETS: { id: LiveVisualPresetId; label: string }[] = [
   { id: "clean_mannequin", label: "Clean" },
@@ -1707,18 +1709,23 @@ export function AvatarPreviewDevScreen() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.modeChipsRow}
                   >
-                    {AVATAR_SOURCE_OPTIONS.map((sourceOption) => {
-                      const selected = liveAvatarSourcePreference === sourceOption.id;
+                    {DEV_AVATAR_SOURCE_OPTIONS.options.map((sourceOption) => {
+                      const selected =
+                        !sourceOption.disabled &&
+                        liveAvatarSourcePreference === sourceOption.preference;
                       return (
                         <Pressable
                           key={sourceOption.id}
                           onPress={() => {
-                            setLiveAvatarSourcePreference(sourceOption.id);
+                            if (sourceOption.disabled) return;
+                            setLiveAvatarSourcePreference(sourceOption.preference);
                             setViewportBaselineNonce((n) => n + 1);
                           }}
+                          disabled={sourceOption.disabled}
                           style={({ pressed }) => [
                             styles.modeChip,
                             selected && styles.modeChipSelected,
+                            sourceOption.disabled && styles.modeChipDisabled,
                             pressed && styles.modeChipPressed,
                           ]}
                         >
@@ -1726,10 +1733,23 @@ export function AvatarPreviewDevScreen() {
                             style={[
                               styles.modeChipLabel,
                               selected && styles.modeChipLabelSelected,
+                              sourceOption.disabled && styles.modeChipLabelDisabled,
                             ]}
                             numberOfLines={2}
                           >
                             {sourceOption.label}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.modeChipMeta,
+                              selected && styles.modeChipMetaSelected,
+                              sourceOption.disabled && styles.modeChipLabelDisabled,
+                            ]}
+                            numberOfLines={2}
+                          >
+                            {sourceOption.disabled
+                              ? sourceOption.missingReason ?? sourceOption.availability
+                              : sourceOption.availability}
                           </Text>
                         </Pressable>
                       );
@@ -1986,6 +2006,8 @@ export function AvatarPreviewDevScreen() {
                           {typeof livePoseFitDebug.avatar.boundsHeight === "number"
                             ? livePoseFitDebug.avatar.boundsHeight.toFixed(2)
                             : "n/a"}
+                          {" "}Â· material safety{" "}
+                          {livePoseFitDebug.avatar.materialSafetyStatus ?? "n/a"}
                         </Text>
                       ) : null}
                       <Text style={styles.poseFitDebugLine} selectable>
@@ -4278,6 +4300,9 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
     backgroundColor: theme.colors.surface,
   },
+  modeChipDisabled: {
+    opacity: 0.48,
+  },
   modeChipPressed: { opacity: 0.85 },
   modeChipLabel: {
     fontSize: theme.typography.fontSize.caption,
@@ -4287,6 +4312,19 @@ const styles = StyleSheet.create({
   modeChipLabelSelected: {
     color: theme.colors.primary,
     fontWeight: theme.typography.fontWeight.semibold,
+  },
+  modeChipLabelDisabled: {
+    color: theme.colors.textMuted,
+  },
+  modeChipMeta: {
+    marginTop: 2,
+    fontSize: 9,
+    color: theme.colors.textMuted,
+    textAlign: "center",
+    lineHeight: 11,
+  },
+  modeChipMetaSelected: {
+    color: theme.colors.primary,
   },
   historyScroll: {
     flexDirection: "row",
