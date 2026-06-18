@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { THREE } from "./three";
 
 const FALLBACK_COLOR = 0xc4957a;
 

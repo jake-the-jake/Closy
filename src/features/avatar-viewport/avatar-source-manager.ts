@@ -11,6 +11,7 @@ export type AvatarSourceLoadState = "idle" | "loading" | "loaded" | "failed";
 
 export type AvatarSourceFailureReason =
   | "none"
+  | "visible_startup_default"
   | "env_forced_procedural"
   | "explicit_procedural"
   | "missing_realistic_glb"
@@ -43,6 +44,7 @@ export type ResolveAvatarSourceInput = {
   preference: AvatarSourcePreference;
   runtimeAssets?: Partial<AvatarRuntimeAssetUrls>;
   envRuntimeUrls: AvatarRuntimeAssetUrls;
+  productionBundledAssetModule?: number | null;
   stylisedBundledAssetModule?: number | null;
   forceProcedural?: boolean;
   failedSourceType?: AvatarSourceType | null;
@@ -57,7 +59,7 @@ function externalBodyUrl(
   return runtimeAssets?.bodyGltfUrl ?? envRuntimeUrls.bodyGltfUrl ?? null;
 }
 
-function proceduralResolved(
+export function resolveProceduralAvatarFallback(
   input: ResolveAvatarSourceInput,
   fallbackReason: AvatarSourceFailureReason,
   errorReason: string | null = null,
@@ -69,7 +71,10 @@ function proceduralResolved(
     resolvedUri: null,
     bundledAssetModule: null,
     fallbackReason,
-    debugLabel: `Procedural fallback (${fallbackReason})`,
+    debugLabel:
+      fallbackReason === "visible_startup_default"
+        ? "Fallback mannequin (visible startup default)"
+        : `Fallback mannequin (${fallbackReason})`,
     requested: input.preference,
     usingProceduralFallback: true,
   };
@@ -81,7 +86,7 @@ function glbResolved(
 ): AvatarResolvedSource {
   const failed = input.failedSourceType === descriptor.sourceType;
   if (failed) {
-    return proceduralResolved(input, "glb_load_failed", input.errorReason);
+    return resolveProceduralAvatarFallback(input, "glb_load_failed", input.errorReason);
   }
   return {
     sourceType: descriptor.sourceType,
@@ -100,20 +105,20 @@ export function resolveAvatarSource(
   input: ResolveAvatarSourceInput,
 ): AvatarResolvedSource {
   if (input.forceProcedural) {
-    return proceduralResolved(input, "env_forced_procedural");
+    return resolveProceduralAvatarFallback(input, "env_forced_procedural");
   }
   if (input.preference === "procedural_fallback") {
-    return proceduralResolved(input, "explicit_procedural");
+    return resolveProceduralAvatarFallback(input, "explicit_procedural");
   }
 
   const realisticUrl = externalBodyUrl(input.runtimeAssets, input.envRuntimeUrls);
   const realistic: AvatarSourceDescriptor = {
     sourceType: "realistic_glb",
-    assetId: "runtime-realistic-avatar",
-    label: "Realistic GLB (runtime URL)",
-    bundledAssetModule: null,
+    assetId: "production-avatar",
+    label: realisticUrl ? "Production avatar GLB (runtime URL)" : "Production avatar GLB (bundled)",
+    bundledAssetModule: input.productionBundledAssetModule ?? null,
     uri: realisticUrl,
-    available: realisticUrl != null,
+    available: realisticUrl != null || input.productionBundledAssetModule != null,
   };
   const stylised: AvatarSourceDescriptor = {
     sourceType: "stylised_glb",
@@ -127,18 +132,18 @@ export function resolveAvatarSource(
   if (input.preference === "realistic_glb") {
     return realistic.available
       ? glbResolved(input, realistic)
-      : proceduralResolved(input, "missing_realistic_glb");
+      : resolveProceduralAvatarFallback(input, "missing_realistic_glb");
   }
 
   if (input.preference === "stylised_glb") {
     return stylised.available
       ? glbResolved(input, stylised)
-      : proceduralResolved(input, "missing_stylised_glb");
+      : resolveProceduralAvatarFallback(input, "missing_stylised_glb");
   }
 
   if (realistic.available) return glbResolved(input, realistic);
   if (stylised.available) return glbResolved(input, stylised);
-  return proceduralResolved(input, "no_glb_available");
+  return resolveProceduralAvatarFallback(input, "no_glb_available");
 }
 
 export function avatarSourceLoadStateLabel(

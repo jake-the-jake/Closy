@@ -6,7 +6,7 @@ Closy Avatar Preview now treats procedural geometry as an emergency fallback, no
 
 The avatar source manager resolves one deterministic body source:
 
-1. `realistic_glb`: a runtime URL or future bundled realistic avatar.
+1. `realistic_glb`: the internal slot for a future polished/high-quality avatar GLB.
 2. `stylised_glb`: the bundled stylised mannequin GLB slot.
 3. `procedural_fallback`: the safe procedural mannequin when no GLB is available or a GLB fails.
 

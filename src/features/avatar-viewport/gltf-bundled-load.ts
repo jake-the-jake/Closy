@@ -6,8 +6,7 @@
 
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system/legacy";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFLoader, type GLTF } from "./three";
 
 import { stripEmbeddedTexturesFromGlb } from "./gltf-strip-embedded-textures";
 

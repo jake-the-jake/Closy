@@ -74,6 +74,7 @@ import {
 import { runAvatarExportMock } from "@/features/avatar-export/runner/avatarExportRunner.mock";
 import {
   analyzeRuntimeClipping,
+  AVATAR_SOURCE_OPTIONS,
   AvatarViewportLive,
   type AvatarViewportDevSceneInspect,
   buildExportRequestFromAvatarScene,
@@ -277,6 +278,7 @@ type LiveVisualPresetId =
   | "clean_mannequin"
   | "fit_debug"
   | "skeleton"
+  | "garment_test"
   | "debug";
 
 const LIVE_WORKBENCH_TABS: { id: LiveWorkbenchTabId; label: string }[] = [
@@ -293,14 +295,8 @@ const LIVE_VISUAL_PRESETS: { id: LiveVisualPresetId; label: string }[] = [
   { id: "clean_mannequin", label: "Clean" },
   { id: "fit_debug", label: "Fit" },
   { id: "skeleton", label: "Skeleton" },
+  { id: "garment_test", label: "Garment" },
   { id: "debug", label: "Debug" },
-];
-
-const LIVE_AVATAR_SOURCE_OPTIONS: { id: AvatarSourcePreference; label: string }[] = [
-  { id: "auto", label: "Auto" },
-  { id: "realistic_glb", label: "Realistic GLB" },
-  { id: "stylised_glb", label: "Stylised GLB" },
-  { id: "procedural_fallback", label: "Procedural fallback" },
 ];
 
 const MAX_RENDER_HISTORY = 10;
@@ -470,7 +466,7 @@ export function AvatarPreviewDevScreen() {
   const [stressTestBusy, setStressTestBusy] = useState(false);
   const [stabilizeBusy, setStabilizeBusy] = useState(false);
   const [liveAvatarSourcePreference, setLiveAvatarSourcePreference] =
-    useState<AvatarSourcePreference>("auto");
+    useState<AvatarSourcePreference>("best");
   const [liveBodyOnlyGarments, setLiveBodyOnlyGarments] = useState(false);
   const [liveGarmentOnlyViewport, setLiveGarmentOnlyViewport] = useState(false);
   const [liveSkeletonOverlay, setLiveSkeletonOverlay] = useState(false);
@@ -548,6 +544,18 @@ export function AvatarPreviewDevScreen() {
           setLiveGarmentAttachDebug(false);
           setLiveClipOverlay(false);
           break;
+        case "garment_test":
+          setLiveViewportShading("garment_focus");
+          setLiveBodyOnlyGarments(false);
+          setLiveGarmentOnlyViewport(false);
+          setLiveSkeletonOverlay(false);
+          setLiveFitDebugOverlay(true);
+          setLiveGarmentAttachDebug(true);
+          setLiveClipOverlay(false);
+          setLiveSceneInspectEnabled(false);
+          setLiveSceneMarkers(false);
+          setLiveSceneBrightBody(false);
+          break;
         case "debug":
           setLiveViewportShading("overlay_debug");
           setLiveBodyOnlyGarments(false);
@@ -610,7 +618,7 @@ export function AvatarPreviewDevScreen() {
       setLiveVisualPreset("clean_mannequin");
       setLiveViewportShading("normal");
       setOfflineFitDebugMode("normal");
-      setLiveAvatarSourcePreference("auto");
+      setLiveAvatarSourcePreference("best");
       setLiveBodyOnlyGarments(false);
       setLiveGarmentOnlyViewport(false);
       setLiveSkeletonOverlay(false);
@@ -1502,6 +1510,7 @@ export function AvatarPreviewDevScreen() {
                 compareActive={liveFitShowBaseline && liveFitBaseline != null}
                 clipOverlayEnabled={liveClipOverlay}
                 avatarSourcePreference={liveAvatarSourcePreference}
+                avatarRouteMode="dev"
                 bodyOnlyGarments={liveBodyOnlyGarments}
                 garmentOnlyViewport={liveGarmentOnlyViewport}
                 showSkeletonOverlay={liveSkeletonOverlay}
@@ -1690,7 +1699,7 @@ export function AvatarPreviewDevScreen() {
                 <>
                   <Text style={styles.section}>Body</Text>
                   <Text style={styles.debugNote}>
-                    Deterministic avatar source selection. Auto tries a realistic GLB URL, then the bundled stylised GLB, then the procedural fallback without requiring a toggle.
+                    Deterministic avatar source selection. Auto uses the shared resolver; dev can explicitly test polished/stylised GLB slots, and failures keep the fallback visible.
                   </Text>
                   <Text style={styles.fitSubnote}>Avatar source</Text>
                   <ScrollView
@@ -1698,7 +1707,7 @@ export function AvatarPreviewDevScreen() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.modeChipsRow}
                   >
-                    {LIVE_AVATAR_SOURCE_OPTIONS.map((sourceOption) => {
+                    {AVATAR_SOURCE_OPTIONS.map((sourceOption) => {
                       const selected = liveAvatarSourcePreference === sourceOption.id;
                       return (
                         <Pressable
@@ -2028,7 +2037,8 @@ export function AvatarPreviewDevScreen() {
                           <Text style={styles.poseFitDebugLine} selectable>
                             active tab: {livePoseFitDebug.startup.activeTab} · clean mode{" "}
                             {livePoseFitDebug.startup.cleanMode ? "yes" : "no"} · reason{" "}
-                            {livePoseFitDebug.startup.startupReason} · exact baseline{" "}
+                            {livePoseFitDebug.startup.startupReason} · phase{" "}
+                            {livePoseFitDebug.startup.phase} · exact baseline{" "}
                             {livePoseFitDebug.startup.exactBaselineOk ? "yes" : "no"}
                           </Text>
                           <Text style={styles.poseFitDebugLine} selectable>
@@ -2050,7 +2060,8 @@ export function AvatarPreviewDevScreen() {
                             {livePoseFitDebug.renderAudit.visibleMeshCount}/
                             {livePoseFitDebug.renderAudit.totalMeshCount} · gltf{" "}
                             {livePoseFitDebug.renderAudit.gltfVisibleMeshCount}/
-                            {livePoseFitDebug.renderAudit.gltfTotalMeshCount}
+                            {livePoseFitDebug.renderAudit.gltfTotalMeshCount} · scene children{" "}
+                            {livePoseFitDebug.renderAudit.sceneChildCount}
                           </Text>
                           {livePoseFitDebug.renderAudit.firstMeshWorldPosition ? (
                             <Text style={styles.poseFitDebugLine} selectable>
@@ -2077,6 +2088,10 @@ export function AvatarPreviewDevScreen() {
                               render fallback: {livePoseFitDebug.renderAudit.safetyFallbackReason}
                             </Text>
                           ) : null}
+                          <Text style={styles.poseFitDebugLine} selectable>
+                            last render audit:{" "}
+                            {new Date(livePoseFitDebug.renderAudit.lastRenderTimestamp).toLocaleTimeString()}
+                          </Text>
                         </>
                       ) : null}
                       {livePoseFitDebug.bodySource ? (
@@ -2088,6 +2103,38 @@ export function AvatarPreviewDevScreen() {
                           {livePoseFitDebug.bodySource.errorReason
                             ? ` · error ${livePoseFitDebug.bodySource.errorReason}`
                             : ""}
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.avatar ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          asset audit: mesh {livePoseFitDebug.avatar.visibleMeshCount ?? "?"}/
+                          {livePoseFitDebug.avatar.meshCount ?? "?"} · skinned{" "}
+                          {livePoseFitDebug.avatar.skinnedMeshCount ?? "?"} · bones{" "}
+                          {livePoseFitDebug.avatar.boneCount ?? "?"} · mats{" "}
+                          {livePoseFitDebug.avatar.materialCount ?? "?"} · tex{" "}
+                          {livePoseFitDebug.avatar.textureCount ?? "?"} · anim{" "}
+                          {livePoseFitDebug.avatar.animationCount ?? "?"} · tris{" "}
+                          {livePoseFitDebug.avatar.triangleEstimate ?? "?"}
+                          {livePoseFitDebug.avatar.assetFailureReason
+                            ? ` · failure ${livePoseFitDebug.avatar.assetFailureReason}`
+                            : ""}
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.avatar?.materialNames ? (
+                        <Text style={styles.poseFitDebugLine} selectable numberOfLines={2}>
+                          material names: {livePoseFitDebug.avatar.materialNames.join(", ")} · transparent{" "}
+                          {livePoseFitDebug.avatar.transparentMaterialCount ?? 0} · scale{" "}
+                          {livePoseFitDebug.avatar.worldScale
+                            ? `[${fmtVec3(livePoseFitDebug.avatar.worldScale)}]`
+                            : "n/a"}
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.bodySource ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          asset manifest: {livePoseFitDebug.bodySource.assetManifestId ?? "n/a"} ·{" "}
+                          {livePoseFitDebug.bodySource.assetAvailability ?? "n/a"} · route{" "}
+                          {livePoseFitDebug.bodySource.routeMode ?? "n/a"} · load intent{" "}
+                          {livePoseFitDebug.bodySource.loadIntent ?? "n/a"}
                         </Text>
                       ) : null}
                       {livePoseFitDebug.interaction ? (

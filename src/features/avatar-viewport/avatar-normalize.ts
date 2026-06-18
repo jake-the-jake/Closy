@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { THREE } from "./three";
 
 export type AvatarNormalizeReport = {
   height: number;

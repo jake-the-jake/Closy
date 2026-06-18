@@ -4,5 +4,5 @@
   "present": false,
   "targetHeightMeters": 1.78,
   "orientation": "Y-up, facing +Z",
-  "notes": "Drop the production/generated realistic GLB beside this metadata file when available."
+  "notes": "Drop the production/generated polished avatar GLB beside this metadata file when available."
 }

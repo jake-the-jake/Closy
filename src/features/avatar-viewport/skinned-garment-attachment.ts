@@ -4,7 +4,7 @@
  * the actual body instead of only shared rig scalars + static nudges.
  */
 
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import type { BodySceneAnchors } from "@/features/avatar-export";
 

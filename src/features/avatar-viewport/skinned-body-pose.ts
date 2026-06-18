@@ -3,7 +3,7 @@
  * First-class support for Khronos CesiumMan bone naming; fuzzy fallback for common Mixamo-style names.
  */
 
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import type { BodyRigMetrics } from "@/features/avatar-export";
 import { BODY_SHAPE_REF_METRICS } from "@/features/avatar-export";

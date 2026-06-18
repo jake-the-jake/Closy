@@ -7,7 +7,7 @@
  * Bind pose: `relaxed` (see `poseAngles`). Order with fit: pose warp from rest → then regional fit offsets.
  */
 
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import type { BodySceneAnchors } from "@/features/avatar-export";
 import type { DevAvatarPoseKey } from "@/features/avatar-export/dev-avatar-shared";

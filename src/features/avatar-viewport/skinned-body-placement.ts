@@ -3,7 +3,7 @@
  * CesiumMan–specific ratio is approximate; keeps one coherent figure vs procedural anchors.
  */
 
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import type { BodyRigMetrics } from "@/features/avatar-export";
 

@@ -9,7 +9,7 @@
  * Keep numeric rig constants in sync with `avatar-procedural-scene.tsx`.
  */
 
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import {
   bodySceneAnchorsFromShape,

@@ -20,6 +20,7 @@ import { theme } from "@/theme";
 
 const CREATE_OUTFIT_HREF = "/create-outfit" as Href;
 const SUGGEST_OUTFIT_HREF = "/suggest-outfit" as Href;
+const AVATAR_TRY_ON_HREF = "/avatar" as Href;
 
 export function OutfitsScreen() {
   const navigation = useNavigation();
@@ -74,6 +75,21 @@ export function OutfitsScreen() {
           <Text style={styles.suggestSub}>
             Choose an occasion (office, gym, date night, weather…); we rank looks
             from your items only. Save or tweak in the builder.
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push(AVATAR_TRY_ON_HREF)}
+          accessibilityRole="button"
+          accessibilityLabel="Try outfits on avatar"
+          style={({ pressed }) => [
+            styles.avatarCard,
+            pressed && styles.suggestCardPressed,
+          ]}
+        >
+          <Text style={styles.avatarEyebrow}>New preview</Text>
+          <Text style={styles.suggestTitle}>Try outfits on avatar</Text>
+          <Text style={styles.suggestSub}>
+            Open a clean mannequin preview with simple outfit, pose, rotate, and zoom controls.
           </Text>
         </Pressable>
       </View>
@@ -233,6 +249,23 @@ const styles = StyleSheet.create({
   },
   suggestCardPressed: {
     opacity: 0.92,
+  },
+  avatarCard: {
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.surface,
+  },
+  avatarEyebrow: {
+    marginBottom: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   suggestTitle: {
     fontSize: theme.typography.fontSize.md,

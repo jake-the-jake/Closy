@@ -15,7 +15,7 @@
  * No cloth physics; CPU vertex push with rest-pose caching.
  */
 
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import type { GarmentFitState } from "@/features/avatar-export";
 

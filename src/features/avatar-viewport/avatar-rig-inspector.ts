@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { THREE } from "./three";
 
 export const AVATAR_RIG_SLOTS = [
   "hips",

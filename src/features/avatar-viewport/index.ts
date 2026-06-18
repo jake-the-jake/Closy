@@ -3,6 +3,7 @@ export {
   type AvatarViewportDevSceneInspect,
   type AvatarViewportLiveProps,
 } from "./avatar-viewport-live";
+export { AvatarExperienceScreen } from "./avatar-experience-screen";
 export {
   DEFAULT_STYLISED_AVATAR,
   DEFAULT_STYLISED_AVATAR_GLTF,
@@ -11,6 +12,15 @@ export {
   REALISTIC_AVATAR_ASSET_SLOT,
   STYLISED_AVATAR_ASSET_SLOT,
 } from "./avatar-assets";
+export {
+  AVATAR_ASSET_MANIFESTS,
+  avatarAssetAvailabilityLabel,
+  getAvatarAssetManifest,
+  type AvatarAssetKind,
+  type AvatarAssetManifest,
+  type AvatarAssetManifestId,
+  type AvatarAssetNamingProfile,
+} from "./assets/avatarAssetManifest";
 export type {
   AvatarRenderAudit,
   GarmentAnchorFitDebug,
@@ -68,12 +78,28 @@ export {
 } from "./runtime-asset-sources";
 export {
   avatarSourceLoadStateLabel,
+  AVATAR_SOURCE_OPTIONS,
+  resolveAvatarSourceForRoute,
   resolveAvatarSource,
   type AvatarResolvedSource,
+  type AvatarResolvedRouteSource,
+  type AvatarRouteActiveSource,
+  type AvatarRouteMode,
+  type AvatarSourceOption,
   type AvatarSourceLoadState,
   type AvatarSourcePreference,
   type AvatarSourceType,
-} from "./avatar-source-manager";
+} from "./avatarSourceResolver";
+export {
+  resolveAvatarSource as resolveUnifiedAvatarSource,
+  avatarSourcePreferenceToLegacyLabel,
+  type AvatarSelectedSourceType,
+  type AvatarSourceResolution,
+} from "./avatar-source/resolveAvatarSource";
+export {
+  resolveAvatarStartupPhase,
+  type AvatarStartupMachineInput,
+} from "./avatar-startup-state";
 export {
   AVATAR_ANCHOR_NAMES,
   buildFitProxiesFromAnchors,
@@ -83,6 +109,54 @@ export {
   type AvatarAnchorResolveReport,
   type AvatarFitProxy,
 } from "./avatar-anchors";
+export {
+  buildGarmentAnchorsFromProceduralJoints,
+  type AvatarGarmentAnchorSet,
+} from "./garment-fit/garmentAnchors";
+export {
+  BODY_ANCHOR_NAMES,
+  hasCoreGarmentAnchors,
+  type BodyAnchorMap,
+  type BodyAnchorName,
+} from "./garment-fit/bodyAnchors";
+export {
+  solveGarmentFitFromBodyAnchors,
+  type SolvedGarmentFit,
+} from "./garment-fit/garmentFitSolver";
+export {
+  auditAvatarObject3D,
+  type AvatarAssetAudit,
+} from "./avatar-loader/avatarAssetAudit";
+export { auditAvatarAsset } from "./avatar-loader/auditAvatarAsset";
+export {
+  loadAvatarAsset,
+  type LoadedAvatarAsset,
+} from "./avatar-loader/loadAvatarAsset";
+export {
+  clearAvatarAssetCache,
+  loadPreparedAvatarAsset,
+  type PreparedAvatarAsset,
+} from "./avatar-loader/avatarAssetCache";
+export {
+  normalizeAvatarScene,
+  type NormalizeAvatarSceneOptions,
+} from "./avatar-loader/normalizeAvatarScene";
+export { prepareAvatarMaterials } from "./avatar-loader/prepareAvatarMaterials";
+export { prepareAvatarRig } from "./avatar-loader/prepareAvatarRig";
+export {
+  normalizeAvatarPbrMaterials,
+  type AvatarMaterialNormalizeReport,
+  type AvatarMaterialRole,
+} from "./materials/avatarPbrMaterials";
+export {
+  computeAvatarBodyLandmarks,
+  type AvatarBodyLandmarks,
+} from "./fit/avatarBodyLandmarks";
+export { extractAvatarLandmarks } from "./fit/extractAvatarLandmarks";
+export {
+  solveAvatarGarmentAttachment,
+  type AvatarGarmentAttachmentSolve,
+} from "./fit/avatarGarmentAttachment";
 export {
   AVATAR_RIG_SLOTS,
   inspectAvatarRig,

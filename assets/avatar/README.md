@@ -4,7 +4,7 @@ This folder is the runtime asset convention for Avatar Preview and future produc
 
 Place body GLBs here when they are ready:
 
-- `realistic/default-avatar.glb` for a generated or artist-authored high-quality human avatar.
+- `realistic/default-avatar.glb` for a future generated or artist-authored polished human avatar.
 - `stylised/default-mannequin.glb` for a friendly product mannequin fallback.
 - `fallback/` is reserved for procedural configuration and notes, not a primary visual path.
 

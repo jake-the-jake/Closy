@@ -70,6 +70,10 @@ export function AppNavigationShell() {
                   options={{ title: "Suggest an outfit" }}
                 />
                 <Stack.Screen
+                  name="avatar"
+                  options={{ title: "Avatar try-on" }}
+                />
+                <Stack.Screen
                   name="edit-outfit/[id]"
                   options={{
                     title: "Edit outfit",

@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber/native";
 import { useMemo, useRef } from "react";
-import * as THREE from "three";
+import { THREE } from "./three";
 import type { RefObject } from "react";
 
 import type { BodySceneAnchors } from "@/features/avatar-export";

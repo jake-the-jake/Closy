@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber/native";
 import { useMemo, useRef } from "react";
 import type { MutableRefObject, RefObject } from "react";
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import type { AvatarViewportNavSettings } from "./avatar-viewport-nav-settings";
 import type { LiveViewportSceneDiagnostics } from "./live-viewport-debug-types";

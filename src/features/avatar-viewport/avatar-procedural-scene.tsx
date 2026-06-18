@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber/native";
-import { Suspense, useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import { Suspense, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
-import * as THREE from "three";
+import { THREE } from "./three";
 
 import type { GarmentFitState } from "@/features/avatar-export";
 import {
@@ -46,7 +46,6 @@ import {
   PROCEDURAL_HUMANOID_JOINTS,
   HUMANOID_PROPORTIONS,
   averageJoints,
-  buildProceduralGarmentFollowPoints,
   buildProceduralHumanoidJointMap,
   jointVector,
   type ProceduralHumanoidJointMap,
@@ -56,6 +55,7 @@ import { buildFitProxiesFromAnchors, type AvatarAnchorMap } from "./avatar-ancho
 import { SkinnedGarmentAttachmentDriver } from "./skinned-garment-attachment-driver";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 import type { AvatarViewportNavSettings } from "./avatar-viewport-nav-settings";
+import { buildGarmentAnchorsFromProceduralJoints } from "./garment-fit/garmentAnchors";
 
 const SKIN = new THREE.Color(0xdcc2a8);
 const SKIN_DIM = new THREE.Color(0xb39073);
@@ -381,11 +381,13 @@ function auditDrawableHierarchy({
   gltfRoot,
   activeRenderBranchName,
   safetyFallbackReason,
+  sceneChildCount,
 }: {
   root: THREE.Object3D | null | undefined;
   gltfRoot: THREE.Object3D | null | undefined;
   activeRenderBranchName: string;
   safetyFallbackReason: string | null;
+  sceneChildCount: number;
 }): AvatarRenderAudit {
   repairDrawableHierarchy(root);
   const total = countDrawableMeshes(root);
@@ -410,6 +412,7 @@ function auditDrawableHierarchy({
   return {
     activeRenderBranchName,
     mountedAvatarRoot: !!root,
+    sceneChildCount,
     totalMeshCount: total.total,
     visibleMeshCount: total.visible,
     gltfTotalMeshCount: gltf.total,
@@ -419,6 +422,7 @@ function auditDrawableHierarchy({
     firstMeshMaterialOpacity,
     firstMeshMaterialTransparent,
     safetyFallbackReason,
+    lastRenderTimestamp: Date.now(),
   };
 }
 
@@ -651,7 +655,7 @@ function ShirtTorsoProxy({
     return e;
   }, [topEmissive, clipEmissiveAdd]);
   const P = HUMANOID_PROPORTIONS;
-  const follow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
+  const follow = useMemo(() => buildGarmentAnchorsFromProceduralJoints(jointMap), [jointMap]);
   const topCenter = torsoMountMode === "skinned_chest"
     ? new THREE.Vector3(0, P.chestY - rig.chestY - 0.045, 0.01)
     : follow.topCenter.clone().add(new THREE.Vector3(0, -0.036, 0.012));
@@ -734,7 +738,7 @@ function PantsGarmentProxies({
   /** When parent anchor sits on skinned pelvis, use shorter proxy stack. */
   bottomMountMode?: "rig" | "skinned_pelvis";
 }) {
-  const follow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
+  const follow = useMemo(() => buildGarmentAnchorsFromProceduralJoints(jointMap), [jointMap]);
   const groupRef = useRef<THREE.Group>(null);
   useLayoutEffect(() => {
     const root = groupRef.current;
@@ -1105,7 +1109,7 @@ function ProceduralRigBody({
   const torsoCenter = averageJoints(jointMap, "spine", "chest");
   const abdomenCenter = averageJoints(jointMap, "waist", "spine", "pelvis");
   const neckBase = chest.clone().lerp(neck, 0.48);
-  const sleeveFollow = useMemo(() => buildProceduralGarmentFollowPoints(jointMap), [jointMap]);
+  const sleeveFollow = useMemo(() => buildGarmentAnchorsFromProceduralJoints(jointMap), [jointMap]);
   const sleeveOffset = new THREE.Vector3(
     sleevePos[0] * FIT_VIS.sleevePosMul * 0.18,
     sleevePos[1] * FIT_VIS.sleevePosMul * 0.12,
@@ -1496,6 +1500,7 @@ export function AvatarProceduralScene({
   bodyShape = DEFAULT_BODY_SHAPE,
   runtimeBodyGltfUrl = null,
   runtimeBodyBundledModule = null,
+  runtimeBodySourceType = "procedural_fallback",
   runtimeTopGltfUrl = null,
   runtimeBottomGltfUrl = null,
   includeSceneLights = true,
@@ -1527,6 +1532,7 @@ export function AvatarProceduralScene({
   runtimeBodyGltfUrl?: string | null;
   /** Bundled body: Metro module id; loaded via `GLTFLoader.parse` (no `file://`). */
   runtimeBodyBundledModule?: number | null;
+  runtimeBodySourceType?: "production_avatar" | "stylised_avatar" | "procedural_fallback";
   runtimeTopGltfUrl?: string | null;
   runtimeBottomGltfUrl?: string | null;
   includeSceneLights?: boolean;
@@ -1563,6 +1569,7 @@ export function AvatarProceduralScene({
     orbit: SceneSpaceDebugOrbitBindings;
   } | null;
 }) {
+  const { scene, invalidate } = useThree();
   const torsoRegionFitRef = useRef<THREE.Group>(null);
   const avatarWorldFitRef = useRef<THREE.Group>(null);
   const bodyRootRef = useRef<THREE.Group>(null);
@@ -1668,11 +1675,16 @@ export function AvatarProceduralScene({
 
   const shirtInfl = 1 + r.torso.inflate * 2.2;
 
-  const skinnedAnchorsActive =
-    !garmentOnlyViewport &&
-    (runtimeBodyBundledModule != null || runtimeBodyGltfUrl != null);
+  const runtimeBodyActive = runtimeBodyBundledModule != null || runtimeBodyGltfUrl != null;
+  const skinnedAnchorsActive = !garmentOnlyViewport && runtimeBodyActive;
   const showBodyMesh = !garmentOnlyViewport;
   const hideGarments = bodyOnlyGarments;
+  const [gltfBodyVisibleReady, setGltfBodyVisibleReady] = useState(false);
+  const showProceduralBody = !runtimeBodyActive || !gltfBodyVisibleReady;
+
+  useLayoutEffect(() => {
+    setGltfBodyVisibleReady(false);
+  }, [runtimeBodyBundledModule, runtimeBodyGltfUrl]);
 
   const attachmentDriverEnabled =
     skinnedAnchorsActive &&
@@ -1733,19 +1745,19 @@ export function AvatarProceduralScene({
     const bodyGroup = bodyRootRef.current;
     const gltfGroup = gltfBodyRootRef.current;
     const garmentGroup = garmentRootRef.current;
-    const runtimeBodyActive = runtimeBodyBundledModule != null || runtimeBodyGltfUrl != null;
     const activeRenderBranchName =
-      runtimeBodyBundledModule != null
-        ? "stylised_glb"
-        : runtimeBodyGltfUrl != null
-          ? "realistic_glb"
-          : "procedural_fallback";
+      runtimeBodyActive
+        ? runtimeBodySourceType === "production_avatar"
+          ? "production_avatar"
+          : "stylised_glb"
+        : "procedural_fallback";
     const initialRenderAudit = showBodyMesh
       ? auditDrawableHierarchy({
           root: bodyGroup,
           gltfRoot: gltfGroup,
           activeRenderBranchName,
           safetyFallbackReason: null,
+          sceneChildCount: scene.children.length,
         })
       : null;
     const safetyFallbackReason =
@@ -1753,9 +1765,13 @@ export function AvatarProceduralScene({
       startupLoadGeneration > 0 &&
       (initialRenderAudit?.gltfVisibleMeshCount ?? 0) <= 0
         ? runtimeBodyBundledModule != null
-          ? "stylised_glb_loaded_but_no_visible_meshes"
-          : "realistic_glb_loaded_but_no_visible_meshes"
+          ? runtimeBodySourceType === "production_avatar"
+            ? "production_avatar_loaded_but_no_visible_meshes"
+            : "stylised_glb_loaded_but_no_visible_meshes"
+          : "production_avatar_loaded_but_no_visible_meshes"
         : null;
+    const gltfVisible = runtimeBodyActive && (initialRenderAudit?.gltfVisibleMeshCount ?? 0) > 0;
+    setGltfBodyVisibleReady((prev) => (prev === gltfVisible ? prev : gltfVisible));
     const renderAudit =
       initialRenderAudit && safetyFallbackReason
         ? { ...initialRenderAudit, safetyFallbackReason }
@@ -1790,13 +1806,18 @@ export function AvatarProceduralScene({
     if (json === lastStartupReportJson.current) return;
     lastStartupReportJson.current = json;
     onStartupVisibilityReport(payload);
+    invalidate();
   }, [
     onStartupVisibilityReport,
+    scene,
+    invalidate,
     showBodyMesh,
     hideGarments,
     startupLoadGeneration,
     runtimeBodyBundledModule,
     runtimeBodyGltfUrl,
+    runtimeBodySourceType,
+    runtimeBodyActive,
     pose,
     liveShading,
     garmentFit,
@@ -1872,9 +1893,11 @@ export function AvatarProceduralScene({
 
           {showBodyMesh ? (
             <group ref={bodyRootRef} name="avatar_body_root">
-              <group name="procedural_body_root">
-                <ProceduralRigBody {...rigMat} />
-              </group>
+              {showProceduralBody ? (
+                <group name="procedural_body_root">
+                  <ProceduralRigBody {...rigMat} />
+                </group>
+              ) : null}
               {runtimeBodyBundledModule != null || runtimeBodyGltfUrl ? (
                 <GltfErrorBoundary
                   key={String(runtimeBodyBundledModule ?? runtimeBodyGltfUrl ?? "")}

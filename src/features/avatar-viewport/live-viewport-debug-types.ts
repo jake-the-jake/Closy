@@ -14,11 +14,21 @@ export type SkinnedRigPoseReport = {
   criticalMapped: number;
   criticalTotal: number;
   meshCount?: number;
+  visibleMeshCount?: number;
+  skinnedMeshCount?: number;
   materialCount?: number;
+  textureCount?: number;
+  materialNames?: string[];
+  transparentMaterialCount?: number;
+  triangleEstimate?: number;
+  sceneChildCount?: number;
+  worldScale?: [number, number, number];
+  animationCount?: number;
   boneCount?: number;
   boundsHeight?: number;
   rigTypeGuess?: string;
   rigConfidence?: number;
+  assetFailureReason?: string | null;
 };
 
 /** Snapshot of garment anchor groups under `avatar_torso_region_fit` (dev). */
@@ -65,6 +75,7 @@ export type LiveViewportSceneDiagnostics = {
 export type AvatarRenderAudit = {
   activeRenderBranchName: string;
   mountedAvatarRoot: boolean;
+  sceneChildCount: number;
   totalMeshCount: number;
   visibleMeshCount: number;
   gltfTotalMeshCount: number;
@@ -74,16 +85,26 @@ export type AvatarRenderAudit = {
   firstMeshMaterialOpacity: number | null;
   firstMeshMaterialTransparent: boolean | null;
   safetyFallbackReason: string | null;
+  lastRenderTimestamp: number;
   cameraPosition?: [number, number, number];
   cameraTarget?: [number, number, number];
   cameraRadius?: number;
 };
+
+export type AvatarStartupPhase =
+  | "idle"
+  | "loadingBody"
+  | "bodyLoaded"
+  | "sceneReady"
+  | "visible"
+  | "failedWithFallback";
 
 /** Live body path + intent (dev diagnostics; avoids silent bundled↔procedural drift). */
 export type LiveViewportBodySourceDebug = {
   /** What the viewport is actually drawing for the body mesh. */
   active:
     | "realistic_glb"
+    | "production_avatar"
     | "stylised_glb"
     | "bundled_skinned"
     | "external_skinned_url"
@@ -92,7 +113,7 @@ export type LiveViewportBodySourceDebug = {
     | "procedural_fallback_error"
     | "procedural_scene_default";
   /** User-facing intent from props (before runtime failure fallback). */
-  userIntent: "auto" | "realistic_glb" | "stylised_glb" | "procedural";
+  userIntent: "best" | "production" | "stylised" | "fallback";
   /** High-level cause for the current active body source. */
   sourceReason: "startup" | "user_toggle" | "hard_fallback";
   loadStatus: "idle" | "pending" | "loaded" | "failed";
@@ -102,11 +123,19 @@ export type LiveViewportBodySourceDebug = {
     | "user_procedural_toggle"
     | "env_force_procedural"
     | "runtime_url_override"
+    | "production_avatar"
     | "skinned_load_failed_fallback"
     | "avatar_source_manager";
   debugLabel?: string;
   fallbackReason?: string;
   errorReason?: string | null;
+  routeMode?: "user" | "dev";
+  resolvedLabel?: string;
+  loadIntent?: string;
+  visibleByDefault?: boolean;
+  effectivePreference?: "best" | "production" | "stylised" | "fallback";
+  assetManifestId?: string;
+  assetAvailability?: string;
 };
 
 export type LiveViewportPoseFitDebug = {
@@ -130,9 +159,19 @@ export type LiveViewportPoseFitDebug = {
     avatarSource?: string;
     fallbackReason?: string;
     meshCount?: number;
+    visibleMeshCount?: number;
+    skinnedMeshCount?: number;
     materialCount?: number;
+    textureCount?: number;
+    materialNames?: string[];
+    transparentMaterialCount?: number;
+    triangleEstimate?: number;
+    sceneChildCount?: number;
+    worldScale?: [number, number, number];
+    animationCount?: number;
     boneCount?: number;
     boundsHeight?: number;
+    assetFailureReason?: string | null;
   } | null;
   garmentPoseMatchesBody: boolean;
   skinned: SkinnedRigPoseReport | null;
@@ -152,6 +191,7 @@ export type LiveViewportPoseFitDebug = {
     garmentGroupVisible: boolean;
     activeTab: string;
     cleanMode: boolean;
+    phase: AvatarStartupPhase;
     renderSafe: boolean;
     lastSceneError: string | null;
     startupReason: string;
