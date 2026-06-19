@@ -9,7 +9,7 @@ import {
   useRef,
 } from "react";
 import { THREE } from "./three";
-import { GLTFLoader, type GLTF } from "./three";
+import { GLTFLoader, SkeletonUtils, type GLTF } from "./three";
 
 import {
   DEFAULT_BODY_SHAPE,
@@ -38,9 +38,16 @@ import {
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 import { alignSkinnedRootToPelvisMetric } from "./skinned-body-placement";
 import type {
+  AvatarSkinCloneAudit,
   AvatarRenderableReport,
   SkinnedRigPoseReport,
 } from "./live-viewport-debug-types";
+import {
+  createAvatarRenderProbe,
+  projectObjectBounds,
+  type AvatarProjectionSnapshot,
+  type AvatarRenderProbeSnapshot,
+} from "./avatar-source/avatarRenderProbe";
 import {
   applySkinnedPoseToBones,
   applySkinnedShapeScales,
@@ -80,6 +87,7 @@ type AvatarGltfStats = {
   animationCount: number;
   materialSafetyStatus?: "mobile_safe" | "mobile_sanitized";
   assetFailureReason: string | null;
+  skinCloneAudit: AvatarSkinCloneAudit;
 };
 
 function isMeshLike(o: THREE.Object3D): o is THREE.Mesh | THREE.SkinnedMesh {
@@ -89,6 +97,14 @@ function isMeshLike(o: THREE.Object3D): o is THREE.Mesh | THREE.SkinnedMesh {
 
 function isStandardMaterialLike(m: THREE.Material): m is THREE.MeshStandardMaterial {
   return m instanceof THREE.MeshStandardMaterial || (m as { isMeshStandardMaterial?: boolean }).isMeshStandardMaterial === true;
+}
+
+function countSkinnedMeshes(root: THREE.Object3D): number {
+  let count = 0;
+  root.traverse((o) => {
+    if ((o as THREE.SkinnedMesh).isSkinnedMesh) count += 1;
+  });
+  return count;
 }
 
 function v3tuple(v: THREE.Vector3): [number, number, number] {
@@ -136,6 +152,119 @@ function updateWorldFromSceneRoot(object: THREE.Object3D) {
   root.updateMatrixWorld(true);
 }
 
+function collectBones(root: THREE.Object3D): Set<THREE.Bone> {
+  const bones = new Set<THREE.Bone>();
+  root.traverse((o) => {
+    if (o instanceof THREE.Bone || (o as { isBone?: boolean }).isBone === true) {
+      bones.add(o as THREE.Bone);
+    }
+  });
+  return bones;
+}
+
+function finiteMatrix(matrix: THREE.Matrix4): boolean {
+  return matrix.elements.every((n) => Number.isFinite(n));
+}
+
+function skinAttributesValid(mesh: THREE.SkinnedMesh): boolean {
+  const geometry = mesh.geometry;
+  const skinIndex = geometry?.getAttribute("skinIndex");
+  const skinWeight = geometry?.getAttribute("skinWeight");
+  if (!skinIndex || !skinWeight || skinIndex.count !== skinWeight.count) return false;
+  for (let i = 0; i < Math.min(skinWeight.count, 64); i += 1) {
+    for (let c = 0; c < skinWeight.itemSize; c += 1) {
+      const weight = skinWeight.getComponent(i, c);
+      if (!Number.isFinite(weight)) return false;
+    }
+  }
+  return true;
+}
+
+function auditSkinClone(sourceScene: THREE.Object3D, cloneScene: THREE.Object3D): AvatarSkinCloneAudit {
+  const sourceBones = collectBones(sourceScene);
+  const clonedBones = collectBones(cloneScene);
+  let skinnedMeshCount = 0;
+  let sharedSourceBoneReferences = 0;
+  let clonedBonesBelongToClone = true;
+  let bindMatricesFinite = true;
+  let skinAttrsValid = true;
+
+  cloneScene.traverse((o) => {
+    const mesh = o as THREE.SkinnedMesh;
+    if (!mesh.isSkinnedMesh) return;
+    skinnedMeshCount += 1;
+    if (!mesh.skeleton || mesh.skeleton.bones.length <= 0) {
+      clonedBonesBelongToClone = false;
+      skinAttrsValid = false;
+      return;
+    }
+    if (mesh.skeleton.boneInverses.length !== mesh.skeleton.bones.length) {
+      bindMatricesFinite = false;
+    }
+    if (!finiteMatrix(mesh.bindMatrix) || !finiteMatrix(mesh.bindMatrixInverse)) {
+      bindMatricesFinite = false;
+    }
+    for (const inverse of mesh.skeleton.boneInverses) {
+      if (!finiteMatrix(inverse)) bindMatricesFinite = false;
+    }
+    for (const bone of mesh.skeleton.bones) {
+      if (!clonedBones.has(bone)) clonedBonesBelongToClone = false;
+      if (sourceBones.has(bone)) sharedSourceBoneReferences += 1;
+    }
+    if (!skinAttributesValid(mesh)) skinAttrsValid = false;
+    try {
+      mesh.skeleton.update();
+    } catch {
+      bindMatricesFinite = false;
+    }
+  });
+
+  const valid =
+    skinnedMeshCount <= 0 ||
+    (clonedBones.size > 0 &&
+      clonedBonesBelongToClone &&
+      sharedSourceBoneReferences === 0 &&
+      bindMatricesFinite &&
+      skinAttrsValid);
+  const reason = valid
+    ? skinnedMeshCount > 0
+      ? "skinned_clone_valid"
+      : "no_skinned_meshes"
+    : sharedSourceBoneReferences > 0
+      ? "clone_references_source_bones"
+      : !clonedBonesBelongToClone
+        ? "cloned_bones_not_in_clone_hierarchy"
+        : !bindMatricesFinite
+          ? "bind_matrices_invalid"
+          : "skin_attributes_invalid";
+
+  return {
+    sourceSceneUuid: sourceScene.uuid,
+    cloneSceneUuid: cloneScene.uuid,
+    skinnedMeshCount,
+    sourceBoneCount: sourceBones.size,
+    clonedBoneCount: clonedBones.size,
+    clonedBonesBelongToClone,
+    sharedSourceBoneReferences,
+    bindMatricesFinite,
+    skinAttributesValid: skinAttrsValid,
+    valid,
+    reason,
+  };
+}
+
+function cloneGltfScene(gltf: GLTF): { root: THREE.Object3D; skinCloneAudit: AvatarSkinCloneAudit } {
+  const sourceScene = gltf.scene;
+  const root =
+    countSkinnedMeshes(sourceScene) > 0
+      ? (SkeletonUtils.clone(sourceScene) as THREE.Object3D)
+      : sourceScene.clone(true);
+  return {
+    root,
+    skinCloneAudit: auditSkinClone(sourceScene, root),
+  };
+}
+
 function boundsAreFiniteNonZero(bounds: AvatarRenderableReport["bounds"]): boolean {
   if (!bounds) return false;
   return (
@@ -151,6 +280,8 @@ function buildRenderableReport(
   assetId: string,
   scene: THREE.Object3D,
   stats: AvatarGltfStats,
+  probe: AvatarRenderProbeSnapshot,
+  projection: AvatarProjectionSnapshot,
 ): AvatarRenderableReport {
   updateWorldFromSceneRoot(scene);
   const firstMesh = findFirstMesh(scene);
@@ -192,23 +323,77 @@ function buildRenderableReport(
     firstMaterialTransparent,
   };
 
-  let reason = "renderable";
-  if (!reportBase.mounted) reason = "scene_not_mounted";
-  else if (stats.assetFailureReason) reason = stats.assetFailureReason;
-  else if (stats.meshCount <= 0) reason = "asset_has_no_meshes";
-  else if (stats.visibleMeshCount <= 0) reason = "asset_has_no_visible_meshes";
-  else if (!boundsAreFiniteNonZero(bounds)) reason = "asset_bounds_invalid";
+  const hierarchyValid =
+    !stats.assetFailureReason &&
+    stats.meshCount > 0 &&
+    stats.visibleMeshCount > 0 &&
+    boundsAreFiniteNonZero(bounds) &&
+    !(firstMaterialTransparent === true && (firstMaterialOpacity ?? 0) <= 0.01) &&
+    finiteTuple(firstMeshWorldPosition) &&
+    finiteNonZeroTuple(firstMeshWorldScale) &&
+    stats.skinCloneAudit.valid;
+  const mounted = reportBase.mounted;
+  const renderConfirmed = probe.drawConfirmationCount >= 2 && projection.projectedBoundsVisible;
+  const preflightValid = hierarchyValid;
+  const mountValid = mounted;
+  const renderValid = renderConfirmed;
+  const promotionValid = preflightValid && mountValid && renderValid;
+
+  let hierarchyReason = "hierarchy_valid";
+  if (stats.assetFailureReason) hierarchyReason = stats.assetFailureReason;
+  else if (stats.meshCount <= 0) hierarchyReason = "asset_has_no_meshes";
+  else if (stats.visibleMeshCount <= 0) hierarchyReason = "asset_has_no_visible_meshes";
+  else if (!boundsAreFiniteNonZero(bounds)) hierarchyReason = "asset_bounds_invalid";
   else if (firstMaterialTransparent === true && (firstMaterialOpacity ?? 0) <= 0.01) {
-    reason = "first_mesh_material_fully_transparent";
+    hierarchyReason = "first_mesh_material_fully_transparent";
   } else if (!finiteTuple(firstMeshWorldPosition)) {
-    reason = "first_mesh_world_position_invalid";
+    hierarchyReason = "first_mesh_world_position_invalid";
   } else if (!finiteNonZeroTuple(firstMeshWorldScale)) {
-    reason = "first_mesh_world_scale_invalid";
+    hierarchyReason = "first_mesh_world_scale_invalid";
+  } else if (!stats.skinCloneAudit.valid) {
+    hierarchyReason = stats.skinCloneAudit.reason;
   }
+
+  const renderConfirmationReason = !hierarchyValid
+    ? hierarchyReason
+    : !mounted
+      ? "scene_not_mounted"
+      : probe.drawConfirmationCount <= 0
+        ? "draw_pending"
+        : probe.drawConfirmationCount < 2
+          ? "draw_needs_second_frame"
+          : !projection.projectedBoundsVisible
+            ? projection.reason
+            : "render_confirmed";
+  const reason = promotionValid ? "promotion_valid" : renderConfirmationReason;
 
   return {
     ...reportBase,
-    valid: reason === "renderable",
+    mounted,
+    hierarchyValid,
+    drawSubmitted: probe.drawSubmitted,
+    drawConfirmationCount: probe.drawConfirmationCount,
+    firstDrawTimestamp: probe.firstDrawTimestamp,
+    lastDrawTimestamp: probe.lastDrawTimestamp,
+    firstDrawFrame: probe.firstDrawFrame,
+    lastDrawFrame: probe.lastDrawFrame,
+    projectedBoundsVisible: projection.projectedBoundsVisible,
+    cameraFrustumValid: projection.cameraFrustumValid,
+    rendererCallCountAtConfirmation: probe.rendererCallCountAtConfirmation,
+    rendererTriangleCountAtConfirmation: probe.rendererTriangleCountAtConfirmation,
+    renderConfirmed,
+    renderConfirmationReason,
+    ndcMin: projection.ndcMin,
+    ndcMax: projection.ndcMax,
+    cameraDistance: projection.cameraDistance,
+    cameraNear: projection.cameraNear,
+    cameraFar: projection.cameraFar,
+    preflightValid,
+    mountValid,
+    renderValid,
+    promotionValid,
+    skinCloneAudit: stats.skinCloneAudit,
+    valid: promotionValid,
     reason,
   };
 }
@@ -220,27 +405,51 @@ function useRenderableReport(
   stats: AvatarGltfStats,
   onRenderableReport: ((report: AvatarRenderableReport) => void) | undefined,
 ) {
+  const camera = useThree((st) => st.camera);
   const lastReportJson = useRef("");
-  const emittedValidRef = useRef(false);
+  const emittedPromotionRef = useRef(false);
+  const probeRef = useRef<ReturnType<typeof createAvatarRenderProbe> | null>(null);
   const emit = () => {
     if (!onRenderableReport) return;
-    const report = buildRenderableReport(sourceKey, assetId, scene, stats);
+    const probe = probeRef.current?.snapshot() ?? {
+      drawSubmitted: false,
+      drawConfirmationCount: 0,
+      firstDrawTimestamp: null,
+      lastDrawTimestamp: null,
+      firstDrawFrame: null,
+      lastDrawFrame: null,
+      rendererCallCountAtConfirmation: null,
+      rendererTriangleCountAtConfirmation: null,
+    };
+    const projection = projectObjectBounds(scene, camera);
+    const report = buildRenderableReport(sourceKey, assetId, scene, stats, probe, projection);
     const json = JSON.stringify(report);
     if (json !== lastReportJson.current) {
       lastReportJson.current = json;
       onRenderableReport(report);
     }
-    if (report.valid) emittedValidRef.current = true;
+    if (report.promotionValid) emittedPromotionRef.current = true;
   };
 
   useLayoutEffect(() => {
-    emittedValidRef.current = false;
+    emittedPromotionRef.current = false;
+    probeRef.current?.dispose();
+    probeRef.current = createAvatarRenderProbe({
+      root: scene,
+      sourceKey,
+      sceneUuid: scene.uuid,
+    });
     emit();
+    return () => {
+      probeRef.current?.dispose();
+      probeRef.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceKey, assetId, scene, stats, onRenderableReport]);
 
   useFrame(() => {
-    if (emittedValidRef.current) return;
+    probeRef.current?.tickFrame();
+    if (emittedPromotionRef.current) return;
     emit();
   });
 }
@@ -360,7 +569,7 @@ function usePreparedGltf(
   applyUntexturedFallbackMaterials: boolean,
 ): PreparedGltf {
   return useMemo(() => {
-    const root = gltf.scene.clone(true);
+    const { root, skinCloneAudit } = cloneGltfScene(gltf);
     const normalizeReport = normalizeAvatarScene(root, {
       expectedHeightMeters: normalizeY,
     });
@@ -396,6 +605,7 @@ function usePreparedGltf(
         animationCount: audit.animationCount,
         materialSafetyStatus: audit.materialSafetyStatus,
         assetFailureReason: audit.failureReason,
+        skinCloneAudit,
       },
     };
   }, [gltf, cacheKey, normalizeY, metrics, applyPelvisAlign, applyUntexturedFallbackMaterials]);
@@ -565,6 +775,7 @@ function useSkinnedBodyLayout(
           rigTypeGuess: stats.rigInspection.rigTypeGuess,
           rigConfidence: stats.rigInspection.confidence,
           assetFailureReason: stats.assetFailureReason,
+          skinCloneAudit: stats.skinCloneAudit,
         };
         const rj = JSON.stringify(report);
         if (rj !== lastRigReportJson.current) {
@@ -627,6 +838,7 @@ function useSkinnedBodyLayout(
         rigTypeGuess: stats.rigInspection.rigTypeGuess,
         rigConfidence: stats.rigInspection.confidence,
         assetFailureReason: stats.assetFailureReason,
+        skinCloneAudit: stats.skinCloneAudit,
       };
       const rj = JSON.stringify(report);
       if (rj !== lastRigReportJson.current) {
@@ -856,7 +1068,7 @@ export function GltfRuntimeGarment({
 }: GltfRuntimeGarmentProps) {
   const gltf = useLoader(GLTFLoader, url);
   const { scene, baseline } = useMemo(() => {
-    const root = gltf.scene.clone(true);
+    const root = SkeletonUtils.clone(gltf.scene) as THREE.Object3D;
     normalizeAvatarScene(root, { expectedHeightMeters: normalizeHeight });
     normalizeAvatarPbrMaterials(root);
     const bl = buildMaterialBaseline(root);

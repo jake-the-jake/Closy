@@ -14,6 +14,7 @@ const zustandMiddlewareCjs = path.resolve(
   "node_modules/zustand/middleware.js",
 );
 const threeRoot = path.resolve(__dirname, "node_modules/three");
+const threeNativeCjs = path.resolve(__dirname, "node_modules/three/build/three.cjs");
 
 /** Keep avatar preview on one canonical Three.js module instance. */
 config.resolver.extraNodeModules = {
@@ -28,6 +29,12 @@ config.resolver.extraNodeModules = {
  * appear broken. Force the CommonJS build (`process.env.NODE_ENV`), which matches native.
  */
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (platform !== "web" && moduleName === "three") {
+    return {
+      filePath: threeNativeCjs,
+      type: "sourceFile",
+    };
+  }
   if (platform === "web" && moduleName === "zustand/middleware") {
     return {
       filePath: zustandMiddlewareCjs,

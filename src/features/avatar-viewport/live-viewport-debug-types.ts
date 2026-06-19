@@ -31,6 +31,7 @@ export type SkinnedRigPoseReport = {
   rigTypeGuess?: string;
   rigConfidence?: number;
   assetFailureReason?: string | null;
+  skinCloneAudit?: AvatarSkinCloneAudit | null;
 };
 
 /** Snapshot of garment anchor groups under `avatar_torso_region_fit` (dev). */
@@ -118,6 +119,43 @@ export type AvatarRenderableReport = {
   firstMeshWorldScale: [number, number, number] | null;
   firstMaterialOpacity: number | null;
   firstMaterialTransparent: boolean | null;
+  hierarchyValid: boolean;
+  drawSubmitted: boolean;
+  drawConfirmationCount: number;
+  firstDrawTimestamp: number | null;
+  lastDrawTimestamp: number | null;
+  firstDrawFrame: number | null;
+  lastDrawFrame: number | null;
+  projectedBoundsVisible: boolean;
+  cameraFrustumValid: boolean;
+  rendererCallCountAtConfirmation: number | null;
+  rendererTriangleCountAtConfirmation: number | null;
+  renderConfirmed: boolean;
+  renderConfirmationReason: string;
+  ndcMin: [number, number, number] | null;
+  ndcMax: [number, number, number] | null;
+  cameraDistance: number | null;
+  cameraNear: number | null;
+  cameraFar: number | null;
+  preflightValid: boolean;
+  mountValid: boolean;
+  renderValid: boolean;
+  promotionValid: boolean;
+  skinCloneAudit?: AvatarSkinCloneAudit | null;
+  valid: boolean;
+  reason: string;
+};
+
+export type AvatarSkinCloneAudit = {
+  sourceSceneUuid: string;
+  cloneSceneUuid: string;
+  skinnedMeshCount: number;
+  sourceBoneCount: number;
+  clonedBoneCount: number;
+  clonedBonesBelongToClone: boolean;
+  sharedSourceBoneReferences: number;
+  bindMatricesFinite: boolean;
+  skinAttributesValid: boolean;
   valid: boolean;
   reason: string;
 };
@@ -217,6 +255,7 @@ export type LiveViewportPoseFitDebug = {
     boneCount?: number;
     boundsHeight?: number;
     assetFailureReason?: string | null;
+    skinCloneAudit?: AvatarSkinCloneAudit | null;
   } | null;
   garmentPoseMatchesBody: boolean;
   skinned: SkinnedRigPoseReport | null;

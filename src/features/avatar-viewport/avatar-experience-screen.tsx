@@ -190,6 +190,24 @@ export function AvatarExperienceScreen() {
                     : "n/a"}
                 </Text>
                 <Text style={styles.devLine}>
+                  draw={debug?.renderableReport?.drawConfirmationCount ?? "n/a"} renderConfirmed=
+                  {debug?.renderableReport?.renderConfirmed == null
+                    ? "n/a"
+                    : debug.renderableReport.renderConfirmed
+                      ? "yes"
+                      : "no"} projected=
+                  {debug?.renderableReport?.projectedBoundsVisible == null
+                    ? "n/a"
+                    : debug.renderableReport.projectedBoundsVisible
+                      ? "yes"
+                      : "no"} promotion=
+                  {debug?.renderableReport?.promotionValid == null
+                    ? "n/a"
+                    : debug.renderableReport.promotionValid
+                      ? "yes"
+                      : "no"}
+                </Text>
+                <Text style={styles.devLine}>
                   branch={debug?.renderAudit?.activeRenderBranchName ?? "n/a"} fallback=
                   {debug?.renderAudit?.safetyFallbackReason ??
                     debug?.sourceLifecycle?.failureReason ??

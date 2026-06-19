@@ -2013,15 +2013,56 @@ export function AvatarPreviewDevScreen() {
                           ({livePoseFitDebug.sourceLifecycle.mountReason ?? "n/a"})
                         </Text>
                       ) : null}
+                      {livePoseFitDebug.sourceLifecycle ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          staged validity: preflight{" "}
+                          {livePoseFitDebug.sourceLifecycle.preflightValid == null
+                            ? "n/a"
+                            : livePoseFitDebug.sourceLifecycle.preflightValid
+                              ? "yes"
+                              : "no"}{" "}
+                          / render{" "}
+                          {livePoseFitDebug.sourceLifecycle.renderValid == null
+                            ? "n/a"
+                            : livePoseFitDebug.sourceLifecycle.renderValid
+                              ? "yes"
+                              : "no"}{" "}
+                          / promotion{" "}
+                          {livePoseFitDebug.sourceLifecycle.promotionValid == null
+                            ? "n/a"
+                            : livePoseFitDebug.sourceLifecycle.promotionValid
+                              ? "yes"
+                              : "no"}
+                        </Text>
+                      ) : null}
                       {livePoseFitDebug.renderableReport ? (
                         <Text style={styles.poseFitDebugLine} selectable>
                           child report: source {livePoseFitDebug.renderableReport.assetId} / mounted{" "}
-                          {livePoseFitDebug.renderableReport.mounted ? "yes" : "no"} / valid{" "}
-                          {livePoseFitDebug.renderableReport.valid ? "yes" : "no"} / reason{" "}
+                          {livePoseFitDebug.renderableReport.mounted ? "yes" : "no"} / promoted{" "}
+                          {livePoseFitDebug.renderableReport.promotionValid ? "yes" : "no"} / reason{" "}
                           {livePoseFitDebug.renderableReport.reason} / meshes{" "}
                           {livePoseFitDebug.renderableReport.visibleMeshCount}/
                           {livePoseFitDebug.renderableReport.meshCount} / scene{" "}
                           {livePoseFitDebug.renderableReport.sceneUuid}
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.renderableReport ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          render probe: draw{" "}
+                          {livePoseFitDebug.renderableReport.drawSubmitted ? "yes" : "no"} / confirms{" "}
+                          {livePoseFitDebug.renderableReport.drawConfirmationCount} / render confirmed{" "}
+                          {livePoseFitDebug.renderableReport.renderConfirmed ? "yes" : "no"} / projected{" "}
+                          {livePoseFitDebug.renderableReport.projectedBoundsVisible ? "yes" : "no"} / reason{" "}
+                          {livePoseFitDebug.renderableReport.renderConfirmationReason}
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.renderableReport?.skinCloneAudit ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          skin clone: {livePoseFitDebug.renderableReport.skinCloneAudit.valid ? "ok" : "fail"} /{" "}
+                          {livePoseFitDebug.renderableReport.skinCloneAudit.reason} / source bones{" "}
+                          {livePoseFitDebug.renderableReport.skinCloneAudit.sourceBoneCount} / cloned bones{" "}
+                          {livePoseFitDebug.renderableReport.skinCloneAudit.clonedBoneCount} / shared refs{" "}
+                          {livePoseFitDebug.renderableReport.skinCloneAudit.sharedSourceBoneReferences}
                         </Text>
                       ) : null}
                       {livePoseFitDebug.avatar ? (

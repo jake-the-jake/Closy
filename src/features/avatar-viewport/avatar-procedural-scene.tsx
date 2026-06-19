@@ -1695,7 +1695,8 @@ export function AvatarProceduralScene({
   const gltfBodyVisibleReady =
     runtimeBodyActive &&
     renderableReportMatchesSource &&
-    runtimeBodyRenderableReport.valid &&
+    runtimeBodyRenderableReport.promotionValid &&
+    runtimeBodyRenderableReport.renderConfirmed &&
     runtimeBodyRenderableReport.mounted;
   const showProceduralBody = !runtimeBodyActive || !gltfBodyVisibleReady;
 
@@ -1795,7 +1796,8 @@ export function AvatarProceduralScene({
     const childReportReady =
       runtimeBodyActive &&
       renderableReportMatchesSource &&
-      runtimeBodyRenderableReport?.valid === true &&
+      runtimeBodyRenderableReport?.promotionValid === true &&
+      runtimeBodyRenderableReport?.renderConfirmed === true &&
       runtimeBodyRenderableReport.mounted === true;
     const safetyFallbackReason =
       runtimeBodyActive &&

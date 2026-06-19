@@ -647,19 +647,14 @@ export function AvatarViewportLive({
     [candidateAvatarRouteSource],
   );
   const [activeVisibleRouteSource, setActiveVisibleRouteSource] =
-    useState<AvatarResolvedRouteSource>(candidateAvatarRouteSource);
+    useState<AvatarResolvedRouteSource>(fallbackAvatarRouteSource);
   const [renderRouteSource, setRenderRouteSource] =
     useState<AvatarResolvedRouteSource>(candidateAvatarRouteSource);
   const activeVisibleRouteSourceRef = useRef(activeVisibleRouteSource);
   const renderRouteSourceRef = useRef(renderRouteSource);
-  const lastGoodVisibleRouteSourceRef = useRef<AvatarResolvedRouteSource | null>(null);
-  const sourceVersionRef = useRef(0);
-  const lastCandidateSourceKeyRef = useRef(candidateSourceKey);
-  if (lastCandidateSourceKeyRef.current !== candidateSourceKey) {
-    lastCandidateSourceKeyRef.current = candidateSourceKey;
-    sourceVersionRef.current += 1;
-  }
-  const sourceVersion = sourceVersionRef.current;
+  const lastGoodVisibleRouteSourceRef =
+    useRef<AvatarResolvedRouteSource | null>(fallbackAvatarRouteSource);
+  const [sourceVersion, setSourceVersion] = useState(0);
   const [sourceFailureReason, setSourceFailureReason] = useState<string | null>(null);
   const [sourceFallbackReason, setSourceFallbackReason] = useState<string | null>(null);
   const [sourceValidation, setSourceValidation] =
@@ -678,6 +673,7 @@ export function AvatarViewportLive({
   }, [renderRouteSource]);
 
   useEffect(() => {
+    setSourceVersion((v) => v + 1);
     setSourceValidation(null);
     setRuntimeBodyRenderableReport(null);
     setSourceFailureReason(null);
@@ -868,7 +864,10 @@ export function AvatarViewportLive({
         setSourceValidation({
           valid: false,
           assetAuditValid: false,
+          preflightValid: false,
           mountAuditValid: false,
+          renderValid: false,
+          promotionValid: false,
           renderable: false,
           assetReason: "candidate_loading",
           mountReason: "candidate_loading",
@@ -987,7 +986,7 @@ export function AvatarViewportLive({
             ? "stylised_glb_renderable_report_missing"
             : "realistic_glb_renderable_report_missing");
       triggerGlbVisibilityFallback(resolvedAvatarSource.sourceType, reason);
-    }, 1000);
+    }, 3000);
     return () => clearTimeout(id);
   }, [
     resolvedAvatarSource.sourceType,
@@ -1012,7 +1011,11 @@ export function AvatarViewportLive({
     if (
       sourceValidation.reason === "candidate_loading" ||
       sourceValidation.reason === "missing_child_renderable_report" ||
-      sourceValidation.mountReason === "scene_not_mounted"
+      sourceValidation.mountReason === "scene_not_mounted" ||
+      sourceValidation.reason === "draw_pending" ||
+      sourceValidation.reason === "draw_needs_second_frame" ||
+      sourceValidation.reason === "projected_outside_view" ||
+      sourceValidation.reason === "projected_visible"
     ) {
       return;
     }
@@ -1310,6 +1313,7 @@ export function AvatarViewportLive({
         boneCount: skinnedPoseReport?.boneCount,
         boundsHeight: skinnedPoseReport?.boundsHeight,
         assetFailureReason: skinnedPoseReport?.assetFailureReason,
+        skinCloneAudit: skinnedPoseReport?.skinCloneAudit,
       },
       garmentPoseMatchesBody: true,
       skinned: skinnedPoseReport,

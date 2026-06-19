@@ -31,8 +31,11 @@ export type AvatarViewportSourceMachineSnapshot = {
   fallbackReason: string | null;
   failureReason: string | null;
   validationReason: string | null;
+  preflightValid: boolean | null;
   assetAuditValid: boolean | null;
   mountAuditValid: boolean | null;
+  renderValid: boolean | null;
+  promotionValid: boolean | null;
   assetReason: string | null;
   mountReason: string | null;
   visibleMeshCount: number;
@@ -111,8 +114,11 @@ export function buildAvatarViewportSourceMachineSnapshot(input: {
     fallbackReason: input.fallbackReason,
     failureReason: input.failureReason,
     validationReason: input.validation?.reason ?? null,
+    preflightValid: input.validation?.preflightValid ?? null,
     assetAuditValid: input.validation?.assetAuditValid ?? null,
     mountAuditValid: input.validation?.mountAuditValid ?? null,
+    renderValid: input.validation?.renderValid ?? null,
+    promotionValid: input.validation?.promotionValid ?? null,
     assetReason: input.validation?.assetReason ?? null,
     mountReason: input.validation?.mountReason ?? null,
     visibleMeshCount: activeVisibleMeshCount,

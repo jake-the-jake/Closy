@@ -2,6 +2,9 @@ import type { AvatarRenderAudit } from "../live-viewport-debug-types";
 import type { AvatarRenderableReport } from "../live-viewport-debug-types";
 
 export type AvatarCandidateValidation = {
+  preflightValid: boolean;
+  renderValid: boolean;
+  promotionValid: boolean;
   assetAuditValid: boolean;
   mountAuditValid: boolean;
   renderable: boolean;
@@ -46,7 +49,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: false,
+      preflightValid: false,
       mountAuditValid: false,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "missing_render_audit",
       mountReason: "missing_render_audit",
@@ -64,7 +70,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: false,
+      preflightValid: false,
       mountAuditValid: false,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "avatar_root_not_mounted",
       mountReason: "avatar_root_not_mounted",
@@ -82,7 +91,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: false,
+      preflightValid: false,
       mountAuditValid: audit.mountedAvatarRoot,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: audit.gltfTotalMeshCount > 0 ? "gltf_loaded_but_no_visible_meshes" : "gltf_not_attached",
       mountReason: audit.mountedAvatarRoot ? "mounted" : "avatar_root_not_mounted",
@@ -100,7 +112,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: false,
+      preflightValid: false,
       mountAuditValid: audit.mountedAvatarRoot,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "no_renderable_meshes",
       mountReason: audit.mountedAvatarRoot ? "mounted" : "avatar_root_not_mounted",
@@ -118,7 +133,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: false,
+      preflightValid: false,
       mountAuditValid: audit.mountedAvatarRoot,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "no_visible_meshes",
       mountReason: audit.mountedAvatarRoot ? "mounted" : "avatar_root_not_mounted",
@@ -136,7 +154,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: false,
+      preflightValid: false,
       mountAuditValid: audit.mountedAvatarRoot,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "first_mesh_material_fully_transparent",
       mountReason: audit.mountedAvatarRoot ? "mounted" : "avatar_root_not_mounted",
@@ -154,7 +175,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: true,
+      preflightValid: true,
       mountAuditValid: false,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "asset_audit_valid",
       mountReason: "first_mesh_world_position_invalid",
@@ -172,7 +196,10 @@ export function validateAvatarRenderableFromAudit(
     return {
       valid: false,
       assetAuditValid: true,
+      preflightValid: true,
       mountAuditValid: false,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "asset_audit_valid",
       mountReason: "first_mesh_world_scale_invalid",
@@ -189,7 +216,10 @@ export function validateAvatarRenderableFromAudit(
   return {
     valid: true,
     assetAuditValid: true,
+    preflightValid: true,
     mountAuditValid: true,
+    renderValid: true,
+    promotionValid: true,
     renderable: true,
     assetReason: "asset_audit_valid",
     mountReason: "mounted",
@@ -230,7 +260,10 @@ export function validateAvatarCandidateRenderable({
     return {
       valid: false,
       assetAuditValid: false,
+      preflightValid: false,
       mountAuditValid: false,
+      renderValid: false,
+      promotionValid: false,
       renderable: false,
       assetReason: "missing_child_renderable_report",
       mountReason: "missing_child_renderable_report",
@@ -247,18 +280,21 @@ export function validateAvatarCandidateRenderable({
   }
 
   const assetAuditValid =
+    childReport.preflightValid &&
     childReport.meshCount > 0 &&
     childReport.visibleMeshCount > 0 &&
     validBounds(childReport.bounds) &&
     !(childReport.firstMaterialTransparent === true && (childReport.firstMaterialOpacity ?? 0) <= 0.01);
   const assetReason = assetAuditValid ? "asset_audit_valid" : childReport.reason;
   const mountAuditValid =
+    childReport.mountValid === true &&
     childReport.mounted === true &&
     childReport.sourceKey === expectedSourceKey &&
     !!childReport.sceneUuid &&
     reportSourceVersion === currentSourceVersion &&
     finiteTuple(childReport.firstMeshWorldPosition) &&
     finiteNonZeroTuple(childReport.firstMeshWorldScale);
+  const renderValid = childReport.renderValid === true && childReport.renderConfirmed === true;
   const mountReason =
     childReport.sourceKey !== expectedSourceKey
       ? "stale_source_report"
@@ -273,17 +309,27 @@ export function validateAvatarCandidateRenderable({
               : !finiteNonZeroTuple(childReport.firstMeshWorldScale)
                 ? "first_mesh_world_scale_invalid"
                 : "mounted";
-  const renderable = assetAuditValid && mountAuditValid && childReport.valid;
+  const promotionValid =
+    assetAuditValid && mountAuditValid && renderValid && childReport.promotionValid && childReport.valid;
 
   return {
-    valid: renderable,
+    valid: promotionValid,
+    preflightValid: assetAuditValid,
     assetAuditValid,
     mountAuditValid,
-    renderable,
+    renderValid,
+    promotionValid,
+    renderable: promotionValid,
     assetReason,
     mountReason,
     sourceKey: childReport.sourceKey,
-    reason: renderable ? "renderable" : !assetAuditValid ? assetReason : mountReason,
+    reason: promotionValid
+      ? "promotion_valid"
+      : !assetAuditValid
+        ? assetReason
+        : !mountAuditValid
+          ? mountReason
+          : childReport.renderConfirmationReason,
     meshCount: childReport.meshCount,
     visibleMeshCount: childReport.visibleMeshCount,
     materialCount: childReport.materialCount,
