@@ -25,6 +25,18 @@ Preferred asset convention:
 Current bridge:
 
 - `assets/models/avatar/default-stylised-avatar.glb` is still used as the Production Avatar bridge until a dedicated production file is placed in the new convention.
+- The manifest marks this as `status: "bridge"`, not a completed production asset.
+- The canonical authored contract lives at `assets/models/avatar/production/avatar.manifest.json`.
+
+## Offline GLB Audit
+
+Run the deterministic local audit before wiring a candidate over the fallback:
+
+```bash
+npm run closy:avatar-audit -- assets/models/avatar/default-stylised-avatar.glb
+```
+
+The audit exits non-zero for malformed GLB files, zero mesh primitives, broken buffers/accessors, non-finite bounds, or zero renderable geometry. A valid offline audit does not by itself prove React Three Fiber mounted the scene; runtime promotion also requires the child-owned renderable report from the loaded GLB component.
 
 ## GLB Export Requirements
 

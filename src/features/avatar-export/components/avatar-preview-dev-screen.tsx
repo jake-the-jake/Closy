@@ -1996,6 +1996,34 @@ export function AvatarPreviewDevScreen() {
                           {livePoseFitDebug.sourceLifecycle.failureReason ?? "none"}
                         </Text>
                       ) : null}
+                      {livePoseFitDebug.sourceLifecycle ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          validation stages: asset{" "}
+                          {livePoseFitDebug.sourceLifecycle.assetAuditValid == null
+                            ? "n/a"
+                            : livePoseFitDebug.sourceLifecycle.assetAuditValid
+                              ? "ok"
+                              : "fail"}{" "}
+                          ({livePoseFitDebug.sourceLifecycle.assetReason ?? "n/a"}) / mount{" "}
+                          {livePoseFitDebug.sourceLifecycle.mountAuditValid == null
+                            ? "n/a"
+                            : livePoseFitDebug.sourceLifecycle.mountAuditValid
+                              ? "ok"
+                              : "fail"}{" "}
+                          ({livePoseFitDebug.sourceLifecycle.mountReason ?? "n/a"})
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.renderableReport ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          child report: source {livePoseFitDebug.renderableReport.assetId} / mounted{" "}
+                          {livePoseFitDebug.renderableReport.mounted ? "yes" : "no"} / valid{" "}
+                          {livePoseFitDebug.renderableReport.valid ? "yes" : "no"} / reason{" "}
+                          {livePoseFitDebug.renderableReport.reason} / meshes{" "}
+                          {livePoseFitDebug.renderableReport.visibleMeshCount}/
+                          {livePoseFitDebug.renderableReport.meshCount} / scene{" "}
+                          {livePoseFitDebug.renderableReport.sceneUuid}
+                        </Text>
+                      ) : null}
                       {livePoseFitDebug.avatar ? (
                         <Text style={styles.poseFitDebugLine} selectable>
                           avatar model: {livePoseFitDebug.avatar.activeAvatarModel} · garment follow{" "}

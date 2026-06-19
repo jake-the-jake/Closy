@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "closy:avatar-export": "node scripts/closy-avatar-export.mjs",
+    "closy:avatar-audit": "node scripts/avatar-audit.mjs",
     "closy:avatar-request": "node scripts/closy-avatar-request.mjs"
   },
   "dependencies": {

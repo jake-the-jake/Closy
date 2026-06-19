@@ -37,7 +37,10 @@ import {
 } from "./garment-deformation";
 import type { LiveViewportShadingMode } from "./live-viewport-shading";
 import { alignSkinnedRootToPelvisMetric } from "./skinned-body-placement";
-import type { SkinnedRigPoseReport } from "./live-viewport-debug-types";
+import type {
+  AvatarRenderableReport,
+  SkinnedRigPoseReport,
+} from "./live-viewport-debug-types";
 import {
   applySkinnedPoseToBones,
   applySkinnedShapeScales,
@@ -86,6 +89,160 @@ function isMeshLike(o: THREE.Object3D): o is THREE.Mesh | THREE.SkinnedMesh {
 
 function isStandardMaterialLike(m: THREE.Material): m is THREE.MeshStandardMaterial {
   return m instanceof THREE.MeshStandardMaterial || (m as { isMeshStandardMaterial?: boolean }).isMeshStandardMaterial === true;
+}
+
+function v3tuple(v: THREE.Vector3): [number, number, number] {
+  return [v.x, v.y, v.z];
+}
+
+function finiteTuple(value: [number, number, number] | null | undefined): boolean {
+  return !!value && value.every((n) => Number.isFinite(n));
+}
+
+function finiteNonZeroTuple(value: [number, number, number] | null | undefined): boolean {
+  return finiteTuple(value) && value!.some((n) => Math.abs(n) > 1e-6);
+}
+
+function materialList(mesh: THREE.Mesh | THREE.SkinnedMesh): THREE.Material[] {
+  if (Array.isArray(mesh.material)) return mesh.material.filter(Boolean);
+  return mesh.material ? [mesh.material] : [];
+}
+
+function firstMaterialSnapshot(mesh: THREE.Mesh | THREE.SkinnedMesh): {
+  opacity: number | null;
+  transparent: boolean | null;
+} {
+  const mat = materialList(mesh)[0] as
+    | (THREE.Material & { opacity?: number; transparent?: boolean })
+    | undefined;
+  return {
+    opacity: typeof mat?.opacity === "number" && Number.isFinite(mat.opacity) ? mat.opacity : null,
+    transparent: typeof mat?.transparent === "boolean" ? mat.transparent : null,
+  };
+}
+
+function findFirstMesh(root: THREE.Object3D): THREE.Mesh | THREE.SkinnedMesh | null {
+  let first: THREE.Mesh | THREE.SkinnedMesh | null = null;
+  root.traverse((o) => {
+    if (first || !isMeshLike(o)) return;
+    first = o;
+  });
+  return first;
+}
+
+function updateWorldFromSceneRoot(object: THREE.Object3D) {
+  let root = object;
+  while (root.parent) root = root.parent;
+  root.updateMatrixWorld(true);
+}
+
+function boundsAreFiniteNonZero(bounds: AvatarRenderableReport["bounds"]): boolean {
+  if (!bounds) return false;
+  return (
+    finiteTuple(bounds.min) &&
+    finiteTuple(bounds.max) &&
+    finiteTuple(bounds.center) &&
+    finiteNonZeroTuple(bounds.size)
+  );
+}
+
+function buildRenderableReport(
+  sourceKey: string,
+  assetId: string,
+  scene: THREE.Object3D,
+  stats: AvatarGltfStats,
+): AvatarRenderableReport {
+  updateWorldFromSceneRoot(scene);
+  const firstMesh = findFirstMesh(scene);
+  const firstWorld = new THREE.Vector3();
+  const firstScale = new THREE.Vector3();
+  let firstMeshWorldPosition: [number, number, number] | null = null;
+  let firstMeshWorldScale: [number, number, number] | null = null;
+  let firstMaterialOpacity: number | null = null;
+  let firstMaterialTransparent: boolean | null = null;
+  if (firstMesh) {
+    firstMesh.getWorldPosition(firstWorld);
+    firstMesh.getWorldScale(firstScale);
+    firstMeshWorldPosition = v3tuple(firstWorld);
+    firstMeshWorldScale = v3tuple(firstScale);
+    const material = firstMaterialSnapshot(firstMesh);
+    firstMaterialOpacity = material.opacity;
+    firstMaterialTransparent = material.transparent;
+  }
+
+  const bounds = stats.audit.bounds ?? null;
+  const reportBase = {
+    sourceKey,
+    assetId,
+    sceneUuid: scene.uuid,
+    mounted: scene.parent != null,
+    meshCount: stats.meshCount,
+    visibleMeshCount: stats.visibleMeshCount,
+    skinnedMeshCount: stats.skinnedMeshCount,
+    materialCount: stats.materialCount,
+    textureCount: stats.textureCount,
+    boneCount: stats.rigInspection.boneCount,
+    animationCount: stats.animationCount,
+    triangleEstimate: stats.triangleEstimate,
+    bounds,
+    firstMeshName: firstMesh?.name || null,
+    firstMeshWorldPosition,
+    firstMeshWorldScale,
+    firstMaterialOpacity,
+    firstMaterialTransparent,
+  };
+
+  let reason = "renderable";
+  if (!reportBase.mounted) reason = "scene_not_mounted";
+  else if (stats.assetFailureReason) reason = stats.assetFailureReason;
+  else if (stats.meshCount <= 0) reason = "asset_has_no_meshes";
+  else if (stats.visibleMeshCount <= 0) reason = "asset_has_no_visible_meshes";
+  else if (!boundsAreFiniteNonZero(bounds)) reason = "asset_bounds_invalid";
+  else if (firstMaterialTransparent === true && (firstMaterialOpacity ?? 0) <= 0.01) {
+    reason = "first_mesh_material_fully_transparent";
+  } else if (!finiteTuple(firstMeshWorldPosition)) {
+    reason = "first_mesh_world_position_invalid";
+  } else if (!finiteNonZeroTuple(firstMeshWorldScale)) {
+    reason = "first_mesh_world_scale_invalid";
+  }
+
+  return {
+    ...reportBase,
+    valid: reason === "renderable",
+    reason,
+  };
+}
+
+function useRenderableReport(
+  sourceKey: string,
+  assetId: string,
+  scene: THREE.Object3D,
+  stats: AvatarGltfStats,
+  onRenderableReport: ((report: AvatarRenderableReport) => void) | undefined,
+) {
+  const lastReportJson = useRef("");
+  const emittedValidRef = useRef(false);
+  const emit = () => {
+    if (!onRenderableReport) return;
+    const report = buildRenderableReport(sourceKey, assetId, scene, stats);
+    const json = JSON.stringify(report);
+    if (json !== lastReportJson.current) {
+      lastReportJson.current = json;
+      onRenderableReport(report);
+    }
+    if (report.valid) emittedValidRef.current = true;
+  };
+
+  useLayoutEffect(() => {
+    emittedValidRef.current = false;
+    emit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceKey, assetId, scene, stats, onRenderableReport]);
+
+  useFrame(() => {
+    if (emittedValidRef.current) return;
+    emit();
+  });
 }
 
 export function poseRootEulerApprox(pose: DevAvatarPoseKey): [number, number, number] {
@@ -497,6 +654,8 @@ function useSkinnedBodyLayout(
 }
 
 type GltfRuntimeBodyShared = {
+  sourceKey: string;
+  assetId: string;
   pose: DevAvatarPoseKey;
   liveShading: LiveViewportShadingMode;
   bodyShape?: BodyShapeParams;
@@ -506,6 +665,7 @@ type GltfRuntimeBodyShared = {
   onSceneReady?: () => void;
   /** Dev: skinned bone pose / map status for live diagnostics. */
   onRigPoseReport?: (r: SkinnedRigPoseReport) => void;
+  onRenderableReport?: (report: AvatarRenderableReport) => void;
   /** Dev: loud unlit-ish standard material + no frustum cull — visibility proof only. */
   debugForceBrightMaterial?: boolean;
 };
@@ -513,6 +673,8 @@ type GltfRuntimeBodyShared = {
 /** Bundled module: Android-safe parse path (no `file://` in GLTFLoader). */
 export function GltfRuntimeBodyFromBundledModule({
   bundledAssetModule,
+  sourceKey,
+  assetId,
   pose,
   liveShading,
   bodyShape = DEFAULT_BODY_SHAPE,
@@ -520,6 +682,7 @@ export function GltfRuntimeBodyFromBundledModule({
   poseBias,
   onSceneReady,
   onRigPoseReport,
+  onRenderableReport,
   debugForceBrightMaterial,
 }: GltfRuntimeBodyShared & { bundledAssetModule: number }) {
   const gltf = use(useMemo(() => loadBundledGltfModule(bundledAssetModule), [bundledAssetModule]));
@@ -548,6 +711,7 @@ export function GltfRuntimeBodyFromBundledModule({
     stats,
     debugForceBrightMaterial,
   );
+  useRenderableReport(sourceKey, assetId, scene, stats, onRenderableReport);
 
   return (
     <>
@@ -562,6 +726,8 @@ export function GltfRuntimeBodyFromBundledModule({
 /** Remote / https body URL — `useLoader` is fine for http(s). */
 export function GltfRuntimeBodyFromUrl({
   url,
+  sourceKey,
+  assetId,
   pose,
   liveShading,
   bodyShape = DEFAULT_BODY_SHAPE,
@@ -569,6 +735,7 @@ export function GltfRuntimeBodyFromUrl({
   poseBias,
   onSceneReady,
   onRigPoseReport,
+  onRenderableReport,
   debugForceBrightMaterial,
 }: GltfRuntimeBodyShared & { url: string }) {
   const gltf = useLoader(GLTFLoader, url);
@@ -597,6 +764,7 @@ export function GltfRuntimeBodyFromUrl({
     stats,
     debugForceBrightMaterial,
   );
+  useRenderableReport(sourceKey, assetId, scene, stats, onRenderableReport);
 
   return (
     <>
@@ -624,6 +792,8 @@ export function GltfRuntimeBody(props: GltfRuntimeBodyProps) {
     return (
       <GltfRuntimeBodyFromBundledModule
         bundledAssetModule={props.bundledAssetModule}
+        sourceKey={props.sourceKey}
+        assetId={props.assetId}
         pose={props.pose}
         liveShading={props.liveShading}
         bodyShape={props.bodyShape}
@@ -631,6 +801,7 @@ export function GltfRuntimeBody(props: GltfRuntimeBodyProps) {
         poseBias={props.poseBias}
         onSceneReady={props.onSceneReady}
         onRigPoseReport={props.onRigPoseReport}
+        onRenderableReport={props.onRenderableReport}
         debugForceBrightMaterial={props.debugForceBrightMaterial}
       />
     );
@@ -639,6 +810,8 @@ export function GltfRuntimeBody(props: GltfRuntimeBodyProps) {
     return (
       <GltfRuntimeBodyFromUrl
         url={props.url}
+        sourceKey={props.sourceKey}
+        assetId={props.assetId}
         pose={props.pose}
         liveShading={props.liveShading}
         bodyShape={props.bodyShape}
@@ -646,6 +819,7 @@ export function GltfRuntimeBody(props: GltfRuntimeBodyProps) {
         poseBias={props.poseBias}
         onSceneReady={props.onSceneReady}
         onRigPoseReport={props.onRigPoseReport}
+        onRenderableReport={props.onRenderableReport}
         debugForceBrightMaterial={props.debugForceBrightMaterial}
       />
     );

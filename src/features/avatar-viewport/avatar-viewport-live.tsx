@@ -43,6 +43,7 @@ import {
 import { deformationSummary } from "./garment-deformation";
 import type {
   AvatarRenderAudit,
+  AvatarRenderableReport,
   AvatarStartupPhase,
   GarmentAttachmentSnapshot,
   LiveViewportBodySourceDebug,
@@ -80,6 +81,7 @@ import {
   type AvatarViewportSourceMachineSnapshot,
 } from "./avatar-source/avatarViewportSourceMachine";
 import {
+  validateAvatarCandidateRenderable,
   validateAvatarRenderableFromAudit,
   type AvatarRenderableValidation,
 } from "./avatar-source/validateAvatarRenderable";
@@ -651,11 +653,21 @@ export function AvatarViewportLive({
   const activeVisibleRouteSourceRef = useRef(activeVisibleRouteSource);
   const renderRouteSourceRef = useRef(renderRouteSource);
   const lastGoodVisibleRouteSourceRef = useRef<AvatarResolvedRouteSource | null>(null);
-  const [sourceVersion, setSourceVersion] = useState(0);
+  const sourceVersionRef = useRef(0);
+  const lastCandidateSourceKeyRef = useRef(candidateSourceKey);
+  if (lastCandidateSourceKeyRef.current !== candidateSourceKey) {
+    lastCandidateSourceKeyRef.current = candidateSourceKey;
+    sourceVersionRef.current += 1;
+  }
+  const sourceVersion = sourceVersionRef.current;
   const [sourceFailureReason, setSourceFailureReason] = useState<string | null>(null);
   const [sourceFallbackReason, setSourceFallbackReason] = useState<string | null>(null);
   const [sourceValidation, setSourceValidation] =
     useState<AvatarRenderableValidation | null>(null);
+  const [runtimeBodyRenderableReport, setRuntimeBodyRenderableReport] = useState<{
+    report: AvatarRenderableReport;
+    sourceVersion: number;
+  } | null>(null);
 
   useEffect(() => {
     activeVisibleRouteSourceRef.current = activeVisibleRouteSource;
@@ -666,8 +678,8 @@ export function AvatarViewportLive({
   }, [renderRouteSource]);
 
   useEffect(() => {
-    setSourceVersion((v) => v + 1);
     setSourceValidation(null);
+    setRuntimeBodyRenderableReport(null);
     setSourceFailureReason(null);
     setSourceFallbackReason(null);
     skinnedBodyLoadErrLogged.current = null;
@@ -794,6 +806,18 @@ export function AvatarViewportLive({
     setStartupReason("body_loaded");
   }, []);
 
+  const onRuntimeBodyRenderableReport = useCallback(
+    (report: AvatarRenderableReport) => {
+      setRuntimeBodyRenderableReport((prev) => {
+        const next = { report, sourceVersion };
+        const prevJson = prev ? JSON.stringify(prev) : "";
+        const nextJson = JSON.stringify(next);
+        return prevJson === nextJson ? prev : next;
+      });
+    },
+    [sourceVersion],
+  );
+
   const onSceneRenderError = useCallback((message: string) => {
     setRenderSafe(false);
     setLastSceneError(message);
@@ -815,6 +839,7 @@ export function AvatarViewportLive({
       garmentGroupVisible: boolean;
       startupReason: string;
       renderAudit?: AvatarRenderAudit | null;
+      renderableReport?: AvatarRenderableReport | null;
     }) => {
       setSceneReady(report.sceneReady);
       setVisibleMeshCount(report.visibleMeshCount);
@@ -824,6 +849,16 @@ export function AvatarViewportLive({
       renderAuditRef.current = report.renderAudit ?? null;
       setRenderAudit(report.renderAudit ?? null);
       const activeSource = renderRouteSourceRef.current;
+      const expectedSourceKey = avatarRouteSourceKey(activeSource);
+      const childReportForCandidate =
+        report.renderableReport && report.renderableReport.sourceKey === expectedSourceKey
+          ? {
+              report: report.renderableReport,
+              sourceVersion,
+            }
+          : runtimeBodyRenderableReport?.report.sourceKey === expectedSourceKey
+            ? runtimeBodyRenderableReport
+            : null;
       const requiresGltfValidation =
         activeSource != null &&
         routeSourceRequiresRenderableValidation(activeSource) &&
@@ -832,6 +867,12 @@ export function AvatarViewportLive({
         const audit = report.renderAudit;
         setSourceValidation({
           valid: false,
+          assetAuditValid: false,
+          mountAuditValid: false,
+          renderable: false,
+          assetReason: "candidate_loading",
+          mountReason: "candidate_loading",
+          sourceKey: expectedSourceKey,
           reason: "candidate_loading",
           meshCount: audit?.gltfTotalMeshCount ?? 0,
           visibleMeshCount: audit?.gltfVisibleMeshCount ?? 0,
@@ -843,9 +884,17 @@ export function AvatarViewportLive({
       }
       const requiresVisibleGltfMesh =
         activeSource != null && routeSourceRequiresRenderableValidation(activeSource);
-      const validation = validateAvatarRenderableFromAudit(report.renderAudit, {
-        requireGltfVisibleMesh: requiresVisibleGltfMesh,
-      });
+      const validation = requiresVisibleGltfMesh
+        ? validateAvatarCandidateRenderable({
+            parentAudit: report.renderAudit,
+            childReport: childReportForCandidate?.report ?? null,
+            expectedSourceKey,
+            currentSourceVersion: sourceVersion,
+            reportSourceVersion: childReportForCandidate?.sourceVersion ?? null,
+          })
+        : validateAvatarRenderableFromAudit(report.renderAudit, {
+            requireGltfVisibleMesh: false,
+          });
       setSourceValidation(validation);
       if (validation.valid) {
         lastGoodVisibleRouteSourceRef.current = activeSource;
@@ -855,7 +904,7 @@ export function AvatarViewportLive({
         setSourceFallbackReason(null);
       }
     },
-    [bodyLoadForUi],
+    [bodyLoadForUi, runtimeBodyRenderableReport, sourceVersion],
   );
 
   const onSkinnedRigPoseReport = useCallback(
@@ -929,23 +978,23 @@ export function AvatarViewportLive({
       ) {
         return;
       }
-      const audit = renderAuditRef.current;
-      if (!audit) return;
-      if (audit && audit.gltfVisibleMeshCount > 0) return;
+      if (sourceValidation?.valid) return;
       const reason =
-        resolvedAvatarRouteSource.activeSource === "production-avatar"
-          ? "production_avatar_loaded_but_no_visible_meshes"
+        sourceValidation?.reason ??
+        (resolvedAvatarRouteSource.activeSource === "production-avatar"
+          ? "production_avatar_renderable_report_missing"
           : resolvedAvatarSource.sourceType === "stylised_glb"
-          ? "stylised_glb_loaded_but_no_visible_meshes"
-          : "realistic_glb_loaded_but_no_visible_meshes";
+            ? "stylised_glb_renderable_report_missing"
+            : "realistic_glb_renderable_report_missing");
       triggerGlbVisibilityFallback(resolvedAvatarSource.sourceType, reason);
-    }, 650);
+    }, 1000);
     return () => clearTimeout(id);
   }, [
     resolvedAvatarSource.sourceType,
     bodyLoadForUi,
     bodyAssetKey,
     resolvedAvatarRouteSource.activeSource,
+    sourceValidation,
     triggerGlbVisibilityFallback,
   ]);
 
@@ -959,21 +1008,22 @@ export function AvatarViewportLive({
       return;
     }
     const audit = renderAuditRef.current;
-    if (!audit) return;
-    if ((audit?.gltfVisibleMeshCount ?? 0) > 0) return;
-    const reason =
-      resolvedAvatarRouteSource.activeSource === "production-avatar"
-        ? "production_avatar_loaded_but_no_visible_meshes"
-        : resolvedAvatarSource.sourceType === "stylised_glb"
-        ? "stylised_glb_loaded_but_no_visible_meshes"
-        : "realistic_glb_loaded_but_no_visible_meshes";
-    triggerGlbVisibilityFallback(resolvedAvatarSource.sourceType, reason);
+    if (!audit || !sourceValidation || sourceValidation.valid) return;
+    if (
+      sourceValidation.reason === "candidate_loading" ||
+      sourceValidation.reason === "missing_child_renderable_report" ||
+      sourceValidation.mountReason === "scene_not_mounted"
+    ) {
+      return;
+    }
+    triggerGlbVisibilityFallback(resolvedAvatarSource.sourceType, sourceValidation.reason);
   }, [
     resolvedAvatarSource.sourceType,
     bodyLoadForUi,
     sceneReady,
     visibleMeshCount,
     resolvedAvatarRouteSource.activeSource,
+    sourceValidation,
     triggerGlbVisibilityFallback,
   ]);
 
@@ -1148,7 +1198,7 @@ export function AvatarViewportLive({
         bodySourceDebug?.active === "realistic_glb" ||
         bodySourceDebug?.active === "bundled_skinned" ||
         bodySourceDebug?.active === "external_skinned_url") &&
-      (renderAudit?.gltfVisibleMeshCount ?? 0) > 0;
+      (sourceValidation?.valid === true || (renderAudit?.gltfVisibleMeshCount ?? 0) > 0);
     const visibleBranch: "bundled" | "procedural" | "none" =
       !bodyVisible
         ? "none"
@@ -1303,6 +1353,8 @@ export function AvatarViewportLive({
         zoomInputMode,
       },
       renderAudit: layout === "workbench" ? renderAuditWithCamera : null,
+      renderableReport:
+        layout === "workbench" ? runtimeBodyRenderableReport?.report ?? null : null,
       scene: devSceneInspect?.enabled ? sceneDiagnostics : null,
     };
     const j = JSON.stringify(payload);
@@ -1324,6 +1376,7 @@ export function AvatarViewportLive({
     layout,
     bodySourceDebug,
     sourceLifecycle,
+    sourceValidation,
     resolvedAvatarSource,
     resolvedAvatarRouteSource.assetManifestId,
     runtimeBodyBundledModule,
@@ -1340,6 +1393,7 @@ export function AvatarViewportLive({
     bodyGroupVisible,
     garmentGroupVisible,
     renderAudit,
+    runtimeBodyRenderableReport,
     activeTab,
     cleanMode,
     startupReason,
@@ -1575,6 +1629,8 @@ export function AvatarViewportLive({
                 bodyShape={bodyShape}
                 runtimeBodyGltfUrl={resolvedRuntime.bodyGltfUrl}
                 runtimeBodyBundledModule={runtimeBodyBundledModule}
+                runtimeBodySourceKey={avatarRouteSourceKey(resolvedAvatarRouteSource)}
+                runtimeBodyAssetId={resolvedAvatarRouteSource.assetManifestId}
                 runtimeBodySourceType={
                   resolvedAvatarRouteSource.activeSource === "production-avatar" ||
                   resolvedAvatarRouteSource.activeSource === "realistic-avatar"
@@ -1594,6 +1650,7 @@ export function AvatarViewportLive({
                 garmentOnlyViewport={garmentOnlyViewport}
                 onRuntimeBodyLoadError={onRuntimeBodyLoadError}
                 onRuntimeBodyLoaded={onRuntimeBodyLoaded}
+                onRuntimeBodyRenderableReport={onRuntimeBodyRenderableReport}
                 onSkinnedRigPoseReport={onSkinnedRigPoseReport}
                 onGarmentAnchorsDebug={onGarmentAnchorsDebug}
                 garmentAttachmentDebug={garmentAttachmentDebug}

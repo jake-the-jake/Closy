@@ -147,7 +147,12 @@ function resolveProduction(
 ): AvatarSourceResolution | null {
   const selectedAssetId = "productionAvatar";
   const selectedAsset = getAvatarAssetManifest(selectedAssetId);
-  if (selectedAsset.status !== "available" && !context.runtimeAssets?.bodyGltfUrl && !context.envRuntimeUrls.bodyGltfUrl) {
+  if (
+    selectedAsset.status !== "available" &&
+    selectedAsset.status !== "bridge" &&
+    !context.runtimeAssets?.bodyGltfUrl &&
+    !context.envRuntimeUrls.bodyGltfUrl
+  ) {
     return null;
   }
   const legacySource = resolveLegacyAvatarSource({

@@ -35,7 +35,7 @@ export type AvatarAssetManifest = {
     maxBones: number;
     maxDrawCalls: number;
   };
-  status: "available" | "missing" | "procedural";
+  status: "available" | "bridge" | "missing" | "invalid" | "procedural";
   missingReason?: string;
   canonicalAssetPath?: string;
 };
@@ -96,7 +96,7 @@ export const AVATAR_ASSET_MANIFESTS = {
       maxBones: 96,
       maxDrawCalls: 12,
     },
-    status: "available",
+    status: "bridge",
     missingReason:
       "Bridge asset is using assets/models/avatar/default-stylised-avatar.glb until production_avatar.glb is added and wired.",
     canonicalAssetPath: "assets/models/avatar/production/production_avatar.glb",
@@ -182,6 +182,10 @@ export function getAvatarAssetManifest(id: AvatarAssetManifestId): AvatarAssetMa
 
 export function avatarAssetAvailabilityLabel(manifest: AvatarAssetManifest): string {
   if (manifest.status === "available") return "available";
+  if (manifest.status === "bridge") {
+    return `bridge asset: ${manifest.missingReason ?? manifest.canonicalAssetPath ?? manifest.id}`;
+  }
   if (manifest.status === "procedural") return "procedural fallback";
+  if (manifest.status === "invalid") return `invalid asset: ${manifest.missingReason ?? manifest.id}`;
   return `missing asset: ${manifest.missingReason ?? manifest.canonicalAssetPath ?? manifest.id}`;
 }

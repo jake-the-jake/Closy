@@ -36,9 +36,15 @@ function manifestState(id: AvatarAssetManifestId) {
   const manifest = getAvatarAssetManifest(id);
   return {
     manifest,
-    available: manifest.status === "available" || manifest.status === "procedural",
+    available:
+      manifest.status === "available" ||
+      manifest.status === "bridge" ||
+      manifest.status === "procedural",
     availability: avatarAssetAvailabilityLabel(manifest),
-    missingReason: manifest.status === "missing" ? manifest.missingReason : undefined,
+    missingReason:
+      manifest.status === "missing" || manifest.status === "invalid"
+        ? manifest.missingReason
+        : undefined,
   };
 }
 

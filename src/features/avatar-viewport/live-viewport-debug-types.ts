@@ -93,6 +93,35 @@ export type AvatarRenderAudit = {
   cameraRadius?: number;
 };
 
+/** Authoritative readiness report emitted by the loaded GLB child scene after preparation + mount. */
+export type AvatarRenderableReport = {
+  sourceKey: string;
+  assetId: string;
+  sceneUuid: string;
+  mounted: boolean;
+  meshCount: number;
+  visibleMeshCount: number;
+  skinnedMeshCount: number;
+  materialCount: number;
+  textureCount: number;
+  boneCount: number;
+  animationCount: number;
+  triangleEstimate: number;
+  bounds: {
+    min: [number, number, number];
+    max: [number, number, number];
+    size: [number, number, number];
+    center: [number, number, number];
+  } | null;
+  firstMeshName: string | null;
+  firstMeshWorldPosition: [number, number, number] | null;
+  firstMeshWorldScale: [number, number, number] | null;
+  firstMaterialOpacity: number | null;
+  firstMaterialTransparent: boolean | null;
+  valid: boolean;
+  reason: string;
+};
+
 export type AvatarStartupPhase =
   | "idle"
   | "loadingBody"
@@ -215,6 +244,7 @@ export type LiveViewportPoseFitDebug = {
     warning: string | null;
   } | null;
   renderAudit?: AvatarRenderAudit | null;
+  renderableReport?: AvatarRenderableReport | null;
   visibility?: {
     mode: "combined" | "body_only" | "garment_only" | "invalid";
     bodyVisible: boolean;

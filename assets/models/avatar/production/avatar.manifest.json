@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "assetId": "closy-production-avatar-v1",
+  "modelFile": "production_avatar.glb",
+  "displayName": "Closy Production Avatar",
+  "license": {
+    "name": "",
+    "source": "",
+    "redistributionAllowed": false,
+    "commercialUseAllowed": false,
+    "attributionRequired": false,
+    "attributionText": ""
+  },
+  "units": "meters",
+  "upAxis": "Y",
+  "forwardAxis": "-Z",
+  "expectedHeight": 1.78,
+  "rigProfile": "mixamo|vrm|readyplayerme|custom|zeroone",
+  "lod": {
+    "level": 0,
+    "triangleBudget": 70000
+  },
+  "materials": {
+    "skin": [],
+    "eyes": [],
+    "hair": [],
+    "garments": []
+  },
+  "animations": [],
+  "textureBudget": {
+    "maxDimension": 2048
+  }
+}

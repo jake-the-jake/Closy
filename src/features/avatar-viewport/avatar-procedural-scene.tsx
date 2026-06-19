@@ -33,6 +33,7 @@ import {
 } from "./gltf-runtime-body";
 import type {
   AvatarRenderAudit,
+  AvatarRenderableReport,
   GarmentAnchorFitDebug,
   GarmentAttachmentSnapshot,
   LiveViewportSceneDiagnostics,
@@ -276,6 +277,7 @@ type StartupVisibilityReport = {
   garmentGroupVisible: boolean;
   startupReason: string;
   renderAudit?: AvatarRenderAudit | null;
+  renderableReport?: AvatarRenderableReport | null;
 };
 
 function isDrawableMesh(o: THREE.Object3D): o is THREE.Mesh | THREE.SkinnedMesh {
@@ -1500,6 +1502,8 @@ export function AvatarProceduralScene({
   bodyShape = DEFAULT_BODY_SHAPE,
   runtimeBodyGltfUrl = null,
   runtimeBodyBundledModule = null,
+  runtimeBodySourceKey = "procedural_fallback",
+  runtimeBodyAssetId = "fallbackMannequin",
   runtimeBodySourceType = "procedural_fallback",
   runtimeTopGltfUrl = null,
   runtimeBottomGltfUrl = null,
@@ -1514,6 +1518,7 @@ export function AvatarProceduralScene({
   garmentOnlyViewport = false,
   onRuntimeBodyLoadError,
   onRuntimeBodyLoaded,
+  onRuntimeBodyRenderableReport,
   onSkinnedRigPoseReport,
   onGarmentAnchorsDebug,
   garmentAttachmentDebug = false,
@@ -1532,6 +1537,8 @@ export function AvatarProceduralScene({
   runtimeBodyGltfUrl?: string | null;
   /** Bundled body: Metro module id; loaded via `GLTFLoader.parse` (no `file://`). */
   runtimeBodyBundledModule?: number | null;
+  runtimeBodySourceKey?: string;
+  runtimeBodyAssetId?: string;
   runtimeBodySourceType?: "production_avatar" | "stylised_avatar" | "procedural_fallback";
   runtimeTopGltfUrl?: string | null;
   runtimeBottomGltfUrl?: string | null;
@@ -1549,6 +1556,7 @@ export function AvatarProceduralScene({
   garmentOnlyViewport?: boolean;
   onRuntimeBodyLoadError?: (message: string) => void;
   onRuntimeBodyLoaded?: () => void;
+  onRuntimeBodyRenderableReport?: (report: AvatarRenderableReport) => void;
   onSkinnedRigPoseReport?: (r: SkinnedRigPoseReport) => void;
   onGarmentAnchorsDebug?: (d: GarmentAnchorFitDebug) => void;
   /** Dev: show spheres at bone-derived attachment points (requires skinned body + garments). */
@@ -1679,12 +1687,36 @@ export function AvatarProceduralScene({
   const skinnedAnchorsActive = !garmentOnlyViewport && runtimeBodyActive;
   const showBodyMesh = !garmentOnlyViewport;
   const hideGarments = bodyOnlyGarments;
-  const [gltfBodyVisibleReady, setGltfBodyVisibleReady] = useState(false);
+  const [runtimeBodyRenderableReport, setRuntimeBodyRenderableReport] =
+    useState<AvatarRenderableReport | null>(null);
+  const renderableReportMatchesSource =
+    runtimeBodyRenderableReport?.sourceKey === runtimeBodySourceKey &&
+    runtimeBodyRenderableReport.assetId === runtimeBodyAssetId;
+  const gltfBodyVisibleReady =
+    runtimeBodyActive &&
+    renderableReportMatchesSource &&
+    runtimeBodyRenderableReport.valid &&
+    runtimeBodyRenderableReport.mounted;
   const showProceduralBody = !runtimeBodyActive || !gltfBodyVisibleReady;
 
   useLayoutEffect(() => {
-    setGltfBodyVisibleReady(false);
-  }, [runtimeBodyBundledModule, runtimeBodyGltfUrl]);
+    setRuntimeBodyRenderableReport(null);
+  }, [runtimeBodyBundledModule, runtimeBodyGltfUrl, runtimeBodySourceKey, runtimeBodyAssetId]);
+
+  const handleRuntimeBodyRenderableReport = useCallback(
+    (report: AvatarRenderableReport) => {
+      onRuntimeBodyRenderableReport?.(report);
+      if (report.sourceKey !== runtimeBodySourceKey || report.assetId !== runtimeBodyAssetId) {
+        return;
+      }
+      setRuntimeBodyRenderableReport((prev) => {
+        const prevJson = prev ? JSON.stringify(prev) : "";
+        const nextJson = JSON.stringify(report);
+        return prevJson === nextJson ? prev : report;
+      });
+    },
+    [onRuntimeBodyRenderableReport, runtimeBodySourceKey, runtimeBodyAssetId],
+  );
 
   const attachmentDriverEnabled =
     skinnedAnchorsActive &&
@@ -1760,18 +1792,24 @@ export function AvatarProceduralScene({
           sceneChildCount: scene.children.length,
         })
       : null;
+    const childReportReady =
+      runtimeBodyActive &&
+      renderableReportMatchesSource &&
+      runtimeBodyRenderableReport?.valid === true &&
+      runtimeBodyRenderableReport.mounted === true;
     const safetyFallbackReason =
       runtimeBodyActive &&
       startupLoadGeneration > 0 &&
+      !childReportReady &&
       (initialRenderAudit?.gltfVisibleMeshCount ?? 0) <= 0
-        ? runtimeBodyBundledModule != null
-          ? runtimeBodySourceType === "production_avatar"
-            ? "production_avatar_loaded_but_no_visible_meshes"
-            : "stylised_glb_loaded_but_no_visible_meshes"
-          : "production_avatar_loaded_but_no_visible_meshes"
+        ? runtimeBodyRenderableReport && renderableReportMatchesSource
+          ? runtimeBodyRenderableReport.reason
+          : runtimeBodyBundledModule != null
+            ? runtimeBodySourceType === "production_avatar"
+              ? "production_avatar_loaded_but_no_visible_meshes"
+              : "stylised_glb_loaded_but_no_visible_meshes"
+            : "production_avatar_loaded_but_no_visible_meshes"
         : null;
-    const gltfVisible = runtimeBodyActive && (initialRenderAudit?.gltfVisibleMeshCount ?? 0) > 0;
-    setGltfBodyVisibleReady((prev) => (prev === gltfVisible ? prev : gltfVisible));
     const renderAudit =
       initialRenderAudit && safetyFallbackReason
         ? { ...initialRenderAudit, safetyFallbackReason }
@@ -1796,11 +1834,14 @@ export function AvatarProceduralScene({
       startupReason: safetyFallbackReason
         ? safetyFallbackReason
         : runtimeBodyActive
-          ? startupLoadGeneration > 0
-            ? "skinned_attached"
-            : "skinned_waiting_attach"
+          ? childReportReady
+            ? "skinned_child_renderable"
+            : startupLoadGeneration > 0
+              ? "skinned_attached"
+              : "skinned_waiting_attach"
           : "procedural_fallback_attached",
       renderAudit,
+      renderableReport: renderableReportMatchesSource ? runtimeBodyRenderableReport : null,
     };
     const json = JSON.stringify(payload);
     if (json === lastStartupReportJson.current) return;
@@ -1818,6 +1859,10 @@ export function AvatarProceduralScene({
     runtimeBodyGltfUrl,
     runtimeBodySourceType,
     runtimeBodyActive,
+    runtimeBodySourceKey,
+    runtimeBodyAssetId,
+    renderableReportMatchesSource,
+    runtimeBodyRenderableReport,
     pose,
     liveShading,
     garmentFit,
@@ -1913,12 +1958,15 @@ export function AvatarProceduralScene({
                       <GltfRuntimeBody
                         url={runtimeBodyGltfUrl}
                         bundledAssetModule={runtimeBodyBundledModule}
+                        sourceKey={runtimeBodySourceKey}
+                        assetId={runtimeBodyAssetId}
                         pose={pose}
                         liveShading={liveShading}
                         bodyShape={bodyShape}
                         debugForceBrightMaterial={!!sceneSpaceDebug?.debugBrightBody}
                         onSceneReady={onRuntimeBodyLoaded}
                         onRigPoseReport={onSkinnedRigPoseReport}
+                        onRenderableReport={handleRuntimeBodyRenderableReport}
                       />
                     </group>
                   </Suspense>

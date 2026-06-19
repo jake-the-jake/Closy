@@ -180,6 +180,16 @@ export function AvatarExperienceScreen() {
                   {debug?.avatar?.materialSafetyStatus ?? "n/a"}
                 </Text>
                 <Text style={styles.devLine}>
+                  child valid={debug?.renderableReport?.valid == null
+                    ? "n/a"
+                    : debug.renderableReport.valid
+                      ? "yes"
+                      : "no"} reason={debug?.renderableReport?.reason ?? "n/a"} childMeshes=
+                  {debug?.renderableReport
+                    ? `${debug.renderableReport.visibleMeshCount}/${debug.renderableReport.meshCount}`
+                    : "n/a"}
+                </Text>
+                <Text style={styles.devLine}>
                   branch={debug?.renderAudit?.activeRenderBranchName ?? "n/a"} fallback=
                   {debug?.renderAudit?.safetyFallbackReason ??
                     debug?.sourceLifecycle?.failureReason ??

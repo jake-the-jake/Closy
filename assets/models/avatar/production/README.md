@@ -3,6 +3,7 @@
 Place the production-quality biped avatar here when it is ready:
 
 - `production_avatar.glb`
+- `avatar.manifest.json`
 
 Requirements:
 
@@ -14,3 +15,11 @@ Requirements:
 - Runtime target: 20k-70k triangles, max 2k textures, sensible bone count, low draw calls.
 
 Do not commit oversized source files here. Keep Blender/source assets outside the mobile bundle and export optimized GLB for the app.
+
+Before wiring a candidate into the manifest as `available`, run:
+
+```bash
+npm run closy:avatar-audit -- assets/models/avatar/production/production_avatar.glb
+```
+
+The runtime will still validate mounted renderability before promoting the asset over the fallback mannequin.
