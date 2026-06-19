@@ -1977,6 +1977,25 @@ export function AvatarPreviewDevScreen() {
                   <Text style={styles.section}>Debug</Text>
                   {livePoseFitDebug ? (
                     <View style={styles.poseFitDebugBox}>
+                      {livePoseFitDebug.sourceLifecycle ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          lifecycle: requested{" "}
+                          {livePoseFitDebug.sourceLifecycle.requestedPreference} / candidate{" "}
+                          {livePoseFitDebug.sourceLifecycle.candidateAssetId} / visible{" "}
+                          {livePoseFitDebug.sourceLifecycle.activeVisibleAssetId} / phase{" "}
+                          {livePoseFitDebug.sourceLifecycle.phase} / v
+                          {livePoseFitDebug.sourceLifecycle.sourceVersion}
+                        </Text>
+                      ) : null}
+                      {livePoseFitDebug.sourceLifecycle ? (
+                        <Text style={styles.poseFitDebugLine} selectable>
+                          last good{" "}
+                          {livePoseFitDebug.sourceLifecycle.lastGoodVisibleAssetId ?? "none"} / candidate meshes{" "}
+                          {livePoseFitDebug.sourceLifecycle.candidateVisibleMeshCount} / validation{" "}
+                          {livePoseFitDebug.sourceLifecycle.validationReason ?? "n/a"} / failure{" "}
+                          {livePoseFitDebug.sourceLifecycle.failureReason ?? "none"}
+                        </Text>
+                      ) : null}
                       {livePoseFitDebug.avatar ? (
                         <Text style={styles.poseFitDebugLine} selectable>
                           avatar model: {livePoseFitDebug.avatar.activeAvatarModel} · garment follow{" "}

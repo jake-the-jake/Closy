@@ -71,17 +71,13 @@ export function getAvatarSourceOptionsForRoute(
   const realistic = manifestState("realisticAvatar");
   const bestAssetId: AvatarAssetManifestId = production.available
     ? "productionAvatar"
-    : realistic.available
-      ? "realisticAvatar"
-      : stylised.available
+    : stylised.available
         ? "stylisedAvatar"
         : "fallbackMannequin";
   const bestAvailability =
     bestAssetId === "productionAvatar"
       ? "resolves to Production Avatar"
-      : bestAssetId === "realisticAvatar"
-        ? "resolves to Realistic Avatar"
-        : bestAssetId === "stylisedAvatar"
+      : bestAssetId === "stylisedAvatar"
           ? "resolves to Stylised Avatar"
           : "fallback only";
 
@@ -90,7 +86,7 @@ export function getAvatarSourceOptionsForRoute(
       option({
         id: "best",
         preference: "best",
-        label: "Closy avatar",
+        label: "Best available avatar",
         description:
           bestAssetId === "fallbackMannequin"
             ? "Uses the safe fitting fallback until a production avatar asset is available."
@@ -99,16 +95,6 @@ export function getAvatarSourceOptionsForRoute(
         hidden: false,
         assetManifestId: bestAssetId,
         availability: bestAvailability,
-        devOnly: false,
-      }),
-      option({
-        id: "stylised",
-        preference: "stylised",
-        label: "Stylised avatar",
-        description: "Optional alternate stylised GLB slot.",
-        disabled: !stylised.available,
-        hidden: !stylised.available,
-        assetManifestId: "stylisedAvatar",
         devOnly: false,
       }),
     ];
@@ -128,7 +114,7 @@ export function getAvatarSourceOptionsForRoute(
         id: "best",
         preference: "best",
         label: "Best / Auto",
-        description: "Production Avatar first, then future valid GLB slots, then fallback.",
+        description: "Production Avatar first, then valid Stylised Avatar, then fallback.",
         disabled: false,
         hidden: false,
         assetManifestId: bestAssetId,

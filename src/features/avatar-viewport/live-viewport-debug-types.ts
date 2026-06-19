@@ -1,5 +1,6 @@
 import type { DevAvatarPoseKey, DevAvatarPresetKey } from "@/features/avatar-export/dev-avatar-shared";
 
+import type { AvatarViewportSourceMachineSnapshot } from "./avatar-source/avatarViewportSourceMachine";
 import type { SkinnedBoneMapStatus } from "./skinned-body-pose";
 
 /** Report from skinned GLTF body pose application (dev / diagnostics). */
@@ -138,6 +139,18 @@ export type LiveViewportBodySourceDebug = {
   effectivePreference?: "best" | "production" | "realistic" | "stylised" | "fallback";
   assetManifestId?: string;
   assetAvailability?: string;
+  requestedPreference?: "best" | "production" | "realistic" | "stylised" | "fallback";
+  resolvedCandidateSource?: string;
+  resolvedCandidateAssetId?: string;
+  activeVisibleSource?: string;
+  activeVisibleAssetId?: string;
+  lastGoodVisibleSource?: string | null;
+  lastGoodVisibleAssetId?: string | null;
+  candidatePhase?: string;
+  candidateLoadState?: string;
+  sourceVersion?: number;
+  candidateVisibleMeshCount?: number;
+  validationReason?: string | null;
 };
 
 export type LiveViewportPoseFitDebug = {
@@ -181,6 +194,7 @@ export type LiveViewportPoseFitDebug = {
   anchors: GarmentAnchorFitDebug | null;
   attachment?: GarmentAttachmentSnapshot | null;
   bodySource?: LiveViewportBodySourceDebug | null;
+  sourceLifecycle?: AvatarViewportSourceMachineSnapshot | null;
   /** Dev workstation: startup baseline + camera generation from preview screen. */
   startup?: {
     sceneReady: boolean;

@@ -66,12 +66,23 @@ import {
 import {
   avatarSourceLoadStateLabel,
   resolveAvatarSourceForRoute,
+  type AvatarResolvedRouteSource,
   type AvatarRouteMode,
   type AvatarSourceLoadState,
   type AvatarSourcePreference,
   type AvatarSourceType,
 } from "./avatarSourceResolver";
 import { resolveAvatarStartupPhase } from "./avatar-startup-state";
+import {
+  avatarRouteSourceKey,
+  buildAvatarViewportSourceMachineSnapshot,
+  routeSourceRequiresRenderableValidation,
+  type AvatarViewportSourceMachineSnapshot,
+} from "./avatar-source/avatarViewportSourceMachine";
+import {
+  validateAvatarRenderableFromAudit,
+  type AvatarRenderableValidation,
+} from "./avatar-source/validateAvatarRenderable";
 
 export type AvatarViewportDevSceneInspect = {
   enabled: boolean;
@@ -595,7 +606,7 @@ export function AvatarViewportLive({
     setFailedAvatarSourceType(null);
   }, [requestedAvatarSource, runtimeAssets?.bodyGltfUrl, envRuntimeUrls.bodyGltfUrl]);
 
-  const resolvedAvatarRouteSource = useMemo(
+  const candidateAvatarRouteSource = useMemo(
     () =>
       resolveAvatarSourceForRoute({
         routeMode: avatarRouteMode,
@@ -603,7 +614,7 @@ export function AvatarViewportLive({
         runtimeAssets,
         envRuntimeUrls,
         forceProcedural: FORCE_PROCEDURAL_BODY,
-        failedSourceType: failedAvatarSourceType,
+        failedSourceType: null,
         loadState: avatarSourceLoadState,
         errorReason: skinnedBodyLoadErrLogged.current,
       }),
@@ -612,10 +623,77 @@ export function AvatarViewportLive({
       requestedAvatarSource,
       runtimeAssets,
       envRuntimeUrls,
-      failedAvatarSourceType,
       avatarSourceLoadState,
     ],
   );
+  const fallbackAvatarRouteSource = useMemo(
+    () =>
+      resolveAvatarSourceForRoute({
+        routeMode: avatarRouteMode,
+        preference: "fallback",
+        runtimeAssets,
+        envRuntimeUrls,
+        forceProcedural: FORCE_PROCEDURAL_BODY,
+        failedSourceType: null,
+        loadState: "loaded",
+        errorReason: null,
+      }),
+    [avatarRouteMode, runtimeAssets, envRuntimeUrls],
+  );
+  const candidateSourceKey = useMemo(
+    () => avatarRouteSourceKey(candidateAvatarRouteSource),
+    [candidateAvatarRouteSource],
+  );
+  const [activeVisibleRouteSource, setActiveVisibleRouteSource] =
+    useState<AvatarResolvedRouteSource>(candidateAvatarRouteSource);
+  const [renderRouteSource, setRenderRouteSource] =
+    useState<AvatarResolvedRouteSource>(candidateAvatarRouteSource);
+  const activeVisibleRouteSourceRef = useRef(activeVisibleRouteSource);
+  const renderRouteSourceRef = useRef(renderRouteSource);
+  const lastGoodVisibleRouteSourceRef = useRef<AvatarResolvedRouteSource | null>(null);
+  const [sourceVersion, setSourceVersion] = useState(0);
+  const [sourceFailureReason, setSourceFailureReason] = useState<string | null>(null);
+  const [sourceFallbackReason, setSourceFallbackReason] = useState<string | null>(null);
+  const [sourceValidation, setSourceValidation] =
+    useState<AvatarRenderableValidation | null>(null);
+
+  useEffect(() => {
+    activeVisibleRouteSourceRef.current = activeVisibleRouteSource;
+  }, [activeVisibleRouteSource]);
+
+  useEffect(() => {
+    renderRouteSourceRef.current = renderRouteSource;
+  }, [renderRouteSource]);
+
+  useEffect(() => {
+    setSourceVersion((v) => v + 1);
+    setSourceValidation(null);
+    setSourceFailureReason(null);
+    setSourceFallbackReason(null);
+    skinnedBodyLoadErrLogged.current = null;
+    setFailedAvatarSourceType(null);
+
+    const candidateIsFailureFallback =
+      candidateAvatarRouteSource.source.usingProceduralFallback &&
+      requestedAvatarSource !== "fallback" &&
+      candidateAvatarRouteSource.source.fallbackReason !== "none";
+    const lastGood = lastGoodVisibleRouteSourceRef.current;
+    if (candidateIsFailureFallback && lastGood) {
+      setSourceFailureReason(candidateAvatarRouteSource.source.fallbackReason);
+      setSourceFallbackReason(candidateAvatarRouteSource.source.fallbackReason);
+      setActiveVisibleRouteSource(lastGood);
+      setRenderRouteSource(lastGood);
+      return;
+    }
+    setRenderRouteSource(candidateAvatarRouteSource);
+    if (candidateAvatarRouteSource.source.usingProceduralFallback) {
+      setActiveVisibleRouteSource(candidateAvatarRouteSource);
+    } else if (!lastGood) {
+      setActiveVisibleRouteSource(fallbackAvatarRouteSource);
+    }
+  }, [candidateSourceKey, requestedAvatarSource, fallbackAvatarRouteSource]);
+
+  const resolvedAvatarRouteSource = renderRouteSource;
   const resolvedAvatarSource = resolvedAvatarRouteSource.source;
 
   const runtimeBodyBundledModule =
@@ -700,6 +778,13 @@ export function AvatarViewportLive({
     handleSceneDiagnostics,
   ]);
 
+  const skinnedBodyPathActive =
+    runtimeBodyBundledModule != null || resolvedRuntime.bodyGltfUrl != null;
+  const bodyLoadForUi =
+    skinnedBodyPathActive && skinnedBodyLoadStatus === "idle"
+      ? "pending"
+      : skinnedBodyLoadStatus;
+
   const onRuntimeBodyLoaded = useCallback(() => {
     setSkinnedBodyLoadStatus("loaded");
     if (!bodyReadyEmittedRef.current) {
@@ -738,8 +823,39 @@ export function AvatarViewportLive({
       setStartupReason(report.startupReason);
       renderAuditRef.current = report.renderAudit ?? null;
       setRenderAudit(report.renderAudit ?? null);
+      const activeSource = renderRouteSourceRef.current;
+      const requiresGltfValidation =
+        activeSource != null &&
+        routeSourceRequiresRenderableValidation(activeSource) &&
+        bodyLoadForUi !== "loaded";
+      if (requiresGltfValidation) {
+        const audit = report.renderAudit;
+        setSourceValidation({
+          valid: false,
+          reason: "candidate_loading",
+          meshCount: audit?.gltfTotalMeshCount ?? 0,
+          visibleMeshCount: audit?.gltfVisibleMeshCount ?? 0,
+          materialCount: 0,
+          firstMeshWorldPosition: audit?.firstMeshWorldPosition ?? null,
+          firstMeshWorldScale: audit?.firstMeshScale ?? null,
+        });
+        return;
+      }
+      const requiresVisibleGltfMesh =
+        activeSource != null && routeSourceRequiresRenderableValidation(activeSource);
+      const validation = validateAvatarRenderableFromAudit(report.renderAudit, {
+        requireGltfVisibleMesh: requiresVisibleGltfMesh,
+      });
+      setSourceValidation(validation);
+      if (validation.valid) {
+        lastGoodVisibleRouteSourceRef.current = activeSource;
+        setActiveVisibleRouteSource(activeSource);
+        setFailedAvatarSourceType(null);
+        setSourceFailureReason(null);
+        setSourceFallbackReason(null);
+      }
     },
-    [],
+    [bodyLoadForUi],
   );
 
   const onSkinnedRigPoseReport = useCallback(
@@ -769,28 +885,32 @@ export function AvatarViewportLive({
     setAttachmentSnapshot(s);
   }, []);
 
-  const skinnedBodyPathActive =
-    runtimeBodyBundledModule != null || resolvedRuntime.bodyGltfUrl != null;
-  const bodyLoadForUi =
-    skinnedBodyPathActive && skinnedBodyLoadStatus === "idle"
-      ? "pending"
-      : skinnedBodyLoadStatus;
-
   const triggerGlbVisibilityFallback = useCallback(
     (sourceType: Exclude<AvatarSourceType, "procedural_fallback">, reason: string) => {
       skinnedBodyLoadErrLogged.current = reason;
       setFailedAvatarSourceType(sourceType);
       setSkinnedBodyLoadStatus("failed");
+      setSourceFailureReason(reason);
+      setSourceFallbackReason(reason);
       setStartupReason(reason);
+      const lastGood = lastGoodVisibleRouteSourceRef.current;
+      if (lastGood) {
+        setActiveVisibleRouteSource(lastGood);
+        setRenderRouteSource(lastGood);
+      } else if (!lastGood) {
+        setActiveVisibleRouteSource(fallbackAvatarRouteSource);
+        setRenderRouteSource(fallbackAvatarRouteSource);
+      }
       if (__DEV__) {
-        console.warn("[AvatarViewportLive] falling back to procedural:", {
+        console.warn("[AvatarViewportLive] candidate source failed validation:", {
           reason,
           sourceType,
+          retained: lastGood ? lastGood.assetManifestId : "procedural_fallback",
           audit: renderAuditRef.current,
         });
       }
     },
-    [],
+    [fallbackAvatarRouteSource],
   );
 
   useEffect(() => {
@@ -810,6 +930,7 @@ export function AvatarViewportLive({
         return;
       }
       const audit = renderAuditRef.current;
+      if (!audit) return;
       if (audit && audit.gltfVisibleMeshCount > 0) return;
       const reason =
         resolvedAvatarRouteSource.activeSource === "production-avatar"
@@ -838,6 +959,7 @@ export function AvatarViewportLive({
       return;
     }
     const audit = renderAuditRef.current;
+    if (!audit) return;
     if ((audit?.gltfVisibleMeshCount ?? 0) > 0) return;
     const reason =
       resolvedAvatarRouteSource.activeSource === "production-avatar"
@@ -870,6 +992,33 @@ export function AvatarViewportLive({
       bodyLoadForUi,
       sceneReady,
       visibleMeshCount,
+    ],
+  );
+
+  const sourceLifecycle: AvatarViewportSourceMachineSnapshot = useMemo(
+    () =>
+      buildAvatarViewportSourceMachineSnapshot({
+        requestedPreference: requestedAvatarSource,
+        candidate: candidateAvatarRouteSource,
+        renderSource: resolvedAvatarRouteSource,
+        activeVisible: activeVisibleRouteSource,
+        lastGood: lastGoodVisibleRouteSourceRef.current,
+        candidateLoadState: avatarSourceLoadState,
+        sourceVersion,
+        validation: sourceValidation,
+        failureReason: sourceFailureReason,
+        fallbackReason: sourceFallbackReason,
+      }),
+    [
+      requestedAvatarSource,
+      candidateAvatarRouteSource,
+      resolvedAvatarRouteSource,
+      activeVisibleRouteSource,
+      avatarSourceLoadState,
+      sourceVersion,
+      sourceValidation,
+      sourceFailureReason,
+      sourceFallbackReason,
     ],
   );
 
@@ -935,11 +1084,25 @@ export function AvatarViewportLive({
       effectivePreference: resolvedAvatarRouteSource.effectivePreference,
       assetManifestId: resolvedAvatarRouteSource.assetManifestId,
       assetAvailability: resolvedAvatarRouteSource.assetAvailability,
+      requestedPreference: requestedAvatarSource,
+      resolvedCandidateSource: candidateAvatarRouteSource.source.sourceType,
+      resolvedCandidateAssetId: candidateAvatarRouteSource.assetManifestId,
+      activeVisibleSource: sourceLifecycle.activeVisibleSource,
+      activeVisibleAssetId: sourceLifecycle.activeVisibleAssetId,
+      lastGoodVisibleSource: sourceLifecycle.lastGoodVisibleSource,
+      lastGoodVisibleAssetId: sourceLifecycle.lastGoodVisibleAssetId,
+      candidatePhase: sourceLifecycle.phase,
+      candidateLoadState: sourceLifecycle.candidateLoadState,
+      sourceVersion: sourceLifecycle.sourceVersion,
+      candidateVisibleMeshCount: sourceLifecycle.candidateVisibleMeshCount,
+      validationReason: sourceLifecycle.validationReason,
     };
   }, [
     requestedAvatarSource,
+    candidateAvatarRouteSource,
     resolvedAvatarSource,
     resolvedAvatarRouteSource,
+    sourceLifecycle,
     bodyLoadForUi,
   ]);
 
@@ -1103,6 +1266,7 @@ export function AvatarViewportLive({
       anchors: garmentAnchorsDbg,
       attachment: attachmentSnapshot,
       bodySource: layout === "workbench" ? bodySourceDebug : null,
+      sourceLifecycle: layout === "workbench" ? sourceLifecycle : null,
       startup:
         layout === "workbench"
           ? {
@@ -1159,6 +1323,7 @@ export function AvatarViewportLive({
     sceneDiagnostics,
     layout,
     bodySourceDebug,
+    sourceLifecycle,
     resolvedAvatarSource,
     resolvedAvatarRouteSource.assetManifestId,
     runtimeBodyBundledModule,
@@ -1188,18 +1353,18 @@ export function AvatarViewportLive({
     const key = message.slice(0, 240);
     const previousKey = skinnedBodyLoadErrLogged.current;
     skinnedBodyLoadErrLogged.current = key;
-    setSkinnedBodyLoadStatus("failed");
-    setFailedAvatarSourceType(
-      resolvedAvatarSource.sourceType === "procedural_fallback"
-        ? null
-        : resolvedAvatarSource.sourceType,
-    );
     if (__DEV__) {
       if (previousKey !== key) {
         console.warn("[AvatarViewportLive] skinned body load failed:", message);
       }
     }
-  }, [resolvedAvatarSource.sourceType]);
+    if (resolvedAvatarSource.sourceType !== "procedural_fallback") {
+      triggerGlbVisibilityFallback(resolvedAvatarSource.sourceType, key);
+      return;
+    }
+    setSkinnedBodyLoadStatus("failed");
+    setFailedAvatarSourceType(null);
+  }, [resolvedAvatarSource.sourceType, triggerGlbVisibilityFallback]);
 
   useEffect(() => {
     if (!resolvedAvatarSource.usingProceduralFallback) {

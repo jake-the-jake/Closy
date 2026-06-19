@@ -8,9 +8,9 @@ This bridge is intentionally a contract today, not a runtime dependency. The app
 
 ## Long-term Flow
 
-1. Closy builds a `ZeroOneAvatarRequest` from the selected user, avatar source, body parameters, pose, outfit items, garments, camera, and requested outputs.
+1. Closy builds a `ZeroOneAvatarRenderRequest` from the selected user, avatar source, body parameters, pose, outfit items, garments, camera, quality, and requested outputs.
 2. ZeroOne consumes that request through a future local engine bridge, offline export job, or native rendering backend.
-3. ZeroOne returns a `ZeroOneAvatarResult` containing one or more outputs: rendered preview, optimized GLB/USDZ, fit diagnostics, simulation metadata, or recoverable errors.
+3. ZeroOne returns a `ZeroOneAvatarRenderResult` containing one or more outputs: rendered preview, optimized GLB, fit diagnostics, simulation cache metadata, or recoverable errors.
 4. Closy displays the preview, stores generated assets, or uses diagnostics to improve fit controls.
 
 ## Bridge Modes
@@ -26,6 +26,12 @@ This bridge is intentionally a contract today, not a runtime dependency. The app
 - Missing realistic/stylised slots should remain explicit missing states, not silent procedural defaults.
 - Procedural fallback is emergency/debug coverage, not the product path.
 - ZeroOne outputs must be validated before replacing a known-good bundled avatar or rendered preview.
+
+## Current TypeScript Files
+
+- `src/features/avatar-viewport/zeroone/zerooneAvatarBridgeTypes.ts`
+- `src/features/avatar-viewport/zeroone/zerooneAvatarBridge.ts`
+- `src/features/avatar-viewport/zeroone/zerooneAvatarTypes.ts` for the broader R&D contract already used by avatar docs.
 
 ## Expected Outputs
 

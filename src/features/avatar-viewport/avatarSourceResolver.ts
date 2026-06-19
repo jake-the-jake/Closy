@@ -73,7 +73,7 @@ export function resolveAvatarSourceForRoute(
     bodyUrl: resolution.legacySource.resolvedUri,
     loadIntent:
       input.preference === "best"
-        ? `${input.routeMode}_best_production_then_realistic_then_stylised_then_fallback`
+        ? `${input.routeMode}_best_production_then_stylised_then_fallback`
         : "explicit_source_selection",
     visibleByDefault: true,
     displayLabel: resolution.selectedAsset.label,

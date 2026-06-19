@@ -152,6 +152,15 @@ export {
   type AvatarMaterialRole,
 } from "./materials/avatarPbrMaterials";
 export {
+  localPlaceholderZeroOneAvatarBridge,
+} from "./zeroone/zerooneAvatarBridge";
+export type {
+  ZeroOneAvatarOutputRequest,
+  ZeroOneAvatarQuality,
+  ZeroOneAvatarRenderRequest,
+  ZeroOneAvatarRenderResult,
+} from "./zeroone/zerooneAvatarBridgeTypes";
+export {
   LOCAL_PLACEHOLDER_ZEROONE_AVATAR_BRIDGE,
   type ZeroOneAvatarBridge,
   type ZeroOneAvatarBridgeMode,

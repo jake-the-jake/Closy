@@ -62,7 +62,7 @@ const SOURCE_OPTIONS: readonly {
   {
     id: "best",
     label: "Best available",
-    description: "Production Avatar first, then valid future GLB slots, then emergency fallback.",
+    description: "Production Avatar first, then a valid Stylised Avatar, then emergency fallback.",
   },
   {
     id: "production",
@@ -266,7 +266,6 @@ export function resolveAvatarSource(
 
   return (
     resolveProduction(preference, context) ??
-    resolveRealistic(preference, context) ??
     resolveStylised(preference, context) ??
     fallbackResolution(preference, context, "no_valid_glb_avatar_available")
   );

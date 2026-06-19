@@ -155,6 +155,12 @@ export function AvatarExperienceScreen() {
                   {debug?.avatar?.loadStatus ?? "n/a"}
                 </Text>
                 <Text style={styles.devLine}>
+                  lifecycle requested={debug?.sourceLifecycle?.requestedPreference ?? "n/a"} candidate=
+                  {debug?.sourceLifecycle?.candidateAssetId ?? "n/a"} visible=
+                  {debug?.sourceLifecycle?.activeVisibleAssetId ?? "n/a"} phase=
+                  {debug?.sourceLifecycle?.phase ?? "n/a"}
+                </Text>
+                <Text style={styles.devLine}>
                   startup={debug?.startup?.phase ?? "n/a"} meshes=
                   {debug?.renderAudit?.visibleMeshCount ?? debug?.startup?.visibleMeshCount ?? "n/a"}
                 </Text>
@@ -176,6 +182,7 @@ export function AvatarExperienceScreen() {
                 <Text style={styles.devLine}>
                   branch={debug?.renderAudit?.activeRenderBranchName ?? "n/a"} fallback=
                   {debug?.renderAudit?.safetyFallbackReason ??
+                    debug?.sourceLifecycle?.failureReason ??
                     debug?.bodySource?.errorReason ??
                     debug?.avatar?.fallbackReason ??
                     "none"}
