@@ -1,0 +1,1 @@
+{"$id":"https://closy.local/schemas/v1/provenance.schema.json","$schema":"https://json-schema.org/draft/2020-12/schema","additionalProperties":true,"properties":{"schemaVersion":{"const":1}},"required":["schemaVersion"],"title":"Closy deterministic provenance graph","type":"object"}

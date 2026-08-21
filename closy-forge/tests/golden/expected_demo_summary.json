@@ -1,0 +1,48 @@
+{
+  "bindingWarningCodes": [
+    "cloth_settle_not_run"
+  ],
+  "canonicalPackageDigest": "e2a4104abec1acb0a081a1dfacd75f9dd96eadaff56309cc5971c278cf03949b",
+  "counts": {
+    "constraints": 74,
+    "edges": 28,
+    "openings": 4,
+    "panels": 5,
+    "renderTriangles": 872,
+    "renderVertices": 1308,
+    "seams": 12,
+    "simulationTriangles": 218,
+    "simulationVertices": 223
+  },
+  "renderTopologyHash": "9029588639d462d8092d44ebdea4bd4f0b78a83c0f827b416ef88c241f459fad",
+  "semanticIds": {
+    "openings": [
+      "opening.neck",
+      "opening.cuff.left",
+      "opening.cuff.right",
+      "opening.hem"
+    ],
+    "panels": [
+      "panel.front",
+      "panel.back",
+      "panel.sleeve.left",
+      "panel.sleeve.right",
+      "panel.neck_band"
+    ],
+    "seams": [
+      "seam.shoulder.left",
+      "seam.shoulder.right",
+      "seam.side.left",
+      "seam.side.right",
+      "seam.armhole.left.front",
+      "seam.armhole.left.back",
+      "seam.armhole.right.front",
+      "seam.armhole.right.back",
+      "seam.sleeve_underarm.left",
+      "seam.sleeve_underarm.right",
+      "seam.neck_band.closure",
+      "seam.neck_band.attachment"
+    ]
+  },
+  "simulationTopologyHash": "2da9de2919fe581dbd9d33ab55d59be4507247f10eb4dd63852d557056b75e9d"
+}

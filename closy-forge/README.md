@@ -1,0 +1,67 @@
+# Closy Forge
+
+Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
+
+Implementation 01 builds one authored fixture:
+
+```bash
+python -m closy_forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment
+python -m closy_forge validate generated/garments/demo_tshirt.closygarment
+python -m closy_forge report generated/garments/demo_tshirt.closygarment
+```
+
+After installation, the console script is equivalent:
+
+```bash
+closy-forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment
+closy-forge validate generated/garments/demo_tshirt.closygarment
+closy-forge report generated/garments/demo_tshirt.closygarment --json
+```
+
+## Setup
+
+Windows PowerShell:
+
+```powershell
+cd closy-forge
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e .[dev]
+```
+
+macOS/Linux:
+
+```bash
+cd closy-forge
+python3.11 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev]'
+```
+
+## Verification
+
+```bash
+python -m ruff check .
+python -m mypy src
+python -m pytest
+python -m closy_forge schemas check --schema-dir schemas/v1
+python -m closy_forge demo build-tshirt --output ../generated/garments/demo_tshirt.closygarment --force
+python -m closy_forge validate ../generated/garments/demo_tshirt.closygarment
+python -m closy_forge report ../generated/garments/demo_tshirt.closygarment
+```
+
+CLI exit codes:
+
+- `0` success
+- `2` command/argument error
+- `3` package validation failure
+- `4` deterministic build failure
+- `5` unsafe path or integrity failure
+
+## Boundary
+
+Forge owns versioned `.closygarment` package contracts, deterministic fixture generation, package validation, reports, and future headless reconstruction stages. The Expo app, C++ prototype engine, Supabase storage, and ZeroOne bridges remain separate consumers/neighbours.
+
+See `docs/architecture.md` for the full boundary and `../docs/closy-garment-package-v1.md` for the package contract.

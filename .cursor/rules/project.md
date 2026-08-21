@@ -15,6 +15,8 @@
 
 ## Coding rules
 - use TypeScript everywhere
+- exception: Python is authorised only under `closy-forge/` for the isolated headless
+  avatar-and-garment package toolchain; do not import it into the Expo/mobile app
 - prefer functional components
 - prefer small files over giant files
 - keep UI components reusable

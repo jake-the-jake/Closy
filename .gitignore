@@ -38,6 +38,18 @@ yarn-error.*
 /generated/avatar_requests/*.json
 /generated/avatar_renders/*.png
 
+# Closy Forge local environments and generated garment packages
+/__pycache__/
+__pycache__/
+*.py[cod]
+*.egg-info/
+/closy-forge/.venv/
+/closy-forge/.mypy_cache/
+/closy-forge/.pytest_cache/
+/closy-forge/.ruff_cache/
+/generated/garments/*.closygarment/
+/generated/ci/*.closygarment/
+
 # typescript
 *.tsbuildinfo
 
