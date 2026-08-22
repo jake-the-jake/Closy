@@ -332,3 +332,35 @@ def test_tshirt_fit_loss_threshold_is_rejected(tmp_path) -> None:  # type: ignor
     fit["losses"]["landmarkRmsNormalised"] = 0.5
     write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
     assert "tshirt_fit_landmark_loss_too_high" in issue_codes(validate_package(corrupt))
+
+
+def test_texture_identity_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_texture_hash.closygarment")
+    texture = read_json(corrupt / "textures" / "texture_identity.json")
+    texture["observedMaterialRegions"][0]["pbr"]["roughnessFactor"] = 0.2
+    write_json(corrupt / "textures" / "texture_identity.json", texture)
+    assert "texture_identity_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_texture_identity_source_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_texture_source_hash.closygarment")
+    texture = read_json(corrupt / "textures" / "texture_identity.json")
+    texture["sourceVisualRecordHash"] = "0" * 64
+    write_json(corrupt / "textures" / "texture_identity.json", texture)
+    assert "texture_identity_visual_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_texture_identity_unknown_material_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_texture_material.closygarment")
+    texture = read_json(corrupt / "textures" / "texture_identity.json")
+    texture["observedMaterialRegions"][0]["materialId"] = "material.unknown"
+    write_json(corrupt / "textures" / "texture_identity.json", texture)
+    assert "texture_identity_unknown_material" in issue_codes(validate_package(corrupt))
+
+
+def test_texture_source_capability_contradiction_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_texture_capability.closygarment")
+    manifest = read_json(corrupt / "manifest.json")
+    manifest["capabilities"]["sourceImageTextureAvailable"] = True
+    write_json(corrupt / "manifest.json", manifest)
+    assert "texture_source_capability_contradiction" in issue_codes(validate_package(corrupt))

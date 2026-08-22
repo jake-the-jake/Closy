@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from closy_forge.appearance import hash_texture_identity_report
 from closy_forge.binding.binary_format import read_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction_error
 from closy_forge.capture.source_records import hash_capture_record
@@ -43,6 +44,7 @@ EXPECTED_FILES = [
     "source/visual_observations.json",
     "source/correction_record.json",
     "fitting/tshirt_fit.json",
+    "textures/texture_identity.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
     "avatar/collision.glb",
@@ -67,6 +69,7 @@ EXPECTED_FILES = [
     "reports/capture_quality.json",
     "reports/visual_understanding_quality.json",
     "reports/fitting_quality.json",
+    "reports/texture_quality.json",
     "reports/semantic_quality.json",
     "reports/pattern_quality.json",
     "reports/simulation_quality.json",
@@ -206,6 +209,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_capture(package_dir, manifest, issues)
     _validate_visual_understanding(package_dir, manifest, issues)
     _validate_fitting(package_dir, manifest, issues)
+    _validate_texture_identity(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
@@ -841,6 +845,285 @@ def _validate_fitting(
                 "Fit report must not contain NaN or Infinity.",
             )
         )
+
+
+def _validate_texture_identity(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    capture_record = _read_required_json(package_dir, "source/capture_record.json", issues)
+    visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    fit_report = _read_required_json(package_dir, "fitting/tshirt_fit.json", issues)
+    render_materials = _read_required_json(package_dir, "render/materials.json", issues)
+    texture = _read_required_json(package_dir, "textures/texture_identity.json", issues)
+    texture_quality = _read_required_json(package_dir, "reports/texture_quality.json", issues)
+    if (
+        capture_record is None
+        or visual is None
+        or fit_report is None
+        or render_materials is None
+        or texture is None
+    ):
+        return
+    declared_capture_hash = _nested_string(capture_record, ["immutability", "sourceRecordHash"], "")
+    declared_visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
+    declared_fit_hash = _nested_string(fit_report, ["integrity", "fitReportHash"], "")
+    if texture.get("sourceRecordId") != capture_record.get("recordId"):
+        issues.append(
+            _issue(
+                "texture_identity_source_capture_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity must reference the capture record ID.",
+            )
+        )
+    if texture.get("sourceRecordHash") != declared_capture_hash:
+        issues.append(
+            _issue(
+                "texture_identity_source_hash_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity must reference the capture record hash.",
+            )
+        )
+    if texture.get("sourceVisualUnderstandingId") != visual.get("visualUnderstandingId"):
+        issues.append(
+            _issue(
+                "texture_identity_visual_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity must reference the visual observation ID.",
+            )
+        )
+    if texture.get("sourceVisualRecordHash") != declared_visual_hash:
+        issues.append(
+            _issue(
+                "texture_identity_visual_hash_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity must reference the visual observation hash.",
+            )
+        )
+    if texture.get("sourceFitReportId") != fit_report.get("fitReportId"):
+        issues.append(
+            _issue(
+                "texture_identity_fit_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity must reference the T-shirt fit report ID.",
+            )
+        )
+    if texture.get("sourceFitReportHash") != declared_fit_hash:
+        issues.append(
+            _issue(
+                "texture_identity_fit_hash_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity must reference the T-shirt fit report hash.",
+            )
+        )
+    if _nested_string(texture, ["integrity", "textureIdentityHash"], "") != (
+        hash_texture_identity_report(texture)
+    ):
+        issues.append(
+            _issue(
+                "texture_identity_hash_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity hash must match its canonical payload.",
+            )
+        )
+    if texture.get("status") != "pass":
+        issues.append(
+            _issue(
+                "texture_identity_not_pass",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity report must pass for this canonical fixture.",
+            )
+        )
+    if (
+        texture.get("sourceTextureAvailable") is not False
+        or texture.get("generatedAtlasAvailable") is not False
+        or texture.get("textureProjectionRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "texture_identity_source_state_invalid",
+                "fatal",
+                "textures/texture_identity.json",
+                "Implementation 04 texture identity must not claim source texture projection.",
+            )
+        )
+    material_ids = {
+        str(material.get("id"))
+        for material in render_materials.get("materials", [])
+        if isinstance(material, dict)
+    }
+    regions = texture.get("observedMaterialRegions", [])
+    if not isinstance(regions, list) or not regions:
+        issues.append(
+            _issue(
+                "texture_identity_material_regions_missing",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity must include at least one observed material region.",
+            )
+        )
+        regions = []
+    for region in regions:
+        if not isinstance(region, dict):
+            issues.append(
+                _issue(
+                    "texture_identity_material_region_invalid",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    "Observed material regions must be objects.",
+                )
+            )
+            continue
+        material_id = str(region.get("materialId", ""))
+        if material_id not in material_ids:
+            issues.append(
+                _issue(
+                    "texture_identity_unknown_material",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    "Texture identity region references an unknown render material.",
+                    material_id,
+                )
+            )
+        _validate_texture_region_pbr(region, issues)
+    plan = texture.get("projectionPlan", {})
+    if not isinstance(plan, dict):
+        issues.append(
+            _issue(
+                "texture_identity_projection_plan_invalid",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity projectionPlan must be an object.",
+            )
+        )
+    else:
+        atlas_size = _int_or(plan.get("recommendedAtlasSizePx"), 0)
+        if atlas_size <= 0 or atlas_size > 2048:
+            issues.append(
+                _issue(
+                    "texture_identity_atlas_size_invalid",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    "Recommended atlas size must be mobile-safe.",
+                )
+            )
+    if texture_quality is not None:
+        if texture_quality.get("textureIdentityId") != texture.get("textureIdentityId"):
+            issues.append(
+                _issue(
+                    "texture_quality_identity_mismatch",
+                    "fatal",
+                    "reports/texture_quality.json",
+                    "Texture quality report must reference the texture identity ID.",
+                )
+            )
+        if texture_quality.get("materialRegionCount") != len(regions):
+            issues.append(
+                _issue(
+                    "texture_quality_region_count_mismatch",
+                    "fatal",
+                    "reports/texture_quality.json",
+                    "Texture quality material region count must match texture identity.",
+                )
+            )
+    caps = manifest.get("capabilities", {})
+    if not isinstance(caps, dict):
+        return
+    if caps.get("textureIdentityEvidenceAvailable") is not True:
+        issues.append(
+            _issue(
+                "texture_identity_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare texture identity evidence availability.",
+            )
+        )
+    if caps.get("pbrMaterialObservationAvailable") is not True:
+        issues.append(
+            _issue(
+                "pbr_material_observation_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare PBR material observation availability.",
+            )
+        )
+    if (
+        texture.get("sourceTextureAvailable") is False
+        and caps.get("sourceImageTextureAvailable") is not False
+    ):
+        issues.append(
+            _issue(
+                "texture_source_capability_contradiction",
+                "fatal",
+                "manifest.json",
+                "sourceImageTextureAvailable must remain false without source texture evidence.",
+            )
+        )
+    if _contains_nonfinite(texture):
+        issues.append(
+            _issue(
+                "texture_identity_nonfinite_numeric_value",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity report must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_texture_region_pbr(region: dict[str, Any], issues: list[ValidationIssue]) -> None:
+    pbr = region.get("pbr", {})
+    if not isinstance(pbr, dict):
+        issues.append(
+            _issue(
+                "texture_identity_pbr_invalid",
+                "fatal",
+                "textures/texture_identity.json",
+                "Texture identity material region must include a PBR object.",
+            )
+        )
+        return
+    base_color = pbr.get("baseColorFactor")
+    if not isinstance(base_color, list | tuple) or len(base_color) != 4:
+        issues.append(
+            _issue(
+                "texture_identity_pbr_color_invalid",
+                "fatal",
+                "textures/texture_identity.json",
+                "PBR baseColorFactor must contain four channel values.",
+            )
+        )
+    else:
+        for channel in base_color:
+            channel_value = _float_or(channel, math.nan)
+            if not math.isfinite(channel_value) or not 0.0 <= channel_value <= 1.0:
+                issues.append(
+                    _issue(
+                        "texture_identity_pbr_color_invalid",
+                        "fatal",
+                        "textures/texture_identity.json",
+                        "PBR baseColorFactor channels must be inside [0, 1].",
+                    )
+                )
+                break
+    for key in ("roughnessFactor", "metallicFactor"):
+        value = _float_or(pbr.get(key), math.nan)
+        if not math.isfinite(value) or not 0.0 <= value <= 1.0:
+            issues.append(
+                _issue(
+                    "texture_identity_pbr_factor_invalid",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    f"PBR {key} must be finite and inside [0, 1].",
+                    str(region.get("regionId", "")),
+                )
+            )
 
 
 def _validate_pattern(package_dir: Path, issues: list[ValidationIssue]) -> None:

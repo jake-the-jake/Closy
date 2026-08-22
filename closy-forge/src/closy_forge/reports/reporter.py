@@ -14,6 +14,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     visual = read_json(package_dir / "source" / "visual_observations.json")
     correction = read_json(package_dir / "source" / "correction_record.json")
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
+    texture = read_json(package_dir / "textures" / "texture_identity.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -60,6 +61,15 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "landmarkRmsNormalised": fitting["losses"]["landmarkRmsNormalised"],
             "maskWidthErrorMeters": fitting["losses"]["maskWidthErrorMeters"],
         },
+        "texture": {
+            "textureIdentityId": texture["textureIdentityId"],
+            "status": texture["status"],
+            "sourceTextureAvailable": texture["sourceTextureAvailable"],
+            "generatedAtlasAvailable": texture["generatedAtlasAvailable"],
+            "textureProjectionRun": texture["textureProjectionRun"],
+            "materialRegionCount": len(texture["observedMaterialRegions"]),
+            "recommendedAtlasSizePx": texture["projectionPlan"]["recommendedAtlasSizePx"],
+        },
         "settle": {
             "solverVersion": settle["solverVersion"],
             "convergenceState": settle["convergenceState"],
@@ -91,6 +101,7 @@ def human_report(package_dir: Path) -> str:
     capture = summary["capture"]
     visual = summary["visualUnderstanding"]
     fitting = summary["fitting"]
+    texture = summary["texture"]
     settle = summary["settle"]
     lines.extend(
         [
@@ -106,6 +117,11 @@ def human_report(package_dir: Path) -> str:
             (
                 f"Fitting: {fitting['status']} via {fitting['fitterVersion']}, "
                 f"landmark RMS {fitting['landmarkRmsNormalised']:.6f}"
+            ),
+            (
+                f"Texture identity: {texture['status']}, "
+                f"{texture['materialRegionCount']} PBR material observations, "
+                f"source textures available={texture['sourceTextureAvailable']}"
             ),
             (
                 f"Binding: {binding['recordCount']} records, "

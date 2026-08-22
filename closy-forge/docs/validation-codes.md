@@ -40,6 +40,14 @@ Representative current codes:
 - `tshirt_fit_not_accepted`: fit report is not passing/accepted for the canonical fixture.
 - `tshirt_fit_landmark_loss_too_high`: fitted parameters exceed the landmark residual threshold.
 - `tshirt_fit_mask_loss_too_high`: fitted parameters exceed the mask-width residual threshold.
+- `texture_identity_hash_mismatch`: texture identity changed without updating its payload hash.
+- `texture_identity_source_hash_mismatch`: texture identity points at the wrong capture source hash.
+- `texture_identity_visual_hash_mismatch`: texture identity points at the wrong visual observation hash.
+- `texture_identity_fit_hash_mismatch`: texture identity points at the wrong fit report hash.
+- `texture_identity_unknown_material`: texture identity references a material not present in `render/materials.json`.
+- `texture_identity_pbr_color_invalid`: texture identity has an invalid PBR base colour factor.
+- `texture_identity_pbr_factor_invalid`: texture identity has an invalid roughness or metallic factor.
+- `texture_source_capability_contradiction`: manifest source-image texture capability contradicts texture identity state.
 - `unsupported_schema_version`: unsupported `schemaVersion`.
 - `required_file_missing`: required package file absent.
 - `unsafe_package_path`: inventory path escapes the package contract.

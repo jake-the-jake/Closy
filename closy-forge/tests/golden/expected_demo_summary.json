@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "fd5f1be7add67b153a5373c2f5ceaadb1b3f04d69a7e9a6b1b95bb160097ad29",
+  "canonicalPackageDigest": "17a2b5edc0a1b264b14492e10c0a866ac291c74affb24d5e636e12508a7b396b",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -21,8 +21,10 @@
     "fittingQualityScored": true,
     "garmentLandmarksAvailable": true,
     "garmentMaskAvailable": true,
+    "pbrMaterialObservationAvailable": true,
     "selfCollisionAvailable": false,
     "sourceCaptureRecordAvailable": true,
+    "textureIdentityEvidenceAvailable": true,
     "tshirtParameterFitAvailable": true,
     "visualObservationsAvailable": true
   },
@@ -44,6 +46,14 @@
     "landmarkRmsNormalised": 0.0,
     "maskWidthErrorMeters": 0.0,
     "status": "pass"
+  },
+  "texture": {
+    "generatedAtlasAvailable": false,
+    "materialRegionCount": 2,
+    "recommendedAtlasSizePx": 1024,
+    "sourceTextureAvailable": false,
+    "status": "pass",
+    "textureProjectionRun": false
   },
   "renderTopologyHash": "9029588639d462d8092d44ebdea4bd4f0b78a83c0f827b416ef88c241f459fad",
   "settle": {

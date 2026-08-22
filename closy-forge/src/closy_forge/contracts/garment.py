@@ -18,6 +18,8 @@ CAPABILITIES_FIXTURE = {
     "editableCorrectionRecordAvailable": True,
     "tshirtParameterFitAvailable": True,
     "fittingQualityScored": True,
+    "textureIdentityEvidenceAvailable": True,
+    "pbrMaterialObservationAvailable": True,
     "personalizedAvatarAvailable": False,
     "skeletalFallbackAvailable": False,
     "zeroOneStaticAvailable": False,

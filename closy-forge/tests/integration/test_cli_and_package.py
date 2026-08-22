@@ -56,4 +56,6 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["capture"]["overallStatus"] == "pass"
     assert payload["visualUnderstanding"]["maskCount"] == 4
     assert payload["fitting"]["status"] == "pass"
+    assert payload["texture"]["sourceTextureAvailable"] is False
+    assert payload["texture"]["materialRegionCount"] == 2
     assert payload["binding"]["recordCount"] > 0

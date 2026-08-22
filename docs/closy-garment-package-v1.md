@@ -13,6 +13,7 @@ demo_tshirt.closygarment/
   source/visual_observations.json
   source/correction_record.json
   fitting/tshirt_fit.json
+  textures/texture_identity.json
   avatar/avatar_contract.json
   avatar/reference_avatar.glb
   avatar/collision.glb
@@ -41,4 +42,4 @@ The canonical coordinate convention is `closy-rh-yup-plus-z-v1`: metres, right-h
 
 The current Forge fixture supports only `garmentClass: "tshirt"`. Unsupported garment classes must be rejected rather than accepted as arbitrary meshes.
 
-The package is valid without ZeroOne, AI reconstruction, source-image textures or personalised avatars. It now includes synthetic metadata-only capture records, deterministic capture quality scoring, analytic visual observations, an empty editable correction record, deterministic T-shirt parameter fitting, and a deterministic CPU reference cloth settle; self-collision, real source textures, and production-grade material calibration remain unavailable until real stages produce them.
+The package is valid without ZeroOne, AI reconstruction, source-image textures or personalised avatars. It now includes synthetic metadata-only capture records, deterministic capture quality scoring, analytic visual observations, an empty editable correction record, deterministic T-shirt parameter fitting, texture identity/PBR evidence derived from authored materials, and a deterministic CPU reference cloth settle; self-collision, real source texture projection, generated texture atlases, and production-grade material calibration remain unavailable until real stages produce them.
