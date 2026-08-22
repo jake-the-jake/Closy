@@ -4,119 +4,455 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 
+HEX_64 = "^[0-9a-f]{64}$"
+REL_PATH = "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._\\-/]+$"
+
 
 def schema_registry() -> dict[str, dict[str, Any]]:
-    base_object = {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "additionalProperties": True,
-        "required": ["schemaVersion"],
-        "properties": {"schemaVersion": {"const": SCHEMA_VERSION}},
-    }
-    schemas = {
-        "common.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/common.schema.json",
-            "title": "Closy common coordinate and artifact fields",
-        },
-        "garment-manifest.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/garment-manifest.schema.json",
-            "title": "Closy garment package manifest",
-            "additionalProperties": False,
-            "required": [
+    return {
+        "common.schema.json": _schema(
+            "Closy common coordinate and artifact fields",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "coordinateConvention": _coordinate_convention(),
+                "artifactRef": _artifact_ref(),
+            },
+            ["schemaVersion"],
+        ),
+        "garment-manifest.schema.json": _schema(
+            "Closy garment package manifest",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "packageKind": {"const": "closy.garment"},
+                "garmentId": {"type": "string", "pattern": "^garment\\."},
+                "displayName": {"type": "string", "minLength": 1},
+                "garmentClass": {"const": "tshirt"},
+                "units": {"const": "metres"},
+                "coordinateConvention": _coordinate_convention(),
+                "status": {"enum": ["validated_fixture", "canonical_contract_ready"]},
+                "avatar": _object(
+                    {
+                        "contractId": {"const": "avatar.closy_reference_v1"},
+                        "version": {"type": "string"},
+                        "path": _rel_path(),
+                        "contentHash": _sha256(),
+                        "sourceKind": {"const": "procedural_fixture"},
+                    },
+                    ["contractId", "version", "path", "contentHash", "sourceKind"],
+                ),
+                "canonicalPaths": _string_map(_rel_path()),
+                "hashes": _string_map(_sha256()),
+                "inventory": {"type": "array", "items": _artifact_ref()},
+                "canonicalDigestDefinition": {"type": "object", "additionalProperties": True},
+                "canonicalPackageDigest": _sha256(),
+                "algorithmVersions": _string_map({"type": "string"}),
+                "seed": {"type": "integer"},
+                "buildProfile": {"type": "object", "additionalProperties": True},
+                "capabilities": _capabilities(),
+                "warnings": {"type": "array", "items": {"type": "string"}},
+                "zeroOne": _object(
+                    {
+                        "staticAvailable": {"type": "boolean"},
+                        "dynamicAvailable": {"type": "boolean"},
+                        "required": {"type": "boolean"},
+                    },
+                    ["staticAvailable", "dynamicAvailable", "required"],
+                ),
+                "extensions": {"type": "object", "additionalProperties": True},
+            },
+            [
                 "schemaVersion",
                 "packageKind",
                 "garmentId",
+                "displayName",
                 "garmentClass",
+                "units",
                 "coordinateConvention",
+                "status",
+                "avatar",
+                "canonicalPaths",
+                "hashes",
                 "inventory",
                 "canonicalPackageDigest",
+                "algorithmVersions",
+                "seed",
+                "buildProfile",
                 "capabilities",
+                "warnings",
+                "zeroOne",
             ],
-            "properties": {
+        ),
+        "provenance.schema.json": _schema(
+            "Closy deterministic provenance graph",
+            {
                 "schemaVersion": {"const": SCHEMA_VERSION},
-                "packageKind": {"const": "closy.garment"},
-                "garmentId": {"type": "string"},
-                "displayName": {"type": "string"},
-                "garmentClass": {"const": "tshirt"},
-                "units": {"const": "metres"},
-                "coordinateConvention": {"type": "object"},
-                "status": {"type": "string"},
-                "avatar": {"type": "object"},
-                "canonicalPaths": {"type": "object"},
-                "hashes": {"type": "object"},
-                "inventory": {"type": "array"},
-                "canonicalDigestDefinition": {"type": "object"},
-                "canonicalPackageDigest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-                "algorithmVersions": {"type": "object"},
+                "sourceKind": {"const": "procedural_fixture"},
+                "allowExternalApis": {"const": False},
+                "allowTrainingUse": {"const": False},
+                "containsUserImagery": {"const": False},
+                "containsPersonalBodyData": {"const": False},
+                "coordinateConvention": _coordinate_convention(),
+                "sourceConvention": _coordinate_convention(),
+                "appliedConversionMatrix": {"type": "array"},
                 "seed": {"type": "integer"},
-                "buildProfile": {"type": "object"},
-                "capabilities": {"type": "object"},
+                "fixedTimestamp": {"type": "string"},
+                "stages": {"type": "array", "items": {"type": "object"}},
                 "warnings": {"type": "array", "items": {"type": "string"}},
-                "zeroOne": {"type": "object"},
-                "extensions": {"type": "object"},
             },
-        },
-        "provenance.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/provenance.schema.json",
-            "title": "Closy deterministic provenance graph",
-        },
-        "avatar-contract.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/avatar-contract.schema.json",
-            "title": "Closy avatar contract",
-        },
-        "avatar-body-regions.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/avatar-body-regions.schema.json",
-            "title": "Closy avatar landmarks, body regions, and collision primitives",
-        },
-        "semantic-graph.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/semantic-graph.schema.json",
-            "title": "Closy garment semantic graph",
-        },
-        "pattern.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/pattern.schema.json",
-            "title": "Closy garment pattern panels, curves, seams, and openings",
-        },
-        "simulation-mesh-manifest.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/simulation-mesh-manifest.schema.json",
-            "title": "Closy garment simulation mesh manifest",
-        },
-        "constraints.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/constraints.schema.json",
-            "title": "Closy garment seam constraints",
-        },
-        "material-physics.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/material-physics.schema.json",
-            "title": "Closy authored material physics preset",
-        },
-        "render-mesh-manifest.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/render-mesh-manifest.schema.json",
-            "title": "Closy garment render mesh manifest",
-        },
-        "render-materials.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/render-materials.schema.json",
-            "title": "Closy garment render materials",
-        },
-        "binding-manifest.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/binding-manifest.schema.json",
-            "title": "Closy sim-to-render binding manifest",
-        },
-        "validation-report.schema.json": {
-            **base_object,
-            "$id": "https://closy.local/schemas/v1/validation-report.schema.json",
-            "title": "Closy package validation issues and report",
-        },
+            [
+                "schemaVersion",
+                "sourceKind",
+                "allowExternalApis",
+                "allowTrainingUse",
+                "containsUserImagery",
+                "containsPersonalBodyData",
+                "coordinateConvention",
+                "sourceConvention",
+                "appliedConversionMatrix",
+                "seed",
+                "fixedTimestamp",
+                "stages",
+                "warnings",
+            ],
+        ),
+        "avatar-contract.schema.json": _schema(
+            "Closy avatar contract",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "avatarContractId": {"const": "avatar.closy_reference_v1"},
+                "version": {"type": "string"},
+                "displayName": {"type": "string"},
+                "coordinateConvention": _coordinate_convention(),
+                "heightMeters": {"type": "number", "minimum": 1.7, "maximum": 1.86},
+                "pose": {"const": "T-pose"},
+                "root": _vec(3),
+                "grounded": {"type": "boolean"},
+                "centeredXZ": {"type": "boolean"},
+                "landmarks": {"type": "object", "additionalProperties": _vec(3)},
+                "requiredLandmarks": {"type": "array", "items": {"type": "string"}},
+                "measurements": {"type": "object", "additionalProperties": {"type": "number"}},
+                "collisionPrimitives": {"type": "array", "items": {"type": "object"}},
+                "capabilities": {"type": "object", "additionalProperties": {"type": "boolean"}},
+                "meshTopologyHash": _sha256(),
+                "meshContentHash": _sha256(),
+                "collisionTopologyHash": _sha256(),
+                "collisionContentHash": _sha256(),
+                "provenance": {"type": "object", "additionalProperties": True},
+            },
+            [
+                "schemaVersion",
+                "avatarContractId",
+                "coordinateConvention",
+                "heightMeters",
+                "landmarks",
+                "collisionPrimitives",
+                "capabilities",
+                "meshTopologyHash",
+                "meshContentHash",
+                "collisionTopologyHash",
+                "collisionContentHash",
+                "provenance",
+            ],
+        ),
+        "avatar-body-regions.schema.json": _schema(
+            "Closy avatar body regions",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "avatarContractId": {"const": "avatar.closy_reference_v1"},
+                "regions": {"type": "array", "items": {"type": "object"}},
+            },
+            ["schemaVersion", "avatarContractId", "regions"],
+        ),
+        "semantic-graph.schema.json": _schema(
+            "Closy garment semantic graph",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "garmentId": {"type": "string"},
+                "garmentClass": {"const": "tshirt"},
+                "source": {"type": "object"},
+                "components": {"type": "array", "items": {"type": "object"}},
+                "partHierarchy": {"type": "object"},
+                "panelMapping": {"type": "object"},
+                "openings": {"type": "array", "items": {"type": "object"}},
+                "seams": {"type": "array", "items": {"type": "object"}},
+                "symmetry": {"type": "array", "items": {"type": "object"}},
+                "requiredIds": {"type": "object"},
+                "materialRegions": {"type": "array", "items": {"type": "string"}},
+                "provenance": {"type": "object"},
+            },
+            [
+                "schemaVersion",
+                "garmentId",
+                "garmentClass",
+                "components",
+                "panelMapping",
+                "openings",
+                "seams",
+                "requiredIds",
+                "provenance",
+            ],
+        ),
+        "pattern.schema.json": _schema(
+            "Closy garment pattern panels, curves, seams, and openings",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "garmentClass": {"const": "tshirt"},
+                "parameters": {"type": "object", "additionalProperties": {"type": "number"}},
+                "panels": {"type": "array", "items": {"type": "object"}},
+                "seams": {"type": "array", "items": {"type": "object"}},
+                "openings": {"type": "array", "items": {"type": "object"}},
+                "provenance": {"type": "object"},
+            },
+            ["schemaVersion", "garmentClass", "parameters", "panels", "seams", "openings"],
+        ),
+        "simulation-mesh-manifest.schema.json": _mesh_manifest_schema(
+            "Closy garment simulation mesh manifest"
+        ),
+        "constraints.schema.json": _schema(
+            "Closy garment seam constraints",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "constraintModel": {"const": "seam_pairs_v1"},
+                "constraints": {"type": "array", "items": {"type": "object"}},
+                "derivableFutureConstraints": {"type": "array", "items": {"type": "string"}},
+            },
+            ["schemaVersion", "constraintModel", "constraints"],
+        ),
+        "material-physics.schema.json": _schema(
+            "Closy authored material physics preset",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "presetId": {"type": "string"},
+                "status": {"type": "string"},
+                "units": {"const": "SI"},
+                "surfaceDensityKgM2": {"type": "number"},
+                "stretchStiffnessNPerM": {"type": "number"},
+                "bendStiffnessNm": {"type": "number"},
+                "dampingRatio": {"type": "number"},
+                "thicknessMeters": {"type": "number"},
+                "clothSettleRun": {"const": False},
+            },
+            [
+                "schemaVersion",
+                "presetId",
+                "status",
+                "units",
+                "surfaceDensityKgM2",
+                "stretchStiffnessNPerM",
+                "bendStiffnessNm",
+                "dampingRatio",
+                "thicknessMeters",
+                "clothSettleRun",
+            ],
+        ),
+        "render-mesh-manifest.schema.json": _mesh_manifest_schema(
+            "Closy garment render mesh manifest"
+        ),
+        "render-materials.schema.json": _schema(
+            "Closy garment render materials",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "materials": {"type": "array", "items": {"type": "object"}},
+            },
+            ["schemaVersion", "materials"],
+        ),
+        "binding-manifest.schema.json": _schema(
+            "Closy sim-to-render binding manifest",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "format": {"const": "CLSYBND1"},
+                "endianness": {"const": "little"},
+                "headerSize": {"const": 96},
+                "recordStride": {"const": 20},
+                "recordLayout": {"type": "array", "items": {"type": "string"}},
+                "sourceSimulationPath": _rel_path(),
+                "targetRenderPath": _rel_path(),
+                "simulationTopologyHash": _sha256(),
+                "renderTopologyHash": _sha256(),
+                "recordCount": {"type": "integer", "minimum": 1},
+                "simulationTriangleCount": {"type": "integer", "minimum": 1},
+                "panelTable": {"type": "array", "items": {"type": "string"}},
+                "algorithm": {"type": "string"},
+                "generationSettings": {"type": "object"},
+                "reconstructionTolerance": {"type": "number"},
+                "maximumReconstructionError": {"type": "number"},
+                "rmsReconstructionError": {"type": "number"},
+            },
+            [
+                "schemaVersion",
+                "format",
+                "endianness",
+                "headerSize",
+                "recordStride",
+                "sourceSimulationPath",
+                "targetRenderPath",
+                "simulationTopologyHash",
+                "renderTopologyHash",
+                "recordCount",
+                "panelTable",
+                "algorithm",
+                "reconstructionTolerance",
+                "maximumReconstructionError",
+                "rmsReconstructionError",
+            ],
+        ),
+        "validation-report.schema.json": _schema(
+            "Closy package validation issues and report",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "status": {"enum": ["passed", "failed", "pending"]},
+                "counts": _object(
+                    {
+                        "info": {"type": "integer"},
+                        "warning": {"type": "integer"},
+                        "error": {"type": "integer"},
+                        "fatal": {"type": "integer"},
+                    },
+                    ["info", "warning", "error", "fatal"],
+                ),
+                "issues": {"type": "array", "items": {"type": "object"}},
+            },
+            ["schemaVersion", "status", "counts", "issues"],
+        ),
     }
-    return schemas
+
+
+def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
+    filename = title.lower().replace(" ", "-")
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": f"https://closy.local/schemas/v1/{filename}.schema.json",
+        "title": title,
+        "type": "object",
+        "additionalProperties": False,
+        "required": required,
+        "properties": properties,
+    }
+
+
+def _object(properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": required,
+        "properties": properties,
+    }
+
+
+def _string_map(value_schema: dict[str, Any]) -> dict[str, Any]:
+    return {"type": "object", "additionalProperties": value_schema}
+
+
+def _coordinate_convention() -> dict[str, Any]:
+    return _object(
+        {
+            "id": {"const": "closy-rh-yup-plus-z-v1"},
+            "units": {"const": "metres"},
+            "handedness": {"const": "right-handed"},
+            "upAxis": {"const": "+Y"},
+            "forwardAxis": {"const": "+Z"},
+            "triangleWinding": {"const": "counter-clockwise-front-face"},
+            "groundPlane": {"const": "Y=0"},
+            "referenceAvatarRoot": {"const": "midpoint_between_grounded_feet_at_x0_z0"},
+            "neutralFixturePose": {"const": "T-pose"},
+        },
+        [
+            "id",
+            "units",
+            "handedness",
+            "upAxis",
+            "forwardAxis",
+            "triangleWinding",
+            "groundPlane",
+            "referenceAvatarRoot",
+            "neutralFixturePose",
+        ],
+    )
+
+
+def _artifact_ref() -> dict[str, Any]:
+    return _object(
+        {
+            "path": _rel_path(),
+            "role": {"type": "string"},
+            "canonical": {"type": "boolean"},
+            "required": {"type": "boolean"},
+            "mediaType": {"type": "string"},
+            "byteSize": {"type": "integer", "minimum": 0},
+            "sha256": _sha256(),
+        },
+        ["path", "role", "canonical", "required", "mediaType", "byteSize", "sha256"],
+    )
+
+
+def _capabilities() -> dict[str, Any]:
+    keys = [
+        "patternAvailable",
+        "simulationReadyTopologyAvailable",
+        "authoredMaterialPresetAvailable",
+        "conventionalGlbAvailable",
+        "simToRenderBindingAvailable",
+        "bindingReconstructionValidated",
+        "actualClothSettleAvailable",
+        "sourceImageTextureAvailable",
+        "personalizedAvatarAvailable",
+        "skeletalFallbackAvailable",
+        "zeroOneStaticAvailable",
+        "zeroOneDynamicAvailable",
+        "mobileOptimisedAuthoritativeAsset",
+    ]
+    return _object({key: {"type": "boolean"} for key in keys}, keys)
+
+
+def _mesh_manifest_schema(title: str) -> dict[str, Any]:
+    return _schema(
+        title,
+        {
+            "schemaVersion": {"const": SCHEMA_VERSION},
+            "meshRole": {"enum": ["simulation", "render"]},
+            "coordinateConvention": _coordinate_convention(),
+            "meshCount": {"type": "integer", "minimum": 1},
+            "vertexCount": {"type": "integer", "minimum": 1},
+            "triangleCount": {"type": "integer", "minimum": 1},
+            "bounds": {"type": "object"},
+            "topologyHash": _sha256(),
+            "contentHash": _sha256(),
+            "panelTable": {"type": "array", "items": {"type": "object"}},
+            "meshes": {"type": "array", "items": {"type": "object"}},
+            "edgeVertexMap": {"type": "object"},
+            "panelCoordinatesRetained": {"const": True},
+            "provenance": {"const": "procedural_fixture"},
+        },
+        [
+            "schemaVersion",
+            "meshRole",
+            "coordinateConvention",
+            "meshCount",
+            "vertexCount",
+            "triangleCount",
+            "bounds",
+            "topologyHash",
+            "contentHash",
+            "panelTable",
+            "meshes",
+            "panelCoordinatesRetained",
+            "provenance",
+        ],
+    )
+
+
+def _vec(length: int) -> dict[str, Any]:
+    return {
+        "type": "array",
+        "minItems": length,
+        "maxItems": length,
+        "items": {"type": "number"},
+    }
+
+
+def _sha256() -> dict[str, str]:
+    return {"type": "string", "pattern": HEX_64}
+
+
+def _rel_path() -> dict[str, str]:
+    return {"type": "string", "pattern": REL_PATH}

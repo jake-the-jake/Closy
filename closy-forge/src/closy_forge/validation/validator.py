@@ -9,8 +9,18 @@ from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction
 from closy_forge.contracts.avatar import REQUIRED_BODY_REGIONS, REQUIRED_LANDMARKS
 from closy_forge.contracts.common import COORDINATE_CONVENTION
 from closy_forge.contracts.semantic import REQUIRED_OPENINGS, REQUIRED_PANELS, REQUIRED_SEAMS
+from closy_forge.geometry.curves import sample_curve
 from closy_forge.geometry.glb_io import audit_glb
-from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec2, Vec3, finite_mesh
+from closy_forge.geometry.mesh_model import (
+    Mesh,
+    MeshSet,
+    Tri,
+    Vec2,
+    Vec3,
+    cross,
+    finite_mesh,
+    sub,
+)
 from closy_forge.geometry.triangulation import validate_panel_boundary
 from closy_forge.package_io.canonical_json import read_json
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, topology_hash
@@ -174,6 +184,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             )
 
     _validate_avatar(package_dir, issues)
+    _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
     _validate_glbs(package_dir, issues)
@@ -255,6 +266,7 @@ def _validate_pattern(package_dir: Path, issues: list[ValidationIssue]) -> None:
     edge_ids = {
         edge["id"] for panel in pattern.get("panels", []) for edge in panel.get("boundary", [])
     }
+    edge_lengths = _pattern_edge_lengths(pattern, issues)
     for seam in pattern.get("seams", []):
         for span in seam.get("spans", []):
             if span.get("panelId") not in panel_ids or span.get("edgeId") not in edge_ids:
@@ -267,6 +279,17 @@ def _validate_pattern(package_dir: Path, issues: list[ValidationIssue]) -> None:
                         seam.get("id"),
                     )
                 )
+            if span.get("orientation") not in {"forward", "reverse"}:
+                issues.append(
+                    _issue(
+                        "invalid_seam_orientation",
+                        "fatal",
+                        "pattern/pattern.json",
+                        "Seam span orientation must be forward or reverse.",
+                        seam.get("id"),
+                    )
+                )
+        _validate_seam_ease(seam, edge_lengths, issues)
     for seam in REQUIRED_SEAMS:
         if seam not in seam_ids:
             issues.append(
@@ -290,8 +313,27 @@ def _validate_pattern(package_dir: Path, issues: list[ValidationIssue]) -> None:
                     opening,
                 )
             )
+    for opening_doc in pattern.get("openings", []):
+        if opening_doc.get("id") in REQUIRED_OPENINGS and opening_doc.get("status") != "open":
+            issues.append(
+                _issue(
+                    "required_opening_filled",
+                    "fatal",
+                    "pattern/pattern.json",
+                    "Implementation 01 neck, cuff and hem openings must remain open.",
+                    opening_doc.get("id"),
+                )
+            )
     for panel_doc in pattern.get("panels", []):
-        boundary_issues = validate_panel_boundary(panel_doc)
+        try:
+            boundary_issues = validate_panel_boundary(panel_doc)
+        except Exception as exc:
+            issues.append(
+                _issue(
+                    "invalid_curve", "fatal", "pattern/pattern.json", str(exc), panel_doc.get("id")
+                )
+            )
+            continue
         for boundary_issue in boundary_issues:
             issues.append(
                 _issue(
@@ -313,14 +355,74 @@ def _validate_pattern(package_dir: Path, issues: list[ValidationIssue]) -> None:
         )
 
 
+def _validate_semantic(package_dir: Path, issues: list[ValidationIssue]) -> None:
+    semantic = _read_required_json(package_dir, "semantic/garment_graph.json", issues)
+    pattern = _read_required_json(package_dir, "pattern/pattern.json", issues)
+    if semantic is None or pattern is None:
+        return
+    pattern_panel_ids = {panel.get("id") for panel in pattern.get("panels", [])}
+    pattern_seam_ids = {seam.get("id") for seam in pattern.get("seams", [])}
+    pattern_opening_ids = {opening.get("id") for opening in pattern.get("openings", [])}
+    component_ids = [component.get("id") for component in semantic.get("components", [])]
+    if len(component_ids) != len(set(component_ids)):
+        issues.append(
+            _issue(
+                "duplicate_component_id",
+                "fatal",
+                "semantic/garment_graph.json",
+                "Component IDs must be unique.",
+            )
+        )
+    for component in semantic.get("components", []):
+        for panel_id in component.get("panels", []):
+            if panel_id not in pattern_panel_ids:
+                issues.append(
+                    _issue(
+                        "dangling_component_panel_reference",
+                        "fatal",
+                        "semantic/garment_graph.json",
+                        "Component references a panel not present in pattern.json.",
+                        component.get("id"),
+                    )
+                )
+    for seam in semantic.get("seams", []):
+        if seam.get("id") not in pattern_seam_ids:
+            issues.append(
+                _issue(
+                    "dangling_semantic_seam_reference",
+                    "fatal",
+                    "semantic/garment_graph.json",
+                    "Semantic seam is not present in pattern.json.",
+                    seam.get("id"),
+                )
+            )
+    for opening in semantic.get("openings", []):
+        if opening.get("id") not in pattern_opening_ids:
+            issues.append(
+                _issue(
+                    "dangling_semantic_opening_reference",
+                    "fatal",
+                    "semantic/garment_graph.json",
+                    "Semantic opening is not present in pattern.json.",
+                    opening.get("id"),
+                )
+            )
+
+
 def _validate_meshes_and_constraints(package_dir: Path, issues: list[ValidationIssue]) -> None:
     sim_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
     render_manifest = _read_required_json(package_dir, "render/mesh_manifest.json", issues)
     constraints = _read_required_json(package_dir, "simulation/constraints.json", issues)
     if sim_manifest is None or render_manifest is None or constraints is None:
         return
-    sim_mesh = _meshset_from_manifest(sim_manifest)
-    render_mesh = _meshset_from_manifest(render_manifest)
+    try:
+        sim_mesh = _meshset_from_manifest(sim_manifest)
+        render_mesh = _meshset_from_manifest(render_manifest)
+    except ValueError as exc:
+        issues.append(
+            _issue("mesh_manifest_invalid", "fatal", "simulation/mesh_manifest.json", str(exc))
+        )
+        return
     for rel, manifest, meshset in [
         ("simulation/mesh_manifest.json", sim_manifest, sim_mesh),
         ("render/mesh_manifest.json", render_manifest, render_mesh),
@@ -334,6 +436,7 @@ def _validate_meshes_and_constraints(package_dir: Path, issues: list[ValidationI
                     "Mesh contains nonfinite data or invalid triangles.",
                 )
             )
+        _validate_triangle_quality(rel, meshset, issues)
         if manifest.get("topologyHash") != topology_hash(meshset):
             issues.append(
                 _issue(
@@ -578,6 +681,8 @@ def _read_required_json(
 def _meshset_from_manifest(manifest: dict[str, Any]) -> MeshSet:
     meshes: list[Mesh] = []
     for mesh_doc in manifest.get("meshes", []):
+        if "panelUvs" not in mesh_doc:
+            raise ValueError("missing_pattern_coordinates")
         meshes.append(
             Mesh(
                 name=str(mesh_doc["name"]),
@@ -589,6 +694,91 @@ def _meshset_from_manifest(manifest: dict[str, Any]) -> MeshSet:
             )
         )
     return MeshSet(meshes)
+
+
+def _pattern_edge_lengths(
+    pattern: dict[str, Any], issues: list[ValidationIssue]
+) -> dict[tuple[str, str], float]:
+    lengths: dict[tuple[str, str], float] = {}
+    for panel in pattern.get("panels", []):
+        panel_id = str(panel.get("id", ""))
+        for edge in panel.get("boundary", []):
+            edge_id = str(edge.get("id", ""))
+            try:
+                points = sample_curve(edge["curve"], int(edge["sampleCount"]))
+            except Exception as exc:
+                issues.append(
+                    _issue("invalid_curve", "fatal", "pattern/pattern.json", str(exc), edge_id)
+                )
+                continue
+            length = 0.0
+            for left, right in zip(points, points[1:], strict=False):
+                length += math.dist(left, right)
+            lengths[(panel_id, edge_id)] = length
+    return lengths
+
+
+def _validate_seam_ease(
+    seam: dict[str, Any],
+    edge_lengths: dict[tuple[str, str], float],
+    issues: list[ValidationIssue],
+) -> None:
+    spans = seam.get("spans", [])
+    if len(spans) < 2:
+        return
+    lengths = [
+        edge_lengths.get((str(span.get("panelId")), str(span.get("edgeId"))), 0.0) for span in spans
+    ]
+    nonzero_lengths = [length for length in lengths if length > 1e-6]
+    if len(nonzero_lengths) < 2:
+        return
+    ease_ratio = float(seam.get("easeRatio", 1.0))
+    if not 0.70 <= ease_ratio <= 1.25:
+        issues.append(
+            _issue(
+                "seam_ease_incompatible",
+                "fatal",
+                "pattern/pattern.json",
+                "Seam ease ratio is outside the Implementation 01 supported range.",
+                seam.get("id"),
+            )
+        )
+        return
+    shortest = min(nonzero_lengths)
+    longest = max(nonzero_lengths)
+    if shortest <= 1e-6 or longest <= 1e-6:
+        issues.append(
+            _issue(
+                "seam_length_incompatible",
+                "fatal",
+                "pattern/pattern.json",
+                "Seam span length is zero or missing.",
+                seam.get("id"),
+            )
+        )
+
+
+def _validate_triangle_quality(
+    rel: str,
+    meshset: MeshSet,
+    issues: list[ValidationIssue],
+) -> None:
+    for mesh in meshset.meshes:
+        for triangle_index, tri in enumerate(mesh.triangles):
+            if any(index < 0 or index >= len(mesh.vertices) for index in tri):
+                continue
+            a, b, c = mesh.vertices[tri[0]], mesh.vertices[tri[1]], mesh.vertices[tri[2]]
+            area2 = math.sqrt(sum(value * value for value in cross(sub(b, a), sub(c, a))))
+            if area2 <= 1e-10:
+                issues.append(
+                    _issue(
+                        "degenerate_triangle",
+                        "fatal",
+                        rel,
+                        "Mesh contains a degenerate triangle.",
+                        f"{mesh.panel_id}:{triangle_index}",
+                    )
+                )
 
 
 def _vec3(value: Any) -> Vec3:

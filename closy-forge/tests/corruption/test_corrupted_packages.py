@@ -61,6 +61,22 @@ def test_duplicate_panel_id_is_rejected(tmp_path) -> None:  # type: ignore[no-un
     assert "duplicate_panel_id" in issue_codes(validate_package(corrupt))
 
 
+def test_duplicate_seam_id_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "duplicate_seam.closygarment")
+    pattern = read_json(corrupt / "pattern" / "pattern.json")
+    pattern["seams"].append(pattern["seams"][0])
+    write_json(corrupt / "pattern" / "pattern.json", pattern)
+    assert "duplicate_seam_id" in issue_codes(validate_package(corrupt))
+
+
+def test_dangling_component_panel_reference_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "dangling_component.closygarment")
+    semantic = read_json(corrupt / "semantic" / "garment_graph.json")
+    semantic["components"][0]["panels"][0] = "panel.missing"
+    write_json(corrupt / "semantic" / "garment_graph.json", semantic)
+    assert "dangling_component_panel_reference" in issue_codes(validate_package(corrupt))
+
+
 def test_dangling_seam_reference_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "dangling_seam.closygarment")
     pattern = read_json(corrupt / "pattern" / "pattern.json")
@@ -82,6 +98,30 @@ def test_self_intersecting_panel_is_rejected(tmp_path) -> None:  # type: ignore[
     assert "panel_boundary_self_intersects" in issue_codes(validate_package(corrupt))
 
 
+def test_invalid_curve_is_rejected_without_traceback(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "invalid_curve.closygarment")
+    pattern = read_json(corrupt / "pattern" / "pattern.json")
+    pattern["panels"][0]["boundary"][0]["curve"]["type"] = "spline_magic"
+    write_json(corrupt / "pattern" / "pattern.json", pattern)
+    assert "invalid_curve" in issue_codes(validate_package(corrupt))
+
+
+def test_incompatible_seam_ease_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_ease.closygarment")
+    pattern = read_json(corrupt / "pattern" / "pattern.json")
+    pattern["seams"][0]["easeRatio"] = 0.01
+    write_json(corrupt / "pattern" / "pattern.json", pattern)
+    assert "seam_ease_incompatible" in issue_codes(validate_package(corrupt))
+
+
+def test_filled_required_opening_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "filled_opening.closygarment")
+    pattern = read_json(corrupt / "pattern" / "pattern.json")
+    pattern["openings"][0]["status"] = "filled"
+    write_json(corrupt / "pattern" / "pattern.json", pattern)
+    assert "required_opening_filled" in issue_codes(validate_package(corrupt))
+
+
 def test_nonfinite_pattern_value_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "nan.closygarment")
     pattern = read_json(corrupt / "pattern" / "pattern.json")
@@ -98,11 +138,38 @@ def test_invalid_constraint_vertex_is_rejected(tmp_path) -> None:  # type: ignor
     assert "invalid_constraint_vertex" in issue_codes(validate_package(corrupt))
 
 
+def test_missing_pattern_coordinates_are_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "missing_uvs.closygarment")
+    mesh_manifest = read_json(corrupt / "simulation" / "mesh_manifest.json")
+    del mesh_manifest["meshes"][0]["panelUvs"]
+    write_json(corrupt / "simulation" / "mesh_manifest.json", mesh_manifest)
+    assert "mesh_manifest_invalid" in issue_codes(validate_package(corrupt))
+
+
+def test_degenerate_triangle_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "degenerate_tri.closygarment")
+    mesh_manifest = read_json(corrupt / "simulation" / "mesh_manifest.json")
+    mesh_manifest["meshes"][0]["triangles"][0] = [0, 0, 1]
+    write_json(corrupt / "simulation" / "mesh_manifest.json", mesh_manifest)
+    assert {"mesh_nonfinite_or_invalid", "degenerate_triangle"} & issue_codes(
+        validate_package(corrupt)
+    )
+
+
 def test_bad_binding_magic_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_magic.closygarment")
     binding_path = corrupt / "binding" / "sim_to_render.bin"
     data = bytearray(binding_path.read_bytes())
     data[0:8] = b"NOTBIND!"
+    binding_path.write_bytes(bytes(data))
+    assert "binding_invalid" in issue_codes(validate_package(corrupt))
+
+
+def test_bad_binding_version_or_stride_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_stride.closygarment")
+    binding_path = corrupt / "binding" / "sim_to_render.bin"
+    data = bytearray(binding_path.read_bytes())
+    data[16:20] = (99).to_bytes(4, byteorder="little")
     binding_path.write_bytes(bytes(data))
     assert "binding_invalid" in issue_codes(validate_package(corrupt))
 
@@ -117,12 +184,30 @@ def test_invalid_binding_triangle_is_rejected(tmp_path) -> None:  # type: ignore
     assert "binding_triangle_out_of_range" in issue_codes(validate_package(corrupt))
 
 
+def test_invalid_binding_barycentric_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_bary.closygarment")
+    binding_path = corrupt / "binding" / "sim_to_render.bin"
+    data = bytearray(binding_path.read_bytes())
+    record = RECORD_STRUCT.pack(0, 0.8, 0.8, 0.0, 0, 0)
+    data[HEADER_SIZE : HEADER_SIZE + RECORD_STRUCT.size] = record
+    binding_path.write_bytes(bytes(data))
+    assert "binding_barycentric_invalid" in issue_codes(validate_package(corrupt))
+
+
 def test_binding_topology_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "binding_topology.closygarment")
     manifest = read_json(corrupt / "binding" / "binding_manifest.json")
     manifest["simulationTopologyHash"] = "0" * 64
     write_json(corrupt / "binding" / "binding_manifest.json", manifest)
     assert "binding_sim_topology_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_render_topology_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "render_topology.closygarment")
+    manifest = read_json(corrupt / "binding" / "binding_manifest.json")
+    manifest["renderTopologyHash"] = "0" * 64
+    write_json(corrupt / "binding" / "binding_manifest.json", manifest)
+    assert "binding_render_topology_hash_mismatch" in issue_codes(validate_package(corrupt))
 
 
 def test_false_capability_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]

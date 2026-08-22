@@ -47,6 +47,7 @@ __pycache__/
 /closy-forge/.mypy_cache/
 /closy-forge/.pytest_cache/
 /closy-forge/.ruff_cache/
+/closy-forge/generated/
 /generated/garments/*.closygarment/
 /generated/ci/*.closygarment/
 

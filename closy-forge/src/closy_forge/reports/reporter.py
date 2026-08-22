@@ -12,13 +12,18 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     binding = read_json(package_dir / "binding" / "binding_manifest.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
+        "schemaVersion": manifest["schemaVersion"],
         "garmentId": manifest["garmentId"],
         "garmentClass": manifest["garmentClass"],
         "avatarContractId": manifest["avatar"]["contractId"],
         "coordinateConvention": manifest["coordinateConvention"]["id"],
         "packageDigest": manifest["canonicalPackageDigest"],
+        "seed": manifest["seed"],
+        "buildProfile": manifest["buildProfile"],
         "capabilities": manifest["capabilities"],
         "counts": summary["counts"],
+        "packageByteSize": sum(entry["byteSize"] for entry in manifest["inventory"]),
+        "fileSizes": {entry["path"]: entry["byteSize"] for entry in manifest["inventory"]},
         "topologyHashes": manifest["hashes"],
         "binding": {
             "recordCount": binding["recordCount"],
@@ -35,8 +40,10 @@ def human_report(package_dir: Path) -> str:
     lines = [
         f"Closy garment package: {summary['garmentId']}",
         f"Class: {summary['garmentClass']}  Avatar: {summary['avatarContractId']}",
+        f"Schema: {summary['schemaVersion']}  Seed: {summary['seed']}",
         f"Convention: {summary['coordinateConvention']}",
         f"Package digest: {summary['packageDigest']}",
+        f"Inventoried bytes: {summary['packageByteSize']}",
         "Counts:",
     ]
     for key, value in summary["counts"].items():

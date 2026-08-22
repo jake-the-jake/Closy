@@ -19,3 +19,8 @@ def test_schema_files_are_parseable_and_versioned() -> None:
     for path in schema_dir.glob("*.schema.json"):
         schema = read_json(path)
         assert schema["properties"]["schemaVersion"]["const"] == 1
+
+
+def test_core_schemas_forbid_unknown_root_fields() -> None:
+    for name, schema in schema_registry().items():
+        assert schema["additionalProperties"] is False, name

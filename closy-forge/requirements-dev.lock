@@ -1,0 +1,11 @@
+# Transitive development constraints for a reproducible Forge checkout.
+# Runtime dependencies remain empty; these are only for lint/type/test tooling.
+colorama==0.4.6
+iniconfig==2.3.0
+mypy==1.14.1
+mypy_extensions==1.1.0
+packaging==26.3
+pluggy==1.6.0
+pytest==8.3.4
+ruff==0.8.6
+typing_extensions==4.16.0

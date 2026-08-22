@@ -27,7 +27,7 @@ cd closy-forge
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -e .[dev]
+python -m pip install -e .[dev] -c requirements-dev.lock
 ```
 
 macOS/Linux:
@@ -37,7 +37,7 @@ cd closy-forge
 python3.11 -m venv .venv
 . .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e '.[dev]'
+python -m pip install -e '.[dev]' -c requirements-dev.lock
 ```
 
 ## Verification
@@ -64,4 +64,11 @@ CLI exit codes:
 
 Forge owns versioned `.closygarment` package contracts, deterministic fixture generation, package validation, reports, and future headless reconstruction stages. The Expo app, C++ prototype engine, Supabase storage, and ZeroOne bridges remain separate consumers/neighbours.
 
-See `docs/architecture.md` for the full boundary and `../docs/closy-garment-package-v1.md` for the package contract.
+See:
+
+- `docs/architecture.md` for the full boundary.
+- `docs/adr-0001-coordinate-convention.md` for the Forge coordinate ADR.
+- `docs/package-contract-v1.md` for the package tree and manifest rules.
+- `docs/tshirt-pattern-v1.md` for the deterministic T-shirt pattern contract.
+- `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.
+- `../docs/closy-garment-package-v1.md` for the repository-level package overview.
