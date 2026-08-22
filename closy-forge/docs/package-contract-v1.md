@@ -1,6 +1,6 @@
 # Package Contract v1
 
-Implementation 01 writes `.closygarment` as an inspectable directory, not a zip/container file.
+Forge writes `.closygarment` as an inspectable directory, not a zip/container file.
 
 ## Required Tree
 
@@ -18,6 +18,9 @@ pattern/panels.svg
 simulation/simulation_mesh.glb
 simulation/mesh_manifest.json
 simulation/constraints.json
+simulation/rest_state.json
+simulation/settled_state.json
+simulation/settle_diagnostics.json
 simulation/material_physics.json
 render/fallback.glb
 render/mesh_manifest.json
@@ -45,4 +48,4 @@ The manifest inventory uses POSIX package-relative paths only. Absolute paths, `
 
 ## Capabilities
 
-Capabilities are booleans, not quality scores. Current true states are pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, and validated reconstruction. Cloth settle, source-image texture, personalised avatar, skeleton, and ZeroOne states are false.
+Capabilities are booleans, not quality scores. Current true states are pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, validated reconstruction, and deterministic reference cloth settle. Source-image texture, personalised avatar, skeleton, self-collision, and ZeroOne states are false.

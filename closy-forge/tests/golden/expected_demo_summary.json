@@ -1,8 +1,8 @@
 {
   "bindingWarningCodes": [
-    "cloth_settle_not_run"
+    "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "e2a4104abec1acb0a081a1dfacd75f9dd96eadaff56309cc5971c278cf03949b",
+  "canonicalPackageDigest": "963a3121887897280868c09082c27c34e8fbd0ca02cf70b645719fd012b3be5d",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -14,7 +14,15 @@
     "simulationTriangles": 218,
     "simulationVertices": 223
   },
+  "requiredCapabilities": {
+    "actualClothSettleAvailable": true,
+    "selfCollisionAvailable": false
+  },
   "renderTopologyHash": "9029588639d462d8092d44ebdea4bd4f0b78a83c0f827b416ef88c241f459fad",
+  "settle": {
+    "convergenceState": "converged",
+    "solverVersion": "closy.reference_xpbd_cpu.v1"
+  },
   "semanticIds": {
     "openings": [
       "opening.neck",

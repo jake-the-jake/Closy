@@ -2,7 +2,7 @@
 
 `.closygarment` is a directory package for avatar-and-garment assets. It is intentionally inspectable during development; no zip/container format is introduced yet.
 
-Required Implementation 01 tree:
+Current deterministic fixture tree:
 
 ```text
 demo_tshirt.closygarment/
@@ -19,6 +19,9 @@ demo_tshirt.closygarment/
   simulation/simulation_mesh.glb
   simulation/mesh_manifest.json
   simulation/constraints.json
+  simulation/rest_state.json
+  simulation/settled_state.json
+  simulation/settle_diagnostics.json
   simulation/material_physics.json
   render/fallback.glb
   render/mesh_manifest.json
@@ -31,6 +34,6 @@ demo_tshirt.closygarment/
 
 The canonical coordinate convention is `closy-rh-yup-plus-z-v1`: metres, right-handed, `+Y` up, semantic `+Z` forward, CCW front-face winding, feet grounded at `Y=0`.
 
-Implementation 01 supports only `garmentClass: "tshirt"`. Unsupported garment classes must be rejected rather than accepted as arbitrary meshes.
+The current Forge fixture supports only `garmentClass: "tshirt"`. Unsupported garment classes must be rejected rather than accepted as arbitrary meshes.
 
-The package is valid without ZeroOne, AI reconstruction, source-image textures, personalised avatars, or cloth settle output. Those capabilities are recorded as unavailable until real stages produce them.
+The package is valid without ZeroOne, AI reconstruction, source-image textures or personalised avatars. It now includes a deterministic CPU reference cloth settle; self-collision and production-grade material calibration remain unavailable until real stages produce them.

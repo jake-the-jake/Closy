@@ -46,4 +46,4 @@ Stable seams are generated for shoulders, sides, armholes, sleeve underarms, nec
 - `opening.cuff.right`
 - `opening.hem`
 
-Seam constraints are deterministic vertex-pair constraints derived from sampled boundary spans. Implementation 01 does not run a cloth solver; the simulation state is analytic rest assembly.
+Seam constraints are deterministic vertex-pair constraints derived from sampled boundary spans. The package now stores `simulation/rest_state.json` for the analytic assembly and `simulation/settled_state.json` plus `simulation/settle_diagnostics.json` for the deterministic CPU reference settle. The settled simulation mesh drives the render fallback through the same barycentric binding contract.

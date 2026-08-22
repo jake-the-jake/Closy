@@ -36,6 +36,10 @@ from closy_forge.package_io.writer import (
     prepare_staging,
     publish_staging,
 )
+from closy_forge.simulation.reference_cloth_solver import (
+    settle_reference_cloth,
+    simulation_state_json,
+)
 from closy_forge.validation.validator import validate_package
 
 
@@ -103,12 +107,15 @@ def _write_package_contents(
     collision_mesh = build_collision_mesh()
     pattern = build_tshirt_pattern(params)
     semantic = build_semantic_graph(pattern)
-    simulation_mesh, edge_maps = build_simulation_mesh(pattern)
+    rest_mesh, edge_maps = build_simulation_mesh(pattern)
     constraints = build_constraints(pattern, edge_maps)
-    render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
-    binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
     avatar = avatar_contract(avatar_mesh, collision_mesh)
     regions = body_regions()
+    material_physics = _material_physics()
+    settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
+    simulation_mesh = settle.settled_mesh
+    render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
+    binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
 
     write_canonical_json(package_dir / "avatar" / "avatar_contract.json", avatar)
     write_canonical_json(package_dir / "avatar" / "body_regions.json", regions)
@@ -149,7 +156,25 @@ def _write_package_contents(
         _mesh_manifest(simulation_mesh, "simulation", edge_maps=edge_maps),
     )
     write_canonical_json(package_dir / "simulation" / "constraints.json", constraints)
-    write_canonical_json(package_dir / "simulation" / "material_physics.json", _material_physics())
+    write_canonical_json(
+        package_dir / "simulation" / "rest_state.json",
+        simulation_state_json(
+            state_id="state.rest_analytic_assembly",
+            meshset=rest_mesh,
+            source_mesh=None,
+        ),
+    )
+    write_canonical_json(
+        package_dir / "simulation" / "settled_state.json",
+        simulation_state_json(
+            state_id="state.settled_reference_cpu_v1",
+            meshset=simulation_mesh,
+            source_mesh=rest_mesh,
+            diagnostics=settle.diagnostics,
+        ),
+    )
+    write_canonical_json(package_dir / "simulation" / "settle_diagnostics.json", settle.diagnostics)
+    write_canonical_json(package_dir / "simulation" / "material_physics.json", material_physics)
     write_glb(
         package_dir / "render" / "fallback.glb",
         render_mesh,
@@ -168,10 +193,12 @@ def _write_package_contents(
         collision_mesh,
         pattern,
         semantic,
+        rest_mesh,
         simulation_mesh,
         render_mesh,
         constraints,
         binding_manifest,
+        settle.diagnostics,
     )
     for name, report in quality_reports.items():
         write_canonical_json(package_dir / "reports" / name, report)
@@ -181,9 +208,11 @@ def _write_package_contents(
         seed,
         avatar_mesh,
         collision_mesh,
+        rest_mesh,
         simulation_mesh,
         render_mesh,
         binding_manifest,
+        settle.diagnostics,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
 
@@ -196,9 +225,11 @@ def _write_package_contents(
         digest,
         avatar_mesh,
         collision_mesh,
+        rest_mesh,
         simulation_mesh,
         render_mesh,
         binding_manifest,
+        settle.diagnostics,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
     return {
@@ -206,9 +237,11 @@ def _write_package_contents(
         "pattern": pattern,
         "semantic": semantic,
         "simulationMesh": simulation_mesh,
+        "restMesh": rest_mesh,
         "renderMesh": render_mesh,
         "constraints": constraints,
         "bindingManifest": binding_manifest,
+        "settleDiagnostics": settle.diagnostics,
         "inventory": inventory,
     }
 
@@ -263,8 +296,11 @@ def _material_physics() -> dict[str, Any]:
         "stretchStiffnessNPerM": 550.0,
         "bendStiffnessNm": 0.0018,
         "dampingRatio": 0.18,
+        "frictionCoefficient": 0.42,
         "thicknessMeters": 0.0016,
-        "clothSettleRun": False,
+        "clothSettleRun": True,
+        "settleBackend": "deterministic_cpu_reference_xpbd",
+        "settleSolverVersion": "closy.reference_xpbd_cpu.v1",
     }
 
 
@@ -303,9 +339,11 @@ def _manifest(
     digest: str,
     avatar_mesh: MeshSet,
     collision_mesh: MeshSet,
+    rest_mesh: MeshSet,
     sim_mesh: MeshSet,
     render_mesh: MeshSet,
     binding_manifest: dict[str, object],
+    settle_diagnostics: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -328,6 +366,9 @@ def _manifest(
             "pattern": "pattern/pattern.json",
             "simulationMesh": "simulation/simulation_mesh.glb",
             "simulationMeshManifest": "simulation/mesh_manifest.json",
+            "simulationRestState": "simulation/rest_state.json",
+            "simulationSettledState": "simulation/settled_state.json",
+            "simulationSettleDiagnostics": "simulation/settle_diagnostics.json",
             "materialPhysics": "simulation/material_physics.json",
             "renderFallback": "render/fallback.glb",
             "renderMeshManifest": "render/mesh_manifest.json",
@@ -340,10 +381,13 @@ def _manifest(
             "avatarContentHash": geometry_content_hash(avatar_mesh),
             "collisionTopologyHash": topology_hash(collision_mesh),
             "collisionContentHash": geometry_content_hash(collision_mesh),
+            "simulationRestTopologyHash": topology_hash(rest_mesh),
+            "simulationRestContentHash": geometry_content_hash(rest_mesh),
             "simulationTopologyHash": topology_hash(sim_mesh),
             "simulationContentHash": geometry_content_hash(sim_mesh),
             "renderTopologyHash": topology_hash(render_mesh),
             "renderContentHash": geometry_content_hash(render_mesh),
+            "settledStateContentHash": str(settle_diagnostics["settledContentHash"]),
         },
         "inventory": inventory,
         "canonicalDigestDefinition": {
@@ -358,25 +402,25 @@ def _manifest(
             "patternGenerator": "closy.tshirt.pattern.v1",
             "curveSampler": "closy.curve_sampler.v1",
             "panelTriangulator": "closy.fan_triangulator.v1",
-            "analyticAssembly": "closy.analytic_assembly.v1",
+            "clothSettle": "closy.reference_xpbd_cpu.v1",
             "renderSubdivision": "closy.render_subdivision.v1",
             "binding": str(binding_manifest["algorithm"]),
             "glbWriter": "closy.glb_writer.v1",
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_01_demo_tshirt",
+            "name": "implementation_02_reference_tshirt_settle",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
         "capabilities": _capabilities(),
         "warnings": [
-            "cloth_settle_not_run",
+            "self_collision_not_run",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "01-forge-foundation-tshirt-vertical-slice"},
+        "extensions": {"closyImplementation": "02-reference-tshirt-settle"},
     }
 
 
@@ -388,7 +432,8 @@ def _capabilities() -> dict[str, bool]:
         "conventionalGlbAvailable": True,
         "simToRenderBindingAvailable": True,
         "bindingReconstructionValidated": True,
-        "actualClothSettleAvailable": False,
+        "actualClothSettleAvailable": True,
+        "selfCollisionAvailable": False,
         "sourceImageTextureAvailable": False,
         "personalizedAvatarAvailable": False,
         "skeletalFallbackAvailable": False,
@@ -403,10 +448,12 @@ def _quality_reports(
     collision_mesh: MeshSet,
     pattern: dict[str, Any],
     semantic: dict[str, Any],
+    rest_mesh: MeshSet,
     sim_mesh: MeshSet,
     render_mesh: MeshSet,
     constraints: dict[str, Any],
     binding_manifest: dict[str, object],
+    settle_diagnostics: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     return {
         "avatar_quality.json": {
@@ -435,11 +482,19 @@ def _quality_reports(
         },
         "simulation_quality.json": {
             "schemaVersion": 1,
-            "status": "warning",
-            "warningCode": "cloth_settle_not_run",
-            "assembly": "analytic_rest_shape",
+            "status": "pass",
+            "assembly": "deterministic_reference_cpu_settle",
+            "solverVersion": settle_diagnostics["solverVersion"],
+            "convergenceState": settle_diagnostics["convergenceState"],
+            "restMesh": _mesh_counts(rest_mesh),
             "mesh": _mesh_counts(sim_mesh),
             "constraintCount": len(constraints["constraints"]),
+            "maximumSeamResidualMeters": settle_diagnostics["maximumSeamResidualMeters"],
+            "rmsSeamResidualMeters": settle_diagnostics["rmsSeamResidualMeters"],
+            "maximumBodyPenetrationMeters": settle_diagnostics["maximumBodyPenetrationMeters"],
+            "maximumStrain": settle_diagnostics["maximumStrain"],
+            "selfCollision": settle_diagnostics["selfCollision"],
+            "inspectionExportPath": "simulation/simulation_mesh.glb",
         },
         "render_quality.json": {
             "schemaVersion": 1,
@@ -463,9 +518,11 @@ def _provenance(
     seed: int,
     avatar_mesh: MeshSet,
     collision_mesh: MeshSet,
+    rest_mesh: MeshSet,
     sim_mesh: MeshSet,
     render_mesh: MeshSet,
     binding_manifest: dict[str, object],
+    settle_diagnostics: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -504,10 +561,21 @@ def _provenance(
                 "panel_triangulator",
                 "closy.fan_triangulator.v1",
                 {"winding": "ccw"},
-                [topology_hash(sim_mesh)],
+                [topology_hash(rest_mesh)],
             ),
             _stage(
-                "analytic_assembly", "closy.analytic_assembly.v1", {"clothSettleRun": False}, []
+                "reference_cloth_settle",
+                "closy.reference_xpbd_cpu.v1",
+                {
+                    "clothSettleRun": True,
+                    "convergenceState": str(settle_diagnostics["convergenceState"]),
+                    "selfCollisionAvailable": False,
+                    "settings": settle_diagnostics["settings"],
+                },
+                [
+                    str(settle_diagnostics["restContentHash"]),
+                    str(settle_diagnostics["settledContentHash"]),
+                ],
             ),
             _stage(
                 "render_subdivision",
@@ -526,7 +594,7 @@ def _provenance(
             ),
             _stage("glb_package_writer", "closy.glb_writer.v1", {"format": "glb2"}, []),
         ],
-        "warnings": ["cloth_settle_not_run", "zeroone_unavailable_optional"],
+        "warnings": ["self_collision_not_run", "zeroone_unavailable_optional"],
     }
 
 
@@ -564,6 +632,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     sim_mesh = context["simulationMesh"]
     render_mesh = context["renderMesh"]
     constraints = context["constraints"]
+    settle = context["settleDiagnostics"]
     return {
         "schemaVersion": 1,
         "garmentId": manifest["garmentId"],
@@ -582,6 +651,15 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
         },
         "hashes": manifest["hashes"],
         "binding": context["bindingManifest"],
+        "settle": {
+            "solverVersion": settle["solverVersion"],
+            "convergenceState": settle["convergenceState"],
+            "maximumSeamResidualMeters": settle["maximumSeamResidualMeters"],
+            "rmsSeamResidualMeters": settle["rmsSeamResidualMeters"],
+            "maximumBodyPenetrationMeters": settle["maximumBodyPenetrationMeters"],
+            "maximumStrain": settle["maximumStrain"],
+            "selfCollisionAvailable": settle["selfCollision"]["available"],
+        },
         "validation": validation,
         "warnings": manifest["warnings"],
         "capabilities": manifest["capabilities"],
@@ -601,9 +679,13 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"{counts['simulationTriangles']} triangles\n"
         f"- Render shell: {counts['renderVertices']} vertices, "
         f"{counts['renderTriangles']} triangles\n"
+        f"- Cloth settle: {summary['settle']['convergenceState']} via "
+        f"`{summary['settle']['solverVersion']}`\n"
+        f"- Seam RMS residual: {summary['settle']['rmsSeamResidualMeters']:.8f} m\n"
+        f"- Max body penetration: {summary['settle']['maximumBodyPenetrationMeters']:.8f} m\n"
         f"- Binding max error: {summary['binding']['maximumReconstructionError']:.8f}\n"
         f"- Validation: {validation['status']} {validation['counts']}\n"
-        "- Warning: `cloth_settle_not_run` is expected for Implementation 01.\n"
+        "- Limitation: `self_collision_not_run` is expected for the first reference solver.\n"
     )
 
 

@@ -216,3 +216,27 @@ def test_false_capability_is_rejected(tmp_path) -> None:  # type: ignore[no-unty
     manifest["capabilities"]["zeroOneStaticAvailable"] = True
     write_json(corrupt / "manifest.json", manifest)
     assert "false_zeroone_capability" in issue_codes(validate_package(corrupt))
+
+
+def test_non_converged_cloth_settle_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_settle.closygarment")
+    diagnostics = read_json(corrupt / "simulation" / "settle_diagnostics.json")
+    diagnostics["convergenceState"] = "failed"
+    write_json(corrupt / "simulation" / "settle_diagnostics.json", diagnostics)
+    assert "cloth_settle_not_converged" in issue_codes(validate_package(corrupt))
+
+
+def test_settled_state_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_settled_hash.closygarment")
+    state = read_json(corrupt / "simulation" / "settled_state.json")
+    state["meshContentHash"] = "0" * 64
+    write_json(corrupt / "simulation" / "settled_state.json", state)
+    assert "settled_state_content_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_cloth_settle_material_contradiction_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_material_settle.closygarment")
+    material = read_json(corrupt / "simulation" / "material_physics.json")
+    material["clothSettleRun"] = False
+    write_json(corrupt / "simulation" / "material_physics.json", material)
+    assert "cloth_settle_material_contradiction" in issue_codes(validate_package(corrupt))

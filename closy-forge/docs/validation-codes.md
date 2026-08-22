@@ -19,7 +19,13 @@ The CLI exits with:
 
 Representative current codes:
 
-- `cloth_settle_not_run`: expected warning for Implementation 01.
+- `self_collision_not_run`: expected warning for the first deterministic CPU reference solver.
+- `cloth_settle_not_run`: warning for legacy/unfinished packages that do not run settle.
+- `cloth_settle_not_converged`: package claims settle availability but diagnostics did not converge.
+- `cloth_settle_body_penetration_too_high`: settled state penetrates the avatar beyond the reference threshold.
+- `cloth_settle_seam_residual_too_high`: settled seam residual exceeds the reference threshold.
+- `cloth_settle_material_contradiction`: material preset and manifest disagree about whether settle ran.
+- `settled_state_content_hash_mismatch`: persisted settled state does not match the simulation mesh manifest.
 - `unsupported_schema_version`: unsupported `schemaVersion`.
 - `required_file_missing`: required package file absent.
 - `unsafe_package_path`: inventory path escapes the package contract.

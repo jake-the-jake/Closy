@@ -20,7 +20,7 @@ Forge only models:
 
 It intentionally does not introduce generic `WorldObject`, `GeneratedObject`, or text-to-anything abstractions.
 
-## Implementation 01 Pipeline
+## Current Pipeline
 
 ```text
 fixed avatar contract
@@ -28,14 +28,15 @@ fixed avatar contract
   -> parametric sewing pattern
   -> simulation-ready panel topology
   -> seam stitch constraints
+  -> deterministic CPU reference cloth settle
   -> separate denser render shell
   -> barycentric sim-to-render binding
   -> deterministic .closygarment package
   -> independent validation and reports
 ```
 
-The current T-shirt is analytically assembled. No cloth settle, body scan, image capture, segmentation, AI inference, ZeroOne processing, or personalised body data is present.
+The current T-shirt stores both analytic rest assembly and a deterministic CPU settled state against the fixed collision avatar. The solver exercises gravity, stretch, bend, seam and body-collision constraints, but it is still a reference backend: self-collision, body scans, image capture, segmentation, AI inference, ZeroOne processing and personalised body data are not present.
 
 ## Future R&D Direction
 
-Implementation 02 should keep the same package contract and add deterministic stitch/body-collision settling against the fixed reference avatar. Later work can add reconstruction services, SMPL/SMPL-X research, AI garment proposal adapters, ZeroOne derivatives, and mobile consumption of these packages without changing the package boundary.
+The next dependency-ready work is capture/visual-understanding scaffolding and richer simulation validation, while preserving the same package boundary. Later work can add reconstruction services, SMPL/SMPL-X research, AI garment proposal adapters, ZeroOne derivatives, and mobile consumption of these packages without changing the package boundary.

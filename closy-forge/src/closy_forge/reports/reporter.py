@@ -10,6 +10,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     manifest = read_json(package_dir / "manifest.json")
     summary = read_json(package_dir / "reports" / "summary.json")
     binding = read_json(package_dir / "binding" / "binding_manifest.json")
+    settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
         "schemaVersion": manifest["schemaVersion"],
@@ -30,6 +31,15 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "maxError": binding["maximumReconstructionError"],
             "rmsError": binding["rmsReconstructionError"],
         },
+        "settle": {
+            "solverVersion": settle["solverVersion"],
+            "convergenceState": settle["convergenceState"],
+            "maximumSeamResidualMeters": settle["maximumSeamResidualMeters"],
+            "rmsSeamResidualMeters": settle["rmsSeamResidualMeters"],
+            "maximumBodyPenetrationMeters": settle["maximumBodyPenetrationMeters"],
+            "maximumStrain": settle["maximumStrain"],
+            "selfCollisionAvailable": settle["selfCollision"]["available"],
+        },
         "validation": validation["counts"],
         "warnings": manifest["warnings"],
     }
@@ -49,16 +59,22 @@ def human_report(package_dir: Path) -> str:
     for key, value in summary["counts"].items():
         lines.append(f"  - {key}: {value}")
     binding = summary["binding"]
+    settle = summary["settle"]
     lines.extend(
         [
             (
                 f"Binding: {binding['recordCount']} records, "
                 f"max error {binding['maxError']:.8f}, RMS {binding['rmsError']:.8f}"
             ),
+            (
+                f"Settle: {settle['convergenceState']} via {settle['solverVersion']}, "
+                f"seam RMS {settle['rmsSeamResidualMeters']:.8f} m, max penetration "
+                f"{settle['maximumBodyPenetrationMeters']:.8f} m"
+            ),
             f"Validation: {summary['validation']}",
             "Warnings: " + ", ".join(summary["warnings"]),
             "ZeroOne: unavailable and optional",
-            "Cloth settle: not run (analytic fixture only)",
+            "Self-collision: not implemented in the reference CPU solver v1",
         ]
     )
     return "\n".join(lines) + "\n"

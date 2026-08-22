@@ -2,7 +2,7 @@
 
 Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
 
-Implementation 01 builds one authored fixture:
+The current deterministic fixture builds one authored T-shirt package with analytic rest state, CPU reference settle state, conventional GLBs, and sim-to-render binding:
 
 ```bash
 python -m closy_forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment
@@ -70,5 +70,7 @@ See:
 - `docs/adr-0001-coordinate-convention.md` for the Forge coordinate ADR.
 - `docs/package-contract-v1.md` for the package tree and manifest rules.
 - `docs/tshirt-pattern-v1.md` for the deterministic T-shirt pattern contract.
+- `docs/cloth-settle-reference-v1.md` for the CPU reference settle backend.
+- `docs/MASTER_BLUEPRINT_PROGRESS.md` for the evidence ledger across the master blueprint.
 - `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.
 - `../docs/closy-garment-package-v1.md` for the repository-level package overview.

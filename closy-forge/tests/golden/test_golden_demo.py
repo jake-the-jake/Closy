@@ -20,6 +20,10 @@ def test_demo_package_matches_structural_golden(tmp_path) -> None:  # type: igno
     assert manifest["canonicalPackageDigest"] == expected["canonicalPackageDigest"]
     assert manifest["hashes"]["simulationTopologyHash"] == expected["simulationTopologyHash"]
     assert manifest["hashes"]["renderTopologyHash"] == expected["renderTopologyHash"]
+    for key, value in expected["requiredCapabilities"].items():
+        assert manifest["capabilities"][key] is value
+    assert summary["settle"]["convergenceState"] == expected["settle"]["convergenceState"]
+    assert summary["settle"]["solverVersion"] == expected["settle"]["solverVersion"]
     for key, value in expected["counts"].items():
         assert summary["counts"][key] == value
     assert [panel["id"] for panel in pattern["panels"]] == expected["semanticIds"]["panels"]

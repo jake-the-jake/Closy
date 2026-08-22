@@ -15,18 +15,18 @@ GarmentRenderShell
 GarmentRenderBinding
 ```
 
-No source imagery, body scans, or personal measurements are present in Implementation 01.
+No source imagery, body scans, or personal measurements are present in the current deterministic fixture.
 
 ## ZeroOne
 
 ZeroOne remains optional and downstream. A future ZeroOne bridge can consume validated Forge render/simulation assets and write derivative static or dynamic geometry outputs. Forge packages must remain valid when ZeroOne outputs are absent.
 
-Implementation 01 records:
+The current deterministic fixture records:
 
 - `zeroOneStaticAvailable: false`
 - `zeroOneDynamicAvailable: false`
 - `zeroOne.required: false`
 
-## Recommended Implementation 02
+## Next Implementation Direction
 
-Add a deterministic T-shirt stitch/body-collision/settle stage against `avatar.closy_reference_v1`, preserving the same package tree and adding honest settle reports only after a real solver stage exists.
+Continue into capture and visual-understanding scaffolding while improving simulation diagnostics. The reference solver now exists, but self-collision and production-grade material calibration remain explicitly unavailable.

@@ -41,6 +41,9 @@ EXPECTED_FILES = [
     "simulation/simulation_mesh.glb",
     "simulation/mesh_manifest.json",
     "simulation/constraints.json",
+    "simulation/rest_state.json",
+    "simulation/settled_state.json",
+    "simulation/settle_diagnostics.json",
     "simulation/material_physics.json",
     "render/fallback.glb",
     "render/mesh_manifest.json",
@@ -187,6 +190,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
+    _validate_settle_state(package_dir, manifest, issues)
     _validate_glbs(package_dir, issues)
     _validate_binding(package_dir, issues)
     _validate_capabilities(manifest, issues)
@@ -483,6 +487,138 @@ def _validate_meshes_and_constraints(package_dir: Path, issues: list[ValidationI
                 )
 
 
+def _validate_settle_state(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    caps = manifest.get("capabilities", {})
+    material = _read_required_json(package_dir, "simulation/material_physics.json", issues)
+    sim_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    rest_state = _read_required_json(package_dir, "simulation/rest_state.json", issues)
+    settled_state = _read_required_json(package_dir, "simulation/settled_state.json", issues)
+    diagnostics = _read_required_json(package_dir, "simulation/settle_diagnostics.json", issues)
+    if (
+        material is None
+        or sim_manifest is None
+        or rest_state is None
+        or settled_state is None
+        or diagnostics is None
+    ):
+        return
+    cloth_available = bool(caps.get("actualClothSettleAvailable"))
+    if cloth_available and not material.get("clothSettleRun"):
+        issues.append(
+            _issue(
+                "cloth_settle_material_contradiction",
+                "fatal",
+                "simulation/material_physics.json",
+                "Manifest claims settle availability but material preset says no settle ran.",
+            )
+        )
+    if cloth_available and diagnostics.get("convergenceState") != "converged":
+        issues.append(
+            _issue(
+                "cloth_settle_not_converged",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "Settled state must report convergence before capability is enabled.",
+            )
+        )
+    if float(diagnostics.get("maximumBodyPenetrationMeters", 1.0)) > 0.012:
+        issues.append(
+            _issue(
+                "cloth_settle_body_penetration_too_high",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "Maximum body penetration exceeds reference threshold.",
+            )
+        )
+    if float(diagnostics.get("rmsSeamResidualMeters", 1.0)) > 0.035:
+        issues.append(
+            _issue(
+                "cloth_settle_seam_residual_too_high",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "RMS seam residual exceeds reference threshold.",
+            )
+        )
+    if int(diagnostics.get("nonFiniteValueCount", 1)) != 0:
+        issues.append(
+            _issue(
+                "cloth_settle_nonfinite",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "Settled simulation state contains non-finite values.",
+            )
+        )
+    if int(diagnostics.get("invertedOrDegenerateElementCount", 1)) != 0:
+        issues.append(
+            _issue(
+                "cloth_settle_degenerate_elements",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "Settled simulation state contains inverted or degenerate elements.",
+            )
+        )
+    if diagnostics.get("settledTopologyHash") != sim_manifest.get("topologyHash"):
+        issues.append(
+            _issue(
+                "settled_topology_hash_mismatch",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "Settled topology hash must match simulation mesh topology.",
+            )
+        )
+    if diagnostics.get("settledContentHash") != sim_manifest.get("contentHash"):
+        issues.append(
+            _issue(
+                "settled_content_hash_mismatch",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "Settled content hash must match simulation mesh content.",
+            )
+        )
+    if settled_state.get("meshTopologyHash") != sim_manifest.get("topologyHash"):
+        issues.append(
+            _issue(
+                "settled_state_topology_hash_mismatch",
+                "fatal",
+                "simulation/settled_state.json",
+                "Settled state topology hash must match simulation mesh topology.",
+            )
+        )
+    if settled_state.get("meshContentHash") != sim_manifest.get("contentHash"):
+        issues.append(
+            _issue(
+                "settled_state_content_hash_mismatch",
+                "fatal",
+                "simulation/settled_state.json",
+                "Settled state content hash must match simulation mesh content.",
+            )
+        )
+    if rest_state.get("meshTopologyHash") != sim_manifest.get("topologyHash"):
+        issues.append(
+            _issue(
+                "rest_state_topology_hash_mismatch",
+                "fatal",
+                "simulation/rest_state.json",
+                "Rest and settled simulation states must share topology.",
+            )
+        )
+    if (
+        _contains_nonfinite(rest_state)
+        or _contains_nonfinite(settled_state)
+        or _contains_nonfinite(diagnostics)
+    ):
+        issues.append(
+            _issue(
+                "settle_state_nonfinite_numeric_value",
+                "fatal",
+                "simulation/settled_state.json",
+                "Simulation state and diagnostics must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_glbs(package_dir: Path, issues: list[ValidationIssue]) -> None:
     for rel in [
         "avatar/reference_avatar.glb",
@@ -615,13 +751,24 @@ def _validate_capabilities(manifest: dict[str, Any], issues: list[ValidationIssu
                 "No physical cloth-settle solver ran in Implementation 01.",
             )
         )
-    if caps.get("actualClothSettleAvailable"):
+    if caps.get("actualClothSettleAvailable") and "cloth_settle_not_run" in manifest.get(
+        "warnings", []
+    ):
         issues.append(
             _issue(
-                "false_cloth_settle_capability",
+                "capability_warning_contradiction",
                 "fatal",
                 "manifest.json",
-                "Implementation 01 does not run cloth settle.",
+                "actualClothSettleAvailable contradicts cloth_settle_not_run warning.",
+            )
+        )
+    if not caps.get("selfCollisionAvailable"):
+        issues.append(
+            _issue(
+                "self_collision_not_run",
+                "warning",
+                "manifest.json",
+                "Reference solver v1 does not implement self-collision.",
             )
         )
     if caps.get("zeroOneStaticAvailable") or caps.get("zeroOneDynamicAvailable"):
