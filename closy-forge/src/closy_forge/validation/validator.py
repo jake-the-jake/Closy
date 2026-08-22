@@ -6,6 +6,7 @@ from typing import Any
 
 from closy_forge.binding.binary_format import read_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction_error
+from closy_forge.capture.source_records import hash_capture_record
 from closy_forge.contracts.avatar import REQUIRED_BODY_REGIONS, REQUIRED_LANDMARKS
 from closy_forge.contracts.common import COORDINATE_CONVENTION
 from closy_forge.contracts.semantic import REQUIRED_OPENINGS, REQUIRED_PANELS, REQUIRED_SEAMS
@@ -30,6 +31,8 @@ from closy_forge.validation.issues import Severity, ValidationIssue
 EXPECTED_FILES = [
     "manifest.json",
     "provenance.json",
+    "source/capture_record.json",
+    "source/capture_quality.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
     "avatar/collision.glb",
@@ -51,6 +54,7 @@ EXPECTED_FILES = [
     "binding/sim_to_render.bin",
     "binding/binding_manifest.json",
     "reports/avatar_quality.json",
+    "reports/capture_quality.json",
     "reports/semantic_quality.json",
     "reports/pattern_quality.json",
     "reports/simulation_quality.json",
@@ -187,6 +191,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             )
 
     _validate_avatar(package_dir, issues)
+    _validate_capture(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
@@ -236,6 +241,220 @@ def _validate_avatar(package_dir: Path, issues: list[ValidationIssue]) -> None:
                 "fatal",
                 "avatar/avatar_contract.json",
                 "Reference avatar height must be approximately human scale.",
+            )
+        )
+
+
+def _validate_capture(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    capture_record = _read_required_json(package_dir, "source/capture_record.json", issues)
+    capture_quality = _read_required_json(package_dir, "source/capture_quality.json", issues)
+    if capture_record is None or capture_quality is None:
+        return
+    privacy = capture_record.get("privacy", {})
+    if not isinstance(privacy, dict):
+        issues.append(
+            _issue(
+                "capture_privacy_policy_invalid",
+                "fatal",
+                "source/capture_record.json",
+                "Capture record privacy block must be an object.",
+            )
+        )
+        privacy = {}
+    if (
+        privacy.get("containsUserImagery") is not False
+        or privacy.get("containsPersonalBodyData") is not False
+    ):
+        issues.append(
+            _issue(
+                "capture_user_data_in_fixture",
+                "fatal",
+                "source/capture_record.json",
+                "Phase 2 fixture capture records must not contain user imagery or body data.",
+            )
+        )
+    if (
+        privacy.get("allowExternalApis") is not False
+        or privacy.get("allowTrainingUse") is not False
+    ):
+        issues.append(
+            _issue(
+                "capture_provider_policy_violation",
+                "fatal",
+                "source/capture_record.json",
+                "Synthetic fixture capture cannot permit external API use or training use.",
+            )
+        )
+    session = capture_record.get("captureSession", {})
+    if not isinstance(session, dict):
+        issues.append(
+            _issue(
+                "capture_session_invalid",
+                "fatal",
+                "source/capture_record.json",
+                "Capture session must be an object.",
+            )
+        )
+        session = {}
+    if session.get("runtimeExternalApis") is not False:
+        issues.append(
+            _issue(
+                "capture_provider_policy_violation",
+                "fatal",
+                "source/capture_record.json",
+                "Synthetic fixture capture must be generated without runtime external APIs.",
+            )
+        )
+    views = capture_record.get("views", [])
+    if not isinstance(views, list):
+        issues.append(
+            _issue(
+                "capture_views_invalid",
+                "fatal",
+                "source/capture_record.json",
+                "Capture views must be a list.",
+            )
+        )
+        views = []
+    if len(views) < 4:
+        issues.append(
+            _issue(
+                "capture_view_count_too_low",
+                "fatal",
+                "source/capture_record.json",
+                "Synthetic T-shirt fixture must include at least four view records.",
+            )
+        )
+    if _int_or(session.get("viewCount"), -1) != len(views):
+        issues.append(
+            _issue(
+                "capture_view_count_mismatch",
+                "fatal",
+                "source/capture_record.json",
+                "Capture session viewCount must match the number of view records.",
+            )
+        )
+    immutability = capture_record.get("immutability", {})
+    if not isinstance(immutability, dict):
+        issues.append(
+            _issue(
+                "capture_immutability_invalid",
+                "fatal",
+                "source/capture_record.json",
+                "Capture record immutability block must be an object.",
+            )
+        )
+        immutability = {}
+    declared_hash = immutability.get("sourceRecordHash")
+    if declared_hash != hash_capture_record(capture_record):
+        issues.append(
+            _issue(
+                "capture_record_hash_mismatch",
+                "fatal",
+                "source/capture_record.json",
+                "Capture record hash must match its canonical payload.",
+            )
+        )
+    if capture_quality.get("sourceRecordId") != capture_record.get("recordId"):
+        issues.append(
+            _issue(
+                "capture_quality_source_mismatch",
+                "fatal",
+                "source/capture_quality.json",
+                "Capture quality report must reference the capture record ID.",
+            )
+        )
+    if capture_quality.get("sourceRecordHash") != declared_hash:
+        issues.append(
+            _issue(
+                "capture_quality_source_hash_mismatch",
+                "fatal",
+                "source/capture_quality.json",
+                "Capture quality report must reference the capture record hash.",
+            )
+        )
+    if capture_quality.get("overallStatus") != "pass":
+        issues.append(
+            _issue(
+                "capture_quality_not_pass",
+                "fatal",
+                "source/capture_quality.json",
+                "Capture quality report must pass for this canonical fixture.",
+            )
+        )
+    if _float_or(capture_quality.get("overallScore"), 0.0) < _float_or(
+        capture_quality.get("qualityThreshold"), 1.0
+    ):
+        issues.append(
+            _issue(
+                "capture_quality_below_threshold",
+                "fatal",
+                "source/capture_quality.json",
+                "Capture quality score is below the declared threshold.",
+            )
+        )
+    if _int_or(capture_quality.get("viewCount"), -1) != len(views):
+        issues.append(
+            _issue(
+                "capture_quality_view_count_mismatch",
+                "fatal",
+                "source/capture_quality.json",
+                "Capture quality viewCount must match the source record.",
+            )
+        )
+    policy = capture_quality.get("policy", {})
+    if not isinstance(policy, dict):
+        issues.append(
+            _issue(
+                "capture_quality_policy_invalid",
+                "fatal",
+                "source/capture_quality.json",
+                "Capture quality policy block must be an object.",
+            )
+        )
+        policy = {}
+    if (
+        policy.get("externalApiUseAllowed") is not False
+        or policy.get("trainingUseAllowed") is not False
+    ):
+        issues.append(
+            _issue(
+                "capture_quality_policy_violation",
+                "fatal",
+                "source/capture_quality.json",
+                "Capture quality report cannot permit external API or training use.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if not isinstance(caps, dict):
+        return
+    if caps.get("sourceCaptureRecordAvailable") is not True:
+        issues.append(
+            _issue(
+                "source_capture_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare available immutable synthetic capture records.",
+            )
+        )
+    if caps.get("captureQualityScored") is not True:
+        issues.append(
+            _issue(
+                "capture_quality_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare deterministic capture quality scoring.",
+            )
+        )
+    if _contains_nonfinite(capture_record) or _contains_nonfinite(capture_quality):
+        issues.append(
+            _issue(
+                "capture_nonfinite_numeric_value",
+                "fatal",
+                "source/capture_record.json",
+                "Capture records and quality reports must not contain NaN or Infinity.",
             )
         )
 
@@ -944,6 +1163,20 @@ def _tri(value: Any) -> Tri:
     if not isinstance(value, list | tuple) or len(value) != 3:
         raise ValueError("expected triangle")
     return (int(value[0]), int(value[1]), int(value[2]))
+
+
+def _int_or(value: Any, fallback: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _float_or(value: Any, fallback: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return fallback
 
 
 def _contains_nonfinite(value: Any) -> bool:

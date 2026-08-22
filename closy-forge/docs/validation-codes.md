@@ -26,6 +26,11 @@ Representative current codes:
 - `cloth_settle_seam_residual_too_high`: settled seam residual exceeds the reference threshold.
 - `cloth_settle_material_contradiction`: material preset and manifest disagree about whether settle ran.
 - `settled_state_content_hash_mismatch`: persisted settled state does not match the simulation mesh manifest.
+- `capture_provider_policy_violation`: synthetic fixture capture permits external API or training use.
+- `capture_record_hash_mismatch`: capture record content changed without updating its canonical payload hash.
+- `capture_quality_source_hash_mismatch`: capture quality report points at the wrong source hash.
+- `capture_quality_not_pass`: capture quality report does not pass the current fixture gate.
+- `capture_quality_below_threshold`: capture quality score is below its declared threshold.
 - `unsupported_schema_version`: unsupported `schemaVersion`.
 - `required_file_missing`: required package file absent.
 - `unsafe_package_path`: inventory path escapes the package contract.

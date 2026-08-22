@@ -6,9 +6,10 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from closy_forge.capture import build_synthetic_capture_record, score_capture_record
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.tshirt.parameters import TShirtParameters
-from closy_forge.package_io.canonical_json import canonical_dumps
+from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
 from closy_forge.validation.validator import validate_package
@@ -71,6 +72,19 @@ def _parser() -> argparse.ArgumentParser:
     build.add_argument("--json", action="store_true", help="Print machine-readable result JSON.")
     build.set_defaults(handler=_build_tshirt)
 
+    capture = subparsers.add_parser("capture", help="Build deterministic capture fixtures.")
+    capture_sub = capture.add_subparsers(dest="capture_command")
+    capture_demo = capture_sub.add_parser(
+        "build-synthetic", help="Build a synthetic metadata-only capture record."
+    )
+    capture_demo.add_argument("--output", required=True, type=Path, help="Output directory.")
+    capture_demo.add_argument("--force", action="store_true", help="Replace existing JSON files.")
+    capture_demo.add_argument(
+        "--seed", type=int, default=101, help="Deterministic fixture seed recorded in the record."
+    )
+    capture_demo.add_argument("--json", action="store_true", help="Print machine-readable result.")
+    capture_demo.set_defaults(handler=_build_synthetic_capture)
+
     validate = subparsers.add_parser("validate", help="Validate a .closygarment package from disk.")
     validate.add_argument("package", type=Path)
     validate.add_argument("--json", action="store_true")
@@ -109,6 +123,34 @@ def _build_tshirt(args: argparse.Namespace) -> int:
         print(f"Built {result.package_dir}")
         print(f"Digest: {payload['canonicalPackageDigest']}")
         print(f"Validation: {payload['validation']}")
+    return EXIT_SUCCESS
+
+
+def _build_synthetic_capture(args: argparse.Namespace) -> int:
+    output = args.output
+    record_path = output / "capture_record.json"
+    quality_path = output / "capture_quality.json"
+    if not args.force and (record_path.exists() or quality_path.exists()):
+        raise FileExistsError(f"{output} already contains capture fixture files; pass --force")
+    record = build_synthetic_capture_record(seed=args.seed)
+    quality = score_capture_record(record)
+    write_canonical_json(record_path, record)
+    write_canonical_json(quality_path, quality)
+    payload = {
+        "status": "built",
+        "output": str(output),
+        "recordId": record["recordId"],
+        "sourceRecordHash": record["immutability"]["sourceRecordHash"],
+        "qualityStatus": quality["overallStatus"],
+        "qualityScore": quality["overallScore"],
+        "viewCount": quality["viewCount"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(f"Built synthetic capture fixture in {output}")
+        print(f"Record: {payload['recordId']}")
+        print(f"Quality: {payload['qualityStatus']} {payload['qualityScore']}")
     return EXIT_SUCCESS
 
 

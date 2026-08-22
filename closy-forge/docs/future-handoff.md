@@ -15,7 +15,7 @@ GarmentRenderShell
 GarmentRenderBinding
 ```
 
-No source imagery, body scans, or personal measurements are present in the current deterministic fixture.
+No real source imagery, body scans, or personal measurements are present in the current deterministic fixture. The current `source/` records are synthetic metadata-only capture fixtures used to test privacy, provenance and quality gates before real media ingestion exists.
 
 ## ZeroOne
 

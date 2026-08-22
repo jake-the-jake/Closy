@@ -10,6 +10,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     manifest = read_json(package_dir / "manifest.json")
     summary = read_json(package_dir / "reports" / "summary.json")
     binding = read_json(package_dir / "binding" / "binding_manifest.json")
+    capture = read_json(package_dir / "source" / "capture_quality.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -30,6 +31,13 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "recordCount": binding["recordCount"],
             "maxError": binding["maximumReconstructionError"],
             "rmsError": binding["rmsReconstructionError"],
+        },
+        "capture": {
+            "sourceRecordId": capture["sourceRecordId"],
+            "viewCount": capture["viewCount"],
+            "overallStatus": capture["overallStatus"],
+            "overallScore": capture["overallScore"],
+            "scorerVersion": capture["scorerVersion"],
         },
         "settle": {
             "solverVersion": settle["solverVersion"],
@@ -59,9 +67,14 @@ def human_report(package_dir: Path) -> str:
     for key, value in summary["counts"].items():
         lines.append(f"  - {key}: {value}")
     binding = summary["binding"]
+    capture = summary["capture"]
     settle = summary["settle"]
     lines.extend(
         [
+            (
+                f"Capture: {capture['viewCount']} synthetic metadata-only views, "
+                f"quality {capture['overallScore']:.6f} ({capture['overallStatus']})"
+            ),
             (
                 f"Binding: {binding['recordCount']} records, "
                 f"max error {binding['maxError']:.8f}, RMS {binding['rmsError']:.8f}"

@@ -24,6 +24,8 @@ It intentionally does not introduce generic `WorldObject`, `GeneratedObject`, or
 
 ```text
 fixed avatar contract
+  -> synthetic metadata-only capture record
+  -> deterministic capture quality scoring
   -> semantic T-shirt graph
   -> parametric sewing pattern
   -> simulation-ready panel topology
@@ -35,8 +37,8 @@ fixed avatar contract
   -> independent validation and reports
 ```
 
-The current T-shirt stores both analytic rest assembly and a deterministic CPU settled state against the fixed collision avatar. The solver exercises gravity, stretch, bend, seam and body-collision constraints, but it is still a reference backend: self-collision, body scans, image capture, segmentation, AI inference, ZeroOne processing and personalised body data are not present.
+The current T-shirt stores synthetic metadata-only capture evidence, analytic rest assembly and a deterministic CPU settled state against the fixed collision avatar. The solver exercises gravity, stretch, bend, seam and body-collision constraints, but it is still a reference backend: self-collision, real user images, body scans, segmentation, AI inference, ZeroOne processing and personalised body data are not present.
 
 ## Future R&D Direction
 
-The next dependency-ready work is capture/visual-understanding scaffolding and richer simulation validation, while preserving the same package boundary. Later work can add reconstruction services, SMPL/SMPL-X research, AI garment proposal adapters, ZeroOne derivatives, and mobile consumption of these packages without changing the package boundary.
+The next dependency-ready work is editable masks/landmark observations and richer simulation validation, while preserving the same package boundary. Later work can add reconstruction services, SMPL/SMPL-X research, AI garment proposal adapters, ZeroOne derivatives, and mobile consumption of these packages without changing the package boundary.

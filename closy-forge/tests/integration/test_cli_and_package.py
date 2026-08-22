@@ -32,6 +32,16 @@ def test_generated_glbs_are_parseable(tmp_path) -> None:  # type: ignore[no-unty
         assert audit["triangleEstimate"] > 0
 
 
+def test_cli_build_synthetic_capture_workflow(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    output = tmp_path / "capture_fixture"
+    assert main(["capture", "build-synthetic", "--output", str(output), "--json"]) == EXIT_SUCCESS
+    record = json.loads((output / "capture_record.json").read_text(encoding="utf-8"))
+    quality = json.loads((output / "capture_quality.json").read_text(encoding="utf-8"))
+    assert record["recordType"] == "synthetic_fixture_capture"
+    assert quality["overallStatus"] == "pass"
+    assert quality["sourceRecordHash"] == record["immutability"]["sourceRecordHash"]
+
+
 def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ignore[no-untyped-def]
     package = tmp_path / "demo_tshirt.closygarment"
     assert main(["demo", "build-tshirt", "--output", str(package)]) == EXIT_SUCCESS
@@ -39,4 +49,5 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     captured = capsys.readouterr()
     payload = json.loads(captured.out.splitlines()[-1])
     assert payload["garmentId"] == "garment.demo_tshirt.reference_v1"
+    assert payload["capture"]["overallStatus"] == "pass"
     assert payload["binding"]["recordCount"] > 0

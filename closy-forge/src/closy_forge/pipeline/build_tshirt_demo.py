@@ -18,6 +18,12 @@ from closy_forge.binding.reconstruct import (
     reconstruct_vertices,
     reconstruction_error,
 )
+from closy_forge.capture import (
+    CAPTURE_QUALITY_SCORER_VERSION,
+    SYNTHETIC_CAPTURE_RECORD_VERSION,
+    build_synthetic_capture_record,
+    score_capture_record,
+)
 from closy_forge.contracts.common import COORDINATE_CONVENTION, DEFAULT_SEED, FIXED_TIMESTAMP
 from closy_forge.garments.tshirt.assembly import build_constraints, build_simulation_mesh
 from closy_forge.garments.tshirt.parameters import TShirtParameters
@@ -26,8 +32,8 @@ from closy_forge.garments.tshirt.semantic_graph import build_semantic_graph
 from closy_forge.geometry.glb_io import audit_glb, write_glb
 from closy_forge.geometry.mesh_model import MeshSet, mesh_bounds
 from closy_forge.geometry.subdivision import subdivide_for_render
-from closy_forge.package_io.canonical_json import write_canonical_json
-from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
+from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
+from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 from closy_forge.package_io.writer import (
     EXCLUDED_FROM_CANONICAL_INVENTORY,
     canonical_package_digest,
@@ -111,12 +117,21 @@ def _write_package_contents(
     constraints = build_constraints(pattern, edge_maps)
     avatar = avatar_contract(avatar_mesh, collision_mesh)
     regions = body_regions()
+    capture_record = build_synthetic_capture_record(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        avatar_contract_id=str(avatar["avatarContractId"]),
+        seed=seed,
+    )
+    capture_quality = score_capture_record(capture_record)
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
     simulation_mesh = settle.settled_mesh
     render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
     binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
 
+    write_canonical_json(package_dir / "source" / "capture_record.json", capture_record)
+    write_canonical_json(package_dir / "source" / "capture_quality.json", capture_quality)
     write_canonical_json(package_dir / "avatar" / "avatar_contract.json", avatar)
     write_canonical_json(package_dir / "avatar" / "body_regions.json", regions)
     write_glb(
@@ -199,6 +214,8 @@ def _write_package_contents(
         constraints,
         binding_manifest,
         settle.diagnostics,
+        capture_record,
+        capture_quality,
     )
     for name, report in quality_reports.items():
         write_canonical_json(package_dir / "reports" / name, report)
@@ -213,6 +230,8 @@ def _write_package_contents(
         render_mesh,
         binding_manifest,
         settle.diagnostics,
+        capture_record,
+        capture_quality,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
 
@@ -230,6 +249,8 @@ def _write_package_contents(
         render_mesh,
         binding_manifest,
         settle.diagnostics,
+        capture_record,
+        capture_quality,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
     return {
@@ -242,6 +263,8 @@ def _write_package_contents(
         "constraints": constraints,
         "bindingManifest": binding_manifest,
         "settleDiagnostics": settle.diagnostics,
+        "captureRecord": capture_record,
+        "captureQuality": capture_quality,
         "inventory": inventory,
     }
 
@@ -344,6 +367,8 @@ def _manifest(
     render_mesh: MeshSet,
     binding_manifest: dict[str, object],
     settle_diagnostics: dict[str, Any],
+    capture_record: dict[str, Any],
+    capture_quality: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -362,6 +387,8 @@ def _manifest(
             "sourceKind": "procedural_fixture",
         },
         "canonicalPaths": {
+            "sourceCaptureRecord": "source/capture_record.json",
+            "sourceCaptureQuality": "source/capture_quality.json",
             "semanticGraph": "semantic/garment_graph.json",
             "pattern": "pattern/pattern.json",
             "simulationMesh": "simulation/simulation_mesh.glb",
@@ -381,6 +408,15 @@ def _manifest(
             "avatarContentHash": geometry_content_hash(avatar_mesh),
             "collisionTopologyHash": topology_hash(collision_mesh),
             "collisionContentHash": geometry_content_hash(collision_mesh),
+            "sourceCaptureRecordHash": _hash_from_inventory(
+                inventory, "source/capture_record.json"
+            ),
+            "sourceCaptureQualityHash": _hash_from_inventory(
+                inventory, "source/capture_quality.json"
+            ),
+            "sourceCaptureRecordPayloadHash": str(
+                capture_record["immutability"]["sourceRecordHash"]
+            ),
             "simulationRestTopologyHash": topology_hash(rest_mesh),
             "simulationRestContentHash": geometry_content_hash(rest_mesh),
             "simulationTopologyHash": topology_hash(sim_mesh),
@@ -399,6 +435,8 @@ def _manifest(
         "canonicalPackageDigest": digest,
         "algorithmVersions": {
             "referenceAvatarGenerator": "closy.reference_avatar.v1",
+            "syntheticCaptureRecord": SYNTHETIC_CAPTURE_RECORD_VERSION,
+            "captureQualityScorer": CAPTURE_QUALITY_SCORER_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
             "curveSampler": "closy.curve_sampler.v1",
             "panelTriangulator": "closy.fan_triangulator.v1",
@@ -409,18 +447,19 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_02_reference_tshirt_settle",
+            "name": "implementation_03_synthetic_capture_quality",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
         "capabilities": _capabilities(),
         "warnings": [
             "self_collision_not_run",
+            "synthetic_capture_metadata_only",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "02-reference-tshirt-settle"},
+        "extensions": {"closyImplementation": "03-synthetic-capture-quality"},
     }
 
 
@@ -435,6 +474,8 @@ def _capabilities() -> dict[str, bool]:
         "actualClothSettleAvailable": True,
         "selfCollisionAvailable": False,
         "sourceImageTextureAvailable": False,
+        "sourceCaptureRecordAvailable": True,
+        "captureQualityScored": True,
         "personalizedAvatarAvailable": False,
         "skeletalFallbackAvailable": False,
         "zeroOneStaticAvailable": False,
@@ -454,8 +495,22 @@ def _quality_reports(
     constraints: dict[str, Any],
     binding_manifest: dict[str, object],
     settle_diagnostics: dict[str, Any],
+    capture_record: dict[str, Any],
+    capture_quality: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     return {
+        "capture_quality.json": {
+            "schemaVersion": 1,
+            "status": capture_quality["overallStatus"],
+            "recordId": capture_record["recordId"],
+            "recordVersion": capture_record["recordVersion"],
+            "sourceKind": capture_record["sourceKind"],
+            "viewCount": capture_quality["viewCount"],
+            "overallScore": capture_quality["overallScore"],
+            "qualityThreshold": capture_quality["qualityThreshold"],
+            "privacy": capture_record["privacy"],
+            "warnings": capture_quality["warnings"],
+        },
         "avatar_quality.json": {
             "schemaVersion": 1,
             "status": "pass",
@@ -523,6 +578,8 @@ def _provenance(
     render_mesh: MeshSet,
     binding_manifest: dict[str, object],
     settle_diagnostics: dict[str, Any],
+    capture_record: dict[str, Any],
+    capture_quality: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -542,6 +599,27 @@ def _provenance(
         "seed": seed,
         "fixedTimestamp": FIXED_TIMESTAMP,
         "stages": [
+            _stage(
+                "synthetic_capture_record",
+                SYNTHETIC_CAPTURE_RECORD_VERSION,
+                {
+                    "sourceKind": capture_record["sourceKind"],
+                    "viewCount": capture_record["captureSession"]["viewCount"],
+                    "containsUserImagery": False,
+                    "runtimeExternalApis": False,
+                },
+                [str(capture_record["immutability"]["sourceRecordHash"])],
+            ),
+            _stage(
+                "capture_quality_scoring",
+                CAPTURE_QUALITY_SCORER_VERSION,
+                {
+                    "qualityThreshold": capture_quality["qualityThreshold"],
+                    "overallStatus": capture_quality["overallStatus"],
+                    "rasterImagesAvailable": False,
+                },
+                [_json_hash(capture_quality)],
+            ),
             _stage(
                 "reference_avatar_parameters",
                 "closy.reference_avatar.parameters.v1",
@@ -633,6 +711,8 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     render_mesh = context["renderMesh"]
     constraints = context["constraints"]
     settle = context["settleDiagnostics"]
+    capture_record = context["captureRecord"]
+    capture_quality = context["captureQuality"]
     return {
         "schemaVersion": 1,
         "garmentId": manifest["garmentId"],
@@ -648,6 +728,16 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "renderVertices": render_mesh.vertex_count,
             "renderTriangles": render_mesh.triangle_count,
             "inventoriedFiles": len(manifest["inventory"]),
+        },
+        "capture": {
+            "recordId": capture_record["recordId"],
+            "sourceKind": capture_record["sourceKind"],
+            "viewCount": capture_quality["viewCount"],
+            "overallStatus": capture_quality["overallStatus"],
+            "overallScore": capture_quality["overallScore"],
+            "scorerVersion": capture_quality["scorerVersion"],
+            "containsUserImagery": capture_record["privacy"]["containsUserImagery"],
+            "externalApisAllowed": capture_record["privacy"]["allowExternalApis"],
         },
         "hashes": manifest["hashes"],
         "binding": context["bindingManifest"],
@@ -675,6 +765,9 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Package digest: `{summary['packageDigest']}`\n"
         f"- Panels/seams/openings: {counts['panels']} / {counts['seams']} / {counts['openings']}\n"
         f"- Constraints: {counts['constraints']}\n"
+        f"- Synthetic capture: {summary['capture']['viewCount']} metadata-only views, "
+        f"quality {summary['capture']['overallScore']:.6f} "
+        f"({summary['capture']['overallStatus']})\n"
         f"- Simulation mesh: {counts['simulationVertices']} vertices, "
         f"{counts['simulationTriangles']} triangles\n"
         f"- Render shell: {counts['renderVertices']} vertices, "
@@ -735,6 +828,10 @@ def _hash_from_inventory(inventory: list[dict[str, object]], relpath: str) -> st
         if entry["path"] == relpath:
             return str(entry["sha256"])
     raise KeyError(relpath)
+
+
+def _json_hash(doc: dict[str, Any]) -> str:
+    return sha256_bytes(canonical_dumps(doc).encode("utf-8"))
 
 
 def audit_package_glbs(package_dir: Path) -> dict[str, dict[str, Any]]:

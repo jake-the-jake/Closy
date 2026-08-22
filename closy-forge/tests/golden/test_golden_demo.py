@@ -22,6 +22,8 @@ def test_demo_package_matches_structural_golden(tmp_path) -> None:  # type: igno
     assert manifest["hashes"]["renderTopologyHash"] == expected["renderTopologyHash"]
     for key, value in expected["requiredCapabilities"].items():
         assert manifest["capabilities"][key] is value
+    for key, value in expected["capture"].items():
+        assert summary["capture"][key] == value
     assert summary["settle"]["convergenceState"] == expected["settle"]["convergenceState"]
     assert summary["settle"]["solverVersion"] == expected["settle"]["solverVersion"]
     for key, value in expected["counts"].items():

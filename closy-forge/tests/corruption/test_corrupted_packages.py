@@ -240,3 +240,40 @@ def test_cloth_settle_material_contradiction_is_rejected(tmp_path) -> None:  # t
     material["clothSettleRun"] = False
     write_json(corrupt / "simulation" / "material_physics.json", material)
     assert "cloth_settle_material_contradiction" in issue_codes(validate_package(corrupt))
+
+
+def test_capture_provider_policy_violation_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_capture_policy.closygarment")
+    record = read_json(corrupt / "source" / "capture_record.json")
+    record["privacy"]["allowExternalApis"] = True
+    write_json(corrupt / "source" / "capture_record.json", record)
+    assert "capture_provider_policy_violation" in issue_codes(validate_package(corrupt))
+
+
+def test_capture_record_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_capture_hash.closygarment")
+    record = read_json(corrupt / "source" / "capture_record.json")
+    record["views"][0]["qualityMeasurements"]["garmentCoverage"] = 0.10
+    write_json(corrupt / "source" / "capture_record.json", record)
+    assert "capture_record_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_capture_quality_source_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_capture_quality_hash.closygarment"
+    )
+    quality = read_json(corrupt / "source" / "capture_quality.json")
+    quality["sourceRecordHash"] = "0" * 64
+    write_json(corrupt / "source" / "capture_quality.json", quality)
+    assert "capture_quality_source_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_capture_quality_failure_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_capture_quality.closygarment")
+    quality = read_json(corrupt / "source" / "capture_quality.json")
+    quality["overallStatus"] = "fail"
+    quality["overallScore"] = 0.01
+    write_json(corrupt / "source" / "capture_quality.json", quality)
+    codes = issue_codes(validate_package(corrupt))
+    assert "capture_quality_not_pass" in codes
+    assert "capture_quality_below_threshold" in codes

@@ -10,6 +10,8 @@ CAPABILITIES_FIXTURE = {
     "actualClothSettleAvailable": True,
     "selfCollisionAvailable": False,
     "sourceImageTextureAvailable": False,
+    "sourceCaptureRecordAvailable": True,
+    "captureQualityScored": True,
     "personalizedAvatarAvailable": False,
     "skeletalFallbackAvailable": False,
     "zeroOneStaticAvailable": False,
