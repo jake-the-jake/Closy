@@ -48,6 +48,14 @@ PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS = [
     "provider_output_not_canonical_garment_truth",
 ]
 
+PARTIAL_REPAIR_RESULT_REJECTION_REASONS = [
+    "cleanup_incomplete",
+    "partial_repair_incomplete",
+    "retopology_not_run",
+    "simulation_binding_missing",
+    "provider_output_not_canonical_garment_truth",
+]
+
 
 def build_clean_geometry_proposal_rejection(
     *,
@@ -62,6 +70,7 @@ def build_clean_geometry_proposal_rejection(
     binding_candidate_report: dict[str, Any] | None = None,
     binding_validation_report: dict[str, Any] | None = None,
     repair_retopology_plan_report: dict[str, Any] | None = None,
+    repair_result_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
 
@@ -174,6 +183,20 @@ def build_clean_geometry_proposal_rejection(
         repair_retopology_plan_status = repair_retopology_plan_report["readiness"]["status"]
         repair_retopology_plan_execution = repair_retopology_plan_report["execution"]
         repair_retopology_plan_aggregate = repair_retopology_plan_report["aggregate"]
+    if repair_result_report is None:
+        repair_result_available = False
+        repair_result_id = None
+        repair_result_hash = None
+        repair_result_status = None
+        repair_result_execution: dict[str, Any] = {}
+        repair_result_aggregate: dict[str, Any] = {}
+    else:
+        repair_result_available = True
+        repair_result_id = repair_result_report["reportId"]
+        repair_result_hash = repair_result_report["integrity"]["geometryRepairResultHash"]
+        repair_result_status = repair_result_report["readiness"]["status"]
+        repair_result_execution = repair_result_report["execution"]
+        repair_result_aggregate = repair_result_report["aggregate"]
     cleanup_run = bool(cleanup_result_execution.get("cleanupRun", False))
     semantic_transfer_run = bool(semantic_transfer_execution.get("semanticTransferRun", False))
     candidate_binding_run = bool(binding_candidate_execution.get("candidateBindingRun", False))
@@ -183,6 +206,9 @@ def build_clean_geometry_proposal_rejection(
     repair_retopology_plan_generated = bool(
         repair_retopology_plan_execution.get("repairRetopologyPlanGenerated", False)
     )
+    partial_repair_result_generated = bool(
+        repair_result_execution.get("repairResultGenerated", False)
+    )
     validation_accepted = bool(binding_validation_readiness_accepts(binding_validation_report))
     rejection_reasons = _rejection_reasons(
         cleanup_run,
@@ -190,6 +216,7 @@ def build_clean_geometry_proposal_rejection(
         candidate_binding_run,
         deformation_validation_run,
         repair_retopology_plan_generated,
+        partial_repair_result_generated,
         validation_accepted,
     )
     required_before_canonical = _required_before_canonical(
@@ -197,6 +224,7 @@ def build_clean_geometry_proposal_rejection(
         semantic_transfer_run,
         deformation_validation_run,
         repair_retopology_plan_generated,
+        partial_repair_result_generated,
         validation_accepted,
     )
     report: dict[str, Any] = {
@@ -223,6 +251,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceGeometryBindingValidationHash": binding_validation_hash,
         "sourceGeometryRepairRetopologyPlanId": repair_retopology_plan_id,
         "sourceGeometryRepairRetopologyPlanHash": repair_retopology_plan_hash,
+        "sourceGeometryRepairResultId": repair_result_id,
+        "sourceGeometryRepairResultHash": repair_result_hash,
         "rawProposal": {
             "available": raw_proposal["available"],
             "assetPath": raw_proposal["assetPath"],
@@ -239,10 +269,14 @@ def build_clean_geometry_proposal_rejection(
             "bindingCandidateReportGenerated": binding_candidate_available,
             "bindingValidationReportGenerated": binding_validation_available,
             "repairRetopologyPlanGenerated": repair_retopology_plan_available,
+            "partialRepairResultGenerated": repair_result_available,
             "cleanupRun": cleanup_run,
             "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
             "retopologyRun": False,
             "seamSplitRun": False,
+            "deformationReprojectionRun": bool(
+                repair_result_execution.get("deformationReprojectionRun", False)
+            ),
             "semanticTransferRun": semantic_transfer_run,
             "boundaryClassificationRun": bool(
                 semantic_transfer_execution.get("boundaryClassificationRun", False)
@@ -258,11 +292,13 @@ def build_clean_geometry_proposal_rejection(
             "blockedBy": [
                 "raw_visual_reference_only",
                 "clean_geometry_provider_unavailable",
-                "repair_retopology_plan_not_executed",
+                "partial_repair_result_not_clean"
+                if repair_result_available
+                else "repair_retopology_plan_not_executed",
                 "simulation_binding_unavailable",
             ],
             "nextRequiredStages": [
-                "execute_repair_retopology_and_seam_split_adapter",
+                "execute_seam_split_retopology_and_runtime_binding_adapter",
                 "accepted_runtime_simulation_binding",
                 "deformation_validation",
                 "canonical_acceptance_quality_gate",
@@ -336,6 +372,14 @@ def build_clean_geometry_proposal_rejection(
             "repairRetopologyEstimatedComplexity": repair_retopology_plan_aggregate.get(
                 "estimatedRepairComplexity"
             ),
+            "repairResultStatus": repair_result_status,
+            "repairResultMovedVertexCount": repair_result_aggregate.get("movedVertexCount"),
+            "repairResultDeferredOperationCount": repair_result_aggregate.get(
+                "deferredOperationCount"
+            ),
+            "repairResultMaxOutputToSettledOffsetMeters": repair_result_aggregate.get(
+                "maxOutputToSettledOffsetMeters"
+            ),
             "simulationBindingRecordCount": 0,
             "failureReason": "clean_geometry_proposal_not_generated",
         },
@@ -370,6 +414,9 @@ def build_clean_geometry_proposal_rejection(
                 "geometry_repair_retopology_plan_available_but_not_executed"
                 if repair_retopology_plan_available
                 else "geometry_repair_retopology_plan_not_generated",
+                "geometry_repair_result_partial_reprojection_not_clean"
+                if repair_result_available
+                else "geometry_repair_result_not_generated",
                 "geometry_cleanup_plan_generated_without_execution"
                 if cleanup_plan_available
                 else "geometry_cleanup_plan_not_generated",
@@ -420,6 +467,8 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "bindingCandidateReportGenerated": cleanup["bindingCandidateReportGenerated"],
         "bindingValidationReportGenerated": cleanup["bindingValidationReportGenerated"],
         "repairRetopologyPlanGenerated": cleanup["repairRetopologyPlanGenerated"],
+        "partialRepairResultGenerated": cleanup["partialRepairResultGenerated"],
+        "deformationReprojectionRun": cleanup["deformationReprojectionRun"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
         "connectedComponentCount": audit["connectedComponentCount"],
@@ -445,6 +494,12 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "repairRetopologyPlanStatus": audit["repairRetopologyPlanStatus"],
         "repairRetopologyRequiredOperationCount": audit["repairRetopologyRequiredOperationCount"],
         "repairRetopologyEstimatedComplexity": audit["repairRetopologyEstimatedComplexity"],
+        "repairResultStatus": audit["repairResultStatus"],
+        "repairResultMovedVertexCount": audit["repairResultMovedVertexCount"],
+        "repairResultDeferredOperationCount": audit["repairResultDeferredOperationCount"],
+        "repairResultMaxOutputToSettledOffsetMeters": audit[
+            "repairResultMaxOutputToSettledOffsetMeters"
+        ],
         "meshCount": audit["meshCount"],
         "triangleEstimate": audit["triangleEstimate"],
         "failureReason": audit["failureReason"],
@@ -481,8 +536,19 @@ def _rejection_reasons(
     candidate_binding_run: bool,
     deformation_validation_run: bool,
     repair_retopology_plan_generated: bool,
+    partial_repair_result_generated: bool,
     validation_accepted: bool,
 ) -> list[str]:
+    if (
+        cleanup_run
+        and semantic_transfer_run
+        and candidate_binding_run
+        and deformation_validation_run
+        and repair_retopology_plan_generated
+        and partial_repair_result_generated
+        and not validation_accepted
+    ):
+        return PARTIAL_REPAIR_RESULT_REJECTION_REASONS
     if (
         cleanup_run
         and semantic_transfer_run
@@ -512,9 +578,13 @@ def _required_before_canonical(
     semantic_transfer_run: bool,
     deformation_validation_run: bool,
     repair_retopology_plan_generated: bool,
+    partial_repair_result_generated: bool,
     validation_accepted: bool,
 ) -> list[str]:
-    required = ["repair_not_run", "simulation_binding_missing"]
+    required = [
+        "partial_repair_incomplete" if partial_repair_result_generated else "repair_not_run",
+        "simulation_binding_missing",
+    ]
     if not cleanup_run:
         required.insert(0, "cleanup_not_run")
     else:
@@ -523,7 +593,9 @@ def _required_before_canonical(
         required.insert(2, "semantic_transfer_missing")
     if deformation_validation_run and not validation_accepted:
         required.insert(-1, "binding_deformation_validation_failed")
-    if repair_retopology_plan_generated:
+    if repair_retopology_plan_generated and not partial_repair_result_generated:
         required.insert(-1, "repair_retopology_plan_not_executed")
+    if partial_repair_result_generated:
+        required.insert(-1, "retopology_not_run")
     required.append("provider_output_not_canonical_garment_truth")
     return required

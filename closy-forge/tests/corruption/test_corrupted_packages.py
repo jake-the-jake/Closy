@@ -627,6 +627,35 @@ def test_geometry_repair_retopology_plan_execution_claim_is_rejected(
     assert "geometry_repair_retopology_plan_quality_status_invalid" in codes
 
 
+def test_geometry_repair_result_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_repair_result_hash.closygarment")
+    repair_result = read_json(corrupt / "reports" / "geometry_repair_result.json")
+    repair_result["aggregate"]["deferredOperationCount"] = 0
+    write_json(corrupt / "reports" / "geometry_repair_result.json", repair_result)
+    assert "geometry_repair_result_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_repair_result_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_repair_result_ready.closygarment")
+    repair_result = read_json(corrupt / "reports" / "geometry_repair_result.json")
+    repair_result["readiness"]["acceptedForCleanProposal"] = True
+    repair_result["readiness"]["acceptedForRuntimeRender"] = True
+    repair_result["execution"]["retopologyRun"] = True
+    repair_result["execution"]["runtimeBindingWritten"] = True
+    repair_result["execution"]["runtimeBindingAccepted"] = True
+    repair_result["quality"]["status"] = "pass"
+    write_json(corrupt / "reports" / "geometry_repair_result.json", repair_result)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_repair_result_hash_mismatch" in codes
+    assert "geometry_repair_result_acceptance_invalid" in codes
+    assert "geometry_repair_result_execution_state_invalid" in codes
+    assert "geometry_repair_result_quality_status_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

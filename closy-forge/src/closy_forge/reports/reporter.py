@@ -23,6 +23,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     binding_candidate = read_json(package_dir / "reports" / "geometry_binding_candidate.json")
     binding_validation = read_json(package_dir / "reports" / "geometry_binding_validation.json")
     repair_plan = read_json(package_dir / "reports" / "geometry_repair_retopology_plan.json")
+    repair_result = read_json(package_dir / "reports" / "geometry_repair_result.json")
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -227,6 +228,26 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "estimatedRepairComplexity": repair_plan["aggregate"]["estimatedRepairComplexity"],
             "acceptedForCleanProposal": repair_plan["readiness"]["acceptedForCleanProposal"],
         },
+        "geometryRepairResult": {
+            "reportId": repair_result["reportId"],
+            "sourceGeometryRepairRetopologyPlanId": repair_result[
+                "sourceGeometryRepairRetopologyPlanId"
+            ],
+            "status": repair_result["readiness"]["status"],
+            "repairResultGenerated": repair_result["execution"]["repairResultGenerated"],
+            "deformationReprojectionRun": repair_result["execution"]["deformationReprojectionRun"],
+            "repairRun": repair_result["execution"]["repairRun"],
+            "retopologyRun": repair_result["execution"]["retopologyRun"],
+            "seamSplitRun": repair_result["execution"]["seamSplitRun"],
+            "movedVertexCount": repair_result["aggregate"]["movedVertexCount"],
+            "unmappedVertexCount": repair_result["aggregate"]["unmappedVertexCount"],
+            "executedOperationCount": repair_result["aggregate"]["executedOperationCount"],
+            "deferredOperationCount": repair_result["aggregate"]["deferredOperationCount"],
+            "maxOutputToSettledOffsetMeters": repair_result["aggregate"][
+                "maxOutputToSettledOffsetMeters"
+            ],
+            "acceptedForCleanProposal": repair_result["readiness"]["acceptedForCleanProposal"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -249,8 +270,14 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "repairRetopologyPlanGenerated": clean_proposal["cleanupPipeline"][
                 "repairRetopologyPlanGenerated"
             ],
+            "partialRepairResultGenerated": clean_proposal["cleanupPipeline"][
+                "partialRepairResultGenerated"
+            ],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
+            "deformationReprojectionRun": clean_proposal["cleanupPipeline"][
+                "deformationReprojectionRun"
+            ],
             "semanticTransferRun": clean_proposal["cleanupPipeline"]["semanticTransferRun"],
             "candidateBindingRun": clean_proposal["cleanupPipeline"]["candidateBindingRun"],
             "deformationValidationRun": clean_proposal["cleanupPipeline"][
@@ -319,6 +346,7 @@ def human_report(package_dir: Path) -> str:
     binding_candidate = summary["geometryBindingCandidate"]
     binding_validation = summary["geometryBindingValidation"]
     repair_plan = summary["geometryRepairRetopologyPlan"]
+    repair_result = summary["geometryRepairResult"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -387,6 +415,12 @@ def human_report(package_dir: Path) -> str:
                 f"required operations={repair_plan['requiredOperationCount']}, "
                 f"complexity={repair_plan['estimatedRepairComplexity']}, "
                 f"executed={repair_plan['repairRun']}"
+            ),
+            (
+                f"Repair result: status={repair_result['status']}, "
+                f"reprojected vertices={repair_result['movedVertexCount']}, "
+                f"deferred operations={repair_result['deferredOperationCount']}, "
+                f"retopology={repair_result['retopologyRun']}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "

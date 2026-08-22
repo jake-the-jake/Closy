@@ -31,6 +31,7 @@ CAPABILITIES_FIXTURE = {
     "geometryBindingCandidateAvailable": True,
     "geometryBindingValidationAvailable": True,
     "geometryRepairRetopologyPlanAvailable": True,
+    "geometryRepairResultAvailable": True,
     "providerProvenanceAvailable": True,
     "geometryProviderRegistryAvailable": True,
     "manualGeometryImportAdapterDeclared": True,

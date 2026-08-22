@@ -15,7 +15,7 @@ from closy_forge.contracts.semantic import REQUIRED_OPENINGS, REQUIRED_PANELS, R
 from closy_forge.fitting import hash_tshirt_fit_report
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.geometry.curves import sample_curve
-from closy_forge.geometry.glb_io import audit_glb
+from closy_forge.geometry.glb_io import audit_glb, write_indexed_glb
 from closy_forge.geometry.mesh_model import (
     Mesh,
     MeshSet,
@@ -38,6 +38,7 @@ from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.proposals import (
     PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_REPAIR_RESULT_REJECTION_REASONS,
     PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
@@ -45,6 +46,7 @@ from closy_forge.proposals import (
     build_geometry_binding_validation_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
+    build_geometry_repair_result_report,
     build_geometry_repair_retopology_plan,
     build_geometry_semantic_transfer_report,
     build_raw_geometry_topology_report,
@@ -54,10 +56,12 @@ from closy_forge.proposals import (
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
+    hash_geometry_repair_result,
     hash_geometry_repair_retopology_plan,
     hash_geometry_semantic_transfer_report,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
+    reproject_cleanup_preview_to_settled_simulation,
 )
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
@@ -78,6 +82,7 @@ EXPECTED_FILES = [
     "proposals/raw_geometry_proposal.json",
     "proposals/manual_raw_visual_proposal.glb",
     "proposals/manual_cleanup_preview.glb",
+    "proposals/manual_repair_preview.glb",
     "proposals/clean_geometry_proposal.json",
     "proposals/provider_registry.json",
     "avatar/avatar_contract.json",
@@ -113,6 +118,7 @@ EXPECTED_FILES = [
     "reports/geometry_binding_candidate.json",
     "reports/geometry_binding_validation.json",
     "reports/geometry_repair_retopology_plan.json",
+    "reports/geometry_repair_result.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -263,6 +269,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_binding_candidate(package_dir, manifest, issues)
     _validate_geometry_binding_validation(package_dir, manifest, issues)
     _validate_geometry_repair_retopology_plan(package_dir, manifest, issues)
+    _validate_geometry_repair_result(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1422,6 +1429,11 @@ def _validate_geometry_proposal(
             "geometryRepairRetopologyPlanAvailable",
             True,
             "geometry_repair_retopology_plan_capability_missing",
+        ),
+        (
+            "geometryRepairResultAvailable",
+            True,
+            "geometry_repair_result_capability_missing",
         ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
@@ -3910,6 +3922,489 @@ def _validate_geometry_repair_retopology_plan(
         )
 
 
+def _validate_geometry_repair_result(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    repair_plan = _read_required_json(
+        package_dir, "reports/geometry_repair_retopology_plan.json", issues
+    )
+    binding_candidate = _read_required_json(
+        package_dir, "reports/geometry_binding_candidate.json", issues
+    )
+    binding_validation = _read_required_json(
+        package_dir, "reports/geometry_binding_validation.json", issues
+    )
+    simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    repair_result = _read_required_json(package_dir, "reports/geometry_repair_result.json", issues)
+    if (
+        repair_plan is None
+        or binding_candidate is None
+        or binding_validation is None
+        or simulation_manifest is None
+        or repair_result is None
+    ):
+        return
+
+    if repair_result.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_repair_result_garment_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result must reference the package garment ID.",
+            )
+        )
+    if repair_result.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_repair_result_class_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result must reference the package garment class.",
+            )
+        )
+
+    expected_sources = [
+        (
+            "sourceGeometryRepairRetopologyPlanId",
+            repair_plan.get("reportId"),
+            "geometry_repair_result_plan_source_mismatch",
+        ),
+        (
+            "sourceGeometryBindingCandidateId",
+            binding_candidate.get("reportId"),
+            "geometry_repair_result_candidate_source_mismatch",
+        ),
+        (
+            "sourceGeometryBindingValidationId",
+            binding_validation.get("reportId"),
+            "geometry_repair_result_validation_source_mismatch",
+        ),
+    ]
+    for field, expected_value, code in expected_sources:
+        if repair_result.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_repair_result.json",
+                    f"Repair result {field} must match its source artifact.",
+                )
+            )
+
+    expected_hashes = [
+        (
+            "sourceGeometryRepairRetopologyPlanHash",
+            _nested_string(repair_plan, ["integrity", "geometryRepairRetopologyPlanHash"], ""),
+            "geometry_repair_result_plan_hash_mismatch",
+        ),
+        (
+            "sourceGeometryBindingCandidateHash",
+            _nested_string(binding_candidate, ["integrity", "geometryBindingCandidateHash"], ""),
+            "geometry_repair_result_candidate_hash_mismatch",
+        ),
+        (
+            "sourceGeometryBindingValidationHash",
+            _nested_string(binding_validation, ["integrity", "geometryBindingValidationHash"], ""),
+            "geometry_repair_result_validation_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if repair_result.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_repair_result.json",
+                    f"Repair result {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(repair_result, ["integrity", "geometryRepairResultHash"], "") != (
+        hash_geometry_repair_result(repair_result)
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_result_hash_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result hash must match its canonical payload.",
+            )
+        )
+
+    input_asset = repair_result.get("inputCleanupAsset", {})
+    target_settled = repair_result.get("targetSettledSimulation", {})
+    output_asset = repair_result.get("outputAsset", {})
+    output_mesh = repair_result.get("outputMesh", {})
+    metrics = repair_result.get("repairMetrics", {})
+    aggregate = repair_result.get("aggregate", {})
+    execution = repair_result.get("execution", {})
+    readiness = repair_result.get("readiness", {})
+    quality = repair_result.get("quality", {})
+    policy = repair_result.get("policy", {})
+    for name, block in [
+        ("inputCleanupAsset", input_asset),
+        ("targetSettledSimulation", target_settled),
+        ("outputAsset", output_asset),
+        ("outputMesh", output_mesh),
+        ("repairMetrics", metrics),
+        ("aggregate", aggregate),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_repair_result_block_invalid",
+                    "fatal",
+                    "reports/geometry_repair_result.json",
+                    f"Repair result {name} block must be an object.",
+                )
+            )
+            return
+
+    candidate_asset = binding_candidate.get("inputCleanupAsset", {})
+    cleanup_asset_path = _validate_repair_result_asset_reference(
+        package_dir,
+        str(candidate_asset.get("path", "")),
+        input_asset,
+        "geometry_repair_result_input_asset",
+        issues,
+    )
+    output_asset_path = _validate_repair_result_asset_reference(
+        package_dir,
+        "proposals/manual_repair_preview.glb",
+        output_asset,
+        "geometry_repair_result_output_asset",
+        issues,
+    )
+    if input_asset.get("sourceAssetHash") != candidate_asset.get("sourceAssetHash"):
+        issues.append(
+            _issue(
+                "geometry_repair_result_input_asset_hash_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result input cleanup asset hash must mirror the binding candidate.",
+            )
+        )
+    if input_asset.get("path") != binding_validation.get("inputCleanupAsset", {}).get("path"):
+        issues.append(
+            _issue(
+                "geometry_repair_result_input_asset_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result input cleanup asset must mirror binding validation.",
+            )
+        )
+    if output_asset.get("canonicalUseAllowed") is not False:
+        issues.append(
+            _issue(
+                "geometry_repair_result_output_acceptance_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair preview output cannot be accepted for canonical use.",
+            )
+        )
+    if output_asset.get("purpose") != "non_canonical_repair_reprojection_preview":
+        issues.append(
+            _issue(
+                "geometry_repair_result_output_purpose_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result output must be labelled as a non-canonical reprojection preview.",
+            )
+        )
+    if target_settled.get("path") != "simulation/simulation_mesh.glb":
+        issues.append(
+            _issue(
+                "geometry_repair_result_target_path_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result target must reference simulation/simulation_mesh.glb.",
+            )
+        )
+
+    try:
+        settled_mesh = _meshset_from_manifest(simulation_manifest)
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_repair_result_mesh_rebuild_failed",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                str(exc),
+            )
+        )
+        return
+
+    if target_settled.get("topologyHash") != topology_hash(settled_mesh):
+        issues.append(
+            _issue(
+                "geometry_repair_result_target_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result settled simulation topology hash is stale.",
+            )
+        )
+    if target_settled.get("contentHash") != geometry_content_hash(settled_mesh):
+        issues.append(
+            _issue(
+                "geometry_repair_result_target_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result settled simulation content hash is stale.",
+            )
+        )
+
+    if cleanup_asset_path is not None and output_asset_path is not None:
+        expected_output_hash = ""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            expected_output = Path(temp_dir) / "manual_repair_preview.glb"
+            try:
+                expected_mesh = reproject_cleanup_preview_to_settled_simulation(
+                    cleanup_asset_path=cleanup_asset_path,
+                    binding_candidate_report=binding_candidate,
+                    settled_simulation_mesh=settled_mesh,
+                )
+                write_indexed_glb(
+                    expected_output,
+                    expected_mesh,
+                    "closy_partial_repair_reprojection_preview_v1",
+                    (0.68, 0.78, 0.92, 1.0),
+                )
+                expected = build_geometry_repair_result_report(
+                    garment_id=str(manifest.get("garmentId", "")),
+                    garment_class=str(manifest.get("garmentClass", "")),
+                    repair_retopology_plan_report=repair_plan,
+                    binding_candidate_report=binding_candidate,
+                    binding_validation_report=binding_validation,
+                    cleanup_asset_path=cleanup_asset_path,
+                    output_asset_path=expected_output,
+                    output_package_asset_path=str(output_asset.get("path", "")),
+                    output_mesh=expected_mesh,
+                    settled_simulation_mesh=settled_mesh,
+                    settled_simulation_mesh_path="simulation/simulation_mesh.glb",
+                )
+                expected_output_hash = sha256_file(expected_output)
+            except Exception as exc:
+                issues.append(
+                    _issue(
+                        "geometry_repair_result_recompute_failed",
+                        "fatal",
+                        "reports/geometry_repair_result.json",
+                        str(exc),
+                    )
+                )
+                return
+        for key in [
+            "inputCleanupAsset",
+            "targetSettledSimulation",
+            "outputAsset",
+            "outputMesh",
+            "repairMetrics",
+            "executedOperations",
+            "deferredOperations",
+            "aggregate",
+            "execution",
+            "readiness",
+            "quality",
+        ]:
+            if repair_result.get(key) != expected.get(key):
+                issues.append(
+                    _issue(
+                        "geometry_repair_result_recompute_mismatch",
+                        "fatal",
+                        "reports/geometry_repair_result.json",
+                        f"Repair result field {key} is stale.",
+                    )
+                )
+        if output_asset.get("sourceAssetHash") != expected_output_hash:
+            issues.append(
+                _issue(
+                    "geometry_repair_result_output_asset_determinism_mismatch",
+                    "fatal",
+                    "proposals/manual_repair_preview.glb",
+                    "Repair preview GLB does not match deterministic reprojection output.",
+                )
+            )
+        if sha256_file(output_asset_path) != expected_output_hash:
+            issues.append(
+                _issue(
+                    "geometry_repair_result_output_asset_hash_mismatch",
+                    "fatal",
+                    "proposals/manual_repair_preview.glb",
+                    "Repair preview GLB hash is stale.",
+                )
+            )
+
+    if (
+        execution.get("repairResultGenerated") is not True
+        or execution.get("deformationReprojectionRun") is not True
+        or execution.get("repairRun") is not True
+        or execution.get("retopologyRun") is not False
+        or execution.get("seamSplitRun") is not False
+        or execution.get("componentStitchingRun") is not False
+        or execution.get("normalContinuityValidationRun") is not False
+        or execution.get("tangentContinuityValidationRun") is not False
+        or execution.get("runtimeBindingWritten") is not False
+        or execution.get("runtimeBindingAccepted") is not False
+        or execution.get("cleanProposalRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_result_execution_state_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Partial repair result may only claim deformation reprojection execution.",
+            )
+        )
+    if (
+        readiness.get("status") != "partial_repair_completed_retopology_pending"
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForSimulation") is not False
+        or readiness.get("acceptedForRuntimeRender") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_result_acceptance_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Partial repair results cannot accept clean/canonical/runtime geometry.",
+            )
+        )
+    if quality.get("status") != "partial_repair_rejected":
+        issues.append(
+            _issue(
+                "geometry_repair_result_quality_status_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "D0 repair result must remain rejected until retopology and binding pass.",
+            )
+        )
+    if (
+        int(aggregate.get("executedOperationCount", -1)) != 1
+        or int(aggregate.get("deferredOperationCount", -1)) <= 0
+        or int(aggregate.get("movedVertexCount", -1)) <= 0
+        or aggregate.get("deformationOffsetReduced") is not True
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_result_aggregate_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Partial repair result aggregate must record one reprojection and deferred work.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_result_policy_violation",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryRepairResultAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_repair_result_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryRepairResultAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(repair_result):
+        issues.append(
+            _issue(
+                "geometry_repair_result_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_repair_result_asset_reference(
+    package_dir: Path,
+    expected_path: str,
+    asset: dict[str, Any],
+    code_prefix: str,
+    issues: list[ValidationIssue],
+) -> Path | None:
+    path_value = asset.get("path")
+    if not isinstance(path_value, str):
+        issues.append(
+            _issue(
+                f"{code_prefix}_path_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result asset path must be package-relative.",
+            )
+        )
+        return None
+    try:
+        validate_package_relpath(path_value)
+    except ValueError:
+        issues.append(
+            _issue(
+                f"{code_prefix}_path_invalid",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result asset path is unsafe.",
+            )
+        )
+        return None
+    if expected_path and path_value != expected_path:
+        issues.append(
+            _issue(
+                f"{code_prefix}_path_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result asset path does not match the expected source.",
+            )
+        )
+    asset_path = package_dir / path_value
+    if not asset_path.exists():
+        issues.append(
+            _issue(
+                f"{code_prefix}_missing",
+                "fatal",
+                path_value,
+                "Repair result asset is missing.",
+            )
+        )
+        return None
+    if asset.get("sourceAssetHash") != sha256_file(asset_path):
+        issues.append(
+            _issue(
+                f"{code_prefix}_hash_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result asset hash is stale.",
+            )
+        )
+    if asset.get("byteSize") != asset_path.stat().st_size:
+        issues.append(
+            _issue(
+                f"{code_prefix}_size_mismatch",
+                "fatal",
+                "reports/geometry_repair_result.json",
+                "Repair result asset byte size is stale.",
+            )
+        )
+    return asset_path
+
+
 def _validate_provider_registry(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -4310,6 +4805,7 @@ def _validate_clean_geometry_proposal(
     repair_plan = _read_required_json(
         package_dir, "reports/geometry_repair_retopology_plan.json", issues
     )
+    repair_result = _read_required_json(package_dir, "reports/geometry_repair_result.json", issues)
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
@@ -4326,6 +4822,7 @@ def _validate_clean_geometry_proposal(
         or binding_candidate is None
         or binding_validation is None
         or repair_plan is None
+        or repair_result is None
         or clean_proposal is None
     ):
         return
@@ -4394,6 +4891,11 @@ def _validate_clean_geometry_proposal(
             "sourceGeometryRepairRetopologyPlanHash",
             _nested_string(repair_plan, ["integrity", "geometryRepairRetopologyPlanHash"], ""),
             "clean_geometry_proposal_repair_retopology_plan_hash_mismatch",
+        ),
+        (
+            "sourceGeometryRepairResultHash",
+            _nested_string(repair_result, ["integrity", "geometryRepairResultHash"], ""),
+            "clean_geometry_proposal_repair_result_hash_mismatch",
         ),
     ]
     for field, expected_hash, code in expected_hashes:
@@ -4487,6 +4989,15 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the repair/retopology plan ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryRepairResultId") != repair_result.get("reportId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_repair_result_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the repair result ID.",
             )
         )
 
@@ -4638,6 +5149,7 @@ def _validate_clean_geometry_proposal(
             )
         )
     validation_execution = binding_validation.get("execution", {})
+    repair_result_execution = repair_result.get("execution", {})
     if cleanup.get("deformationValidationRun") != validation_execution.get(
         "deformationValidationRun"
     ):
@@ -4659,6 +5171,17 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean proposal runtimeBindingAccepted must mirror the binding validation report.",
+            )
+        )
+    if cleanup.get("deformationReprojectionRun") != repair_result_execution.get(
+        "deformationReprojectionRun"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal deformationReprojectionRun must mirror the repair result.",
             )
         )
     for key in [
@@ -4686,6 +5209,7 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("bindingCandidateReportGenerated") is not True
         or cleanup.get("bindingValidationReportGenerated") is not True
         or cleanup.get("repairRetopologyPlanGenerated") is not True
+        or cleanup.get("partialRepairResultGenerated") is not True
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -4697,7 +5221,7 @@ def _validate_clean_geometry_proposal(
                 (
                     "Clean proposal must link completed raw topology, cleanup plan, cleanup "
                     "result, semantic transfer, binding candidate, binding validation and "
-                    "repair/retopology plan."
+                    "repair/retopology execution evidence."
                 ),
             )
         )
@@ -4908,6 +5432,40 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    repair_result_readiness = repair_result.get("readiness", {})
+    if isinstance(repair_result_readiness, dict) and audit.get(
+        "repairResultStatus"
+    ) != repair_result_readiness.get("status"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_repair_result_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal repair result status is stale.",
+            )
+        )
+    repair_result_aggregate = repair_result.get("aggregate", {})
+    if isinstance(repair_result_aggregate, dict):
+        expected_repair_result_fields = {
+            "repairResultMovedVertexCount": repair_result_aggregate.get("movedVertexCount"),
+            "repairResultDeferredOperationCount": repair_result_aggregate.get(
+                "deferredOperationCount"
+            ),
+            "repairResultMaxOutputToSettledOffsetMeters": repair_result_aggregate.get(
+                "maxOutputToSettledOffsetMeters"
+            ),
+        }
+        for key, expected in expected_repair_result_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_repair_result_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal repair result field {key} is stale.",
+                    )
+                )
+
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
         rejection_reasons = []
@@ -4961,6 +5519,8 @@ def _validate_clean_geometry_proposal(
             "bindingCandidateReportGenerated": cleanup.get("bindingCandidateReportGenerated"),
             "bindingValidationReportGenerated": cleanup.get("bindingValidationReportGenerated"),
             "repairRetopologyPlanGenerated": cleanup.get("repairRetopologyPlanGenerated"),
+            "partialRepairResultGenerated": cleanup.get("partialRepairResultGenerated"),
+            "deformationReprojectionRun": cleanup.get("deformationReprojectionRun"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
@@ -4985,6 +5545,12 @@ def _validate_clean_geometry_proposal(
                 "repairRetopologyRequiredOperationCount"
             ),
             "repairRetopologyEstimatedComplexity": audit.get("repairRetopologyEstimatedComplexity"),
+            "repairResultStatus": audit.get("repairResultStatus"),
+            "repairResultMovedVertexCount": audit.get("repairResultMovedVertexCount"),
+            "repairResultDeferredOperationCount": audit.get("repairResultDeferredOperationCount"),
+            "repairResultMaxOutputToSettledOffsetMeters": audit.get(
+                "repairResultMaxOutputToSettledOffsetMeters"
+            ),
             "failureReason": audit.get("failureReason"),
         }
         for key, expected in expected_quality.items():
@@ -5402,6 +5968,9 @@ def _validate_glbs(package_dir: Path, issues: list[ValidationIssue]) -> None:
     for rel in [
         "avatar/reference_avatar.glb",
         "avatar/collision.glb",
+        "proposals/manual_raw_visual_proposal.glb",
+        "proposals/manual_cleanup_preview.glb",
+        "proposals/manual_repair_preview.glb",
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",
     ]:
@@ -5652,6 +6221,16 @@ def _meshset_from_state_and_manifest(state: dict[str, Any], manifest: dict[str, 
 
 
 def _required_clean_rejections_for_state(cleanup: dict[str, Any]) -> list[str]:
+    if (
+        cleanup.get("cleanupRun") is True
+        and cleanup.get("semanticTransferRun") is True
+        and cleanup.get("candidateBindingRun") is True
+        and cleanup.get("deformationValidationRun") is True
+        and cleanup.get("repairRetopologyPlanGenerated") is True
+        and cleanup.get("partialRepairResultGenerated") is True
+        and cleanup.get("runtimeBindingAccepted") is not True
+    ):
+        return PARTIAL_REPAIR_RESULT_REJECTION_REASONS
     if (
         cleanup.get("cleanupRun") is True
         and cleanup.get("semanticTransferRun") is True

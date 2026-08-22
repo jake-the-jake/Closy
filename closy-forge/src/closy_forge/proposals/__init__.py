@@ -2,6 +2,7 @@ from closy_forge.proposals.clean_geometry_proposal import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
     PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_REPAIR_RESULT_REJECTION_REASONS,
     PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
@@ -38,6 +39,12 @@ from closy_forge.proposals.geometry_proposal import (
     geometry_proposal_quality_report,
     hash_geometry_proposal,
 )
+from closy_forge.proposals.geometry_repair_result import (
+    GEOMETRY_REPAIR_RESULT_VERSION,
+    build_geometry_repair_result_report,
+    hash_geometry_repair_result,
+    reproject_cleanup_preview_to_settled_simulation,
+)
 from closy_forge.proposals.geometry_repair_retopology_plan import (
     GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
     build_geometry_repair_retopology_plan,
@@ -73,6 +80,7 @@ __all__ = [
     "GEOMETRY_CLEANUP_RESULT_VERSION",
     "GEOMETRY_SEMANTIC_TRANSFER_VERSION",
     "GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION",
+    "GEOMETRY_REPAIR_RESULT_VERSION",
     "MANUAL_IMPORT_PROVIDER_ID",
     "NULL_GEOMETRY_PROVIDER_ID",
     "NULL_GEOMETRY_PROPOSAL_VERSION",
@@ -80,6 +88,7 @@ __all__ = [
     "RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION",
     "PARTIAL_CLEANUP_REJECTION_REASONS",
     "PARTIAL_BINDING_VALIDATION_REJECTION_REASONS",
+    "PARTIAL_REPAIR_RESULT_REJECTION_REASONS",
     "PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS",
     "PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS",
     "REQUIRED_CLEAN_REJECTION_REASONS",
@@ -90,6 +99,7 @@ __all__ = [
     "build_geometry_cleanup_plan",
     "build_geometry_cleanup_result",
     "build_geometry_repair_retopology_plan",
+    "build_geometry_repair_result_report",
     "build_geometry_semantic_transfer_report",
     "build_manual_geometry_proposal",
     "build_null_geometry_proposal",
@@ -103,6 +113,7 @@ __all__ = [
     "hash_geometry_cleanup_plan",
     "hash_geometry_cleanup_result",
     "hash_geometry_repair_retopology_plan",
+    "hash_geometry_repair_result",
     "hash_geometry_semantic_transfer_report",
     "hash_geometry_proposal",
     "hash_provider_registry",
@@ -110,4 +121,5 @@ __all__ = [
     "inspect_manual_import_candidate",
     "provider_registry_quality_report",
     "raw_geometry_topology_quality_report",
+    "reproject_cleanup_preview_to_settled_simulation",
 ]

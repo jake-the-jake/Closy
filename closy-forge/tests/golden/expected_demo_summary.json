@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "0bd130049b2131f9963d3bfec1d8388ad958e5104666d01d843f293e3a8fcb0d",
+  "canonicalPackageDigest": "8e0ec10dcdedbc391c6aa5b7e4ab0a90055191068cfd26a98290a03d7e6bc54a",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -27,6 +27,7 @@
     "geometryCleanupRecommendationAvailable": true,
     "geometryBindingCandidateAvailable": true,
     "geometryBindingValidationAvailable": true,
+    "geometryRepairResultAvailable": true,
     "geometryRepairRetopologyPlanAvailable": true,
     "geometryBoundaryClassificationAvailable": true,
     "geometryProposalInterfaceAvailable": true,
@@ -179,6 +180,22 @@
     "sourceGeometryBindingValidationId": "binding_validation.cleanup_preview_tshirt_visual_geometry_v1",
     "status": "repair_retopology_plan_generated_execution_pending"
   },
+  "geometryRepairResult": {
+    "acceptedForCleanProposal": false,
+    "deferredOperationCount": 7,
+    "deformationReprojectionRun": true,
+    "executedOperationCount": 1,
+    "maxOutputToSettledOffsetMeters": 0.0,
+    "movedVertexCount": 223,
+    "repairResultGenerated": true,
+    "repairRun": true,
+    "reportId": "repair_result.cleanup_preview_tshirt_visual_geometry_v1",
+    "retopologyRun": false,
+    "seamSplitRun": false,
+    "sourceGeometryRepairRetopologyPlanId": "repair_retopology_plan.cleanup_preview_tshirt_visual_geometry_v1",
+    "status": "partial_repair_completed_retopology_pending",
+    "unmappedVertexCount": 0
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
@@ -189,8 +206,10 @@
     "cleanupPlanGenerated": true,
     "cleanupResultGenerated": true,
     "cleanupRun": true,
+    "deformationReprojectionRun": true,
     "deformationValidationRun": true,
     "failureReason": "clean_geometry_proposal_not_generated",
+    "partialRepairResultGenerated": true,
     "qualityStatus": "rejected",
     "repairRetopologyPlanGenerated": true,
     "repairRun": false,

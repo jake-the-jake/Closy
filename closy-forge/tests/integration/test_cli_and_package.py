@@ -26,6 +26,7 @@ def test_generated_glbs_are_parseable(tmp_path) -> None:  # type: ignore[no-unty
         "avatar/collision.glb",
         "proposals/manual_raw_visual_proposal.glb",
         "proposals/manual_cleanup_preview.glb",
+        "proposals/manual_repair_preview.glb",
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",
     ]:
@@ -118,6 +119,19 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
         == "retopology_required"
     )
     assert payload["geometryRepairRetopologyPlan"]["acceptedForCleanProposal"] is False
+    assert payload["geometryRepairResult"]["status"] == (
+        "partial_repair_completed_retopology_pending"
+    )
+    assert payload["geometryRepairResult"]["repairResultGenerated"] is True
+    assert payload["geometryRepairResult"]["deformationReprojectionRun"] is True
+    assert payload["geometryRepairResult"]["repairRun"] is True
+    assert payload["geometryRepairResult"]["retopologyRun"] is False
+    assert payload["geometryRepairResult"]["seamSplitRun"] is False
+    assert payload["geometryRepairResult"]["movedVertexCount"] == 223
+    assert payload["geometryRepairResult"]["unmappedVertexCount"] == 0
+    assert payload["geometryRepairResult"]["deferredOperationCount"] == 7
+    assert payload["geometryRepairResult"]["maxOutputToSettledOffsetMeters"] == 0.0
+    assert payload["geometryRepairResult"]["acceptedForCleanProposal"] is False
     assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"
     assert payload["cleanGeometryProposal"]["cleanProposalAvailable"] is False
     assert payload["cleanGeometryProposal"]["acceptedForCanonical"] is False
@@ -129,8 +143,10 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["cleanGeometryProposal"]["bindingCandidateReportGenerated"] is True
     assert payload["cleanGeometryProposal"]["bindingValidationReportGenerated"] is True
     assert payload["cleanGeometryProposal"]["repairRetopologyPlanGenerated"] is True
+    assert payload["cleanGeometryProposal"]["partialRepairResultGenerated"] is True
     assert payload["cleanGeometryProposal"]["candidateBindingRun"] is True
     assert payload["cleanGeometryProposal"]["deformationValidationRun"] is True
+    assert payload["cleanGeometryProposal"]["deformationReprojectionRun"] is True
     assert payload["cleanGeometryProposal"]["simulationBindingRun"] is False
     assert payload["cleanGeometryProposal"]["runtimeBindingAccepted"] is False
     assert payload["providerRegistry"]["selectedProviderId"] == ("closy.manual_local_glb_import.v1")
