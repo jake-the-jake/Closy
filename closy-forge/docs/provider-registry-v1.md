@@ -12,7 +12,7 @@ The deterministic demo package currently declares:
 - `closy.manual_local_glb_import.v1`, a local-only manual GLB import adapter contract.
 - future external provider slots for Meshy, TRELLIS and Hunyuan3D marked unconfigured.
 
-The committed fixture uses a tiny project-authored local GLB so the manual adapter path is exercised without external services. Its D0 package capability is therefore `manualGeometryImportAssetAvailable=true`, while `cleanGeometryProposalAvailable=false`.
+The committed fixture uses a tiny project-authored local GLB so the manual adapter path is exercised without external services. Its D0 package capability is therefore `manualGeometryImportAssetAvailable=true`, while `cleanGeometryProposalAvailable=false`. A separate `proposals/clean_geometry_proposal.json` rejection report records that the raw GLB has not passed cleanup, repair, semantic transfer or simulation binding.
 
 ## Manual Import Contract
 
@@ -24,7 +24,7 @@ The manual adapter only accepts operator-supplied `.glb` candidates. It audits:
 - material count;
 - byte size and content hash.
 
-Accepted manual candidates are still raw visual proposals only. They must never become canonical pattern, seam, simulation or binding truth without a later clean proposal and validation stage. The current fixture records this as `quality.status=accepted_visual_reference` with `acceptedForCanonical=false`.
+Accepted manual candidates are still raw visual proposals only. They must never become canonical pattern, seam, simulation or binding truth without a later successful clean proposal and validation stage. The current fixture records this as `quality.status=accepted_visual_reference` with `acceptedForCanonical=false`, followed by a rejected clean proposal report.
 
 ## Policy Rules
 
@@ -37,4 +37,4 @@ Provider records must remain constrained to avatars and garments:
 - no user imagery or personal body data;
 - external providers require future consent, terms review and isolated workers.
 
-The validator rejects registry records that enable external processing, generic-object scope, canonical manual assets, stale hashes or mismatched quality summaries.
+The validator rejects registry records that enable external processing, generic-object scope, canonical manual assets, stale hashes or mismatched quality summaries. It also rejects clean-proposal records that claim the manual raw asset has become clean, bound or canonical before the required pipeline stages exist.

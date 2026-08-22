@@ -16,6 +16,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     texture = read_json(package_dir / "textures" / "texture_identity.json")
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
+    clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
@@ -85,6 +86,20 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "triangleEstimate": proposal["geometryAudit"]["triangleEstimate"],
             "failureReason": proposal["geometryAudit"]["failureReason"],
         },
+        "cleanGeometryProposal": {
+            "proposalId": clean_proposal["proposalId"],
+            "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
+            "qualityStatus": clean_proposal["quality"]["status"],
+            "cleanProposalAvailable": clean_proposal["cleanProposal"]["available"],
+            "acceptedForCanonical": clean_proposal["quality"]["acceptedForCanonical"],
+            "acceptedForSimulation": clean_proposal["quality"]["acceptedForSimulation"],
+            "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
+            "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
+            "semanticTransferRun": clean_proposal["cleanupPipeline"]["semanticTransferRun"],
+            "simulationBindingRun": clean_proposal["cleanupPipeline"]["simulationBindingRun"],
+            "failureReason": clean_proposal["cleanGeometryAudit"]["failureReason"],
+            "rejectionReasons": clean_proposal["quality"]["rejectionReasons"],
+        },
         "providerRegistry": {
             "registryId": provider_registry["registryId"],
             "selectedProviderId": provider_registry["selectedProviderId"],
@@ -136,6 +151,7 @@ def human_report(package_dir: Path) -> str:
     fitting = summary["fitting"]
     texture = summary["texture"]
     proposal = summary["geometryProposal"]
+    clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
     lines.extend(
@@ -161,6 +177,11 @@ def human_report(package_dir: Path) -> str:
             (
                 f"Geometry proposal: {proposal['qualityStatus']} via "
                 f"{proposal['providerId']}, raw available={proposal['rawProposalAvailable']}"
+            ),
+            (
+                f"Clean proposal: {clean_proposal['qualityStatus']}, "
+                f"available={clean_proposal['cleanProposalAvailable']}, "
+                f"reason={clean_proposal['failureReason']}"
             ),
             (
                 f"Provider registry: selected {provider_registry['selectedProviderId']}, "

@@ -440,3 +440,25 @@ def test_geometry_proposal_asset_hash_mismatch_is_rejected(tmp_path) -> None:  #
     proposal["rawProposal"]["sourceAssetHash"] = "0" * 64
     write_json(corrupt / "proposals" / "raw_geometry_proposal.json", proposal)
     assert "geometry_proposal_asset_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
+    clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")
+    clean["cleanGeometryAudit"]["triangleEstimate"] = 12
+    write_json(corrupt / "proposals" / "clean_geometry_proposal.json", clean)
+    assert "clean_geometry_proposal_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_clean_geometry_proposal_availability_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_available.closygarment")
+    clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")
+    clean["cleanProposal"]["available"] = True
+    clean["quality"]["acceptedForCanonical"] = True
+    write_json(corrupt / "proposals" / "clean_geometry_proposal.json", clean)
+    codes = issue_codes(validate_package(corrupt))
+    assert "clean_geometry_proposal_hash_mismatch" in codes
+    assert "clean_geometry_proposal_availability_invalid" in codes
+    assert "clean_geometry_proposal_canonical_acceptance_invalid" in codes

@@ -61,6 +61,10 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryProposal"]["qualityStatus"] == "accepted_visual_reference"
     assert payload["geometryProposal"]["acceptedForCanonical"] is False
     assert payload["geometryProposal"]["rawProposalAvailable"] is True
+    assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"
+    assert payload["cleanGeometryProposal"]["cleanProposalAvailable"] is False
+    assert payload["cleanGeometryProposal"]["acceptedForCanonical"] is False
+    assert payload["cleanGeometryProposal"]["cleanupRun"] is False
     assert payload["providerRegistry"]["selectedProviderId"] == ("closy.manual_local_glb_import.v1")
     assert payload["providerRegistry"]["manualLocalImportAssetAvailable"] is True
     assert payload["binding"]["recordCount"] > 0

@@ -29,7 +29,12 @@ from closy_forge.geometry.triangulation import validate_panel_boundary
 from closy_forge.package_io.canonical_json import read_json
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, topology_hash
 from closy_forge.package_io.paths import validate_package_relpath
-from closy_forge.proposals import hash_geometry_proposal, hash_provider_registry
+from closy_forge.proposals import (
+    REQUIRED_CLEAN_REJECTION_REASONS,
+    hash_clean_geometry_proposal,
+    hash_geometry_proposal,
+    hash_provider_registry,
+)
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
@@ -48,6 +53,7 @@ EXPECTED_FILES = [
     "textures/texture_identity.json",
     "proposals/raw_geometry_proposal.json",
     "proposals/manual_raw_visual_proposal.glb",
+    "proposals/clean_geometry_proposal.json",
     "proposals/provider_registry.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
@@ -75,6 +81,7 @@ EXPECTED_FILES = [
     "reports/fitting_quality.json",
     "reports/texture_quality.json",
     "reports/geometry_proposal_quality.json",
+    "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
     "reports/pattern_quality.json",
@@ -218,6 +225,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_texture_identity(package_dir, manifest, issues)
     _validate_geometry_proposal(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
+    _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
@@ -1893,6 +1901,275 @@ def _validate_provider_registry(
                 "fatal",
                 "proposals/provider_registry.json",
                 "Provider registry must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_clean_geometry_proposal(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    raw_proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
+    provider_registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
+    clean_proposal = _read_required_json(
+        package_dir, "proposals/clean_geometry_proposal.json", issues
+    )
+    clean_quality = _read_required_json(
+        package_dir, "reports/clean_geometry_proposal_quality.json", issues
+    )
+    if raw_proposal is None or provider_registry is None or clean_proposal is None:
+        return
+
+    if clean_proposal.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_garment_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the package garment ID.",
+            )
+        )
+    if clean_proposal.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_class_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the package garment class.",
+            )
+        )
+
+    expected_hashes = [
+        (
+            "sourceRawProposalHash",
+            _nested_string(raw_proposal, ["integrity", "geometryProposalHash"], ""),
+            "clean_geometry_proposal_raw_hash_mismatch",
+        ),
+        (
+            "sourceProviderRegistryHash",
+            _nested_string(provider_registry, ["integrity", "providerRegistryHash"], ""),
+            "clean_geometry_proposal_registry_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if clean_proposal.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "proposals/clean_geometry_proposal.json",
+                    f"Clean geometry proposal {field} must match its source artifact.",
+                )
+            )
+    if clean_proposal.get("sourceRawProposalId") != raw_proposal.get("proposalId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_raw_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the raw proposal ID.",
+            )
+        )
+    if clean_proposal.get("sourceProviderRegistryId") != provider_registry.get("registryId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_registry_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the provider registry ID.",
+            )
+        )
+
+    if _nested_string(clean_proposal, ["integrity", "cleanGeometryProposalHash"], "") != (
+        hash_clean_geometry_proposal(clean_proposal)
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_hash_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal hash must match its canonical payload.",
+            )
+        )
+
+    raw = clean_proposal.get("rawProposal", {})
+    cleanup = clean_proposal.get("cleanupPipeline", {})
+    clean = clean_proposal.get("cleanProposal", {})
+    audit = clean_proposal.get("cleanGeometryAudit", {})
+    canonicalization = clean_proposal.get("canonicalization", {})
+    quality = clean_proposal.get("quality", {})
+    policy = clean_proposal.get("policy", {})
+    for name, block in [
+        ("rawProposal", raw),
+        ("cleanupPipeline", cleanup),
+        ("cleanProposal", clean),
+        ("cleanGeometryAudit", audit),
+        ("canonicalization", canonicalization),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "clean_geometry_proposal_block_invalid",
+                    "fatal",
+                    "proposals/clean_geometry_proposal.json",
+                    f"Clean geometry proposal {name} block must be an object.",
+                )
+            )
+            return
+
+    if raw.get("assetPath") != _nested_string(raw_proposal, ["rawProposal", "assetPath"], ""):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_raw_asset_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal raw asset reference must mirror the raw proposal.",
+            )
+        )
+    if raw.get("sourceAssetHash") != raw_proposal.get("rawProposal", {}).get("sourceAssetHash"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_raw_asset_hash_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal raw asset hash must mirror the raw proposal.",
+            )
+        )
+
+    if (
+        quality.get("status") != "rejected"
+        or clean.get("available") is not False
+        or audit.get("meshAvailable") is not False
+        or _int_or(audit.get("meshCount"), -1) != 0
+        or _int_or(audit.get("triangleEstimate"), -1) != 0
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_availability_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "D0 clean geometry proposal must remain rejected and unavailable.",
+            )
+        )
+
+    if (
+        quality.get("acceptedForCanonical") is not False
+        or quality.get("acceptedForSimulation") is not False
+        or quality.get("acceptedForRuntimeRender") is not False
+        or clean.get("acceptedForCanonical") is not False
+        or clean.get("acceptedForSimulation") is not False
+        or clean.get("acceptedForRuntimeRender") is not False
+        or canonicalization.get("canonicalUseAllowed") is not False
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_canonical_acceptance_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                (
+                    "Rejected clean proposals cannot be accepted for canonical, "
+                    "simulation or runtime use."
+                ),
+            )
+        )
+
+    for key in [
+        "cleanupRun",
+        "repairRun",
+        "retopologyRun",
+        "semanticTransferRun",
+        "simulationBindingRun",
+        "uvTransferRun",
+        "materialTransferRun",
+        "connectedComponentAnalysisRun",
+        "nonManifoldAnalysisRun",
+    ]:
+        if cleanup.get(key) is not False:
+            issues.append(
+                _issue(
+                    "clean_geometry_proposal_cleanup_state_invalid",
+                    "fatal",
+                    "proposals/clean_geometry_proposal.json",
+                    f"Clean proposal field cleanupPipeline.{key} must stay false in D0.",
+                )
+            )
+
+    rejection_reasons = quality.get("rejectionReasons", [])
+    if not isinstance(rejection_reasons, list):
+        rejection_reasons = []
+    for reason in REQUIRED_CLEAN_REJECTION_REASONS:
+        if reason not in rejection_reasons:
+            issues.append(
+                _issue(
+                    "clean_geometry_proposal_rejection_reason_missing",
+                    "fatal",
+                    "proposals/clean_geometry_proposal.json",
+                    "Clean proposal must retain required rejection reasons.",
+                    reason,
+                )
+            )
+
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_policy_violation",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                (
+                    "Clean proposal rejection report cannot permit external APIs, "
+                    "training use or user data."
+                ),
+            )
+        )
+
+    if clean_quality is not None:
+        expected_quality = {
+            "proposalId": clean_proposal.get("proposalId"),
+            "sourceRawProposalId": clean_proposal.get("sourceRawProposalId"),
+            "sourceProviderRegistryId": clean_proposal.get("sourceProviderRegistryId"),
+            "cleanProposalAvailable": clean.get("available"),
+            "acceptedForCanonical": quality.get("acceptedForCanonical"),
+            "cleanupRun": cleanup.get("cleanupRun"),
+            "repairRun": cleanup.get("repairRun"),
+            "semanticTransferRun": cleanup.get("semanticTransferRun"),
+            "simulationBindingRun": cleanup.get("simulationBindingRun"),
+            "failureReason": audit.get("failureReason"),
+        }
+        for key, expected in expected_quality.items():
+            if clean_quality.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_quality_mismatch",
+                        "fatal",
+                        "reports/clean_geometry_proposal_quality.json",
+                        f"Clean proposal quality field {key} must match the proposal.",
+                    )
+                )
+
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("cleanGeometryProposalAvailable") is not False:
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_capability_invalid",
+                "fatal",
+                "manifest.json",
+                "Clean geometry proposal availability must remain false until cleanup succeeds.",
+            )
+        )
+    if _contains_nonfinite(clean_proposal):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_nonfinite_numeric_value",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal report must not contain NaN or Infinity.",
             )
         )
 

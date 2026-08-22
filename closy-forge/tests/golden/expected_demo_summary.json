@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "a0a1fea71d00f965d6276cb481c671ffa8f21c4b8887ad7686fd469d2376db76",
+  "canonicalPackageDigest": "746dc177af7a8cd2c5afe1da1b5f8dfa2f1b9b7491a036a292b4f82b2502b2ea",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -73,6 +73,18 @@
     "rawProposalAvailable": true,
     "triangleEstimate": 218,
     "visibleMeshCount": 5
+  },
+  "cleanGeometryProposal": {
+    "acceptedForCanonical": false,
+    "acceptedForSimulation": false,
+    "cleanProposalAvailable": false,
+    "cleanupRun": false,
+    "failureReason": "clean_geometry_proposal_not_generated",
+    "qualityStatus": "rejected",
+    "repairRun": false,
+    "semanticTransferRun": false,
+    "simulationBindingRun": false,
+    "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1"
   },
   "providerRegistry": {
     "cleanProposalProviderAvailable": false,

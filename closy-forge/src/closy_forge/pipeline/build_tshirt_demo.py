@@ -51,10 +51,13 @@ from closy_forge.package_io.writer import (
     publish_staging,
 )
 from closy_forge.proposals import (
+    CLEAN_GEOMETRY_PROPOSAL_VERSION,
     GEOMETRY_PROPOSAL_VERSION,
     PROVIDER_REGISTRY_VERSION,
+    build_clean_geometry_proposal_rejection,
     build_geometry_provider_registry,
     build_manual_geometry_proposal,
+    clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
     provider_registry_quality_report,
 )
@@ -185,6 +188,12 @@ def _write_package_contents(
         manual_asset_rights_reviewed=True,
         manual_asset_rights_status="project_authored_fixture_no_third_party_asset",
     )
+    clean_geometry_proposal = build_clean_geometry_proposal_rejection(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=geometry_proposal,
+        provider_registry=provider_registry,
+    )
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
     simulation_mesh = settle.settled_mesh
@@ -199,6 +208,9 @@ def _write_package_contents(
     write_canonical_json(package_dir / "textures" / "texture_identity.json", texture_identity)
     write_canonical_json(
         package_dir / "proposals" / "raw_geometry_proposal.json", geometry_proposal
+    )
+    write_canonical_json(
+        package_dir / "proposals" / "clean_geometry_proposal.json", clean_geometry_proposal
     )
     write_canonical_json(package_dir / "proposals" / "provider_registry.json", provider_registry)
     write_canonical_json(package_dir / "avatar" / "avatar_contract.json", avatar)
@@ -290,6 +302,7 @@ def _write_package_contents(
         fit_report,
         texture_identity,
         geometry_proposal,
+        clean_geometry_proposal,
         provider_registry,
     )
     for name, report in quality_reports.items():
@@ -312,6 +325,7 @@ def _write_package_contents(
         fit_report,
         texture_identity,
         geometry_proposal,
+        clean_geometry_proposal,
         provider_registry,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
@@ -337,6 +351,7 @@ def _write_package_contents(
         fit_report,
         texture_identity,
         geometry_proposal,
+        clean_geometry_proposal,
         provider_registry,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
@@ -357,6 +372,7 @@ def _write_package_contents(
         "fitReport": fit_report,
         "textureIdentity": texture_identity,
         "geometryProposal": geometry_proposal,
+        "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
     }
@@ -467,6 +483,7 @@ def _manifest(
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
+    clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
     return {
@@ -494,6 +511,7 @@ def _manifest(
             "textureIdentity": "textures/texture_identity.json",
             "rawGeometryProposal": "proposals/raw_geometry_proposal.json",
             "rawGeometryProposalAsset": "proposals/manual_raw_visual_proposal.glb",
+            "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
             "pattern": "pattern/pattern.json",
@@ -550,6 +568,12 @@ def _manifest(
             "rawGeometryProposalAssetHash": _hash_from_inventory(
                 inventory, "proposals/manual_raw_visual_proposal.glb"
             ),
+            "cleanGeometryProposalHash": _hash_from_inventory(
+                inventory, "proposals/clean_geometry_proposal.json"
+            ),
+            "cleanGeometryProposalPayloadHash": str(
+                clean_geometry_proposal["integrity"]["cleanGeometryProposalHash"]
+            ),
             "geometryProviderRegistryHash": _hash_from_inventory(
                 inventory, "proposals/provider_registry.json"
             ),
@@ -581,6 +605,7 @@ def _manifest(
             "tshirtFit": TSHIRT_FIT_REPORT_VERSION,
             "textureIdentity": TEXTURE_IDENTITY_VERSION,
             "geometryProposal": GEOMETRY_PROPOSAL_VERSION,
+            "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
             "curveSampler": "closy.curve_sampler.v1",
@@ -592,7 +617,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_07_manual_raw_proposal_fixture",
+            "name": "implementation_08_clean_proposal_rejection_report",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -609,7 +634,7 @@ def _manifest(
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "07-manual-raw-proposal-fixture"},
+        "extensions": {"closyImplementation": "08-clean-proposal-rejection-report"},
     }
 
 
@@ -669,6 +694,7 @@ def _quality_reports(
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
+    clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     return {
@@ -721,6 +747,9 @@ def _quality_reports(
             "warnings": texture_identity["warnings"],
         },
         "geometry_proposal_quality.json": geometry_proposal_quality_report(geometry_proposal),
+        "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
+            clean_geometry_proposal
+        ),
         "provider_registry_quality.json": provider_registry_quality_report(provider_registry),
         "avatar_quality.json": {
             "schemaVersion": 1,
@@ -796,6 +825,7 @@ def _provenance(
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
+    clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
     return {
@@ -907,6 +937,20 @@ def _provenance(
                 [str(geometry_proposal["integrity"]["geometryProposalHash"])],
             ),
             _stage(
+                "clean_geometry_proposal_rejection",
+                CLEAN_GEOMETRY_PROPOSAL_VERSION,
+                {
+                    "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
+                    "cleanupRun": False,
+                    "repairRun": False,
+                    "semanticTransferRun": False,
+                    "simulationBindingRun": False,
+                    "acceptedForCanonical": False,
+                    "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
+                },
+                [str(clean_geometry_proposal["integrity"]["cleanGeometryProposalHash"])],
+            ),
+            _stage(
                 "reference_avatar_parameters",
                 "closy.reference_avatar.parameters.v1",
                 {},
@@ -1010,6 +1054,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     fit_report = context["fitReport"]
     texture_identity = context["textureIdentity"]
     geometry_proposal = context["geometryProposal"]
+    clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
         "schemaVersion": 1,
@@ -1078,6 +1123,24 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "triangleEstimate": geometry_proposal["geometryAudit"]["triangleEstimate"],
             "failureReason": geometry_proposal["geometryAudit"]["failureReason"],
         },
+        "cleanGeometryProposal": {
+            "proposalId": clean_geometry_proposal["proposalId"],
+            "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
+            "qualityStatus": clean_geometry_proposal["quality"]["status"],
+            "cleanProposalAvailable": clean_geometry_proposal["cleanProposal"]["available"],
+            "acceptedForCanonical": clean_geometry_proposal["quality"]["acceptedForCanonical"],
+            "acceptedForSimulation": clean_geometry_proposal["quality"]["acceptedForSimulation"],
+            "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
+            "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
+            "semanticTransferRun": clean_geometry_proposal["cleanupPipeline"][
+                "semanticTransferRun"
+            ],
+            "simulationBindingRun": clean_geometry_proposal["cleanupPipeline"][
+                "simulationBindingRun"
+            ],
+            "failureReason": clean_geometry_proposal["cleanGeometryAudit"]["failureReason"],
+            "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
+        },
         "providerRegistry": {
             "registryId": provider_registry["registryId"],
             "selectedProviderId": provider_registry["selectedProviderId"],
@@ -1137,6 +1200,9 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Geometry proposal: {summary['geometryProposal']['qualityStatus']} via "
         f"`{summary['geometryProposal']['providerId']}`, "
         f"raw available={summary['geometryProposal']['rawProposalAvailable']}\n"
+        f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
+        f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
+        f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"
         f"- Provider registry: selected `{summary['providerRegistry']['selectedProviderId']}`, "
         f"manual asset available={summary['providerRegistry']['manualLocalImportAssetAvailable']}\n"
         f"- Simulation mesh: {counts['simulationVertices']} vertices, "

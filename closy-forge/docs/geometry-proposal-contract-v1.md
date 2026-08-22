@@ -18,7 +18,9 @@ The current package uses `closy.manual_local_glb_import.v1` with a tiny project-
 - quality state and rejection reasons;
 - `integrity.geometryProposalHash`, a canonical SHA-256 over the payload with the hash field blanked.
 
-`reports/geometry_proposal_quality.json` mirrors the proposal quality state for quick package inspection.
+`reports/geometry_proposal_quality.json` mirrors the raw proposal quality state for quick package inspection.
+
+`proposals/clean_geometry_proposal.json` records the D0 clean-proposal decision for the raw proposal. In the current fixture it is intentionally rejected because cleanup, repair, semantic transfer, non-manifold analysis and simulation binding have not run. `reports/clean_geometry_proposal_quality.json` mirrors that rejected state for quick inspection.
 
 `proposals/provider_registry.json` records which provider boundary was selected for the package and which future providers remain unavailable or unconfigured.
 
@@ -36,6 +38,8 @@ The validator rejects proposal records when:
 - a manual local GLB proposal has stale asset hash, stale size, invalid path or mismatched audit;
 - the rejected proposal claims canonical acceptance;
 - proposal quality reports no longer match the proposal payload.
+- the clean proposal report claims availability, cleanup, repair, semantic transfer, simulation binding or canonical acceptance before those stages exist;
+- the clean proposal report no longer references the raw proposal/provider registry hashes.
 
 ## Future Providers
 
@@ -43,6 +47,7 @@ Future adapters can include local research models, manual Blender imports, comme
 
 - provider output starts as raw proposal evidence;
 - a geometry audit must run before any clean proposal is considered;
+- a clean proposal must record cleanup, repair, semantic transfer and simulation binding results before canonical acceptance;
 - rejected output remains reproducible and inspectable;
 - no unsupported generic-object request is accepted by the Closy garment foundry;
 - no external service is called without explicit consent and provider policy records.
