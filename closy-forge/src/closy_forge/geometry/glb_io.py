@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from .mesh_model import MeshSet, triangle_normal
+from .mesh_model import Mesh, MeshSet, triangle_normal
 
 
 def _pad4(data: bytes, pad: bytes) -> bytes:
@@ -143,28 +143,18 @@ def write_glb(
 
 
 def audit_glb(path: Path) -> dict[str, Any]:
-    data = path.read_bytes()
-    if len(data) < 20:
-        raise ValueError("malformed_glb_too_small")
-    magic, version, total = struct.unpack_from("<III", data, 0)
-    if magic != 0x46546C67 or version != 2 or total != len(data):
-        raise ValueError("malformed_glb_header")
-    offset = 12
-    gltf: dict[str, Any] | None = None
-    while offset + 8 <= len(data):
-        length, kind = struct.unpack_from("<II", data, offset)
-        payload = data[offset + 8 : offset + 8 + length]
-        if kind == 0x4E4F534A:
-            gltf = json.loads(payload.decode("utf-8").rstrip(" \0"))
-        offset += 8 + length
-    if gltf is None:
-        raise ValueError("missing_json_chunk")
+    gltf, _ = _read_glb(path)
     mesh_count = len(gltf.get("meshes", []))
     primitive_count = sum(len(mesh.get("primitives", [])) for mesh in gltf.get("meshes", []))
     triangle_estimate = 0
     for mesh in gltf.get("meshes", []):
         for primitive in mesh.get("primitives", []):
-            acc = gltf["accessors"][primitive["indices"]]
+            accessor_index = primitive.get("indices")
+            if accessor_index is None:
+                accessor_index = primitive.get("attributes", {}).get("POSITION")
+            if accessor_index is None:
+                continue
+            acc = gltf["accessors"][accessor_index]
             triangle_estimate += int(acc["count"]) // 3
     return {
         "validGlb20": True,
@@ -174,3 +164,138 @@ def audit_glb(path: Path) -> dict[str, Any]:
         "materialCount": len(gltf.get("materials", [])),
         "nodeCount": len(gltf.get("nodes", [])),
     }
+
+
+def read_glb_meshset(path: Path) -> MeshSet:
+    """Read triangle POSITION/index data from a GLB for diagnostics.
+
+    This intentionally supports the conservative GLB subset Closy writes and
+    common non-interleaved triangle primitives. Unsupported provider features
+    should fail audit rather than silently producing misleading topology data.
+    """
+
+    gltf, binary = _read_glb(path)
+    meshes: list[Mesh] = []
+    for mesh_index, mesh_doc in enumerate(gltf.get("meshes", [])):
+        mesh_name = str(mesh_doc.get("name", f"mesh_{mesh_index}"))
+        mesh_extras = mesh_doc.get("extras", {})
+        for primitive_index, primitive in enumerate(mesh_doc.get("primitives", [])):
+            if int(primitive.get("mode", 4)) != 4:
+                raise ValueError("unsupported_glb_primitive_mode")
+            attributes = primitive.get("attributes", {})
+            if "POSITION" not in attributes:
+                raise ValueError("missing_position_accessor")
+            positions = _read_accessor(gltf, binary, int(attributes["POSITION"]))
+            vertices = [_vec3(value) for value in positions]
+            indices: list[int]
+            if "indices" in primitive:
+                indices = [
+                    _scalar_int(value)
+                    for value in _read_accessor(gltf, binary, int(primitive["indices"]))
+                ]
+            else:
+                indices = list(range(len(vertices)))
+            if len(indices) % 3 != 0:
+                raise ValueError("triangle_index_count_not_divisible_by_three")
+            triangles = [
+                (indices[i], indices[i + 1], indices[i + 2]) for i in range(0, len(indices), 3)
+            ]
+            primitive_extras = primitive.get("extras", {})
+            panel_id = str(
+                primitive_extras.get("panelId")
+                or (mesh_extras.get("panelId") if isinstance(mesh_extras, dict) else None)
+                or mesh_name
+            )
+            suffix = (
+                "" if len(mesh_doc.get("primitives", [])) == 1 else f".primitive_{primitive_index}"
+            )
+            meshes.append(
+                Mesh(
+                    name=f"{mesh_name}{suffix}",
+                    panel_id=panel_id,
+                    vertices=vertices,
+                    panel_uvs=[(0.0, 0.0) for _ in vertices],
+                    triangles=triangles,
+                )
+            )
+    return MeshSet(meshes)
+
+
+def _read_glb(path: Path) -> tuple[dict[str, Any], bytes]:
+    data = path.read_bytes()
+    if len(data) < 20:
+        raise ValueError("malformed_glb_too_small")
+    magic, version, total = struct.unpack_from("<III", data, 0)
+    if magic != 0x46546C67 or version != 2 or total != len(data):
+        raise ValueError("malformed_glb_header")
+    offset = 12
+    gltf: dict[str, Any] | None = None
+    binary = b""
+    while offset + 8 <= len(data):
+        length, kind = struct.unpack_from("<II", data, offset)
+        payload = data[offset + 8 : offset + 8 + length]
+        if kind == 0x4E4F534A:
+            gltf = json.loads(payload.decode("utf-8").rstrip(" \0"))
+        elif kind == 0x004E4942:
+            binary = payload
+        offset += 8 + length
+    if gltf is None:
+        raise ValueError("missing_json_chunk")
+    return gltf, binary
+
+
+def _read_accessor(
+    gltf: dict[str, Any], binary: bytes, accessor_index: int
+) -> list[tuple[Any, ...]]:
+    accessor = gltf["accessors"][accessor_index]
+    if "sparse" in accessor:
+        raise ValueError("unsupported_sparse_accessor")
+    view = gltf["bufferViews"][accessor["bufferView"]]
+    component_type = int(accessor["componentType"])
+    component_count = _accessor_component_count(str(accessor["type"]))
+    component_format = _accessor_component_format(component_type)
+    component_size = struct.calcsize("<" + component_format)
+    stride = int(view.get("byteStride", component_size * component_count))
+    base_offset = int(view.get("byteOffset", 0)) + int(accessor.get("byteOffset", 0))
+    count = int(accessor["count"])
+    values: list[tuple[Any, ...]] = []
+    for index in range(count):
+        offset = base_offset + index * stride
+        row = struct.unpack_from("<" + component_format * component_count, binary, offset)
+        values.append(row)
+    return values
+
+
+def _accessor_component_count(accessor_type: str) -> int:
+    counts = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
+    try:
+        return counts[accessor_type]
+    except KeyError as exc:
+        raise ValueError("unsupported_accessor_type") from exc
+
+
+def _accessor_component_format(component_type: int) -> str:
+    formats = {
+        5120: "b",
+        5121: "B",
+        5122: "h",
+        5123: "H",
+        5125: "I",
+        5126: "f",
+    }
+    try:
+        return formats[component_type]
+    except KeyError as exc:
+        raise ValueError("unsupported_accessor_component_type") from exc
+
+
+def _vec3(value: tuple[Any, ...]) -> tuple[float, float, float]:
+    if len(value) != 3:
+        raise ValueError("expected_vec3_accessor")
+    return (float(value[0]), float(value[1]), float(value[2]))
+
+
+def _scalar_int(value: tuple[Any, ...]) -> int:
+    if len(value) != 1:
+        raise ValueError("expected_scalar_accessor")
+    return int(value[0])

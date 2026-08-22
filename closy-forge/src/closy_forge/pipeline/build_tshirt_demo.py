@@ -54,9 +54,11 @@ from closy_forge.proposals import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
     GEOMETRY_PROPOSAL_VERSION,
     PROVIDER_REGISTRY_VERSION,
+    RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
     build_clean_geometry_proposal_rejection,
     build_geometry_provider_registry,
     build_manual_geometry_proposal,
+    build_raw_geometry_topology_report,
     clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
     provider_registry_quality_report,
@@ -188,11 +190,18 @@ def _write_package_contents(
         manual_asset_rights_reviewed=True,
         manual_asset_rights_status="project_authored_fixture_no_third_party_asset",
     )
+    raw_geometry_topology = build_raw_geometry_topology_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=geometry_proposal,
+        asset_path=manual_proposal_asset,
+    )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
         raw_geometry_proposal=geometry_proposal,
         provider_registry=provider_registry,
+        raw_topology_report=raw_geometry_topology,
     )
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
@@ -302,6 +311,7 @@ def _write_package_contents(
         fit_report,
         texture_identity,
         geometry_proposal,
+        raw_geometry_topology,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -325,6 +335,7 @@ def _write_package_contents(
         fit_report,
         texture_identity,
         geometry_proposal,
+        raw_geometry_topology,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -351,6 +362,7 @@ def _write_package_contents(
         fit_report,
         texture_identity,
         geometry_proposal,
+        raw_geometry_topology,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -372,6 +384,7 @@ def _write_package_contents(
         "fitReport": fit_report,
         "textureIdentity": texture_identity,
         "geometryProposal": geometry_proposal,
+        "rawGeometryTopology": raw_geometry_topology,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
@@ -483,6 +496,7 @@ def _manifest(
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
+    raw_geometry_topology: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -511,6 +525,7 @@ def _manifest(
             "textureIdentity": "textures/texture_identity.json",
             "rawGeometryProposal": "proposals/raw_geometry_proposal.json",
             "rawGeometryProposalAsset": "proposals/manual_raw_visual_proposal.glb",
+            "rawGeometryTopology": "reports/raw_geometry_topology.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
@@ -568,6 +583,12 @@ def _manifest(
             "rawGeometryProposalAssetHash": _hash_from_inventory(
                 inventory, "proposals/manual_raw_visual_proposal.glb"
             ),
+            "rawGeometryTopologyHash": _hash_from_inventory(
+                inventory, "reports/raw_geometry_topology.json"
+            ),
+            "rawGeometryTopologyPayloadHash": str(
+                raw_geometry_topology["integrity"]["rawGeometryTopologyReportHash"]
+            ),
             "cleanGeometryProposalHash": _hash_from_inventory(
                 inventory, "proposals/clean_geometry_proposal.json"
             ),
@@ -605,6 +626,7 @@ def _manifest(
             "tshirtFit": TSHIRT_FIT_REPORT_VERSION,
             "textureIdentity": TEXTURE_IDENTITY_VERSION,
             "geometryProposal": GEOMETRY_PROPOSAL_VERSION,
+            "rawGeometryTopology": RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
@@ -662,6 +684,7 @@ def _capabilities() -> dict[str, bool]:
         "geometryProposalInterfaceAvailable": True,
         "rawGeometryProposalRecordAvailable": True,
         "geometryProposalQualityScored": True,
+        "rawGeometryTopologyDiagnosticsAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
@@ -694,6 +717,7 @@ def _quality_reports(
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
+    raw_geometry_topology: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
@@ -747,6 +771,7 @@ def _quality_reports(
             "warnings": texture_identity["warnings"],
         },
         "geometry_proposal_quality.json": geometry_proposal_quality_report(geometry_proposal),
+        "raw_geometry_topology.json": raw_geometry_topology,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
         ),
@@ -825,6 +850,7 @@ def _provenance(
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
+    raw_geometry_topology: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -937,10 +963,31 @@ def _provenance(
                 [str(geometry_proposal["integrity"]["geometryProposalHash"])],
             ),
             _stage(
+                "raw_geometry_topology_diagnostics",
+                RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
+                {
+                    "sourceRawProposalId": raw_geometry_topology["sourceRawProposalId"],
+                    "meshCount": raw_geometry_topology["topology"]["meshCount"],
+                    "componentCount": raw_geometry_topology["topology"]["componentCount"],
+                    "nonManifoldEdgeCount": raw_geometry_topology["topology"][
+                        "nonManifoldEdgeCount"
+                    ],
+                    "degenerateTriangleCount": raw_geometry_topology["topology"][
+                        "degenerateTriangleCount"
+                    ],
+                    "acceptedForCleanProposal": False,
+                },
+                [str(raw_geometry_topology["integrity"]["rawGeometryTopologyReportHash"])],
+            ),
+            _stage(
                 "clean_geometry_proposal_rejection",
                 CLEAN_GEOMETRY_PROPOSAL_VERSION,
                 {
                     "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
+                    "sourceRawTopologyReportId": clean_geometry_proposal[
+                        "sourceRawTopologyReportId"
+                    ],
+                    "topologyDiagnosticsRun": True,
                     "cleanupRun": False,
                     "repairRun": False,
                     "semanticTransferRun": False,
@@ -1054,6 +1101,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     fit_report = context["fitReport"]
     texture_identity = context["textureIdentity"]
     geometry_proposal = context["geometryProposal"]
+    raw_geometry_topology = context["rawGeometryTopology"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
@@ -1123,6 +1171,23 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "triangleEstimate": geometry_proposal["geometryAudit"]["triangleEstimate"],
             "failureReason": geometry_proposal["geometryAudit"]["failureReason"],
         },
+        "rawGeometryTopology": {
+            "reportId": raw_geometry_topology["reportId"],
+            "sourceRawProposalId": raw_geometry_topology["sourceRawProposalId"],
+            "meshCount": raw_geometry_topology["topology"]["meshCount"],
+            "componentCount": raw_geometry_topology["topology"]["componentCount"],
+            "largestComponentTriangleCount": raw_geometry_topology["topology"][
+                "largestComponentTriangleCount"
+            ],
+            "boundaryEdgeCount": raw_geometry_topology["topology"]["boundaryEdgeCount"],
+            "nonManifoldEdgeCount": raw_geometry_topology["topology"]["nonManifoldEdgeCount"],
+            "degenerateTriangleCount": raw_geometry_topology["topology"]["degenerateTriangleCount"],
+            "duplicatePositionCount": raw_geometry_topology["topology"]["duplicatePositionCount"],
+            "manifoldStatus": raw_geometry_topology["topology"]["manifoldStatus"],
+            "acceptedForCleanProposal": raw_geometry_topology["cleanReadiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_geometry_proposal["proposalId"],
             "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
@@ -1130,6 +1195,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "cleanProposalAvailable": clean_geometry_proposal["cleanProposal"]["available"],
             "acceptedForCanonical": clean_geometry_proposal["quality"]["acceptedForCanonical"],
             "acceptedForSimulation": clean_geometry_proposal["quality"]["acceptedForSimulation"],
+            "topologyDiagnosticsRun": clean_geometry_proposal["cleanupPipeline"][
+                "topologyDiagnosticsRun"
+            ],
             "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
             "semanticTransferRun": clean_geometry_proposal["cleanupPipeline"][
@@ -1200,6 +1268,9 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Geometry proposal: {summary['geometryProposal']['qualityStatus']} via "
         f"`{summary['geometryProposal']['providerId']}`, "
         f"raw available={summary['geometryProposal']['rawProposalAvailable']}\n"
+        f"- Raw topology: components={summary['rawGeometryTopology']['componentCount']}, "
+        f"non-manifold edges={summary['rawGeometryTopology']['nonManifoldEdgeCount']}, "
+        f"status=`{summary['rawGeometryTopology']['manifoldStatus']}`\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"

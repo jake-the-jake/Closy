@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "746dc177af7a8cd2c5afe1da1b5f8dfa2f1b9b7491a036a292b4f82b2502b2ea",
+  "canonicalPackageDigest": "bd71904c7ec990bb9ebb5f7f70590db6584cd443ba2c597e86b2931e834cb73d",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -30,6 +30,7 @@
     "manualGeometryImportAssetAvailable": true,
     "pbrMaterialObservationAvailable": true,
     "providerProvenanceAvailable": true,
+    "rawGeometryTopologyDiagnosticsAvailable": true,
     "rawGeometryProposalRecordAvailable": true,
     "selfCollisionAvailable": false,
     "sourceCaptureRecordAvailable": true,
@@ -74,6 +75,19 @@
     "triangleEstimate": 218,
     "visibleMeshCount": 5
   },
+  "rawGeometryTopology": {
+    "acceptedForCleanProposal": false,
+    "boundaryEdgeCount": 218,
+    "componentCount": 5,
+    "degenerateTriangleCount": 0,
+    "duplicatePositionCount": 431,
+    "largestComponentTriangleCount": 66,
+    "manifoldStatus": "open_surface_with_boundaries",
+    "meshCount": 5,
+    "nonManifoldEdgeCount": 0,
+    "reportId": "topology.raw_manual_tshirt_visual_geometry_v1",
+    "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1"
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
@@ -84,7 +98,8 @@
     "repairRun": false,
     "semanticTransferRun": false,
     "simulationBindingRun": false,
-    "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1"
+    "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1",
+    "topologyDiagnosticsRun": true
   },
   "providerRegistry": {
     "cleanProposalProviderAvailable": false,

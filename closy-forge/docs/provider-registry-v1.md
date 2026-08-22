@@ -12,7 +12,7 @@ The deterministic demo package currently declares:
 - `closy.manual_local_glb_import.v1`, a local-only manual GLB import adapter contract.
 - future external provider slots for Meshy, TRELLIS and Hunyuan3D marked unconfigured.
 
-The committed fixture uses a tiny project-authored local GLB so the manual adapter path is exercised without external services. Its D0 package capability is therefore `manualGeometryImportAssetAvailable=true`, while `cleanGeometryProposalAvailable=false`. A separate `proposals/clean_geometry_proposal.json` rejection report records that the raw GLB has not passed cleanup, repair, semantic transfer or simulation binding.
+The committed fixture uses a tiny project-authored local GLB so the manual adapter path is exercised without external services. Its D0 package capability is therefore `manualGeometryImportAssetAvailable=true`, while `cleanGeometryProposalAvailable=false`. `reports/raw_geometry_topology.json` inspects the raw GLB topology, and `proposals/clean_geometry_proposal.json` records that the raw GLB has not passed cleanup, repair, semantic transfer or simulation binding.
 
 ## Manual Import Contract
 
@@ -37,4 +37,4 @@ Provider records must remain constrained to avatars and garments:
 - no user imagery or personal body data;
 - external providers require future consent, terms review and isolated workers.
 
-The validator rejects registry records that enable external processing, generic-object scope, canonical manual assets, stale hashes or mismatched quality summaries. It also rejects clean-proposal records that claim the manual raw asset has become clean, bound or canonical before the required pipeline stages exist.
+The validator rejects registry records that enable external processing, generic-object scope, canonical manual assets, stale hashes or mismatched quality summaries. It also rejects raw-topology diagnostics that drift from the GLB, and clean-proposal records that claim the manual raw asset has become clean, bound or canonical before the required pipeline stages exist.

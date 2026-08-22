@@ -20,7 +20,9 @@ The current package uses `closy.manual_local_glb_import.v1` with a tiny project-
 
 `reports/geometry_proposal_quality.json` mirrors the raw proposal quality state for quick package inspection.
 
-`proposals/clean_geometry_proposal.json` records the D0 clean-proposal decision for the raw proposal. In the current fixture it is intentionally rejected because cleanup, repair, semantic transfer, non-manifold analysis and simulation binding have not run. `reports/clean_geometry_proposal_quality.json` mirrors that rejected state for quick inspection.
+`reports/raw_geometry_topology.json` records deterministic topology diagnostics for the raw GLB: connected components, boundary edges, non-manifold edges, duplicate positions, degenerate triangles and per-mesh summaries. These diagnostics do not make the raw proposal canonical or clean.
+
+`proposals/clean_geometry_proposal.json` records the D0 clean-proposal decision for the raw proposal. In the current fixture it is intentionally rejected because cleanup, repair, semantic transfer and simulation binding have not run. It links to the raw topology diagnostics so the rejection is based on inspected raw geometry, not just provider metadata. `reports/clean_geometry_proposal_quality.json` mirrors that rejected state for quick inspection.
 
 `proposals/provider_registry.json` records which provider boundary was selected for the package and which future providers remain unavailable or unconfigured.
 
@@ -36,10 +38,11 @@ The validator rejects proposal records when:
 - raw proposals do not explicitly forbid canonical use;
 - the null provider claims raw or clean geometry availability;
 - a manual local GLB proposal has stale asset hash, stale size, invalid path or mismatched audit;
+- the raw topology report has stale source hashes, stale asset metadata or diagnostics that no longer match the GLB;
 - the rejected proposal claims canonical acceptance;
 - proposal quality reports no longer match the proposal payload.
 - the clean proposal report claims availability, cleanup, repair, semantic transfer, simulation binding or canonical acceptance before those stages exist;
-- the clean proposal report no longer references the raw proposal/provider registry hashes.
+- the clean proposal report no longer references the raw proposal/provider registry/topology hashes.
 
 ## Future Providers
 
@@ -47,6 +50,7 @@ Future adapters can include local research models, manual Blender imports, comme
 
 - provider output starts as raw proposal evidence;
 - a geometry audit must run before any clean proposal is considered;
+- topology diagnostics must run before cleanup/repair can be trusted;
 - a clean proposal must record cleanup, repair, semantic transfer and simulation binding results before canonical acceptance;
 - rejected output remains reproducible and inspectable;
 - no unsupported generic-object request is accepted by the Closy garment foundry;

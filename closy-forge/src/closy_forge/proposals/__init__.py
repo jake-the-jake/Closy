@@ -22,6 +22,12 @@ from closy_forge.proposals.provider_registry import (
     inspect_manual_import_candidate,
     provider_registry_quality_report,
 )
+from closy_forge.proposals.raw_geometry_topology import (
+    RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
+    build_raw_geometry_topology_report,
+    hash_raw_geometry_topology_report,
+    raw_geometry_topology_quality_report,
+)
 
 __all__ = [
     "CLEAN_GEOMETRY_PROPOSAL_VERSION",
@@ -30,16 +36,20 @@ __all__ = [
     "NULL_GEOMETRY_PROVIDER_ID",
     "NULL_GEOMETRY_PROPOSAL_VERSION",
     "PROVIDER_REGISTRY_VERSION",
+    "RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION",
     "REQUIRED_CLEAN_REJECTION_REASONS",
     "build_clean_geometry_proposal_rejection",
     "build_geometry_provider_registry",
     "build_manual_geometry_proposal",
     "build_null_geometry_proposal",
+    "build_raw_geometry_topology_report",
     "clean_geometry_proposal_quality_report",
     "geometry_proposal_quality_report",
     "hash_clean_geometry_proposal",
     "hash_geometry_proposal",
     "hash_provider_registry",
+    "hash_raw_geometry_topology_report",
     "inspect_manual_import_candidate",
     "provider_registry_quality_report",
+    "raw_geometry_topology_quality_report",
 ]

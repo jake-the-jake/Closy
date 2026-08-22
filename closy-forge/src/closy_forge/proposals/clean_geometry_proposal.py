@@ -24,6 +24,7 @@ def build_clean_geometry_proposal_rejection(
     garment_class: str,
     raw_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
+    raw_topology_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
 
@@ -34,6 +35,16 @@ def build_clean_geometry_proposal_rejection(
     """
 
     raw_proposal = raw_geometry_proposal["rawProposal"]
+    if raw_topology_report is None:
+        topology_available = False
+        topology: dict[str, Any] = {}
+        topology_report_id = None
+        topology_report_hash = None
+    else:
+        topology_available = True
+        topology = raw_topology_report["topology"]
+        topology_report_id = raw_topology_report["reportId"]
+        topology_report_hash = raw_topology_report["integrity"]["rawGeometryTopologyReportHash"]
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "proposalId": "proposal.clean_tshirt_geometry_v1",
@@ -44,6 +55,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceRawProposalHash": raw_geometry_proposal["integrity"]["geometryProposalHash"],
         "sourceProviderRegistryId": provider_registry["registryId"],
         "sourceProviderRegistryHash": provider_registry["integrity"]["providerRegistryHash"],
+        "sourceRawTopologyReportId": topology_report_id,
+        "sourceRawTopologyReportHash": topology_report_hash,
         "rawProposal": {
             "available": raw_proposal["available"],
             "assetPath": raw_proposal["assetPath"],
@@ -53,6 +66,7 @@ def build_clean_geometry_proposal_rejection(
             "acceptedForCanonical": raw_geometry_proposal["quality"]["acceptedForCanonical"],
         },
         "cleanupPipeline": {
+            "topologyDiagnosticsRun": topology_available,
             "cleanupRun": False,
             "repairRun": False,
             "retopologyRun": False,
@@ -60,8 +74,8 @@ def build_clean_geometry_proposal_rejection(
             "simulationBindingRun": False,
             "uvTransferRun": False,
             "materialTransferRun": False,
-            "connectedComponentAnalysisRun": False,
-            "nonManifoldAnalysisRun": False,
+            "connectedComponentAnalysisRun": topology_available,
+            "nonManifoldAnalysisRun": topology_available,
             "blockedBy": [
                 "raw_visual_reference_only",
                 "clean_geometry_provider_unavailable",
@@ -93,9 +107,10 @@ def build_clean_geometry_proposal_rejection(
             "textureCount": 0,
             "bounds": None,
             "scaleApplied": None,
-            "connectedComponentCount": None,
-            "nonManifoldEdgeCount": None,
-            "degenerateTriangleCount": None,
+            "connectedComponentCount": topology.get("componentCount"),
+            "nonManifoldEdgeCount": topology.get("nonManifoldEdgeCount"),
+            "degenerateTriangleCount": topology.get("degenerateTriangleCount"),
+            "rawTopologyManifoldStatus": topology.get("manifoldStatus"),
             "simulationBindingRecordCount": 0,
             "failureReason": "clean_geometry_proposal_not_generated",
         },
@@ -115,6 +130,9 @@ def build_clean_geometry_proposal_rejection(
             "warnings": [
                 "clean_geometry_proposal_not_available",
                 "raw_visual_reference_not_simulation_ready",
+                "topology_diagnostics_completed_without_repair"
+                if topology_available
+                else "topology_diagnostics_not_run",
             ],
         },
         "policy": {
@@ -152,8 +170,12 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "repairRun": cleanup["repairRun"],
         "semanticTransferRun": cleanup["semanticTransferRun"],
         "simulationBindingRun": cleanup["simulationBindingRun"],
+        "topologyDiagnosticsRun": cleanup["topologyDiagnosticsRun"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
+        "connectedComponentCount": audit["connectedComponentCount"],
+        "nonManifoldEdgeCount": audit["nonManifoldEdgeCount"],
+        "degenerateTriangleCount": audit["degenerateTriangleCount"],
         "meshCount": audit["meshCount"],
         "triangleEstimate": audit["triangleEstimate"],
         "failureReason": audit["failureReason"],

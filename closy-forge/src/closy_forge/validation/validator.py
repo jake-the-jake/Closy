@@ -31,9 +31,11 @@ from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, t
 from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.proposals import (
     REQUIRED_CLEAN_REJECTION_REASONS,
+    build_raw_geometry_topology_report,
     hash_clean_geometry_proposal,
     hash_geometry_proposal,
     hash_provider_registry,
+    hash_raw_geometry_topology_report,
 )
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
@@ -81,6 +83,7 @@ EXPECTED_FILES = [
     "reports/fitting_quality.json",
     "reports/texture_quality.json",
     "reports/geometry_proposal_quality.json",
+    "reports/raw_geometry_topology.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -224,6 +227,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_fitting(package_dir, manifest, issues)
     _validate_texture_identity(package_dir, manifest, issues)
     _validate_geometry_proposal(package_dir, manifest, issues)
+    _validate_raw_geometry_topology(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1344,6 +1348,11 @@ def _validate_geometry_proposal(
         ("geometryProposalInterfaceAvailable", True, "geometry_proposal_capability_missing"),
         ("rawGeometryProposalRecordAvailable", True, "geometry_proposal_capability_missing"),
         ("geometryProposalQualityScored", True, "geometry_proposal_capability_missing"),
+        (
+            "rawGeometryTopologyDiagnosticsAvailable",
+            True,
+            "raw_geometry_topology_capability_missing",
+        ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
     ]
@@ -1523,6 +1532,244 @@ def _validate_manual_geometry_proposal_payload(
                 "fatal",
                 "proposals/raw_geometry_proposal.json",
                 "Manual raw proposal GLB must contain visible renderable triangles.",
+            )
+        )
+
+
+def _validate_raw_geometry_topology(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
+    topology = _read_required_json(package_dir, "reports/raw_geometry_topology.json", issues)
+    if proposal is None or topology is None:
+        return
+
+    if topology.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_garment_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology report must reference the package garment ID.",
+            )
+        )
+    if topology.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_class_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology report must reference the package garment class.",
+            )
+        )
+    if topology.get("sourceRawProposalId") != proposal.get("proposalId"):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_source_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology report must reference the raw proposal ID.",
+            )
+        )
+    if topology.get("sourceRawProposalHash") != _nested_string(
+        proposal, ["integrity", "geometryProposalHash"], ""
+    ):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_source_hash_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology report must reference the raw proposal hash.",
+            )
+        )
+
+    raw = proposal.get("rawProposal", {})
+    if not isinstance(raw, dict) or raw.get("available") is not True:
+        issues.append(
+            _issue(
+                "raw_geometry_topology_source_unavailable",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology diagnostics require an available raw GLB proposal.",
+            )
+        )
+        return
+    raw_asset = raw.get("assetPath")
+    if not isinstance(raw_asset, str):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_asset_path_invalid",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology diagnostics require a package-relative GLB path.",
+            )
+        )
+        return
+    try:
+        validate_package_relpath(raw_asset)
+    except ValueError:
+        issues.append(
+            _issue(
+                "raw_geometry_topology_asset_path_invalid",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology diagnostics asset path is unsafe.",
+            )
+        )
+        return
+    asset_path = package_dir / raw_asset
+    if not asset_path.exists():
+        issues.append(
+            _issue(
+                "raw_geometry_topology_asset_missing",
+                "fatal",
+                raw_asset,
+                "Raw topology diagnostics asset is missing.",
+            )
+        )
+        return
+
+    if topology.get("sourceRawAssetPath") != raw_asset:
+        issues.append(
+            _issue(
+                "raw_geometry_topology_asset_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology asset path must mirror the raw proposal.",
+            )
+        )
+    if topology.get("sourceRawAssetHash") != raw.get("sourceAssetHash"):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_asset_hash_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology asset hash must mirror the raw proposal.",
+            )
+        )
+    if topology.get("sourceRawAssetByteSize") != raw.get("byteSize"):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_asset_size_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology asset size must mirror the raw proposal.",
+            )
+        )
+    if _nested_string(topology, ["integrity", "rawGeometryTopologyReportHash"], "") != (
+        hash_raw_geometry_topology_report(topology)
+    ):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_hash_mismatch",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology report hash must match its canonical payload.",
+            )
+        )
+
+    try:
+        expected = build_raw_geometry_topology_report(
+            garment_id=str(manifest.get("garmentId", "")),
+            garment_class=str(manifest.get("garmentClass", "")),
+            raw_geometry_proposal=proposal,
+            asset_path=asset_path,
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "raw_geometry_topology_recompute_failed",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                str(exc),
+            )
+        )
+        return
+
+    expected_fields = [
+        ("inputAudit", "meshCount"),
+        ("inputAudit", "visibleMeshCount"),
+        ("inputAudit", "triangleEstimate"),
+        ("inputAudit", "materialCount"),
+        ("topology", "meshCount"),
+        ("topology", "vertexCount"),
+        ("topology", "triangleCount"),
+        ("topology", "componentCount"),
+        ("topology", "largestComponentTriangleCount"),
+        ("topology", "boundaryEdgeCount"),
+        ("topology", "nonManifoldEdgeCount"),
+        ("topology", "degenerateTriangleCount"),
+        ("topology", "duplicatePositionCount"),
+        ("topology", "manifoldStatus"),
+    ]
+    for block_name, key in expected_fields:
+        block = topology.get(block_name, {})
+        expected_block = expected.get(block_name, {})
+        if not isinstance(block, dict) or not isinstance(expected_block, dict):
+            continue
+        if block.get(key) != expected_block.get(key):
+            issues.append(
+                _issue(
+                    "raw_geometry_topology_diagnostics_mismatch",
+                    "fatal",
+                    "reports/raw_geometry_topology.json",
+                    f"Raw topology diagnostics field {block_name}.{key} is stale.",
+                )
+            )
+
+    readiness = topology.get("cleanReadiness", {})
+    policy = topology.get("policy", {})
+    if not isinstance(readiness, dict) or not isinstance(policy, dict):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_block_invalid",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology report readiness and policy blocks must be objects.",
+            )
+        )
+        return
+    if readiness.get("acceptedForCleanProposal") is not False:
+        issues.append(
+            _issue(
+                "raw_geometry_topology_clean_acceptance_invalid",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology diagnostics alone cannot accept a clean proposal.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_policy_violation",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology diagnostics cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("rawGeometryTopologyDiagnosticsAvailable") is not True:
+        issues.append(
+            _issue(
+                "raw_geometry_topology_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare raw geometry topology diagnostics availability.",
+            )
+        )
+    if _contains_nonfinite(topology):
+        issues.append(
+            _issue(
+                "raw_geometry_topology_nonfinite_numeric_value",
+                "fatal",
+                "reports/raw_geometry_topology.json",
+                "Raw topology report must not contain NaN or Infinity.",
             )
         )
 
@@ -1910,13 +2157,19 @@ def _validate_clean_geometry_proposal(
 ) -> None:
     raw_proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
     provider_registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
+    raw_topology = _read_required_json(package_dir, "reports/raw_geometry_topology.json", issues)
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
     clean_quality = _read_required_json(
         package_dir, "reports/clean_geometry_proposal_quality.json", issues
     )
-    if raw_proposal is None or provider_registry is None or clean_proposal is None:
+    if (
+        raw_proposal is None
+        or provider_registry is None
+        or raw_topology is None
+        or clean_proposal is None
+    ):
         return
 
     if clean_proposal.get("garmentId") != manifest.get("garmentId"):
@@ -1949,6 +2202,11 @@ def _validate_clean_geometry_proposal(
             _nested_string(provider_registry, ["integrity", "providerRegistryHash"], ""),
             "clean_geometry_proposal_registry_hash_mismatch",
         ),
+        (
+            "sourceRawTopologyReportHash",
+            _nested_string(raw_topology, ["integrity", "rawGeometryTopologyReportHash"], ""),
+            "clean_geometry_proposal_topology_hash_mismatch",
+        ),
     ]
     for field, expected_hash, code in expected_hashes:
         if clean_proposal.get(field) != expected_hash:
@@ -1976,6 +2234,15 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the provider registry ID.",
+            )
+        )
+    if clean_proposal.get("sourceRawTopologyReportId") != raw_topology.get("reportId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_topology_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the raw topology report ID.",
             )
         )
 
@@ -2082,8 +2349,6 @@ def _validate_clean_geometry_proposal(
         "simulationBindingRun",
         "uvTransferRun",
         "materialTransferRun",
-        "connectedComponentAnalysisRun",
-        "nonManifoldAnalysisRun",
     ]:
         if cleanup.get(key) is not False:
             issues.append(
@@ -2094,6 +2359,38 @@ def _validate_clean_geometry_proposal(
                     f"Clean proposal field cleanupPipeline.{key} must stay false in D0.",
                 )
             )
+
+    if (
+        cleanup.get("topologyDiagnosticsRun") is not True
+        or cleanup.get("connectedComponentAnalysisRun") is not True
+        or cleanup.get("nonManifoldAnalysisRun") is not True
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_topology_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal must link completed raw topology diagnostics in this package.",
+            )
+        )
+    topology_block = raw_topology.get("topology", {})
+    if isinstance(topology_block, dict):
+        expected_topology_fields = {
+            "connectedComponentCount": topology_block.get("componentCount"),
+            "nonManifoldEdgeCount": topology_block.get("nonManifoldEdgeCount"),
+            "degenerateTriangleCount": topology_block.get("degenerateTriangleCount"),
+            "rawTopologyManifoldStatus": topology_block.get("manifoldStatus"),
+        }
+        for key, expected in expected_topology_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_topology_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal topology audit field {key} is stale.",
+                    )
+                )
 
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
@@ -2140,6 +2437,9 @@ def _validate_clean_geometry_proposal(
             "repairRun": cleanup.get("repairRun"),
             "semanticTransferRun": cleanup.get("semanticTransferRun"),
             "simulationBindingRun": cleanup.get("simulationBindingRun"),
+            "topologyDiagnosticsRun": cleanup.get("topologyDiagnosticsRun"),
+            "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
+            "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "failureReason": audit.get("failureReason"),
         }
         for key, expected in expected_quality.items():

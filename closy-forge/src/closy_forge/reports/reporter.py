@@ -16,6 +16,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     texture = read_json(package_dir / "textures" / "texture_identity.json")
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
+    raw_topology = read_json(package_dir / "reports" / "raw_geometry_topology.json")
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -86,6 +87,21 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "triangleEstimate": proposal["geometryAudit"]["triangleEstimate"],
             "failureReason": proposal["geometryAudit"]["failureReason"],
         },
+        "rawGeometryTopology": {
+            "reportId": raw_topology["reportId"],
+            "sourceRawProposalId": raw_topology["sourceRawProposalId"],
+            "meshCount": raw_topology["topology"]["meshCount"],
+            "componentCount": raw_topology["topology"]["componentCount"],
+            "largestComponentTriangleCount": raw_topology["topology"][
+                "largestComponentTriangleCount"
+            ],
+            "boundaryEdgeCount": raw_topology["topology"]["boundaryEdgeCount"],
+            "nonManifoldEdgeCount": raw_topology["topology"]["nonManifoldEdgeCount"],
+            "degenerateTriangleCount": raw_topology["topology"]["degenerateTriangleCount"],
+            "duplicatePositionCount": raw_topology["topology"]["duplicatePositionCount"],
+            "manifoldStatus": raw_topology["topology"]["manifoldStatus"],
+            "acceptedForCleanProposal": raw_topology["cleanReadiness"]["acceptedForCleanProposal"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -93,6 +109,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "cleanProposalAvailable": clean_proposal["cleanProposal"]["available"],
             "acceptedForCanonical": clean_proposal["quality"]["acceptedForCanonical"],
             "acceptedForSimulation": clean_proposal["quality"]["acceptedForSimulation"],
+            "topologyDiagnosticsRun": clean_proposal["cleanupPipeline"]["topologyDiagnosticsRun"],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
             "semanticTransferRun": clean_proposal["cleanupPipeline"]["semanticTransferRun"],
@@ -151,6 +168,7 @@ def human_report(package_dir: Path) -> str:
     fitting = summary["fitting"]
     texture = summary["texture"]
     proposal = summary["geometryProposal"]
+    raw_topology = summary["rawGeometryTopology"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -177,6 +195,11 @@ def human_report(package_dir: Path) -> str:
             (
                 f"Geometry proposal: {proposal['qualityStatus']} via "
                 f"{proposal['providerId']}, raw available={proposal['rawProposalAvailable']}"
+            ),
+            (
+                f"Raw topology: components={raw_topology['componentCount']}, "
+                f"non-manifold edges={raw_topology['nonManifoldEdgeCount']}, "
+                f"status={raw_topology['manifoldStatus']}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "
