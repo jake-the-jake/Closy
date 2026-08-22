@@ -29,4 +29,4 @@ The current deterministic fixture records:
 
 ## Next Implementation Direction
 
-Continue into deterministic T-shirt parameter fitting from masks/landmarks while improving simulation diagnostics. Synthetic capture and visual-observation scaffolding now exists, but real image ingestion, learned segmentation, self-collision and production-grade material calibration remain explicitly unavailable.
+Continue into texture identity scaffolding or richer pose/motion validation while improving simulation diagnostics. Synthetic capture, visual-observation and deterministic fitting scaffolding now exists, but real image ingestion, learned segmentation, self-collision and production-grade material calibration remain explicitly unavailable.

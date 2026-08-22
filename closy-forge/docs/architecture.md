@@ -27,6 +27,7 @@ fixed avatar contract
   -> synthetic metadata-only capture record
   -> deterministic capture quality scoring
   -> synthetic visual observations and empty correction record
+  -> deterministic T-shirt parameter fitting
   -> semantic T-shirt graph
   -> parametric sewing pattern
   -> simulation-ready panel topology
@@ -38,8 +39,8 @@ fixed avatar contract
   -> independent validation and reports
 ```
 
-The current T-shirt stores synthetic metadata-only capture evidence, analytic mask/landmark observations, an empty editable correction record, analytic rest assembly and a deterministic CPU settled state against the fixed collision avatar. The solver exercises gravity, stretch, bend, seam and body-collision constraints, but it is still a reference backend: self-collision, real user images, body scans, learned segmentation, AI inference, ZeroOne processing and personalised body data are not present.
+The current T-shirt stores synthetic metadata-only capture evidence, analytic mask/landmark observations, an empty editable correction record, a bounded deterministic parameter fit, analytic rest assembly and a deterministic CPU settled state against the fixed collision avatar. The solver exercises gravity, stretch, bend, seam and body-collision constraints, but it is still a reference backend: self-collision, real user images, body scans, learned segmentation, AI inference, ZeroOne processing and personalised body data are not present.
 
 ## Future R&D Direction
 
-The next dependency-ready work is deterministic T-shirt parameter fitting from masks/landmarks and richer simulation validation, while preserving the same package boundary. Later work can add reconstruction services, SMPL/SMPL-X research, AI garment proposal adapters, ZeroOne derivatives, and mobile consumption of these packages without changing the package boundary.
+The next dependency-ready work is texture identity scaffolding or richer pose/motion validation, while preserving the same package boundary. Later work can add reconstruction services, SMPL/SMPL-X research, AI garment proposal adapters, ZeroOne derivatives, and mobile consumption of these packages without changing the package boundary.

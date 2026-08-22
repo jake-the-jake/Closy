@@ -16,6 +16,8 @@ CAPABILITIES_FIXTURE = {
     "garmentMaskAvailable": True,
     "garmentLandmarksAvailable": True,
     "editableCorrectionRecordAvailable": True,
+    "tshirtParameterFitAvailable": True,
+    "fittingQualityScored": True,
     "personalizedAvatarAvailable": False,
     "skeletalFallbackAvailable": False,
     "zeroOneStaticAvailable": False,

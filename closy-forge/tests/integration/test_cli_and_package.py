@@ -55,4 +55,5 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["garmentId"] == "garment.demo_tshirt.reference_v1"
     assert payload["capture"]["overallStatus"] == "pass"
     assert payload["visualUnderstanding"]["maskCount"] == 4
+    assert payload["fitting"]["status"] == "pass"
     assert payload["binding"]["recordCount"] > 0

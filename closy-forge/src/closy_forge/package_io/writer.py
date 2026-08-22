@@ -98,6 +98,8 @@ def _safe_remove_staging(staging: Path) -> None:
 def _role_for_path(rel: str) -> str:
     if rel.startswith("source/"):
         return "source_capture_contract"
+    if rel.startswith("fitting/"):
+        return "fit_report"
     if rel.startswith("avatar/"):
         return "avatar_contract_or_fixture"
     if rel.startswith("semantic/"):
@@ -122,5 +124,6 @@ def _is_canonical(rel: str) -> bool:
         rel.startswith(
             ("source/", "avatar/", "semantic/", "pattern/", "simulation/", "render/", "binding/")
         )
+        or rel.startswith("fitting/")
         or rel == "provenance.json"
     )

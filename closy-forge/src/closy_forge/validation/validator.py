@@ -10,6 +10,8 @@ from closy_forge.capture.source_records import hash_capture_record
 from closy_forge.contracts.avatar import REQUIRED_BODY_REGIONS, REQUIRED_LANDMARKS
 from closy_forge.contracts.common import COORDINATE_CONVENTION
 from closy_forge.contracts.semantic import REQUIRED_OPENINGS, REQUIRED_PANELS, REQUIRED_SEAMS
+from closy_forge.fitting import hash_tshirt_fit_report
+from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.geometry.curves import sample_curve
 from closy_forge.geometry.glb_io import audit_glb
 from closy_forge.geometry.mesh_model import (
@@ -40,6 +42,7 @@ EXPECTED_FILES = [
     "source/capture_quality.json",
     "source/visual_observations.json",
     "source/correction_record.json",
+    "fitting/tshirt_fit.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
     "avatar/collision.glb",
@@ -63,6 +66,7 @@ EXPECTED_FILES = [
     "reports/avatar_quality.json",
     "reports/capture_quality.json",
     "reports/visual_understanding_quality.json",
+    "reports/fitting_quality.json",
     "reports/semantic_quality.json",
     "reports/pattern_quality.json",
     "reports/simulation_quality.json",
@@ -201,6 +205,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_avatar(package_dir, issues)
     _validate_capture(package_dir, manifest, issues)
     _validate_visual_understanding(package_dir, manifest, issues)
+    _validate_fitting(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
@@ -689,6 +694,151 @@ def _validate_visual_understanding(
                 "fatal",
                 "source/visual_observations.json",
                 "Visual observations and correction records must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_fitting(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    fit_report = _read_required_json(package_dir, "fitting/tshirt_fit.json", issues)
+    if visual is None or fit_report is None:
+        return
+    declared_visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
+    if fit_report.get("sourceVisualUnderstandingId") != visual.get("visualUnderstandingId"):
+        issues.append(
+            _issue(
+                "fitting_visual_id_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "Fit report must reference the visual observation ID.",
+            )
+        )
+    if fit_report.get("sourceVisualRecordHash") != declared_visual_hash:
+        issues.append(
+            _issue(
+                "fitting_visual_hash_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "Fit report must reference the visual observation hash.",
+            )
+        )
+    if _nested_string(fit_report, ["integrity", "fitReportHash"], "") != hash_tshirt_fit_report(
+        fit_report
+    ):
+        issues.append(
+            _issue(
+                "tshirt_fit_hash_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "Fit report hash must match its canonical payload.",
+            )
+        )
+    if fit_report.get("status") != "pass" or fit_report.get("accepted") is not True:
+        issues.append(
+            _issue(
+                "tshirt_fit_not_accepted",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "T-shirt fit report must pass and be accepted for this fixture.",
+            )
+        )
+    fitted_parameters = fit_report.get("fittedParameters", {})
+    if not isinstance(fitted_parameters, dict):
+        issues.append(
+            _issue(
+                "tshirt_fit_parameters_invalid",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "Fit report fittedParameters must be an object.",
+            )
+        )
+    else:
+        try:
+            TShirtParameters(**{key: float(value) for key, value in fitted_parameters.items()})
+        except (TypeError, ValueError) as exc:
+            issues.append(
+                _issue(
+                    "tshirt_fit_parameters_invalid",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    str(exc),
+                )
+            )
+    losses = fit_report.get("losses", {})
+    thresholds = fit_report.get("thresholds", {})
+    if not isinstance(losses, dict) or not isinstance(thresholds, dict):
+        issues.append(
+            _issue(
+                "tshirt_fit_loss_invalid",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "Fit report losses and thresholds must be objects.",
+            )
+        )
+    else:
+        if _float_or(losses.get("landmarkRmsNormalised"), 1.0) > _float_or(
+            thresholds.get("maximumLandmarkRmsNormalised"), 0.0
+        ):
+            issues.append(
+                _issue(
+                    "tshirt_fit_landmark_loss_too_high",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    "Landmark RMS exceeds fit threshold.",
+                )
+            )
+        if _float_or(losses.get("maskWidthErrorMeters"), 1.0) > _float_or(
+            thresholds.get("maximumMaskWidthErrorMeters"), 0.0
+        ):
+            issues.append(
+                _issue(
+                    "tshirt_fit_mask_loss_too_high",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    "Mask width error exceeds fit threshold.",
+                )
+            )
+        if _float_or(losses.get("maximumParameterDeltaMeters"), 1.0) > _float_or(
+            thresholds.get("maximumParameterDeltaMeters"), 0.0
+        ):
+            issues.append(
+                _issue(
+                    "tshirt_fit_parameter_delta_too_high",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    "Parameter delta exceeds fit threshold.",
+                )
+            )
+    caps = manifest.get("capabilities", {})
+    if not isinstance(caps, dict):
+        return
+    if caps.get("tshirtParameterFitAvailable") is not True:
+        issues.append(
+            _issue(
+                "tshirt_fit_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare T-shirt parameter fitting availability.",
+            )
+        )
+    if caps.get("fittingQualityScored") is not True:
+        issues.append(
+            _issue(
+                "fitting_quality_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare fitting quality scoring availability.",
+            )
+        )
+    if _contains_nonfinite(fit_report):
+        issues.append(
+            _issue(
+                "tshirt_fit_nonfinite_numeric_value",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "Fit report must not contain NaN or Infinity.",
             )
         )
 

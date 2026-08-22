@@ -13,6 +13,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     capture = read_json(package_dir / "source" / "capture_quality.json")
     visual = read_json(package_dir / "source" / "visual_observations.json")
     correction = read_json(package_dir / "source" / "correction_record.json")
+    fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -51,6 +52,14 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "correctionRecordId": correction["correctionRecordId"],
             "correctionOperationCount": len(correction["operations"]),
         },
+        "fitting": {
+            "fitReportId": fitting["fitReportId"],
+            "fitterVersion": fitting["fitterVersion"],
+            "status": fitting["status"],
+            "accepted": fitting["accepted"],
+            "landmarkRmsNormalised": fitting["losses"]["landmarkRmsNormalised"],
+            "maskWidthErrorMeters": fitting["losses"]["maskWidthErrorMeters"],
+        },
         "settle": {
             "solverVersion": settle["solverVersion"],
             "convergenceState": settle["convergenceState"],
@@ -81,6 +90,7 @@ def human_report(package_dir: Path) -> str:
     binding = summary["binding"]
     capture = summary["capture"]
     visual = summary["visualUnderstanding"]
+    fitting = summary["fitting"]
     settle = summary["settle"]
     lines.extend(
         [
@@ -92,6 +102,10 @@ def human_report(package_dir: Path) -> str:
                 f"Visual observations: {visual['maskCount']} masks, "
                 f"{visual['observedLandmarkCount']} landmarks, "
                 f"{visual['correctionOperationCount']} corrections"
+            ),
+            (
+                f"Fitting: {fitting['status']} via {fitting['fitterVersion']}, "
+                f"landmark RMS {fitting['landmarkRmsNormalised']:.6f}"
             ),
             (
                 f"Binding: {binding['recordCount']} records, "

@@ -11,6 +11,7 @@ source/capture_record.json
 source/capture_quality.json
 source/visual_observations.json
 source/correction_record.json
+fitting/tshirt_fit.json
 avatar/avatar_contract.json
 avatar/reference_avatar.glb
 avatar/collision.glb
@@ -34,6 +35,7 @@ binding/binding_manifest.json
 reports/avatar_quality.json
 reports/capture_quality.json
 reports/visual_understanding_quality.json
+reports/fitting_quality.json
 reports/semantic_quality.json
 reports/pattern_quality.json
 reports/simulation_quality.json
@@ -44,7 +46,7 @@ reports/summary.json
 reports/summary.md
 ```
 
-Absent optional stages are omitted rather than represented by fake folders. The `source/` directory currently contains deterministic synthetic capture metadata, analytic visual observations, and an empty editable correction record. There is no real user imagery, raster source image, learned segmentation mask, `zeroone/`, `textures/`, or AI report in this milestone.
+Absent optional stages are omitted rather than represented by fake folders. The `source/` directory currently contains deterministic synthetic capture metadata, analytic visual observations, and an empty editable correction record. The `fitting/` directory currently contains a bounded deterministic T-shirt parameter fit from those synthetic observations. There is no real user imagery, raster source image, learned segmentation mask, `zeroone/`, `textures/`, or AI report in this milestone.
 
 ## Inventory Rules
 
@@ -54,4 +56,4 @@ The manifest inventory uses POSIX package-relative paths only. Absolute paths, `
 
 ## Capabilities
 
-Capabilities are booleans, not quality scores. Current true states are immutable synthetic capture records, deterministic capture quality scoring, analytic visual observations, editable correction records, synthetic target-garment masks, synthetic T-shirt landmarks, pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, validated reconstruction, and deterministic reference cloth settle. Source-image texture, personalised avatar, skeleton, self-collision, and ZeroOne states are false.
+Capabilities are booleans, not quality scores. Current true states are immutable synthetic capture records, deterministic capture quality scoring, analytic visual observations, editable correction records, synthetic target-garment masks, synthetic T-shirt landmarks, deterministic T-shirt parameter fitting, pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, validated reconstruction, and deterministic reference cloth settle. Source-image texture, personalised avatar, skeleton, self-collision, and ZeroOne states are false.

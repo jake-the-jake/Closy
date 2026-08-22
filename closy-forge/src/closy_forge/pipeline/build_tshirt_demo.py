@@ -25,6 +25,10 @@ from closy_forge.capture import (
     score_capture_record,
 )
 from closy_forge.contracts.common import COORDINATE_CONVENTION, DEFAULT_SEED, FIXED_TIMESTAMP
+from closy_forge.fitting import (
+    TSHIRT_FIT_REPORT_VERSION,
+    fit_tshirt_parameters_from_visual_observations,
+)
 from closy_forge.garments.tshirt.assembly import build_constraints, build_simulation_mesh
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.garments.tshirt.pattern_generator import build_tshirt_pattern
@@ -132,6 +136,7 @@ def _write_package_contents(
     capture_quality = score_capture_record(capture_record)
     visual_observations = build_tshirt_visual_observations(capture_record)
     correction_record = build_empty_correction_record(visual_observations)
+    fit_report = fit_tshirt_parameters_from_visual_observations(visual_observations, prior=params)
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
     simulation_mesh = settle.settled_mesh
@@ -142,6 +147,7 @@ def _write_package_contents(
     write_canonical_json(package_dir / "source" / "capture_quality.json", capture_quality)
     write_canonical_json(package_dir / "source" / "visual_observations.json", visual_observations)
     write_canonical_json(package_dir / "source" / "correction_record.json", correction_record)
+    write_canonical_json(package_dir / "fitting" / "tshirt_fit.json", fit_report)
     write_canonical_json(package_dir / "avatar" / "avatar_contract.json", avatar)
     write_canonical_json(package_dir / "avatar" / "body_regions.json", regions)
     write_glb(
@@ -228,6 +234,7 @@ def _write_package_contents(
         capture_quality,
         visual_observations,
         correction_record,
+        fit_report,
     )
     for name, report in quality_reports.items():
         write_canonical_json(package_dir / "reports" / name, report)
@@ -246,6 +253,7 @@ def _write_package_contents(
         capture_quality,
         visual_observations,
         correction_record,
+        fit_report,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
 
@@ -267,6 +275,7 @@ def _write_package_contents(
         capture_quality,
         visual_observations,
         correction_record,
+        fit_report,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
     return {
@@ -283,6 +292,7 @@ def _write_package_contents(
         "captureQuality": capture_quality,
         "visualObservations": visual_observations,
         "correctionRecord": correction_record,
+        "fitReport": fit_report,
         "inventory": inventory,
     }
 
@@ -389,6 +399,7 @@ def _manifest(
     capture_quality: dict[str, Any],
     visual_observations: dict[str, Any],
     correction_record: dict[str, Any],
+    fit_report: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -411,6 +422,7 @@ def _manifest(
             "sourceCaptureQuality": "source/capture_quality.json",
             "sourceVisualObservations": "source/visual_observations.json",
             "sourceCorrectionRecord": "source/correction_record.json",
+            "tshirtFitReport": "fitting/tshirt_fit.json",
             "semanticGraph": "semantic/garment_graph.json",
             "pattern": "pattern/pattern.json",
             "simulationMesh": "simulation/simulation_mesh.glb",
@@ -451,6 +463,8 @@ def _manifest(
             "sourceCorrectionRecordPayloadHash": str(
                 correction_record["integrity"]["correctionRecordHash"]
             ),
+            "tshirtFitReportHash": _hash_from_inventory(inventory, "fitting/tshirt_fit.json"),
+            "tshirtFitReportPayloadHash": str(fit_report["integrity"]["fitReportHash"]),
             "simulationRestTopologyHash": topology_hash(rest_mesh),
             "simulationRestContentHash": geometry_content_hash(rest_mesh),
             "simulationTopologyHash": topology_hash(sim_mesh),
@@ -473,6 +487,7 @@ def _manifest(
             "captureQualityScorer": CAPTURE_QUALITY_SCORER_VERSION,
             "visualObservations": TSHIRT_VISUAL_OBSERVATION_VERSION,
             "correctionRecord": CORRECTION_RECORD_VERSION,
+            "tshirtFit": TSHIRT_FIT_REPORT_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
             "curveSampler": "closy.curve_sampler.v1",
             "panelTriangulator": "closy.fan_triangulator.v1",
@@ -492,6 +507,7 @@ def _manifest(
             "self_collision_not_run",
             "synthetic_capture_metadata_only",
             "synthetic_visual_observations_not_real_segmentation",
+            "synthetic_fit_not_trained_from_real_images",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
@@ -517,6 +533,8 @@ def _capabilities() -> dict[str, bool]:
         "garmentMaskAvailable": True,
         "garmentLandmarksAvailable": True,
         "editableCorrectionRecordAvailable": True,
+        "tshirtParameterFitAvailable": True,
+        "fittingQualityScored": True,
         "personalizedAvatarAvailable": False,
         "skeletalFallbackAvailable": False,
         "zeroOneStaticAvailable": False,
@@ -540,6 +558,7 @@ def _quality_reports(
     capture_quality: dict[str, Any],
     visual_observations: dict[str, Any],
     correction_record: dict[str, Any],
+    fit_report: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     return {
         "capture_quality.json": {
@@ -567,6 +586,17 @@ def _quality_reports(
             "correctionRecordId": correction_record["correctionRecordId"],
             "correctionOperationCount": len(correction_record["operations"]),
             "warnings": visual_observations["warnings"],
+        },
+        "fitting_quality.json": {
+            "schemaVersion": 1,
+            "status": fit_report["status"],
+            "fitReportId": fit_report["fitReportId"],
+            "sourceVisualUnderstandingId": fit_report["sourceVisualUnderstandingId"],
+            "accepted": fit_report["accepted"],
+            "method": fit_report["method"],
+            "losses": fit_report["losses"],
+            "thresholds": fit_report["thresholds"],
+            "warnings": fit_report["warnings"],
         },
         "avatar_quality.json": {
             "schemaVersion": 1,
@@ -639,6 +669,7 @@ def _provenance(
     capture_quality: dict[str, Any],
     visual_observations: dict[str, Any],
     correction_record: dict[str, Any],
+    fit_report: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -696,6 +727,16 @@ def _provenance(
                 CORRECTION_RECORD_VERSION,
                 {"editable": True, "operationCount": 0, "externalApis": False},
                 [str(correction_record["integrity"]["correctionRecordHash"])],
+            ),
+            _stage(
+                "tshirt_visual_parameter_fit",
+                TSHIRT_FIT_REPORT_VERSION,
+                {
+                    "method": fit_report["method"],
+                    "accepted": bool(fit_report["accepted"]),
+                    "status": fit_report["status"],
+                },
+                [str(fit_report["integrity"]["fitReportHash"])],
             ),
             _stage(
                 "reference_avatar_parameters",
@@ -792,6 +833,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     capture_quality = context["captureQuality"]
     visual_observations = context["visualObservations"]
     correction_record = context["correctionRecord"]
+    fit_report = context["fitReport"]
     return {
         "schemaVersion": 1,
         "garmentId": manifest["garmentId"],
@@ -828,6 +870,15 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "correctionRecordId": correction_record["correctionRecordId"],
             "correctionOperationCount": len(correction_record["operations"]),
         },
+        "fitting": {
+            "fitReportId": fit_report["fitReportId"],
+            "fitterVersion": fit_report["fitterVersion"],
+            "status": fit_report["status"],
+            "accepted": fit_report["accepted"],
+            "landmarkRmsNormalised": fit_report["losses"]["landmarkRmsNormalised"],
+            "maskWidthErrorMeters": fit_report["losses"]["maskWidthErrorMeters"],
+            "fittedParameters": fit_report["fittedParameters"],
+        },
         "hashes": manifest["hashes"],
         "binding": context["bindingManifest"],
         "settle": {
@@ -860,6 +911,9 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Visual observations: {summary['visualUnderstanding']['maskCount']} masks, "
         f"{summary['visualUnderstanding']['observedLandmarkCount']} T-shirt landmarks, "
         f"{summary['visualUnderstanding']['correctionOperationCount']} corrections\n"
+        f"- Fitting: {summary['fitting']['status']} via "
+        f"`{summary['fitting']['fitterVersion']}`, landmark RMS "
+        f"{summary['fitting']['landmarkRmsNormalised']:.6f}\n"
         f"- Simulation mesh: {counts['simulationVertices']} vertices, "
         f"{counts['simulationTriangles']} triangles\n"
         f"- Render shell: {counts['renderVertices']} vertices, "

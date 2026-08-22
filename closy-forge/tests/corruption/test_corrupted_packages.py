@@ -307,3 +307,28 @@ def test_correction_policy_violation_is_rejected(tmp_path) -> None:  # type: ign
     correction["privacy"]["allowTrainingUse"] = True
     write_json(corrupt / "source" / "correction_record.json", correction)
     assert "correction_policy_violation" in issue_codes(validate_package(corrupt))
+
+
+def test_tshirt_fit_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_fit_hash.closygarment")
+    fit = read_json(corrupt / "fitting" / "tshirt_fit.json")
+    fit["fittedParameters"]["garment_body_length"] = 0.74
+    write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
+    assert "tshirt_fit_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_tshirt_fit_rejection_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_fit_status.closygarment")
+    fit = read_json(corrupt / "fitting" / "tshirt_fit.json")
+    fit["status"] = "fail"
+    fit["accepted"] = False
+    write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
+    assert "tshirt_fit_not_accepted" in issue_codes(validate_package(corrupt))
+
+
+def test_tshirt_fit_loss_threshold_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_fit_loss.closygarment")
+    fit = read_json(corrupt / "fitting" / "tshirt_fit.json")
+    fit["losses"]["landmarkRmsNormalised"] = 0.5
+    write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
+    assert "tshirt_fit_landmark_loss_too_high" in issue_codes(validate_package(corrupt))

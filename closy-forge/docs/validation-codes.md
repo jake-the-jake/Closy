@@ -36,6 +36,10 @@ Representative current codes:
 - `visual_mask_point_out_of_range`: synthetic mask polygon contains a point outside normalized image space.
 - `correction_record_hash_mismatch`: editable correction record content changed without updating its payload hash.
 - `correction_policy_violation`: correction record permits external API or training use.
+- `tshirt_fit_hash_mismatch`: T-shirt fit report changed without updating its payload hash.
+- `tshirt_fit_not_accepted`: fit report is not passing/accepted for the canonical fixture.
+- `tshirt_fit_landmark_loss_too_high`: fitted parameters exceed the landmark residual threshold.
+- `tshirt_fit_mask_loss_too_high`: fitted parameters exceed the mask-width residual threshold.
 - `unsupported_schema_version`: unsupported `schemaVersion`.
 - `required_file_missing`: required package file absent.
 - `unsafe_package_path`: inventory path escapes the package contract.

@@ -2,7 +2,7 @@
 
 Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
 
-The current deterministic fixture builds one authored T-shirt package with synthetic metadata-only capture records, analytic mask/landmark observations, an empty correction ledger, analytic rest state, CPU reference settle state, conventional GLBs, and sim-to-render binding:
+The current deterministic fixture builds one authored T-shirt package with synthetic metadata-only capture records, analytic mask/landmark observations, an empty correction ledger, deterministic T-shirt parameter fitting, analytic rest state, CPU reference settle state, conventional GLBs, and sim-to-render binding:
 
 ```bash
 python -m closy_forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment

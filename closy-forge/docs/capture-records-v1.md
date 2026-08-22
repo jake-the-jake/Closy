@@ -78,3 +78,10 @@ This is not learned image understanding yet. The masks and landmarks are synthet
 to prove package shape, provenance and validation. Later stages must replace them with real
 front/rear ingestion, provider or manual mask evidence, landmark observations, texture projection
 evidence and human correction operations.
+
+## Fitting Handoff
+
+`fitting/tshirt_fit.json` consumes `source/visual_observations.json` and stores the first bounded
+closed-form T-shirt parameter estimate. This is still synthetic and deterministic, but it proves the
+next boundary: fit reports must cite the visual-observation hash, stay inside the authored T-shirt
+parameter bounds, report losses, and provide explicit alternative hypotheses.
