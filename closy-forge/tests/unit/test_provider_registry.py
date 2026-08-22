@@ -82,6 +82,31 @@ def test_manual_import_candidate_accepts_valid_local_glb(tmp_path: Path) -> None
     assert candidate["audit"]["triangleEstimate"] == 1
 
 
+def test_registry_selects_reviewed_manual_candidate(tmp_path: Path) -> None:
+    capture, visual, fit, texture, proposal = _source_artifacts()
+    glb_path = tmp_path / "manual_tshirt_candidate.glb"
+    write_glb(glb_path, _tiny_mesh(), "manual_candidate_material", (0.1, 0.2, 0.8, 1.0))
+
+    registry = build_geometry_provider_registry(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        geometry_proposal=proposal,
+        manual_asset_path=glb_path,
+        manual_asset_rights_reviewed=True,
+        manual_asset_rights_status="project_authored_fixture_no_third_party_asset",
+    )
+
+    assert registry["selectedProviderId"] == "closy.manual_local_glb_import.v1"
+    assert registry["d0Capabilities"]["manualLocalImportAssetAvailable"] is True
+    assert registry["manualImportCandidate"]["acceptedForRawProposal"] is True
+    assert registry["providers"][1]["licence"]["termsReviewed"] is True
+    assert registry["integrity"]["providerRegistryHash"] == hash_provider_registry(registry)
+
+
 def _source_artifacts() -> (
     tuple[
         dict[str, object],

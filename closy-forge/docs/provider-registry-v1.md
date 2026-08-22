@@ -12,7 +12,7 @@ The deterministic demo package currently declares:
 - `closy.manual_local_glb_import.v1`, a local-only manual GLB import adapter contract.
 - future external provider slots for Meshy, TRELLIS and Hunyuan3D marked unconfigured.
 
-The manual import adapter is declared but not configured in the committed fixture because no reviewed local GLB asset is supplied. Its D0 package capability is therefore `manualGeometryImportAssetAvailable=false`.
+The committed fixture uses a tiny project-authored local GLB so the manual adapter path is exercised without external services. Its D0 package capability is therefore `manualGeometryImportAssetAvailable=true`, while `cleanGeometryProposalAvailable=false`.
 
 ## Manual Import Contract
 
@@ -24,7 +24,7 @@ The manual adapter only accepts operator-supplied `.glb` candidates. It audits:
 - material count;
 - byte size and content hash.
 
-Accepted manual candidates are still raw visual proposals only. They must never become canonical pattern, seam, simulation or binding truth without a later clean proposal and validation stage.
+Accepted manual candidates are still raw visual proposals only. They must never become canonical pattern, seam, simulation or binding truth without a later clean proposal and validation stage. The current fixture records this as `quality.status=accepted_visual_reference` with `acceptedForCanonical=false`.
 
 ## Policy Rules
 

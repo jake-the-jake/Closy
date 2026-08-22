@@ -2,7 +2,7 @@
 
 Gate C2 introduces a safe boundary for visual geometry providers.
 
-The current implementation uses `closy.null_geometry_proposal_provider.v1`, a deterministic null adapter. It exists to exercise request, provenance, audit, quality and rejection paths without calling external services or pretending to have generated a useful mesh.
+The current package uses `closy.manual_local_glb_import.v1` with a tiny project-authored GLB fixture to exercise local raw visual proposal import without calling external services or accepting provider geometry as canonical truth. The null provider remains available as a deterministic rejection adapter.
 
 ## Artifact
 
@@ -12,6 +12,7 @@ The current implementation uses `closy.null_geometry_proposal_provider.v1`, a de
 - provider identity, version and policy metadata;
 - avatar/garment-only request scope;
 - raw proposal availability and clean proposal availability;
+- package-relative raw proposal asset path when a local GLB is available;
 - alignment rules for future imported geometry;
 - geometry audit fields such as mesh count, visible mesh count, triangle estimate and bounds;
 - quality state and rejection reasons;
@@ -19,7 +20,7 @@ The current implementation uses `closy.null_geometry_proposal_provider.v1`, a de
 
 `reports/geometry_proposal_quality.json` mirrors the proposal quality state for quick package inspection.
 
-`proposals/provider_registry.json` records which provider boundary was selected for the package and which future/manual providers remain unavailable or unconfigured.
+`proposals/provider_registry.json` records which provider boundary was selected for the package and which future providers remain unavailable or unconfigured.
 
 ## C2 Rules
 
@@ -32,6 +33,7 @@ The validator rejects proposal records when:
 - the request is not constrained to avatar/garment use;
 - raw proposals do not explicitly forbid canonical use;
 - the null provider claims raw or clean geometry availability;
+- a manual local GLB proposal has stale asset hash, stale size, invalid path or mismatched audit;
 - the rejected proposal claims canonical acceptance;
 - proposal quality reports no longer match the proposal payload.
 

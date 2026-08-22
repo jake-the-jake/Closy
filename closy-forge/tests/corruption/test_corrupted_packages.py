@@ -424,9 +424,19 @@ def test_provider_registry_generic_domain_is_rejected(tmp_path) -> None:  # type
     assert "provider_registry_domain_invalid" in issue_codes(validate_package(corrupt))
 
 
-def test_provider_registry_manual_asset_claim_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
-    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_registry_manual.closygarment")
+def test_provider_registry_manual_rights_violation_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_registry_manual_rights.closygarment"
+    )
     registry = read_json(corrupt / "proposals" / "provider_registry.json")
-    registry["manualImportCandidate"]["acceptedForRawProposal"] = True
+    registry["providers"][1]["licence"]["termsReviewed"] = False
     write_json(corrupt / "proposals" / "provider_registry.json", registry)
-    assert "provider_registry_manual_asset_unexpected" in issue_codes(validate_package(corrupt))
+    assert "provider_registry_manual_rights_unreviewed" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_proposal_asset_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_proposal_asset.closygarment")
+    proposal = read_json(corrupt / "proposals" / "raw_geometry_proposal.json")
+    proposal["rawProposal"]["sourceAssetHash"] = "0" * 64
+    write_json(corrupt / "proposals" / "raw_geometry_proposal.json", proposal)
+    assert "geometry_proposal_asset_hash_mismatch" in issue_codes(validate_package(corrupt))

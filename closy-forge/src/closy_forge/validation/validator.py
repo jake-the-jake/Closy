@@ -47,6 +47,7 @@ EXPECTED_FILES = [
     "fitting/tshirt_fit.json",
     "textures/texture_identity.json",
     "proposals/raw_geometry_proposal.json",
+    "proposals/manual_raw_visual_proposal.glb",
     "proposals/provider_registry.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
@@ -1295,31 +1296,18 @@ def _validate_geometry_proposal(
                 "Null/manual raw proposals cannot be accepted as canonical garment truth.",
             )
         )
-    if quality.get("status") != "rejected":
+    provider_id = str(provider.get("providerId", ""))
+    if provider_id == "closy.null_geometry_proposal_provider.v1":
+        _validate_null_geometry_proposal_payload(raw, clean, quality, audit, issues)
+    elif provider_id == "closy.manual_local_glb_import.v1":
+        _validate_manual_geometry_proposal_payload(package_dir, raw, clean, quality, audit, issues)
+    else:
         issues.append(
             _issue(
-                "geometry_proposal_status_invalid",
+                "geometry_proposal_provider_invalid",
                 "fatal",
                 "proposals/raw_geometry_proposal.json",
-                "The deterministic null provider proposal must be rejected.",
-            )
-        )
-    if raw.get("available") is not False or clean.get("available") is not False:
-        issues.append(
-            _issue(
-                "geometry_proposal_availability_invalid",
-                "fatal",
-                "proposals/raw_geometry_proposal.json",
-                "Null provider must not claim raw or clean geometry availability.",
-            )
-        )
-    if _int_or(audit.get("meshCount"), -1) != 0 or _int_or(audit.get("triangleEstimate"), -1) != 0:
-        issues.append(
-            _issue(
-                "geometry_proposal_audit_invalid",
-                "fatal",
-                "proposals/raw_geometry_proposal.json",
-                "Null provider geometry audit must report zero meshes and triangles.",
+                "Unknown geometry proposal provider for v1 package validation.",
             )
         )
     if proposal_quality is not None:
@@ -1368,6 +1356,165 @@ def _validate_geometry_proposal(
                 "fatal",
                 "proposals/raw_geometry_proposal.json",
                 "Geometry proposal report must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_null_geometry_proposal_payload(
+    raw: dict[str, Any],
+    clean: dict[str, Any],
+    quality: dict[str, Any],
+    audit: dict[str, Any],
+    issues: list[ValidationIssue],
+) -> None:
+    if quality.get("status") != "rejected":
+        issues.append(
+            _issue(
+                "geometry_proposal_status_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "The deterministic null provider proposal must be rejected.",
+            )
+        )
+    if raw.get("available") is not False or clean.get("available") is not False:
+        issues.append(
+            _issue(
+                "geometry_proposal_availability_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Null provider must not claim raw or clean geometry availability.",
+            )
+        )
+    if _int_or(audit.get("meshCount"), -1) != 0 or _int_or(audit.get("triangleEstimate"), -1) != 0:
+        issues.append(
+            _issue(
+                "geometry_proposal_audit_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Null provider geometry audit must report zero meshes and triangles.",
+            )
+        )
+
+
+def _validate_manual_geometry_proposal_payload(
+    package_dir: Path,
+    raw: dict[str, Any],
+    clean: dict[str, Any],
+    quality: dict[str, Any],
+    audit: dict[str, Any],
+    issues: list[ValidationIssue],
+) -> None:
+    if quality.get("status") != "accepted_visual_reference":
+        issues.append(
+            _issue(
+                "geometry_proposal_status_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual local GLB proposals must be accepted only as visual reference.",
+            )
+        )
+    if raw.get("available") is not True or clean.get("available") is not False:
+        issues.append(
+            _issue(
+                "geometry_proposal_availability_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual local proposal must have raw geometry and no clean proposal.",
+            )
+        )
+    if quality.get("acceptedForVisualReference") is not True:
+        issues.append(
+            _issue(
+                "geometry_proposal_visual_reference_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual local proposal must explicitly be visual-reference only.",
+            )
+        )
+    raw_asset = raw.get("assetPath")
+    if not isinstance(raw_asset, str):
+        issues.append(
+            _issue(
+                "geometry_proposal_asset_path_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual raw proposal must provide a package-relative GLB path.",
+            )
+        )
+        return
+    try:
+        validate_package_relpath(raw_asset)
+    except ValueError:
+        issues.append(
+            _issue(
+                "geometry_proposal_asset_path_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual raw proposal asset path is unsafe.",
+            )
+        )
+        return
+    asset_path = package_dir / raw_asset
+    if not asset_path.exists():
+        issues.append(
+            _issue(
+                "geometry_proposal_asset_missing",
+                "fatal",
+                raw_asset,
+                "Manual raw proposal GLB is missing.",
+            )
+        )
+        return
+    try:
+        glb_audit = audit_glb(asset_path)
+    except Exception as exc:
+        issues.append(_issue("geometry_proposal_asset_audit_failed", "fatal", raw_asset, str(exc)))
+        return
+    if raw.get("sourceAssetHash") != sha256_file(asset_path):
+        issues.append(
+            _issue(
+                "geometry_proposal_asset_hash_mismatch",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual raw proposal asset hash is stale.",
+            )
+        )
+    if raw.get("byteSize") != asset_path.stat().st_size:
+        issues.append(
+            _issue(
+                "geometry_proposal_asset_size_mismatch",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual raw proposal asset byte size is stale.",
+            )
+        )
+    expected_counts = {
+        "meshCount": glb_audit["meshCount"],
+        "visibleMeshCount": glb_audit["primitiveCount"],
+        "triangleEstimate": glb_audit["triangleEstimate"],
+        "materialCount": glb_audit["materialCount"],
+    }
+    for key, expected in expected_counts.items():
+        if _int_or(audit.get(key), -1) != int(expected):
+            issues.append(
+                _issue(
+                    "geometry_proposal_audit_mismatch",
+                    "fatal",
+                    "proposals/raw_geometry_proposal.json",
+                    f"Manual raw proposal audit field {key} is stale.",
+                )
+            )
+    if (
+        _int_or(audit.get("meshCount"), 0) <= 0
+        or _int_or(audit.get("visibleMeshCount"), 0) <= 0
+        or _int_or(audit.get("triangleEstimate"), 0) <= 0
+    ):
+        issues.append(
+            _issue(
+                "geometry_proposal_audit_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Manual raw proposal GLB must contain visible renderable triangles.",
             )
         )
 
@@ -1508,16 +1655,17 @@ def _validate_provider_registry(
                 "Selected provider must be present in provider list.",
             )
         )
-    if selected_provider != "closy.null_geometry_proposal_provider.v1":
+    allowed_selected = {
+        "closy.null_geometry_proposal_provider.v1",
+        "closy.manual_local_glb_import.v1",
+    }
+    if selected_provider not in allowed_selected:
         issues.append(
             _issue(
                 "provider_registry_selected_provider_invalid",
                 "fatal",
                 "proposals/provider_registry.json",
-                (
-                    "The deterministic demo package must select the null provider until "
-                    "a reviewed asset exists."
-                ),
+                "Selected geometry provider is not supported by v1 validation.",
             )
         )
 
@@ -1611,11 +1759,12 @@ def _validate_provider_registry(
                 )
             )
 
+    manual_asset_available = manual.get("acceptedForRawProposal") is True
     expected_d0 = [
         ("providerRegistryAvailable", True),
         ("nullProviderAvailable", True),
         ("manualLocalImportAdapterDeclared", True),
-        ("manualLocalImportAssetAvailable", False),
+        ("manualLocalImportAssetAvailable", manual_asset_available),
         ("externalProvidersConfigured", False),
         ("cleanProposalProviderAvailable", False),
     ]
@@ -1639,30 +1788,47 @@ def _validate_provider_registry(
                 "Manual import candidates are visual proposals and must not be canonical.",
             )
         )
-    if manual.get("acceptedForRawProposal") is not False:
-        issues.append(
-            _issue(
-                "provider_registry_manual_asset_unexpected",
-                "fatal",
-                "proposals/provider_registry.json",
-                (
-                    "The deterministic demo package must not claim an operator-supplied "
-                    "manual GLB asset."
-                ),
-            )
-        )
-    if manual.get("status") != "missing_local_asset":
+    expected_manual_status = (
+        "eligible_raw_visual_proposal" if manual_asset_available else "missing_local_asset"
+    )
+    if manual.get("status") != expected_manual_status:
         issues.append(
             _issue(
                 "provider_registry_manual_status_invalid",
                 "fatal",
                 "proposals/provider_registry.json",
-                (
-                    "The deterministic demo package must report the manual provider as "
-                    "missing local asset."
-                ),
+                "Manual provider status must match the audited local asset state.",
             )
         )
+    if selected_provider == "closy.manual_local_glb_import.v1" and not manual_asset_available:
+        issues.append(
+            _issue(
+                "provider_registry_manual_asset_missing",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Manual provider cannot be selected without an accepted local GLB asset.",
+            )
+        )
+    if selected_provider == "closy.manual_local_glb_import.v1":
+        manual_provider = next(
+            (
+                provider
+                for provider in providers
+                if isinstance(provider, dict)
+                and provider.get("providerId") == "closy.manual_local_glb_import.v1"
+            ),
+            {},
+        )
+        licence = manual_provider.get("licence", {}) if isinstance(manual_provider, dict) else {}
+        if not isinstance(licence, dict) or licence.get("termsReviewed") is not True:
+            issues.append(
+                _issue(
+                    "provider_registry_manual_rights_unreviewed",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Selected manual provider requires explicit asset rights review.",
+                )
+            )
     if registry_quality is not None:
         expected_quality = {
             "registryId": registry.get("registryId"),
@@ -1689,7 +1855,7 @@ def _validate_provider_registry(
         expected_manifest = [
             ("geometryProviderRegistryAvailable", True),
             ("manualGeometryImportAdapterDeclared", True),
-            ("manualGeometryImportAssetAvailable", False),
+            ("manualGeometryImportAssetAvailable", manual_asset_available),
             ("externalGeometryProvidersConfigured", False),
             ("cleanGeometryProposalAvailable", False),
         ]

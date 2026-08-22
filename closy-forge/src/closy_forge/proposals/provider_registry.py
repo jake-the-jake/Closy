@@ -24,10 +24,17 @@ def build_geometry_provider_registry(
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
     manual_asset_path: Path | None = None,
+    manual_asset_rights_reviewed: bool = False,
+    manual_asset_rights_status: str = "operator_supplied_asset_requires_review",
 ) -> dict[str, Any]:
     """Record allowed geometry providers without pretending a missing provider ran."""
 
     manual_candidate = inspect_manual_import_candidate(manual_asset_path)
+    manual_asset_available = bool(manual_candidate["acceptedForRawProposal"])
+    manual_asset_selectable = manual_asset_available and manual_asset_rights_reviewed
+    selected_provider_id = (
+        MANUAL_IMPORT_PROVIDER_ID if manual_asset_selectable else NULL_GEOMETRY_PROVIDER_ID
+    )
     registry: dict[str, Any] = {
         "schemaVersion": 1,
         "registryId": "provider_registry.geometry_tshirt_reference_v1",
@@ -51,11 +58,19 @@ def build_geometry_provider_registry(
             "allowsGenericObjects": False,
             "unsupportedPurposePolicy": "reject_before_provider_execution",
         },
-        "selectedProviderId": NULL_GEOMETRY_PROVIDER_ID,
-        "selectionReason": "demo_package_has_no_operator_supplied_manual_glb_asset",
+        "selectedProviderId": selected_provider_id,
+        "selectionReason": (
+            "manual_local_glb_passed_d0_audit_and_rights_review"
+            if manual_asset_selectable
+            else "demo_package_has_no_reviewed_manual_glb_asset"
+        ),
         "providers": [
             _null_provider(),
-            _manual_import_provider(manual_candidate),
+            _manual_import_provider(
+                manual_candidate,
+                manual_asset_rights_reviewed=manual_asset_rights_reviewed,
+                manual_asset_rights_status=manual_asset_rights_status,
+            ),
         ],
         "futureProviderSlots": [
             {
@@ -81,7 +96,7 @@ def build_geometry_provider_registry(
             "providerRegistryAvailable": True,
             "nullProviderAvailable": True,
             "manualLocalImportAdapterDeclared": True,
-            "manualLocalImportAssetAvailable": manual_candidate["acceptedForRawProposal"],
+            "manualLocalImportAssetAvailable": manual_asset_available,
             "externalProvidersConfigured": False,
             "cleanProposalProviderAvailable": False,
         },
@@ -228,7 +243,12 @@ def _null_provider() -> dict[str, Any]:
     }
 
 
-def _manual_import_provider(manual_candidate: dict[str, Any]) -> dict[str, Any]:
+def _manual_import_provider(
+    manual_candidate: dict[str, Any],
+    *,
+    manual_asset_rights_reviewed: bool,
+    manual_asset_rights_status: str,
+) -> dict[str, Any]:
     return {
         "providerId": MANUAL_IMPORT_PROVIDER_ID,
         "label": "Manual local GLB import provider",
@@ -254,12 +274,13 @@ def _manual_import_provider(manual_candidate: dict[str, Any]) -> dict[str, Any]:
         "supportedPurposes": ["garment_visual_geometry_proposal"],
         "supportedGarmentClasses": ["tshirt"],
         "licence": {
-            "assetRightsStatus": "operator_supplied_asset_requires_review",
-            "termsReviewed": False,
+            "assetRightsStatus": manual_asset_rights_status,
+            "termsReviewed": manual_asset_rights_reviewed,
         },
         "configuration": {
             "requiresOperatorSuppliedLocalAsset": True,
             "configuredForDemoPackage": manual_candidate["acceptedForRawProposal"],
+            "assetRightsReviewed": manual_asset_rights_reviewed,
         },
         "contract": manual_candidate["contract"],
     }

@@ -1,5 +1,7 @@
 from closy_forge.proposals.geometry_proposal import (
     GEOMETRY_PROPOSAL_VERSION,
+    NULL_GEOMETRY_PROPOSAL_VERSION,
+    build_manual_geometry_proposal,
     build_null_geometry_proposal,
     geometry_proposal_quality_report,
     hash_geometry_proposal,
@@ -18,8 +20,10 @@ __all__ = [
     "GEOMETRY_PROPOSAL_VERSION",
     "MANUAL_IMPORT_PROVIDER_ID",
     "NULL_GEOMETRY_PROVIDER_ID",
+    "NULL_GEOMETRY_PROPOSAL_VERSION",
     "PROVIDER_REGISTRY_VERSION",
     "build_geometry_provider_registry",
+    "build_manual_geometry_proposal",
     "build_null_geometry_proposal",
     "geometry_proposal_quality_report",
     "hash_geometry_proposal",

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
 from closy_forge.contracts.common import COORDINATE_CONVENTION, FIXED_TIMESTAMP
+from closy_forge.geometry.glb_io import audit_glb
 from closy_forge.package_io.canonical_json import canonical_dumps
-from closy_forge.package_io.hashing import sha256_bytes
+from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 
-GEOMETRY_PROPOSAL_VERSION = "closy.geometry_proposal.null_provider.v1"
+GEOMETRY_PROPOSAL_VERSION = "closy.geometry_proposal.manual_local_glb_import.v1"
+NULL_GEOMETRY_PROPOSAL_VERSION = "closy.geometry_proposal.null_provider.v1"
 
 
 def build_null_geometry_proposal(
@@ -24,7 +27,7 @@ def build_null_geometry_proposal(
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "proposalId": "proposal.null_tshirt_visual_geometry_v1",
-        "stageVersion": GEOMETRY_PROPOSAL_VERSION,
+        "stageVersion": NULL_GEOMETRY_PROPOSAL_VERSION,
         "garmentId": garment_id,
         "garmentClass": garment_class,
         "sourceRecordId": capture_record["recordId"],
@@ -100,6 +103,116 @@ def build_null_geometry_proposal(
             "warnings": [
                 "provider_adapter_scaffold_only",
                 "no_raw_mesh_generated",
+            ],
+        },
+        "policy": {
+            "allowExternalApis": False,
+            "allowTrainingUse": False,
+            "containsUserImagery": False,
+            "containsPersonalBodyData": False,
+            "approvedDomain": "avatar_and_garment_only",
+        },
+        "integrity": {"geometryProposalHash": ""},
+    }
+    report["integrity"]["geometryProposalHash"] = hash_geometry_proposal(report)
+    return report
+
+
+def build_manual_geometry_proposal(
+    *,
+    garment_id: str,
+    garment_class: str,
+    capture_record: dict[str, Any],
+    visual_observations: dict[str, Any],
+    fit_report: dict[str, Any],
+    texture_identity: dict[str, Any],
+    asset_path: Path,
+    package_asset_path: str,
+) -> dict[str, Any]:
+    """Import a local GLB as raw visual evidence while rejecting canonical use."""
+
+    audit = audit_glb(asset_path)
+    report: dict[str, Any] = {
+        "schemaVersion": 1,
+        "proposalId": "proposal.manual_tshirt_raw_visual_geometry_v1",
+        "stageVersion": GEOMETRY_PROPOSAL_VERSION,
+        "garmentId": garment_id,
+        "garmentClass": garment_class,
+        "sourceRecordId": capture_record["recordId"],
+        "sourceRecordHash": capture_record["immutability"]["sourceRecordHash"],
+        "sourceVisualUnderstandingId": visual_observations["visualUnderstandingId"],
+        "sourceVisualRecordHash": visual_observations["integrity"]["visualRecordHash"],
+        "sourceFitReportId": fit_report["fitReportId"],
+        "sourceFitReportHash": fit_report["integrity"]["fitReportHash"],
+        "sourceTextureIdentityId": texture_identity["textureIdentityId"],
+        "sourceTextureIdentityHash": texture_identity["integrity"]["textureIdentityHash"],
+        "provider": {
+            "providerId": "closy.manual_local_glb_import.v1",
+            "providerKind": "manual_local_asset_import_adapter",
+            "modelId": "project_authored_manual_fixture",
+            "modelVersion": "closy.manual_tshirt_fixture.v1",
+            "runtimeExternalApis": False,
+            "allowTrainingUse": False,
+            "containsUserImagery": False,
+            "termsReviewed": True,
+        },
+        "request": {
+            "purpose": "garment_visual_geometry_proposal",
+            "supportedDomain": "avatar_garment_only",
+            "garmentClass": garment_class,
+            "desiredTopologyStyle": "raw_visual_proposal_not_simulation_ready",
+            "targetResolution": "package_contained_manual_fixture_glb",
+            "texturePbrRequested": bool(texture_identity["textureProjectionRun"]),
+            "deterministicSeed": 101,
+            "submittedAt": FIXED_TIMESTAMP,
+        },
+        "rawProposal": {
+            "available": True,
+            "assetPath": package_asset_path,
+            "representation": "glb2_triangle_mesh",
+            "noCanonicalUse": True,
+            "reason": "manual_fixture_available_for_visual_reference_only",
+            "sourceAssetHash": sha256_file(asset_path),
+            "byteSize": asset_path.stat().st_size,
+        },
+        "cleanProposal": {
+            "available": False,
+            "assetPath": None,
+            "representation": "none",
+            "reason": "raw_manual_proposal_not_cleaned_or_bound_to_canonical_topology",
+        },
+        "alignmentRules": {
+            "coordinateConvention": COORDINATE_CONVENTION,
+            "unitScale": "metres",
+            "groundPlane": "Y=0",
+            "forwardAxis": "+Z",
+            "centerPolicy": "center_xz_and_place_feet_on_ground_when_geometry_exists",
+            "scalePolicy": "normalise_to_avatar_contract_height_when_geometry_exists",
+            "windingPolicy": "counter_clockwise_front_face",
+        },
+        "geometryAudit": {
+            "meshAvailable": True,
+            "meshCount": audit["meshCount"],
+            "visibleMeshCount": audit["primitiveCount"],
+            "triangleEstimate": audit["triangleEstimate"],
+            "materialCount": audit["materialCount"],
+            "textureCount": 0,
+            "bounds": None,
+            "scaleApplied": None,
+            "failureReason": None,
+        },
+        "quality": {
+            "status": "accepted_visual_reference",
+            "acceptedForCanonical": False,
+            "acceptedForVisualReference": True,
+            "rejectionReasons": [
+                "raw_proposal_not_simulation_ready",
+                "clean_geometry_proposal_not_available",
+                "provider_output_not_canonical_garment_truth",
+            ],
+            "warnings": [
+                "manual_fixture_not_production_provider",
+                "clean_geometry_proposal_not_generated",
             ],
         },
         "policy": {

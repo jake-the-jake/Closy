@@ -14,6 +14,7 @@ source/correction_record.json
 fitting/tshirt_fit.json
 textures/texture_identity.json
 proposals/raw_geometry_proposal.json
+proposals/manual_raw_visual_proposal.glb
 proposals/provider_registry.json
 avatar/avatar_contract.json
 avatar/reference_avatar.glb
@@ -52,7 +53,7 @@ reports/summary.json
 reports/summary.md
 ```
 
-Absent optional stages are omitted rather than represented by fake folders. The `source/` directory currently contains deterministic synthetic capture metadata, analytic visual observations, and an empty editable correction record. The `fitting/` directory currently contains a bounded deterministic T-shirt parameter fit from those synthetic observations. The `textures/` directory currently contains texture identity evidence derived from authored render materials, not source photo texture projection. The `proposals/` directory currently contains a rejected deterministic null visual-geometry proposal and a provider registry that declares the local/manual provider boundary without accepting fake provider output. There is no real user imagery, raster source image, learned segmentation mask, `zeroone/`, generated texture atlas, configured manual GLB asset, clean geometry proposal, or AI mesh in this milestone.
+Absent optional stages are omitted rather than represented by fake folders. The `source/` directory currently contains deterministic synthetic capture metadata, analytic visual observations, and an empty editable correction record. The `fitting/` directory currently contains a bounded deterministic T-shirt parameter fit from those synthetic observations. The `textures/` directory currently contains texture identity evidence derived from authored render materials, not source photo texture projection. The `proposals/` directory currently contains a package-contained project-authored manual raw visual proposal GLB plus a provider registry. The raw proposal is accepted only as visual reference and remains rejected for canonical garment truth. There is no real user imagery, raster source image, learned segmentation mask, `zeroone/`, generated texture atlas, clean geometry proposal, or external AI mesh in this milestone.
 
 ## Inventory Rules
 
@@ -62,4 +63,4 @@ The manifest inventory uses POSIX package-relative paths only. Absolute paths, `
 
 ## Capabilities
 
-Capabilities are booleans, not quality scores. Current true states are immutable synthetic capture records, deterministic capture quality scoring, analytic visual observations, editable correction records, synthetic target-garment masks, synthetic T-shirt landmarks, deterministic T-shirt parameter fitting, texture identity evidence, PBR material observations, raw geometry proposal records, provider provenance, provider registry availability, manual import adapter declaration, geometry proposal quality scoring, pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, validated reconstruction, and deterministic reference cloth settle. Source-image texture, generated texture atlas, configured manual geometry asset, external geometry providers, clean geometry proposal, personalised avatar, skeleton, self-collision, and ZeroOne states are false.
+Capabilities are booleans, not quality scores. Current true states are immutable synthetic capture records, deterministic capture quality scoring, analytic visual observations, editable correction records, synthetic target-garment masks, synthetic T-shirt landmarks, deterministic T-shirt parameter fitting, texture identity evidence, PBR material observations, raw geometry proposal records, provider provenance, provider registry availability, manual import adapter declaration, configured manual raw geometry asset, geometry proposal quality scoring, pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, validated reconstruction, and deterministic reference cloth settle. Source-image texture, generated texture atlas, external geometry providers, clean geometry proposal, personalised avatar, skeleton, self-collision, and ZeroOne states are false.

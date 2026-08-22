@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "cfe62135f6e264d0d8d385caf93f7d6df213311d4c617ee31e1d6f354229eb08",
+  "canonicalPackageDigest": "a0a1fea71d00f965d6276cb481c671ffa8f21c4b8887ad7686fd469d2376db76",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -27,7 +27,7 @@
     "geometryProposalQualityScored": true,
     "geometryProviderRegistryAvailable": true,
     "manualGeometryImportAdapterDeclared": true,
-    "manualGeometryImportAssetAvailable": false,
+    "manualGeometryImportAssetAvailable": true,
     "pbrMaterialObservationAvailable": true,
     "providerProvenanceAvailable": true,
     "rawGeometryProposalRecordAvailable": true,
@@ -67,22 +67,22 @@
   "geometryProposal": {
     "acceptedForCanonical": false,
     "cleanProposalAvailable": false,
-    "failureReason": "null_provider_no_geometry_generated",
-    "meshCount": 0,
-    "qualityStatus": "rejected",
-    "rawProposalAvailable": false,
-    "triangleEstimate": 0,
-    "visibleMeshCount": 0
+    "failureReason": null,
+    "meshCount": 5,
+    "qualityStatus": "accepted_visual_reference",
+    "rawProposalAvailable": true,
+    "triangleEstimate": 218,
+    "visibleMeshCount": 5
   },
   "providerRegistry": {
     "cleanProposalProviderAvailable": false,
     "externalProvidersConfigured": false,
     "manualLocalImportAdapterDeclared": true,
-    "manualLocalImportAssetAvailable": false,
+    "manualLocalImportAssetAvailable": true,
     "providerCount": 2,
     "registryId": "provider_registry.geometry_tshirt_reference_v1",
-    "selectedProviderId": "closy.null_geometry_proposal_provider.v1",
-    "selectionReason": "demo_package_has_no_operator_supplied_manual_glb_asset"
+    "selectedProviderId": "closy.manual_local_glb_import.v1",
+    "selectionReason": "manual_local_glb_passed_d0_audit_and_rights_review"
   },
   "renderTopologyHash": "9029588639d462d8092d44ebdea4bd4f0b78a83c0f827b416ef88c241f459fad",
   "settle": {

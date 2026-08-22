@@ -54,7 +54,7 @@ from closy_forge.proposals import (
     GEOMETRY_PROPOSAL_VERSION,
     PROVIDER_REGISTRY_VERSION,
     build_geometry_provider_registry,
-    build_null_geometry_proposal,
+    build_manual_geometry_proposal,
     geometry_proposal_quality_report,
     provider_registry_quality_report,
 )
@@ -156,13 +156,22 @@ def _write_package_contents(
         fit_report=fit_report,
         render_materials=render_materials,
     )
-    geometry_proposal = build_null_geometry_proposal(
+    manual_proposal_asset = package_dir / "proposals" / "manual_raw_visual_proposal.glb"
+    write_glb(
+        manual_proposal_asset,
+        rest_mesh,
+        "closy_manual_raw_visual_tshirt_fixture_v1",
+        (0.78, 0.82, 0.92, 1.0),
+    )
+    geometry_proposal = build_manual_geometry_proposal(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
         capture_record=capture_record,
         visual_observations=visual_observations,
         fit_report=fit_report,
         texture_identity=texture_identity,
+        asset_path=manual_proposal_asset,
+        package_asset_path="proposals/manual_raw_visual_proposal.glb",
     )
     provider_registry = build_geometry_provider_registry(
         garment_id="garment.demo_tshirt.reference_v1",
@@ -172,6 +181,9 @@ def _write_package_contents(
         fit_report=fit_report,
         texture_identity=texture_identity,
         geometry_proposal=geometry_proposal,
+        manual_asset_path=manual_proposal_asset,
+        manual_asset_rights_reviewed=True,
+        manual_asset_rights_status="project_authored_fixture_no_third_party_asset",
     )
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
@@ -481,6 +493,7 @@ def _manifest(
             "tshirtFitReport": "fitting/tshirt_fit.json",
             "textureIdentity": "textures/texture_identity.json",
             "rawGeometryProposal": "proposals/raw_geometry_proposal.json",
+            "rawGeometryProposalAsset": "proposals/manual_raw_visual_proposal.glb",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
             "pattern": "pattern/pattern.json",
@@ -534,6 +547,9 @@ def _manifest(
             "rawGeometryProposalPayloadHash": str(
                 geometry_proposal["integrity"]["geometryProposalHash"]
             ),
+            "rawGeometryProposalAssetHash": _hash_from_inventory(
+                inventory, "proposals/manual_raw_visual_proposal.glb"
+            ),
             "geometryProviderRegistryHash": _hash_from_inventory(
                 inventory, "proposals/provider_registry.json"
             ),
@@ -576,7 +592,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_06_provider_registry_boundary",
+            "name": "implementation_07_manual_raw_proposal_fixture",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -587,13 +603,13 @@ def _manifest(
             "synthetic_visual_observations_not_real_segmentation",
             "synthetic_fit_not_trained_from_real_images",
             "source_texture_projection_not_run",
-            "geometry_proposal_rejected_null_provider",
-            "manual_geometry_provider_asset_not_configured",
+            "manual_raw_geometry_proposal_not_canonical",
+            "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "06-provider-registry-boundary"},
+        "extensions": {"closyImplementation": "07-manual-raw-proposal-fixture"},
     }
 
 
@@ -624,7 +640,7 @@ def _capabilities() -> dict[str, bool]:
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
-        "manualGeometryImportAssetAvailable": False,
+        "manualGeometryImportAssetAvailable": True,
         "externalGeometryProvidersConfigured": False,
         "cleanGeometryProposalAvailable": False,
         "personalizedAvatarAvailable": False,
@@ -877,13 +893,13 @@ def _provenance(
                 [str(provider_registry["integrity"]["providerRegistryHash"])],
             ),
             _stage(
-                "null_geometry_proposal_provider",
+                "manual_local_geometry_proposal_provider",
                 GEOMETRY_PROPOSAL_VERSION,
                 {
                     "providerId": geometry_proposal["provider"]["providerId"],
                     "providerKind": geometry_proposal["provider"]["providerKind"],
                     "runtimeExternalApis": False,
-                    "rawProposalAvailable": False,
+                    "rawProposalAvailable": geometry_proposal["rawProposal"]["available"],
                     "cleanProposalAvailable": False,
                     "acceptedForCanonical": False,
                     "rejectionReasons": geometry_proposal["quality"]["rejectionReasons"],
@@ -945,8 +961,8 @@ def _provenance(
         "warnings": [
             "self_collision_not_run",
             "source_texture_projection_not_run",
-            "geometry_proposal_rejected_null_provider",
-            "manual_geometry_provider_asset_not_configured",
+            "manual_raw_geometry_proposal_not_canonical",
+            "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
         ],
     }
