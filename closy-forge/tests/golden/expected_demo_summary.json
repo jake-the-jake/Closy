@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "416834901134333671a32d75a9e53c92995d8ad9cd474e32ea5b672c962144bc",
+  "canonicalPackageDigest": "173bd317e97fed3d6e6397a7dd0dbdd24e87c53ec58d47cf5a8403e1be5cf7c8",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -25,6 +25,7 @@
     "garmentMaskAvailable": true,
     "geometryCleanupExecutionAvailable": true,
     "geometryCleanupRecommendationAvailable": true,
+    "geometryBindingCandidateAvailable": true,
     "geometryBoundaryClassificationAvailable": true,
     "geometryProposalInterfaceAvailable": true,
     "geometryProposalQualityScored": true,
@@ -134,9 +135,26 @@
     "transferredPanelCount": 5,
     "unclassifiedBoundaryEdgeCount": 0
   },
+  "geometryBindingCandidate": {
+    "acceptedForCleanProposal": false,
+    "candidateBindingRun": true,
+    "candidateCompleteness": 1.0,
+    "cleanupVertexCount": 223,
+    "mappedVertexCount": 223,
+    "maxPanelUvDistance": 3.3e-08,
+    "maxRestToSimulationOffsetMeters": 0.944948063,
+    "reportId": "binding_candidate.cleanup_preview_tshirt_visual_geometry_v1",
+    "runtimeBindingWritten": false,
+    "simulationBindingRun": false,
+    "sourceGeometrySemanticTransferId": "semantic_transfer.cleanup_preview_tshirt_visual_geometry_v1",
+    "status": "binding_candidate_generated_validation_pending",
+    "unmappedVertexCount": 0
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
+    "bindingCandidateReportGenerated": true,
+    "candidateBindingRun": true,
     "cleanProposalAvailable": false,
     "cleanupPlanGenerated": true,
     "cleanupResultGenerated": true,

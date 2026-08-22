@@ -535,6 +535,36 @@ def test_geometry_semantic_transfer_acceptance_claim_is_rejected(
     assert "geometry_semantic_transfer_input_asset_acceptance_invalid" in codes
 
 
+def test_geometry_binding_candidate_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_binding_candidate_hash.closygarment"
+    )
+    candidate = read_json(corrupt / "reports" / "geometry_binding_candidate.json")
+    candidate["aggregate"]["mappedVertexCount"] = 999
+    write_json(corrupt / "reports" / "geometry_binding_candidate.json", candidate)
+    assert "geometry_binding_candidate_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_binding_candidate_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_binding_candidate_ready.closygarment"
+    )
+    candidate = read_json(corrupt / "reports" / "geometry_binding_candidate.json")
+    candidate["readiness"]["acceptedForCleanProposal"] = True
+    candidate["readiness"]["acceptedForRuntimeRender"] = True
+    candidate["execution"]["simulationBindingRun"] = True
+    candidate["execution"]["runtimeBindingWritten"] = True
+    write_json(corrupt / "reports" / "geometry_binding_candidate.json", candidate)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_binding_candidate_hash_mismatch" in codes
+    assert "geometry_binding_candidate_acceptance_invalid" in codes
+    assert "geometry_binding_candidate_execution_state_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

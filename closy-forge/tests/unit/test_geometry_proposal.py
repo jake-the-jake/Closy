@@ -14,6 +14,7 @@ from closy_forge.proposals import (
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_clean_geometry_proposal_rejection,
+    build_geometry_binding_candidate_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
@@ -24,6 +25,7 @@ from closy_forge.proposals import (
     clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
     hash_clean_geometry_proposal,
+    hash_geometry_binding_candidate_report,
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
@@ -495,6 +497,121 @@ def test_geometry_semantic_transfer_classifies_cleanup_preview_without_acceptanc
         clean["quality"]["rejectionReasons"]
     )
     assert "semantic_transfer_missing" not in clean["quality"]["rejectionReasons"]
+    assert clean["quality"]["acceptedForCanonical"] is False
+
+
+def test_geometry_binding_candidate_maps_cleanup_preview_without_runtime_binding(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    capture = build_synthetic_capture_record(seed=101)
+    visual = build_tshirt_visual_observations(capture)
+    fit = fit_tshirt_parameters_from_visual_observations(visual)
+    texture = build_texture_identity_report(
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        render_materials={"schemaVersion": 1, "materials": []},
+    )
+    pattern = build_tshirt_pattern(TShirtParameters())
+    semantic = build_semantic_graph(pattern)
+    rest_mesh, _ = build_simulation_mesh(pattern)
+    asset = tmp_path / "manual_visual.glb"
+    cleanup_asset = tmp_path / "manual_cleanup_preview.glb"
+    write_glb(asset, rest_mesh, "manual_visual_material", (0.8, 0.8, 0.9, 1.0))
+    raw = build_manual_geometry_proposal(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        asset_path=asset,
+        package_asset_path="proposals/manual_visual.glb",
+    )
+    registry = build_geometry_provider_registry(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        geometry_proposal=raw,
+        manual_asset_path=asset,
+        manual_asset_rights_reviewed=True,
+        manual_asset_rights_status="project_authored_fixture_no_third_party_asset",
+    )
+    topology = build_raw_geometry_topology_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        asset_path=asset,
+    )
+    cleanup_plan = build_geometry_cleanup_plan(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        raw_topology_report=topology,
+    )
+    cleanup_result = build_geometry_cleanup_result(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        raw_topology_report=topology,
+        cleanup_plan_report=cleanup_plan,
+        source_asset_path=asset,
+        output_asset_path=cleanup_asset,
+        output_package_asset_path="proposals/manual_cleanup_preview.glb",
+    )
+    semantic_transfer = build_geometry_semantic_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        semantic_graph=semantic,
+        pattern=pattern,
+        cleanup_result_report=cleanup_result,
+        cleanup_asset_path=cleanup_asset,
+    )
+
+    binding_candidate = build_geometry_binding_candidate_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        semantic_transfer_report=semantic_transfer,
+        cleanup_asset_path=cleanup_asset,
+        simulation_mesh=rest_mesh,
+        simulation_mesh_path="simulation/simulation_mesh.glb",
+    )
+    clean = build_clean_geometry_proposal_rejection(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        provider_registry=registry,
+        raw_topology_report=topology,
+        cleanup_plan_report=cleanup_plan,
+        cleanup_result_report=cleanup_result,
+        semantic_transfer_report=semantic_transfer,
+        binding_candidate_report=binding_candidate,
+    )
+
+    assert binding_candidate["execution"]["candidateBindingRun"] is True
+    assert binding_candidate["execution"]["simulationBindingRun"] is False
+    assert binding_candidate["execution"]["runtimeBindingWritten"] is False
+    assert binding_candidate["aggregate"]["cleanupVertexCount"] == rest_mesh.vertex_count
+    assert binding_candidate["aggregate"]["mappedVertexCount"] == rest_mesh.vertex_count
+    assert binding_candidate["aggregate"]["unmappedVertexCount"] == 0
+    assert binding_candidate["aggregate"]["candidateCompleteness"] == 1.0
+    assert binding_candidate["readiness"]["acceptedForCleanProposal"] is False
+    assert binding_candidate["integrity"]["geometryBindingCandidateHash"] == (
+        hash_geometry_binding_candidate_report(binding_candidate)
+    )
+    assert (
+        clean["sourceGeometryBindingCandidateHash"]
+        == (binding_candidate["integrity"]["geometryBindingCandidateHash"])
+    )
+    assert clean["cleanupPipeline"]["bindingCandidateReportGenerated"] is True
+    assert clean["cleanupPipeline"]["candidateBindingRun"] is True
+    assert clean["cleanupPipeline"]["simulationBindingRun"] is False
+    assert (
+        clean["cleanGeometryAudit"]["bindingCandidateMappedVertexCount"] == rest_mesh.vertex_count
+    )
     assert clean["quality"]["acceptedForCanonical"] is False
 
 

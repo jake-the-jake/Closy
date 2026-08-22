@@ -84,6 +84,16 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometrySemanticTransfer"]["classifiedBoundaryEdgeCount"] == 218
     assert payload["geometrySemanticTransfer"]["unclassifiedBoundaryEdgeCount"] == 0
     assert payload["geometrySemanticTransfer"]["acceptedForCleanProposal"] is False
+    assert payload["geometryBindingCandidate"]["status"] == (
+        "binding_candidate_generated_validation_pending"
+    )
+    assert payload["geometryBindingCandidate"]["candidateBindingRun"] is True
+    assert payload["geometryBindingCandidate"]["runtimeBindingWritten"] is False
+    assert payload["geometryBindingCandidate"]["cleanupVertexCount"] == 223
+    assert payload["geometryBindingCandidate"]["mappedVertexCount"] == 223
+    assert payload["geometryBindingCandidate"]["unmappedVertexCount"] == 0
+    assert payload["geometryBindingCandidate"]["candidateCompleteness"] == 1.0
+    assert payload["geometryBindingCandidate"]["acceptedForCleanProposal"] is False
     assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"
     assert payload["cleanGeometryProposal"]["cleanProposalAvailable"] is False
     assert payload["cleanGeometryProposal"]["acceptedForCanonical"] is False
@@ -92,6 +102,8 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["cleanGeometryProposal"]["cleanupRun"] is True
     assert payload["cleanGeometryProposal"]["semanticTransferReportGenerated"] is True
     assert payload["cleanGeometryProposal"]["semanticTransferRun"] is True
+    assert payload["cleanGeometryProposal"]["bindingCandidateReportGenerated"] is True
+    assert payload["cleanGeometryProposal"]["candidateBindingRun"] is True
     assert payload["cleanGeometryProposal"]["simulationBindingRun"] is False
     assert payload["providerRegistry"]["selectedProviderId"] == ("closy.manual_local_glb_import.v1")
     assert payload["providerRegistry"]["manualLocalImportAssetAvailable"] is True

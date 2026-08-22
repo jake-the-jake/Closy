@@ -43,6 +43,7 @@ def build_clean_geometry_proposal_rejection(
     cleanup_plan_report: dict[str, Any] | None = None,
     cleanup_result_report: dict[str, Any] | None = None,
     semantic_transfer_report: dict[str, Any] | None = None,
+    binding_candidate_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
 
@@ -105,8 +106,25 @@ def build_clean_geometry_proposal_rejection(
         semantic_transfer_status = semantic_transfer_report["readiness"]["status"]
         semantic_transfer_execution = semantic_transfer_report["execution"]
         semantic_transfer_aggregate = semantic_transfer_report["aggregate"]
+    if binding_candidate_report is None:
+        binding_candidate_available = False
+        binding_candidate_id = None
+        binding_candidate_hash = None
+        binding_candidate_status = None
+        binding_candidate_execution: dict[str, Any] = {}
+        binding_candidate_aggregate: dict[str, Any] = {}
+    else:
+        binding_candidate_available = True
+        binding_candidate_id = binding_candidate_report["reportId"]
+        binding_candidate_hash = binding_candidate_report["integrity"][
+            "geometryBindingCandidateHash"
+        ]
+        binding_candidate_status = binding_candidate_report["readiness"]["status"]
+        binding_candidate_execution = binding_candidate_report["execution"]
+        binding_candidate_aggregate = binding_candidate_report["aggregate"]
     cleanup_run = bool(cleanup_result_execution.get("cleanupRun", False))
     semantic_transfer_run = bool(semantic_transfer_execution.get("semanticTransferRun", False))
+    candidate_binding_run = bool(binding_candidate_execution.get("candidateBindingRun", False))
     rejection_reasons = _rejection_reasons(cleanup_run, semantic_transfer_run)
     required_before_canonical = _required_before_canonical(cleanup_run, semantic_transfer_run)
     report: dict[str, Any] = {
@@ -127,6 +145,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceGeometryCleanupResultHash": cleanup_result_hash,
         "sourceGeometrySemanticTransferId": semantic_transfer_id,
         "sourceGeometrySemanticTransferHash": semantic_transfer_hash,
+        "sourceGeometryBindingCandidateId": binding_candidate_id,
+        "sourceGeometryBindingCandidateHash": binding_candidate_hash,
         "rawProposal": {
             "available": raw_proposal["available"],
             "assetPath": raw_proposal["assetPath"],
@@ -140,6 +160,7 @@ def build_clean_geometry_proposal_rejection(
             "cleanupPlanGenerated": cleanup_plan_available,
             "cleanupResultGenerated": cleanup_result_available,
             "semanticTransferReportGenerated": semantic_transfer_available,
+            "bindingCandidateReportGenerated": binding_candidate_available,
             "cleanupRun": cleanup_run,
             "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
             "retopologyRun": False,
@@ -147,6 +168,7 @@ def build_clean_geometry_proposal_rejection(
             "boundaryClassificationRun": bool(
                 semantic_transfer_execution.get("boundaryClassificationRun", False)
             ),
+            "candidateBindingRun": candidate_binding_run,
             "simulationBindingRun": False,
             "uvTransferRun": False,
             "materialTransferRun": False,
@@ -158,7 +180,8 @@ def build_clean_geometry_proposal_rejection(
                 "simulation_binding_unavailable",
             ],
             "nextRequiredStages": [
-                "simulation_ready_topology_or_binding",
+                "accepted_runtime_simulation_binding",
+                "deformation_validation",
                 "canonical_acceptance_quality_gate",
             ],
         },
@@ -204,6 +227,16 @@ def build_clean_geometry_proposal_rejection(
             "ambiguousBoundaryEdgeCount": semantic_transfer_aggregate.get(
                 "ambiguousBoundaryEdgeCount"
             ),
+            "bindingCandidateStatus": binding_candidate_status,
+            "bindingCandidateMappedVertexCount": binding_candidate_aggregate.get(
+                "mappedVertexCount"
+            ),
+            "bindingCandidateUnmappedVertexCount": binding_candidate_aggregate.get(
+                "unmappedVertexCount"
+            ),
+            "bindingCandidateCompleteness": binding_candidate_aggregate.get(
+                "candidateCompleteness"
+            ),
             "simulationBindingRecordCount": 0,
             "failureReason": "clean_geometry_proposal_not_generated",
         },
@@ -229,6 +262,9 @@ def build_clean_geometry_proposal_rejection(
                 "geometry_semantic_transfer_available_but_not_bound"
                 if semantic_transfer_available
                 else "geometry_semantic_transfer_not_generated",
+                "geometry_binding_candidate_available_but_not_runtime_binding"
+                if binding_candidate_available
+                else "geometry_binding_candidate_not_generated",
                 "geometry_cleanup_plan_generated_without_execution"
                 if cleanup_plan_available
                 else "geometry_cleanup_plan_not_generated",
@@ -276,6 +312,7 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "cleanupPlanGenerated": cleanup["cleanupPlanGenerated"],
         "cleanupResultGenerated": cleanup["cleanupResultGenerated"],
         "semanticTransferReportGenerated": cleanup["semanticTransferReportGenerated"],
+        "bindingCandidateReportGenerated": cleanup["bindingCandidateReportGenerated"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
         "connectedComponentCount": audit["connectedComponentCount"],
@@ -289,6 +326,10 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "transferredPanelCount": audit["transferredPanelCount"],
         "classifiedBoundaryEdgeCount": audit["classifiedBoundaryEdgeCount"],
         "unclassifiedBoundaryEdgeCount": audit["unclassifiedBoundaryEdgeCount"],
+        "bindingCandidateStatus": audit["bindingCandidateStatus"],
+        "bindingCandidateMappedVertexCount": audit["bindingCandidateMappedVertexCount"],
+        "bindingCandidateUnmappedVertexCount": audit["bindingCandidateUnmappedVertexCount"],
+        "bindingCandidateCompleteness": audit["bindingCandidateCompleteness"],
         "meshCount": audit["meshCount"],
         "triangleEstimate": audit["triangleEstimate"],
         "failureReason": audit["failureReason"],
