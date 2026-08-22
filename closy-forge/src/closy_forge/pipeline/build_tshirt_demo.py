@@ -47,6 +47,12 @@ from closy_forge.simulation.reference_cloth_solver import (
     simulation_state_json,
 )
 from closy_forge.validation.validator import validate_package
+from closy_forge.visual_understanding import (
+    CORRECTION_RECORD_VERSION,
+    TSHIRT_VISUAL_OBSERVATION_VERSION,
+    build_empty_correction_record,
+    build_tshirt_visual_observations,
+)
 
 
 @dataclass(frozen=True)
@@ -124,6 +130,8 @@ def _write_package_contents(
         seed=seed,
     )
     capture_quality = score_capture_record(capture_record)
+    visual_observations = build_tshirt_visual_observations(capture_record)
+    correction_record = build_empty_correction_record(visual_observations)
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
     simulation_mesh = settle.settled_mesh
@@ -132,6 +140,8 @@ def _write_package_contents(
 
     write_canonical_json(package_dir / "source" / "capture_record.json", capture_record)
     write_canonical_json(package_dir / "source" / "capture_quality.json", capture_quality)
+    write_canonical_json(package_dir / "source" / "visual_observations.json", visual_observations)
+    write_canonical_json(package_dir / "source" / "correction_record.json", correction_record)
     write_canonical_json(package_dir / "avatar" / "avatar_contract.json", avatar)
     write_canonical_json(package_dir / "avatar" / "body_regions.json", regions)
     write_glb(
@@ -216,6 +226,8 @@ def _write_package_contents(
         settle.diagnostics,
         capture_record,
         capture_quality,
+        visual_observations,
+        correction_record,
     )
     for name, report in quality_reports.items():
         write_canonical_json(package_dir / "reports" / name, report)
@@ -232,6 +244,8 @@ def _write_package_contents(
         settle.diagnostics,
         capture_record,
         capture_quality,
+        visual_observations,
+        correction_record,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
 
@@ -251,6 +265,8 @@ def _write_package_contents(
         settle.diagnostics,
         capture_record,
         capture_quality,
+        visual_observations,
+        correction_record,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
     return {
@@ -265,6 +281,8 @@ def _write_package_contents(
         "settleDiagnostics": settle.diagnostics,
         "captureRecord": capture_record,
         "captureQuality": capture_quality,
+        "visualObservations": visual_observations,
+        "correctionRecord": correction_record,
         "inventory": inventory,
     }
 
@@ -369,6 +387,8 @@ def _manifest(
     settle_diagnostics: dict[str, Any],
     capture_record: dict[str, Any],
     capture_quality: dict[str, Any],
+    visual_observations: dict[str, Any],
+    correction_record: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -389,6 +409,8 @@ def _manifest(
         "canonicalPaths": {
             "sourceCaptureRecord": "source/capture_record.json",
             "sourceCaptureQuality": "source/capture_quality.json",
+            "sourceVisualObservations": "source/visual_observations.json",
+            "sourceCorrectionRecord": "source/correction_record.json",
             "semanticGraph": "semantic/garment_graph.json",
             "pattern": "pattern/pattern.json",
             "simulationMesh": "simulation/simulation_mesh.glb",
@@ -417,6 +439,18 @@ def _manifest(
             "sourceCaptureRecordPayloadHash": str(
                 capture_record["immutability"]["sourceRecordHash"]
             ),
+            "sourceVisualObservationsHash": _hash_from_inventory(
+                inventory, "source/visual_observations.json"
+            ),
+            "sourceVisualObservationsPayloadHash": str(
+                visual_observations["integrity"]["visualRecordHash"]
+            ),
+            "sourceCorrectionRecordHash": _hash_from_inventory(
+                inventory, "source/correction_record.json"
+            ),
+            "sourceCorrectionRecordPayloadHash": str(
+                correction_record["integrity"]["correctionRecordHash"]
+            ),
             "simulationRestTopologyHash": topology_hash(rest_mesh),
             "simulationRestContentHash": geometry_content_hash(rest_mesh),
             "simulationTopologyHash": topology_hash(sim_mesh),
@@ -437,6 +471,8 @@ def _manifest(
             "referenceAvatarGenerator": "closy.reference_avatar.v1",
             "syntheticCaptureRecord": SYNTHETIC_CAPTURE_RECORD_VERSION,
             "captureQualityScorer": CAPTURE_QUALITY_SCORER_VERSION,
+            "visualObservations": TSHIRT_VISUAL_OBSERVATION_VERSION,
+            "correctionRecord": CORRECTION_RECORD_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
             "curveSampler": "closy.curve_sampler.v1",
             "panelTriangulator": "closy.fan_triangulator.v1",
@@ -455,6 +491,7 @@ def _manifest(
         "warnings": [
             "self_collision_not_run",
             "synthetic_capture_metadata_only",
+            "synthetic_visual_observations_not_real_segmentation",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
@@ -476,6 +513,10 @@ def _capabilities() -> dict[str, bool]:
         "sourceImageTextureAvailable": False,
         "sourceCaptureRecordAvailable": True,
         "captureQualityScored": True,
+        "visualObservationsAvailable": True,
+        "garmentMaskAvailable": True,
+        "garmentLandmarksAvailable": True,
+        "editableCorrectionRecordAvailable": True,
         "personalizedAvatarAvailable": False,
         "skeletalFallbackAvailable": False,
         "zeroOneStaticAvailable": False,
@@ -497,6 +538,8 @@ def _quality_reports(
     settle_diagnostics: dict[str, Any],
     capture_record: dict[str, Any],
     capture_quality: dict[str, Any],
+    visual_observations: dict[str, Any],
+    correction_record: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     return {
         "capture_quality.json": {
@@ -510,6 +553,20 @@ def _quality_reports(
             "qualityThreshold": capture_quality["qualityThreshold"],
             "privacy": capture_record["privacy"],
             "warnings": capture_quality["warnings"],
+        },
+        "visual_understanding_quality.json": {
+            "schemaVersion": 1,
+            "status": "pass",
+            "visualUnderstandingId": visual_observations["visualUnderstandingId"],
+            "sourceRecordId": visual_observations["sourceRecordId"],
+            "maskCount": visual_observations["aggregate"]["maskCount"],
+            "observedLandmarkCount": len(visual_observations["aggregate"]["observedLandmarks"]),
+            "requiredLandmarkCount": len(visual_observations["aggregate"]["requiredLandmarks"]),
+            "meanMaskConfidence": visual_observations["aggregate"]["meanMaskConfidence"],
+            "meanLandmarkConfidence": visual_observations["aggregate"]["meanLandmarkConfidence"],
+            "correctionRecordId": correction_record["correctionRecordId"],
+            "correctionOperationCount": len(correction_record["operations"]),
+            "warnings": visual_observations["warnings"],
         },
         "avatar_quality.json": {
             "schemaVersion": 1,
@@ -580,6 +637,8 @@ def _provenance(
     settle_diagnostics: dict[str, Any],
     capture_record: dict[str, Any],
     capture_quality: dict[str, Any],
+    visual_observations: dict[str, Any],
+    correction_record: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -619,6 +678,24 @@ def _provenance(
                     "rasterImagesAvailable": False,
                 },
                 [_json_hash(capture_quality)],
+            ),
+            _stage(
+                "synthetic_visual_observations",
+                TSHIRT_VISUAL_OBSERVATION_VERSION,
+                {
+                    "maskRepresentation": "normalised_polygon",
+                    "requiredLandmarkCount": len(
+                        visual_observations["aggregate"]["requiredLandmarks"]
+                    ),
+                    "externalApis": False,
+                },
+                [str(visual_observations["integrity"]["visualRecordHash"])],
+            ),
+            _stage(
+                "empty_correction_record",
+                CORRECTION_RECORD_VERSION,
+                {"editable": True, "operationCount": 0, "externalApis": False},
+                [str(correction_record["integrity"]["correctionRecordHash"])],
             ),
             _stage(
                 "reference_avatar_parameters",
@@ -713,6 +790,8 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     settle = context["settleDiagnostics"]
     capture_record = context["captureRecord"]
     capture_quality = context["captureQuality"]
+    visual_observations = context["visualObservations"]
+    correction_record = context["correctionRecord"]
     return {
         "schemaVersion": 1,
         "garmentId": manifest["garmentId"],
@@ -738,6 +817,16 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "scorerVersion": capture_quality["scorerVersion"],
             "containsUserImagery": capture_record["privacy"]["containsUserImagery"],
             "externalApisAllowed": capture_record["privacy"]["allowExternalApis"],
+        },
+        "visualUnderstanding": {
+            "visualUnderstandingId": visual_observations["visualUnderstandingId"],
+            "maskCount": visual_observations["aggregate"]["maskCount"],
+            "observedLandmarkCount": len(visual_observations["aggregate"]["observedLandmarks"]),
+            "requiredLandmarkCount": len(visual_observations["aggregate"]["requiredLandmarks"]),
+            "meanMaskConfidence": visual_observations["aggregate"]["meanMaskConfidence"],
+            "meanLandmarkConfidence": visual_observations["aggregate"]["meanLandmarkConfidence"],
+            "correctionRecordId": correction_record["correctionRecordId"],
+            "correctionOperationCount": len(correction_record["operations"]),
         },
         "hashes": manifest["hashes"],
         "binding": context["bindingManifest"],
@@ -768,6 +857,9 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Synthetic capture: {summary['capture']['viewCount']} metadata-only views, "
         f"quality {summary['capture']['overallScore']:.6f} "
         f"({summary['capture']['overallStatus']})\n"
+        f"- Visual observations: {summary['visualUnderstanding']['maskCount']} masks, "
+        f"{summary['visualUnderstanding']['observedLandmarkCount']} T-shirt landmarks, "
+        f"{summary['visualUnderstanding']['correctionOperationCount']} corrections\n"
         f"- Simulation mesh: {counts['simulationVertices']} vertices, "
         f"{counts['simulationTriangles']} triangles\n"
         f"- Render shell: {counts['renderVertices']} vertices, "

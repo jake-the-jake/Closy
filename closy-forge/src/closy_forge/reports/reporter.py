@@ -11,6 +11,8 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     summary = read_json(package_dir / "reports" / "summary.json")
     binding = read_json(package_dir / "binding" / "binding_manifest.json")
     capture = read_json(package_dir / "source" / "capture_quality.json")
+    visual = read_json(package_dir / "source" / "visual_observations.json")
+    correction = read_json(package_dir / "source" / "correction_record.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -38,6 +40,16 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "overallStatus": capture["overallStatus"],
             "overallScore": capture["overallScore"],
             "scorerVersion": capture["scorerVersion"],
+        },
+        "visualUnderstanding": {
+            "visualUnderstandingId": visual["visualUnderstandingId"],
+            "maskCount": visual["aggregate"]["maskCount"],
+            "observedLandmarkCount": len(visual["aggregate"]["observedLandmarks"]),
+            "requiredLandmarkCount": len(visual["aggregate"]["requiredLandmarks"]),
+            "meanMaskConfidence": visual["aggregate"]["meanMaskConfidence"],
+            "meanLandmarkConfidence": visual["aggregate"]["meanLandmarkConfidence"],
+            "correctionRecordId": correction["correctionRecordId"],
+            "correctionOperationCount": len(correction["operations"]),
         },
         "settle": {
             "solverVersion": settle["solverVersion"],
@@ -68,12 +80,18 @@ def human_report(package_dir: Path) -> str:
         lines.append(f"  - {key}: {value}")
     binding = summary["binding"]
     capture = summary["capture"]
+    visual = summary["visualUnderstanding"]
     settle = summary["settle"]
     lines.extend(
         [
             (
                 f"Capture: {capture['viewCount']} synthetic metadata-only views, "
                 f"quality {capture['overallScore']:.6f} ({capture['overallStatus']})"
+            ),
+            (
+                f"Visual observations: {visual['maskCount']} masks, "
+                f"{visual['observedLandmarkCount']} landmarks, "
+                f"{visual['correctionOperationCount']} corrections"
             ),
             (
                 f"Binding: {binding['recordCount']} records, "

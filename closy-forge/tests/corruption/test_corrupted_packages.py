@@ -277,3 +277,33 @@ def test_capture_quality_failure_is_rejected(tmp_path) -> None:  # type: ignore[
     codes = issue_codes(validate_package(corrupt))
     assert "capture_quality_not_pass" in codes
     assert "capture_quality_below_threshold" in codes
+
+
+def test_visual_observation_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_visual_hash.closygarment")
+    visual = read_json(corrupt / "source" / "visual_observations.json")
+    visual["views"][0]["masks"][0]["confidence"] = 0.01
+    write_json(corrupt / "source" / "visual_observations.json", visual)
+    assert "visual_observation_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_required_visual_landmark_missing_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "missing_visual_landmark.closygarment")
+    visual = read_json(corrupt / "source" / "visual_observations.json")
+    for view in visual["views"]:
+        view["landmarks"] = [
+            landmark for landmark in view["landmarks"] if landmark["id"] != "landmark.neck.center"
+        ]
+    visual["integrity"]["visualRecordHash"] = "0" * 64
+    write_json(corrupt / "source" / "visual_observations.json", visual)
+    codes = issue_codes(validate_package(corrupt))
+    assert "required_tshirt_visual_landmark_missing" in codes
+    assert "visual_observation_hash_mismatch" in codes
+
+
+def test_correction_policy_violation_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_correction_policy.closygarment")
+    correction = read_json(corrupt / "source" / "correction_record.json")
+    correction["privacy"]["allowTrainingUse"] = True
+    write_json(corrupt / "source" / "correction_record.json", correction)
+    assert "correction_policy_violation" in issue_codes(validate_package(corrupt))

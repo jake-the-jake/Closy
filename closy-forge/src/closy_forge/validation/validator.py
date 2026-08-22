@@ -27,12 +27,19 @@ from closy_forge.package_io.canonical_json import read_json
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, topology_hash
 from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.validation.issues import Severity, ValidationIssue
+from closy_forge.visual_understanding import (
+    REQUIRED_TSHIRT_VISUAL_LANDMARKS,
+    hash_correction_record,
+    hash_visual_observations,
+)
 
 EXPECTED_FILES = [
     "manifest.json",
     "provenance.json",
     "source/capture_record.json",
     "source/capture_quality.json",
+    "source/visual_observations.json",
+    "source/correction_record.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
     "avatar/collision.glb",
@@ -55,6 +62,7 @@ EXPECTED_FILES = [
     "binding/binding_manifest.json",
     "reports/avatar_quality.json",
     "reports/capture_quality.json",
+    "reports/visual_understanding_quality.json",
     "reports/semantic_quality.json",
     "reports/pattern_quality.json",
     "reports/simulation_quality.json",
@@ -192,6 +200,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
 
     _validate_avatar(package_dir, issues)
     _validate_capture(package_dir, manifest, issues)
+    _validate_visual_understanding(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
@@ -455,6 +464,231 @@ def _validate_capture(
                 "fatal",
                 "source/capture_record.json",
                 "Capture records and quality reports must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_visual_understanding(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    capture_record = _read_required_json(package_dir, "source/capture_record.json", issues)
+    visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    correction = _read_required_json(package_dir, "source/correction_record.json", issues)
+    if capture_record is None or visual is None or correction is None:
+        return
+    declared_capture_hash = _nested_string(capture_record, ["immutability", "sourceRecordHash"], "")
+    if visual.get("sourceRecordId") != capture_record.get("recordId"):
+        issues.append(
+            _issue(
+                "visual_observation_source_mismatch",
+                "fatal",
+                "source/visual_observations.json",
+                "Visual observations must reference the capture record ID.",
+            )
+        )
+    if visual.get("sourceRecordHash") != declared_capture_hash:
+        issues.append(
+            _issue(
+                "visual_observation_source_hash_mismatch",
+                "fatal",
+                "source/visual_observations.json",
+                "Visual observations must reference the capture record hash.",
+            )
+        )
+    if _nested_string(visual, ["integrity", "visualRecordHash"], "") != hash_visual_observations(
+        visual
+    ):
+        issues.append(
+            _issue(
+                "visual_observation_hash_mismatch",
+                "fatal",
+                "source/visual_observations.json",
+                "Visual observation hash must match its canonical payload.",
+            )
+        )
+    provider = visual.get("provider", {})
+    if not isinstance(provider, dict):
+        issues.append(
+            _issue(
+                "visual_provider_invalid",
+                "fatal",
+                "source/visual_observations.json",
+                "Visual observation provider must be an object.",
+            )
+        )
+        provider = {}
+    if provider.get("externalApis") is not False or provider.get("trainingUse") is not False:
+        issues.append(
+            _issue(
+                "visual_provider_policy_violation",
+                "fatal",
+                "source/visual_observations.json",
+                "Synthetic visual observations cannot use external APIs or training use.",
+            )
+        )
+    views = visual.get("views", [])
+    if not isinstance(views, list):
+        issues.append(
+            _issue(
+                "visual_observation_views_invalid",
+                "fatal",
+                "source/visual_observations.json",
+                "Visual observation views must be a list.",
+            )
+        )
+        views = []
+    capture_view_ids = {
+        str(view.get("viewId"))
+        for view in capture_record.get("views", [])
+        if isinstance(view, dict)
+    }
+    visual_view_ids = {str(view.get("viewId")) for view in views if isinstance(view, dict)}
+    if visual_view_ids != capture_view_ids:
+        issues.append(
+            _issue(
+                "visual_observation_view_set_mismatch",
+                "fatal",
+                "source/visual_observations.json",
+                "Visual observations must cover the same capture views.",
+            )
+        )
+    mask_count = 0
+    observed_landmarks: set[str] = set()
+    for view in views:
+        if not isinstance(view, dict):
+            continue
+        masks = view.get("masks", [])
+        if not isinstance(masks, list):
+            issues.append(
+                _issue(
+                    "visual_mask_list_invalid",
+                    "fatal",
+                    "source/visual_observations.json",
+                    "Each visual observation view must contain a mask list.",
+                    str(view.get("viewId", "")),
+                )
+            )
+            masks = []
+        mask_count += len(masks)
+        for mask in masks:
+            if isinstance(mask, dict):
+                _validate_normalised_mask(mask, issues)
+        landmarks = view.get("landmarks", [])
+        if not isinstance(landmarks, list):
+            issues.append(
+                _issue(
+                    "visual_landmark_list_invalid",
+                    "fatal",
+                    "source/visual_observations.json",
+                    "Each visual observation view must contain a landmark list.",
+                    str(view.get("viewId", "")),
+                )
+            )
+            landmarks = []
+        for landmark in landmarks:
+            if isinstance(landmark, dict):
+                observed_landmarks.add(str(landmark.get("id", "")))
+                _validate_normalised_point(
+                    landmark.get("position2d"), "visual_landmark_out_of_range", issues
+                )
+    if mask_count < len(views):
+        issues.append(
+            _issue(
+                "visual_mask_missing",
+                "fatal",
+                "source/visual_observations.json",
+                "Each capture view must include at least one target-garment mask.",
+            )
+        )
+    for landmark_id in REQUIRED_TSHIRT_VISUAL_LANDMARKS:
+        if landmark_id not in observed_landmarks:
+            issues.append(
+                _issue(
+                    "required_tshirt_visual_landmark_missing",
+                    "fatal",
+                    "source/visual_observations.json",
+                    "Required T-shirt visual landmark missing.",
+                    landmark_id,
+                )
+            )
+    declared_visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
+    if correction.get("visualUnderstandingId") != visual.get("visualUnderstandingId"):
+        issues.append(
+            _issue(
+                "correction_visual_id_mismatch",
+                "fatal",
+                "source/correction_record.json",
+                "Correction record must reference the visual observation ID.",
+            )
+        )
+    if correction.get("visualRecordHash") != declared_visual_hash:
+        issues.append(
+            _issue(
+                "correction_visual_hash_mismatch",
+                "fatal",
+                "source/correction_record.json",
+                "Correction record must reference the visual observation hash.",
+            )
+        )
+    if _nested_string(
+        correction, ["integrity", "correctionRecordHash"], ""
+    ) != hash_correction_record(correction):
+        issues.append(
+            _issue(
+                "correction_record_hash_mismatch",
+                "fatal",
+                "source/correction_record.json",
+                "Correction record hash must match its canonical payload.",
+            )
+        )
+    correction_privacy = correction.get("privacy", {})
+    if not isinstance(correction_privacy, dict):
+        issues.append(
+            _issue(
+                "correction_privacy_policy_invalid",
+                "fatal",
+                "source/correction_record.json",
+                "Correction privacy block must be an object.",
+            )
+        )
+        correction_privacy = {}
+    if (
+        correction_privacy.get("allowExternalApis") is not False
+        or correction_privacy.get("allowTrainingUse") is not False
+    ):
+        issues.append(
+            _issue(
+                "correction_policy_violation",
+                "fatal",
+                "source/correction_record.json",
+                "Correction records cannot permit external API or training use.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if not isinstance(caps, dict):
+        return
+    for key, code in [
+        ("visualObservationsAvailable", "visual_observations_capability_missing"),
+        ("garmentMaskAvailable", "garment_mask_capability_missing"),
+        ("garmentLandmarksAvailable", "garment_landmarks_capability_missing"),
+        ("editableCorrectionRecordAvailable", "correction_record_capability_missing"),
+    ]:
+        if caps.get(key) is not True:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "manifest.json",
+                    f"Manifest capability {key} must be true for this fixture.",
+                )
+            )
+    if _contains_nonfinite(visual) or _contains_nonfinite(correction):
+        issues.append(
+            _issue(
+                "visual_observation_nonfinite_numeric_value",
+                "fatal",
+                "source/visual_observations.json",
+                "Visual observations and correction records must not contain NaN or Infinity.",
             )
         )
 
@@ -1145,6 +1379,68 @@ def _validate_triangle_quality(
                         f"{mesh.panel_id}:{triangle_index}",
                     )
                 )
+
+
+def _validate_normalised_mask(mask: dict[str, Any], issues: list[ValidationIssue]) -> None:
+    polygons = mask.get("polygons", [])
+    if not isinstance(polygons, list) or not polygons:
+        issues.append(
+            _issue(
+                "visual_mask_polygon_missing",
+                "fatal",
+                "source/visual_observations.json",
+                "Mask must include at least one normalised polygon.",
+                str(mask.get("maskId", "")),
+            )
+        )
+        return
+    for polygon in polygons:
+        if not isinstance(polygon, list) or len(polygon) < 3:
+            issues.append(
+                _issue(
+                    "visual_mask_polygon_invalid",
+                    "fatal",
+                    "source/visual_observations.json",
+                    "Mask polygon must contain at least three points.",
+                    str(mask.get("maskId", "")),
+                )
+            )
+            continue
+        for point in polygon:
+            _validate_normalised_point(point, "visual_mask_point_out_of_range", issues)
+
+
+def _validate_normalised_point(point: Any, code: str, issues: list[ValidationIssue]) -> None:
+    if not isinstance(point, list | tuple) or len(point) != 2:
+        issues.append(
+            _issue(
+                code,
+                "fatal",
+                "source/visual_observations.json",
+                "Normalised image point must be [x, y].",
+            )
+        )
+        return
+    x = _float_or(point[0], math.nan)
+    y = _float_or(point[1], math.nan)
+    if not math.isfinite(x) or not math.isfinite(y) or not 0.0 <= x <= 1.0 or not 0.0 <= y <= 1.0:
+        issues.append(
+            _issue(
+                code,
+                "fatal",
+                "source/visual_observations.json",
+                "Normalised image point must stay inside [0, 1].",
+            )
+        )
+
+
+def _nested_string(data: dict[str, Any], path: list[str], fallback: str) -> str:
+    value: Any = data
+    for key in path:
+        if not isinstance(value, dict):
+            return fallback
+        value = value.get(key)
+    return value if isinstance(value, str) else fallback
 
 
 def _vec3(value: Any) -> Vec3:

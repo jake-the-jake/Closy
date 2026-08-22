@@ -13,6 +13,10 @@ from closy_forge.package_io.canonical_json import canonical_dumps, write_canonic
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
 from closy_forge.validation.validator import validate_package
+from closy_forge.visual_understanding import (
+    build_empty_correction_record,
+    build_tshirt_visual_observations,
+)
 
 EXIT_SUCCESS = 0
 EXIT_ARGUMENT_ERROR = 2
@@ -130,12 +134,20 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
     output = args.output
     record_path = output / "capture_record.json"
     quality_path = output / "capture_quality.json"
-    if not args.force and (record_path.exists() or quality_path.exists()):
+    visual_path = output / "visual_observations.json"
+    correction_path = output / "correction_record.json"
+    if not args.force and any(
+        path.exists() for path in [record_path, quality_path, visual_path, correction_path]
+    ):
         raise FileExistsError(f"{output} already contains capture fixture files; pass --force")
     record = build_synthetic_capture_record(seed=args.seed)
     quality = score_capture_record(record)
+    visual = build_tshirt_visual_observations(record)
+    correction = build_empty_correction_record(visual)
     write_canonical_json(record_path, record)
     write_canonical_json(quality_path, quality)
+    write_canonical_json(visual_path, visual)
+    write_canonical_json(correction_path, correction)
     payload = {
         "status": "built",
         "output": str(output),
@@ -144,6 +156,9 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
         "qualityStatus": quality["overallStatus"],
         "qualityScore": quality["overallScore"],
         "viewCount": quality["viewCount"],
+        "maskCount": visual["aggregate"]["maskCount"],
+        "landmarkCount": len(visual["aggregate"]["observedLandmarks"]),
+        "correctionOperationCount": len(correction["operations"]),
     }
     if args.json:
         print(canonical_dumps(payload), end="")

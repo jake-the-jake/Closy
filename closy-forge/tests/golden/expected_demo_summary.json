@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "01274d3bcc3f69d65767fb6759dc6f51e209f5a73b2f0ff2f32c55f2f38d09cc",
+  "canonicalPackageDigest": "54766b93602bc6b4ecd194f36c310d93d5183f74c9bc78bd4c2ef9675676a2d4",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -17,8 +17,12 @@
   "requiredCapabilities": {
     "actualClothSettleAvailable": true,
     "captureQualityScored": true,
+    "editableCorrectionRecordAvailable": true,
+    "garmentLandmarksAvailable": true,
+    "garmentMaskAvailable": true,
     "selfCollisionAvailable": false,
-    "sourceCaptureRecordAvailable": true
+    "sourceCaptureRecordAvailable": true,
+    "visualObservationsAvailable": true
   },
   "capture": {
     "overallScore": 0.94265,
@@ -26,6 +30,12 @@
     "recordId": "capture.synthetic_tshirt_reference_v1",
     "sourceKind": "synthetic_metadata_only",
     "viewCount": 4
+  },
+  "visualUnderstanding": {
+    "correctionOperationCount": 0,
+    "maskCount": 4,
+    "observedLandmarkCount": 10,
+    "requiredLandmarkCount": 10
   },
   "renderTopologyHash": "9029588639d462d8092d44ebdea4bd4f0b78a83c0f827b416ef88c241f459fad",
   "settle": {

@@ -6,11 +6,15 @@ The current fixture writes:
 
 - `source/capture_record.json`
 - `source/capture_quality.json`
+- `source/visual_observations.json`
+- `source/correction_record.json`
 - `reports/capture_quality.json`
+- `reports/visual_understanding_quality.json`
 
 These records are deterministic, synthetic, metadata-only fixtures. They contain camera/view
-metadata, visibility expectations, and quality measurements, but no raster imagery, no masks, no
-body scans, no personal measurements, and no provider output.
+metadata, visibility expectations, quality measurements, analytic polygon silhouettes, T-shirt
+landmark observations, and an empty correction ledger, but no raster imagery, no body scans, no
+personal measurements, and no provider output.
 
 ## Privacy Contract
 
@@ -53,7 +57,24 @@ deliberately simple and deterministic. It scores:
 
 The current fixture has four synthetic metadata-only views and passes with score `0.942650`.
 
+## Visual Observations And Corrections
+
+`source/visual_observations.json` stores provider-free analytic placeholders for the visual
+understanding layer:
+
+- one editable target-garment polygon mask per synthetic view;
+- required T-shirt landmarks such as neck, shoulders, armholes, cuffs and hem points;
+- normalized image coordinates in top-left origin `[0, 1]` space;
+- confidence values that are intentionally separate from semantic/pattern certainty.
+
+`source/correction_record.json` starts as `empty_editable_baseline` with no operations. It records
+the allowed future edits, including mask polygon edits, landmark moves, semantic label overrides and
+confidence overrides. Future real correction flows must append operations instead of rewriting
+source evidence silently.
+
 ## Current Limitations
 
-This is not image understanding yet. It is the contract and validation substrate for later source
-images, editable masks, landmark observations, texture projection evidence and human corrections.
+This is not learned image understanding yet. The masks and landmarks are synthetic placeholders used
+to prove package shape, provenance and validation. Later stages must replace them with real
+front/rear ingestion, provider or manual mask evidence, landmark observations, texture projection
+evidence and human correction operations.

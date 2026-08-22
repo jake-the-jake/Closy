@@ -31,6 +31,11 @@ Representative current codes:
 - `capture_quality_source_hash_mismatch`: capture quality report points at the wrong source hash.
 - `capture_quality_not_pass`: capture quality report does not pass the current fixture gate.
 - `capture_quality_below_threshold`: capture quality score is below its declared threshold.
+- `visual_observation_hash_mismatch`: visual mask/landmark observations changed without updating their payload hash.
+- `required_tshirt_visual_landmark_missing`: visual observations do not include a required T-shirt landmark.
+- `visual_mask_point_out_of_range`: synthetic mask polygon contains a point outside normalized image space.
+- `correction_record_hash_mismatch`: editable correction record content changed without updating its payload hash.
+- `correction_policy_violation`: correction record permits external API or training use.
 - `unsupported_schema_version`: unsupported `schemaVersion`.
 - `required_file_missing`: required package file absent.
 - `unsafe_package_path`: inventory path escapes the package contract.
