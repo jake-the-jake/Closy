@@ -102,6 +102,8 @@ def _role_for_path(rel: str) -> str:
         return "fit_report"
     if rel.startswith("textures/"):
         return "texture_identity_contract"
+    if rel.startswith("proposals/"):
+        return "visual_geometry_proposal_contract"
     if rel.startswith("avatar/"):
         return "avatar_contract_or_fixture"
     if rel.startswith("semantic/"):
@@ -128,5 +130,6 @@ def _is_canonical(rel: str) -> bool:
         )
         or rel.startswith("fitting/")
         or rel.startswith("textures/")
+        or rel.startswith("proposals/")
         or rel == "provenance.json"
     )

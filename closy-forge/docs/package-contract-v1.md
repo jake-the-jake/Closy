@@ -13,6 +13,7 @@ source/visual_observations.json
 source/correction_record.json
 fitting/tshirt_fit.json
 textures/texture_identity.json
+proposals/raw_geometry_proposal.json
 avatar/avatar_contract.json
 avatar/reference_avatar.glb
 avatar/collision.glb
@@ -38,6 +39,7 @@ reports/capture_quality.json
 reports/visual_understanding_quality.json
 reports/fitting_quality.json
 reports/texture_quality.json
+reports/geometry_proposal_quality.json
 reports/semantic_quality.json
 reports/pattern_quality.json
 reports/simulation_quality.json
@@ -48,7 +50,7 @@ reports/summary.json
 reports/summary.md
 ```
 
-Absent optional stages are omitted rather than represented by fake folders. The `source/` directory currently contains deterministic synthetic capture metadata, analytic visual observations, and an empty editable correction record. The `fitting/` directory currently contains a bounded deterministic T-shirt parameter fit from those synthetic observations. The `textures/` directory currently contains texture identity evidence derived from authored render materials, not source photo texture projection. There is no real user imagery, raster source image, learned segmentation mask, `zeroone/`, generated texture atlas, or AI report in this milestone.
+Absent optional stages are omitted rather than represented by fake folders. The `source/` directory currently contains deterministic synthetic capture metadata, analytic visual observations, and an empty editable correction record. The `fitting/` directory currently contains a bounded deterministic T-shirt parameter fit from those synthetic observations. The `textures/` directory currently contains texture identity evidence derived from authored render materials, not source photo texture projection. The `proposals/` directory currently contains a rejected deterministic null visual-geometry proposal to exercise Gate C2 without accepting fake provider output. There is no real user imagery, raster source image, learned segmentation mask, `zeroone/`, generated texture atlas, clean geometry proposal, or AI mesh in this milestone.
 
 ## Inventory Rules
 
@@ -58,4 +60,4 @@ The manifest inventory uses POSIX package-relative paths only. Absolute paths, `
 
 ## Capabilities
 
-Capabilities are booleans, not quality scores. Current true states are immutable synthetic capture records, deterministic capture quality scoring, analytic visual observations, editable correction records, synthetic target-garment masks, synthetic T-shirt landmarks, deterministic T-shirt parameter fitting, texture identity evidence, PBR material observations, pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, validated reconstruction, and deterministic reference cloth settle. Source-image texture, generated texture atlas, personalised avatar, skeleton, self-collision, and ZeroOne states are false.
+Capabilities are booleans, not quality scores. Current true states are immutable synthetic capture records, deterministic capture quality scoring, analytic visual observations, editable correction records, synthetic target-garment masks, synthetic T-shirt landmarks, deterministic T-shirt parameter fitting, texture identity evidence, PBR material observations, raw geometry proposal records, provider provenance, geometry proposal quality scoring, pattern, simulation-ready topology, authored material preset, conventional GLB, sim-to-render binding, validated reconstruction, and deterministic reference cloth settle. Source-image texture, generated texture atlas, clean geometry proposal, personalised avatar, skeleton, self-collision, and ZeroOne states are false.

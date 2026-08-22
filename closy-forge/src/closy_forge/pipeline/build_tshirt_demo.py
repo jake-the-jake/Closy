@@ -50,6 +50,11 @@ from closy_forge.package_io.writer import (
     prepare_staging,
     publish_staging,
 )
+from closy_forge.proposals import (
+    GEOMETRY_PROPOSAL_VERSION,
+    build_null_geometry_proposal,
+    geometry_proposal_quality_report,
+)
 from closy_forge.simulation.reference_cloth_solver import (
     settle_reference_cloth,
     simulation_state_json,
@@ -148,6 +153,14 @@ def _write_package_contents(
         fit_report=fit_report,
         render_materials=render_materials,
     )
+    geometry_proposal = build_null_geometry_proposal(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture_record,
+        visual_observations=visual_observations,
+        fit_report=fit_report,
+        texture_identity=texture_identity,
+    )
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
     simulation_mesh = settle.settled_mesh
@@ -160,6 +173,9 @@ def _write_package_contents(
     write_canonical_json(package_dir / "source" / "correction_record.json", correction_record)
     write_canonical_json(package_dir / "fitting" / "tshirt_fit.json", fit_report)
     write_canonical_json(package_dir / "textures" / "texture_identity.json", texture_identity)
+    write_canonical_json(
+        package_dir / "proposals" / "raw_geometry_proposal.json", geometry_proposal
+    )
     write_canonical_json(package_dir / "avatar" / "avatar_contract.json", avatar)
     write_canonical_json(package_dir / "avatar" / "body_regions.json", regions)
     write_glb(
@@ -248,6 +264,7 @@ def _write_package_contents(
         correction_record,
         fit_report,
         texture_identity,
+        geometry_proposal,
     )
     for name, report in quality_reports.items():
         write_canonical_json(package_dir / "reports" / name, report)
@@ -268,6 +285,7 @@ def _write_package_contents(
         correction_record,
         fit_report,
         texture_identity,
+        geometry_proposal,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
 
@@ -291,6 +309,7 @@ def _write_package_contents(
         correction_record,
         fit_report,
         texture_identity,
+        geometry_proposal,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
     return {
@@ -309,6 +328,7 @@ def _write_package_contents(
         "correctionRecord": correction_record,
         "fitReport": fit_report,
         "textureIdentity": texture_identity,
+        "geometryProposal": geometry_proposal,
         "inventory": inventory,
     }
 
@@ -417,6 +437,7 @@ def _manifest(
     correction_record: dict[str, Any],
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
+    geometry_proposal: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -441,6 +462,7 @@ def _manifest(
             "sourceCorrectionRecord": "source/correction_record.json",
             "tshirtFitReport": "fitting/tshirt_fit.json",
             "textureIdentity": "textures/texture_identity.json",
+            "rawGeometryProposal": "proposals/raw_geometry_proposal.json",
             "semanticGraph": "semantic/garment_graph.json",
             "pattern": "pattern/pattern.json",
             "simulationMesh": "simulation/simulation_mesh.glb",
@@ -487,6 +509,12 @@ def _manifest(
                 inventory, "textures/texture_identity.json"
             ),
             "textureIdentityPayloadHash": str(texture_identity["integrity"]["textureIdentityHash"]),
+            "rawGeometryProposalHash": _hash_from_inventory(
+                inventory, "proposals/raw_geometry_proposal.json"
+            ),
+            "rawGeometryProposalPayloadHash": str(
+                geometry_proposal["integrity"]["geometryProposalHash"]
+            ),
             "simulationRestTopologyHash": topology_hash(rest_mesh),
             "simulationRestContentHash": geometry_content_hash(rest_mesh),
             "simulationTopologyHash": topology_hash(sim_mesh),
@@ -511,6 +539,7 @@ def _manifest(
             "correctionRecord": CORRECTION_RECORD_VERSION,
             "tshirtFit": TSHIRT_FIT_REPORT_VERSION,
             "textureIdentity": TEXTURE_IDENTITY_VERSION,
+            "geometryProposal": GEOMETRY_PROPOSAL_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
             "curveSampler": "closy.curve_sampler.v1",
             "panelTriangulator": "closy.fan_triangulator.v1",
@@ -521,7 +550,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_04_texture_identity_scaffold",
+            "name": "implementation_05_geometry_proposal_boundary",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -532,11 +561,12 @@ def _manifest(
             "synthetic_visual_observations_not_real_segmentation",
             "synthetic_fit_not_trained_from_real_images",
             "source_texture_projection_not_run",
+            "geometry_proposal_rejected_null_provider",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "04-texture-identity-scaffold"},
+        "extensions": {"closyImplementation": "05-geometry-proposal-boundary"},
     }
 
 
@@ -561,6 +591,11 @@ def _capabilities() -> dict[str, bool]:
         "fittingQualityScored": True,
         "textureIdentityEvidenceAvailable": True,
         "pbrMaterialObservationAvailable": True,
+        "geometryProposalInterfaceAvailable": True,
+        "rawGeometryProposalRecordAvailable": True,
+        "geometryProposalQualityScored": True,
+        "providerProvenanceAvailable": True,
+        "cleanGeometryProposalAvailable": False,
         "personalizedAvatarAvailable": False,
         "skeletalFallbackAvailable": False,
         "zeroOneStaticAvailable": False,
@@ -586,6 +621,7 @@ def _quality_reports(
     correction_record: dict[str, Any],
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
+    geometry_proposal: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     return {
         "capture_quality.json": {
@@ -636,6 +672,7 @@ def _quality_reports(
             "recommendedAtlasSizePx": texture_identity["projectionPlan"]["recommendedAtlasSizePx"],
             "warnings": texture_identity["warnings"],
         },
+        "geometry_proposal_quality.json": geometry_proposal_quality_report(geometry_proposal),
         "avatar_quality.json": {
             "schemaVersion": 1,
             "status": "pass",
@@ -709,6 +746,7 @@ def _provenance(
     correction_record: dict[str, Any],
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
+    geometry_proposal: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -789,6 +827,20 @@ def _provenance(
                 [str(texture_identity["integrity"]["textureIdentityHash"])],
             ),
             _stage(
+                "null_geometry_proposal_provider",
+                GEOMETRY_PROPOSAL_VERSION,
+                {
+                    "providerId": geometry_proposal["provider"]["providerId"],
+                    "providerKind": geometry_proposal["provider"]["providerKind"],
+                    "runtimeExternalApis": False,
+                    "rawProposalAvailable": False,
+                    "cleanProposalAvailable": False,
+                    "acceptedForCanonical": False,
+                    "rejectionReasons": geometry_proposal["quality"]["rejectionReasons"],
+                },
+                [str(geometry_proposal["integrity"]["geometryProposalHash"])],
+            ),
+            _stage(
                 "reference_avatar_parameters",
                 "closy.reference_avatar.parameters.v1",
                 {},
@@ -843,6 +895,7 @@ def _provenance(
         "warnings": [
             "self_collision_not_run",
             "source_texture_projection_not_run",
+            "geometry_proposal_rejected_null_provider",
             "zeroone_unavailable_optional",
         ],
     }
@@ -889,6 +942,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     correction_record = context["correctionRecord"]
     fit_report = context["fitReport"]
     texture_identity = context["textureIdentity"]
+    geometry_proposal = context["geometryProposal"]
     return {
         "schemaVersion": 1,
         "garmentId": manifest["garmentId"],
@@ -943,6 +997,19 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "materialRegionCount": len(texture_identity["observedMaterialRegions"]),
             "recommendedAtlasSizePx": texture_identity["projectionPlan"]["recommendedAtlasSizePx"],
         },
+        "geometryProposal": {
+            "proposalId": geometry_proposal["proposalId"],
+            "providerId": geometry_proposal["provider"]["providerId"],
+            "providerKind": geometry_proposal["provider"]["providerKind"],
+            "qualityStatus": geometry_proposal["quality"]["status"],
+            "rawProposalAvailable": geometry_proposal["rawProposal"]["available"],
+            "cleanProposalAvailable": geometry_proposal["cleanProposal"]["available"],
+            "acceptedForCanonical": geometry_proposal["quality"]["acceptedForCanonical"],
+            "meshCount": geometry_proposal["geometryAudit"]["meshCount"],
+            "visibleMeshCount": geometry_proposal["geometryAudit"]["visibleMeshCount"],
+            "triangleEstimate": geometry_proposal["geometryAudit"]["triangleEstimate"],
+            "failureReason": geometry_proposal["geometryAudit"]["failureReason"],
+        },
         "hashes": manifest["hashes"],
         "binding": context["bindingManifest"],
         "settle": {
@@ -981,6 +1048,9 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Texture identity: {summary['texture']['status']}, "
         f"{summary['texture']['materialRegionCount']} PBR material observations, "
         f"source textures available={summary['texture']['sourceTextureAvailable']}\n"
+        f"- Geometry proposal: {summary['geometryProposal']['qualityStatus']} via "
+        f"`{summary['geometryProposal']['providerId']}`, "
+        f"raw available={summary['geometryProposal']['rawProposalAvailable']}\n"
         f"- Simulation mesh: {counts['simulationVertices']} vertices, "
         f"{counts['simulationTriangles']} triangles\n"
         f"- Render shell: {counts['renderVertices']} vertices, "

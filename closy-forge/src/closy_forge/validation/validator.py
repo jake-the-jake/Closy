@@ -29,6 +29,7 @@ from closy_forge.geometry.triangulation import validate_panel_boundary
 from closy_forge.package_io.canonical_json import read_json
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, topology_hash
 from closy_forge.package_io.paths import validate_package_relpath
+from closy_forge.proposals import hash_geometry_proposal
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
@@ -45,6 +46,7 @@ EXPECTED_FILES = [
     "source/correction_record.json",
     "fitting/tshirt_fit.json",
     "textures/texture_identity.json",
+    "proposals/raw_geometry_proposal.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
     "avatar/collision.glb",
@@ -70,6 +72,7 @@ EXPECTED_FILES = [
     "reports/visual_understanding_quality.json",
     "reports/fitting_quality.json",
     "reports/texture_quality.json",
+    "reports/geometry_proposal_quality.json",
     "reports/semantic_quality.json",
     "reports/pattern_quality.json",
     "reports/simulation_quality.json",
@@ -210,6 +213,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_visual_understanding(package_dir, manifest, issues)
     _validate_fitting(package_dir, manifest, issues)
     _validate_texture_identity(package_dir, manifest, issues)
+    _validate_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
@@ -1124,6 +1128,245 @@ def _validate_texture_region_pbr(region: dict[str, Any], issues: list[Validation
                     str(region.get("regionId", "")),
                 )
             )
+
+
+def _validate_geometry_proposal(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    capture_record = _read_required_json(package_dir, "source/capture_record.json", issues)
+    visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    fit_report = _read_required_json(package_dir, "fitting/tshirt_fit.json", issues)
+    texture = _read_required_json(package_dir, "textures/texture_identity.json", issues)
+    proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
+    proposal_quality = _read_required_json(
+        package_dir, "reports/geometry_proposal_quality.json", issues
+    )
+    if (
+        capture_record is None
+        or visual is None
+        or fit_report is None
+        or texture is None
+        or proposal is None
+    ):
+        return
+    if proposal.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_proposal_garment_mismatch",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Geometry proposal must reference the package garment ID.",
+            )
+        )
+    if proposal.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_proposal_class_mismatch",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Geometry proposal must reference the package garment class.",
+            )
+        )
+    expected_hashes = [
+        (
+            "sourceRecordHash",
+            _nested_string(capture_record, ["immutability", "sourceRecordHash"], ""),
+            "geometry_proposal_source_hash_mismatch",
+        ),
+        (
+            "sourceVisualRecordHash",
+            _nested_string(visual, ["integrity", "visualRecordHash"], ""),
+            "geometry_proposal_visual_hash_mismatch",
+        ),
+        (
+            "sourceFitReportHash",
+            _nested_string(fit_report, ["integrity", "fitReportHash"], ""),
+            "geometry_proposal_fit_hash_mismatch",
+        ),
+        (
+            "sourceTextureIdentityHash",
+            _nested_string(texture, ["integrity", "textureIdentityHash"], ""),
+            "geometry_proposal_texture_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if proposal.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "proposals/raw_geometry_proposal.json",
+                    f"Geometry proposal {field} must match its source artifact.",
+                )
+            )
+    if _nested_string(proposal, ["integrity", "geometryProposalHash"], "") != (
+        hash_geometry_proposal(proposal)
+    ):
+        issues.append(
+            _issue(
+                "geometry_proposal_hash_mismatch",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Geometry proposal hash must match its canonical payload.",
+            )
+        )
+    provider = proposal.get("provider", {})
+    policy = proposal.get("policy", {})
+    request = proposal.get("request", {})
+    raw = proposal.get("rawProposal", {})
+    clean = proposal.get("cleanProposal", {})
+    quality = proposal.get("quality", {})
+    audit = proposal.get("geometryAudit", {})
+    for name, block in [
+        ("provider", provider),
+        ("policy", policy),
+        ("request", request),
+        ("rawProposal", raw),
+        ("cleanProposal", clean),
+        ("quality", quality),
+        ("geometryAudit", audit),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_proposal_block_invalid",
+                    "fatal",
+                    "proposals/raw_geometry_proposal.json",
+                    f"Geometry proposal {name} block must be an object.",
+                )
+            )
+            return
+    if (
+        provider.get("runtimeExternalApis") is not False
+        or provider.get("allowTrainingUse") is not False
+        or provider.get("containsUserImagery") is not False
+        or policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_proposal_provider_policy_violation",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Null/manual proposal fixture cannot use external APIs, training use or user data.",
+            )
+        )
+    if (
+        request.get("purpose") != "garment_visual_geometry_proposal"
+        or request.get("supportedDomain") != "avatar_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_proposal_domain_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Geometry proposal requests must be constrained to avatar/garment use.",
+            )
+        )
+    if policy.get("approvedDomain") != "avatar_and_garment_only":
+        issues.append(
+            _issue(
+                "geometry_proposal_domain_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Geometry proposal policy must approve only avatar-and-garment scope.",
+            )
+        )
+    if raw.get("noCanonicalUse") is not True:
+        issues.append(
+            _issue(
+                "geometry_proposal_raw_canonical_use_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Raw geometry proposals must explicitly forbid canonical use.",
+            )
+        )
+    if quality.get("acceptedForCanonical") is not False:
+        issues.append(
+            _issue(
+                "geometry_proposal_canonical_acceptance_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Null/manual raw proposals cannot be accepted as canonical garment truth.",
+            )
+        )
+    if quality.get("status") != "rejected":
+        issues.append(
+            _issue(
+                "geometry_proposal_status_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "The deterministic null provider proposal must be rejected.",
+            )
+        )
+    if raw.get("available") is not False or clean.get("available") is not False:
+        issues.append(
+            _issue(
+                "geometry_proposal_availability_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Null provider must not claim raw or clean geometry availability.",
+            )
+        )
+    if _int_or(audit.get("meshCount"), -1) != 0 or _int_or(audit.get("triangleEstimate"), -1) != 0:
+        issues.append(
+            _issue(
+                "geometry_proposal_audit_invalid",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Null provider geometry audit must report zero meshes and triangles.",
+            )
+        )
+    if proposal_quality is not None:
+        if proposal_quality.get("proposalId") != proposal.get("proposalId"):
+            issues.append(
+                _issue(
+                    "geometry_proposal_quality_mismatch",
+                    "fatal",
+                    "reports/geometry_proposal_quality.json",
+                    "Geometry proposal quality report must reference the proposal ID.",
+                )
+            )
+        if proposal_quality.get("acceptedForCanonical") != quality.get("acceptedForCanonical"):
+            issues.append(
+                _issue(
+                    "geometry_proposal_quality_mismatch",
+                    "fatal",
+                    "reports/geometry_proposal_quality.json",
+                    "Geometry proposal quality acceptance must match the proposal.",
+                )
+            )
+    caps = manifest.get("capabilities", {})
+    if not isinstance(caps, dict):
+        return
+    expected_capabilities = [
+        ("geometryProposalInterfaceAvailable", True, "geometry_proposal_capability_missing"),
+        ("rawGeometryProposalRecordAvailable", True, "geometry_proposal_capability_missing"),
+        ("geometryProposalQualityScored", True, "geometry_proposal_capability_missing"),
+        ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
+        ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
+    ]
+    for key, expected, code in expected_capabilities:
+        if caps.get(key) is not expected:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "manifest.json",
+                    f"Manifest capability {key} must be {expected!r} for the null provider.",
+                )
+            )
+    if _contains_nonfinite(proposal):
+        issues.append(
+            _issue(
+                "geometry_proposal_nonfinite_numeric_value",
+                "fatal",
+                "proposals/raw_geometry_proposal.json",
+                "Geometry proposal report must not contain NaN or Infinity.",
+            )
+        )
 
 
 def _validate_pattern(package_dir: Path, issues: list[ValidationIssue]) -> None:

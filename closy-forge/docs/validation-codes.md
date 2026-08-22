@@ -48,6 +48,14 @@ Representative current codes:
 - `texture_identity_pbr_color_invalid`: texture identity has an invalid PBR base colour factor.
 - `texture_identity_pbr_factor_invalid`: texture identity has an invalid roughness or metallic factor.
 - `texture_source_capability_contradiction`: manifest source-image texture capability contradicts texture identity state.
+- `geometry_proposal_hash_mismatch`: raw geometry proposal changed without updating its payload hash.
+- `geometry_proposal_source_hash_mismatch`: proposal points at the wrong capture source hash.
+- `geometry_proposal_provider_policy_violation`: proposal provider policy claims disallowed external API, training or user-data use.
+- `geometry_proposal_domain_invalid`: proposal request is not constrained to Closy avatar/garment scope.
+- `geometry_proposal_raw_canonical_use_invalid`: raw proposal does not explicitly forbid canonical use.
+- `geometry_proposal_canonical_acceptance_invalid`: rejected/null provider output claims canonical acceptance.
+- `geometry_proposal_availability_invalid`: null provider claims raw or clean geometry availability.
+- `clean_geometry_proposal_capability_invalid`: manifest claims clean geometry proposal availability in the null-provider fixture.
 - `unsupported_schema_version`: unsupported `schemaVersion`.
 - `required_file_missing`: required package file absent.
 - `unsafe_package_path`: inventory path escapes the package contract.

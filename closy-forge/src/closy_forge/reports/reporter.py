@@ -15,6 +15,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     correction = read_json(package_dir / "source" / "correction_record.json")
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     texture = read_json(package_dir / "textures" / "texture_identity.json")
+    proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -70,6 +71,19 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "materialRegionCount": len(texture["observedMaterialRegions"]),
             "recommendedAtlasSizePx": texture["projectionPlan"]["recommendedAtlasSizePx"],
         },
+        "geometryProposal": {
+            "proposalId": proposal["proposalId"],
+            "providerId": proposal["provider"]["providerId"],
+            "providerKind": proposal["provider"]["providerKind"],
+            "qualityStatus": proposal["quality"]["status"],
+            "rawProposalAvailable": proposal["rawProposal"]["available"],
+            "cleanProposalAvailable": proposal["cleanProposal"]["available"],
+            "acceptedForCanonical": proposal["quality"]["acceptedForCanonical"],
+            "meshCount": proposal["geometryAudit"]["meshCount"],
+            "visibleMeshCount": proposal["geometryAudit"]["visibleMeshCount"],
+            "triangleEstimate": proposal["geometryAudit"]["triangleEstimate"],
+            "failureReason": proposal["geometryAudit"]["failureReason"],
+        },
         "settle": {
             "solverVersion": settle["solverVersion"],
             "convergenceState": settle["convergenceState"],
@@ -102,6 +116,7 @@ def human_report(package_dir: Path) -> str:
     visual = summary["visualUnderstanding"]
     fitting = summary["fitting"]
     texture = summary["texture"]
+    proposal = summary["geometryProposal"]
     settle = summary["settle"]
     lines.extend(
         [
@@ -122,6 +137,10 @@ def human_report(package_dir: Path) -> str:
                 f"Texture identity: {texture['status']}, "
                 f"{texture['materialRegionCount']} PBR material observations, "
                 f"source textures available={texture['sourceTextureAvailable']}"
+            ),
+            (
+                f"Geometry proposal: {proposal['qualityStatus']} via "
+                f"{proposal['providerId']}, raw available={proposal['rawProposalAvailable']}"
             ),
             (
                 f"Binding: {binding['recordCount']} records, "

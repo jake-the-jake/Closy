@@ -2,7 +2,7 @@
 
 Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
 
-The current deterministic fixture builds one authored T-shirt package with synthetic metadata-only capture records, analytic mask/landmark observations, an empty correction ledger, deterministic T-shirt parameter fitting, texture/PBR identity evidence, analytic rest state, CPU reference settle state, conventional GLBs, and sim-to-render binding:
+The current deterministic fixture builds one authored T-shirt package with synthetic metadata-only capture records, analytic mask/landmark observations, an empty correction ledger, deterministic T-shirt parameter fitting, texture/PBR identity evidence, a rejected null visual-geometry proposal boundary, analytic rest state, CPU reference settle state, conventional GLBs, and sim-to-render binding:
 
 ```bash
 python -m closy_forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment
@@ -73,6 +73,7 @@ See:
 - `docs/tshirt-pattern-v1.md` for the deterministic T-shirt pattern contract.
 - `docs/capture-records-v1.md` for synthetic source records, capture quality scoring, visual observations and correction records.
 - `docs/texture-identity-v1.md` for synthetic texture identity and mobile-safe PBR evidence.
+- `docs/geometry-proposal-contract-v1.md` for the raw/clean visual-geometry proposal boundary.
 - `docs/cloth-settle-reference-v1.md` for the CPU reference settle backend.
 - `docs/MASTER_BLUEPRINT_PROGRESS.md` for the evidence ledger across the master blueprint.
 - `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.

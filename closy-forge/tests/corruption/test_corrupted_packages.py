@@ -364,3 +364,37 @@ def test_texture_source_capability_contradiction_is_rejected(tmp_path) -> None: 
     manifest["capabilities"]["sourceImageTextureAvailable"] = True
     write_json(corrupt / "manifest.json", manifest)
     assert "texture_source_capability_contradiction" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_proposal_hash.closygarment")
+    proposal = read_json(corrupt / "proposals" / "raw_geometry_proposal.json")
+    proposal["geometryAudit"]["triangleEstimate"] = 42
+    write_json(corrupt / "proposals" / "raw_geometry_proposal.json", proposal)
+    assert "geometry_proposal_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_proposal_provider_policy_violation_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_proposal_policy.closygarment")
+    proposal = read_json(corrupt / "proposals" / "raw_geometry_proposal.json")
+    proposal["provider"]["runtimeExternalApis"] = True
+    write_json(corrupt / "proposals" / "raw_geometry_proposal.json", proposal)
+    assert "geometry_proposal_provider_policy_violation" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_proposal_domain_violation_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_proposal_domain.closygarment")
+    proposal = read_json(corrupt / "proposals" / "raw_geometry_proposal.json")
+    proposal["request"]["supportedDomain"] = "generic_object"
+    write_json(corrupt / "proposals" / "raw_geometry_proposal.json", proposal)
+    assert "geometry_proposal_domain_invalid" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_proposal_canonical_acceptance_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_proposal_canonical.closygarment")
+    proposal = read_json(corrupt / "proposals" / "raw_geometry_proposal.json")
+    proposal["quality"]["acceptedForCanonical"] = True
+    write_json(corrupt / "proposals" / "raw_geometry_proposal.json", proposal)
+    assert "geometry_proposal_canonical_acceptance_invalid" in issue_codes(
+        validate_package(corrupt)
+    )
