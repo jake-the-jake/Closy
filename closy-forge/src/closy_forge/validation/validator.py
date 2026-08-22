@@ -29,7 +29,7 @@ from closy_forge.geometry.triangulation import validate_panel_boundary
 from closy_forge.package_io.canonical_json import read_json
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, topology_hash
 from closy_forge.package_io.paths import validate_package_relpath
-from closy_forge.proposals import hash_geometry_proposal
+from closy_forge.proposals import hash_geometry_proposal, hash_provider_registry
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
@@ -47,6 +47,7 @@ EXPECTED_FILES = [
     "fitting/tshirt_fit.json",
     "textures/texture_identity.json",
     "proposals/raw_geometry_proposal.json",
+    "proposals/provider_registry.json",
     "avatar/avatar_contract.json",
     "avatar/reference_avatar.glb",
     "avatar/collision.glb",
@@ -73,6 +74,7 @@ EXPECTED_FILES = [
     "reports/fitting_quality.json",
     "reports/texture_quality.json",
     "reports/geometry_proposal_quality.json",
+    "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
     "reports/pattern_quality.json",
     "reports/simulation_quality.json",
@@ -214,6 +216,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_fitting(package_dir, manifest, issues)
     _validate_texture_identity(package_dir, manifest, issues)
     _validate_geometry_proposal(package_dir, manifest, issues)
+    _validate_provider_registry(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
@@ -1365,6 +1368,365 @@ def _validate_geometry_proposal(
                 "fatal",
                 "proposals/raw_geometry_proposal.json",
                 "Geometry proposal report must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_provider_registry(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    capture_record = _read_required_json(package_dir, "source/capture_record.json", issues)
+    visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    fit_report = _read_required_json(package_dir, "fitting/tshirt_fit.json", issues)
+    texture = _read_required_json(package_dir, "textures/texture_identity.json", issues)
+    proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
+    registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
+    registry_quality = _read_required_json(
+        package_dir, "reports/provider_registry_quality.json", issues
+    )
+    if (
+        capture_record is None
+        or visual is None
+        or fit_report is None
+        or texture is None
+        or proposal is None
+        or registry is None
+    ):
+        return
+
+    if registry.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "provider_registry_garment_mismatch",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Provider registry must reference the package garment ID.",
+            )
+        )
+    if registry.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "provider_registry_class_mismatch",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Provider registry must reference the package garment class.",
+            )
+        )
+
+    expected_hashes = [
+        (
+            "sourceRecordHash",
+            _nested_string(capture_record, ["immutability", "sourceRecordHash"], ""),
+            "provider_registry_source_hash_mismatch",
+        ),
+        (
+            "sourceVisualRecordHash",
+            _nested_string(visual, ["integrity", "visualRecordHash"], ""),
+            "provider_registry_visual_hash_mismatch",
+        ),
+        (
+            "sourceFitReportHash",
+            _nested_string(fit_report, ["integrity", "fitReportHash"], ""),
+            "provider_registry_fit_hash_mismatch",
+        ),
+        (
+            "sourceTextureIdentityHash",
+            _nested_string(texture, ["integrity", "textureIdentityHash"], ""),
+            "provider_registry_texture_hash_mismatch",
+        ),
+        (
+            "sourceGeometryProposalHash",
+            _nested_string(proposal, ["integrity", "geometryProposalHash"], ""),
+            "provider_registry_proposal_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if registry.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    f"Provider registry {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(registry, ["integrity", "providerRegistryHash"], "") != (
+        hash_provider_registry(registry)
+    ):
+        issues.append(
+            _issue(
+                "provider_registry_hash_mismatch",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Provider registry hash must match its canonical payload.",
+            )
+        )
+
+    scope = registry.get("scope", {})
+    policy = registry.get("policy", {})
+    providers = registry.get("providers", [])
+    d0_caps = registry.get("d0Capabilities", {})
+    manual = registry.get("manualImportCandidate", {})
+    for name, block in [
+        ("scope", scope),
+        ("policy", policy),
+        ("d0Capabilities", d0_caps),
+        ("manualImportCandidate", manual),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "provider_registry_block_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    f"Provider registry {name} block must be an object.",
+                )
+            )
+            return
+    if not isinstance(providers, list) or not providers:
+        issues.append(
+            _issue(
+                "provider_registry_provider_list_invalid",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Provider registry must list at least one provider.",
+            )
+        )
+        providers = []
+
+    selected_provider = str(registry.get("selectedProviderId", ""))
+    provider_ids = {
+        str(provider.get("providerId", "")) for provider in providers if isinstance(provider, dict)
+    }
+    if selected_provider not in provider_ids:
+        issues.append(
+            _issue(
+                "provider_registry_selected_provider_missing",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Selected provider must be present in provider list.",
+            )
+        )
+    if selected_provider != "closy.null_geometry_proposal_provider.v1":
+        issues.append(
+            _issue(
+                "provider_registry_selected_provider_invalid",
+                "fatal",
+                "proposals/provider_registry.json",
+                (
+                    "The deterministic demo package must select the null provider until "
+                    "a reviewed asset exists."
+                ),
+            )
+        )
+
+    if (
+        scope.get("supportedDomain") != "avatar_garment_only"
+        or scope.get("allowsGenericObjects") is not False
+        or "garment_visual_geometry_proposal" not in scope.get("supportedPurposes", [])
+        or manifest.get("garmentClass") not in scope.get("supportedGarmentClasses", [])
+    ):
+        issues.append(
+            _issue(
+                "provider_registry_domain_invalid",
+                "fatal",
+                "proposals/provider_registry.json",
+                (
+                    "Provider registry must remain constrained to avatar-and-garment "
+                    "geometry proposals."
+                ),
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "provider_registry_policy_violation",
+                "fatal",
+                "proposals/provider_registry.json",
+                "D0 provider registry cannot permit external APIs, training use or user data.",
+            )
+        )
+
+    for provider in providers:
+        if not isinstance(provider, dict):
+            issues.append(
+                _issue(
+                    "provider_registry_provider_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Provider entries must be objects.",
+                )
+            )
+            continue
+        provider_policy = provider.get("policy", {})
+        if not isinstance(provider_policy, dict):
+            issues.append(
+                _issue(
+                    "provider_registry_provider_policy_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Provider policy entries must be objects.",
+                    str(provider.get("providerId", "")),
+                )
+            )
+            continue
+        if (
+            provider_policy.get("runtimeExternalApis") is not False
+            or provider_policy.get("allowTrainingUse") is not False
+            or provider_policy.get("acceptsUserImagery") is not False
+            or provider_policy.get("containsPersonalBodyData") is not False
+        ):
+            issues.append(
+                _issue(
+                    "provider_registry_provider_policy_violation",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    (
+                        "Provider entries cannot enable external APIs, training use "
+                        "or user data in D0."
+                    ),
+                    str(provider.get("providerId", "")),
+                )
+            )
+        if (
+            provider_policy.get("approvedDomain") != "avatar_and_garment_only"
+            or provider_policy.get("allowsGenericObjects") is not False
+            or "garment_visual_geometry_proposal" not in provider.get("supportedPurposes", [])
+            or manifest.get("garmentClass") not in provider.get("supportedGarmentClasses", [])
+        ):
+            issues.append(
+                _issue(
+                    "provider_registry_provider_domain_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Provider entries must be garment/avatar constrained.",
+                    str(provider.get("providerId", "")),
+                )
+            )
+
+    expected_d0 = [
+        ("providerRegistryAvailable", True),
+        ("nullProviderAvailable", True),
+        ("manualLocalImportAdapterDeclared", True),
+        ("manualLocalImportAssetAvailable", False),
+        ("externalProvidersConfigured", False),
+        ("cleanProposalProviderAvailable", False),
+    ]
+    for key, expected in expected_d0:
+        if d0_caps.get(key) is not expected:
+            issues.append(
+                _issue(
+                    "provider_registry_d0_capability_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    f"D0 provider capability {key} must be {expected!r}.",
+                )
+            )
+
+    if manual.get("acceptedForCanonical") is not False:
+        issues.append(
+            _issue(
+                "provider_registry_manual_canonical_invalid",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Manual import candidates are visual proposals and must not be canonical.",
+            )
+        )
+    if manual.get("acceptedForRawProposal") is not False:
+        issues.append(
+            _issue(
+                "provider_registry_manual_asset_unexpected",
+                "fatal",
+                "proposals/provider_registry.json",
+                (
+                    "The deterministic demo package must not claim an operator-supplied "
+                    "manual GLB asset."
+                ),
+            )
+        )
+    if manual.get("status") != "missing_local_asset":
+        issues.append(
+            _issue(
+                "provider_registry_manual_status_invalid",
+                "fatal",
+                "proposals/provider_registry.json",
+                (
+                    "The deterministic demo package must report the manual provider as "
+                    "missing local asset."
+                ),
+            )
+        )
+    if registry_quality is not None:
+        expected_quality = {
+            "registryId": registry.get("registryId"),
+            "selectedProviderId": selected_provider,
+            "manualLocalImportAssetAvailable": d0_caps.get("manualLocalImportAssetAvailable"),
+            "externalProvidersConfigured": d0_caps.get("externalProvidersConfigured"),
+            "cleanProposalProviderAvailable": d0_caps.get("cleanProposalProviderAvailable"),
+            "manualImportStatus": manual.get("status"),
+            "manualImportFailureReason": manual.get("failureReason"),
+        }
+        for key, expected in expected_quality.items():
+            if registry_quality.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "provider_registry_quality_mismatch",
+                        "fatal",
+                        "reports/provider_registry_quality.json",
+                        f"Provider registry quality field {key} must match the registry.",
+                    )
+                )
+
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict):
+        expected_manifest = [
+            ("geometryProviderRegistryAvailable", True),
+            ("manualGeometryImportAdapterDeclared", True),
+            ("manualGeometryImportAssetAvailable", False),
+            ("externalGeometryProvidersConfigured", False),
+            ("cleanGeometryProposalAvailable", False),
+        ]
+        for key, expected in expected_manifest:
+            if caps.get(key) is not expected:
+                issues.append(
+                    _issue(
+                        "provider_registry_manifest_capability_invalid",
+                        "fatal",
+                        "manifest.json",
+                        f"Manifest capability {key} must be {expected!r}.",
+                    )
+                )
+
+    future_slots = registry.get("futureProviderSlots", [])
+    if isinstance(future_slots, list):
+        for slot in future_slots:
+            if not isinstance(slot, dict):
+                continue
+            if not str(slot.get("status", "")).startswith("unconfigured_"):
+                issues.append(
+                    _issue(
+                        "provider_registry_future_slot_invalid",
+                        "fatal",
+                        "proposals/provider_registry.json",
+                        "Future provider slots must remain explicitly unconfigured in D0.",
+                        str(slot.get("providerId", "")),
+                    )
+                )
+
+    if _contains_nonfinite(registry):
+        issues.append(
+            _issue(
+                "provider_registry_nonfinite_numeric_value",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Provider registry must not contain NaN or Infinity.",
             )
         )
 

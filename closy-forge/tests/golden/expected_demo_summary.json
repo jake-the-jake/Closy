@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "d53fce27a13df2febd2923c4c24b1f2071e3491264b713275a7d2b2098e56b8e",
+  "canonicalPackageDigest": "cfe62135f6e264d0d8d385caf93f7d6df213311d4c617ee31e1d6f354229eb08",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -19,11 +19,15 @@
     "captureQualityScored": true,
     "cleanGeometryProposalAvailable": false,
     "editableCorrectionRecordAvailable": true,
+    "externalGeometryProvidersConfigured": false,
     "fittingQualityScored": true,
     "garmentLandmarksAvailable": true,
     "garmentMaskAvailable": true,
     "geometryProposalInterfaceAvailable": true,
     "geometryProposalQualityScored": true,
+    "geometryProviderRegistryAvailable": true,
+    "manualGeometryImportAdapterDeclared": true,
+    "manualGeometryImportAssetAvailable": false,
     "pbrMaterialObservationAvailable": true,
     "providerProvenanceAvailable": true,
     "rawGeometryProposalRecordAvailable": true,
@@ -69,6 +73,16 @@
     "rawProposalAvailable": false,
     "triangleEstimate": 0,
     "visibleMeshCount": 0
+  },
+  "providerRegistry": {
+    "cleanProposalProviderAvailable": false,
+    "externalProvidersConfigured": false,
+    "manualLocalImportAdapterDeclared": true,
+    "manualLocalImportAssetAvailable": false,
+    "providerCount": 2,
+    "registryId": "provider_registry.geometry_tshirt_reference_v1",
+    "selectedProviderId": "closy.null_geometry_proposal_provider.v1",
+    "selectionReason": "demo_package_has_no_operator_supplied_manual_glb_asset"
   },
   "renderTopologyHash": "9029588639d462d8092d44ebdea4bd4f0b78a83c0f827b416ef88c241f459fad",
   "settle": {

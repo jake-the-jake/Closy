@@ -16,6 +16,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     texture = read_json(package_dir / "textures" / "texture_identity.json")
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
+    provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -84,6 +85,24 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "triangleEstimate": proposal["geometryAudit"]["triangleEstimate"],
             "failureReason": proposal["geometryAudit"]["failureReason"],
         },
+        "providerRegistry": {
+            "registryId": provider_registry["registryId"],
+            "selectedProviderId": provider_registry["selectedProviderId"],
+            "selectionReason": provider_registry["selectionReason"],
+            "providerCount": len(provider_registry["providers"]),
+            "manualLocalImportAdapterDeclared": provider_registry["d0Capabilities"][
+                "manualLocalImportAdapterDeclared"
+            ],
+            "manualLocalImportAssetAvailable": provider_registry["d0Capabilities"][
+                "manualLocalImportAssetAvailable"
+            ],
+            "externalProvidersConfigured": provider_registry["d0Capabilities"][
+                "externalProvidersConfigured"
+            ],
+            "cleanProposalProviderAvailable": provider_registry["d0Capabilities"][
+                "cleanProposalProviderAvailable"
+            ],
+        },
         "settle": {
             "solverVersion": settle["solverVersion"],
             "convergenceState": settle["convergenceState"],
@@ -117,6 +136,7 @@ def human_report(package_dir: Path) -> str:
     fitting = summary["fitting"]
     texture = summary["texture"]
     proposal = summary["geometryProposal"]
+    provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
     lines.extend(
         [
@@ -141,6 +161,11 @@ def human_report(package_dir: Path) -> str:
             (
                 f"Geometry proposal: {proposal['qualityStatus']} via "
                 f"{proposal['providerId']}, raw available={proposal['rawProposalAvailable']}"
+            ),
+            (
+                f"Provider registry: selected {provider_registry['selectedProviderId']}, "
+                "manual asset available="
+                f"{provider_registry['manualLocalImportAssetAvailable']}"
             ),
             (
                 f"Binding: {binding['recordCount']} records, "

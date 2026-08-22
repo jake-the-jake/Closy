@@ -398,3 +398,35 @@ def test_geometry_proposal_canonical_acceptance_is_rejected(tmp_path) -> None:  
     assert "geometry_proposal_canonical_acceptance_invalid" in issue_codes(
         validate_package(corrupt)
     )
+
+
+def test_provider_registry_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_registry_hash.closygarment")
+    registry = read_json(corrupt / "proposals" / "provider_registry.json")
+    registry["selectionReason"] = "tampered"
+    write_json(corrupt / "proposals" / "provider_registry.json", registry)
+    assert "provider_registry_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_provider_registry_policy_violation_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_registry_policy.closygarment")
+    registry = read_json(corrupt / "proposals" / "provider_registry.json")
+    registry["providers"][0]["policy"]["runtimeExternalApis"] = True
+    write_json(corrupt / "proposals" / "provider_registry.json", registry)
+    assert "provider_registry_provider_policy_violation" in issue_codes(validate_package(corrupt))
+
+
+def test_provider_registry_generic_domain_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_registry_domain.closygarment")
+    registry = read_json(corrupt / "proposals" / "provider_registry.json")
+    registry["scope"]["allowsGenericObjects"] = True
+    write_json(corrupt / "proposals" / "provider_registry.json", registry)
+    assert "provider_registry_domain_invalid" in issue_codes(validate_package(corrupt))
+
+
+def test_provider_registry_manual_asset_claim_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_registry_manual.closygarment")
+    registry = read_json(corrupt / "proposals" / "provider_registry.json")
+    registry["manualImportCandidate"]["acceptedForRawProposal"] = True
+    write_json(corrupt / "proposals" / "provider_registry.json", registry)
+    assert "provider_registry_manual_asset_unexpected" in issue_codes(validate_package(corrupt))

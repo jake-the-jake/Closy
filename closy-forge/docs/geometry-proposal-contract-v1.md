@@ -19,6 +19,8 @@ The current implementation uses `closy.null_geometry_proposal_provider.v1`, a de
 
 `reports/geometry_proposal_quality.json` mirrors the proposal quality state for quick package inspection.
 
+`proposals/provider_registry.json` records which provider boundary was selected for the package and which future/manual providers remain unavailable or unconfigured.
+
 ## C2 Rules
 
 Raw visual geometry proposals are never canonical garment truth. A provider output may help with visual reference, texture recovery or future dense detail, but panels, seams, simulation topology, avatar correspondence and package validation remain Closy-owned.
