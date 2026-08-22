@@ -5,13 +5,13 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 ## Dashboard
 
 - Branch: `codex/closy-forge-phase-0`
-- Head when last updated: `pending-current-increment`
-- Current active increment: `BP-17-PHASE-01` deterministic T-shirt cloth assembly and settle
-- Completed phases: `BP-17-PHASE-00`
-- Partially complete phases: `BP-17-PHASE-01`
+- Latest completed implementation commit when last updated: `bf1ae29`
+- Current active increment: `BP-17-PHASE-02` capture and visual-understanding slice
+- Completed phases: `BP-17-PHASE-00`, `BP-17-PHASE-01`
+- Partially complete phases: `BP-17-PHASE-06`
 - Passed gates: `BP-18-GATE-C1`
 - Blocked gates: `BP-18-GATE-Z1`, `BP-18-GATE-Z2`, `BP-18-GATE-P1`
-- Next dependency-ready increment: `BP-17-PHASE-02` capture and visual-understanding slice
+- Next dependency-ready increment: `BP-17-PHASE-02` immutable synthetic capture records and quality scoring
 - Last focused verification: `python -m pytest` -> `42 passed`; `python -m closy_forge schemas check --schema-dir schemas/v1` -> fresh
 
 ## Core Principles And Architecture
@@ -45,17 +45,17 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 | BP-08-H-PATTERN-INFERENCE | in_progress | Level 1 parametric T-shirt template. | Pattern schema | `parameters.py`, `pattern_generator.py` | Bounded variants validate and stable seam IDs remain. | `30f7d08` | No image parameter prediction. | Phase 3 deterministic fitting from masks. |
 | BP-08-I-GEOMETRY-PROVIDERS | not_started | Raw visual proposal provider interface/adapters. | Gate C2 prerequisites | None | None | None | No provider work; no API use. | Add null/manual provider after C2 contract. |
 | BP-08-J-SIM-MESH-CONSTRUCTION | complete | Pattern-derived simulation mesh with panel UVs. | Pattern schema | `geometry/triangulation.py`, `assembly.py` | Mesh manifests retain `panelUvs`; corruption tests reject missing coordinates. | `30f7d08`, `3dd65b1` | Coarse fan triangulation. | Improve triangulation quality before richer cloth. |
-| BP-08-K-CLOTH-SIMULATION | in_progress | CPU reference settle with gravity, seams, stretch, bend and body collision. | Simulation mesh and collision avatar | `simulation/reference_cloth_solver.py`, `simulation/*state.json`, `simulation/settle_diagnostics.json` | Solver unit test; package validates with `actualClothSettleAvailable=true`. | pending-current-increment | Self-collision unavailable; not production-grade cloth. | Add self-collision or richer body-collision tests later. |
+| BP-08-K-CLOTH-SIMULATION | complete | CPU reference settle with gravity, seams, stretch, bend and body collision. | Simulation mesh and collision avatar | `simulation/reference_cloth_solver.py`, `simulation/*state.json`, `simulation/settle_diagnostics.json` | Solver unit test; package validates with `actualClothSettleAvailable=true`; diagnostics converge. | `bf1ae29` | Self-collision unavailable; not production-grade cloth. | Add self-collision or richer body-collision tests later. |
 | BP-08-L-FIT-REFINEMENT | not_started | Differentiable/iterative fit refinement. | Capture masks/depth and solver | None | None | None | No image evidence/losses. | Begin after Phase 3. |
 | BP-08-M-MESH-ANALYSIS | in_progress | Mesh audit and repair report. | Mesh assets | `geometry/glb_io.py`, validator | GLB parse smoke and degenerate triangle corruption tests pass. | `30f7d08`, `3dd65b1` | No connected component/non-manifold analysis. | Add visual proposal mesh audit in Gate C2. |
 | BP-08-N-GARMENT-RETOPOLOGY | in_progress | Simulation/render/runtime topology distinction. | Mesh construction | `subdivision.py`, binding docs | Separate render shell and simulation topology. | `30f7d08` | No learned/semantic retopology. | Improve fallback topology only after dense proposals. |
 | BP-08-O-UV-STRATEGY | in_progress | Pattern-space UV retained. | Simulation mesh | mesh manifests, GLB `TEXCOORD_0` | Panel coordinates retained and validated. | `30f7d08`, `3dd65b1` | No atlas/source-view UVs. | Add texture projection UVs in Phase 4. |
 | BP-08-P-TEXTURE-PBR | not_started | Source projection and PBR recovery. | Capture images and render shell | `render/materials.json` only | Authored flat PBR material exists. | `30f7d08` | No source texture, normal, AO or inpainting. | Phase 4. |
-| BP-08-Q-MATERIAL-INFERENCE | in_progress | Conservative cotton jersey preset. | Material schema | `material_physics.json` | Solver consumes damping/thickness; material schema exported. | pending-current-increment | No learned preset selector/calibration. | Phase 7 preset library. |
+| BP-08-Q-MATERIAL-INFERENCE | in_progress | Conservative cotton jersey preset. | Material schema | `material_physics.json` | Solver consumes damping/thickness; material schema exported. | `bf1ae29` | No learned preset selector/calibration. | Phase 7 preset library. |
 | BP-08-R-SIM-TO-RENDER-BINDING | complete | CLSYBND1 barycentric binding and validation. | Simulation/render mesh | `binding/` | Reconstruction and topology mismatch tests pass. | `30f7d08`, `3dd65b1` | Normal/tangent dynamic strategy not implemented. | Gate C3 pose-suite work. |
 | BP-08-S-LAYERING-ANIMATION | not_started | Layering, animation and fallback deformation. | Motion suite and multiple garments | None | None | None | Single garment only. | Phase 13. |
 | BP-08-T-HUMAN-CORRECTION | not_started | Structured correction tools. | Capture/fitting schemas | None | None | None | No UI or correction records. | Phase 2/3. |
-| BP-08-U-QUALITY-PROVENANCE | in_progress | Stage reports, provenance and quality gates. | All package stages | `reports/`, `provenance.json`, validator | Summary and validation reports generated; settle diagnostics added. | `30f7d08`, pending-current-increment | No capture/visual/runtime metrics yet. | Expand metrics with each stage. |
+| BP-08-U-QUALITY-PROVENANCE | in_progress | Stage reports, provenance and quality gates. | All package stages | `reports/`, `provenance.json`, validator | Summary and validation reports generated; settle diagnostics added. | `30f7d08`, `bf1ae29` | No capture/visual/runtime metrics yet. | Expand metrics with each stage. |
 
 ## ZeroOne Stages Z1 Through Z8
 
@@ -80,18 +80,18 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 | BP-10-MANIFEST | complete | Manifest identity, inventory, hashes and capabilities. | Package writer | `pipeline/build_tshirt_demo.py`, schema | Hash/inventory corruption tests pass. | `30f7d08`, `3dd65b1` | Quality summary remains simple. | Expand per stage. |
 | BP-10-COORDINATES | complete | Metres, RH, Y-up, +Z forward, CCW. | ADR | `contracts/common.py`, ADR | Validator rejects convention mismatch. | `30f7d08`, `3dd65b1` | Existing app GLB mismatch remains isolated. | Later app-runtime migration. |
 | BP-10-STABLE-IDS-HASHES | complete | Stable IDs and topology/content hashes. | Mesh/pattern contracts | `package_io/hashing.py` | Golden digest and topology hashes stable. | `30f7d08` | No schema migration yet. | Add v2 only with migration/rejection. |
-| BP-10-PROVENANCE | complete | Deterministic provenance graph. | Stage outputs | `provenance.json` | Records source kind, privacy flags, seed and stages. | `30f7d08`, pending-current-increment | No user source deletion graph yet. | Phase 2 source records. |
-| BP-10-CAPABILITIES | complete | Truthful capability flags. | Package manifest | Manifest + validator | False ZeroOne claim rejected; settle capability validated. | `30f7d08`, pending-current-increment | Capabilities are fixture-level. | Add capability negotiation for service/runtime later. |
+| BP-10-PROVENANCE | complete | Deterministic provenance graph. | Stage outputs | `provenance.json` | Records source kind, privacy flags, seed and stages. | `30f7d08`, `bf1ae29` | No user source deletion graph yet. | Phase 2 source records. |
+| BP-10-CAPABILITIES | complete | Truthful capability flags. | Package manifest | Manifest + validator | False ZeroOne claim rejected; settle capability validated. | `30f7d08`, `bf1ae29` | Capabilities are fixture-level. | Add capability negotiation for service/runtime later. |
 | BP-11-SERVICE-LAYER | in_progress | Python sidecar isolated from Expo/C++/ZeroOne. | Repo boundary | `closy-forge/` | Root docs and CI exist. | `30f7d08` | No HTTP/worker API. | CLI-first phases continue. |
 | BP-11-PIPELINE-ORCHESTRATION | not_started | Idempotent stages, caching, resume/cancel/events. | Stage contracts | None | None | None | Current builder is a direct vertical slice. | Add local orchestrator before Phase 5/provider work. |
 | BP-11-PROVIDER-ISOLATION | not_started | Separate worker environments for heavy providers. | Provider interfaces | None | None | None | Core env intentionally minimal. | Add profile manifests when providers begin. |
 | BP-11-CLI | complete | Build, validate, report commands. | Package builder | `cli/main.py` | CLI integration tests pass. | `30f7d08` | No ingest/analyse/simulate commands yet. | Add commands per phase. |
 | BP-11-API-SHAPE | not_started | Reconstruction job HTTP/service API. | Stable CLI/stages | None | None | None | No service. | After CLI contracts mature. |
 | BP-11-STORAGE | not_started | Content-addressed/object storage model. | Source records | None | None | None | Local package only. | Phase 2 job records. |
-| BP-11-OBSERVABILITY | in_progress | Timings, counts, diagnostics, validation outcomes. | Stage reports | Reports and settle diagnostics | Mesh counts, validation, settle diagnostics recorded. | pending-current-increment | No hardware/memory/provider cost metrics. | Add per-stage benchmark profile. |
+| BP-11-OBSERVABILITY | in_progress | Timings, counts, diagnostics, validation outcomes. | Stage reports | Reports and settle diagnostics | Mesh counts, validation, settle diagnostics recorded. | `bf1ae29` | No hardware/memory/provider cost metrics. | Add per-stage benchmark profile. |
 | BP-12-MODEL-STRATEGY | not_started | Provider/model registry and baselines. | Data/eval contracts | None | None | None | No model/provider dependency. | Add registry before any model adapter. |
 | BP-13-DATA-STRATEGY | not_started | Synthetic/real dataset manifests and splits. | Capture/pattern infrastructure | None | None | None | No datasets. | Start synthetic fixture manifests in Phase 2/9. |
-| BP-14-EVALUATION | in_progress | Stage metrics and golden/regression suite. | Package stages | `tests/golden`, reports | Golden package summary and corruption suite pass. | `30f7d08`, pending-current-increment | No capture/appearance/runtime benchmarks. | Add metrics per stage. |
+| BP-14-EVALUATION | in_progress | Stage metrics and golden/regression suite. | Package stages | `tests/golden`, reports | Golden package summary and corruption suite pass. | `30f7d08`, `bf1ae29` | No capture/appearance/runtime benchmarks. | Add metrics per stage. |
 | BP-15-SECURITY-PRIVACY | in_progress | Privacy flags, no real user data, provider policy false. | Provenance | `provenance.json`, docs | `containsUserImagery=false`, external APIs false. | `30f7d08` | No real deletion flow or encryption. | Phase 2 source deletion graph before real captures. |
 | BP-15-LICENSING | in_progress | Dependency and asset licence discipline. | Dependency choices | `THIRD_PARTY.md` | Direct/transitive dev deps recorded; no external models. | `30f7d08`, `3dd65b1` | No model/dataset registry. | Add before provider/data ingestion. |
 | BP-16-COMPUTE-D0 | complete | CPU/schema/test profile. | Minimal dependencies | `pyproject.toml`, `requirements-dev.lock`, CI | Ruff/mypy/pytest/schema checks pass on CPU. | `30f7d08`, `3dd65b1` | No GPU checks. | Preserve as always-on gate. |
@@ -104,7 +104,7 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 | ID | Status | Scope | Dependencies | Implementation paths | Evidence | Commits | Known limitations | Next action |
 |---|---|---|---|---|---|---|---|---|
 | BP-17-PHASE-00 | complete | Contract and deterministic harness. | None | `closy-forge/` | Build/validate/report, schemas, tests, CI. | `30f7d08`, `3dd65b1` | One fixture only. | Keep D0 gate green. |
-| BP-17-PHASE-01 | in_progress | Deterministic T-shirt construction and cloth settle. | Phase 0 | `garments/tshirt/`, `simulation/reference_cloth_solver.py` | T-shirt panels, constraints, material and reference settle run. | `30f7d08`, pending-current-increment | No self-collision/inspection render image. | Add richer simulation diagnostics or begin Phase 2. |
+| BP-17-PHASE-01 | complete | Deterministic T-shirt construction and cloth settle. | Phase 0 | `garments/tshirt/`, `simulation/reference_cloth_solver.py` | T-shirt panels, constraints, material and reference settle run; deterministic double-build digest `963a3121887897280868c09082c27c34e8fbd0ca02cf70b645719fd012b3be5d`. | `30f7d08`, `bf1ae29` | Self-collision unavailable; no rendered preview image. | Continue into Phase 2 capture records. |
 | BP-17-PHASE-02 | not_started | Capture and visual-understanding slice. | Phase 1 package baseline | None | None | None | No source images/masks. | Add immutable synthetic capture records and quality scoring. |
 | BP-17-PHASE-03 | not_started | T-shirt pattern fitting from images. | Phase 2 masks/landmarks | None | None | None | No image evidence. | Deterministic optimisation after Phase 2. |
 | BP-17-PHASE-04 | not_started | Texture identity recovery. | Capture/views/render shell | None | None | None | No source textures. | Add projection and confidence maps. |
@@ -139,19 +139,19 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 | BP-19-RISK-03-AI-MESH | complete | AI mesh cannot become canonical. | Package boundary | Docs/capabilities | No provider output in canonical package. | `30f7d08` | No providers yet. | Keep raw proposal distinction. |
 | BP-19-RISK-04-TEXTURE-HALLUCINATION | not_started | Preserve observed texture regions. | Capture/texture phase | None | None | None | No textures. | Phase 4. |
 | BP-19-RISK-05-SCOPE-EXPLOSION | complete | Start narrow. | None | T-shirt-only validator | Unsupported class rejected. | `30f7d08` | One family only. | Add families one at a time. |
-| BP-19-RISK-06-CLOTH-INSTABILITY | in_progress | Conservative solver diagnostics and rejection. | Solver | Validator/diagnostics | Non-convergence corruption rejected. | pending-current-increment | Self-collision absent. | Add motion/self-collision tests later. |
+| BP-19-RISK-06-CLOTH-INSTABILITY | in_progress | Conservative solver diagnostics and rejection. | Solver | Validator/diagnostics | Non-convergence corruption rejected. | `bf1ae29` | Self-collision absent. | Add motion/self-collision tests later. |
 | BP-19-RISK-07-RETOPOLOGY-CORRESPONDENCE | in_progress | Preserve correspondence through binding/hash validation. | Binding | `binding/`, validator | Topology mismatches rejected. | `30f7d08`, `3dd65b1` | No external remeshing. | Dense proposal transfer maps later. |
 | BP-19-RISK-08-ZEROONE-COUPLING | complete | Closy works without ZeroOne. | Package fallback | Manifest capabilities | ZeroOne optional false. | `30f7d08` | No ZeroOne derivative. | Later optional bridge. |
 | BP-19-RISK-09-DYNAMIC-CLUSTERS | blocked_external | Dynamic cluster culling efficiency. | ZeroOne dynamic | None | None | None | External ZeroOne. | After Z2. |
 | BP-19-RISK-10-DEPENDENCY-CONFLICT | in_progress | Keep core env minimal. | Dependency discipline | `requirements-dev.lock`, `THIRD_PARTY.md` | No ML/GPU deps in D0. | `3dd65b1` | No provider envs yet. | Isolate future workers. |
 | BP-19-RISK-11-LICENSING | in_progress | Avoid restrictive deps/assets. | Dependency review | `THIRD_PARTY.md` | No external models/assets. | `30f7d08`, `3dd65b1` | No model registry. | Add before providers. |
 | BP-19-RISK-12-PRIVACY | in_progress | No source/user data; provenance privacy flags. | None | `provenance.json` | Privacy flags false. | `30f7d08` | No deletion flow. | Phase 2 before real data. |
-| BP-19-RISK-13-UNMEASURED-VISUAL | in_progress | Stage metrics, tests and reports. | Package reports | `reports/`, tests | Golden/settle diagnostics. | pending-current-increment | No visual screenshot metrics. | Add inspection previews later. |
+| BP-19-RISK-13-UNMEASURED-VISUAL | in_progress | Stage metrics, tests and reports. | Package reports | `reports/`, tests | Golden/settle diagnostics. | `bf1ae29` | No visual screenshot metrics. | Add inspection previews later. |
 | BP-19-RISK-14-MOBILE-TOO-EARLY | complete | Keep mobile app untouched until packages are valid. | Boundary | No `src/` staged | Existing dirty app files preserved. | `30f7d08` | No runtime consumption. | App integration only after package runtime contract. |
-| BP-20-RESEARCH-PROTOTYPE | in_progress | Deterministic T-shirt pattern/simulation, future images/textures/binding. | Phases 0-6 | Forge package | Pattern, settle and binding exist. | pending-current-increment | No front/rear image fitting or textures. | Phase 2/3/4. |
+| BP-20-RESEARCH-PROTOTYPE | in_progress | Deterministic T-shirt pattern/simulation, future images/textures/binding. | Phases 0-6 | Forge package | Pattern, settle and binding exist. | `bf1ae29` | No front/rear image fitting or textures. | Phase 2/3/4. |
 | BP-20-ALPHA | not_started | Several categories, correction, providers, exports, ZeroOne static. | Many phases | None | None | None | Not alpha. | Complete phases 2-10. |
 | BP-20-BETA | not_started | Personalisation, layers, privacy, dynamic ZeroOne. | P1/Z2 | None | None | None | Not beta. | Later. |
 | BP-20-PRODUCTION | not_started | Reliable supported garment digitisation. | All gates | None | None | None | Not production. | Later. |
 | BP-21-LOCKED-DECISIONS | complete | Preserve all 12 locked decisions unless evidence changes. | Blueprint | Docs/contracts | Domain-specific package, no raw AI canonical, ZeroOne optional. | `30f7d08`, `3dd65b1` | Needs ongoing review. | Recheck each increment. |
 | BP-22-IMPLEMENTATION-01 | complete | Forge foundation and deterministic T-shirt vertical slice. | None | `closy-forge/` | 38 tests reported after hardening; current suite now 42 tests. | `30f7d08`, `3dd65b1` | Initial commit lacked settle. | Superseded by Phase 1 settle increment. |
-| BP-23-IMPLEMENTATION-02 | in_progress | Deterministic stitch/body-collision/settle path. | Implementation 01 | `simulation/reference_cloth_solver.py` | Solver/diagnostics added; validation passes. | pending-current-increment | Self-collision/production solver absent. | Commit increment and begin Phase 2. |
+| BP-23-IMPLEMENTATION-02 | complete | Deterministic stitch/body-collision/settle path. | Implementation 01 | `simulation/reference_cloth_solver.py` | Solver/diagnostics added; validation passes; `42` Forge tests pass. | `bf1ae29` | Self-collision/production solver absent. | Begin Phase 2 capture records. |
