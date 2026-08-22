@@ -94,6 +94,16 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryBindingCandidate"]["unmappedVertexCount"] == 0
     assert payload["geometryBindingCandidate"]["candidateCompleteness"] == 1.0
     assert payload["geometryBindingCandidate"]["acceptedForCleanProposal"] is False
+    assert payload["geometryBindingValidation"]["status"] == (
+        "deformation_validation_failed_runtime_binding_rejected"
+    )
+    assert payload["geometryBindingValidation"]["deformationValidationRun"] is True
+    assert payload["geometryBindingValidation"]["runtimeBindingAccepted"] is False
+    assert payload["geometryBindingValidation"]["validationRecordCount"] == 223
+    assert payload["geometryBindingValidation"]["failedCheckCount"] == 1
+    assert payload["geometryBindingValidation"]["notRunCheckCount"] == 4
+    assert payload["geometryBindingValidation"]["maxCleanupToSettledOffsetMeters"] == 0.944948063
+    assert payload["geometryBindingValidation"]["acceptedForCleanProposal"] is False
     assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"
     assert payload["cleanGeometryProposal"]["cleanProposalAvailable"] is False
     assert payload["cleanGeometryProposal"]["acceptedForCanonical"] is False
@@ -103,8 +113,11 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["cleanGeometryProposal"]["semanticTransferReportGenerated"] is True
     assert payload["cleanGeometryProposal"]["semanticTransferRun"] is True
     assert payload["cleanGeometryProposal"]["bindingCandidateReportGenerated"] is True
+    assert payload["cleanGeometryProposal"]["bindingValidationReportGenerated"] is True
     assert payload["cleanGeometryProposal"]["candidateBindingRun"] is True
+    assert payload["cleanGeometryProposal"]["deformationValidationRun"] is True
     assert payload["cleanGeometryProposal"]["simulationBindingRun"] is False
+    assert payload["cleanGeometryProposal"]["runtimeBindingAccepted"] is False
     assert payload["providerRegistry"]["selectedProviderId"] == ("closy.manual_local_glb_import.v1")
     assert payload["providerRegistry"]["manualLocalImportAssetAvailable"] is True
     assert payload["binding"]["recordCount"] > 0

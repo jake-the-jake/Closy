@@ -53,6 +53,7 @@ from closy_forge.package_io.writer import (
 from closy_forge.proposals import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
     GEOMETRY_BINDING_CANDIDATE_VERSION,
+    GEOMETRY_BINDING_VALIDATION_VERSION,
     GEOMETRY_CLEANUP_PLAN_VERSION,
     GEOMETRY_CLEANUP_RESULT_VERSION,
     GEOMETRY_PROPOSAL_VERSION,
@@ -61,6 +62,7 @@ from closy_forge.proposals import (
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
     build_clean_geometry_proposal_rejection,
     build_geometry_binding_candidate_report,
+    build_geometry_binding_validation_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
@@ -240,6 +242,16 @@ def _write_package_contents(
         simulation_mesh=simulation_mesh,
         simulation_mesh_path="simulation/simulation_mesh.glb",
     )
+    geometry_binding_validation = build_geometry_binding_validation_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        binding_candidate_report=geometry_binding_candidate,
+        cleanup_asset_path=cleanup_preview_asset,
+        rest_simulation_mesh=rest_mesh,
+        settled_simulation_mesh=simulation_mesh,
+        rest_state_path="simulation/rest_state.json",
+        settled_simulation_mesh_path="simulation/simulation_mesh.glb",
+    )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -250,6 +262,7 @@ def _write_package_contents(
         cleanup_result_report=geometry_cleanup_result,
         semantic_transfer_report=geometry_semantic_transfer,
         binding_candidate_report=geometry_binding_candidate,
+        binding_validation_report=geometry_binding_validation,
     )
     render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
     binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
@@ -361,6 +374,7 @@ def _write_package_contents(
         geometry_cleanup_result,
         geometry_semantic_transfer,
         geometry_binding_candidate,
+        geometry_binding_validation,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -389,6 +403,7 @@ def _write_package_contents(
         geometry_cleanup_result,
         geometry_semantic_transfer,
         geometry_binding_candidate,
+        geometry_binding_validation,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -420,6 +435,7 @@ def _write_package_contents(
         geometry_cleanup_result,
         geometry_semantic_transfer,
         geometry_binding_candidate,
+        geometry_binding_validation,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -446,6 +462,7 @@ def _write_package_contents(
         "geometryCleanupResult": geometry_cleanup_result,
         "geometrySemanticTransfer": geometry_semantic_transfer,
         "geometryBindingCandidate": geometry_binding_candidate,
+        "geometryBindingValidation": geometry_binding_validation,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
@@ -562,6 +579,7 @@ def _manifest(
     geometry_cleanup_result: dict[str, Any],
     geometry_semantic_transfer: dict[str, Any],
     geometry_binding_candidate: dict[str, Any],
+    geometry_binding_validation: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -596,6 +614,7 @@ def _manifest(
             "geometryCleanupResult": "reports/geometry_cleanup_result.json",
             "geometrySemanticTransfer": "reports/geometry_semantic_transfer.json",
             "geometryBindingCandidate": "reports/geometry_binding_candidate.json",
+            "geometryBindingValidation": "reports/geometry_binding_validation.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
@@ -686,6 +705,12 @@ def _manifest(
             "geometryBindingCandidatePayloadHash": str(
                 geometry_binding_candidate["integrity"]["geometryBindingCandidateHash"]
             ),
+            "geometryBindingValidationHash": _hash_from_inventory(
+                inventory, "reports/geometry_binding_validation.json"
+            ),
+            "geometryBindingValidationPayloadHash": str(
+                geometry_binding_validation["integrity"]["geometryBindingValidationHash"]
+            ),
             "cleanGeometryProposalHash": _hash_from_inventory(
                 inventory, "proposals/clean_geometry_proposal.json"
             ),
@@ -728,6 +753,7 @@ def _manifest(
             "geometryCleanupResult": GEOMETRY_CLEANUP_RESULT_VERSION,
             "geometrySemanticTransfer": GEOMETRY_SEMANTIC_TRANSFER_VERSION,
             "geometryBindingCandidate": GEOMETRY_BINDING_CANDIDATE_VERSION,
+            "geometryBindingValidation": GEOMETRY_BINDING_VALIDATION_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
@@ -740,7 +766,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_14_geometry_binding_candidate",
+            "name": "implementation_15_geometry_binding_validation",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -755,12 +781,13 @@ def _manifest(
             "partial_geometry_cleanup_not_clean_proposal",
             "geometry_semantic_transfer_not_simulation_binding",
             "geometry_binding_candidate_not_runtime_binding",
+            "geometry_binding_validation_rejected_runtime_binding",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "14-geometry-binding-candidate"},
+        "extensions": {"closyImplementation": "15-geometry-binding-validation"},
     }
 
 
@@ -794,6 +821,7 @@ def _capabilities() -> dict[str, bool]:
         "geometrySemanticTransferAvailable": True,
         "geometryBoundaryClassificationAvailable": True,
         "geometryBindingCandidateAvailable": True,
+        "geometryBindingValidationAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
@@ -831,6 +859,7 @@ def _quality_reports(
     geometry_cleanup_result: dict[str, Any],
     geometry_semantic_transfer: dict[str, Any],
     geometry_binding_candidate: dict[str, Any],
+    geometry_binding_validation: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
@@ -889,6 +918,7 @@ def _quality_reports(
         "geometry_cleanup_result.json": geometry_cleanup_result,
         "geometry_semantic_transfer.json": geometry_semantic_transfer,
         "geometry_binding_candidate.json": geometry_binding_candidate,
+        "geometry_binding_validation.json": geometry_binding_validation,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
         ),
@@ -972,6 +1002,7 @@ def _provenance(
     geometry_cleanup_result: dict[str, Any],
     geometry_semantic_transfer: dict[str, Any],
     geometry_binding_candidate: dict[str, Any],
+    geometry_binding_validation: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -1181,6 +1212,32 @@ def _provenance(
                 [str(geometry_binding_candidate["integrity"]["geometryBindingCandidateHash"])],
             ),
             _stage(
+                "geometry_binding_validation",
+                GEOMETRY_BINDING_VALIDATION_VERSION,
+                {
+                    "sourceGeometryBindingCandidateId": geometry_binding_validation[
+                        "sourceGeometryBindingCandidateId"
+                    ],
+                    "deformationValidationRun": geometry_binding_validation["execution"][
+                        "deformationValidationRun"
+                    ],
+                    "runtimeBindingAccepted": geometry_binding_validation["execution"][
+                        "runtimeBindingAccepted"
+                    ],
+                    "maxCleanupToSettledOffsetMeters": geometry_binding_validation["aggregate"][
+                        "maxCleanupToSettledOffsetMeters"
+                    ],
+                    "rmsCleanupToSettledOffsetMeters": geometry_binding_validation["aggregate"][
+                        "rmsCleanupToSettledOffsetMeters"
+                    ],
+                    "failedCheckCount": geometry_binding_validation["quality"]["failedCheckCount"],
+                    "notRunCheckCount": geometry_binding_validation["quality"]["notRunCheckCount"],
+                    "acceptedForCleanProposal": False,
+                    "status": geometry_binding_validation["readiness"]["status"],
+                },
+                [str(geometry_binding_validation["integrity"]["geometryBindingValidationHash"])],
+            ),
+            _stage(
                 "clean_geometry_proposal_rejection",
                 CLEAN_GEOMETRY_PROPOSAL_VERSION,
                 {
@@ -1200,17 +1257,23 @@ def _provenance(
                     "sourceGeometryBindingCandidateId": clean_geometry_proposal[
                         "sourceGeometryBindingCandidateId"
                     ],
+                    "sourceGeometryBindingValidationId": clean_geometry_proposal[
+                        "sourceGeometryBindingValidationId"
+                    ],
                     "topologyDiagnosticsRun": True,
                     "cleanupPlanGenerated": True,
                     "cleanupResultGenerated": True,
                     "semanticTransferReportGenerated": True,
                     "bindingCandidateReportGenerated": True,
+                    "bindingValidationReportGenerated": True,
                     "cleanupRun": True,
                     "repairRun": False,
                     "semanticTransferRun": True,
                     "boundaryClassificationRun": True,
                     "candidateBindingRun": True,
+                    "deformationValidationRun": True,
                     "simulationBindingRun": False,
+                    "runtimeBindingAccepted": False,
                     "acceptedForCanonical": False,
                     "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
                 },
@@ -1273,6 +1336,7 @@ def _provenance(
             "source_texture_projection_not_run",
             "manual_raw_geometry_proposal_not_canonical",
             "geometry_binding_candidate_not_runtime_binding",
+            "geometry_binding_validation_rejected_runtime_binding",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
         ],
@@ -1326,6 +1390,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_cleanup_result = context["geometryCleanupResult"]
     geometry_semantic_transfer = context["geometrySemanticTransfer"]
     geometry_binding_candidate = context["geometryBindingCandidate"]
+    geometry_binding_validation = context["geometryBindingValidation"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
@@ -1514,6 +1579,33 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "acceptedForCleanProposal"
             ],
         },
+        "geometryBindingValidation": {
+            "reportId": geometry_binding_validation["reportId"],
+            "sourceGeometryBindingCandidateId": geometry_binding_validation[
+                "sourceGeometryBindingCandidateId"
+            ],
+            "status": geometry_binding_validation["readiness"]["status"],
+            "deformationValidationRun": geometry_binding_validation["execution"][
+                "deformationValidationRun"
+            ],
+            "runtimeBindingAccepted": geometry_binding_validation["execution"][
+                "runtimeBindingAccepted"
+            ],
+            "validationRecordCount": geometry_binding_validation["aggregate"][
+                "validationRecordCount"
+            ],
+            "failedCheckCount": geometry_binding_validation["quality"]["failedCheckCount"],
+            "notRunCheckCount": geometry_binding_validation["quality"]["notRunCheckCount"],
+            "maxCleanupToSettledOffsetMeters": geometry_binding_validation["aggregate"][
+                "maxCleanupToSettledOffsetMeters"
+            ],
+            "rmsCleanupToSettledOffsetMeters": geometry_binding_validation["aggregate"][
+                "rmsCleanupToSettledOffsetMeters"
+            ],
+            "acceptedForCleanProposal": geometry_binding_validation["readiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_geometry_proposal["proposalId"],
             "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
@@ -1536,6 +1628,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "bindingCandidateReportGenerated": clean_geometry_proposal["cleanupPipeline"][
                 "bindingCandidateReportGenerated"
             ],
+            "bindingValidationReportGenerated": clean_geometry_proposal["cleanupPipeline"][
+                "bindingValidationReportGenerated"
+            ],
             "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
             "semanticTransferRun": clean_geometry_proposal["cleanupPipeline"][
@@ -1544,8 +1639,14 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "candidateBindingRun": clean_geometry_proposal["cleanupPipeline"][
                 "candidateBindingRun"
             ],
+            "deformationValidationRun": clean_geometry_proposal["cleanupPipeline"][
+                "deformationValidationRun"
+            ],
             "simulationBindingRun": clean_geometry_proposal["cleanupPipeline"][
                 "simulationBindingRun"
+            ],
+            "runtimeBindingAccepted": clean_geometry_proposal["cleanupPipeline"][
+                "runtimeBindingAccepted"
             ],
             "failureReason": clean_geometry_proposal["cleanGeometryAudit"]["failureReason"],
             "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
@@ -1629,6 +1730,12 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"{summary['geometryBindingCandidate']['cleanupVertexCount']}, "
         f"runtime binding={summary['geometryBindingCandidate']['runtimeBindingWritten']}, "
         f"accepted={summary['geometryBindingCandidate']['acceptedForCleanProposal']}\n"
+        f"- Binding validation: status=`{summary['geometryBindingValidation']['status']}`, "
+        f"max offset="
+        f"{summary['geometryBindingValidation']['maxCleanupToSettledOffsetMeters']:.8f} m, "
+        f"failed checks={summary['geometryBindingValidation']['failedCheckCount']}, "
+        f"runtime accepted="
+        f"{summary['geometryBindingValidation']['runtimeBindingAccepted']}\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"

@@ -1,5 +1,6 @@
 from closy_forge.proposals.clean_geometry_proposal import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
+    PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
@@ -11,6 +12,11 @@ from closy_forge.proposals.geometry_binding_candidate import (
     GEOMETRY_BINDING_CANDIDATE_VERSION,
     build_geometry_binding_candidate_report,
     hash_geometry_binding_candidate_report,
+)
+from closy_forge.proposals.geometry_binding_validation import (
+    GEOMETRY_BINDING_VALIDATION_VERSION,
+    build_geometry_binding_validation_report,
+    hash_geometry_binding_validation_report,
 )
 from closy_forge.proposals.geometry_cleanup_plan import (
     GEOMETRY_CLEANUP_PLAN_VERSION,
@@ -56,6 +62,7 @@ __all__ = [
     "CLEAN_GEOMETRY_PROPOSAL_VERSION",
     "GEOMETRY_PROPOSAL_VERSION",
     "GEOMETRY_BINDING_CANDIDATE_VERSION",
+    "GEOMETRY_BINDING_VALIDATION_VERSION",
     "GEOMETRY_CLEANUP_PLAN_VERSION",
     "GEOMETRY_CLEANUP_RESULT_VERSION",
     "GEOMETRY_SEMANTIC_TRANSFER_VERSION",
@@ -65,11 +72,13 @@ __all__ = [
     "PROVIDER_REGISTRY_VERSION",
     "RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION",
     "PARTIAL_CLEANUP_REJECTION_REASONS",
+    "PARTIAL_BINDING_VALIDATION_REJECTION_REASONS",
     "PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS",
     "REQUIRED_CLEAN_REJECTION_REASONS",
     "build_clean_geometry_proposal_rejection",
     "build_geometry_provider_registry",
     "build_geometry_binding_candidate_report",
+    "build_geometry_binding_validation_report",
     "build_geometry_cleanup_plan",
     "build_geometry_cleanup_result",
     "build_geometry_semantic_transfer_report",
@@ -81,6 +90,7 @@ __all__ = [
     "geometry_proposal_quality_report",
     "hash_clean_geometry_proposal",
     "hash_geometry_binding_candidate_report",
+    "hash_geometry_binding_validation_report",
     "hash_geometry_cleanup_plan",
     "hash_geometry_cleanup_result",
     "hash_geometry_semantic_transfer_report",

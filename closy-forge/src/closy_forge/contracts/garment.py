@@ -29,6 +29,7 @@ CAPABILITIES_FIXTURE = {
     "geometrySemanticTransferAvailable": True,
     "geometryBoundaryClassificationAvailable": True,
     "geometryBindingCandidateAvailable": True,
+    "geometryBindingValidationAvailable": True,
     "providerProvenanceAvailable": True,
     "geometryProviderRegistryAvailable": True,
     "manualGeometryImportAdapterDeclared": True,

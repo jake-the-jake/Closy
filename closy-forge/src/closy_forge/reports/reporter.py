@@ -21,6 +21,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     cleanup_result = read_json(package_dir / "reports" / "geometry_cleanup_result.json")
     semantic_transfer = read_json(package_dir / "reports" / "geometry_semantic_transfer.json")
     binding_candidate = read_json(package_dir / "reports" / "geometry_binding_candidate.json")
+    binding_validation = read_json(package_dir / "reports" / "geometry_binding_validation.json")
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -188,6 +189,25 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             ],
             "acceptedForCleanProposal": binding_candidate["readiness"]["acceptedForCleanProposal"],
         },
+        "geometryBindingValidation": {
+            "reportId": binding_validation["reportId"],
+            "sourceGeometryBindingCandidateId": binding_validation[
+                "sourceGeometryBindingCandidateId"
+            ],
+            "status": binding_validation["readiness"]["status"],
+            "deformationValidationRun": binding_validation["execution"]["deformationValidationRun"],
+            "runtimeBindingAccepted": binding_validation["execution"]["runtimeBindingAccepted"],
+            "validationRecordCount": binding_validation["aggregate"]["validationRecordCount"],
+            "failedCheckCount": binding_validation["quality"]["failedCheckCount"],
+            "notRunCheckCount": binding_validation["quality"]["notRunCheckCount"],
+            "maxCleanupToSettledOffsetMeters": binding_validation["aggregate"][
+                "maxCleanupToSettledOffsetMeters"
+            ],
+            "rmsCleanupToSettledOffsetMeters": binding_validation["aggregate"][
+                "rmsCleanupToSettledOffsetMeters"
+            ],
+            "acceptedForCleanProposal": binding_validation["readiness"]["acceptedForCleanProposal"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -204,11 +224,18 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "bindingCandidateReportGenerated": clean_proposal["cleanupPipeline"][
                 "bindingCandidateReportGenerated"
             ],
+            "bindingValidationReportGenerated": clean_proposal["cleanupPipeline"][
+                "bindingValidationReportGenerated"
+            ],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
             "semanticTransferRun": clean_proposal["cleanupPipeline"]["semanticTransferRun"],
             "candidateBindingRun": clean_proposal["cleanupPipeline"]["candidateBindingRun"],
+            "deformationValidationRun": clean_proposal["cleanupPipeline"][
+                "deformationValidationRun"
+            ],
             "simulationBindingRun": clean_proposal["cleanupPipeline"]["simulationBindingRun"],
+            "runtimeBindingAccepted": clean_proposal["cleanupPipeline"]["runtimeBindingAccepted"],
             "failureReason": clean_proposal["cleanGeometryAudit"]["failureReason"],
             "rejectionReasons": clean_proposal["quality"]["rejectionReasons"],
         },
@@ -268,6 +295,7 @@ def human_report(package_dir: Path) -> str:
     cleanup_result = summary["geometryCleanupResult"]
     semantic_transfer = summary["geometrySemanticTransfer"]
     binding_candidate = summary["geometryBindingCandidate"]
+    binding_validation = summary["geometryBindingValidation"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -324,6 +352,12 @@ def human_report(package_dir: Path) -> str:
                 f"{binding_candidate['cleanupVertexCount']}, runtime binding="
                 f"{binding_candidate['runtimeBindingWritten']}, "
                 f"accepted={binding_candidate['acceptedForCleanProposal']}"
+            ),
+            (
+                f"Binding validation: status={binding_validation['status']}, "
+                f"max offset {binding_validation['maxCleanupToSettledOffsetMeters']:.8f} m, "
+                f"failed checks={binding_validation['failedCheckCount']}, runtime accepted="
+                f"{binding_validation['runtimeBindingAccepted']}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "

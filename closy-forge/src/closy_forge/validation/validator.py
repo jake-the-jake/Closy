@@ -36,16 +36,19 @@ from closy_forge.package_io.hashing import (
 )
 from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.proposals import (
+    PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_geometry_binding_candidate_report,
+    build_geometry_binding_validation_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_semantic_transfer_report,
     build_raw_geometry_topology_report,
     hash_clean_geometry_proposal,
     hash_geometry_binding_candidate_report,
+    hash_geometry_binding_validation_report,
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
@@ -105,6 +108,7 @@ EXPECTED_FILES = [
     "reports/geometry_cleanup_result.json",
     "reports/geometry_semantic_transfer.json",
     "reports/geometry_binding_candidate.json",
+    "reports/geometry_binding_validation.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -253,6 +257,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_cleanup_result(package_dir, manifest, issues)
     _validate_geometry_semantic_transfer(package_dir, manifest, issues)
     _validate_geometry_binding_candidate(package_dir, manifest, issues)
+    _validate_geometry_binding_validation(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1402,6 +1407,11 @@ def _validate_geometry_proposal(
             "geometryBindingCandidateAvailable",
             True,
             "geometry_binding_candidate_capability_missing",
+        ),
+        (
+            "geometryBindingValidationAvailable",
+            True,
+            "geometry_binding_validation_capability_missing",
         ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
@@ -3134,6 +3144,446 @@ def _validate_binding_candidate_asset_reference(
     return asset_path
 
 
+def _validate_geometry_binding_validation(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    cleanup_result = _read_required_json(
+        package_dir, "reports/geometry_cleanup_result.json", issues
+    )
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
+    binding_candidate = _read_required_json(
+        package_dir, "reports/geometry_binding_candidate.json", issues
+    )
+    simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    rest_state = _read_required_json(package_dir, "simulation/rest_state.json", issues)
+    binding_validation = _read_required_json(
+        package_dir, "reports/geometry_binding_validation.json", issues
+    )
+    if (
+        cleanup_result is None
+        or semantic_transfer is None
+        or binding_candidate is None
+        or simulation_manifest is None
+        or rest_state is None
+        or binding_validation is None
+    ):
+        return
+
+    if binding_validation.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_garment_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation must reference the package garment ID.",
+            )
+        )
+    if binding_validation.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_class_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation must reference the package garment class.",
+            )
+        )
+
+    expected_sources = [
+        (
+            "sourceGeometryBindingCandidateId",
+            binding_candidate.get("reportId"),
+            "geometry_binding_validation_candidate_source_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferId",
+            semantic_transfer.get("reportId"),
+            "geometry_binding_validation_semantic_source_mismatch",
+        ),
+        (
+            "sourceGeometryCleanupResultId",
+            cleanup_result.get("reportId"),
+            "geometry_binding_validation_cleanup_result_source_mismatch",
+        ),
+    ]
+    for field, expected_value, code in expected_sources:
+        if binding_validation.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_binding_validation.json",
+                    f"Binding validation {field} must match its source artifact.",
+                )
+            )
+
+    expected_hashes = [
+        (
+            "sourceGeometryBindingCandidateHash",
+            _nested_string(binding_candidate, ["integrity", "geometryBindingCandidateHash"], ""),
+            "geometry_binding_validation_candidate_hash_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferHash",
+            _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], ""),
+            "geometry_binding_validation_semantic_hash_mismatch",
+        ),
+        (
+            "sourceGeometryCleanupResultHash",
+            _nested_string(cleanup_result, ["integrity", "geometryCleanupResultHash"], ""),
+            "geometry_binding_validation_cleanup_result_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if binding_validation.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_binding_validation.json",
+                    f"Binding validation {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(binding_validation, ["integrity", "geometryBindingValidationHash"], "") != (
+        hash_geometry_binding_validation_report(binding_validation)
+    ):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_hash_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation hash must match its canonical payload.",
+            )
+        )
+
+    input_asset = binding_validation.get("inputCleanupAsset", {})
+    source_rest = binding_validation.get("sourceRestSimulation", {})
+    target_settled = binding_validation.get("targetSettledSimulation", {})
+    validation_settings = binding_validation.get("validationSettings", {})
+    execution = binding_validation.get("execution", {})
+    readiness = binding_validation.get("readiness", {})
+    aggregate = binding_validation.get("aggregate", {})
+    quality = binding_validation.get("quality", {})
+    policy = binding_validation.get("policy", {})
+    for name, block in [
+        ("inputCleanupAsset", input_asset),
+        ("sourceRestSimulation", source_rest),
+        ("targetSettledSimulation", target_settled),
+        ("validationSettings", validation_settings),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("aggregate", aggregate),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_binding_validation_block_invalid",
+                    "fatal",
+                    "reports/geometry_binding_validation.json",
+                    f"Binding validation {name} block must be an object.",
+                )
+            )
+            return
+
+    candidate_asset = binding_candidate.get("inputCleanupAsset", {})
+    cleanup_asset_path = _validate_binding_validation_asset_reference(
+        package_dir,
+        candidate_asset,
+        input_asset,
+        issues,
+    )
+    if source_rest.get("path") != "simulation/rest_state.json":
+        issues.append(
+            _issue(
+                "geometry_binding_validation_rest_path_invalid",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation rest source must reference simulation/rest_state.json.",
+            )
+        )
+    if target_settled.get("path") != "simulation/simulation_mesh.glb":
+        issues.append(
+            _issue(
+                "geometry_binding_validation_target_path_invalid",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation target must reference simulation/simulation_mesh.glb.",
+            )
+        )
+
+    try:
+        settled_mesh = _meshset_from_manifest(simulation_manifest)
+        rest_mesh = _meshset_from_state_and_manifest(rest_state, simulation_manifest)
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_binding_validation_mesh_rebuild_failed",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                str(exc),
+            )
+        )
+        return
+
+    if source_rest.get("topologyHash") != topology_hash(rest_mesh):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_rest_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation rest topology hash is stale.",
+            )
+        )
+    if source_rest.get("contentHash") != geometry_content_hash(rest_mesh):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_rest_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation rest content hash is stale.",
+            )
+        )
+    if target_settled.get("topologyHash") != simulation_manifest.get("topologyHash"):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_settled_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation settled topology hash is stale.",
+            )
+        )
+    if target_settled.get("contentHash") != simulation_manifest.get("contentHash"):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_settled_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation settled content hash is stale.",
+            )
+        )
+
+    if cleanup_asset_path is not None:
+        try:
+            expected = build_geometry_binding_validation_report(
+                garment_id=str(manifest.get("garmentId", "")),
+                garment_class=str(manifest.get("garmentClass", "")),
+                binding_candidate_report=binding_candidate,
+                cleanup_asset_path=cleanup_asset_path,
+                rest_simulation_mesh=rest_mesh,
+                settled_simulation_mesh=settled_mesh,
+                rest_state_path="simulation/rest_state.json",
+                settled_simulation_mesh_path="simulation/simulation_mesh.glb",
+            )
+        except Exception as exc:
+            issues.append(
+                _issue(
+                    "geometry_binding_validation_recompute_failed",
+                    "fatal",
+                    "reports/geometry_binding_validation.json",
+                    str(exc),
+                )
+            )
+            return
+        for key in [
+            "inputCleanupAsset",
+            "sourceRestSimulation",
+            "targetSettledSimulation",
+            "validationSettings",
+            "validationRecords",
+            "aggregate",
+            "checks",
+            "execution",
+            "readiness",
+            "quality",
+        ]:
+            if binding_validation.get(key) != expected.get(key):
+                issues.append(
+                    _issue(
+                        "geometry_binding_validation_recompute_mismatch",
+                        "fatal",
+                        "reports/geometry_binding_validation.json",
+                        f"Binding validation field {key} is stale.",
+                    )
+                )
+
+    if int(aggregate.get("validationRecordCount", -1)) <= 0:
+        issues.append(
+            _issue(
+                "geometry_binding_validation_empty",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation must include per-vertex validation records.",
+            )
+        )
+    if int(aggregate.get("unmappedVertexCount", -1)) != 0:
+        issues.append(
+            _issue(
+                "geometry_binding_validation_unmapped_vertices",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Every cleanup-preview vertex must remain mapped during validation.",
+            )
+        )
+    if (
+        execution.get("candidateBindingRun") is not True
+        or execution.get("deformationValidationRun") is not True
+        or execution.get("simulationBindingRun") is not False
+        or execution.get("runtimeBindingWritten") is not False
+        or execution.get("runtimeBindingAccepted") is not False
+        or execution.get("repairRun") is not False
+        or execution.get("retopologyRun") is not False
+        or execution.get("cleanProposalRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_execution_state_invalid",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                (
+                    "Binding validation may not claim runtime binding, repair "
+                    "or clean proposal output."
+                ),
+            )
+        )
+    if (
+        readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForSimulation") is not False
+        or readiness.get("acceptedForRuntimeRender") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_acceptance_invalid",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation cannot accept clean/canonical/runtime geometry in D0.",
+            )
+        )
+    if quality.get("status") != "failed_rejected":
+        issues.append(
+            _issue(
+                "geometry_binding_validation_quality_status_invalid",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "D0 binding validation must remain a failed rejection report.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_policy_violation",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryBindingValidationAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_binding_validation_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryBindingValidationAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(binding_validation):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation report must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_binding_validation_asset_reference(
+    package_dir: Path,
+    candidate_asset: dict[str, Any],
+    asset: dict[str, Any],
+    issues: list[ValidationIssue],
+) -> Path | None:
+    path_value = asset.get("path")
+    if not isinstance(path_value, str):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_input_asset_path_invalid",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation input path must be package-relative.",
+            )
+        )
+        return None
+    try:
+        validate_package_relpath(path_value)
+    except ValueError:
+        issues.append(
+            _issue(
+                "geometry_binding_validation_input_asset_path_invalid",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation input path is unsafe.",
+            )
+        )
+        return None
+    if (
+        asset.get("path") != candidate_asset.get("path")
+        or asset.get("sourceAssetHash") != candidate_asset.get("sourceAssetHash")
+        or asset.get("byteSize") != candidate_asset.get("byteSize")
+        or asset.get("canonicalUseAllowed") is not False
+        or asset.get("purpose") != "non_canonical_cleanup_preview"
+    ):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_input_asset_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation input asset must mirror the binding candidate input.",
+            )
+        )
+    asset_path = package_dir / path_value
+    if not asset_path.exists():
+        issues.append(
+            _issue(
+                "geometry_binding_validation_input_asset_missing",
+                "fatal",
+                path_value,
+                "Binding validation input asset is missing.",
+            )
+        )
+        return None
+    if asset.get("sourceAssetHash") != sha256_file(asset_path):
+        issues.append(
+            _issue(
+                "geometry_binding_validation_input_asset_hash_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation input asset hash is stale.",
+            )
+        )
+    if asset.get("byteSize") != asset_path.stat().st_size:
+        issues.append(
+            _issue(
+                "geometry_binding_validation_input_asset_size_mismatch",
+                "fatal",
+                "reports/geometry_binding_validation.json",
+                "Binding validation input asset byte size is stale.",
+            )
+        )
+    return asset_path
+
+
 def _validate_provider_registry(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -3528,6 +3978,9 @@ def _validate_clean_geometry_proposal(
     binding_candidate = _read_required_json(
         package_dir, "reports/geometry_binding_candidate.json", issues
     )
+    binding_validation = _read_required_json(
+        package_dir, "reports/geometry_binding_validation.json", issues
+    )
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
@@ -3542,6 +3995,7 @@ def _validate_clean_geometry_proposal(
         or cleanup_result is None
         or semantic_transfer is None
         or binding_candidate is None
+        or binding_validation is None
         or clean_proposal is None
     ):
         return
@@ -3600,6 +4054,11 @@ def _validate_clean_geometry_proposal(
             "sourceGeometryBindingCandidateHash",
             _nested_string(binding_candidate, ["integrity", "geometryBindingCandidateHash"], ""),
             "clean_geometry_proposal_binding_candidate_hash_mismatch",
+        ),
+        (
+            "sourceGeometryBindingValidationHash",
+            _nested_string(binding_validation, ["integrity", "geometryBindingValidationHash"], ""),
+            "clean_geometry_proposal_binding_validation_hash_mismatch",
         ),
     ]
     for field, expected_hash, code in expected_hashes:
@@ -3673,6 +4132,17 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the binding candidate report ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryBindingValidationId") != binding_validation.get(
+        "reportId"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_binding_validation_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the binding validation report ID.",
             )
         )
 
@@ -3823,6 +4293,30 @@ def _validate_clean_geometry_proposal(
                 "Clean proposal simulationBindingRun must mirror the binding candidate report.",
             )
         )
+    validation_execution = binding_validation.get("execution", {})
+    if cleanup.get("deformationValidationRun") != validation_execution.get(
+        "deformationValidationRun"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                (
+                    "Clean proposal deformationValidationRun must mirror the binding "
+                    "validation report."
+                ),
+            )
+        )
+    if cleanup.get("runtimeBindingAccepted") != validation_execution.get("runtimeBindingAccepted"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal runtimeBindingAccepted must mirror the binding validation report.",
+            )
+        )
     for key in [
         "repairRun",
         "retopologyRun",
@@ -3845,6 +4339,7 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("cleanupResultGenerated") is not True
         or cleanup.get("semanticTransferReportGenerated") is not True
         or cleanup.get("bindingCandidateReportGenerated") is not True
+        or cleanup.get("bindingValidationReportGenerated") is not True
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -3997,18 +4492,46 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    validation_readiness = binding_validation.get("readiness", {})
+    if isinstance(validation_readiness, dict) and audit.get(
+        "bindingValidationStatus"
+    ) != validation_readiness.get("status"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_binding_validation_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal binding validation status is stale.",
+            )
+        )
+    validation_aggregate = binding_validation.get("aggregate", {})
+    validation_quality = binding_validation.get("quality", {})
+    if isinstance(validation_aggregate, dict) and isinstance(validation_quality, dict):
+        expected_validation_fields = {
+            "bindingValidationMaxOffsetMeters": validation_aggregate.get(
+                "maxCleanupToSettledOffsetMeters"
+            ),
+            "bindingValidationRmsOffsetMeters": validation_aggregate.get(
+                "rmsCleanupToSettledOffsetMeters"
+            ),
+            "bindingValidationFailedCheckCount": validation_quality.get("failedCheckCount"),
+            "bindingValidationNotRunCheckCount": validation_quality.get("notRunCheckCount"),
+        }
+        for key, expected in expected_validation_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_binding_validation_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal binding validation field {key} is stale.",
+                    )
+                )
+
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
         rejection_reasons = []
-    required_rejections = (
-        PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS
-        if cleanup.get("cleanupRun") is True and cleanup.get("semanticTransferRun") is True
-        else (
-            PARTIAL_CLEANUP_REJECTION_REASONS
-            if cleanup.get("cleanupRun") is True
-            else REQUIRED_CLEAN_REJECTION_REASONS
-        )
-    )
+    required_rejections = _required_clean_rejections_for_state(cleanup)
     for reason in required_rejections:
         if reason not in rejection_reasons:
             issues.append(
@@ -4056,6 +4579,7 @@ def _validate_clean_geometry_proposal(
             "cleanupResultGenerated": cleanup.get("cleanupResultGenerated"),
             "semanticTransferReportGenerated": cleanup.get("semanticTransferReportGenerated"),
             "bindingCandidateReportGenerated": cleanup.get("bindingCandidateReportGenerated"),
+            "bindingValidationReportGenerated": cleanup.get("bindingValidationReportGenerated"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
@@ -4070,6 +4594,11 @@ def _validate_clean_geometry_proposal(
             "bindingCandidateMappedVertexCount": audit.get("bindingCandidateMappedVertexCount"),
             "bindingCandidateUnmappedVertexCount": audit.get("bindingCandidateUnmappedVertexCount"),
             "bindingCandidateCompleteness": audit.get("bindingCandidateCompleteness"),
+            "bindingValidationStatus": audit.get("bindingValidationStatus"),
+            "bindingValidationMaxOffsetMeters": audit.get("bindingValidationMaxOffsetMeters"),
+            "bindingValidationRmsOffsetMeters": audit.get("bindingValidationRmsOffsetMeters"),
+            "bindingValidationFailedCheckCount": audit.get("bindingValidationFailedCheckCount"),
+            "bindingValidationNotRunCheckCount": audit.get("bindingValidationNotRunCheckCount"),
             "failureReason": audit.get("failureReason"),
         }
         for key, expected in expected_quality.items():
@@ -4705,6 +5234,51 @@ def _meshset_from_manifest(manifest: dict[str, Any]) -> MeshSet:
             )
         )
     return MeshSet(meshes)
+
+
+def _meshset_from_state_and_manifest(state: dict[str, Any], manifest: dict[str, Any]) -> MeshSet:
+    state_meshes = state.get("meshes", [])
+    manifest_meshes = manifest.get("meshes", [])
+    if not isinstance(state_meshes, list) or len(state_meshes) != len(manifest_meshes):
+        raise ValueError("state_mesh_count_mismatch")
+    meshes: list[Mesh] = []
+    for state_mesh, manifest_mesh in zip(state_meshes, manifest_meshes, strict=True):
+        positions = state_mesh.get("positions", [])
+        if len(positions) != len(manifest_mesh.get("vertices", [])):
+            raise ValueError("state_vertex_count_mismatch")
+        if str(state_mesh.get("name")) != str(manifest_mesh.get("name")):
+            raise ValueError("state_mesh_name_mismatch")
+        if str(state_mesh.get("panelId")) != str(manifest_mesh.get("panelId")):
+            raise ValueError("state_panel_id_mismatch")
+        meshes.append(
+            Mesh(
+                name=str(manifest_mesh["name"]),
+                panel_id=str(manifest_mesh["panelId"]),
+                vertices=[_vec3(vertex) for vertex in positions],
+                panel_uvs=[_vec2(uv) for uv in manifest_mesh["panelUvs"]],
+                triangles=[_tri(triangle) for triangle in manifest_mesh["triangles"]],
+                material_id=str(
+                    manifest_mesh.get("materialId", "material.cotton_jersey_reference_v1")
+                ),
+            )
+        )
+    return MeshSet(meshes)
+
+
+def _required_clean_rejections_for_state(cleanup: dict[str, Any]) -> list[str]:
+    if (
+        cleanup.get("cleanupRun") is True
+        and cleanup.get("semanticTransferRun") is True
+        and cleanup.get("candidateBindingRun") is True
+        and cleanup.get("deformationValidationRun") is True
+        and cleanup.get("runtimeBindingAccepted") is not True
+    ):
+        return PARTIAL_BINDING_VALIDATION_REJECTION_REASONS
+    if cleanup.get("cleanupRun") is True and cleanup.get("semanticTransferRun") is True:
+        return PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS
+    if cleanup.get("cleanupRun") is True:
+        return PARTIAL_CLEANUP_REJECTION_REASONS
+    return REQUIRED_CLEAN_REJECTION_REASONS
 
 
 def _pattern_edge_lengths(

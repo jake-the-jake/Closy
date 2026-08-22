@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "173bd317e97fed3d6e6397a7dd0dbdd24e87c53ec58d47cf5a8403e1be5cf7c8",
+  "canonicalPackageDigest": "1bf1f3dad82e1340930dc26013aa389e954364dbaebd5526d23f5f4a04adcd55",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -26,6 +26,7 @@
     "geometryCleanupExecutionAvailable": true,
     "geometryCleanupRecommendationAvailable": true,
     "geometryBindingCandidateAvailable": true,
+    "geometryBindingValidationAvailable": true,
     "geometryBoundaryClassificationAvailable": true,
     "geometryProposalInterfaceAvailable": true,
     "geometryProposalQualityScored": true,
@@ -150,18 +151,34 @@
     "status": "binding_candidate_generated_validation_pending",
     "unmappedVertexCount": 0
   },
+  "geometryBindingValidation": {
+    "acceptedForCleanProposal": false,
+    "deformationValidationRun": true,
+    "failedCheckCount": 1,
+    "maxCleanupToSettledOffsetMeters": 0.944948063,
+    "notRunCheckCount": 4,
+    "reportId": "binding_validation.cleanup_preview_tshirt_visual_geometry_v1",
+    "rmsCleanupToSettledOffsetMeters": 0.466748462,
+    "runtimeBindingAccepted": false,
+    "sourceGeometryBindingCandidateId": "binding_candidate.cleanup_preview_tshirt_visual_geometry_v1",
+    "status": "deformation_validation_failed_runtime_binding_rejected",
+    "validationRecordCount": 223
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
     "bindingCandidateReportGenerated": true,
+    "bindingValidationReportGenerated": true,
     "candidateBindingRun": true,
     "cleanProposalAvailable": false,
     "cleanupPlanGenerated": true,
     "cleanupResultGenerated": true,
     "cleanupRun": true,
+    "deformationValidationRun": true,
     "failureReason": "clean_geometry_proposal_not_generated",
     "qualityStatus": "rejected",
     "repairRun": false,
+    "runtimeBindingAccepted": false,
     "semanticTransferReportGenerated": true,
     "semanticTransferRun": true,
     "simulationBindingRun": false,

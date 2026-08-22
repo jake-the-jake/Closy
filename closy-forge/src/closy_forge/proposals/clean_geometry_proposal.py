@@ -32,6 +32,14 @@ PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS = [
     "provider_output_not_canonical_garment_truth",
 ]
 
+PARTIAL_BINDING_VALIDATION_REJECTION_REASONS = [
+    "cleanup_incomplete",
+    "repair_not_run",
+    "simulation_binding_failed_deformation_validation",
+    "simulation_binding_missing",
+    "provider_output_not_canonical_garment_truth",
+]
+
 
 def build_clean_geometry_proposal_rejection(
     *,
@@ -44,6 +52,7 @@ def build_clean_geometry_proposal_rejection(
     cleanup_result_report: dict[str, Any] | None = None,
     semantic_transfer_report: dict[str, Any] | None = None,
     binding_candidate_report: dict[str, Any] | None = None,
+    binding_validation_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
 
@@ -122,11 +131,44 @@ def build_clean_geometry_proposal_rejection(
         binding_candidate_status = binding_candidate_report["readiness"]["status"]
         binding_candidate_execution = binding_candidate_report["execution"]
         binding_candidate_aggregate = binding_candidate_report["aggregate"]
+    if binding_validation_report is None:
+        binding_validation_available = False
+        binding_validation_id = None
+        binding_validation_hash = None
+        binding_validation_status = None
+        binding_validation_execution: dict[str, Any] = {}
+        binding_validation_aggregate: dict[str, Any] = {}
+        binding_validation_quality: dict[str, Any] = {}
+    else:
+        binding_validation_available = True
+        binding_validation_id = binding_validation_report["reportId"]
+        binding_validation_hash = binding_validation_report["integrity"][
+            "geometryBindingValidationHash"
+        ]
+        binding_validation_status = binding_validation_report["readiness"]["status"]
+        binding_validation_execution = binding_validation_report["execution"]
+        binding_validation_aggregate = binding_validation_report["aggregate"]
+        binding_validation_quality = binding_validation_report["quality"]
     cleanup_run = bool(cleanup_result_execution.get("cleanupRun", False))
     semantic_transfer_run = bool(semantic_transfer_execution.get("semanticTransferRun", False))
     candidate_binding_run = bool(binding_candidate_execution.get("candidateBindingRun", False))
-    rejection_reasons = _rejection_reasons(cleanup_run, semantic_transfer_run)
-    required_before_canonical = _required_before_canonical(cleanup_run, semantic_transfer_run)
+    deformation_validation_run = bool(
+        binding_validation_execution.get("deformationValidationRun", False)
+    )
+    validation_accepted = bool(binding_validation_readiness_accepts(binding_validation_report))
+    rejection_reasons = _rejection_reasons(
+        cleanup_run,
+        semantic_transfer_run,
+        candidate_binding_run,
+        deformation_validation_run,
+        validation_accepted,
+    )
+    required_before_canonical = _required_before_canonical(
+        cleanup_run,
+        semantic_transfer_run,
+        deformation_validation_run,
+        validation_accepted,
+    )
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "proposalId": "proposal.clean_tshirt_geometry_v1",
@@ -147,6 +189,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceGeometrySemanticTransferHash": semantic_transfer_hash,
         "sourceGeometryBindingCandidateId": binding_candidate_id,
         "sourceGeometryBindingCandidateHash": binding_candidate_hash,
+        "sourceGeometryBindingValidationId": binding_validation_id,
+        "sourceGeometryBindingValidationHash": binding_validation_hash,
         "rawProposal": {
             "available": raw_proposal["available"],
             "assetPath": raw_proposal["assetPath"],
@@ -161,6 +205,7 @@ def build_clean_geometry_proposal_rejection(
             "cleanupResultGenerated": cleanup_result_available,
             "semanticTransferReportGenerated": semantic_transfer_available,
             "bindingCandidateReportGenerated": binding_candidate_available,
+            "bindingValidationReportGenerated": binding_validation_available,
             "cleanupRun": cleanup_run,
             "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
             "retopologyRun": False,
@@ -169,7 +214,9 @@ def build_clean_geometry_proposal_rejection(
                 semantic_transfer_execution.get("boundaryClassificationRun", False)
             ),
             "candidateBindingRun": candidate_binding_run,
+            "deformationValidationRun": deformation_validation_run,
             "simulationBindingRun": False,
+            "runtimeBindingAccepted": False,
             "uvTransferRun": False,
             "materialTransferRun": False,
             "connectedComponentAnalysisRun": topology_available,
@@ -237,6 +284,15 @@ def build_clean_geometry_proposal_rejection(
             "bindingCandidateCompleteness": binding_candidate_aggregate.get(
                 "candidateCompleteness"
             ),
+            "bindingValidationStatus": binding_validation_status,
+            "bindingValidationMaxOffsetMeters": binding_validation_aggregate.get(
+                "maxCleanupToSettledOffsetMeters"
+            ),
+            "bindingValidationRmsOffsetMeters": binding_validation_aggregate.get(
+                "rmsCleanupToSettledOffsetMeters"
+            ),
+            "bindingValidationFailedCheckCount": binding_validation_quality.get("failedCheckCount"),
+            "bindingValidationNotRunCheckCount": binding_validation_quality.get("notRunCheckCount"),
             "simulationBindingRecordCount": 0,
             "failureReason": "clean_geometry_proposal_not_generated",
         },
@@ -265,6 +321,9 @@ def build_clean_geometry_proposal_rejection(
                 "geometry_binding_candidate_available_but_not_runtime_binding"
                 if binding_candidate_available
                 else "geometry_binding_candidate_not_generated",
+                "geometry_binding_validation_rejected_runtime_binding"
+                if binding_validation_available
+                else "geometry_binding_validation_not_generated",
                 "geometry_cleanup_plan_generated_without_execution"
                 if cleanup_plan_available
                 else "geometry_cleanup_plan_not_generated",
@@ -313,6 +372,7 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "cleanupResultGenerated": cleanup["cleanupResultGenerated"],
         "semanticTransferReportGenerated": cleanup["semanticTransferReportGenerated"],
         "bindingCandidateReportGenerated": cleanup["bindingCandidateReportGenerated"],
+        "bindingValidationReportGenerated": cleanup["bindingValidationReportGenerated"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
         "connectedComponentCount": audit["connectedComponentCount"],
@@ -330,6 +390,11 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "bindingCandidateMappedVertexCount": audit["bindingCandidateMappedVertexCount"],
         "bindingCandidateUnmappedVertexCount": audit["bindingCandidateUnmappedVertexCount"],
         "bindingCandidateCompleteness": audit["bindingCandidateCompleteness"],
+        "bindingValidationStatus": audit["bindingValidationStatus"],
+        "bindingValidationMaxOffsetMeters": audit["bindingValidationMaxOffsetMeters"],
+        "bindingValidationRmsOffsetMeters": audit["bindingValidationRmsOffsetMeters"],
+        "bindingValidationFailedCheckCount": audit["bindingValidationFailedCheckCount"],
+        "bindingValidationNotRunCheckCount": audit["bindingValidationNotRunCheckCount"],
         "meshCount": audit["meshCount"],
         "triangleEstimate": audit["triangleEstimate"],
         "failureReason": audit["failureReason"],
@@ -346,7 +411,35 @@ def hash_clean_geometry_proposal(proposal: dict[str, Any]) -> str:
     return sha256_bytes(canonical_dumps(payload).encode("utf-8"))
 
 
-def _rejection_reasons(cleanup_run: bool, semantic_transfer_run: bool) -> list[str]:
+def binding_validation_readiness_accepts(
+    binding_validation_report: dict[str, Any] | None,
+) -> bool:
+    if binding_validation_report is None:
+        return False
+    readiness = binding_validation_report.get("readiness", {})
+    return (
+        isinstance(readiness, dict)
+        and readiness.get("acceptedForCleanProposal") is True
+        and readiness.get("acceptedForSimulation") is True
+        and readiness.get("acceptedForRuntimeRender") is True
+    )
+
+
+def _rejection_reasons(
+    cleanup_run: bool,
+    semantic_transfer_run: bool,
+    candidate_binding_run: bool,
+    deformation_validation_run: bool,
+    validation_accepted: bool,
+) -> list[str]:
+    if (
+        cleanup_run
+        and semantic_transfer_run
+        and candidate_binding_run
+        and deformation_validation_run
+        and not validation_accepted
+    ):
+        return PARTIAL_BINDING_VALIDATION_REJECTION_REASONS
     if cleanup_run and semantic_transfer_run:
         return PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS
     if cleanup_run:
@@ -354,7 +447,12 @@ def _rejection_reasons(cleanup_run: bool, semantic_transfer_run: bool) -> list[s
     return REQUIRED_CLEAN_REJECTION_REASONS
 
 
-def _required_before_canonical(cleanup_run: bool, semantic_transfer_run: bool) -> list[str]:
+def _required_before_canonical(
+    cleanup_run: bool,
+    semantic_transfer_run: bool,
+    deformation_validation_run: bool,
+    validation_accepted: bool,
+) -> list[str]:
     required = ["repair_not_run", "simulation_binding_missing"]
     if not cleanup_run:
         required.insert(0, "cleanup_not_run")
@@ -362,5 +460,7 @@ def _required_before_canonical(cleanup_run: bool, semantic_transfer_run: bool) -
         required.insert(0, "cleanup_incomplete")
     if not semantic_transfer_run:
         required.insert(2, "semantic_transfer_missing")
+    if deformation_validation_run and not validation_accepted:
+        required.insert(-1, "binding_deformation_validation_failed")
     required.append("provider_output_not_canonical_garment_truth")
     return required
