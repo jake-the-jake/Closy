@@ -2,6 +2,7 @@ from closy_forge.proposals.clean_geometry_proposal import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
     PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_clean_geometry_proposal_rejection,
@@ -37,6 +38,11 @@ from closy_forge.proposals.geometry_proposal import (
     geometry_proposal_quality_report,
     hash_geometry_proposal,
 )
+from closy_forge.proposals.geometry_repair_retopology_plan import (
+    GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
+    build_geometry_repair_retopology_plan,
+    hash_geometry_repair_retopology_plan,
+)
 from closy_forge.proposals.geometry_semantic_transfer import (
     GEOMETRY_SEMANTIC_TRANSFER_VERSION,
     build_geometry_semantic_transfer_report,
@@ -66,6 +72,7 @@ __all__ = [
     "GEOMETRY_CLEANUP_PLAN_VERSION",
     "GEOMETRY_CLEANUP_RESULT_VERSION",
     "GEOMETRY_SEMANTIC_TRANSFER_VERSION",
+    "GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION",
     "MANUAL_IMPORT_PROVIDER_ID",
     "NULL_GEOMETRY_PROVIDER_ID",
     "NULL_GEOMETRY_PROPOSAL_VERSION",
@@ -73,6 +80,7 @@ __all__ = [
     "RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION",
     "PARTIAL_CLEANUP_REJECTION_REASONS",
     "PARTIAL_BINDING_VALIDATION_REJECTION_REASONS",
+    "PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS",
     "PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS",
     "REQUIRED_CLEAN_REJECTION_REASONS",
     "build_clean_geometry_proposal_rejection",
@@ -81,6 +89,7 @@ __all__ = [
     "build_geometry_binding_validation_report",
     "build_geometry_cleanup_plan",
     "build_geometry_cleanup_result",
+    "build_geometry_repair_retopology_plan",
     "build_geometry_semantic_transfer_report",
     "build_manual_geometry_proposal",
     "build_null_geometry_proposal",
@@ -93,6 +102,7 @@ __all__ = [
     "hash_geometry_binding_validation_report",
     "hash_geometry_cleanup_plan",
     "hash_geometry_cleanup_result",
+    "hash_geometry_repair_retopology_plan",
     "hash_geometry_semantic_transfer_report",
     "hash_geometry_proposal",
     "hash_provider_registry",

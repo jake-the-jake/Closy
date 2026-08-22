@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "1bf1f3dad82e1340930dc26013aa389e954364dbaebd5526d23f5f4a04adcd55",
+  "canonicalPackageDigest": "0bd130049b2131f9963d3bfec1d8388ad958e5104666d01d843f293e3a8fcb0d",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -27,6 +27,7 @@
     "geometryCleanupRecommendationAvailable": true,
     "geometryBindingCandidateAvailable": true,
     "geometryBindingValidationAvailable": true,
+    "geometryRepairRetopologyPlanAvailable": true,
     "geometryBoundaryClassificationAvailable": true,
     "geometryProposalInterfaceAvailable": true,
     "geometryProposalQualityScored": true,
@@ -164,6 +165,20 @@
     "status": "deformation_validation_failed_runtime_binding_rejected",
     "validationRecordCount": 223
   },
+  "geometryRepairRetopologyPlan": {
+    "acceptedForCleanProposal": false,
+    "deformationFailedVertexCount": 210,
+    "estimatedRepairComplexity": "retopology_required",
+    "recommendedOperationCount": 8,
+    "repairRetopologyPlanGenerated": true,
+    "repairRun": false,
+    "reportId": "repair_retopology_plan.cleanup_preview_tshirt_visual_geometry_v1",
+    "requiredOperationCount": 8,
+    "retopologyRun": false,
+    "seamSplitRun": false,
+    "sourceGeometryBindingValidationId": "binding_validation.cleanup_preview_tshirt_visual_geometry_v1",
+    "status": "repair_retopology_plan_generated_execution_pending"
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
@@ -177,6 +192,7 @@
     "deformationValidationRun": true,
     "failureReason": "clean_geometry_proposal_not_generated",
     "qualityStatus": "rejected",
+    "repairRetopologyPlanGenerated": true,
     "repairRun": false,
     "runtimeBindingAccepted": false,
     "semanticTransferReportGenerated": true,

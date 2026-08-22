@@ -104,6 +104,20 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryBindingValidation"]["notRunCheckCount"] == 4
     assert payload["geometryBindingValidation"]["maxCleanupToSettledOffsetMeters"] == 0.944948063
     assert payload["geometryBindingValidation"]["acceptedForCleanProposal"] is False
+    assert payload["geometryRepairRetopologyPlan"]["status"] == (
+        "repair_retopology_plan_generated_execution_pending"
+    )
+    assert payload["geometryRepairRetopologyPlan"]["repairRetopologyPlanGenerated"] is True
+    assert payload["geometryRepairRetopologyPlan"]["repairRun"] is False
+    assert payload["geometryRepairRetopologyPlan"]["retopologyRun"] is False
+    assert payload["geometryRepairRetopologyPlan"]["seamSplitRun"] is False
+    assert payload["geometryRepairRetopologyPlan"]["requiredOperationCount"] == 8
+    assert payload["geometryRepairRetopologyPlan"]["deformationFailedVertexCount"] == 210
+    assert (
+        payload["geometryRepairRetopologyPlan"]["estimatedRepairComplexity"]
+        == "retopology_required"
+    )
+    assert payload["geometryRepairRetopologyPlan"]["acceptedForCleanProposal"] is False
     assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"
     assert payload["cleanGeometryProposal"]["cleanProposalAvailable"] is False
     assert payload["cleanGeometryProposal"]["acceptedForCanonical"] is False
@@ -114,6 +128,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["cleanGeometryProposal"]["semanticTransferRun"] is True
     assert payload["cleanGeometryProposal"]["bindingCandidateReportGenerated"] is True
     assert payload["cleanGeometryProposal"]["bindingValidationReportGenerated"] is True
+    assert payload["cleanGeometryProposal"]["repairRetopologyPlanGenerated"] is True
     assert payload["cleanGeometryProposal"]["candidateBindingRun"] is True
     assert payload["cleanGeometryProposal"]["deformationValidationRun"] is True
     assert payload["cleanGeometryProposal"]["simulationBindingRun"] is False

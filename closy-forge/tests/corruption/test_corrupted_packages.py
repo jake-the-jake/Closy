@@ -598,6 +598,35 @@ def test_geometry_binding_validation_acceptance_claim_is_rejected(
     assert "geometry_binding_validation_quality_status_invalid" in codes
 
 
+def test_geometry_repair_retopology_plan_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_repair_plan_hash.closygarment")
+    repair_plan = read_json(corrupt / "reports" / "geometry_repair_retopology_plan.json")
+    repair_plan["aggregate"]["requiredOperationCount"] = 0
+    write_json(corrupt / "reports" / "geometry_repair_retopology_plan.json", repair_plan)
+    assert "geometry_repair_retopology_plan_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_repair_retopology_plan_execution_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_repair_plan_ready.closygarment")
+    repair_plan = read_json(corrupt / "reports" / "geometry_repair_retopology_plan.json")
+    repair_plan["readiness"]["acceptedForCleanProposal"] = True
+    repair_plan["readiness"]["acceptedForRuntimeRender"] = True
+    repair_plan["execution"]["repairRun"] = True
+    repair_plan["execution"]["retopologyRun"] = True
+    repair_plan["execution"]["runtimeBindingWritten"] = True
+    repair_plan["quality"]["status"] = "pass"
+    write_json(corrupt / "reports" / "geometry_repair_retopology_plan.json", repair_plan)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_repair_retopology_plan_hash_mismatch" in codes
+    assert "geometry_repair_retopology_plan_acceptance_invalid" in codes
+    assert "geometry_repair_retopology_plan_execution_state_invalid" in codes
+    assert "geometry_repair_retopology_plan_quality_status_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

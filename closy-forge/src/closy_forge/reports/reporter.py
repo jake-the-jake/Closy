@@ -22,6 +22,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     semantic_transfer = read_json(package_dir / "reports" / "geometry_semantic_transfer.json")
     binding_candidate = read_json(package_dir / "reports" / "geometry_binding_candidate.json")
     binding_validation = read_json(package_dir / "reports" / "geometry_binding_validation.json")
+    repair_plan = read_json(package_dir / "reports" / "geometry_repair_retopology_plan.json")
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -208,6 +209,24 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             ],
             "acceptedForCleanProposal": binding_validation["readiness"]["acceptedForCleanProposal"],
         },
+        "geometryRepairRetopologyPlan": {
+            "reportId": repair_plan["reportId"],
+            "sourceGeometryBindingValidationId": repair_plan["sourceGeometryBindingValidationId"],
+            "status": repair_plan["readiness"]["status"],
+            "repairRetopologyPlanGenerated": repair_plan["execution"][
+                "repairRetopologyPlanGenerated"
+            ],
+            "repairRun": repair_plan["execution"]["repairRun"],
+            "retopologyRun": repair_plan["execution"]["retopologyRun"],
+            "seamSplitRun": repair_plan["execution"]["seamSplitRun"],
+            "recommendedOperationCount": repair_plan["aggregate"]["recommendedOperationCount"],
+            "requiredOperationCount": repair_plan["aggregate"]["requiredOperationCount"],
+            "deformationFailedVertexCount": repair_plan["aggregate"][
+                "deformationFailedVertexCount"
+            ],
+            "estimatedRepairComplexity": repair_plan["aggregate"]["estimatedRepairComplexity"],
+            "acceptedForCleanProposal": repair_plan["readiness"]["acceptedForCleanProposal"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -226,6 +245,9 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             ],
             "bindingValidationReportGenerated": clean_proposal["cleanupPipeline"][
                 "bindingValidationReportGenerated"
+            ],
+            "repairRetopologyPlanGenerated": clean_proposal["cleanupPipeline"][
+                "repairRetopologyPlanGenerated"
             ],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
@@ -296,6 +318,7 @@ def human_report(package_dir: Path) -> str:
     semantic_transfer = summary["geometrySemanticTransfer"]
     binding_candidate = summary["geometryBindingCandidate"]
     binding_validation = summary["geometryBindingValidation"]
+    repair_plan = summary["geometryRepairRetopologyPlan"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -358,6 +381,12 @@ def human_report(package_dir: Path) -> str:
                 f"max offset {binding_validation['maxCleanupToSettledOffsetMeters']:.8f} m, "
                 f"failed checks={binding_validation['failedCheckCount']}, runtime accepted="
                 f"{binding_validation['runtimeBindingAccepted']}"
+            ),
+            (
+                f"Repair/retopology plan: status={repair_plan['status']}, "
+                f"required operations={repair_plan['requiredOperationCount']}, "
+                f"complexity={repair_plan['estimatedRepairComplexity']}, "
+                f"executed={repair_plan['repairRun']}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "

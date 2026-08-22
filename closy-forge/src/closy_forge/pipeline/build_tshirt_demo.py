@@ -57,6 +57,7 @@ from closy_forge.proposals import (
     GEOMETRY_CLEANUP_PLAN_VERSION,
     GEOMETRY_CLEANUP_RESULT_VERSION,
     GEOMETRY_PROPOSAL_VERSION,
+    GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
     GEOMETRY_SEMANTIC_TRANSFER_VERSION,
     PROVIDER_REGISTRY_VERSION,
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
@@ -66,6 +67,7 @@ from closy_forge.proposals import (
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
+    build_geometry_repair_retopology_plan,
     build_geometry_semantic_transfer_report,
     build_manual_geometry_proposal,
     build_raw_geometry_topology_report,
@@ -252,6 +254,15 @@ def _write_package_contents(
         rest_state_path="simulation/rest_state.json",
         settled_simulation_mesh_path="simulation/simulation_mesh.glb",
     )
+    geometry_repair_retopology_plan = build_geometry_repair_retopology_plan(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_topology_report=raw_geometry_topology,
+        cleanup_result_report=geometry_cleanup_result,
+        semantic_transfer_report=geometry_semantic_transfer,
+        binding_candidate_report=geometry_binding_candidate,
+        binding_validation_report=geometry_binding_validation,
+    )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -263,6 +274,7 @@ def _write_package_contents(
         semantic_transfer_report=geometry_semantic_transfer,
         binding_candidate_report=geometry_binding_candidate,
         binding_validation_report=geometry_binding_validation,
+        repair_retopology_plan_report=geometry_repair_retopology_plan,
     )
     render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
     binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
@@ -375,6 +387,7 @@ def _write_package_contents(
         geometry_semantic_transfer,
         geometry_binding_candidate,
         geometry_binding_validation,
+        geometry_repair_retopology_plan,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -404,6 +417,7 @@ def _write_package_contents(
         geometry_semantic_transfer,
         geometry_binding_candidate,
         geometry_binding_validation,
+        geometry_repair_retopology_plan,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -436,6 +450,7 @@ def _write_package_contents(
         geometry_semantic_transfer,
         geometry_binding_candidate,
         geometry_binding_validation,
+        geometry_repair_retopology_plan,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -463,6 +478,7 @@ def _write_package_contents(
         "geometrySemanticTransfer": geometry_semantic_transfer,
         "geometryBindingCandidate": geometry_binding_candidate,
         "geometryBindingValidation": geometry_binding_validation,
+        "geometryRepairRetopologyPlan": geometry_repair_retopology_plan,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
@@ -580,6 +596,7 @@ def _manifest(
     geometry_semantic_transfer: dict[str, Any],
     geometry_binding_candidate: dict[str, Any],
     geometry_binding_validation: dict[str, Any],
+    geometry_repair_retopology_plan: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -615,6 +632,7 @@ def _manifest(
             "geometrySemanticTransfer": "reports/geometry_semantic_transfer.json",
             "geometryBindingCandidate": "reports/geometry_binding_candidate.json",
             "geometryBindingValidation": "reports/geometry_binding_validation.json",
+            "geometryRepairRetopologyPlan": "reports/geometry_repair_retopology_plan.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
@@ -711,6 +729,12 @@ def _manifest(
             "geometryBindingValidationPayloadHash": str(
                 geometry_binding_validation["integrity"]["geometryBindingValidationHash"]
             ),
+            "geometryRepairRetopologyPlanHash": _hash_from_inventory(
+                inventory, "reports/geometry_repair_retopology_plan.json"
+            ),
+            "geometryRepairRetopologyPlanPayloadHash": str(
+                geometry_repair_retopology_plan["integrity"]["geometryRepairRetopologyPlanHash"]
+            ),
             "cleanGeometryProposalHash": _hash_from_inventory(
                 inventory, "proposals/clean_geometry_proposal.json"
             ),
@@ -754,6 +778,7 @@ def _manifest(
             "geometrySemanticTransfer": GEOMETRY_SEMANTIC_TRANSFER_VERSION,
             "geometryBindingCandidate": GEOMETRY_BINDING_CANDIDATE_VERSION,
             "geometryBindingValidation": GEOMETRY_BINDING_VALIDATION_VERSION,
+            "geometryRepairRetopologyPlan": GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
@@ -766,7 +791,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_15_geometry_binding_validation",
+            "name": "implementation_16_geometry_repair_retopology_plan",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -782,12 +807,13 @@ def _manifest(
             "geometry_semantic_transfer_not_simulation_binding",
             "geometry_binding_candidate_not_runtime_binding",
             "geometry_binding_validation_rejected_runtime_binding",
+            "geometry_repair_retopology_plan_not_executed",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "15-geometry-binding-validation"},
+        "extensions": {"closyImplementation": "16-geometry-repair-retopology-plan"},
     }
 
 
@@ -822,6 +848,7 @@ def _capabilities() -> dict[str, bool]:
         "geometryBoundaryClassificationAvailable": True,
         "geometryBindingCandidateAvailable": True,
         "geometryBindingValidationAvailable": True,
+        "geometryRepairRetopologyPlanAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
@@ -860,6 +887,7 @@ def _quality_reports(
     geometry_semantic_transfer: dict[str, Any],
     geometry_binding_candidate: dict[str, Any],
     geometry_binding_validation: dict[str, Any],
+    geometry_repair_retopology_plan: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
@@ -919,6 +947,7 @@ def _quality_reports(
         "geometry_semantic_transfer.json": geometry_semantic_transfer,
         "geometry_binding_candidate.json": geometry_binding_candidate,
         "geometry_binding_validation.json": geometry_binding_validation,
+        "geometry_repair_retopology_plan.json": geometry_repair_retopology_plan,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
         ),
@@ -1003,6 +1032,7 @@ def _provenance(
     geometry_semantic_transfer: dict[str, Any],
     geometry_binding_candidate: dict[str, Any],
     geometry_binding_validation: dict[str, Any],
+    geometry_repair_retopology_plan: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -1238,6 +1268,38 @@ def _provenance(
                 [str(geometry_binding_validation["integrity"]["geometryBindingValidationHash"])],
             ),
             _stage(
+                "geometry_repair_retopology_plan",
+                GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
+                {
+                    "sourceGeometryBindingValidationId": geometry_repair_retopology_plan[
+                        "sourceGeometryBindingValidationId"
+                    ],
+                    "repairRetopologyPlanGenerated": geometry_repair_retopology_plan["execution"][
+                        "repairRetopologyPlanGenerated"
+                    ],
+                    "requiredOperationCount": geometry_repair_retopology_plan["aggregate"][
+                        "requiredOperationCount"
+                    ],
+                    "deformationFailedVertexCount": geometry_repair_retopology_plan["aggregate"][
+                        "deformationFailedVertexCount"
+                    ],
+                    "estimatedRepairComplexity": geometry_repair_retopology_plan["aggregate"][
+                        "estimatedRepairComplexity"
+                    ],
+                    "repairRun": geometry_repair_retopology_plan["execution"]["repairRun"],
+                    "retopologyRun": geometry_repair_retopology_plan["execution"]["retopologyRun"],
+                    "acceptedForCleanProposal": False,
+                    "status": geometry_repair_retopology_plan["readiness"]["status"],
+                },
+                [
+                    str(
+                        geometry_repair_retopology_plan["integrity"][
+                            "geometryRepairRetopologyPlanHash"
+                        ]
+                    )
+                ],
+            ),
+            _stage(
                 "clean_geometry_proposal_rejection",
                 CLEAN_GEOMETRY_PROPOSAL_VERSION,
                 {
@@ -1260,14 +1322,19 @@ def _provenance(
                     "sourceGeometryBindingValidationId": clean_geometry_proposal[
                         "sourceGeometryBindingValidationId"
                     ],
+                    "sourceGeometryRepairRetopologyPlanId": clean_geometry_proposal[
+                        "sourceGeometryRepairRetopologyPlanId"
+                    ],
                     "topologyDiagnosticsRun": True,
                     "cleanupPlanGenerated": True,
                     "cleanupResultGenerated": True,
                     "semanticTransferReportGenerated": True,
                     "bindingCandidateReportGenerated": True,
                     "bindingValidationReportGenerated": True,
+                    "repairRetopologyPlanGenerated": True,
                     "cleanupRun": True,
                     "repairRun": False,
+                    "retopologyRun": False,
                     "semanticTransferRun": True,
                     "boundaryClassificationRun": True,
                     "candidateBindingRun": True,
@@ -1391,6 +1458,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_semantic_transfer = context["geometrySemanticTransfer"]
     geometry_binding_candidate = context["geometryBindingCandidate"]
     geometry_binding_validation = context["geometryBindingValidation"]
+    geometry_repair_retopology_plan = context["geometryRepairRetopologyPlan"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
@@ -1606,6 +1674,34 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "acceptedForCleanProposal"
             ],
         },
+        "geometryRepairRetopologyPlan": {
+            "reportId": geometry_repair_retopology_plan["reportId"],
+            "sourceGeometryBindingValidationId": geometry_repair_retopology_plan[
+                "sourceGeometryBindingValidationId"
+            ],
+            "status": geometry_repair_retopology_plan["readiness"]["status"],
+            "repairRetopologyPlanGenerated": geometry_repair_retopology_plan["execution"][
+                "repairRetopologyPlanGenerated"
+            ],
+            "repairRun": geometry_repair_retopology_plan["execution"]["repairRun"],
+            "retopologyRun": geometry_repair_retopology_plan["execution"]["retopologyRun"],
+            "seamSplitRun": geometry_repair_retopology_plan["execution"]["seamSplitRun"],
+            "recommendedOperationCount": geometry_repair_retopology_plan["aggregate"][
+                "recommendedOperationCount"
+            ],
+            "requiredOperationCount": geometry_repair_retopology_plan["aggregate"][
+                "requiredOperationCount"
+            ],
+            "deformationFailedVertexCount": geometry_repair_retopology_plan["aggregate"][
+                "deformationFailedVertexCount"
+            ],
+            "estimatedRepairComplexity": geometry_repair_retopology_plan["aggregate"][
+                "estimatedRepairComplexity"
+            ],
+            "acceptedForCleanProposal": geometry_repair_retopology_plan["readiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_geometry_proposal["proposalId"],
             "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
@@ -1630,6 +1726,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "bindingValidationReportGenerated": clean_geometry_proposal["cleanupPipeline"][
                 "bindingValidationReportGenerated"
+            ],
+            "repairRetopologyPlanGenerated": clean_geometry_proposal["cleanupPipeline"][
+                "repairRetopologyPlanGenerated"
             ],
             "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
@@ -1736,6 +1835,10 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"failed checks={summary['geometryBindingValidation']['failedCheckCount']}, "
         f"runtime accepted="
         f"{summary['geometryBindingValidation']['runtimeBindingAccepted']}\n"
+        f"- Repair/retopology plan: status=`{summary['geometryRepairRetopologyPlan']['status']}`, "
+        f"required operations={summary['geometryRepairRetopologyPlan']['requiredOperationCount']}, "
+        f"complexity=`{summary['geometryRepairRetopologyPlan']['estimatedRepairComplexity']}`, "
+        f"executed={summary['geometryRepairRetopologyPlan']['repairRun']}\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"

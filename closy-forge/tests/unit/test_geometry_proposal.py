@@ -12,6 +12,7 @@ from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.proposals import (
     PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_clean_geometry_proposal_rejection,
@@ -20,6 +21,7 @@ from closy_forge.proposals import (
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
+    build_geometry_repair_retopology_plan,
     build_geometry_semantic_transfer_report,
     build_manual_geometry_proposal,
     build_null_geometry_proposal,
@@ -32,6 +34,7 @@ from closy_forge.proposals import (
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
+    hash_geometry_repair_retopology_plan,
     hash_geometry_semantic_transfer_report,
     hash_raw_geometry_topology_report,
 )
@@ -707,6 +710,15 @@ def test_geometry_binding_validation_rejects_unverified_deformation_candidate(
         rest_state_path="simulation/rest_state.json",
         settled_simulation_mesh_path="simulation/simulation_mesh.glb",
     )
+    repair_plan = build_geometry_repair_retopology_plan(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_topology_report=topology,
+        cleanup_result_report=cleanup_result,
+        semantic_transfer_report=semantic_transfer,
+        binding_candidate_report=binding_candidate,
+        binding_validation_report=binding_validation,
+    )
     clean = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -718,6 +730,7 @@ def test_geometry_binding_validation_rejects_unverified_deformation_candidate(
         semantic_transfer_report=semantic_transfer,
         binding_candidate_report=binding_candidate,
         binding_validation_report=binding_validation,
+        repair_retopology_plan_report=repair_plan,
     )
 
     assert binding_validation["execution"]["deformationValidationRun"] is True
@@ -733,15 +746,37 @@ def test_geometry_binding_validation_rejects_unverified_deformation_candidate(
     assert binding_validation["integrity"]["geometryBindingValidationHash"] == (
         hash_geometry_binding_validation_report(binding_validation)
     )
+    assert repair_plan["execution"]["repairRetopologyPlanGenerated"] is True
+    assert repair_plan["execution"]["repairRun"] is False
+    assert repair_plan["execution"]["retopologyRun"] is False
+    assert repair_plan["readiness"]["status"] == (
+        "repair_retopology_plan_generated_execution_pending"
+    )
+    assert repair_plan["quality"]["status"] == "plan_only_rejected"
+    assert repair_plan["aggregate"]["requiredOperationCount"] == 8
+    assert repair_plan["aggregate"]["deformationFailedVertexCount"] == rest_mesh.vertex_count
+    assert repair_plan["aggregate"]["estimatedRepairComplexity"] == "retopology_required"
+    assert repair_plan["integrity"]["geometryRepairRetopologyPlanHash"] == (
+        hash_geometry_repair_retopology_plan(repair_plan)
+    )
     assert (
         clean["sourceGeometryBindingValidationHash"]
         == (binding_validation["integrity"]["geometryBindingValidationHash"])
     )
+    assert (
+        clean["sourceGeometryRepairRetopologyPlanHash"]
+        == (repair_plan["integrity"]["geometryRepairRetopologyPlanHash"])
+    )
     assert clean["cleanupPipeline"]["bindingValidationReportGenerated"] is True
+    assert clean["cleanupPipeline"]["repairRetopologyPlanGenerated"] is True
     assert clean["cleanupPipeline"]["deformationValidationRun"] is True
     assert clean["cleanupPipeline"]["runtimeBindingAccepted"] is False
     assert clean["cleanGeometryAudit"]["bindingValidationFailedCheckCount"] == 1
-    assert set(PARTIAL_BINDING_VALIDATION_REJECTION_REASONS).issubset(
+    assert clean["cleanGeometryAudit"]["repairRetopologyRequiredOperationCount"] == 8
+    assert set(PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS).issubset(
+        clean["quality"]["rejectionReasons"]
+    )
+    assert not set(PARTIAL_BINDING_VALIDATION_REJECTION_REASONS).issubset(
         clean["quality"]["rejectionReasons"]
     )
     assert clean["quality"]["acceptedForCanonical"] is False

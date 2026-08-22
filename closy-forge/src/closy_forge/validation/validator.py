@@ -38,12 +38,14 @@ from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.proposals import (
     PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_geometry_binding_candidate_report,
     build_geometry_binding_validation_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
+    build_geometry_repair_retopology_plan,
     build_geometry_semantic_transfer_report,
     build_raw_geometry_topology_report,
     hash_clean_geometry_proposal,
@@ -52,6 +54,7 @@ from closy_forge.proposals import (
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
+    hash_geometry_repair_retopology_plan,
     hash_geometry_semantic_transfer_report,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
@@ -109,6 +112,7 @@ EXPECTED_FILES = [
     "reports/geometry_semantic_transfer.json",
     "reports/geometry_binding_candidate.json",
     "reports/geometry_binding_validation.json",
+    "reports/geometry_repair_retopology_plan.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -258,6 +262,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_semantic_transfer(package_dir, manifest, issues)
     _validate_geometry_binding_candidate(package_dir, manifest, issues)
     _validate_geometry_binding_validation(package_dir, manifest, issues)
+    _validate_geometry_repair_retopology_plan(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1412,6 +1417,11 @@ def _validate_geometry_proposal(
             "geometryBindingValidationAvailable",
             True,
             "geometry_binding_validation_capability_missing",
+        ),
+        (
+            "geometryRepairRetopologyPlanAvailable",
+            True,
+            "geometry_repair_retopology_plan_capability_missing",
         ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
@@ -3584,6 +3594,322 @@ def _validate_binding_validation_asset_reference(
     return asset_path
 
 
+def _validate_geometry_repair_retopology_plan(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    raw_topology = _read_required_json(package_dir, "reports/raw_geometry_topology.json", issues)
+    cleanup_result = _read_required_json(
+        package_dir, "reports/geometry_cleanup_result.json", issues
+    )
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
+    binding_candidate = _read_required_json(
+        package_dir, "reports/geometry_binding_candidate.json", issues
+    )
+    binding_validation = _read_required_json(
+        package_dir, "reports/geometry_binding_validation.json", issues
+    )
+    repair_plan = _read_required_json(
+        package_dir, "reports/geometry_repair_retopology_plan.json", issues
+    )
+    if (
+        raw_topology is None
+        or cleanup_result is None
+        or semantic_transfer is None
+        or binding_candidate is None
+        or binding_validation is None
+        or repair_plan is None
+    ):
+        return
+
+    if repair_plan.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_garment_mismatch",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan must reference the package garment ID.",
+            )
+        )
+    if repair_plan.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_class_mismatch",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan must reference the package garment class.",
+            )
+        )
+
+    expected_sources = [
+        (
+            "sourceRawTopologyReportId",
+            raw_topology.get("reportId"),
+            "geometry_repair_retopology_plan_topology_source_mismatch",
+        ),
+        (
+            "sourceGeometryCleanupResultId",
+            cleanup_result.get("reportId"),
+            "geometry_repair_retopology_plan_cleanup_result_source_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferId",
+            semantic_transfer.get("reportId"),
+            "geometry_repair_retopology_plan_semantic_source_mismatch",
+        ),
+        (
+            "sourceGeometryBindingCandidateId",
+            binding_candidate.get("reportId"),
+            "geometry_repair_retopology_plan_candidate_source_mismatch",
+        ),
+        (
+            "sourceGeometryBindingValidationId",
+            binding_validation.get("reportId"),
+            "geometry_repair_retopology_plan_validation_source_mismatch",
+        ),
+    ]
+    for field, expected_value, code in expected_sources:
+        if repair_plan.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_repair_retopology_plan.json",
+                    f"Repair/retopology plan {field} must match its source artifact.",
+                )
+            )
+
+    expected_hashes = [
+        (
+            "sourceRawTopologyReportHash",
+            _nested_string(raw_topology, ["integrity", "rawGeometryTopologyReportHash"], ""),
+            "geometry_repair_retopology_plan_topology_hash_mismatch",
+        ),
+        (
+            "sourceGeometryCleanupResultHash",
+            _nested_string(cleanup_result, ["integrity", "geometryCleanupResultHash"], ""),
+            "geometry_repair_retopology_plan_cleanup_result_hash_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferHash",
+            _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], ""),
+            "geometry_repair_retopology_plan_semantic_hash_mismatch",
+        ),
+        (
+            "sourceGeometryBindingCandidateHash",
+            _nested_string(binding_candidate, ["integrity", "geometryBindingCandidateHash"], ""),
+            "geometry_repair_retopology_plan_candidate_hash_mismatch",
+        ),
+        (
+            "sourceGeometryBindingValidationHash",
+            _nested_string(binding_validation, ["integrity", "geometryBindingValidationHash"], ""),
+            "geometry_repair_retopology_plan_validation_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if repair_plan.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_repair_retopology_plan.json",
+                    f"Repair/retopology plan {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(repair_plan, ["integrity", "geometryRepairRetopologyPlanHash"], "") != (
+        hash_geometry_repair_retopology_plan(repair_plan)
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_hash_mismatch",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan hash must match its canonical payload.",
+            )
+        )
+
+    try:
+        expected = build_geometry_repair_retopology_plan(
+            garment_id=str(manifest.get("garmentId", "")),
+            garment_class=str(manifest.get("garmentClass", "")),
+            raw_topology_report=raw_topology,
+            cleanup_result_report=cleanup_result,
+            semantic_transfer_report=semantic_transfer,
+            binding_candidate_report=binding_candidate,
+            binding_validation_report=binding_validation,
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_recompute_failed",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                str(exc),
+            )
+        )
+        return
+    for key in [
+        "failureSnapshot",
+        "planningSettings",
+        "recommendedOperations",
+        "repairSequence",
+        "aggregate",
+        "execution",
+        "readiness",
+        "quality",
+    ]:
+        if repair_plan.get(key) != expected.get(key):
+            issues.append(
+                _issue(
+                    "geometry_repair_retopology_plan_recompute_mismatch",
+                    "fatal",
+                    "reports/geometry_repair_retopology_plan.json",
+                    f"Repair/retopology plan field {key} is stale.",
+                )
+            )
+
+    failure_snapshot = repair_plan.get("failureSnapshot", {})
+    aggregate = repair_plan.get("aggregate", {})
+    operations = repair_plan.get("recommendedOperations", [])
+    sequence = repair_plan.get("repairSequence", [])
+    execution = repair_plan.get("execution", {})
+    readiness = repair_plan.get("readiness", {})
+    quality = repair_plan.get("quality", {})
+    policy = repair_plan.get("policy", {})
+    for name, block in [
+        ("failureSnapshot", failure_snapshot),
+        ("aggregate", aggregate),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_repair_retopology_plan_block_invalid",
+                    "fatal",
+                    "reports/geometry_repair_retopology_plan.json",
+                    f"Repair/retopology plan {name} block must be an object.",
+                )
+            )
+            return
+    if not isinstance(operations, list) or not isinstance(sequence, list):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_block_invalid",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan operations and sequence must be arrays.",
+            )
+        )
+        return
+
+    required_count = sum(
+        1 for operation in operations if isinstance(operation, dict) and operation.get("required")
+    )
+    if (
+        int(aggregate.get("recommendedOperationCount", -1)) != len(operations)
+        or int(aggregate.get("requiredOperationCount", -1)) != required_count
+        or int(aggregate.get("repairSequenceStepCount", -1)) != len(sequence)
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_aggregate_invalid",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan aggregate counts must match operations and sequence.",
+            )
+        )
+    if int(failure_snapshot.get("deformationFailedVertexCount", 0)) <= 0:
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_missing_failure_evidence",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan must preserve deformation failure evidence.",
+            )
+        )
+    if (
+        execution.get("repairRetopologyPlanGenerated") is not True
+        or execution.get("repairRun") is not False
+        or execution.get("retopologyRun") is not False
+        or execution.get("seamSplitRun") is not False
+        or execution.get("normalContinuityValidationRun") is not False
+        or execution.get("tangentContinuityValidationRun") is not False
+        or execution.get("runtimeBindingWritten") is not False
+        or execution.get("runtimeBindingAccepted") is not False
+        or execution.get("cleanProposalRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_execution_state_invalid",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan may not claim execution, runtime binding or clean output.",
+            )
+        )
+    if (
+        readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForSimulation") is not False
+        or readiness.get("acceptedForRuntimeRender") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_acceptance_invalid",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan cannot accept clean/canonical/runtime geometry in D0.",
+            )
+        )
+    if quality.get("status") != "plan_only_rejected":
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_quality_status_invalid",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "D0 repair/retopology plan must remain a rejected plan-only artifact.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_policy_violation",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryRepairRetopologyPlanAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryRepairRetopologyPlanAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(repair_plan):
+        issues.append(
+            _issue(
+                "geometry_repair_retopology_plan_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_repair_retopology_plan.json",
+                "Repair/retopology plan must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_provider_registry(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -3981,6 +4307,9 @@ def _validate_clean_geometry_proposal(
     binding_validation = _read_required_json(
         package_dir, "reports/geometry_binding_validation.json", issues
     )
+    repair_plan = _read_required_json(
+        package_dir, "reports/geometry_repair_retopology_plan.json", issues
+    )
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
@@ -3996,6 +4325,7 @@ def _validate_clean_geometry_proposal(
         or semantic_transfer is None
         or binding_candidate is None
         or binding_validation is None
+        or repair_plan is None
         or clean_proposal is None
     ):
         return
@@ -4059,6 +4389,11 @@ def _validate_clean_geometry_proposal(
             "sourceGeometryBindingValidationHash",
             _nested_string(binding_validation, ["integrity", "geometryBindingValidationHash"], ""),
             "clean_geometry_proposal_binding_validation_hash_mismatch",
+        ),
+        (
+            "sourceGeometryRepairRetopologyPlanHash",
+            _nested_string(repair_plan, ["integrity", "geometryRepairRetopologyPlanHash"], ""),
+            "clean_geometry_proposal_repair_retopology_plan_hash_mismatch",
         ),
     ]
     for field, expected_hash, code in expected_hashes:
@@ -4143,6 +4478,15 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the binding validation report ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryRepairRetopologyPlanId") != repair_plan.get("reportId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_repair_retopology_plan_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the repair/retopology plan ID.",
             )
         )
 
@@ -4322,6 +4666,7 @@ def _validate_clean_geometry_proposal(
         "retopologyRun",
         "uvTransferRun",
         "materialTransferRun",
+        "seamSplitRun",
     ]:
         if cleanup.get(key) is not False:
             issues.append(
@@ -4340,6 +4685,7 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("semanticTransferReportGenerated") is not True
         or cleanup.get("bindingCandidateReportGenerated") is not True
         or cleanup.get("bindingValidationReportGenerated") is not True
+        or cleanup.get("repairRetopologyPlanGenerated") is not True
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -4350,7 +4696,8 @@ def _validate_clean_geometry_proposal(
                 "proposals/clean_geometry_proposal.json",
                 (
                     "Clean proposal must link completed raw topology, cleanup plan, cleanup "
-                    "result, semantic transfer and binding candidate."
+                    "result, semantic transfer, binding candidate, binding validation and "
+                    "repair/retopology plan."
                 ),
             )
         )
@@ -4528,6 +4875,39 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    repair_plan_readiness = repair_plan.get("readiness", {})
+    if isinstance(repair_plan_readiness, dict) and audit.get(
+        "repairRetopologyPlanStatus"
+    ) != repair_plan_readiness.get("status"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_repair_retopology_plan_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal repair/retopology plan status is stale.",
+            )
+        )
+    repair_plan_aggregate = repair_plan.get("aggregate", {})
+    if isinstance(repair_plan_aggregate, dict):
+        expected_repair_plan_fields = {
+            "repairRetopologyRequiredOperationCount": repair_plan_aggregate.get(
+                "requiredOperationCount"
+            ),
+            "repairRetopologyEstimatedComplexity": repair_plan_aggregate.get(
+                "estimatedRepairComplexity"
+            ),
+        }
+        for key, expected in expected_repair_plan_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_repair_retopology_plan_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal repair/retopology plan field {key} is stale.",
+                    )
+                )
+
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
         rejection_reasons = []
@@ -4580,6 +4960,7 @@ def _validate_clean_geometry_proposal(
             "semanticTransferReportGenerated": cleanup.get("semanticTransferReportGenerated"),
             "bindingCandidateReportGenerated": cleanup.get("bindingCandidateReportGenerated"),
             "bindingValidationReportGenerated": cleanup.get("bindingValidationReportGenerated"),
+            "repairRetopologyPlanGenerated": cleanup.get("repairRetopologyPlanGenerated"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
@@ -4599,6 +4980,11 @@ def _validate_clean_geometry_proposal(
             "bindingValidationRmsOffsetMeters": audit.get("bindingValidationRmsOffsetMeters"),
             "bindingValidationFailedCheckCount": audit.get("bindingValidationFailedCheckCount"),
             "bindingValidationNotRunCheckCount": audit.get("bindingValidationNotRunCheckCount"),
+            "repairRetopologyPlanStatus": audit.get("repairRetopologyPlanStatus"),
+            "repairRetopologyRequiredOperationCount": audit.get(
+                "repairRetopologyRequiredOperationCount"
+            ),
+            "repairRetopologyEstimatedComplexity": audit.get("repairRetopologyEstimatedComplexity"),
             "failureReason": audit.get("failureReason"),
         }
         for key, expected in expected_quality.items():
@@ -5266,6 +5652,15 @@ def _meshset_from_state_and_manifest(state: dict[str, Any], manifest: dict[str, 
 
 
 def _required_clean_rejections_for_state(cleanup: dict[str, Any]) -> list[str]:
+    if (
+        cleanup.get("cleanupRun") is True
+        and cleanup.get("semanticTransferRun") is True
+        and cleanup.get("candidateBindingRun") is True
+        and cleanup.get("deformationValidationRun") is True
+        and cleanup.get("repairRetopologyPlanGenerated") is True
+        and cleanup.get("runtimeBindingAccepted") is not True
+    ):
+        return PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS
     if (
         cleanup.get("cleanupRun") is True
         and cleanup.get("semanticTransferRun") is True
