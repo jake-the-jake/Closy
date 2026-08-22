@@ -506,6 +506,35 @@ def test_geometry_cleanup_result_acceptance_claim_is_rejected(
     assert "geometry_cleanup_result_output_acceptance_invalid" in codes
 
 
+def test_geometry_semantic_transfer_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_semantic_transfer_hash.closygarment"
+    )
+    semantic_transfer = read_json(corrupt / "reports" / "geometry_semantic_transfer.json")
+    semantic_transfer["aggregate"]["classifiedBoundaryEdgeCount"] = 999
+    write_json(corrupt / "reports" / "geometry_semantic_transfer.json", semantic_transfer)
+    assert "geometry_semantic_transfer_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_semantic_transfer_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_semantic_transfer_ready.closygarment"
+    )
+    semantic_transfer = read_json(corrupt / "reports" / "geometry_semantic_transfer.json")
+    semantic_transfer["readiness"]["acceptedForCleanProposal"] = True
+    semantic_transfer["readiness"]["acceptedForCanonical"] = True
+    semantic_transfer["inputAsset"]["canonicalUseAllowed"] = True
+    write_json(corrupt / "reports" / "geometry_semantic_transfer.json", semantic_transfer)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_semantic_transfer_hash_mismatch" in codes
+    assert "geometry_semantic_transfer_acceptance_invalid" in codes
+    assert "geometry_semantic_transfer_input_asset_acceptance_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

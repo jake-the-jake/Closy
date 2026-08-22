@@ -26,6 +26,8 @@ CAPABILITIES_FIXTURE = {
     "rawGeometryTopologyDiagnosticsAvailable": True,
     "geometryCleanupRecommendationAvailable": True,
     "geometryCleanupExecutionAvailable": True,
+    "geometrySemanticTransferAvailable": True,
+    "geometryBoundaryClassificationAvailable": True,
     "providerProvenanceAvailable": True,
     "geometryProviderRegistryAvailable": True,
     "manualGeometryImportAdapterDeclared": True,

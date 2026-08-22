@@ -55,12 +55,14 @@ from closy_forge.proposals import (
     GEOMETRY_CLEANUP_PLAN_VERSION,
     GEOMETRY_CLEANUP_RESULT_VERSION,
     GEOMETRY_PROPOSAL_VERSION,
+    GEOMETRY_SEMANTIC_TRANSFER_VERSION,
     PROVIDER_REGISTRY_VERSION,
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
     build_clean_geometry_proposal_rejection,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
+    build_geometry_semantic_transfer_report,
     build_manual_geometry_proposal,
     build_raw_geometry_topology_report,
     clean_geometry_proposal_quality_report,
@@ -217,6 +219,14 @@ def _write_package_contents(
         output_asset_path=cleanup_preview_asset,
         output_package_asset_path="proposals/manual_cleanup_preview.glb",
     )
+    geometry_semantic_transfer = build_geometry_semantic_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        semantic_graph=semantic,
+        pattern=pattern,
+        cleanup_result_report=geometry_cleanup_result,
+        cleanup_asset_path=cleanup_preview_asset,
+    )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -225,6 +235,7 @@ def _write_package_contents(
         raw_topology_report=raw_geometry_topology,
         cleanup_plan_report=geometry_cleanup_plan,
         cleanup_result_report=geometry_cleanup_result,
+        semantic_transfer_report=geometry_semantic_transfer,
     )
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
@@ -337,6 +348,7 @@ def _write_package_contents(
         raw_geometry_topology,
         geometry_cleanup_plan,
         geometry_cleanup_result,
+        geometry_semantic_transfer,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -363,6 +375,7 @@ def _write_package_contents(
         raw_geometry_topology,
         geometry_cleanup_plan,
         geometry_cleanup_result,
+        geometry_semantic_transfer,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -392,6 +405,7 @@ def _write_package_contents(
         raw_geometry_topology,
         geometry_cleanup_plan,
         geometry_cleanup_result,
+        geometry_semantic_transfer,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -416,6 +430,7 @@ def _write_package_contents(
         "rawGeometryTopology": raw_geometry_topology,
         "geometryCleanupPlan": geometry_cleanup_plan,
         "geometryCleanupResult": geometry_cleanup_result,
+        "geometrySemanticTransfer": geometry_semantic_transfer,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
@@ -530,6 +545,7 @@ def _manifest(
     raw_geometry_topology: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
     geometry_cleanup_result: dict[str, Any],
+    geometry_semantic_transfer: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -562,6 +578,7 @@ def _manifest(
             "geometryCleanupPlan": "reports/geometry_cleanup_plan.json",
             "geometryCleanupPreviewAsset": "proposals/manual_cleanup_preview.glb",
             "geometryCleanupResult": "reports/geometry_cleanup_result.json",
+            "geometrySemanticTransfer": "reports/geometry_semantic_transfer.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
@@ -640,6 +657,12 @@ def _manifest(
             "geometryCleanupResultPayloadHash": str(
                 geometry_cleanup_result["integrity"]["geometryCleanupResultHash"]
             ),
+            "geometrySemanticTransferHash": _hash_from_inventory(
+                inventory, "reports/geometry_semantic_transfer.json"
+            ),
+            "geometrySemanticTransferPayloadHash": str(
+                geometry_semantic_transfer["integrity"]["geometrySemanticTransferHash"]
+            ),
             "cleanGeometryProposalHash": _hash_from_inventory(
                 inventory, "proposals/clean_geometry_proposal.json"
             ),
@@ -680,6 +703,7 @@ def _manifest(
             "rawGeometryTopology": RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
             "geometryCleanupPlan": GEOMETRY_CLEANUP_PLAN_VERSION,
             "geometryCleanupResult": GEOMETRY_CLEANUP_RESULT_VERSION,
+            "geometrySemanticTransfer": GEOMETRY_SEMANTIC_TRANSFER_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
@@ -692,7 +716,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_11_geometry_cleanup_adapter",
+            "name": "implementation_12_geometry_semantic_transfer",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -705,12 +729,13 @@ def _manifest(
             "source_texture_projection_not_run",
             "manual_raw_geometry_proposal_not_canonical",
             "partial_geometry_cleanup_not_clean_proposal",
+            "geometry_semantic_transfer_not_simulation_binding",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "11-geometry-cleanup-adapter"},
+        "extensions": {"closyImplementation": "12-geometry-semantic-transfer"},
     }
 
 
@@ -741,6 +766,8 @@ def _capabilities() -> dict[str, bool]:
         "rawGeometryTopologyDiagnosticsAvailable": True,
         "geometryCleanupRecommendationAvailable": True,
         "geometryCleanupExecutionAvailable": True,
+        "geometrySemanticTransferAvailable": True,
+        "geometryBoundaryClassificationAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
@@ -776,6 +803,7 @@ def _quality_reports(
     raw_geometry_topology: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
     geometry_cleanup_result: dict[str, Any],
+    geometry_semantic_transfer: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
@@ -832,6 +860,7 @@ def _quality_reports(
         "raw_geometry_topology.json": raw_geometry_topology,
         "geometry_cleanup_plan.json": geometry_cleanup_plan,
         "geometry_cleanup_result.json": geometry_cleanup_result,
+        "geometry_semantic_transfer.json": geometry_semantic_transfer,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
         ),
@@ -913,6 +942,7 @@ def _provenance(
     raw_geometry_topology: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
     geometry_cleanup_result: dict[str, Any],
+    geometry_semantic_transfer: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -1071,6 +1101,30 @@ def _provenance(
                 [str(geometry_cleanup_result["integrity"]["geometryCleanupResultHash"])],
             ),
             _stage(
+                "geometry_semantic_transfer",
+                GEOMETRY_SEMANTIC_TRANSFER_VERSION,
+                {
+                    "sourceGeometryCleanupResultId": geometry_semantic_transfer[
+                        "sourceGeometryCleanupResultId"
+                    ],
+                    "semanticTransferRun": geometry_semantic_transfer["execution"][
+                        "semanticTransferRun"
+                    ],
+                    "boundaryClassificationRun": geometry_semantic_transfer["execution"][
+                        "boundaryClassificationRun"
+                    ],
+                    "transferredPanelCount": geometry_semantic_transfer["aggregate"][
+                        "transferredPanelCount"
+                    ],
+                    "classifiedBoundaryEdgeCount": geometry_semantic_transfer["aggregate"][
+                        "classifiedBoundaryEdgeCount"
+                    ],
+                    "acceptedForCleanProposal": False,
+                    "status": geometry_semantic_transfer["readiness"]["status"],
+                },
+                [str(geometry_semantic_transfer["integrity"]["geometrySemanticTransferHash"])],
+            ),
+            _stage(
                 "clean_geometry_proposal_rejection",
                 CLEAN_GEOMETRY_PROPOSAL_VERSION,
                 {
@@ -1084,12 +1138,17 @@ def _provenance(
                     "sourceGeometryCleanupResultId": clean_geometry_proposal[
                         "sourceGeometryCleanupResultId"
                     ],
+                    "sourceGeometrySemanticTransferId": clean_geometry_proposal[
+                        "sourceGeometrySemanticTransferId"
+                    ],
                     "topologyDiagnosticsRun": True,
                     "cleanupPlanGenerated": True,
                     "cleanupResultGenerated": True,
+                    "semanticTransferReportGenerated": True,
                     "cleanupRun": True,
                     "repairRun": False,
-                    "semanticTransferRun": False,
+                    "semanticTransferRun": True,
+                    "boundaryClassificationRun": True,
                     "simulationBindingRun": False,
                     "acceptedForCanonical": False,
                     "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
@@ -1203,6 +1262,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     raw_geometry_topology = context["rawGeometryTopology"]
     geometry_cleanup_plan = context["geometryCleanupPlan"]
     geometry_cleanup_result = context["geometryCleanupResult"]
+    geometry_semantic_transfer = context["geometrySemanticTransfer"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
@@ -1335,6 +1395,37 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "acceptedForCleanProposal"
             ],
         },
+        "geometrySemanticTransfer": {
+            "reportId": geometry_semantic_transfer["reportId"],
+            "sourceGeometryCleanupResultId": geometry_semantic_transfer[
+                "sourceGeometryCleanupResultId"
+            ],
+            "status": geometry_semantic_transfer["readiness"]["status"],
+            "semanticTransferRun": geometry_semantic_transfer["execution"]["semanticTransferRun"],
+            "boundaryClassificationRun": geometry_semantic_transfer["execution"][
+                "boundaryClassificationRun"
+            ],
+            "transferredPanelCount": geometry_semantic_transfer["aggregate"][
+                "transferredPanelCount"
+            ],
+            "expectedPanelCount": geometry_semantic_transfer["aggregate"]["expectedPanelCount"],
+            "classifiedBoundaryEdgeCount": geometry_semantic_transfer["aggregate"][
+                "classifiedBoundaryEdgeCount"
+            ],
+            "boundaryEdgeCount": geometry_semantic_transfer["aggregate"]["boundaryEdgeCount"],
+            "unclassifiedBoundaryEdgeCount": geometry_semantic_transfer["aggregate"][
+                "unclassifiedBoundaryEdgeCount"
+            ],
+            "ambiguousBoundaryEdgeCount": geometry_semantic_transfer["aggregate"][
+                "ambiguousBoundaryEdgeCount"
+            ],
+            "classificationCompleteness": geometry_semantic_transfer["aggregate"][
+                "classificationCompleteness"
+            ],
+            "acceptedForCleanProposal": geometry_semantic_transfer["readiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_geometry_proposal["proposalId"],
             "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
@@ -1350,6 +1441,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "cleanupResultGenerated": clean_geometry_proposal["cleanupPipeline"][
                 "cleanupResultGenerated"
+            ],
+            "semanticTransferReportGenerated": clean_geometry_proposal["cleanupPipeline"][
+                "semanticTransferReportGenerated"
             ],
             "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
@@ -1430,6 +1524,12 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"removed duplicate vertices="
         f"{summary['geometryCleanupResult']['removedDuplicateVertexCount']}, "
         f"accepted={summary['geometryCleanupResult']['acceptedForCleanProposal']}\n"
+        f"- Semantic transfer: status=`{summary['geometrySemanticTransfer']['status']}`, "
+        f"panels={summary['geometrySemanticTransfer']['transferredPanelCount']}/"
+        f"{summary['geometrySemanticTransfer']['expectedPanelCount']}, "
+        f"boundaries={summary['geometrySemanticTransfer']['classifiedBoundaryEdgeCount']}/"
+        f"{summary['geometrySemanticTransfer']['boundaryEdgeCount']}, "
+        f"accepted={summary['geometrySemanticTransfer']['acceptedForCleanProposal']}\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"

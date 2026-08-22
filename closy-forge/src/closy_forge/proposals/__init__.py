@@ -1,6 +1,7 @@
 from closy_forge.proposals.clean_geometry_proposal import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_clean_geometry_proposal_rejection,
     clean_geometry_proposal_quality_report,
@@ -25,6 +26,11 @@ from closy_forge.proposals.geometry_proposal import (
     geometry_proposal_quality_report,
     hash_geometry_proposal,
 )
+from closy_forge.proposals.geometry_semantic_transfer import (
+    GEOMETRY_SEMANTIC_TRANSFER_VERSION,
+    build_geometry_semantic_transfer_report,
+    hash_geometry_semantic_transfer_report,
+)
 from closy_forge.proposals.provider_registry import (
     MANUAL_IMPORT_PROVIDER_ID,
     NULL_GEOMETRY_PROVIDER_ID,
@@ -46,17 +52,20 @@ __all__ = [
     "GEOMETRY_PROPOSAL_VERSION",
     "GEOMETRY_CLEANUP_PLAN_VERSION",
     "GEOMETRY_CLEANUP_RESULT_VERSION",
+    "GEOMETRY_SEMANTIC_TRANSFER_VERSION",
     "MANUAL_IMPORT_PROVIDER_ID",
     "NULL_GEOMETRY_PROVIDER_ID",
     "NULL_GEOMETRY_PROPOSAL_VERSION",
     "PROVIDER_REGISTRY_VERSION",
     "RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION",
     "PARTIAL_CLEANUP_REJECTION_REASONS",
+    "PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS",
     "REQUIRED_CLEAN_REJECTION_REASONS",
     "build_clean_geometry_proposal_rejection",
     "build_geometry_provider_registry",
     "build_geometry_cleanup_plan",
     "build_geometry_cleanup_result",
+    "build_geometry_semantic_transfer_report",
     "build_manual_geometry_proposal",
     "build_null_geometry_proposal",
     "build_raw_geometry_topology_report",
@@ -66,6 +75,7 @@ __all__ = [
     "hash_clean_geometry_proposal",
     "hash_geometry_cleanup_plan",
     "hash_geometry_cleanup_result",
+    "hash_geometry_semantic_transfer_report",
     "hash_geometry_proposal",
     "hash_provider_registry",
     "hash_raw_geometry_topology_report",

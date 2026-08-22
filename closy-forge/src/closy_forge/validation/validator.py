@@ -27,19 +27,27 @@ from closy_forge.geometry.mesh_model import (
     sub,
 )
 from closy_forge.geometry.triangulation import validate_panel_boundary
-from closy_forge.package_io.canonical_json import read_json
-from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, topology_hash
+from closy_forge.package_io.canonical_json import canonical_dumps, read_json
+from closy_forge.package_io.hashing import (
+    geometry_content_hash,
+    sha256_bytes,
+    sha256_file,
+    topology_hash,
+)
 from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.proposals import (
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
+    build_geometry_semantic_transfer_report,
     build_raw_geometry_topology_report,
     hash_clean_geometry_proposal,
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
+    hash_geometry_semantic_transfer_report,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
 )
@@ -93,6 +101,7 @@ EXPECTED_FILES = [
     "reports/raw_geometry_topology.json",
     "reports/geometry_cleanup_plan.json",
     "reports/geometry_cleanup_result.json",
+    "reports/geometry_semantic_transfer.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -239,6 +248,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_raw_geometry_topology(package_dir, manifest, issues)
     _validate_geometry_cleanup_plan(package_dir, manifest, issues)
     _validate_geometry_cleanup_result(package_dir, manifest, issues)
+    _validate_geometry_semantic_transfer(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1374,6 +1384,16 @@ def _validate_geometry_proposal(
             True,
             "geometry_cleanup_execution_capability_missing",
         ),
+        (
+            "geometrySemanticTransferAvailable",
+            True,
+            "geometry_semantic_transfer_capability_missing",
+        ),
+        (
+            "geometryBoundaryClassificationAvailable",
+            True,
+            "geometry_boundary_classification_capability_missing",
+        ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
     ]
@@ -2370,6 +2390,352 @@ def _validate_cleanup_result_asset_reference(
     return asset_path
 
 
+def _validate_geometry_semantic_transfer(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    semantic = _read_required_json(package_dir, "semantic/garment_graph.json", issues)
+    pattern = _read_required_json(package_dir, "pattern/pattern.json", issues)
+    cleanup_result = _read_required_json(
+        package_dir, "reports/geometry_cleanup_result.json", issues
+    )
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
+    if semantic is None or pattern is None or cleanup_result is None or semantic_transfer is None:
+        return
+
+    if semantic_transfer.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_garment_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer must reference the package garment ID.",
+            )
+        )
+    if semantic_transfer.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_class_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer must reference the package garment class.",
+            )
+        )
+    if semantic_transfer.get("sourceGeometryCleanupResultId") != cleanup_result.get("reportId"):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_cleanup_result_source_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer must reference the cleanup result ID.",
+            )
+        )
+
+    expected_hashes = [
+        (
+            "sourceGeometryCleanupResultHash",
+            _nested_string(cleanup_result, ["integrity", "geometryCleanupResultHash"], ""),
+            "geometry_semantic_transfer_cleanup_result_hash_mismatch",
+        ),
+        (
+            "sourceSemanticGraphHash",
+            _json_hash(semantic),
+            "geometry_semantic_transfer_semantic_hash_mismatch",
+        ),
+        (
+            "sourcePatternHash",
+            _json_hash(pattern),
+            "geometry_semantic_transfer_pattern_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if semantic_transfer.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_semantic_transfer.json",
+                    f"Semantic transfer {field} must match its source artifact.",
+                )
+            )
+    if _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], "") != (
+        hash_geometry_semantic_transfer_report(semantic_transfer)
+    ):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_hash_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer hash must match its canonical payload.",
+            )
+        )
+
+    input_asset = semantic_transfer.get("inputAsset", {})
+    execution = semantic_transfer.get("execution", {})
+    readiness = semantic_transfer.get("readiness", {})
+    aggregate = semantic_transfer.get("aggregate", {})
+    policy = semantic_transfer.get("policy", {})
+    for name, block in [
+        ("inputAsset", input_asset),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("aggregate", aggregate),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_semantic_transfer_block_invalid",
+                    "fatal",
+                    "reports/geometry_semantic_transfer.json",
+                    f"Semantic transfer {name} block must be an object.",
+                )
+            )
+            return
+
+    cleanup_output = cleanup_result.get("outputAsset", {})
+    cleanup_asset_path = _validate_semantic_transfer_asset_reference(
+        package_dir,
+        str(cleanup_output.get("path", "")),
+        input_asset,
+        issues,
+    )
+    if (
+        input_asset.get("path") != cleanup_output.get("path")
+        or input_asset.get("sourceAssetHash") != cleanup_output.get("sourceAssetHash")
+        or input_asset.get("byteSize") != cleanup_output.get("byteSize")
+    ):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer input asset must mirror the cleanup preview output.",
+            )
+        )
+    if (
+        input_asset.get("canonicalUseAllowed") is not False
+        or input_asset.get("purpose") != "non_canonical_cleanup_preview"
+    ):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_acceptance_invalid",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer input must remain a non-canonical cleanup preview.",
+            )
+        )
+
+    if cleanup_asset_path is not None:
+        try:
+            expected = build_geometry_semantic_transfer_report(
+                garment_id=str(manifest.get("garmentId", "")),
+                garment_class=str(manifest.get("garmentClass", "")),
+                semantic_graph=semantic,
+                pattern=pattern,
+                cleanup_result_report=cleanup_result,
+                cleanup_asset_path=cleanup_asset_path,
+            )
+        except Exception as exc:
+            issues.append(
+                _issue(
+                    "geometry_semantic_transfer_recompute_failed",
+                    "fatal",
+                    "reports/geometry_semantic_transfer.json",
+                    str(exc),
+                )
+            )
+            return
+        for key in [
+            "topologySnapshot",
+            "panelTransfers",
+            "boundaryClassifications",
+            "aggregate",
+            "execution",
+            "readiness",
+            "quality",
+        ]:
+            if semantic_transfer.get(key) != expected.get(key):
+                issues.append(
+                    _issue(
+                        "geometry_semantic_transfer_recompute_mismatch",
+                        "fatal",
+                        "reports/geometry_semantic_transfer.json",
+                        f"Semantic transfer field {key} is stale.",
+                    )
+                )
+
+    required_panels = set(REQUIRED_PANELS)
+    panel_transfers = semantic_transfer.get("panelTransfers", [])
+    transferred = {
+        str(transfer.get("panelId"))
+        for transfer in panel_transfers
+        if isinstance(transfer, dict)
+        and transfer.get("transferStatus") == "stable_panel_id_transferred"
+    }
+    if not required_panels.issubset(transferred):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_required_panel_missing",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer must include every required T-shirt panel.",
+            )
+        )
+    if int(aggregate.get("unclassifiedBoundaryEdgeCount", -1)) != 0:
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_unclassified_boundary",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Every cleanup-preview boundary edge must classify to a known pattern boundary.",
+            )
+        )
+    if (
+        execution.get("semanticTransferRun") is not True
+        or execution.get("panelIdTransferRun") is not True
+        or execution.get("boundaryClassificationRun") is not True
+        or execution.get("repairRun") is not False
+        or execution.get("retopologyRun") is not False
+        or execution.get("simulationBindingRun") is not False
+        or execution.get("uvTransferRun") is not False
+        or execution.get("materialTransferRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_execution_state_invalid",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer may only claim panel and boundary classification in this pass.",
+            )
+        )
+    if (
+        readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForSimulation") is not False
+        or readiness.get("acceptedForRuntimeRender") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_acceptance_invalid",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer cannot accept clean/canonical/runtime geometry.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_policy_violation",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict):
+        expected_caps = [
+            ("geometrySemanticTransferAvailable", True),
+            ("geometryBoundaryClassificationAvailable", True),
+        ]
+        for key, expected_enabled in expected_caps:
+            if caps.get(key) is not expected_enabled:
+                issues.append(
+                    _issue(
+                        "geometry_semantic_transfer_capability_missing",
+                        "fatal",
+                        "manifest.json",
+                        f"Manifest capability {key} must be {expected_enabled!r}.",
+                    )
+                )
+    if _contains_nonfinite(semantic_transfer):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer report must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_semantic_transfer_asset_reference(
+    package_dir: Path,
+    expected_path: str,
+    asset: dict[str, Any],
+    issues: list[ValidationIssue],
+) -> Path | None:
+    path_value = asset.get("path")
+    if not isinstance(path_value, str):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_path_invalid",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer input path must be package-relative.",
+            )
+        )
+        return None
+    try:
+        validate_package_relpath(path_value)
+    except ValueError:
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_path_invalid",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer input path is unsafe.",
+            )
+        )
+        return None
+    if expected_path and path_value != expected_path:
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_path_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer input path does not match cleanup output.",
+            )
+        )
+    asset_path = package_dir / path_value
+    if not asset_path.exists():
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_missing",
+                "fatal",
+                path_value,
+                "Semantic transfer input asset is missing.",
+            )
+        )
+        return None
+    if asset.get("sourceAssetHash") != sha256_file(asset_path):
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_hash_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer input asset hash is stale.",
+            )
+        )
+    if asset.get("byteSize") != asset_path.stat().st_size:
+        issues.append(
+            _issue(
+                "geometry_semantic_transfer_input_asset_size_mismatch",
+                "fatal",
+                "reports/geometry_semantic_transfer.json",
+                "Semantic transfer input asset byte size is stale.",
+            )
+        )
+    return asset_path
+
+
 def _validate_provider_registry(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -2758,6 +3124,9 @@ def _validate_clean_geometry_proposal(
     cleanup_result = _read_required_json(
         package_dir, "reports/geometry_cleanup_result.json", issues
     )
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
@@ -2770,6 +3139,7 @@ def _validate_clean_geometry_proposal(
         or raw_topology is None
         or cleanup_plan is None
         or cleanup_result is None
+        or semantic_transfer is None
         or clean_proposal is None
     ):
         return
@@ -2818,6 +3188,11 @@ def _validate_clean_geometry_proposal(
             "sourceGeometryCleanupResultHash",
             _nested_string(cleanup_result, ["integrity", "geometryCleanupResultHash"], ""),
             "clean_geometry_proposal_cleanup_result_hash_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferHash",
+            _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], ""),
+            "clean_geometry_proposal_semantic_transfer_hash_mismatch",
         ),
     ]
     for field, expected_hash, code in expected_hashes:
@@ -2873,6 +3248,15 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the cleanup result ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometrySemanticTransferId") != semantic_transfer.get("reportId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_semantic_transfer_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the semantic transfer report ID.",
             )
         )
 
@@ -2980,10 +3364,33 @@ def _validate_clean_geometry_proposal(
                 "Clean proposal cleanupRun must mirror the cleanup result.",
             )
         )
+    semantic_execution = semantic_transfer.get("execution", {})
+    if cleanup.get("semanticTransferRun") != semantic_execution.get("semanticTransferRun"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal semanticTransferRun must mirror the semantic transfer report.",
+            )
+        )
+    if cleanup.get("boundaryClassificationRun") != semantic_execution.get(
+        "boundaryClassificationRun"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                (
+                    "Clean proposal boundaryClassificationRun must mirror the semantic "
+                    "transfer report."
+                ),
+            )
+        )
     for key in [
         "repairRun",
         "retopologyRun",
-        "semanticTransferRun",
         "simulationBindingRun",
         "uvTransferRun",
         "materialTransferRun",
@@ -3002,6 +3409,7 @@ def _validate_clean_geometry_proposal(
         cleanup.get("topologyDiagnosticsRun") is not True
         or cleanup.get("cleanupPlanGenerated") is not True
         or cleanup.get("cleanupResultGenerated") is not True
+        or cleanup.get("semanticTransferReportGenerated") is not True
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -3010,7 +3418,10 @@ def _validate_clean_geometry_proposal(
                 "clean_geometry_proposal_topology_state_invalid",
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
-                "Clean proposal must link completed raw topology, cleanup plan and cleanup result.",
+                (
+                    "Clean proposal must link completed raw topology, cleanup plan, cleanup "
+                    "result and semantic transfer."
+                ),
             )
         )
     topology_block = raw_topology.get("topology", {})
@@ -3088,13 +3499,50 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    semantic_readiness = semantic_transfer.get("readiness", {})
+    if isinstance(semantic_readiness, dict) and audit.get(
+        "semanticTransferStatus"
+    ) != semantic_readiness.get("status"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_semantic_transfer_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal semantic transfer status is stale.",
+            )
+        )
+    semantic_aggregate = semantic_transfer.get("aggregate", {})
+    if isinstance(semantic_aggregate, dict):
+        expected_semantic_fields = {
+            "transferredPanelCount": semantic_aggregate.get("transferredPanelCount"),
+            "classifiedBoundaryEdgeCount": semantic_aggregate.get("classifiedBoundaryEdgeCount"),
+            "unclassifiedBoundaryEdgeCount": semantic_aggregate.get(
+                "unclassifiedBoundaryEdgeCount"
+            ),
+            "ambiguousBoundaryEdgeCount": semantic_aggregate.get("ambiguousBoundaryEdgeCount"),
+        }
+        for key, expected in expected_semantic_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_semantic_transfer_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal semantic transfer field {key} is stale.",
+                    )
+                )
+
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
         rejection_reasons = []
     required_rejections = (
-        PARTIAL_CLEANUP_REJECTION_REASONS
-        if cleanup.get("cleanupRun") is True
-        else REQUIRED_CLEAN_REJECTION_REASONS
+        PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS
+        if cleanup.get("cleanupRun") is True and cleanup.get("semanticTransferRun") is True
+        else (
+            PARTIAL_CLEANUP_REJECTION_REASONS
+            if cleanup.get("cleanupRun") is True
+            else REQUIRED_CLEAN_REJECTION_REASONS
+        )
     )
     for reason in required_rejections:
         if reason not in rejection_reasons:
@@ -3141,12 +3589,17 @@ def _validate_clean_geometry_proposal(
             "topologyDiagnosticsRun": cleanup.get("topologyDiagnosticsRun"),
             "cleanupPlanGenerated": cleanup.get("cleanupPlanGenerated"),
             "cleanupResultGenerated": cleanup.get("cleanupResultGenerated"),
+            "semanticTransferReportGenerated": cleanup.get("semanticTransferReportGenerated"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
             "cleanupResultStatus": audit.get("cleanupResultStatus"),
             "cleanupPreviewAssetPath": audit.get("cleanupPreviewAssetPath"),
             "postCleanupDuplicatePositionCount": audit.get("postCleanupDuplicatePositionCount"),
+            "semanticTransferStatus": audit.get("semanticTransferStatus"),
+            "transferredPanelCount": audit.get("transferredPanelCount"),
+            "classifiedBoundaryEdgeCount": audit.get("classifiedBoundaryEdgeCount"),
+            "unclassifiedBoundaryEdgeCount": audit.get("unclassifiedBoundaryEdgeCount"),
             "failureReason": audit.get("failureReason"),
         }
         for key, expected in expected_quality.items():
@@ -3929,6 +4382,10 @@ def _nested_string(data: dict[str, Any], path: list[str], fallback: str) -> str:
             return fallback
         value = value.get(key)
     return value if isinstance(value, str) else fallback
+
+
+def _json_hash(data: dict[str, Any]) -> str:
+    return sha256_bytes(canonical_dumps(data).encode("utf-8"))
 
 
 def _vec3(value: Any) -> Vec3:

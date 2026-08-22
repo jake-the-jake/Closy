@@ -19,6 +19,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     raw_topology = read_json(package_dir / "reports" / "raw_geometry_topology.json")
     cleanup_plan = read_json(package_dir / "reports" / "geometry_cleanup_plan.json")
     cleanup_result = read_json(package_dir / "reports" / "geometry_cleanup_result.json")
+    semantic_transfer = read_json(package_dir / "reports" / "geometry_semantic_transfer.json")
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -142,6 +143,31 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "deferredOperationCount": len(cleanup_result["deferredOperations"]),
             "acceptedForCleanProposal": cleanup_result["readiness"]["acceptedForCleanProposal"],
         },
+        "geometrySemanticTransfer": {
+            "reportId": semantic_transfer["reportId"],
+            "sourceGeometryCleanupResultId": semantic_transfer["sourceGeometryCleanupResultId"],
+            "status": semantic_transfer["readiness"]["status"],
+            "semanticTransferRun": semantic_transfer["execution"]["semanticTransferRun"],
+            "boundaryClassificationRun": semantic_transfer["execution"][
+                "boundaryClassificationRun"
+            ],
+            "transferredPanelCount": semantic_transfer["aggregate"]["transferredPanelCount"],
+            "expectedPanelCount": semantic_transfer["aggregate"]["expectedPanelCount"],
+            "classifiedBoundaryEdgeCount": semantic_transfer["aggregate"][
+                "classifiedBoundaryEdgeCount"
+            ],
+            "boundaryEdgeCount": semantic_transfer["aggregate"]["boundaryEdgeCount"],
+            "unclassifiedBoundaryEdgeCount": semantic_transfer["aggregate"][
+                "unclassifiedBoundaryEdgeCount"
+            ],
+            "ambiguousBoundaryEdgeCount": semantic_transfer["aggregate"][
+                "ambiguousBoundaryEdgeCount"
+            ],
+            "classificationCompleteness": semantic_transfer["aggregate"][
+                "classificationCompleteness"
+            ],
+            "acceptedForCleanProposal": semantic_transfer["readiness"]["acceptedForCleanProposal"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -152,6 +178,9 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "topologyDiagnosticsRun": clean_proposal["cleanupPipeline"]["topologyDiagnosticsRun"],
             "cleanupPlanGenerated": clean_proposal["cleanupPipeline"]["cleanupPlanGenerated"],
             "cleanupResultGenerated": clean_proposal["cleanupPipeline"]["cleanupResultGenerated"],
+            "semanticTransferReportGenerated": clean_proposal["cleanupPipeline"][
+                "semanticTransferReportGenerated"
+            ],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
             "semanticTransferRun": clean_proposal["cleanupPipeline"]["semanticTransferRun"],
@@ -213,6 +242,7 @@ def human_report(package_dir: Path) -> str:
     raw_topology = summary["rawGeometryTopology"]
     cleanup_plan = summary["geometryCleanupPlan"]
     cleanup_result = summary["geometryCleanupResult"]
+    semantic_transfer = summary["geometrySemanticTransfer"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -254,6 +284,14 @@ def human_report(package_dir: Path) -> str:
                 f"removed duplicate vertices="
                 f"{cleanup_result['removedDuplicateVertexCount']}, "
                 f"accepted={cleanup_result['acceptedForCleanProposal']}"
+            ),
+            (
+                f"Semantic transfer: status={semantic_transfer['status']}, "
+                f"panels={semantic_transfer['transferredPanelCount']}/"
+                f"{semantic_transfer['expectedPanelCount']}, "
+                f"boundaries={semantic_transfer['classifiedBoundaryEdgeCount']}/"
+                f"{semantic_transfer['boundaryEdgeCount']}, "
+                f"accepted={semantic_transfer['acceptedForCleanProposal']}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "

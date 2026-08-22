@@ -75,12 +75,24 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryCleanupResult"]["repairRun"] is False
     assert payload["geometryCleanupResult"]["removedDuplicateVertexCount"] > 0
     assert payload["geometryCleanupResult"]["acceptedForCleanProposal"] is False
+    assert payload["geometrySemanticTransfer"]["status"] == (
+        "semantic_transfer_completed_binding_pending"
+    )
+    assert payload["geometrySemanticTransfer"]["semanticTransferRun"] is True
+    assert payload["geometrySemanticTransfer"]["boundaryClassificationRun"] is True
+    assert payload["geometrySemanticTransfer"]["transferredPanelCount"] == 5
+    assert payload["geometrySemanticTransfer"]["classifiedBoundaryEdgeCount"] == 218
+    assert payload["geometrySemanticTransfer"]["unclassifiedBoundaryEdgeCount"] == 0
+    assert payload["geometrySemanticTransfer"]["acceptedForCleanProposal"] is False
     assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"
     assert payload["cleanGeometryProposal"]["cleanProposalAvailable"] is False
     assert payload["cleanGeometryProposal"]["acceptedForCanonical"] is False
     assert payload["cleanGeometryProposal"]["topologyDiagnosticsRun"] is True
     assert payload["cleanGeometryProposal"]["cleanupPlanGenerated"] is True
     assert payload["cleanGeometryProposal"]["cleanupRun"] is True
+    assert payload["cleanGeometryProposal"]["semanticTransferReportGenerated"] is True
+    assert payload["cleanGeometryProposal"]["semanticTransferRun"] is True
+    assert payload["cleanGeometryProposal"]["simulationBindingRun"] is False
     assert payload["providerRegistry"]["selectedProviderId"] == ("closy.manual_local_glb_import.v1")
     assert payload["providerRegistry"]["manualLocalImportAssetAvailable"] is True
     assert payload["binding"]["recordCount"] > 0

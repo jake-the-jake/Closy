@@ -25,6 +25,13 @@ PARTIAL_CLEANUP_REJECTION_REASONS = [
     "provider_output_not_canonical_garment_truth",
 ]
 
+PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS = [
+    "cleanup_incomplete",
+    "repair_not_run",
+    "simulation_binding_missing",
+    "provider_output_not_canonical_garment_truth",
+]
+
 
 def build_clean_geometry_proposal_rejection(
     *,
@@ -35,6 +42,7 @@ def build_clean_geometry_proposal_rejection(
     raw_topology_report: dict[str, Any] | None = None,
     cleanup_plan_report: dict[str, Any] | None = None,
     cleanup_result_report: dict[str, Any] | None = None,
+    semantic_transfer_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
 
@@ -81,10 +89,26 @@ def build_clean_geometry_proposal_rejection(
         cleanup_result_execution = cleanup_result_report["execution"]
         cleanup_result_output = cleanup_result_report["outputAsset"]
         cleanup_result_topology_after = cleanup_result_report["topologyAfter"]
+    if semantic_transfer_report is None:
+        semantic_transfer_available = False
+        semantic_transfer_id = None
+        semantic_transfer_hash = None
+        semantic_transfer_status = None
+        semantic_transfer_execution: dict[str, Any] = {}
+        semantic_transfer_aggregate: dict[str, Any] = {}
+    else:
+        semantic_transfer_available = True
+        semantic_transfer_id = semantic_transfer_report["reportId"]
+        semantic_transfer_hash = semantic_transfer_report["integrity"][
+            "geometrySemanticTransferHash"
+        ]
+        semantic_transfer_status = semantic_transfer_report["readiness"]["status"]
+        semantic_transfer_execution = semantic_transfer_report["execution"]
+        semantic_transfer_aggregate = semantic_transfer_report["aggregate"]
     cleanup_run = bool(cleanup_result_execution.get("cleanupRun", False))
-    rejection_reasons = (
-        PARTIAL_CLEANUP_REJECTION_REASONS if cleanup_run else REQUIRED_CLEAN_REJECTION_REASONS
-    )
+    semantic_transfer_run = bool(semantic_transfer_execution.get("semanticTransferRun", False))
+    rejection_reasons = _rejection_reasons(cleanup_run, semantic_transfer_run)
+    required_before_canonical = _required_before_canonical(cleanup_run, semantic_transfer_run)
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "proposalId": "proposal.clean_tshirt_geometry_v1",
@@ -101,6 +125,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceGeometryCleanupPlanHash": cleanup_plan_hash,
         "sourceGeometryCleanupResultId": cleanup_result_id,
         "sourceGeometryCleanupResultHash": cleanup_result_hash,
+        "sourceGeometrySemanticTransferId": semantic_transfer_id,
+        "sourceGeometrySemanticTransferHash": semantic_transfer_hash,
         "rawProposal": {
             "available": raw_proposal["available"],
             "assetPath": raw_proposal["assetPath"],
@@ -113,10 +139,14 @@ def build_clean_geometry_proposal_rejection(
             "topologyDiagnosticsRun": topology_available,
             "cleanupPlanGenerated": cleanup_plan_available,
             "cleanupResultGenerated": cleanup_result_available,
+            "semanticTransferReportGenerated": semantic_transfer_available,
             "cleanupRun": cleanup_run,
             "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
             "retopologyRun": False,
-            "semanticTransferRun": False,
+            "semanticTransferRun": semantic_transfer_run,
+            "boundaryClassificationRun": bool(
+                semantic_transfer_execution.get("boundaryClassificationRun", False)
+            ),
             "simulationBindingRun": False,
             "uvTransferRun": False,
             "materialTransferRun": False,
@@ -125,12 +155,9 @@ def build_clean_geometry_proposal_rejection(
             "blockedBy": [
                 "raw_visual_reference_only",
                 "clean_geometry_provider_unavailable",
-                "semantic_correspondence_unavailable",
                 "simulation_binding_unavailable",
             ],
             "nextRequiredStages": [
-                "mesh_cleanup_and_repair",
-                "semantic_garment_region_transfer",
                 "simulation_ready_topology_or_binding",
                 "canonical_acceptance_quality_gate",
             ],
@@ -166,6 +193,17 @@ def build_clean_geometry_proposal_rejection(
             "postCleanupDuplicatePositionCount": cleanup_result_topology_after.get(
                 "duplicatePositionCount"
             ),
+            "semanticTransferStatus": semantic_transfer_status,
+            "transferredPanelCount": semantic_transfer_aggregate.get("transferredPanelCount"),
+            "classifiedBoundaryEdgeCount": semantic_transfer_aggregate.get(
+                "classifiedBoundaryEdgeCount"
+            ),
+            "unclassifiedBoundaryEdgeCount": semantic_transfer_aggregate.get(
+                "unclassifiedBoundaryEdgeCount"
+            ),
+            "ambiguousBoundaryEdgeCount": semantic_transfer_aggregate.get(
+                "ambiguousBoundaryEdgeCount"
+            ),
             "simulationBindingRecordCount": 0,
             "failureReason": "clean_geometry_proposal_not_generated",
         },
@@ -174,7 +212,7 @@ def build_clean_geometry_proposal_rejection(
             "submittedAt": FIXED_TIMESTAMP,
             "canonicalUseAllowed": False,
             "forbiddenReason": "raw_provider_output_requires_cleanup_repair_and_semantic_binding",
-            "requiredBeforeCanonical": REQUIRED_CLEAN_REJECTION_REASONS,
+            "requiredBeforeCanonical": required_before_canonical,
         },
         "quality": {
             "status": "rejected",
@@ -188,6 +226,9 @@ def build_clean_geometry_proposal_rejection(
                 "geometry_cleanup_result_available_but_not_clean"
                 if cleanup_result_available
                 else "geometry_cleanup_result_not_generated",
+                "geometry_semantic_transfer_available_but_not_bound"
+                if semantic_transfer_available
+                else "geometry_semantic_transfer_not_generated",
                 "geometry_cleanup_plan_generated_without_execution"
                 if cleanup_plan_available
                 else "geometry_cleanup_plan_not_generated",
@@ -234,6 +275,7 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "topologyDiagnosticsRun": cleanup["topologyDiagnosticsRun"],
         "cleanupPlanGenerated": cleanup["cleanupPlanGenerated"],
         "cleanupResultGenerated": cleanup["cleanupResultGenerated"],
+        "semanticTransferReportGenerated": cleanup["semanticTransferReportGenerated"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
         "connectedComponentCount": audit["connectedComponentCount"],
@@ -243,6 +285,10 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "cleanupResultStatus": audit["cleanupResultStatus"],
         "cleanupPreviewAssetPath": audit["cleanupPreviewAssetPath"],
         "postCleanupDuplicatePositionCount": audit["postCleanupDuplicatePositionCount"],
+        "semanticTransferStatus": audit["semanticTransferStatus"],
+        "transferredPanelCount": audit["transferredPanelCount"],
+        "classifiedBoundaryEdgeCount": audit["classifiedBoundaryEdgeCount"],
+        "unclassifiedBoundaryEdgeCount": audit["unclassifiedBoundaryEdgeCount"],
         "meshCount": audit["meshCount"],
         "triangleEstimate": audit["triangleEstimate"],
         "failureReason": audit["failureReason"],
@@ -257,3 +303,23 @@ def hash_clean_geometry_proposal(proposal: dict[str, Any]) -> str:
     if isinstance(integrity, dict):
         integrity["cleanGeometryProposalHash"] = ""
     return sha256_bytes(canonical_dumps(payload).encode("utf-8"))
+
+
+def _rejection_reasons(cleanup_run: bool, semantic_transfer_run: bool) -> list[str]:
+    if cleanup_run and semantic_transfer_run:
+        return PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS
+    if cleanup_run:
+        return PARTIAL_CLEANUP_REJECTION_REASONS
+    return REQUIRED_CLEAN_REJECTION_REASONS
+
+
+def _required_before_canonical(cleanup_run: bool, semantic_transfer_run: bool) -> list[str]:
+    required = ["repair_not_run", "simulation_binding_missing"]
+    if not cleanup_run:
+        required.insert(0, "cleanup_not_run")
+    else:
+        required.insert(0, "cleanup_incomplete")
+    if not semantic_transfer_run:
+        required.insert(2, "semantic_transfer_missing")
+    required.append("provider_output_not_canonical_garment_truth")
+    return required

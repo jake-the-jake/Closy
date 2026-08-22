@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "71427a76c017886c13c495fded6514c9443efdb993d12af28870339453d823e9",
+  "canonicalPackageDigest": "416834901134333671a32d75a9e53c92995d8ad9cd474e32ea5b672c962144bc",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -25,9 +25,11 @@
     "garmentMaskAvailable": true,
     "geometryCleanupExecutionAvailable": true,
     "geometryCleanupRecommendationAvailable": true,
+    "geometryBoundaryClassificationAvailable": true,
     "geometryProposalInterfaceAvailable": true,
     "geometryProposalQualityScored": true,
     "geometryProviderRegistryAvailable": true,
+    "geometrySemanticTransferAvailable": true,
     "manualGeometryImportAdapterDeclared": true,
     "manualGeometryImportAssetAvailable": true,
     "pbrMaterialObservationAvailable": true,
@@ -118,6 +120,20 @@
     "verticesAfter": 223,
     "verticesBefore": 654
   },
+  "geometrySemanticTransfer": {
+    "acceptedForCleanProposal": false,
+    "ambiguousBoundaryEdgeCount": 10,
+    "boundaryClassificationRun": true,
+    "boundaryEdgeCount": 218,
+    "classificationCompleteness": 1.0,
+    "classifiedBoundaryEdgeCount": 218,
+    "expectedPanelCount": 5,
+    "semanticTransferRun": true,
+    "sourceGeometryCleanupResultId": "cleanup_result.raw_manual_tshirt_visual_geometry_v1",
+    "status": "semantic_transfer_completed_binding_pending",
+    "transferredPanelCount": 5,
+    "unclassifiedBoundaryEdgeCount": 0
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
@@ -128,7 +144,8 @@
     "failureReason": "clean_geometry_proposal_not_generated",
     "qualityStatus": "rejected",
     "repairRun": false,
-    "semanticTransferRun": false,
+    "semanticTransferReportGenerated": true,
+    "semanticTransferRun": true,
     "simulationBindingRun": false,
     "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1",
     "topologyDiagnosticsRun": true

@@ -3,15 +3,21 @@ from __future__ import annotations
 from closy_forge.appearance import build_texture_identity_report
 from closy_forge.capture import build_synthetic_capture_record
 from closy_forge.fitting import fit_tshirt_parameters_from_visual_observations
+from closy_forge.garments.tshirt.assembly import build_simulation_mesh
+from closy_forge.garments.tshirt.parameters import TShirtParameters
+from closy_forge.garments.tshirt.pattern_generator import build_tshirt_pattern
+from closy_forge.garments.tshirt.semantic_graph import build_semantic_graph
 from closy_forge.geometry.glb_io import write_glb
 from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.proposals import (
     PARTIAL_CLEANUP_REJECTION_REASONS,
+    PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_clean_geometry_proposal_rejection,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
+    build_geometry_semantic_transfer_report,
     build_manual_geometry_proposal,
     build_null_geometry_proposal,
     build_raw_geometry_topology_report,
@@ -21,6 +27,7 @@ from closy_forge.proposals import (
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
+    hash_geometry_semantic_transfer_report,
     hash_raw_geometry_topology_report,
 )
 from closy_forge.visual_understanding import build_tshirt_visual_observations
@@ -382,6 +389,112 @@ def test_geometry_cleanup_result_welds_preview_without_clean_acceptance(
     assert clean["cleanGeometryAudit"]["cleanupResultStatus"] == "partial_cleanup_completed"
     assert clean["cleanGeometryAudit"]["postCleanupDuplicatePositionCount"] == 0
     assert set(PARTIAL_CLEANUP_REJECTION_REASONS).issubset(clean["quality"]["rejectionReasons"])
+    assert clean["quality"]["acceptedForCanonical"] is False
+
+
+def test_geometry_semantic_transfer_classifies_cleanup_preview_without_acceptance(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    capture = build_synthetic_capture_record(seed=101)
+    visual = build_tshirt_visual_observations(capture)
+    fit = fit_tshirt_parameters_from_visual_observations(visual)
+    texture = build_texture_identity_report(
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        render_materials={"schemaVersion": 1, "materials": []},
+    )
+    pattern = build_tshirt_pattern(TShirtParameters())
+    semantic = build_semantic_graph(pattern)
+    rest_mesh, _ = build_simulation_mesh(pattern)
+    asset = tmp_path / "manual_visual.glb"
+    cleanup_asset = tmp_path / "manual_cleanup_preview.glb"
+    write_glb(asset, rest_mesh, "manual_visual_material", (0.8, 0.8, 0.9, 1.0))
+    raw = build_manual_geometry_proposal(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        asset_path=asset,
+        package_asset_path="proposals/manual_visual.glb",
+    )
+    registry = build_geometry_provider_registry(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        geometry_proposal=raw,
+        manual_asset_path=asset,
+        manual_asset_rights_reviewed=True,
+        manual_asset_rights_status="project_authored_fixture_no_third_party_asset",
+    )
+    topology = build_raw_geometry_topology_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        asset_path=asset,
+    )
+    cleanup_plan = build_geometry_cleanup_plan(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        raw_topology_report=topology,
+    )
+    cleanup_result = build_geometry_cleanup_result(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        raw_topology_report=topology,
+        cleanup_plan_report=cleanup_plan,
+        source_asset_path=asset,
+        output_asset_path=cleanup_asset,
+        output_package_asset_path="proposals/manual_cleanup_preview.glb",
+    )
+
+    semantic_transfer = build_geometry_semantic_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        semantic_graph=semantic,
+        pattern=pattern,
+        cleanup_result_report=cleanup_result,
+        cleanup_asset_path=cleanup_asset,
+    )
+    clean = build_clean_geometry_proposal_rejection(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        provider_registry=registry,
+        raw_topology_report=topology,
+        cleanup_plan_report=cleanup_plan,
+        cleanup_result_report=cleanup_result,
+        semantic_transfer_report=semantic_transfer,
+    )
+
+    assert semantic_transfer["execution"]["semanticTransferRun"] is True
+    assert semantic_transfer["execution"]["boundaryClassificationRun"] is True
+    assert semantic_transfer["aggregate"]["transferredPanelCount"] == 5
+    assert semantic_transfer["aggregate"]["classifiedBoundaryEdgeCount"] == 218
+    assert semantic_transfer["aggregate"]["unclassifiedBoundaryEdgeCount"] == 0
+    assert semantic_transfer["readiness"]["acceptedForCleanProposal"] is False
+    assert semantic_transfer["integrity"]["geometrySemanticTransferHash"] == (
+        hash_geometry_semantic_transfer_report(semantic_transfer)
+    )
+    assert (
+        clean["sourceGeometrySemanticTransferHash"]
+        == (semantic_transfer["integrity"]["geometrySemanticTransferHash"])
+    )
+    assert clean["cleanupPipeline"]["semanticTransferReportGenerated"] is True
+    assert clean["cleanupPipeline"]["semanticTransferRun"] is True
+    assert clean["cleanupPipeline"]["boundaryClassificationRun"] is True
+    assert clean["cleanupPipeline"]["simulationBindingRun"] is False
+    assert set(PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS).issubset(
+        clean["quality"]["rejectionReasons"]
+    )
+    assert "semantic_transfer_missing" not in clean["quality"]["rejectionReasons"]
     assert clean["quality"]["acceptedForCanonical"] is False
 
 
