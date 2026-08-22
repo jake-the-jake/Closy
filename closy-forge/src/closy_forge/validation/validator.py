@@ -31,8 +31,10 @@ from closy_forge.package_io.hashing import geometry_content_hash, sha256_file, t
 from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.proposals import (
     REQUIRED_CLEAN_REJECTION_REASONS,
+    build_geometry_cleanup_plan,
     build_raw_geometry_topology_report,
     hash_clean_geometry_proposal,
+    hash_geometry_cleanup_plan,
     hash_geometry_proposal,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
@@ -84,6 +86,7 @@ EXPECTED_FILES = [
     "reports/texture_quality.json",
     "reports/geometry_proposal_quality.json",
     "reports/raw_geometry_topology.json",
+    "reports/geometry_cleanup_plan.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -228,6 +231,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_texture_identity(package_dir, manifest, issues)
     _validate_geometry_proposal(package_dir, manifest, issues)
     _validate_raw_geometry_topology(package_dir, manifest, issues)
+    _validate_geometry_cleanup_plan(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1353,6 +1357,11 @@ def _validate_geometry_proposal(
             True,
             "raw_geometry_topology_capability_missing",
         ),
+        (
+            "geometryCleanupRecommendationAvailable",
+            True,
+            "geometry_cleanup_recommendation_capability_missing",
+        ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
     ]
@@ -1774,6 +1783,215 @@ def _validate_raw_geometry_topology(
         )
 
 
+def _validate_geometry_cleanup_plan(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
+    raw_topology = _read_required_json(package_dir, "reports/raw_geometry_topology.json", issues)
+    cleanup_plan = _read_required_json(package_dir, "reports/geometry_cleanup_plan.json", issues)
+    if proposal is None or raw_topology is None or cleanup_plan is None:
+        return
+
+    if cleanup_plan.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_garment_mismatch",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plan must reference the package garment ID.",
+            )
+        )
+    if cleanup_plan.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_class_mismatch",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plan must reference the package garment class.",
+            )
+        )
+    if cleanup_plan.get("sourceRawProposalId") != proposal.get("proposalId"):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_raw_source_mismatch",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plan must reference the raw proposal ID.",
+            )
+        )
+    if cleanup_plan.get("sourceRawTopologyReportId") != raw_topology.get("reportId"):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_topology_source_mismatch",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plan must reference the raw topology report ID.",
+            )
+        )
+    expected_hashes = [
+        (
+            "sourceRawProposalHash",
+            _nested_string(proposal, ["integrity", "geometryProposalHash"], ""),
+            "geometry_cleanup_plan_raw_hash_mismatch",
+        ),
+        (
+            "sourceRawTopologyReportHash",
+            _nested_string(raw_topology, ["integrity", "rawGeometryTopologyReportHash"], ""),
+            "geometry_cleanup_plan_topology_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if cleanup_plan.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_cleanup_plan.json",
+                    f"Cleanup plan {field} must match its source artifact.",
+                )
+            )
+    if _nested_string(cleanup_plan, ["integrity", "geometryCleanupPlanHash"], "") != (
+        hash_geometry_cleanup_plan(cleanup_plan)
+    ):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_hash_mismatch",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plan hash must match its canonical payload.",
+            )
+        )
+
+    try:
+        expected = build_geometry_cleanup_plan(
+            garment_id=str(manifest.get("garmentId", "")),
+            garment_class=str(manifest.get("garmentClass", "")),
+            raw_geometry_proposal=proposal,
+            raw_topology_report=raw_topology,
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_recompute_failed",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                str(exc),
+            )
+        )
+        return
+
+    snapshot = cleanup_plan.get("topologySnapshot", {})
+    expected_snapshot = expected.get("topologySnapshot", {})
+    if isinstance(snapshot, dict) and isinstance(expected_snapshot, dict):
+        for key, expected_value in expected_snapshot.items():
+            if snapshot.get(key) != expected_value:
+                issues.append(
+                    _issue(
+                        "geometry_cleanup_plan_topology_snapshot_mismatch",
+                        "fatal",
+                        "reports/geometry_cleanup_plan.json",
+                        f"Cleanup plan topology snapshot field {key} is stale.",
+                    )
+                )
+
+    operations = cleanup_plan.get("recommendedOperations", [])
+    expected_operations = expected.get("recommendedOperations", [])
+    if not isinstance(operations, list) or operations != expected_operations:
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_operations_mismatch",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plan recommended operations must match topology diagnostics.",
+            )
+        )
+
+    execution = cleanup_plan.get("execution", {})
+    readiness = cleanup_plan.get("readiness", {})
+    policy = cleanup_plan.get("policy", {})
+    for name, block in [
+        ("execution", execution),
+        ("readiness", readiness),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_cleanup_plan_block_invalid",
+                    "fatal",
+                    "reports/geometry_cleanup_plan.json",
+                    f"Cleanup plan {name} block must be an object.",
+                )
+            )
+            return
+    if (
+        execution.get("cleanupRun") is not False
+        or execution.get("repairRun") is not False
+        or execution.get("retopologyRun") is not False
+        or execution.get("semanticTransferRun") is not False
+        or execution.get("simulationBindingRun") is not False
+        or execution.get("outputAssetPath") is not None
+        or execution.get("outputAssetHash") is not None
+    ):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_execution_state_invalid",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup recommendation plans must not claim executed repair output.",
+            )
+        )
+    if (
+        readiness.get("status") != "blocked_not_executed"
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForSimulation") is not False
+        or readiness.get("acceptedForRuntimeRender") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_clean_acceptance_invalid",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup recommendation plans cannot accept clean/canonical/runtime geometry.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_policy_violation",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plans cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryCleanupRecommendationAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_cleanup_recommendation_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare cleanup recommendation availability.",
+            )
+        )
+    if _contains_nonfinite(cleanup_plan):
+        issues.append(
+            _issue(
+                "geometry_cleanup_plan_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_cleanup_plan.json",
+                "Cleanup plan report must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_provider_registry(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -2158,6 +2376,7 @@ def _validate_clean_geometry_proposal(
     raw_proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
     provider_registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
     raw_topology = _read_required_json(package_dir, "reports/raw_geometry_topology.json", issues)
+    cleanup_plan = _read_required_json(package_dir, "reports/geometry_cleanup_plan.json", issues)
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
@@ -2168,6 +2387,7 @@ def _validate_clean_geometry_proposal(
         raw_proposal is None
         or provider_registry is None
         or raw_topology is None
+        or cleanup_plan is None
         or clean_proposal is None
     ):
         return
@@ -2207,6 +2427,11 @@ def _validate_clean_geometry_proposal(
             _nested_string(raw_topology, ["integrity", "rawGeometryTopologyReportHash"], ""),
             "clean_geometry_proposal_topology_hash_mismatch",
         ),
+        (
+            "sourceGeometryCleanupPlanHash",
+            _nested_string(cleanup_plan, ["integrity", "geometryCleanupPlanHash"], ""),
+            "clean_geometry_proposal_cleanup_plan_hash_mismatch",
+        ),
     ]
     for field, expected_hash, code in expected_hashes:
         if clean_proposal.get(field) != expected_hash:
@@ -2243,6 +2468,15 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the raw topology report ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryCleanupPlanId") != cleanup_plan.get("reportId"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_plan_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the cleanup plan ID.",
             )
         )
 
@@ -2362,6 +2596,7 @@ def _validate_clean_geometry_proposal(
 
     if (
         cleanup.get("topologyDiagnosticsRun") is not True
+        or cleanup.get("cleanupPlanGenerated") is not True
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -2370,7 +2605,7 @@ def _validate_clean_geometry_proposal(
                 "clean_geometry_proposal_topology_state_invalid",
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
-                "Clean proposal must link completed raw topology diagnostics in this package.",
+                "Clean proposal must link completed raw topology diagnostics and cleanup plan.",
             )
         )
     topology_block = raw_topology.get("topology", {})
@@ -2391,6 +2626,17 @@ def _validate_clean_geometry_proposal(
                         f"Clean proposal topology audit field {key} is stale.",
                     )
                 )
+
+    readiness = cleanup_plan.get("readiness", {})
+    if isinstance(readiness, dict) and audit.get("cleanupPlanStatus") != readiness.get("status"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_plan_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal cleanup plan status is stale.",
+            )
+        )
 
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
@@ -2438,8 +2684,10 @@ def _validate_clean_geometry_proposal(
             "semanticTransferRun": cleanup.get("semanticTransferRun"),
             "simulationBindingRun": cleanup.get("simulationBindingRun"),
             "topologyDiagnosticsRun": cleanup.get("topologyDiagnosticsRun"),
+            "cleanupPlanGenerated": cleanup.get("cleanupPlanGenerated"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
+            "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
             "failureReason": audit.get("failureReason"),
         }
         for key, expected in expected_quality.items():

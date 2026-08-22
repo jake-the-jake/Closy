@@ -24,6 +24,7 @@ CAPABILITIES_FIXTURE = {
     "rawGeometryProposalRecordAvailable": True,
     "geometryProposalQualityScored": True,
     "rawGeometryTopologyDiagnosticsAvailable": True,
+    "geometryCleanupRecommendationAvailable": True,
     "providerProvenanceAvailable": True,
     "geometryProviderRegistryAvailable": True,
     "manualGeometryImportAdapterDeclared": True,

@@ -8,6 +8,7 @@ from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.proposals import (
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_clean_geometry_proposal_rejection,
+    build_geometry_cleanup_plan,
     build_geometry_provider_registry,
     build_manual_geometry_proposal,
     build_null_geometry_proposal,
@@ -15,6 +16,7 @@ from closy_forge.proposals import (
     clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
     hash_clean_geometry_proposal,
+    hash_geometry_cleanup_plan,
     hash_geometry_proposal,
     hash_raw_geometry_topology_report,
 )
@@ -140,6 +142,12 @@ def test_clean_geometry_proposal_rejects_uncleaned_raw_visual_reference(
         raw_geometry_proposal=raw,
         asset_path=asset,
     )
+    cleanup_plan = build_geometry_cleanup_plan(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        raw_topology_report=topology,
+    )
 
     clean = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
@@ -147,6 +155,7 @@ def test_clean_geometry_proposal_rejects_uncleaned_raw_visual_reference(
         raw_geometry_proposal=raw,
         provider_registry=registry,
         raw_topology_report=topology,
+        cleanup_plan_report=cleanup_plan,
     )
     quality = clean_geometry_proposal_quality_report(clean)
 
@@ -156,13 +165,19 @@ def test_clean_geometry_proposal_rejects_uncleaned_raw_visual_reference(
         clean["sourceRawTopologyReportHash"]
         == topology["integrity"]["rawGeometryTopologyReportHash"]
     )
+    assert (
+        clean["sourceGeometryCleanupPlanHash"]
+        == cleanup_plan["integrity"]["geometryCleanupPlanHash"]
+    )
     assert clean["cleanProposal"]["available"] is False
     assert clean["quality"]["status"] == "rejected"
     assert clean["quality"]["acceptedForCanonical"] is False
     assert clean["cleanupPipeline"]["topologyDiagnosticsRun"] is True
+    assert clean["cleanupPipeline"]["cleanupPlanGenerated"] is True
     assert clean["cleanupPipeline"]["cleanupRun"] is False
     assert clean["cleanupPipeline"]["semanticTransferRun"] is False
     assert clean["cleanGeometryAudit"]["connectedComponentCount"] == 1
+    assert clean["cleanGeometryAudit"]["cleanupPlanStatus"] == "blocked_not_executed"
     assert set(REQUIRED_CLEAN_REJECTION_REASONS).issubset(clean["quality"]["rejectionReasons"])
     assert clean["integrity"]["cleanGeometryProposalHash"] == hash_clean_geometry_proposal(clean)
     assert quality["status"] == "rejected"
@@ -209,6 +224,64 @@ def test_raw_geometry_topology_report_reads_glb_and_rejects_clean_readiness(
     assert topology["cleanReadiness"]["acceptedForCleanProposal"] is False
     assert topology["integrity"]["rawGeometryTopologyReportHash"] == (
         hash_raw_geometry_topology_report(topology)
+    )
+
+
+def test_geometry_cleanup_plan_recommends_required_repairs_without_acceptance(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    capture = build_synthetic_capture_record(seed=101)
+    visual = build_tshirt_visual_observations(capture)
+    fit = fit_tshirt_parameters_from_visual_observations(visual)
+    texture = build_texture_identity_report(
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        render_materials={"schemaVersion": 1, "materials": []},
+    )
+    asset = tmp_path / "manual_visual.glb"
+    write_glb(asset, _tiny_mesh(), "manual_visual_material", (0.8, 0.8, 0.9, 1.0))
+    raw = build_manual_geometry_proposal(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        asset_path=asset,
+        package_asset_path="proposals/manual_visual.glb",
+    )
+    topology = build_raw_geometry_topology_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        asset_path=asset,
+    )
+
+    cleanup_plan = build_geometry_cleanup_plan(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=raw,
+        raw_topology_report=topology,
+    )
+    operations = {
+        operation["operationId"]: operation for operation in cleanup_plan["recommendedOperations"]
+    }
+
+    assert (
+        cleanup_plan["sourceRawTopologyReportHash"]
+        == topology["integrity"]["rawGeometryTopologyReportHash"]
+    )
+    assert cleanup_plan["topologySnapshot"]["boundaryEdgeCount"] == 3
+    assert operations["boundary_loop_classification"]["required"] is True
+    assert operations["non_manifold_edge_repair"]["required"] is False
+    assert operations["degenerate_triangle_removal"]["required"] is False
+    assert cleanup_plan["execution"]["cleanupRun"] is False
+    assert cleanup_plan["execution"]["repairRun"] is False
+    assert cleanup_plan["readiness"]["status"] == "blocked_not_executed"
+    assert cleanup_plan["readiness"]["acceptedForCleanProposal"] is False
+    assert cleanup_plan["integrity"]["geometryCleanupPlanHash"] == (
+        hash_geometry_cleanup_plan(cleanup_plan)
     )
 
 

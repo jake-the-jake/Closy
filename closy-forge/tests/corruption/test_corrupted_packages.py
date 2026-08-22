@@ -462,6 +462,26 @@ def test_raw_geometry_topology_clean_acceptance_is_rejected(tmp_path) -> None:  
     assert "raw_geometry_topology_clean_acceptance_invalid" in codes
 
 
+def test_geometry_cleanup_plan_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_cleanup_plan_hash.closygarment")
+    cleanup_plan = read_json(corrupt / "reports" / "geometry_cleanup_plan.json")
+    cleanup_plan["topologySnapshot"]["componentCount"] = 99
+    write_json(corrupt / "reports" / "geometry_cleanup_plan.json", cleanup_plan)
+    assert "geometry_cleanup_plan_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_cleanup_plan_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_cleanup_plan_ready.closygarment")
+    cleanup_plan = read_json(corrupt / "reports" / "geometry_cleanup_plan.json")
+    cleanup_plan["readiness"]["acceptedForCleanProposal"] = True
+    write_json(corrupt / "reports" / "geometry_cleanup_plan.json", cleanup_plan)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_cleanup_plan_hash_mismatch" in codes
+    assert "geometry_cleanup_plan_clean_acceptance_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

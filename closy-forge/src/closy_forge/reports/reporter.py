@@ -17,6 +17,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     texture = read_json(package_dir / "textures" / "texture_identity.json")
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
     raw_topology = read_json(package_dir / "reports" / "raw_geometry_topology.json")
+    cleanup_plan = read_json(package_dir / "reports" / "geometry_cleanup_plan.json")
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -102,6 +103,20 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "manifoldStatus": raw_topology["topology"]["manifoldStatus"],
             "acceptedForCleanProposal": raw_topology["cleanReadiness"]["acceptedForCleanProposal"],
         },
+        "geometryCleanupPlan": {
+            "reportId": cleanup_plan["reportId"],
+            "sourceRawProposalId": cleanup_plan["sourceRawProposalId"],
+            "sourceRawTopologyReportId": cleanup_plan["sourceRawTopologyReportId"],
+            "status": cleanup_plan["readiness"]["status"],
+            "estimatedRepairComplexity": cleanup_plan["readiness"]["estimatedRepairComplexity"],
+            "recommendedOperationCount": len(cleanup_plan["recommendedOperations"]),
+            "requiredOperationCount": sum(
+                1 for operation in cleanup_plan["recommendedOperations"] if operation["required"]
+            ),
+            "cleanupRun": cleanup_plan["execution"]["cleanupRun"],
+            "repairRun": cleanup_plan["execution"]["repairRun"],
+            "acceptedForCleanProposal": cleanup_plan["readiness"]["acceptedForCleanProposal"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -110,6 +125,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "acceptedForCanonical": clean_proposal["quality"]["acceptedForCanonical"],
             "acceptedForSimulation": clean_proposal["quality"]["acceptedForSimulation"],
             "topologyDiagnosticsRun": clean_proposal["cleanupPipeline"]["topologyDiagnosticsRun"],
+            "cleanupPlanGenerated": clean_proposal["cleanupPipeline"]["cleanupPlanGenerated"],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
             "semanticTransferRun": clean_proposal["cleanupPipeline"]["semanticTransferRun"],
@@ -169,6 +185,7 @@ def human_report(package_dir: Path) -> str:
     texture = summary["texture"]
     proposal = summary["geometryProposal"]
     raw_topology = summary["rawGeometryTopology"]
+    cleanup_plan = summary["geometryCleanupPlan"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -200,6 +217,10 @@ def human_report(package_dir: Path) -> str:
                 f"Raw topology: components={raw_topology['componentCount']}, "
                 f"non-manifold edges={raw_topology['nonManifoldEdgeCount']}, "
                 f"status={raw_topology['manifoldStatus']}"
+            ),
+            (
+                f"Cleanup plan: {cleanup_plan['requiredOperationCount']} required operations, "
+                f"status={cleanup_plan['status']}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "

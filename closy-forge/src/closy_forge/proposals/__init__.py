@@ -5,6 +5,11 @@ from closy_forge.proposals.clean_geometry_proposal import (
     clean_geometry_proposal_quality_report,
     hash_clean_geometry_proposal,
 )
+from closy_forge.proposals.geometry_cleanup_plan import (
+    GEOMETRY_CLEANUP_PLAN_VERSION,
+    build_geometry_cleanup_plan,
+    hash_geometry_cleanup_plan,
+)
 from closy_forge.proposals.geometry_proposal import (
     GEOMETRY_PROPOSAL_VERSION,
     NULL_GEOMETRY_PROPOSAL_VERSION,
@@ -32,6 +37,7 @@ from closy_forge.proposals.raw_geometry_topology import (
 __all__ = [
     "CLEAN_GEOMETRY_PROPOSAL_VERSION",
     "GEOMETRY_PROPOSAL_VERSION",
+    "GEOMETRY_CLEANUP_PLAN_VERSION",
     "MANUAL_IMPORT_PROVIDER_ID",
     "NULL_GEOMETRY_PROVIDER_ID",
     "NULL_GEOMETRY_PROPOSAL_VERSION",
@@ -40,12 +46,14 @@ __all__ = [
     "REQUIRED_CLEAN_REJECTION_REASONS",
     "build_clean_geometry_proposal_rejection",
     "build_geometry_provider_registry",
+    "build_geometry_cleanup_plan",
     "build_manual_geometry_proposal",
     "build_null_geometry_proposal",
     "build_raw_geometry_topology_report",
     "clean_geometry_proposal_quality_report",
     "geometry_proposal_quality_report",
     "hash_clean_geometry_proposal",
+    "hash_geometry_cleanup_plan",
     "hash_geometry_proposal",
     "hash_provider_registry",
     "hash_raw_geometry_topology_report",

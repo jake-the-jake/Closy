@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "bd71904c7ec990bb9ebb5f7f70590db6584cd443ba2c597e86b2931e834cb73d",
+  "canonicalPackageDigest": "ec01b04ad06b0ac38f0142e931a55963e4adb7033c2410b5d22fa6c6c019760a",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -23,6 +23,7 @@
     "fittingQualityScored": true,
     "garmentLandmarksAvailable": true,
     "garmentMaskAvailable": true,
+    "geometryCleanupRecommendationAvailable": true,
     "geometryProposalInterfaceAvailable": true,
     "geometryProposalQualityScored": true,
     "geometryProviderRegistryAvailable": true,
@@ -88,10 +89,23 @@
     "reportId": "topology.raw_manual_tshirt_visual_geometry_v1",
     "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1"
   },
+  "geometryCleanupPlan": {
+    "acceptedForCleanProposal": false,
+    "cleanupRun": false,
+    "estimatedRepairComplexity": "semantic_open_surface_cleanup_required",
+    "recommendedOperationCount": 8,
+    "repairRun": false,
+    "reportId": "cleanup_plan.raw_manual_tshirt_visual_geometry_v1",
+    "requiredOperationCount": 6,
+    "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1",
+    "sourceRawTopologyReportId": "topology.raw_manual_tshirt_visual_geometry_v1",
+    "status": "blocked_not_executed"
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
     "cleanProposalAvailable": false,
+    "cleanupPlanGenerated": true,
     "cleanupRun": false,
     "failureReason": "clean_geometry_proposal_not_generated",
     "qualityStatus": "rejected",
