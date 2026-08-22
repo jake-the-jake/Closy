@@ -24,6 +24,9 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     binding_validation = read_json(package_dir / "reports" / "geometry_binding_validation.json")
     repair_plan = read_json(package_dir / "reports" / "geometry_repair_retopology_plan.json")
     repair_result = read_json(package_dir / "reports" / "geometry_repair_result.json")
+    runtime_binding_result = read_json(
+        package_dir / "reports" / "geometry_runtime_binding_result.json"
+    )
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -248,6 +251,26 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             ],
             "acceptedForCleanProposal": repair_result["readiness"]["acceptedForCleanProposal"],
         },
+        "geometryRuntimeBindingResult": {
+            "reportId": runtime_binding_result["reportId"],
+            "sourceGeometryRepairResultId": runtime_binding_result["sourceGeometryRepairResultId"],
+            "status": runtime_binding_result["readiness"]["status"],
+            "retopologyRun": runtime_binding_result["execution"]["retopologyRun"],
+            "seamSplitRun": runtime_binding_result["execution"]["seamSplitRun"],
+            "componentStitchingRun": runtime_binding_result["execution"]["componentStitchingRun"],
+            "runtimeBindingWritten": runtime_binding_result["execution"]["runtimeBindingWritten"],
+            "runtimeBindingAccepted": runtime_binding_result["execution"]["runtimeBindingAccepted"],
+            "runtimeBindingRecordCount": runtime_binding_result["aggregate"][
+                "runtimeBindingRecordCount"
+            ],
+            "maxReconstructionError": runtime_binding_result["aggregate"]["maxReconstructionError"],
+            "maxSeamPairDistanceMeters": runtime_binding_result["aggregate"][
+                "maxSeamPairDistanceMeters"
+            ],
+            "acceptedForCleanProposal": runtime_binding_result["readiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -272,6 +295,9 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             ],
             "partialRepairResultGenerated": clean_proposal["cleanupPipeline"][
                 "partialRepairResultGenerated"
+            ],
+            "runtimeBindingResultGenerated": clean_proposal["cleanupPipeline"][
+                "runtimeBindingResultGenerated"
             ],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
@@ -347,6 +373,7 @@ def human_report(package_dir: Path) -> str:
     binding_validation = summary["geometryBindingValidation"]
     repair_plan = summary["geometryRepairRetopologyPlan"]
     repair_result = summary["geometryRepairResult"]
+    runtime_binding_result = summary["geometryRuntimeBindingResult"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -421,6 +448,12 @@ def human_report(package_dir: Path) -> str:
                 f"reprojected vertices={repair_result['movedVertexCount']}, "
                 f"deferred operations={repair_result['deferredOperationCount']}, "
                 f"retopology={repair_result['retopologyRun']}"
+            ),
+            (
+                f"Runtime binding result: status={runtime_binding_result['status']}, "
+                f"records={runtime_binding_result['runtimeBindingRecordCount']}, "
+                f"accepted={runtime_binding_result['runtimeBindingAccepted']}, "
+                f"max reconstruction error={runtime_binding_result['maxReconstructionError']:.8f}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "

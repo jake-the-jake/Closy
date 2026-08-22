@@ -59,6 +59,7 @@ from closy_forge.proposals import (
     GEOMETRY_PROPOSAL_VERSION,
     GEOMETRY_REPAIR_RESULT_VERSION,
     GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
+    GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
     GEOMETRY_SEMANTIC_TRANSFER_VERSION,
     PROVIDER_REGISTRY_VERSION,
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
@@ -70,8 +71,11 @@ from closy_forge.proposals import (
     build_geometry_provider_registry,
     build_geometry_repair_result_report,
     build_geometry_repair_retopology_plan,
+    build_geometry_runtime_binding_result_report,
     build_geometry_semantic_transfer_report,
     build_manual_geometry_proposal,
+    build_proposal_runtime_binding,
+    build_proposal_runtime_render_mesh,
     build_raw_geometry_topology_report,
     clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
@@ -291,6 +295,49 @@ def _write_package_contents(
         settled_simulation_mesh=simulation_mesh,
         settled_simulation_mesh_path="simulation/simulation_mesh.glb",
     )
+    proposal_runtime_render_mesh, proposal_runtime_binding_seeds = (
+        build_proposal_runtime_render_mesh(simulation_mesh)
+    )
+    proposal_runtime_binding, proposal_runtime_binding_manifest = build_proposal_runtime_binding(
+        settled_simulation_mesh=simulation_mesh,
+        runtime_render_mesh=proposal_runtime_render_mesh,
+        render_binding_seeds=proposal_runtime_binding_seeds,
+        target_render_path="proposals/manual_runtime_retopology_preview.glb",
+    )
+    proposal_runtime_render_asset = (
+        package_dir / "proposals" / "manual_runtime_retopology_preview.glb"
+    )
+    write_indexed_glb(
+        proposal_runtime_render_asset,
+        proposal_runtime_render_mesh,
+        "closy_proposal_runtime_retopology_preview_v1",
+        (0.54, 0.70, 0.90, 1.0),
+    )
+    proposal_runtime_binding_asset = package_dir / "binding" / "proposal_sim_to_render.bin"
+    write_binding(proposal_runtime_binding_asset, proposal_runtime_binding)
+    write_canonical_json(
+        package_dir / "binding" / "proposal_binding_manifest.json",
+        proposal_runtime_binding_manifest,
+    )
+    geometry_runtime_binding_result = build_geometry_runtime_binding_result_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        repair_result_report=geometry_repair_result,
+        semantic_transfer_report=geometry_semantic_transfer,
+        binding_candidate_report=geometry_binding_candidate,
+        binding_validation_report=geometry_binding_validation,
+        repair_asset_path=repair_preview_asset,
+        output_render_asset_path=proposal_runtime_render_asset,
+        output_render_package_path="proposals/manual_runtime_retopology_preview.glb",
+        output_binding_path=proposal_runtime_binding_asset,
+        output_binding_package_path="binding/proposal_sim_to_render.bin",
+        output_binding_manifest=proposal_runtime_binding_manifest,
+        output_binding_manifest_package_path="binding/proposal_binding_manifest.json",
+        output_render_mesh=proposal_runtime_render_mesh,
+        settled_simulation_mesh=simulation_mesh,
+        settled_simulation_mesh_path="simulation/simulation_mesh.glb",
+        constraints=constraints,
+    )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -304,6 +351,7 @@ def _write_package_contents(
         binding_validation_report=geometry_binding_validation,
         repair_retopology_plan_report=geometry_repair_retopology_plan,
         repair_result_report=geometry_repair_result,
+        runtime_binding_result_report=geometry_runtime_binding_result,
     )
     render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
     binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
@@ -418,6 +466,7 @@ def _write_package_contents(
         geometry_binding_validation,
         geometry_repair_retopology_plan,
         geometry_repair_result,
+        geometry_runtime_binding_result,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -449,6 +498,7 @@ def _write_package_contents(
         geometry_binding_validation,
         geometry_repair_retopology_plan,
         geometry_repair_result,
+        geometry_runtime_binding_result,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -483,6 +533,7 @@ def _write_package_contents(
         geometry_binding_validation,
         geometry_repair_retopology_plan,
         geometry_repair_result,
+        geometry_runtime_binding_result,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -512,6 +563,7 @@ def _write_package_contents(
         "geometryBindingValidation": geometry_binding_validation,
         "geometryRepairRetopologyPlan": geometry_repair_retopology_plan,
         "geometryRepairResult": geometry_repair_result,
+        "geometryRuntimeBindingResult": geometry_runtime_binding_result,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
@@ -631,6 +683,7 @@ def _manifest(
     geometry_binding_validation: dict[str, Any],
     geometry_repair_retopology_plan: dict[str, Any],
     geometry_repair_result: dict[str, Any],
+    geometry_runtime_binding_result: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -669,6 +722,10 @@ def _manifest(
             "geometryRepairRetopologyPlan": "reports/geometry_repair_retopology_plan.json",
             "geometryRepairPreviewAsset": "proposals/manual_repair_preview.glb",
             "geometryRepairResult": "reports/geometry_repair_result.json",
+            "geometryRuntimeRetopologyPreviewAsset": (
+                "proposals/manual_runtime_retopology_preview.glb"
+            ),
+            "geometryRuntimeBindingResult": "reports/geometry_runtime_binding_result.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
@@ -684,6 +741,8 @@ def _manifest(
             "renderMaterials": "render/materials.json",
             "binding": "binding/sim_to_render.bin",
             "bindingManifest": "binding/binding_manifest.json",
+            "proposalRuntimeBinding": "binding/proposal_sim_to_render.bin",
+            "proposalRuntimeBindingManifest": "binding/proposal_binding_manifest.json",
         },
         "hashes": {
             "avatarTopologyHash": topology_hash(avatar_mesh),
@@ -780,6 +839,21 @@ def _manifest(
             "geometryRepairResultPayloadHash": str(
                 geometry_repair_result["integrity"]["geometryRepairResultHash"]
             ),
+            "geometryRuntimeRetopologyPreviewAssetHash": _hash_from_inventory(
+                inventory, "proposals/manual_runtime_retopology_preview.glb"
+            ),
+            "geometryRuntimeBindingResultHash": _hash_from_inventory(
+                inventory, "reports/geometry_runtime_binding_result.json"
+            ),
+            "geometryRuntimeBindingResultPayloadHash": str(
+                geometry_runtime_binding_result["integrity"]["geometryRuntimeBindingResultHash"]
+            ),
+            "proposalRuntimeBindingHash": _hash_from_inventory(
+                inventory, "binding/proposal_sim_to_render.bin"
+            ),
+            "proposalRuntimeBindingManifestHash": _hash_from_inventory(
+                inventory, "binding/proposal_binding_manifest.json"
+            ),
             "cleanGeometryProposalHash": _hash_from_inventory(
                 inventory, "proposals/clean_geometry_proposal.json"
             ),
@@ -825,6 +899,7 @@ def _manifest(
             "geometryBindingValidation": GEOMETRY_BINDING_VALIDATION_VERSION,
             "geometryRepairRetopologyPlan": GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
             "geometryRepairResult": GEOMETRY_REPAIR_RESULT_VERSION,
+            "geometryRuntimeBindingResult": GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
@@ -837,7 +912,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_17_geometry_repair_result",
+            "name": "implementation_18_geometry_runtime_binding_result",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -854,13 +929,13 @@ def _manifest(
             "geometry_binding_candidate_not_runtime_binding",
             "geometry_binding_validation_rejected_runtime_binding",
             "geometry_repair_result_partial_reprojection_not_clean",
-            "geometry_repair_retopology_pending_after_partial_result",
+            "geometry_runtime_binding_result_clean_acceptance_pending",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "17-geometry-repair-result"},
+        "extensions": {"closyImplementation": "18-geometry-runtime-binding-result"},
     }
 
 
@@ -897,6 +972,7 @@ def _capabilities() -> dict[str, bool]:
         "geometryBindingValidationAvailable": True,
         "geometryRepairRetopologyPlanAvailable": True,
         "geometryRepairResultAvailable": True,
+        "geometryRuntimeBindingResultAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
@@ -937,6 +1013,7 @@ def _quality_reports(
     geometry_binding_validation: dict[str, Any],
     geometry_repair_retopology_plan: dict[str, Any],
     geometry_repair_result: dict[str, Any],
+    geometry_runtime_binding_result: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
@@ -998,6 +1075,7 @@ def _quality_reports(
         "geometry_binding_validation.json": geometry_binding_validation,
         "geometry_repair_retopology_plan.json": geometry_repair_retopology_plan,
         "geometry_repair_result.json": geometry_repair_result,
+        "geometry_runtime_binding_result.json": geometry_runtime_binding_result,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
         ),
@@ -1084,6 +1162,7 @@ def _provenance(
     geometry_binding_validation: dict[str, Any],
     geometry_repair_retopology_plan: dict[str, Any],
     geometry_repair_result: dict[str, Any],
+    geometry_runtime_binding_result: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -1374,6 +1453,38 @@ def _provenance(
                 [str(geometry_repair_result["integrity"]["geometryRepairResultHash"])],
             ),
             _stage(
+                "geometry_runtime_binding_result",
+                GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
+                {
+                    "sourceGeometryRepairResultId": geometry_runtime_binding_result[
+                        "sourceGeometryRepairResultId"
+                    ],
+                    "retopologyRun": geometry_runtime_binding_result["execution"]["retopologyRun"],
+                    "seamSplitRun": geometry_runtime_binding_result["execution"]["seamSplitRun"],
+                    "componentStitchingRun": geometry_runtime_binding_result["execution"][
+                        "componentStitchingRun"
+                    ],
+                    "runtimeBindingWritten": geometry_runtime_binding_result["execution"][
+                        "runtimeBindingWritten"
+                    ],
+                    "runtimeBindingAccepted": geometry_runtime_binding_result["execution"][
+                        "runtimeBindingAccepted"
+                    ],
+                    "recordCount": geometry_runtime_binding_result["aggregate"][
+                        "runtimeBindingRecordCount"
+                    ],
+                    "acceptedForCleanProposal": False,
+                    "status": geometry_runtime_binding_result["readiness"]["status"],
+                },
+                [
+                    str(
+                        geometry_runtime_binding_result["integrity"][
+                            "geometryRuntimeBindingResultHash"
+                        ]
+                    )
+                ],
+            ),
+            _stage(
                 "clean_geometry_proposal_rejection",
                 CLEAN_GEOMETRY_PROPOSAL_VERSION,
                 {
@@ -1402,6 +1513,9 @@ def _provenance(
                     "sourceGeometryRepairResultId": clean_geometry_proposal[
                         "sourceGeometryRepairResultId"
                     ],
+                    "sourceGeometryRuntimeBindingResultId": clean_geometry_proposal[
+                        "sourceGeometryRuntimeBindingResultId"
+                    ],
                     "topologyDiagnosticsRun": True,
                     "cleanupPlanGenerated": True,
                     "cleanupResultGenerated": True,
@@ -1410,16 +1524,30 @@ def _provenance(
                     "bindingValidationReportGenerated": True,
                     "repairRetopologyPlanGenerated": True,
                     "partialRepairResultGenerated": True,
+                    "runtimeBindingResultGenerated": clean_geometry_proposal["cleanupPipeline"][
+                        "runtimeBindingResultGenerated"
+                    ],
                     "cleanupRun": True,
                     "repairRun": False,
-                    "retopologyRun": False,
+                    "retopologyRun": clean_geometry_proposal["cleanupPipeline"]["retopologyRun"],
+                    "seamSplitRun": clean_geometry_proposal["cleanupPipeline"]["seamSplitRun"],
+                    "componentStitchingRun": clean_geometry_proposal["cleanupPipeline"][
+                        "componentStitchingRun"
+                    ],
                     "deformationReprojectionRun": True,
                     "semanticTransferRun": True,
                     "boundaryClassificationRun": True,
                     "candidateBindingRun": True,
                     "deformationValidationRun": True,
-                    "simulationBindingRun": False,
-                    "runtimeBindingAccepted": False,
+                    "simulationBindingRun": clean_geometry_proposal["cleanupPipeline"][
+                        "simulationBindingRun"
+                    ],
+                    "runtimeBindingWritten": clean_geometry_proposal["cleanupPipeline"][
+                        "runtimeBindingWritten"
+                    ],
+                    "runtimeBindingAccepted": clean_geometry_proposal["cleanupPipeline"][
+                        "runtimeBindingAccepted"
+                    ],
                     "acceptedForCanonical": False,
                     "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
                 },
@@ -1539,6 +1667,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_binding_validation = context["geometryBindingValidation"]
     geometry_repair_retopology_plan = context["geometryRepairRetopologyPlan"]
     geometry_repair_result = context["geometryRepairResult"]
+    geometry_runtime_binding_result = context["geometryRuntimeBindingResult"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
@@ -1806,6 +1935,48 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "acceptedForCleanProposal"
             ],
         },
+        "geometryRuntimeBindingResult": {
+            "reportId": geometry_runtime_binding_result["reportId"],
+            "sourceGeometryRepairResultId": geometry_runtime_binding_result[
+                "sourceGeometryRepairResultId"
+            ],
+            "status": geometry_runtime_binding_result["readiness"]["status"],
+            "retopologyRun": geometry_runtime_binding_result["execution"]["retopologyRun"],
+            "seamSplitRun": geometry_runtime_binding_result["execution"]["seamSplitRun"],
+            "componentStitchingRun": geometry_runtime_binding_result["execution"][
+                "componentStitchingRun"
+            ],
+            "normalContinuityValidationRun": geometry_runtime_binding_result["execution"][
+                "normalContinuityValidationRun"
+            ],
+            "tangentContinuityValidationRun": geometry_runtime_binding_result["execution"][
+                "tangentContinuityValidationRun"
+            ],
+            "runtimeBindingWritten": geometry_runtime_binding_result["execution"][
+                "runtimeBindingWritten"
+            ],
+            "runtimeBindingAccepted": geometry_runtime_binding_result["execution"][
+                "runtimeBindingAccepted"
+            ],
+            "runtimeBindingRecordCount": geometry_runtime_binding_result["aggregate"][
+                "runtimeBindingRecordCount"
+            ],
+            "maxReconstructionError": geometry_runtime_binding_result["aggregate"][
+                "maxReconstructionError"
+            ],
+            "maxSeamPairDistanceMeters": geometry_runtime_binding_result["aggregate"][
+                "maxSeamPairDistanceMeters"
+            ],
+            "maxNormalAngleDegrees": geometry_runtime_binding_result["aggregate"][
+                "maxNormalAngleDegrees"
+            ],
+            "maxTangentAngleDegrees": geometry_runtime_binding_result["aggregate"][
+                "maxTangentAngleDegrees"
+            ],
+            "acceptedForCleanProposal": geometry_runtime_binding_result["readiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_geometry_proposal["proposalId"],
             "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
@@ -1836,6 +2007,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "partialRepairResultGenerated": clean_geometry_proposal["cleanupPipeline"][
                 "partialRepairResultGenerated"
+            ],
+            "runtimeBindingResultGenerated": clean_geometry_proposal["cleanupPipeline"][
+                "runtimeBindingResultGenerated"
             ],
             "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
@@ -1953,6 +2127,11 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"reprojected vertices={summary['geometryRepairResult']['movedVertexCount']}, "
         f"deferred operations={summary['geometryRepairResult']['deferredOperationCount']}, "
         f"retopology={summary['geometryRepairResult']['retopologyRun']}\n"
+        f"- Runtime binding result: status=`{summary['geometryRuntimeBindingResult']['status']}`, "
+        f"records={summary['geometryRuntimeBindingResult']['runtimeBindingRecordCount']}, "
+        f"accepted={summary['geometryRuntimeBindingResult']['runtimeBindingAccepted']}, "
+        f"max reconstruction error="
+        f"{summary['geometryRuntimeBindingResult']['maxReconstructionError']:.8f}\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"
@@ -2038,6 +2217,7 @@ def audit_package_glbs(package_dir: Path) -> dict[str, dict[str, Any]]:
             "avatar/reference_avatar.glb",
             "avatar/collision.glb",
             "proposals/manual_repair_preview.glb",
+            "proposals/manual_runtime_retopology_preview.glb",
             "simulation/simulation_mesh.glb",
             "render/fallback.glb",
         ]

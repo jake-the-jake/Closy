@@ -27,6 +27,7 @@ def test_generated_glbs_are_parseable(tmp_path) -> None:  # type: ignore[no-unty
         "proposals/manual_raw_visual_proposal.glb",
         "proposals/manual_cleanup_preview.glb",
         "proposals/manual_repair_preview.glb",
+        "proposals/manual_runtime_retopology_preview.glb",
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",
     ]:
@@ -132,6 +133,17 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryRepairResult"]["deferredOperationCount"] == 7
     assert payload["geometryRepairResult"]["maxOutputToSettledOffsetMeters"] == 0.0
     assert payload["geometryRepairResult"]["acceptedForCleanProposal"] is False
+    assert payload["geometryRuntimeBindingResult"]["status"] == (
+        "runtime_binding_ready_clean_acceptance_pending"
+    )
+    assert payload["geometryRuntimeBindingResult"]["retopologyRun"] is True
+    assert payload["geometryRuntimeBindingResult"]["seamSplitRun"] is True
+    assert payload["geometryRuntimeBindingResult"]["componentStitchingRun"] is True
+    assert payload["geometryRuntimeBindingResult"]["runtimeBindingWritten"] is True
+    assert payload["geometryRuntimeBindingResult"]["runtimeBindingAccepted"] is True
+    assert payload["geometryRuntimeBindingResult"]["runtimeBindingRecordCount"] == 1308
+    assert payload["geometryRuntimeBindingResult"]["maxReconstructionError"] == 0.0
+    assert payload["geometryRuntimeBindingResult"]["acceptedForCleanProposal"] is False
     assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"
     assert payload["cleanGeometryProposal"]["cleanProposalAvailable"] is False
     assert payload["cleanGeometryProposal"]["acceptedForCanonical"] is False
@@ -144,11 +156,12 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["cleanGeometryProposal"]["bindingValidationReportGenerated"] is True
     assert payload["cleanGeometryProposal"]["repairRetopologyPlanGenerated"] is True
     assert payload["cleanGeometryProposal"]["partialRepairResultGenerated"] is True
+    assert payload["cleanGeometryProposal"]["runtimeBindingResultGenerated"] is True
     assert payload["cleanGeometryProposal"]["candidateBindingRun"] is True
     assert payload["cleanGeometryProposal"]["deformationValidationRun"] is True
     assert payload["cleanGeometryProposal"]["deformationReprojectionRun"] is True
-    assert payload["cleanGeometryProposal"]["simulationBindingRun"] is False
-    assert payload["cleanGeometryProposal"]["runtimeBindingAccepted"] is False
+    assert payload["cleanGeometryProposal"]["simulationBindingRun"] is True
+    assert payload["cleanGeometryProposal"]["runtimeBindingAccepted"] is True
     assert payload["providerRegistry"]["selectedProviderId"] == ("closy.manual_local_glb_import.v1")
     assert payload["providerRegistry"]["manualLocalImportAssetAvailable"] is True
     assert payload["binding"]["recordCount"] > 0

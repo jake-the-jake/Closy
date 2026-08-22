@@ -656,6 +656,37 @@ def test_geometry_repair_result_acceptance_claim_is_rejected(
     assert "geometry_repair_result_quality_status_invalid" in codes
 
 
+def test_geometry_runtime_binding_result_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_runtime_binding_result_hash.closygarment"
+    )
+    runtime_result = read_json(corrupt / "reports" / "geometry_runtime_binding_result.json")
+    runtime_result["aggregate"]["runtimeBindingRecordCount"] = 0
+    write_json(corrupt / "reports" / "geometry_runtime_binding_result.json", runtime_result)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_runtime_binding_result_hash_mismatch" in codes
+    assert "geometry_runtime_binding_result_aggregate_invalid" in codes
+
+
+def test_geometry_runtime_binding_result_clean_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_runtime_binding_result_ready.closygarment"
+    )
+    runtime_result = read_json(corrupt / "reports" / "geometry_runtime_binding_result.json")
+    runtime_result["readiness"]["acceptedForCleanProposal"] = True
+    runtime_result["readiness"]["acceptedForCanonical"] = True
+    runtime_result["quality"]["status"] = "pass"
+    write_json(corrupt / "reports" / "geometry_runtime_binding_result.json", runtime_result)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_runtime_binding_result_hash_mismatch" in codes
+    assert "geometry_runtime_binding_result_acceptance_invalid" in codes
+    assert "geometry_runtime_binding_result_quality_status_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

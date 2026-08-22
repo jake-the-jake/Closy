@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from closy_forge.appearance import hash_texture_identity_report
-from closy_forge.binding.binary_format import read_binding
+from closy_forge.binding.binary_format import read_binding, write_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction_error
 from closy_forge.capture.source_records import hash_capture_record
 from closy_forge.contracts.avatar import REQUIRED_BODY_REGIONS, REQUIRED_LANDMARKS
@@ -40,6 +40,7 @@ from closy_forge.proposals import (
     PARTIAL_CLEANUP_REJECTION_REASONS,
     PARTIAL_REPAIR_RESULT_REJECTION_REASONS,
     PARTIAL_REPAIR_RETOPOLOGY_PLAN_REJECTION_REASONS,
+    PARTIAL_RUNTIME_BINDING_RESULT_REJECTION_REASONS,
     PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS,
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_geometry_binding_candidate_report,
@@ -48,7 +49,10 @@ from closy_forge.proposals import (
     build_geometry_cleanup_result,
     build_geometry_repair_result_report,
     build_geometry_repair_retopology_plan,
+    build_geometry_runtime_binding_result_report,
     build_geometry_semantic_transfer_report,
+    build_proposal_runtime_binding,
+    build_proposal_runtime_render_mesh,
     build_raw_geometry_topology_report,
     hash_clean_geometry_proposal,
     hash_geometry_binding_candidate_report,
@@ -58,6 +62,7 @@ from closy_forge.proposals import (
     hash_geometry_proposal,
     hash_geometry_repair_result,
     hash_geometry_repair_retopology_plan,
+    hash_geometry_runtime_binding_result,
     hash_geometry_semantic_transfer_report,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
@@ -83,6 +88,7 @@ EXPECTED_FILES = [
     "proposals/manual_raw_visual_proposal.glb",
     "proposals/manual_cleanup_preview.glb",
     "proposals/manual_repair_preview.glb",
+    "proposals/manual_runtime_retopology_preview.glb",
     "proposals/clean_geometry_proposal.json",
     "proposals/provider_registry.json",
     "avatar/avatar_contract.json",
@@ -105,6 +111,8 @@ EXPECTED_FILES = [
     "render/materials.json",
     "binding/sim_to_render.bin",
     "binding/binding_manifest.json",
+    "binding/proposal_sim_to_render.bin",
+    "binding/proposal_binding_manifest.json",
     "reports/avatar_quality.json",
     "reports/capture_quality.json",
     "reports/visual_understanding_quality.json",
@@ -119,6 +127,7 @@ EXPECTED_FILES = [
     "reports/geometry_binding_validation.json",
     "reports/geometry_repair_retopology_plan.json",
     "reports/geometry_repair_result.json",
+    "reports/geometry_runtime_binding_result.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -270,6 +279,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_binding_validation(package_dir, manifest, issues)
     _validate_geometry_repair_retopology_plan(package_dir, manifest, issues)
     _validate_geometry_repair_result(package_dir, manifest, issues)
+    _validate_geometry_runtime_binding_result(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1434,6 +1444,11 @@ def _validate_geometry_proposal(
             "geometryRepairResultAvailable",
             True,
             "geometry_repair_result_capability_missing",
+        ),
+        (
+            "geometryRuntimeBindingResultAvailable",
+            True,
+            "geometry_runtime_binding_result_capability_missing",
         ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
@@ -4405,6 +4420,686 @@ def _validate_repair_result_asset_reference(
     return asset_path
 
 
+def _validate_geometry_runtime_binding_result(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
+    binding_candidate = _read_required_json(
+        package_dir, "reports/geometry_binding_candidate.json", issues
+    )
+    binding_validation = _read_required_json(
+        package_dir, "reports/geometry_binding_validation.json", issues
+    )
+    repair_result = _read_required_json(package_dir, "reports/geometry_repair_result.json", issues)
+    simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    constraints = _read_required_json(package_dir, "simulation/constraints.json", issues)
+    proposal_binding_manifest = _read_required_json(
+        package_dir, "binding/proposal_binding_manifest.json", issues
+    )
+    runtime_result = _read_required_json(
+        package_dir, "reports/geometry_runtime_binding_result.json", issues
+    )
+    if (
+        semantic_transfer is None
+        or binding_candidate is None
+        or binding_validation is None
+        or repair_result is None
+        or simulation_manifest is None
+        or constraints is None
+        or proposal_binding_manifest is None
+        or runtime_result is None
+    ):
+        return
+
+    if runtime_result.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_garment_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result must reference the package garment ID.",
+            )
+        )
+    if runtime_result.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_class_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result must reference the package garment class.",
+            )
+        )
+
+    expected_sources = [
+        (
+            "sourceGeometryRepairResultId",
+            repair_result.get("reportId"),
+            "geometry_runtime_binding_result_repair_source_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferId",
+            semantic_transfer.get("reportId"),
+            "geometry_runtime_binding_result_semantic_source_mismatch",
+        ),
+        (
+            "sourceGeometryBindingCandidateId",
+            binding_candidate.get("reportId"),
+            "geometry_runtime_binding_result_candidate_source_mismatch",
+        ),
+        (
+            "sourceGeometryBindingValidationId",
+            binding_validation.get("reportId"),
+            "geometry_runtime_binding_result_validation_source_mismatch",
+        ),
+    ]
+    for field, expected_value, code in expected_sources:
+        if runtime_result.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_runtime_binding_result.json",
+                    f"Runtime binding result {field} must match its source artifact.",
+                )
+            )
+
+    expected_hashes = [
+        (
+            "sourceGeometryRepairResultHash",
+            _nested_string(repair_result, ["integrity", "geometryRepairResultHash"], ""),
+            "geometry_runtime_binding_result_repair_hash_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferHash",
+            _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], ""),
+            "geometry_runtime_binding_result_semantic_hash_mismatch",
+        ),
+        (
+            "sourceGeometryBindingCandidateHash",
+            _nested_string(binding_candidate, ["integrity", "geometryBindingCandidateHash"], ""),
+            "geometry_runtime_binding_result_candidate_hash_mismatch",
+        ),
+        (
+            "sourceGeometryBindingValidationHash",
+            _nested_string(binding_validation, ["integrity", "geometryBindingValidationHash"], ""),
+            "geometry_runtime_binding_result_validation_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if runtime_result.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_runtime_binding_result.json",
+                    f"Runtime binding result {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(
+        runtime_result, ["integrity", "geometryRuntimeBindingResultHash"], ""
+    ) != hash_geometry_runtime_binding_result(runtime_result):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_hash_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result hash must match its canonical payload.",
+            )
+        )
+
+    input_repair_asset = runtime_result.get("inputRepairAsset", {})
+    target_settled = runtime_result.get("targetSettledSimulation", {})
+    output_render_asset = runtime_result.get("outputRenderAsset", {})
+    output_binding = runtime_result.get("outputBinding", {})
+    output_binding_manifest = runtime_result.get("outputBindingManifest", {})
+    output_render_mesh = runtime_result.get("outputRenderMesh", {})
+    retopology = runtime_result.get("retopology", {})
+    seam_continuity = runtime_result.get("seamContinuity", {})
+    aggregate = runtime_result.get("aggregate", {})
+    execution = runtime_result.get("execution", {})
+    readiness = runtime_result.get("readiness", {})
+    quality = runtime_result.get("quality", {})
+    policy = runtime_result.get("policy", {})
+    for name, block in [
+        ("inputRepairAsset", input_repair_asset),
+        ("targetSettledSimulation", target_settled),
+        ("outputRenderAsset", output_render_asset),
+        ("outputBinding", output_binding),
+        ("outputBindingManifest", output_binding_manifest),
+        ("outputRenderMesh", output_render_mesh),
+        ("retopology", retopology),
+        ("seamContinuity", seam_continuity),
+        ("aggregate", aggregate),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_runtime_binding_result_block_invalid",
+                    "fatal",
+                    "reports/geometry_runtime_binding_result.json",
+                    f"Runtime binding result {name} block must be an object.",
+                )
+            )
+            return
+
+    _validate_runtime_binding_result_file_reference(
+        package_dir,
+        "proposals/manual_repair_preview.glb",
+        input_repair_asset,
+        "geometry_runtime_binding_result_input_repair_asset",
+        issues,
+    )
+    output_render_asset_path = _validate_runtime_binding_result_file_reference(
+        package_dir,
+        "proposals/manual_runtime_retopology_preview.glb",
+        output_render_asset,
+        "geometry_runtime_binding_result_output_render_asset",
+        issues,
+    )
+    output_binding_path = _validate_runtime_binding_result_file_reference(
+        package_dir,
+        "binding/proposal_sim_to_render.bin",
+        output_binding,
+        "geometry_runtime_binding_result_output_binding",
+        issues,
+    )
+    if input_repair_asset.get("sourceAssetHash") != repair_result.get("outputAsset", {}).get(
+        "sourceAssetHash"
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_repair_asset_hash_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding input repair asset hash must mirror the repair result.",
+            )
+        )
+    if input_repair_asset.get("purpose") != repair_result.get("outputAsset", {}).get("purpose"):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_repair_asset_purpose_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding input repair asset purpose must mirror the repair result.",
+            )
+        )
+
+    try:
+        settled_mesh = _meshset_from_manifest(simulation_manifest)
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_mesh_rebuild_failed",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                str(exc),
+            )
+        )
+        return
+    if target_settled.get("path") != "simulation/simulation_mesh.glb":
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_target_path_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result target must reference simulation/simulation_mesh.glb.",
+            )
+        )
+    if target_settled.get("topologyHash") != topology_hash(settled_mesh):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_target_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding settled simulation topology hash is stale.",
+            )
+        )
+    if target_settled.get("contentHash") != geometry_content_hash(settled_mesh):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_target_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding settled simulation content hash is stale.",
+            )
+        )
+
+    if output_render_asset.get("canonicalUseAllowed") is not False:
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_render_acceptance_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime retopology preview cannot be accepted for canonical use.",
+            )
+        )
+    if output_render_asset.get("runtimePreviewUseAllowed") is not True:
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_runtime_preview_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime retopology preview must be accepted only for preview/runtime inspection.",
+            )
+        )
+    if output_render_asset.get("purpose") != "non_canonical_runtime_retopology_preview":
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_render_purpose_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime retopology preview must be labelled as non-canonical runtime preview.",
+            )
+        )
+
+    if output_binding.get("format") != "CLSYBND1":
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_binding_format_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime proposal binding must use CLSYBND1.",
+            )
+        )
+    if (
+        output_binding.get("runtimeUseAllowed") is not True
+        or output_binding.get("accepted") is not True
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_binding_acceptance_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime proposal binding must be accepted for runtime preview only.",
+            )
+        )
+    if output_binding_manifest.get("path") != "binding/proposal_binding_manifest.json":
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_binding_manifest_path_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result must reference binding/proposal_binding_manifest.json.",
+            )
+        )
+    for key in [
+        "format",
+        "algorithm",
+        "recordCount",
+        "sourceSimulationPath",
+        "targetRenderPath",
+        "simulationTopologyHash",
+        "renderTopologyHash",
+        "maximumReconstructionError",
+        "rmsReconstructionError",
+    ]:
+        if output_binding_manifest.get(key) != proposal_binding_manifest.get(key):
+            issues.append(
+                _issue(
+                    "geometry_runtime_binding_result_binding_manifest_mismatch",
+                    "fatal",
+                    "reports/geometry_runtime_binding_result.json",
+                    f"Runtime binding manifest field {key} is stale.",
+                )
+            )
+
+    if output_binding_path is not None:
+        try:
+            runtime_binding = read_binding(output_binding_path)
+        except Exception as exc:
+            issues.append(
+                _issue(
+                    "geometry_runtime_binding_result_binding_invalid",
+                    "fatal",
+                    "binding/proposal_sim_to_render.bin",
+                    str(exc),
+                )
+            )
+            runtime_binding = None
+        if runtime_binding is not None:
+            if runtime_binding.simulation_topology_hash != proposal_binding_manifest.get(
+                "simulationTopologyHash"
+            ):
+                issues.append(
+                    _issue(
+                        "geometry_runtime_binding_result_binding_sim_topology_mismatch",
+                        "fatal",
+                        "binding/proposal_sim_to_render.bin",
+                        "Proposal binding simulation topology hash is stale.",
+                    )
+                )
+            if runtime_binding.render_topology_hash != proposal_binding_manifest.get(
+                "renderTopologyHash"
+            ):
+                issues.append(
+                    _issue(
+                        "geometry_runtime_binding_result_binding_render_topology_mismatch",
+                        "fatal",
+                        "binding/proposal_sim_to_render.bin",
+                        "Proposal binding render topology hash is stale.",
+                    )
+                )
+            if len(runtime_binding.records) != int(
+                proposal_binding_manifest.get("recordCount", -1)
+            ):
+                issues.append(
+                    _issue(
+                        "geometry_runtime_binding_result_binding_record_count_mismatch",
+                        "fatal",
+                        "binding/proposal_sim_to_render.bin",
+                        "Proposal binding record count does not match its manifest.",
+                    )
+                )
+
+    expected_render_hash = ""
+    expected_binding_hash = ""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp = Path(temp_dir)
+        expected_render_path = temp / "manual_runtime_retopology_preview.glb"
+        expected_binding_path = temp / "proposal_sim_to_render.bin"
+        try:
+            expected_render_mesh, expected_binding_seeds = build_proposal_runtime_render_mesh(
+                settled_mesh
+            )
+            expected_binding, expected_binding_manifest = build_proposal_runtime_binding(
+                settled_simulation_mesh=settled_mesh,
+                runtime_render_mesh=expected_render_mesh,
+                render_binding_seeds=expected_binding_seeds,
+                target_render_path="proposals/manual_runtime_retopology_preview.glb",
+            )
+            write_indexed_glb(
+                expected_render_path,
+                expected_render_mesh,
+                "closy_proposal_runtime_retopology_preview_v1",
+                (0.54, 0.70, 0.90, 1.0),
+            )
+            write_binding(expected_binding_path, expected_binding)
+            expected_report = build_geometry_runtime_binding_result_report(
+                garment_id=str(manifest.get("garmentId", "")),
+                garment_class=str(manifest.get("garmentClass", "")),
+                repair_result_report=repair_result,
+                semantic_transfer_report=semantic_transfer,
+                binding_candidate_report=binding_candidate,
+                binding_validation_report=binding_validation,
+                repair_asset_path=package_dir / "proposals" / "manual_repair_preview.glb",
+                output_render_asset_path=expected_render_path,
+                output_render_package_path="proposals/manual_runtime_retopology_preview.glb",
+                output_binding_path=expected_binding_path,
+                output_binding_package_path="binding/proposal_sim_to_render.bin",
+                output_binding_manifest=expected_binding_manifest,
+                output_binding_manifest_package_path="binding/proposal_binding_manifest.json",
+                output_render_mesh=expected_render_mesh,
+                settled_simulation_mesh=settled_mesh,
+                settled_simulation_mesh_path="simulation/simulation_mesh.glb",
+                constraints=constraints,
+            )
+            expected_render_hash = sha256_file(expected_render_path)
+            expected_binding_hash = sha256_file(expected_binding_path)
+        except Exception as exc:
+            issues.append(
+                _issue(
+                    "geometry_runtime_binding_result_recompute_failed",
+                    "fatal",
+                    "reports/geometry_runtime_binding_result.json",
+                    str(exc),
+                )
+            )
+            return
+
+    if proposal_binding_manifest != expected_binding_manifest:
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_proposal_binding_manifest_mismatch",
+                "fatal",
+                "binding/proposal_binding_manifest.json",
+                "Proposal runtime binding manifest is stale.",
+            )
+        )
+    for key in [
+        "inputRepairAsset",
+        "targetSettledSimulation",
+        "outputRenderAsset",
+        "outputBinding",
+        "outputBindingManifest",
+        "outputRenderMesh",
+        "retopology",
+        "seamContinuity",
+        "checks",
+        "executedOperations",
+        "deferredOperations",
+        "aggregate",
+        "execution",
+        "readiness",
+        "quality",
+    ]:
+        if runtime_result.get(key) != expected_report.get(key):
+            issues.append(
+                _issue(
+                    "geometry_runtime_binding_result_recompute_mismatch",
+                    "fatal",
+                    "reports/geometry_runtime_binding_result.json",
+                    f"Runtime binding result field {key} is stale.",
+                )
+            )
+    if output_render_asset.get("sourceAssetHash") != expected_render_hash:
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_render_asset_determinism_mismatch",
+                "fatal",
+                "proposals/manual_runtime_retopology_preview.glb",
+                "Runtime retopology preview GLB does not match deterministic output.",
+            )
+        )
+    if (
+        output_render_asset_path is not None
+        and sha256_file(output_render_asset_path) != expected_render_hash
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_render_asset_hash_mismatch",
+                "fatal",
+                "proposals/manual_runtime_retopology_preview.glb",
+                "Runtime retopology preview GLB hash is stale.",
+            )
+        )
+    if output_binding.get("sourceAssetHash") != expected_binding_hash:
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_binding_determinism_mismatch",
+                "fatal",
+                "binding/proposal_sim_to_render.bin",
+                "Runtime proposal binding does not match deterministic output.",
+            )
+        )
+    if (
+        output_binding_path is not None
+        and sha256_file(output_binding_path) != expected_binding_hash
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_binding_hash_mismatch",
+                "fatal",
+                "binding/proposal_sim_to_render.bin",
+                "Runtime proposal binding hash is stale.",
+            )
+        )
+
+    if (
+        execution.get("runtimeBindingResultGenerated") is not True
+        or execution.get("deformationReprojectionRun") is not True
+        or execution.get("repairRun") is not True
+        or execution.get("retopologyRun") is not True
+        or execution.get("seamSplitRun") is not True
+        or execution.get("componentStitchingRun") is not True
+        or execution.get("normalContinuityValidationRun") is not True
+        or execution.get("tangentContinuityValidationRun") is not True
+        or execution.get("runtimeBindingWritten") is not True
+        or execution.get("runtimeBindingAccepted") is not True
+        or execution.get("cleanProposalRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_execution_state_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result must claim only deterministic retopology and binding work.",
+            )
+        )
+    if (
+        readiness.get("status") != "runtime_binding_ready_clean_acceptance_pending"
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForSimulation") is not True
+        or readiness.get("acceptedForRuntimeRender") is not True
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_acceptance_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                (
+                    "Runtime binding result may be accepted for simulation/runtime preview "
+                    "only, not clean or canonical use."
+                ),
+            )
+        )
+    if quality.get("status") != "runtime_binding_pass_clean_rejected":
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_quality_status_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding quality must pass only with clean acceptance still rejected.",
+            )
+        )
+    if (
+        _int_or(aggregate.get("runtimeBindingRecordCount"), -1) != settled_mesh.triangle_count * 6
+        or _float_or(aggregate.get("maxReconstructionError"), 1.0) > 1e-6
+        or _float_or(aggregate.get("rmsReconstructionError"), 1.0) > 1e-6
+        or aggregate.get("runtimeBindingAccepted") is not True
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_aggregate_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding aggregate must record exact reconstruction and acceptance.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_policy_violation",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryRuntimeBindingResultAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryRuntimeBindingResultAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(runtime_result):
+        issues.append(
+            _issue(
+                "geometry_runtime_binding_result_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_runtime_binding_result_file_reference(
+    package_dir: Path,
+    expected_path: str,
+    asset: dict[str, Any],
+    code_prefix: str,
+    issues: list[ValidationIssue],
+) -> Path | None:
+    path_value = asset.get("path")
+    if not isinstance(path_value, str):
+        issues.append(
+            _issue(
+                f"{code_prefix}_path_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result asset path must be package-relative.",
+            )
+        )
+        return None
+    try:
+        validate_package_relpath(path_value)
+    except ValueError:
+        issues.append(
+            _issue(
+                f"{code_prefix}_path_invalid",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result asset path is unsafe.",
+            )
+        )
+        return None
+    if expected_path and path_value != expected_path:
+        issues.append(
+            _issue(
+                f"{code_prefix}_path_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result asset path does not match the expected source.",
+            )
+        )
+    asset_path = package_dir / path_value
+    if not asset_path.exists():
+        issues.append(
+            _issue(
+                f"{code_prefix}_missing",
+                "fatal",
+                path_value,
+                "Runtime binding result asset is missing.",
+            )
+        )
+        return None
+    if asset.get("sourceAssetHash") != sha256_file(asset_path):
+        issues.append(
+            _issue(
+                f"{code_prefix}_hash_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result asset hash is stale.",
+            )
+        )
+    if asset.get("byteSize") != asset_path.stat().st_size:
+        issues.append(
+            _issue(
+                f"{code_prefix}_size_mismatch",
+                "fatal",
+                "reports/geometry_runtime_binding_result.json",
+                "Runtime binding result asset byte size is stale.",
+            )
+        )
+    return asset_path
+
+
 def _validate_provider_registry(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -4806,6 +5501,9 @@ def _validate_clean_geometry_proposal(
         package_dir, "reports/geometry_repair_retopology_plan.json", issues
     )
     repair_result = _read_required_json(package_dir, "reports/geometry_repair_result.json", issues)
+    runtime_binding_result = _read_required_json(
+        package_dir, "reports/geometry_runtime_binding_result.json", issues
+    )
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
@@ -4823,6 +5521,7 @@ def _validate_clean_geometry_proposal(
         or binding_validation is None
         or repair_plan is None
         or repair_result is None
+        or runtime_binding_result is None
         or clean_proposal is None
     ):
         return
@@ -4896,6 +5595,15 @@ def _validate_clean_geometry_proposal(
             "sourceGeometryRepairResultHash",
             _nested_string(repair_result, ["integrity", "geometryRepairResultHash"], ""),
             "clean_geometry_proposal_repair_result_hash_mismatch",
+        ),
+        (
+            "sourceGeometryRuntimeBindingResultHash",
+            _nested_string(
+                runtime_binding_result,
+                ["integrity", "geometryRuntimeBindingResultHash"],
+                "",
+            ),
+            "clean_geometry_proposal_runtime_binding_result_hash_mismatch",
         ),
     ]
     for field, expected_hash, code in expected_hashes:
@@ -4998,6 +5706,17 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the repair result ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryRuntimeBindingResultId") != runtime_binding_result.get(
+        "reportId"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_runtime_binding_result_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the runtime binding result ID.",
             )
         )
 
@@ -5139,17 +5858,20 @@ def _validate_clean_geometry_proposal(
                 "Clean proposal candidateBindingRun must mirror the binding candidate report.",
             )
         )
-    if cleanup.get("simulationBindingRun") != binding_execution.get("simulationBindingRun"):
+    validation_execution = binding_validation.get("execution", {})
+    repair_result_execution = repair_result.get("execution", {})
+    runtime_binding_result_execution = runtime_binding_result.get("execution", {})
+    if cleanup.get("simulationBindingRun") != runtime_binding_result_execution.get(
+        "runtimeBindingAccepted"
+    ):
         issues.append(
             _issue(
                 "clean_geometry_proposal_cleanup_state_invalid",
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
-                "Clean proposal simulationBindingRun must mirror the binding candidate report.",
+                "Clean proposal simulationBindingRun must mirror runtime binding acceptance.",
             )
         )
-    validation_execution = binding_validation.get("execution", {})
-    repair_result_execution = repair_result.get("execution", {})
     if cleanup.get("deformationValidationRun") != validation_execution.get(
         "deformationValidationRun"
     ):
@@ -5164,15 +5886,47 @@ def _validate_clean_geometry_proposal(
                 ),
             )
         )
-    if cleanup.get("runtimeBindingAccepted") != validation_execution.get("runtimeBindingAccepted"):
+    if cleanup.get("runtimeBindingResultGenerated") is not True:
         issues.append(
             _issue(
                 "clean_geometry_proposal_cleanup_state_invalid",
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
-                "Clean proposal runtimeBindingAccepted must mirror the binding validation report.",
+                "Clean proposal runtimeBindingResultGenerated must be true.",
             )
         )
+    if cleanup.get("runtimeBindingResultGenerated") != runtime_binding_result_execution.get(
+        "runtimeBindingResultGenerated"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                (
+                    "Clean proposal runtimeBindingResultGenerated must mirror the runtime "
+                    "binding result."
+                ),
+            )
+        )
+    for key in [
+        "retopologyRun",
+        "seamSplitRun",
+        "componentStitchingRun",
+        "normalContinuityValidationRun",
+        "tangentContinuityValidationRun",
+        "runtimeBindingWritten",
+        "runtimeBindingAccepted",
+    ]:
+        if cleanup.get(key) != runtime_binding_result_execution.get(key):
+            issues.append(
+                _issue(
+                    "clean_geometry_proposal_cleanup_state_invalid",
+                    "fatal",
+                    "proposals/clean_geometry_proposal.json",
+                    f"Clean proposal {key} must mirror the runtime binding result.",
+                )
+            )
     if cleanup.get("deformationReprojectionRun") != repair_result_execution.get(
         "deformationReprojectionRun"
     ):
@@ -5186,10 +5940,8 @@ def _validate_clean_geometry_proposal(
         )
     for key in [
         "repairRun",
-        "retopologyRun",
         "uvTransferRun",
         "materialTransferRun",
-        "seamSplitRun",
     ]:
         if cleanup.get(key) is not False:
             issues.append(
@@ -5210,6 +5962,14 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("bindingValidationReportGenerated") is not True
         or cleanup.get("repairRetopologyPlanGenerated") is not True
         or cleanup.get("partialRepairResultGenerated") is not True
+        or cleanup.get("runtimeBindingResultGenerated") is not True
+        or cleanup.get("retopologyRun") is not True
+        or cleanup.get("seamSplitRun") is not True
+        or cleanup.get("componentStitchingRun") is not True
+        or cleanup.get("normalContinuityValidationRun") is not True
+        or cleanup.get("tangentContinuityValidationRun") is not True
+        or cleanup.get("runtimeBindingWritten") is not True
+        or cleanup.get("runtimeBindingAccepted") is not True
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -5466,6 +6226,46 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    runtime_binding_readiness = runtime_binding_result.get("readiness", {})
+    if isinstance(runtime_binding_readiness, dict) and audit.get(
+        "runtimeBindingResultStatus"
+    ) != runtime_binding_readiness.get("status"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_runtime_binding_result_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal runtime binding result status is stale.",
+            )
+        )
+    runtime_binding_aggregate = runtime_binding_result.get("aggregate", {})
+    runtime_binding_quality = runtime_binding_result.get("quality", {})
+    if isinstance(runtime_binding_aggregate, dict) and isinstance(runtime_binding_quality, dict):
+        expected_runtime_binding_fields = {
+            "runtimeBindingResultQualityStatus": runtime_binding_quality.get("status"),
+            "runtimeBindingRecordCount": runtime_binding_aggregate.get("runtimeBindingRecordCount"),
+            "runtimeBindingAccepted": runtime_binding_aggregate.get("runtimeBindingAccepted"),
+            "runtimeBindingMaxReconstructionError": runtime_binding_aggregate.get(
+                "maxReconstructionError"
+            ),
+            "runtimeBindingFailedOrWarnCheckCount": runtime_binding_aggregate.get(
+                "failedOrWarnCheckCount"
+            ),
+            "simulationBindingRecordCount": runtime_binding_aggregate.get(
+                "runtimeBindingRecordCount"
+            ),
+        }
+        for key, expected in expected_runtime_binding_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_runtime_binding_result_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal runtime binding result field {key} is stale.",
+                    )
+                )
+
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
         rejection_reasons = []
@@ -5520,7 +6320,15 @@ def _validate_clean_geometry_proposal(
             "bindingValidationReportGenerated": cleanup.get("bindingValidationReportGenerated"),
             "repairRetopologyPlanGenerated": cleanup.get("repairRetopologyPlanGenerated"),
             "partialRepairResultGenerated": cleanup.get("partialRepairResultGenerated"),
+            "runtimeBindingResultGenerated": cleanup.get("runtimeBindingResultGenerated"),
+            "retopologyRun": cleanup.get("retopologyRun"),
+            "seamSplitRun": cleanup.get("seamSplitRun"),
+            "componentStitchingRun": cleanup.get("componentStitchingRun"),
+            "normalContinuityValidationRun": cleanup.get("normalContinuityValidationRun"),
+            "tangentContinuityValidationRun": cleanup.get("tangentContinuityValidationRun"),
             "deformationReprojectionRun": cleanup.get("deformationReprojectionRun"),
+            "runtimeBindingWritten": cleanup.get("runtimeBindingWritten"),
+            "runtimeBindingAccepted": cleanup.get("runtimeBindingAccepted"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
@@ -5550,6 +6358,15 @@ def _validate_clean_geometry_proposal(
             "repairResultDeferredOperationCount": audit.get("repairResultDeferredOperationCount"),
             "repairResultMaxOutputToSettledOffsetMeters": audit.get(
                 "repairResultMaxOutputToSettledOffsetMeters"
+            ),
+            "runtimeBindingResultStatus": audit.get("runtimeBindingResultStatus"),
+            "runtimeBindingResultQualityStatus": audit.get("runtimeBindingResultQualityStatus"),
+            "runtimeBindingRecordCount": audit.get("runtimeBindingRecordCount"),
+            "runtimeBindingMaxReconstructionError": audit.get(
+                "runtimeBindingMaxReconstructionError"
+            ),
+            "runtimeBindingFailedOrWarnCheckCount": audit.get(
+                "runtimeBindingFailedOrWarnCheckCount"
             ),
             "failureReason": audit.get("failureReason"),
         }
@@ -5971,6 +6788,7 @@ def _validate_glbs(package_dir: Path, issues: list[ValidationIssue]) -> None:
         "proposals/manual_raw_visual_proposal.glb",
         "proposals/manual_cleanup_preview.glb",
         "proposals/manual_repair_preview.glb",
+        "proposals/manual_runtime_retopology_preview.glb",
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",
     ]:
@@ -6221,6 +7039,17 @@ def _meshset_from_state_and_manifest(state: dict[str, Any], manifest: dict[str, 
 
 
 def _required_clean_rejections_for_state(cleanup: dict[str, Any]) -> list[str]:
+    if (
+        cleanup.get("cleanupRun") is True
+        and cleanup.get("semanticTransferRun") is True
+        and cleanup.get("candidateBindingRun") is True
+        and cleanup.get("deformationValidationRun") is True
+        and cleanup.get("repairRetopologyPlanGenerated") is True
+        and cleanup.get("partialRepairResultGenerated") is True
+        and cleanup.get("runtimeBindingResultGenerated") is True
+        and cleanup.get("runtimeBindingAccepted") is True
+    ):
+        return PARTIAL_RUNTIME_BINDING_RESULT_REJECTION_REASONS
     if (
         cleanup.get("cleanupRun") is True
         and cleanup.get("semanticTransferRun") is True
