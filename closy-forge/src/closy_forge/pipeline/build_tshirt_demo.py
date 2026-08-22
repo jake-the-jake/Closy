@@ -53,11 +53,13 @@ from closy_forge.package_io.writer import (
 from closy_forge.proposals import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
     GEOMETRY_CLEANUP_PLAN_VERSION,
+    GEOMETRY_CLEANUP_RESULT_VERSION,
     GEOMETRY_PROPOSAL_VERSION,
     PROVIDER_REGISTRY_VERSION,
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
     build_clean_geometry_proposal_rejection,
     build_geometry_cleanup_plan,
+    build_geometry_cleanup_result,
     build_geometry_provider_registry,
     build_manual_geometry_proposal,
     build_raw_geometry_topology_report,
@@ -204,6 +206,17 @@ def _write_package_contents(
         raw_geometry_proposal=geometry_proposal,
         raw_topology_report=raw_geometry_topology,
     )
+    cleanup_preview_asset = package_dir / "proposals" / "manual_cleanup_preview.glb"
+    geometry_cleanup_result = build_geometry_cleanup_result(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=geometry_proposal,
+        raw_topology_report=raw_geometry_topology,
+        cleanup_plan_report=geometry_cleanup_plan,
+        source_asset_path=manual_proposal_asset,
+        output_asset_path=cleanup_preview_asset,
+        output_package_asset_path="proposals/manual_cleanup_preview.glb",
+    )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -211,6 +224,7 @@ def _write_package_contents(
         provider_registry=provider_registry,
         raw_topology_report=raw_geometry_topology,
         cleanup_plan_report=geometry_cleanup_plan,
+        cleanup_result_report=geometry_cleanup_result,
     )
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
@@ -322,6 +336,7 @@ def _write_package_contents(
         geometry_proposal,
         raw_geometry_topology,
         geometry_cleanup_plan,
+        geometry_cleanup_result,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -347,6 +362,7 @@ def _write_package_contents(
         geometry_proposal,
         raw_geometry_topology,
         geometry_cleanup_plan,
+        geometry_cleanup_result,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -375,6 +391,7 @@ def _write_package_contents(
         geometry_proposal,
         raw_geometry_topology,
         geometry_cleanup_plan,
+        geometry_cleanup_result,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -398,6 +415,7 @@ def _write_package_contents(
         "geometryProposal": geometry_proposal,
         "rawGeometryTopology": raw_geometry_topology,
         "geometryCleanupPlan": geometry_cleanup_plan,
+        "geometryCleanupResult": geometry_cleanup_result,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
@@ -511,6 +529,7 @@ def _manifest(
     geometry_proposal: dict[str, Any],
     raw_geometry_topology: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
+    geometry_cleanup_result: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -541,6 +560,8 @@ def _manifest(
             "rawGeometryProposalAsset": "proposals/manual_raw_visual_proposal.glb",
             "rawGeometryTopology": "reports/raw_geometry_topology.json",
             "geometryCleanupPlan": "reports/geometry_cleanup_plan.json",
+            "geometryCleanupPreviewAsset": "proposals/manual_cleanup_preview.glb",
+            "geometryCleanupResult": "reports/geometry_cleanup_result.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
@@ -610,6 +631,15 @@ def _manifest(
             "geometryCleanupPlanPayloadHash": str(
                 geometry_cleanup_plan["integrity"]["geometryCleanupPlanHash"]
             ),
+            "geometryCleanupPreviewAssetHash": _hash_from_inventory(
+                inventory, "proposals/manual_cleanup_preview.glb"
+            ),
+            "geometryCleanupResultHash": _hash_from_inventory(
+                inventory, "reports/geometry_cleanup_result.json"
+            ),
+            "geometryCleanupResultPayloadHash": str(
+                geometry_cleanup_result["integrity"]["geometryCleanupResultHash"]
+            ),
             "cleanGeometryProposalHash": _hash_from_inventory(
                 inventory, "proposals/clean_geometry_proposal.json"
             ),
@@ -649,6 +679,7 @@ def _manifest(
             "geometryProposal": GEOMETRY_PROPOSAL_VERSION,
             "rawGeometryTopology": RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
             "geometryCleanupPlan": GEOMETRY_CLEANUP_PLAN_VERSION,
+            "geometryCleanupResult": GEOMETRY_CLEANUP_RESULT_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
@@ -661,7 +692,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_10_geometry_cleanup_plan",
+            "name": "implementation_11_geometry_cleanup_adapter",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -673,13 +704,13 @@ def _manifest(
             "synthetic_fit_not_trained_from_real_images",
             "source_texture_projection_not_run",
             "manual_raw_geometry_proposal_not_canonical",
-            "geometry_cleanup_plan_not_executed",
+            "partial_geometry_cleanup_not_clean_proposal",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "10-geometry-cleanup-plan"},
+        "extensions": {"closyImplementation": "11-geometry-cleanup-adapter"},
     }
 
 
@@ -709,6 +740,7 @@ def _capabilities() -> dict[str, bool]:
         "geometryProposalQualityScored": True,
         "rawGeometryTopologyDiagnosticsAvailable": True,
         "geometryCleanupRecommendationAvailable": True,
+        "geometryCleanupExecutionAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
@@ -743,6 +775,7 @@ def _quality_reports(
     geometry_proposal: dict[str, Any],
     raw_geometry_topology: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
+    geometry_cleanup_result: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
@@ -798,6 +831,7 @@ def _quality_reports(
         "geometry_proposal_quality.json": geometry_proposal_quality_report(geometry_proposal),
         "raw_geometry_topology.json": raw_geometry_topology,
         "geometry_cleanup_plan.json": geometry_cleanup_plan,
+        "geometry_cleanup_result.json": geometry_cleanup_result,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
         ),
@@ -878,6 +912,7 @@ def _provenance(
     geometry_proposal: dict[str, Any],
     raw_geometry_topology: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
+    geometry_cleanup_result: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -1022,6 +1057,20 @@ def _provenance(
                 [str(geometry_cleanup_plan["integrity"]["geometryCleanupPlanHash"])],
             ),
             _stage(
+                "local_geometry_cleanup_adapter",
+                GEOMETRY_CLEANUP_RESULT_VERSION,
+                {
+                    "adapterId": geometry_cleanup_result["adapterId"],
+                    "cleanupRun": geometry_cleanup_result["execution"]["cleanupRun"],
+                    "repairRun": geometry_cleanup_result["execution"]["repairRun"],
+                    "outputAssetPath": geometry_cleanup_result["outputAsset"]["path"],
+                    "acceptedForCleanProposal": False,
+                    "deferredOperationCount": len(geometry_cleanup_result["deferredOperations"]),
+                    "status": geometry_cleanup_result["readiness"]["status"],
+                },
+                [str(geometry_cleanup_result["integrity"]["geometryCleanupResultHash"])],
+            ),
+            _stage(
                 "clean_geometry_proposal_rejection",
                 CLEAN_GEOMETRY_PROPOSAL_VERSION,
                 {
@@ -1032,9 +1081,13 @@ def _provenance(
                     "sourceGeometryCleanupPlanId": clean_geometry_proposal[
                         "sourceGeometryCleanupPlanId"
                     ],
+                    "sourceGeometryCleanupResultId": clean_geometry_proposal[
+                        "sourceGeometryCleanupResultId"
+                    ],
                     "topologyDiagnosticsRun": True,
                     "cleanupPlanGenerated": True,
-                    "cleanupRun": False,
+                    "cleanupResultGenerated": True,
+                    "cleanupRun": True,
                     "repairRun": False,
                     "semanticTransferRun": False,
                     "simulationBindingRun": False,
@@ -1149,6 +1202,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_proposal = context["geometryProposal"]
     raw_geometry_topology = context["rawGeometryTopology"]
     geometry_cleanup_plan = context["geometryCleanupPlan"]
+    geometry_cleanup_result = context["geometryCleanupResult"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
@@ -1255,6 +1309,32 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "acceptedForCleanProposal"
             ],
         },
+        "geometryCleanupResult": {
+            "reportId": geometry_cleanup_result["reportId"],
+            "sourceGeometryCleanupPlanId": geometry_cleanup_result["sourceGeometryCleanupPlanId"],
+            "status": geometry_cleanup_result["readiness"]["status"],
+            "outputAssetPath": geometry_cleanup_result["outputAsset"]["path"],
+            "cleanupRun": geometry_cleanup_result["execution"]["cleanupRun"],
+            "repairRun": geometry_cleanup_result["execution"]["repairRun"],
+            "verticesBefore": geometry_cleanup_result["topologyBefore"]["vertexCount"],
+            "verticesAfter": geometry_cleanup_result["topologyAfter"]["vertexCount"],
+            "duplicatePositionCountBefore": geometry_cleanup_result["topologyBefore"][
+                "duplicatePositionCount"
+            ],
+            "duplicatePositionCountAfter": geometry_cleanup_result["topologyAfter"][
+                "duplicatePositionCount"
+            ],
+            "removedDuplicateVertexCount": _operation_removed_count(
+                geometry_cleanup_result, "duplicate_position_weld"
+            ),
+            "removedDegenerateTriangleCount": _operation_removed_count(
+                geometry_cleanup_result, "degenerate_triangle_removal"
+            ),
+            "deferredOperationCount": len(geometry_cleanup_result["deferredOperations"]),
+            "acceptedForCleanProposal": geometry_cleanup_result["readiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_geometry_proposal["proposalId"],
             "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
@@ -1267,6 +1347,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "cleanupPlanGenerated": clean_geometry_proposal["cleanupPipeline"][
                 "cleanupPlanGenerated"
+            ],
+            "cleanupResultGenerated": clean_geometry_proposal["cleanupPipeline"][
+                "cleanupResultGenerated"
             ],
             "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
@@ -1343,6 +1426,10 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"status=`{summary['rawGeometryTopology']['manifoldStatus']}`\n"
         f"- Cleanup plan: {summary['geometryCleanupPlan']['requiredOperationCount']} required "
         f"operations, status=`{summary['geometryCleanupPlan']['status']}`\n"
+        f"- Cleanup result: status=`{summary['geometryCleanupResult']['status']}`, "
+        f"removed duplicate vertices="
+        f"{summary['geometryCleanupResult']['removedDuplicateVertexCount']}, "
+        f"accepted={summary['geometryCleanupResult']['acceptedForCleanProposal']}\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"
@@ -1368,6 +1455,13 @@ def _mesh_counts(meshset: MeshSet) -> dict[str, int]:
         "vertexCount": meshset.vertex_count,
         "triangleCount": meshset.triangle_count,
     }
+
+
+def _operation_removed_count(cleanup_result: dict[str, Any], operation_id: str) -> int:
+    for operation in cleanup_result["executedOperations"]:
+        if operation["operationId"] == operation_id:
+            return int(operation["removedCount"])
+    return 0
 
 
 def _panels_svg(pattern: dict[str, Any]) -> str:

@@ -482,6 +482,30 @@ def test_geometry_cleanup_plan_acceptance_claim_is_rejected(
     assert "geometry_cleanup_plan_clean_acceptance_invalid" in codes
 
 
+def test_geometry_cleanup_result_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_cleanup_result_hash.closygarment")
+    cleanup_result = read_json(corrupt / "reports" / "geometry_cleanup_result.json")
+    cleanup_result["topologyAfter"]["duplicatePositionCount"] = 999
+    write_json(corrupt / "reports" / "geometry_cleanup_result.json", cleanup_result)
+    assert "geometry_cleanup_result_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_geometry_cleanup_result_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_cleanup_result_ready.closygarment"
+    )
+    cleanup_result = read_json(corrupt / "reports" / "geometry_cleanup_result.json")
+    cleanup_result["readiness"]["acceptedForCleanProposal"] = True
+    cleanup_result["outputAsset"]["canonicalUseAllowed"] = True
+    write_json(corrupt / "reports" / "geometry_cleanup_result.json", cleanup_result)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_cleanup_result_hash_mismatch" in codes
+    assert "geometry_cleanup_result_clean_acceptance_invalid" in codes
+    assert "geometry_cleanup_result_output_acceptance_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

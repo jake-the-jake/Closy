@@ -18,6 +18,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
     raw_topology = read_json(package_dir / "reports" / "raw_geometry_topology.json")
     cleanup_plan = read_json(package_dir / "reports" / "geometry_cleanup_plan.json")
+    cleanup_result = read_json(package_dir / "reports" / "geometry_cleanup_result.json")
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -117,6 +118,30 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "repairRun": cleanup_plan["execution"]["repairRun"],
             "acceptedForCleanProposal": cleanup_plan["readiness"]["acceptedForCleanProposal"],
         },
+        "geometryCleanupResult": {
+            "reportId": cleanup_result["reportId"],
+            "sourceGeometryCleanupPlanId": cleanup_result["sourceGeometryCleanupPlanId"],
+            "status": cleanup_result["readiness"]["status"],
+            "outputAssetPath": cleanup_result["outputAsset"]["path"],
+            "cleanupRun": cleanup_result["execution"]["cleanupRun"],
+            "repairRun": cleanup_result["execution"]["repairRun"],
+            "verticesBefore": cleanup_result["topologyBefore"]["vertexCount"],
+            "verticesAfter": cleanup_result["topologyAfter"]["vertexCount"],
+            "duplicatePositionCountBefore": cleanup_result["topologyBefore"][
+                "duplicatePositionCount"
+            ],
+            "duplicatePositionCountAfter": cleanup_result["topologyAfter"][
+                "duplicatePositionCount"
+            ],
+            "removedDuplicateVertexCount": _operation_removed_count(
+                cleanup_result, "duplicate_position_weld"
+            ),
+            "removedDegenerateTriangleCount": _operation_removed_count(
+                cleanup_result, "degenerate_triangle_removal"
+            ),
+            "deferredOperationCount": len(cleanup_result["deferredOperations"]),
+            "acceptedForCleanProposal": cleanup_result["readiness"]["acceptedForCleanProposal"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -126,6 +151,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "acceptedForSimulation": clean_proposal["quality"]["acceptedForSimulation"],
             "topologyDiagnosticsRun": clean_proposal["cleanupPipeline"]["topologyDiagnosticsRun"],
             "cleanupPlanGenerated": clean_proposal["cleanupPipeline"]["cleanupPlanGenerated"],
+            "cleanupResultGenerated": clean_proposal["cleanupPipeline"]["cleanupResultGenerated"],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
             "semanticTransferRun": clean_proposal["cleanupPipeline"]["semanticTransferRun"],
@@ -186,6 +212,7 @@ def human_report(package_dir: Path) -> str:
     proposal = summary["geometryProposal"]
     raw_topology = summary["rawGeometryTopology"]
     cleanup_plan = summary["geometryCleanupPlan"]
+    cleanup_result = summary["geometryCleanupResult"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -223,6 +250,12 @@ def human_report(package_dir: Path) -> str:
                 f"status={cleanup_plan['status']}"
             ),
             (
+                f"Cleanup result: status={cleanup_result['status']}, "
+                f"removed duplicate vertices="
+                f"{cleanup_result['removedDuplicateVertexCount']}, "
+                f"accepted={cleanup_result['acceptedForCleanProposal']}"
+            ),
+            (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "
                 f"available={clean_proposal['cleanProposalAvailable']}, "
                 f"reason={clean_proposal['failureReason']}"
@@ -248,3 +281,10 @@ def human_report(package_dir: Path) -> str:
         ]
     )
     return "\n".join(lines) + "\n"
+
+
+def _operation_removed_count(cleanup_result: dict[str, Any], operation_id: str) -> int:
+    for operation in cleanup_result["executedOperations"]:
+        if operation["operationId"] == operation_id:
+            return int(operation["removedCount"])
+    return 0

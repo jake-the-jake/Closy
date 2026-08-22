@@ -17,6 +17,14 @@ REQUIRED_CLEAN_REJECTION_REASONS = [
     "provider_output_not_canonical_garment_truth",
 ]
 
+PARTIAL_CLEANUP_REJECTION_REASONS = [
+    "cleanup_incomplete",
+    "repair_not_run",
+    "semantic_transfer_missing",
+    "simulation_binding_missing",
+    "provider_output_not_canonical_garment_truth",
+]
+
 
 def build_clean_geometry_proposal_rejection(
     *,
@@ -26,6 +34,7 @@ def build_clean_geometry_proposal_rejection(
     provider_registry: dict[str, Any],
     raw_topology_report: dict[str, Any] | None = None,
     cleanup_plan_report: dict[str, Any] | None = None,
+    cleanup_result_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
 
@@ -56,6 +65,26 @@ def build_clean_geometry_proposal_rejection(
         cleanup_plan_id = cleanup_plan_report["reportId"]
         cleanup_plan_hash = cleanup_plan_report["integrity"]["geometryCleanupPlanHash"]
         cleanup_plan_status = cleanup_plan_report["readiness"]["status"]
+    if cleanup_result_report is None:
+        cleanup_result_available = False
+        cleanup_result_id = None
+        cleanup_result_hash = None
+        cleanup_result_status = None
+        cleanup_result_execution: dict[str, Any] = {}
+        cleanup_result_output: dict[str, Any] = {}
+        cleanup_result_topology_after: dict[str, Any] = {}
+    else:
+        cleanup_result_available = True
+        cleanup_result_id = cleanup_result_report["reportId"]
+        cleanup_result_hash = cleanup_result_report["integrity"]["geometryCleanupResultHash"]
+        cleanup_result_status = cleanup_result_report["readiness"]["status"]
+        cleanup_result_execution = cleanup_result_report["execution"]
+        cleanup_result_output = cleanup_result_report["outputAsset"]
+        cleanup_result_topology_after = cleanup_result_report["topologyAfter"]
+    cleanup_run = bool(cleanup_result_execution.get("cleanupRun", False))
+    rejection_reasons = (
+        PARTIAL_CLEANUP_REJECTION_REASONS if cleanup_run else REQUIRED_CLEAN_REJECTION_REASONS
+    )
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "proposalId": "proposal.clean_tshirt_geometry_v1",
@@ -70,6 +99,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceRawTopologyReportHash": topology_report_hash,
         "sourceGeometryCleanupPlanId": cleanup_plan_id,
         "sourceGeometryCleanupPlanHash": cleanup_plan_hash,
+        "sourceGeometryCleanupResultId": cleanup_result_id,
+        "sourceGeometryCleanupResultHash": cleanup_result_hash,
         "rawProposal": {
             "available": raw_proposal["available"],
             "assetPath": raw_proposal["assetPath"],
@@ -81,8 +112,9 @@ def build_clean_geometry_proposal_rejection(
         "cleanupPipeline": {
             "topologyDiagnosticsRun": topology_available,
             "cleanupPlanGenerated": cleanup_plan_available,
-            "cleanupRun": False,
-            "repairRun": False,
+            "cleanupResultGenerated": cleanup_result_available,
+            "cleanupRun": cleanup_run,
+            "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
             "retopologyRun": False,
             "semanticTransferRun": False,
             "simulationBindingRun": False,
@@ -126,6 +158,14 @@ def build_clean_geometry_proposal_rejection(
             "degenerateTriangleCount": topology.get("degenerateTriangleCount"),
             "rawTopologyManifoldStatus": topology.get("manifoldStatus"),
             "cleanupPlanStatus": cleanup_plan_status,
+            "cleanupResultStatus": cleanup_result_status,
+            "cleanupPreviewAssetPath": cleanup_result_output.get("path"),
+            "cleanupPreviewAssetHash": cleanup_result_output.get("sourceAssetHash"),
+            "postCleanupComponentCount": cleanup_result_topology_after.get("componentCount"),
+            "postCleanupBoundaryEdgeCount": cleanup_result_topology_after.get("boundaryEdgeCount"),
+            "postCleanupDuplicatePositionCount": cleanup_result_topology_after.get(
+                "duplicatePositionCount"
+            ),
             "simulationBindingRecordCount": 0,
             "failureReason": "clean_geometry_proposal_not_generated",
         },
@@ -141,10 +181,13 @@ def build_clean_geometry_proposal_rejection(
             "acceptedForCanonical": False,
             "acceptedForSimulation": False,
             "acceptedForRuntimeRender": False,
-            "rejectionReasons": REQUIRED_CLEAN_REJECTION_REASONS,
+            "rejectionReasons": rejection_reasons,
             "warnings": [
                 "clean_geometry_proposal_not_available",
                 "raw_visual_reference_not_simulation_ready",
+                "geometry_cleanup_result_available_but_not_clean"
+                if cleanup_result_available
+                else "geometry_cleanup_result_not_generated",
                 "geometry_cleanup_plan_generated_without_execution"
                 if cleanup_plan_available
                 else "geometry_cleanup_plan_not_generated",
@@ -190,12 +233,16 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "simulationBindingRun": cleanup["simulationBindingRun"],
         "topologyDiagnosticsRun": cleanup["topologyDiagnosticsRun"],
         "cleanupPlanGenerated": cleanup["cleanupPlanGenerated"],
+        "cleanupResultGenerated": cleanup["cleanupResultGenerated"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
         "connectedComponentCount": audit["connectedComponentCount"],
         "nonManifoldEdgeCount": audit["nonManifoldEdgeCount"],
         "degenerateTriangleCount": audit["degenerateTriangleCount"],
         "cleanupPlanStatus": audit["cleanupPlanStatus"],
+        "cleanupResultStatus": audit["cleanupResultStatus"],
+        "cleanupPreviewAssetPath": audit["cleanupPreviewAssetPath"],
+        "postCleanupDuplicatePositionCount": audit["postCleanupDuplicatePositionCount"],
         "meshCount": audit["meshCount"],
         "triangleEstimate": audit["triangleEstimate"],
         "failureReason": audit["failureReason"],

@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from .mesh_model import Mesh, MeshSet, triangle_normal
+from .mesh_model import Mesh, MeshSet, Vec3, add, normalize, triangle_normal
 
 
 def _pad4(data: bytes, pad: bytes) -> bytes:
@@ -142,6 +142,142 @@ def write_glb(
         handle.write(bin_bytes)
 
 
+def write_indexed_glb(
+    path: Path, meshset: MeshSet, material_name: str, color: tuple[float, float, float, float]
+) -> None:
+    """Write an indexed GLB without expanding vertices per triangle.
+
+    The default writer preserves the original D0 render fixture behaviour. This
+    indexed variant is used by mesh-cleanup previews so duplicate-position welds
+    remain visible to topology diagnostics.
+    """
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    buffer = bytearray()
+    buffer_views: list[dict[str, Any]] = []
+    accessors: list[dict[str, Any]] = []
+    meshes_json: list[dict[str, Any]] = []
+    nodes: list[dict[str, Any]] = []
+
+    def append_blob(blob: bytes, target: int | None = None) -> int:
+        nonlocal buffer
+        buffer.extend(b"\x00" * ((4 - len(buffer) % 4) % 4))
+        offset = len(buffer)
+        buffer.extend(blob)
+        view: dict[str, Any] = {"buffer": 0, "byteOffset": offset, "byteLength": len(blob)}
+        if target is not None:
+            view["target"] = target
+        buffer_views.append(view)
+        return len(buffer_views) - 1
+
+    for mesh_i, mesh in enumerate(meshset.meshes):
+        if not mesh.vertices or not mesh.triangles:
+            continue
+        uvs = mesh.panel_uvs
+        if len(uvs) != len(mesh.vertices):
+            uvs = [(0.0, 0.0) for _ in mesh.vertices]
+        normals = _vertex_normals(mesh)
+
+        pos_view = append_blob(_write_floats(mesh.vertices), 34962)
+        norm_view = append_blob(_write_floats(normals), 34962)
+        uv_view = append_blob(_write_floats(uvs), 34962)
+        idx_view = append_blob(_write_indices(mesh.triangles), 34963)
+        mins = [min(v[i] for v in mesh.vertices) for i in range(3)]
+        maxs = [max(v[i] for v in mesh.vertices) for i in range(3)]
+        pos_acc = len(accessors)
+        accessors.append(
+            {
+                "bufferView": pos_view,
+                "componentType": 5126,
+                "count": len(mesh.vertices),
+                "type": "VEC3",
+                "min": mins,
+                "max": maxs,
+            }
+        )
+        norm_acc = len(accessors)
+        accessors.append(
+            {"bufferView": norm_view, "componentType": 5126, "count": len(normals), "type": "VEC3"}
+        )
+        uv_acc = len(accessors)
+        accessors.append(
+            {
+                "bufferView": uv_view,
+                "componentType": 5126,
+                "count": len(uvs),
+                "type": "VEC2",
+            }
+        )
+        idx_acc = len(accessors)
+        accessors.append(
+            {
+                "bufferView": idx_view,
+                "componentType": 5125,
+                "count": len(mesh.triangles) * 3,
+                "type": "SCALAR",
+            }
+        )
+        meshes_json.append(
+            {
+                "name": mesh.name,
+                "primitives": [
+                    {
+                        "attributes": {
+                            "POSITION": pos_acc,
+                            "NORMAL": norm_acc,
+                            "TEXCOORD_0": uv_acc,
+                        },
+                        "indices": idx_acc,
+                        "material": 0,
+                        "mode": 4,
+                        "extras": {"panelId": mesh.panel_id, "primitiveOrder": mesh_i},
+                    }
+                ],
+                "extras": {"panelId": mesh.panel_id},
+            }
+        )
+        nodes.append(
+            {
+                "mesh": len(meshes_json) - 1,
+                "name": mesh.name,
+                "extras": {"panelId": mesh.panel_id},
+            }
+        )
+
+    gltf: dict[str, Any] = {
+        "asset": {"version": "2.0", "generator": "closy-forge-0.1.0-indexed"},
+        "scene": 0,
+        "scenes": [{"nodes": list(range(len(nodes)))}],
+        "nodes": nodes,
+        "meshes": meshes_json,
+        "materials": [
+            {
+                "name": material_name,
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": list(color),
+                    "metallicFactor": 0.0,
+                    "roughnessFactor": 0.86,
+                },
+                "doubleSided": True,
+            }
+        ],
+        "buffers": [{"byteLength": len(buffer)}],
+        "bufferViews": buffer_views,
+        "accessors": accessors,
+    }
+    json_bytes = _pad4(
+        json.dumps(gltf, sort_keys=True, separators=(",", ":")).encode("utf-8"), b" "
+    )
+    bin_bytes = _pad4(bytes(buffer), b"\x00")
+    total_len = 12 + 8 + len(json_bytes) + 8 + len(bin_bytes)
+    with path.open("wb") as handle:
+        handle.write(struct.pack("<III", 0x46546C67, 2, total_len))
+        handle.write(struct.pack("<II", len(json_bytes), 0x4E4F534A))
+        handle.write(json_bytes)
+        handle.write(struct.pack("<II", len(bin_bytes), 0x004E4942))
+        handle.write(bin_bytes)
+
+
 def audit_glb(path: Path) -> dict[str, Any]:
     gltf, _ = _read_glb(path)
     mesh_count = len(gltf.get("meshes", []))
@@ -200,6 +336,15 @@ def read_glb_meshset(path: Path) -> MeshSet:
             triangles = [
                 (indices[i], indices[i + 1], indices[i + 2]) for i in range(0, len(indices), 3)
             ]
+            uv_accessor_index = attributes.get("TEXCOORD_0")
+            if uv_accessor_index is None:
+                panel_uvs = [(0.0, 0.0) for _ in vertices]
+            else:
+                panel_uvs = [
+                    _vec2(value) for value in _read_accessor(gltf, binary, int(uv_accessor_index))
+                ]
+                if len(panel_uvs) != len(vertices):
+                    raise ValueError("texcoord_count_mismatch")
             primitive_extras = primitive.get("extras", {})
             panel_id = str(
                 primitive_extras.get("panelId")
@@ -214,7 +359,7 @@ def read_glb_meshset(path: Path) -> MeshSet:
                     name=f"{mesh_name}{suffix}",
                     panel_id=panel_id,
                     vertices=vertices,
-                    panel_uvs=[(0.0, 0.0) for _ in vertices],
+                    panel_uvs=panel_uvs,
                     triangles=triangles,
                 )
             )
@@ -295,7 +440,22 @@ def _vec3(value: tuple[Any, ...]) -> tuple[float, float, float]:
     return (float(value[0]), float(value[1]), float(value[2]))
 
 
+def _vec2(value: tuple[Any, ...]) -> tuple[float, float]:
+    if len(value) != 2:
+        raise ValueError("expected_vec2_accessor")
+    return (float(value[0]), float(value[1]))
+
+
 def _scalar_int(value: tuple[Any, ...]) -> int:
     if len(value) != 1:
         raise ValueError("expected_scalar_accessor")
     return int(value[0])
+
+
+def _vertex_normals(mesh: Mesh) -> list[Vec3]:
+    normals: list[Vec3] = [(0.0, 0.0, 0.0) for _ in mesh.vertices]
+    for tri in mesh.triangles:
+        normal = triangle_normal(mesh.vertices, tri)
+        for index in tri:
+            normals[index] = add(normals[index], normal)
+    return [normalize(normal) for normal in normals]

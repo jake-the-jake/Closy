@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "ec01b04ad06b0ac38f0142e931a55963e4adb7033c2410b5d22fa6c6c019760a",
+  "canonicalPackageDigest": "71427a76c017886c13c495fded6514c9443efdb993d12af28870339453d823e9",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -23,6 +23,7 @@
     "fittingQualityScored": true,
     "garmentLandmarksAvailable": true,
     "garmentMaskAvailable": true,
+    "geometryCleanupExecutionAvailable": true,
     "geometryCleanupRecommendationAvailable": true,
     "geometryProposalInterfaceAvailable": true,
     "geometryProposalQualityScored": true,
@@ -101,12 +102,29 @@
     "sourceRawTopologyReportId": "topology.raw_manual_tshirt_visual_geometry_v1",
     "status": "blocked_not_executed"
   },
+  "geometryCleanupResult": {
+    "acceptedForCleanProposal": false,
+    "cleanupRun": true,
+    "deferredOperationCount": 6,
+    "duplicatePositionCountAfter": 0,
+    "duplicatePositionCountBefore": 431,
+    "outputAssetPath": "proposals/manual_cleanup_preview.glb",
+    "removedDegenerateTriangleCount": 0,
+    "removedDuplicateVertexCount": 431,
+    "repairRun": false,
+    "reportId": "cleanup_result.raw_manual_tshirt_visual_geometry_v1",
+    "sourceGeometryCleanupPlanId": "cleanup_plan.raw_manual_tshirt_visual_geometry_v1",
+    "status": "partial_cleanup_completed",
+    "verticesAfter": 223,
+    "verticesBefore": 654
+  },
   "cleanGeometryProposal": {
     "acceptedForCanonical": false,
     "acceptedForSimulation": false,
     "cleanProposalAvailable": false,
     "cleanupPlanGenerated": true,
-    "cleanupRun": false,
+    "cleanupResultGenerated": true,
+    "cleanupRun": true,
     "failureReason": "clean_geometry_proposal_not_generated",
     "qualityStatus": "rejected",
     "repairRun": false,

@@ -36,6 +36,8 @@ def test_demo_package_matches_structural_golden(tmp_path) -> None:  # type: igno
         assert summary["rawGeometryTopology"][key] == value
     for key, value in expected["geometryCleanupPlan"].items():
         assert summary["geometryCleanupPlan"][key] == value
+    for key, value in expected["geometryCleanupResult"].items():
+        assert summary["geometryCleanupResult"][key] == value
     for key, value in expected["cleanGeometryProposal"].items():
         assert summary["cleanGeometryProposal"][key] == value
     for key, value in expected["providerRegistry"].items():
