@@ -4,13 +4,13 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 
 ## Current State
 
-- Active blueprint checkpoint: `REPO-HYGIENE-CI-DIAGNOSTICS`
-- Exact subtask: replace broad Forge failure-artifact upload with strict privacy-safe diagnostics before raster ingestion.
+- Active blueprint checkpoint: `BP-47-INSPECTION-ARTIFACTS`
+- Exact subtask: add deterministic inspection artifacts for the rejected BP-46 stitched candidate while keeping BP-46 topology proof partial.
 - Current branch: `codex/closy-forge-phase-0`
-- Evidence commit SHA: `e02b85a5f6f2e165c7a0dec2777ff10531048d1b`
-- Record based on SHA: `e02b85a5f6f2e165c7a0dec2777ff10531048d1b`
+- Evidence commit SHA: `eb4c6113a921037db4f39778f2fa224869fd7d99`
+- Record based on SHA: `eb4c6113a921037db4f39778f2fa224869fd7d99`
 - Draft PR: `https://github.com/jake-the-jake/Closy/pull/1`
-- Last remote green evidence: GitHub Actions run `32658750731`, Ubuntu and Windows Forge Python 3.11 jobs passed at commit `7c649178cea49542ff759de51a79c959c5c1e15c`.
+- Last remote green evidence: GitHub Actions run `32659894892`, Ubuntu and Windows Forge Python 3.11 jobs passed at commit `e05b14ee7b62103464857218321de7b0c023564f`.
 - Last local package digest before this resume record: `f84091eb6bdd3f9e42e40a7319580cbf24699f41b1e3b7b306a2a564087771e0`
 
 ## Current BP-46 Truth
@@ -38,9 +38,13 @@ Current blocking evidence:
 ## Files And Functions Involved
 
 - `.gitignore`
+- `.github/workflows/closy-forge.yml`
 - `engine/CMakeLists.txt`
 - `engine/build/_deps/glfw-src`
 - `engine/build/_deps/glm-src`
+- `closy-forge/src/closy_forge/ci/sanitized_diagnostics.py`
+- `closy-forge/src/closy_forge/cli/main.py`
+- `closy-forge/tests/unit/test_ci_sanitized_diagnostics.py`
 - `closy-forge/tests/unit/test_repository_hygiene.py`
 - `closy-forge/src/closy_forge/proposals/geometry_stitched_shell.py`
 - `closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py`
@@ -54,6 +58,10 @@ Current blocking evidence:
 
 ## Checks Completed After This Resume Update
 
+- `python -m pytest tests/unit/test_ci_sanitized_diagnostics.py -q`
+- `python -m ruff check src/closy_forge/ci src/closy_forge/cli/main.py tests/unit/test_ci_sanitized_diagnostics.py`
+- `python -m mypy src/closy_forge/ci src/closy_forge/cli/main.py`
+- real temp-package `closy-forge ci diagnostics` smoke wrote only fixed JSON files under the safe diagnostics output directory.
 - `python -m pytest tests/unit/test_repository_hygiene.py -q`
 - `python -m ruff check tests/unit/test_repository_hygiene.py`
 - `python -m ruff format tests/unit/test_repository_hygiene.py --check`
@@ -72,19 +80,19 @@ Current blocking evidence:
 - `python -m closy_forge packages diff` reported the two temp packages identical, with 68 files on each side.
 - `python -m closy_forge validate` passed with the single current package validation warning `self_collision_not_run`.
 - `python -m closy_forge report` confirmed the same package digest and the rejected clean-acceptance state.
-- GitHub Actions run `32658750731` before this resume record: full Forge matrix passed for the BP-46 closeout proof-invariant commit.
+- GitHub Actions run `32659894892` before this resume record: full Forge matrix passed for the repository gitlink hygiene commit and the checkout annotation disappeared.
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI for the repository gitlink hygiene checkpoint is pending until the hygiene and ledger commits are pushed.
+- Remote CI for the CI diagnostics checkpoint is pending until the diagnostics and ledger commits are pushed.
 
 ## Next Exact Command
 
 ```powershell
 cd E:\apps\Closy\closy-forge
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_repository_hygiene.py tests\unit\test_blueprint_coverage.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_ci_sanitized_diagnostics.py tests\unit\test_blueprint_coverage.py -q
 ```
 
 ## Next Safe Action
 
-Commit and push the repository gitlink hygiene ledger correction, inspect remote CI to confirm the checkout annotations disappear, then implement the strict sanitized Forge failure-diagnostics exporter before BP-47 inspection artifacts.
+Commit and push the CI diagnostics ledger correction, inspect remote CI, then begin BP-47 deterministic inspection artifacts without promoting BP-46 clean/canonical acceptance.
