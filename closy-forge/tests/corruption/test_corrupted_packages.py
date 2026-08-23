@@ -702,6 +702,37 @@ def test_geometry_clean_acceptance_gate_hash_mismatch_is_rejected(
     assert "geometry_clean_acceptance_gate_aggregate_invalid" in codes
 
 
+def test_geometry_material_uv_transfer_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_material_uv_transfer_hash.closygarment"
+    )
+    transfer = read_json(corrupt / "reports" / "geometry_material_uv_transfer.json")
+    transfer["aggregate"]["missingMaterialCount"] = 3
+    write_json(corrupt / "reports" / "geometry_material_uv_transfer.json", transfer)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_material_uv_transfer_hash_mismatch" in codes
+    assert "geometry_material_uv_transfer_recompute_mismatch" in codes
+    assert "geometry_material_uv_transfer_aggregate_invalid" in codes
+
+
+def test_geometry_material_uv_transfer_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_material_uv_transfer_ready.closygarment"
+    )
+    transfer = read_json(corrupt / "reports" / "geometry_material_uv_transfer.json")
+    transfer["readiness"]["acceptedForCleanProposal"] = True
+    transfer["readiness"]["acceptedForCanonical"] = True
+    write_json(corrupt / "reports" / "geometry_material_uv_transfer.json", transfer)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_material_uv_transfer_hash_mismatch" in codes
+    assert "geometry_material_uv_transfer_recompute_mismatch" in codes
+    assert "geometry_material_uv_transfer_acceptance_invalid" in codes
+
+
 def test_geometry_clean_acceptance_gate_acceptance_claim_is_rejected(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]

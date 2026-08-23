@@ -49,6 +49,7 @@ from closy_forge.proposals import (
     build_geometry_clean_acceptance_gate_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
+    build_geometry_material_uv_transfer_report,
     build_geometry_repair_result_report,
     build_geometry_repair_retopology_plan,
     build_geometry_runtime_binding_result_report,
@@ -62,6 +63,7 @@ from closy_forge.proposals import (
     hash_geometry_clean_acceptance_gate,
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
+    hash_geometry_material_uv_transfer,
     hash_geometry_proposal,
     hash_geometry_repair_result,
     hash_geometry_repair_retopology_plan,
@@ -131,6 +133,7 @@ EXPECTED_FILES = [
     "reports/geometry_repair_retopology_plan.json",
     "reports/geometry_repair_result.json",
     "reports/geometry_runtime_binding_result.json",
+    "reports/geometry_material_uv_transfer.json",
     "reports/geometry_clean_acceptance_gate.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
@@ -284,6 +287,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_repair_retopology_plan(package_dir, manifest, issues)
     _validate_geometry_repair_result(package_dir, manifest, issues)
     _validate_geometry_runtime_binding_result(package_dir, manifest, issues)
+    _validate_geometry_material_uv_transfer(package_dir, manifest, issues)
     _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
@@ -5039,6 +5043,330 @@ def _validate_geometry_runtime_binding_result(
         )
 
 
+def _validate_geometry_material_uv_transfer(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    runtime_result = _read_required_json(
+        package_dir, "reports/geometry_runtime_binding_result.json", issues
+    )
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
+    texture_identity = _read_required_json(package_dir, "textures/texture_identity.json", issues)
+    render_materials = _read_required_json(package_dir, "render/materials.json", issues)
+    simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    material_transfer = _read_required_json(
+        package_dir, "reports/geometry_material_uv_transfer.json", issues
+    )
+    if (
+        runtime_result is None
+        or semantic_transfer is None
+        or texture_identity is None
+        or render_materials is None
+        or simulation_manifest is None
+        or material_transfer is None
+    ):
+        return
+
+    if material_transfer.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_garment_mismatch",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer report must reference the package garment ID.",
+            )
+        )
+    if material_transfer.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_class_mismatch",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer report must reference the package garment class.",
+            )
+        )
+
+    expected_sources = [
+        (
+            "sourceGeometryRuntimeBindingResultId",
+            runtime_result.get("reportId"),
+            "geometry_material_uv_transfer_runtime_source_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferId",
+            semantic_transfer.get("reportId"),
+            "geometry_material_uv_transfer_semantic_source_mismatch",
+        ),
+        (
+            "sourceTextureIdentityId",
+            texture_identity.get("textureIdentityId"),
+            "geometry_material_uv_transfer_texture_source_mismatch",
+        ),
+    ]
+    for field, expected_value, code in expected_sources:
+        if material_transfer.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_material_uv_transfer.json",
+                    f"Material/UV transfer {field} must match its source artifact.",
+                )
+            )
+
+    expected_hashes = [
+        (
+            "sourceGeometryRuntimeBindingResultHash",
+            _nested_string(runtime_result, ["integrity", "geometryRuntimeBindingResultHash"], ""),
+            "geometry_material_uv_transfer_runtime_hash_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferHash",
+            _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], ""),
+            "geometry_material_uv_transfer_semantic_hash_mismatch",
+        ),
+        (
+            "sourceTextureIdentityHash",
+            _nested_string(texture_identity, ["integrity", "textureIdentityHash"], ""),
+            "geometry_material_uv_transfer_texture_hash_mismatch",
+        ),
+        (
+            "sourceRenderMaterialsHash",
+            _json_hash(render_materials),
+            "geometry_material_uv_transfer_render_materials_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if material_transfer.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_material_uv_transfer.json",
+                    f"Material/UV transfer {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(material_transfer, ["integrity", "geometryMaterialUvTransferHash"], "") != (
+        hash_geometry_material_uv_transfer(material_transfer)
+    ):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_hash_mismatch",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer report hash must match its canonical payload.",
+            )
+        )
+
+    try:
+        settled_mesh = _meshset_from_manifest(simulation_manifest)
+        runtime_render_mesh, _binding_seeds = build_proposal_runtime_render_mesh(settled_mesh)
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_mesh_rebuild_failed",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                str(exc),
+            )
+        )
+        return
+
+    if material_transfer.get("sourceRuntimeRenderMeshTopologyHash") != topology_hash(
+        runtime_render_mesh
+    ):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_runtime_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer runtime render topology hash is stale.",
+            )
+        )
+    if material_transfer.get("sourceRuntimeRenderMeshContentHash") != geometry_content_hash(
+        runtime_render_mesh
+    ):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_runtime_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer runtime render content hash is stale.",
+            )
+        )
+
+    try:
+        expected_report = build_geometry_material_uv_transfer_report(
+            garment_id=str(manifest.get("garmentId", "")),
+            garment_class=str(manifest.get("garmentClass", "")),
+            runtime_binding_result_report=runtime_result,
+            semantic_transfer_report=semantic_transfer,
+            texture_identity_report=texture_identity,
+            render_materials=render_materials,
+            runtime_render_mesh=runtime_render_mesh,
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_recompute_failed",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                str(exc),
+            )
+        )
+        return
+
+    for key in [
+        "candidate",
+        "uvTransfer",
+        "materialTransfer",
+        "pbrTransfer",
+        "aggregate",
+        "execution",
+        "readiness",
+        "quality",
+        "policy",
+    ]:
+        if material_transfer.get(key) != expected_report.get(key):
+            issues.append(
+                _issue(
+                    "geometry_material_uv_transfer_recompute_mismatch",
+                    "fatal",
+                    "reports/geometry_material_uv_transfer.json",
+                    f"Material/UV transfer field {key} is stale.",
+                )
+            )
+
+    candidate = material_transfer.get("candidate", {})
+    aggregate = material_transfer.get("aggregate", {})
+    execution = material_transfer.get("execution", {})
+    readiness = material_transfer.get("readiness", {})
+    quality = material_transfer.get("quality", {})
+    policy = material_transfer.get("policy", {})
+    for name, block in [
+        ("candidate", candidate),
+        ("aggregate", aggregate),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_material_uv_transfer_block_invalid",
+                    "fatal",
+                    "reports/geometry_material_uv_transfer.json",
+                    f"Material/UV transfer {name} block must be an object.",
+                )
+            )
+            return
+
+    if (
+        execution.get("materialUvTransferReportGenerated") is not True
+        or execution.get("uvTransferRun") is not True
+        or execution.get("materialTransferRun") is not True
+        or execution.get("sourceTextureProjectionRun")
+        != texture_identity.get("textureProjectionRun")
+        or execution.get("visualFidelityReviewRun") is not False
+        or execution.get("singleShellWeldProofRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_execution_state_invalid",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                (
+                    "Material/UV transfer may claim authored PBR and UV transfer only; "
+                    "visual fidelity and weld proof must remain separate."
+                ),
+            )
+        )
+    if (
+        readiness.get("status") != "material_uv_transfer_completed_fidelity_weld_pending"
+        or readiness.get("acceptedForMaterialPreview") is not True
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForRuntimeRender")
+        != runtime_result.get("readiness", {}).get("acceptedForRuntimeRender")
+    ):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_acceptance_invalid",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                (
+                    "Material/UV transfer can accept material preview evidence but not clean "
+                    "or canonical geometry."
+                ),
+            )
+        )
+    if quality.get("status") != "pass_runtime_material_preview_clean_rejected":
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_quality_status_invalid",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                (
+                    "Material/UV transfer quality must pass only for runtime preview "
+                    "material evidence."
+                ),
+            )
+        )
+    if (
+        aggregate.get("acceptedForMaterialPreview") is not True
+        or aggregate.get("acceptedForCleanProposal") is not False
+        or aggregate.get("acceptedForCanonical") is not False
+        or _int_or(aggregate.get("missingUvCount"), -1) != 0
+        or _int_or(aggregate.get("missingMaterialCount"), -1) != 0
+        or _int_or(aggregate.get("transferredMaterialCount"), 0) <= 0
+    ):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_aggregate_invalid",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer aggregate must record complete preview material evidence.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_policy_violation",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryMaterialUvTransferAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryMaterialUvTransferAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(material_transfer):
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_material_uv_transfer.json",
+                "Material/UV transfer report must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_geometry_clean_acceptance_gate(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -5049,6 +5377,9 @@ def _validate_geometry_clean_acceptance_gate(
         package_dir, "reports/geometry_semantic_transfer.json", issues
     )
     texture_identity = _read_required_json(package_dir, "textures/texture_identity.json", issues)
+    material_uv_transfer = _read_required_json(
+        package_dir, "reports/geometry_material_uv_transfer.json", issues
+    )
     provider_registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
     clean_gate = _read_required_json(
         package_dir, "reports/geometry_clean_acceptance_gate.json", issues
@@ -5057,6 +5388,7 @@ def _validate_geometry_clean_acceptance_gate(
         runtime_result is None
         or semantic_transfer is None
         or texture_identity is None
+        or material_uv_transfer is None
         or provider_registry is None
         or clean_gate is None
     ):
@@ -5098,6 +5430,11 @@ def _validate_geometry_clean_acceptance_gate(
             "geometry_clean_acceptance_gate_texture_source_mismatch",
         ),
         (
+            "sourceGeometryMaterialUvTransferId",
+            material_uv_transfer.get("reportId"),
+            "geometry_clean_acceptance_gate_material_uv_source_mismatch",
+        ),
+        (
             "sourceProviderRegistryId",
             provider_registry.get("registryId"),
             "geometry_clean_acceptance_gate_registry_source_mismatch",
@@ -5129,6 +5466,15 @@ def _validate_geometry_clean_acceptance_gate(
             "sourceTextureIdentityHash",
             _nested_string(texture_identity, ["integrity", "textureIdentityHash"], ""),
             "geometry_clean_acceptance_gate_texture_hash_mismatch",
+        ),
+        (
+            "sourceGeometryMaterialUvTransferHash",
+            _nested_string(
+                material_uv_transfer,
+                ["integrity", "geometryMaterialUvTransferHash"],
+                "",
+            ),
+            "geometry_clean_acceptance_gate_material_uv_hash_mismatch",
         ),
         (
             "sourceProviderRegistryHash",
@@ -5205,6 +5551,7 @@ def _validate_geometry_clean_acceptance_gate(
         runtime_binding_result_report=runtime_result,
         semantic_transfer_report=semantic_transfer,
         texture_identity_report=texture_identity,
+        material_uv_transfer_report=material_uv_transfer,
         provider_registry=provider_registry,
     )
     for key in [
@@ -5235,8 +5582,9 @@ def _validate_geometry_clean_acceptance_gate(
         or execution.get("materialEvidenceReviewed") is not True
         or execution.get("policyReviewed") is not True
         or execution.get("visualFidelityReviewRun") is not False
-        or execution.get("uvTransferRun") is not False
-        or execution.get("materialTransferRun") is not False
+        or execution.get("uvTransferRun") is not True
+        or execution.get("materialTransferRun") is not True
+        or execution.get("materialTransferAccepted") is not True
         or execution.get("singleShellWeldProofRun") is not False
     ):
         issues.append(
@@ -5246,12 +5594,13 @@ def _validate_geometry_clean_acceptance_gate(
                 "reports/geometry_clean_acceptance_gate.json",
                 (
                     "Clean acceptance gate may review deterministic runtime evidence but "
-                    "cannot claim material transfer, visual review or single-shell proof."
+                    "must claim material/UV evidence only after the transfer report, while "
+                    "visual review and single-shell proof remain separate."
                 ),
             )
         )
     if (
-        readiness.get("status") != "clean_acceptance_rejected_fidelity_material_pending"
+        readiness.get("status") != "clean_acceptance_rejected_fidelity_weld_pending"
         or readiness.get("acceptedForCleanProposal") is not False
         or readiness.get("acceptedForCanonical") is not False
         or readiness.get("acceptedForSimulation") is not False
@@ -5828,6 +6177,9 @@ def _validate_clean_geometry_proposal(
     runtime_binding_result = _read_required_json(
         package_dir, "reports/geometry_runtime_binding_result.json", issues
     )
+    material_uv_transfer = _read_required_json(
+        package_dir, "reports/geometry_material_uv_transfer.json", issues
+    )
     clean_acceptance_gate = _read_required_json(
         package_dir, "reports/geometry_clean_acceptance_gate.json", issues
     )
@@ -5849,6 +6201,7 @@ def _validate_clean_geometry_proposal(
         or repair_plan is None
         or repair_result is None
         or runtime_binding_result is None
+        or material_uv_transfer is None
         or clean_acceptance_gate is None
         or clean_proposal is None
     ):
@@ -5932,6 +6285,15 @@ def _validate_clean_geometry_proposal(
                 "",
             ),
             "clean_geometry_proposal_runtime_binding_result_hash_mismatch",
+        ),
+        (
+            "sourceGeometryMaterialUvTransferHash",
+            _nested_string(
+                material_uv_transfer,
+                ["integrity", "geometryMaterialUvTransferHash"],
+                "",
+            ),
+            "clean_geometry_proposal_material_uv_transfer_hash_mismatch",
         ),
         (
             "sourceGeometryCleanAcceptanceGateHash",
@@ -6054,6 +6416,17 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the runtime binding result ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryMaterialUvTransferId") != material_uv_transfer.get(
+        "reportId"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_material_uv_transfer_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the material/UV transfer report ID.",
             )
         )
     if clean_proposal.get("sourceGeometryCleanAcceptanceGateId") != clean_acceptance_gate.get(
@@ -6276,6 +6649,59 @@ def _validate_clean_geometry_proposal(
                 )
             )
     clean_gate_execution = clean_acceptance_gate.get("execution", {})
+    material_transfer_execution = material_uv_transfer.get("execution", {})
+    material_transfer_readiness = material_uv_transfer.get("readiness", {})
+    material_transfer_aggregate = material_uv_transfer.get("aggregate", {})
+    if cleanup.get("materialUvTransferReportGenerated") is not True:
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal materialUvTransferReportGenerated must be true.",
+            )
+        )
+    if cleanup.get("uvTransferRun") != material_transfer_execution.get("uvTransferRun"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal uvTransferRun must mirror the material/UV transfer report.",
+            )
+        )
+    if cleanup.get("materialTransferRun") != material_transfer_execution.get("materialTransferRun"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal materialTransferRun must mirror the material/UV transfer report.",
+            )
+        )
+    if cleanup.get("materialTransferAccepted") != material_transfer_readiness.get(
+        "acceptedForMaterialPreview"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                (
+                    "Clean proposal materialTransferAccepted must mirror material-preview "
+                    "readiness."
+                ),
+            )
+        )
+    if cleanup.get("materialTransferRun") != clean_gate_execution.get("materialTransferRun"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal materialTransferRun must mirror the clean acceptance gate.",
+            )
+        )
     if cleanup.get("cleanAcceptanceGateGenerated") is not True:
         issues.append(
             _issue(
@@ -6321,8 +6747,6 @@ def _validate_clean_geometry_proposal(
         )
     for key in [
         "repairRun",
-        "uvTransferRun",
-        "materialTransferRun",
     ]:
         if cleanup.get(key) is not False:
             issues.append(
@@ -6344,6 +6768,7 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("repairRetopologyPlanGenerated") is not True
         or cleanup.get("partialRepairResultGenerated") is not True
         or cleanup.get("runtimeBindingResultGenerated") is not True
+        or cleanup.get("materialUvTransferReportGenerated") is not True
         or cleanup.get("retopologyRun") is not True
         or cleanup.get("seamSplitRun") is not True
         or cleanup.get("componentStitchingRun") is not True
@@ -6354,6 +6779,9 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("cleanAcceptanceGateGenerated") is not True
         or cleanup.get("cleanAcceptanceGateRun") is not True
         or cleanup.get("cleanAcceptanceGateAccepted") is not False
+        or cleanup.get("uvTransferRun") is not True
+        or cleanup.get("materialTransferRun") is not True
+        or cleanup.get("materialTransferAccepted") is not True
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -6650,6 +7078,37 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    material_transfer_readiness = material_uv_transfer.get("readiness", {})
+    material_transfer_aggregate = material_uv_transfer.get("aggregate", {})
+    if isinstance(material_transfer_readiness, dict) and isinstance(
+        material_transfer_aggregate, dict
+    ):
+        expected_material_fields = {
+            "materialUvTransferStatus": material_transfer_readiness.get("status"),
+            "materialUvTransferRun": material_transfer_aggregate.get("uvTransferAccepted")
+            and material_transfer_aggregate.get("materialTransferAccepted"),
+            "materialTransferAccepted": material_transfer_readiness.get(
+                "acceptedForMaterialPreview"
+            ),
+            "materialTransferTransferredMaterialCount": material_transfer_aggregate.get(
+                "transferredMaterialCount"
+            ),
+            "materialTransferMissingMaterialCount": material_transfer_aggregate.get(
+                "missingMaterialCount"
+            ),
+            "materialTransferMissingUvCount": material_transfer_aggregate.get("missingUvCount"),
+        }
+        for key, expected in expected_material_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_material_uv_transfer_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal material/UV transfer field {key} is stale.",
+                    )
+                )
+
     clean_gate_readiness = clean_acceptance_gate.get("readiness", {})
     clean_gate_quality = clean_acceptance_gate.get("quality", {})
     clean_gate_aggregate = clean_acceptance_gate.get("aggregate", {})
@@ -6731,6 +7190,7 @@ def _validate_clean_geometry_proposal(
             "repairRetopologyPlanGenerated": cleanup.get("repairRetopologyPlanGenerated"),
             "partialRepairResultGenerated": cleanup.get("partialRepairResultGenerated"),
             "runtimeBindingResultGenerated": cleanup.get("runtimeBindingResultGenerated"),
+            "materialUvTransferReportGenerated": cleanup.get("materialUvTransferReportGenerated"),
             "retopologyRun": cleanup.get("retopologyRun"),
             "seamSplitRun": cleanup.get("seamSplitRun"),
             "componentStitchingRun": cleanup.get("componentStitchingRun"),
@@ -6742,6 +7202,9 @@ def _validate_clean_geometry_proposal(
             "cleanAcceptanceGateGenerated": cleanup.get("cleanAcceptanceGateGenerated"),
             "cleanAcceptanceGateRun": cleanup.get("cleanAcceptanceGateRun"),
             "cleanAcceptanceGateAccepted": cleanup.get("cleanAcceptanceGateAccepted"),
+            "uvTransferRun": cleanup.get("uvTransferRun"),
+            "materialTransferRun": cleanup.get("materialTransferRun"),
+            "materialTransferAccepted": cleanup.get("materialTransferAccepted"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
@@ -6781,6 +7244,15 @@ def _validate_clean_geometry_proposal(
             "runtimeBindingFailedOrWarnCheckCount": audit.get(
                 "runtimeBindingFailedOrWarnCheckCount"
             ),
+            "materialUvTransferStatus": audit.get("materialUvTransferStatus"),
+            "materialUvTransferRun": audit.get("materialUvTransferRun"),
+            "materialTransferTransferredMaterialCount": audit.get(
+                "materialTransferTransferredMaterialCount"
+            ),
+            "materialTransferMissingMaterialCount": audit.get(
+                "materialTransferMissingMaterialCount"
+            ),
+            "materialTransferMissingUvCount": audit.get("materialTransferMissingUvCount"),
             "cleanAcceptanceGateStatus": audit.get("cleanAcceptanceGateStatus"),
             "cleanAcceptanceGateQualityStatus": audit.get("cleanAcceptanceGateQualityStatus"),
             "cleanAcceptanceGateFailedCheckCount": audit.get("cleanAcceptanceGateFailedCheckCount"),
@@ -7355,6 +7827,15 @@ def _validate_capabilities(manifest: dict[str, Any], issues: list[ValidationIssu
                 "warning",
                 "manifest.json",
                 "Reference solver v1 does not implement self-collision.",
+            )
+        )
+    if caps.get("geometryMaterialUvTransferAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_material_uv_transfer_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare material/UV transfer evidence availability.",
             )
         )
     if caps.get("zeroOneStaticAvailable") or caps.get("zeroOneDynamicAvailable"):

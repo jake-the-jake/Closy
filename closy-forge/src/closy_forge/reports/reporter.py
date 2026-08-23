@@ -27,6 +27,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     runtime_binding_result = read_json(
         package_dir / "reports" / "geometry_runtime_binding_result.json"
     )
+    material_uv_transfer = read_json(package_dir / "reports" / "geometry_material_uv_transfer.json")
     clean_acceptance_gate = read_json(
         package_dir / "reports" / "geometry_clean_acceptance_gate.json"
     )
@@ -274,6 +275,26 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
                 "acceptedForCleanProposal"
             ],
         },
+        "geometryMaterialUvTransfer": {
+            "reportId": material_uv_transfer["reportId"],
+            "sourceGeometryRuntimeBindingResultId": material_uv_transfer[
+                "sourceGeometryRuntimeBindingResultId"
+            ],
+            "status": material_uv_transfer["readiness"]["status"],
+            "uvTransferRun": material_uv_transfer["execution"]["uvTransferRun"],
+            "materialTransferRun": material_uv_transfer["execution"]["materialTransferRun"],
+            "sourceTextureProjectionRun": material_uv_transfer["execution"][
+                "sourceTextureProjectionRun"
+            ],
+            "acceptedForMaterialPreview": material_uv_transfer["readiness"][
+                "acceptedForMaterialPreview"
+            ],
+            "transferredMaterialCount": material_uv_transfer["aggregate"][
+                "transferredMaterialCount"
+            ],
+            "missingMaterialCount": material_uv_transfer["aggregate"]["missingMaterialCount"],
+            "missingUvCount": material_uv_transfer["aggregate"]["missingUvCount"],
+        },
         "geometryCleanAcceptanceGate": {
             "reportId": clean_acceptance_gate["reportId"],
             "sourceGeometryRuntimeBindingResultId": clean_acceptance_gate[
@@ -414,6 +435,7 @@ def human_report(package_dir: Path) -> str:
     repair_plan = summary["geometryRepairRetopologyPlan"]
     repair_result = summary["geometryRepairResult"]
     runtime_binding_result = summary["geometryRuntimeBindingResult"]
+    material_uv_transfer = summary["geometryMaterialUvTransfer"]
     clean_acceptance_gate = summary["geometryCleanAcceptanceGate"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
@@ -495,6 +517,12 @@ def human_report(package_dir: Path) -> str:
                 f"records={runtime_binding_result['runtimeBindingRecordCount']}, "
                 f"accepted={runtime_binding_result['runtimeBindingAccepted']}, "
                 f"max reconstruction error={runtime_binding_result['maxReconstructionError']:.8f}"
+            ),
+            (
+                f"Material/UV transfer: status={material_uv_transfer['status']}, "
+                f"uv={material_uv_transfer['uvTransferRun']}, "
+                f"materials={material_uv_transfer['materialTransferRun']}, "
+                f"preview accepted={material_uv_transfer['acceptedForMaterialPreview']}"
             ),
             (
                 f"Clean acceptance gate: status={clean_acceptance_gate['status']}, "

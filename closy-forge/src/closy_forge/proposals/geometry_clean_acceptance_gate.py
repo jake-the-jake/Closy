@@ -11,8 +11,6 @@ GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION = "closy.geometry_clean_acceptance_gate.r
 CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS = [
     "clean_acceptance_gate_rejected",
     "visual_fidelity_review_not_run",
-    "material_transfer_not_run",
-    "source_texture_projection_not_run",
     "single_shell_weld_not_proven",
     "normal_continuity_warn",
     "tangent_continuity_warn",
@@ -30,6 +28,7 @@ def build_geometry_clean_acceptance_gate_report(
     runtime_binding_result_report: dict[str, Any],
     semantic_transfer_report: dict[str, Any],
     texture_identity_report: dict[str, Any],
+    material_uv_transfer_report: dict[str, Any] | None = None,
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
     """Evaluate whether a runtime-bound visual proposal can become clean geometry.
@@ -47,6 +46,19 @@ def build_geometry_clean_acceptance_gate_report(
     runtime_seams = runtime_binding_result_report["seamContinuity"]
     semantic_aggregate = semantic_transfer_report["aggregate"]
     material_regions = texture_identity_report.get("observedMaterialRegions", [])
+    material_execution = (
+        material_uv_transfer_report.get("execution", {})
+        if material_uv_transfer_report is not None
+        else {}
+    )
+    material_readiness = (
+        material_uv_transfer_report.get("readiness", {})
+        if material_uv_transfer_report is not None
+        else {}
+    )
+    material_transfer_run = bool(material_execution.get("materialTransferRun", False))
+    uv_transfer_run = bool(material_execution.get("uvTransferRun", False))
+    material_transfer_accepted = bool(material_readiness.get("acceptedForMaterialPreview", False))
 
     checks = _checks(
         runtime_execution=runtime_execution,
@@ -56,6 +68,7 @@ def build_geometry_clean_acceptance_gate_report(
         runtime_seams=runtime_seams,
         semantic_aggregate=semantic_aggregate,
         texture_identity=texture_identity_report,
+        material_uv_transfer=material_uv_transfer_report,
         provider_registry=provider_registry,
     )
     accepted_for_clean = all(check["status"] == "pass" for check in checks)
@@ -77,6 +90,14 @@ def build_geometry_clean_acceptance_gate_report(
         ],
         "sourceTextureIdentityId": texture_identity_report["textureIdentityId"],
         "sourceTextureIdentityHash": texture_identity_report["integrity"]["textureIdentityHash"],
+        "sourceGeometryMaterialUvTransferId": material_uv_transfer_report["reportId"]
+        if material_uv_transfer_report is not None
+        else None,
+        "sourceGeometryMaterialUvTransferHash": material_uv_transfer_report["integrity"][
+            "geometryMaterialUvTransferHash"
+        ]
+        if material_uv_transfer_report is not None
+        else None,
         "sourceProviderRegistryId": provider_registry["registryId"],
         "sourceProviderRegistryHash": provider_registry["integrity"]["providerRegistryHash"],
         "candidate": {
@@ -113,7 +134,14 @@ def build_geometry_clean_acceptance_gate_report(
             "materialRegionCount": len(material_regions),
             "sourceTextureAvailable": texture_identity_report["sourceTextureAvailable"],
             "textureProjectionRun": texture_identity_report["textureProjectionRun"],
-            "materialTransferRun": False,
+            "uvTransferRun": uv_transfer_run,
+            "materialTransferRun": material_transfer_run,
+            "materialTransferAccepted": material_transfer_accepted,
+            "transferredMaterialCount": material_uv_transfer_report["aggregate"][
+                "transferredMaterialCount"
+            ]
+            if material_uv_transfer_report is not None
+            else 0,
             "visualFidelityReviewRun": False,
             "visualFidelityScore": None,
         },
@@ -146,19 +174,24 @@ def build_geometry_clean_acceptance_gate_report(
             "materialEvidenceReviewed": True,
             "policyReviewed": True,
             "visualFidelityReviewRun": False,
-            "uvTransferRun": False,
-            "materialTransferRun": False,
+            "uvTransferRun": uv_transfer_run,
+            "materialTransferRun": material_transfer_run,
+            "materialTransferAccepted": material_transfer_accepted,
             "singleShellWeldProofRun": False,
         },
         "readiness": {
-            "status": "clean_acceptance_rejected_fidelity_material_pending"
+            "status": "clean_acceptance_rejected_fidelity_weld_pending"
+            if material_transfer_accepted and not accepted_for_clean
+            else "clean_acceptance_rejected_fidelity_material_pending"
             if not accepted_for_clean
             else "clean_acceptance_passed",
             "acceptedForCleanProposal": accepted_for_clean,
             "acceptedForCanonical": False,
             "acceptedForSimulation": False,
             "acceptedForRuntimeRender": runtime_readiness["acceptedForRuntimeRender"],
-            "nextExecutableStage": "material_uv_transfer_and_visual_fidelity_review",
+            "nextExecutableStage": "visual_fidelity_review_and_single_shell_stitch_weld_proof"
+            if material_transfer_accepted
+            else "material_uv_transfer_and_visual_fidelity_review",
             "blockingReasons": blocking_reasons,
         },
         "quality": {
@@ -175,7 +208,10 @@ def build_geometry_clean_acceptance_gate_report(
                     "tangent_continuity_warn"
                     if runtime_seams["tangentContinuityStatus"] == "warn"
                     else None,
-                    "material_transfer_not_run",
+                    "source_texture_projection_not_run"
+                    if texture_identity_report["textureProjectionRun"] is False
+                    else None,
+                    "material_transfer_not_run" if not material_transfer_run else None,
                     "visual_fidelity_review_not_run",
                     "single_shell_weld_not_proven",
                 ]
@@ -215,8 +251,36 @@ def _checks(
     runtime_seams: dict[str, Any],
     semantic_aggregate: dict[str, Any],
     texture_identity: dict[str, Any],
+    material_uv_transfer: dict[str, Any] | None,
     provider_registry: dict[str, Any],
 ) -> list[dict[str, Any]]:
+    if material_uv_transfer is None:
+        material_check_status = "not_run"
+        material_measured: dict[str, Any] = {
+            "sourceTextureAvailable": texture_identity["sourceTextureAvailable"],
+            "textureProjectionRun": texture_identity["textureProjectionRun"],
+            "observedMaterialRegions": len(texture_identity.get("observedMaterialRegions", [])),
+        }
+    else:
+        material_check_status = (
+            "pass"
+            if material_uv_transfer["readiness"]["acceptedForMaterialPreview"] is True
+            and material_uv_transfer["execution"]["uvTransferRun"] is True
+            and material_uv_transfer["execution"]["materialTransferRun"] is True
+            else "fail"
+        )
+        material_measured = {
+            "uvTransferRun": material_uv_transfer["execution"]["uvTransferRun"],
+            "materialTransferRun": material_uv_transfer["execution"]["materialTransferRun"],
+            "acceptedForMaterialPreview": material_uv_transfer["readiness"][
+                "acceptedForMaterialPreview"
+            ],
+            "transferredMaterialCount": material_uv_transfer["aggregate"][
+                "transferredMaterialCount"
+            ],
+            "missingMaterialCount": material_uv_transfer["aggregate"]["missingMaterialCount"],
+            "missingUvCount": material_uv_transfer["aggregate"]["missingUvCount"],
+        }
     return [
         {
             "checkId": "runtime_binding_preview_ready",
@@ -276,12 +340,8 @@ def _checks(
         },
         {
             "checkId": "material_transfer",
-            "status": "not_run",
-            "measured": {
-                "sourceTextureAvailable": texture_identity["sourceTextureAvailable"],
-                "textureProjectionRun": texture_identity["textureProjectionRun"],
-                "observedMaterialRegions": len(texture_identity.get("observedMaterialRegions", [])),
-            },
+            "status": material_check_status,
+            "measured": material_measured,
             "threshold": "source texture or explicit transferred material evidence required",
         },
         {
@@ -327,7 +387,9 @@ def _blocking_reasons(checks: list[dict[str, Any]]) -> list[str]:
 
 def _reason_aliases(check_id: str, status: str) -> set[str]:
     if check_id == "material_transfer" and status == "not_run":
-        return {"material_transfer_not_run", "source_texture_projection_not_run"}
+        return {"material_transfer_not_run"}
+    if check_id == "material_transfer" and status == "fail":
+        return {"material_transfer_failed"}
     if check_id == "visual_fidelity_review" and status == "not_run":
         return {"visual_fidelity_review_not_run"}
     if check_id == "single_shell_stitch_weld_proof" and status == "fail":

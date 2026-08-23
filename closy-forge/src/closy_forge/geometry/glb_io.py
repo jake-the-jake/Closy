@@ -230,17 +230,21 @@ def write_indexed_glb(
                         "indices": idx_acc,
                         "material": 0,
                         "mode": 4,
-                        "extras": {"panelId": mesh.panel_id, "primitiveOrder": mesh_i},
+                        "extras": {
+                            "panelId": mesh.panel_id,
+                            "materialId": mesh.material_id,
+                            "primitiveOrder": mesh_i,
+                        },
                     }
                 ],
-                "extras": {"panelId": mesh.panel_id},
+                "extras": {"panelId": mesh.panel_id, "materialId": mesh.material_id},
             }
         )
         nodes.append(
             {
                 "mesh": len(meshes_json) - 1,
                 "name": mesh.name,
-                "extras": {"panelId": mesh.panel_id},
+                "extras": {"panelId": mesh.panel_id, "materialId": mesh.material_id},
             }
         )
 
@@ -351,6 +355,11 @@ def read_glb_meshset(path: Path) -> MeshSet:
                 or (mesh_extras.get("panelId") if isinstance(mesh_extras, dict) else None)
                 or mesh_name
             )
+            material_id = str(
+                primitive_extras.get("materialId")
+                or (mesh_extras.get("materialId") if isinstance(mesh_extras, dict) else None)
+                or "material.cotton_jersey_reference_v1"
+            )
             suffix = (
                 "" if len(mesh_doc.get("primitives", [])) == 1 else f".primitive_{primitive_index}"
             )
@@ -361,6 +370,7 @@ def read_glb_meshset(path: Path) -> MeshSet:
                     vertices=vertices,
                     panel_uvs=panel_uvs,
                     triangles=triangles,
+                    material_id=material_id,
                 )
             )
     return MeshSet(meshes)

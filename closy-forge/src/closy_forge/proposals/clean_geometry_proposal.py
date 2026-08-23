@@ -82,6 +82,7 @@ def build_clean_geometry_proposal_rejection(
     repair_retopology_plan_report: dict[str, Any] | None = None,
     repair_result_report: dict[str, Any] | None = None,
     runtime_binding_result_report: dict[str, Any] | None = None,
+    material_uv_transfer_report: dict[str, Any] | None = None,
     clean_acceptance_gate_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
@@ -227,6 +228,24 @@ def build_clean_geometry_proposal_rejection(
         runtime_binding_result_execution = runtime_binding_result_report["execution"]
         runtime_binding_result_aggregate = runtime_binding_result_report["aggregate"]
         runtime_binding_result_quality = runtime_binding_result_report["quality"]
+    if material_uv_transfer_report is None:
+        material_uv_transfer_available = False
+        material_uv_transfer_id = None
+        material_uv_transfer_hash = None
+        material_uv_transfer_status = None
+        material_uv_transfer_execution: dict[str, Any] = {}
+        material_uv_transfer_aggregate: dict[str, Any] = {}
+        material_uv_transfer_readiness: dict[str, Any] = {}
+    else:
+        material_uv_transfer_available = True
+        material_uv_transfer_id = material_uv_transfer_report["reportId"]
+        material_uv_transfer_hash = material_uv_transfer_report["integrity"][
+            "geometryMaterialUvTransferHash"
+        ]
+        material_uv_transfer_status = material_uv_transfer_report["readiness"]["status"]
+        material_uv_transfer_execution = material_uv_transfer_report["execution"]
+        material_uv_transfer_aggregate = material_uv_transfer_report["aggregate"]
+        material_uv_transfer_readiness = material_uv_transfer_report["readiness"]
     if clean_acceptance_gate_report is None:
         clean_acceptance_gate_available = False
         clean_acceptance_gate_id = None
@@ -271,6 +290,11 @@ def build_clean_geometry_proposal_rejection(
     )
     clean_acceptance_gate_accepted = bool(
         clean_acceptance_gate_aggregate.get("acceptedForCleanProposal", False)
+    )
+    material_transfer_run = bool(material_uv_transfer_execution.get("materialTransferRun", False))
+    uv_transfer_run = bool(material_uv_transfer_execution.get("uvTransferRun", False))
+    material_transfer_accepted = bool(
+        material_uv_transfer_readiness.get("acceptedForMaterialPreview", False)
     )
     validation_accepted = bool(binding_validation_readiness_accepts(binding_validation_report))
     rejection_reasons = _rejection_reasons(
@@ -326,6 +350,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceGeometryRepairResultHash": repair_result_hash,
         "sourceGeometryRuntimeBindingResultId": runtime_binding_result_id,
         "sourceGeometryRuntimeBindingResultHash": runtime_binding_result_hash,
+        "sourceGeometryMaterialUvTransferId": material_uv_transfer_id,
+        "sourceGeometryMaterialUvTransferHash": material_uv_transfer_hash,
         "sourceGeometryCleanAcceptanceGateId": clean_acceptance_gate_id,
         "sourceGeometryCleanAcceptanceGateHash": clean_acceptance_gate_hash,
         "rawProposal": {
@@ -346,6 +372,7 @@ def build_clean_geometry_proposal_rejection(
             "repairRetopologyPlanGenerated": repair_retopology_plan_available,
             "partialRepairResultGenerated": repair_result_available,
             "runtimeBindingResultGenerated": runtime_binding_result_available,
+            "materialUvTransferReportGenerated": material_uv_transfer_available,
             "cleanAcceptanceGateGenerated": clean_acceptance_gate_available,
             "cleanupRun": cleanup_run,
             "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
@@ -378,11 +405,9 @@ def build_clean_geometry_proposal_rejection(
                 clean_acceptance_gate_execution.get("visualFidelityReviewRun", False)
             ),
             "providerVisualFidelityAccepted": False,
-            "uvTransferRun": False,
-            "materialTransferRun": bool(
-                clean_acceptance_gate_execution.get("materialTransferRun", False)
-            ),
-            "materialTransferAccepted": False,
+            "uvTransferRun": uv_transfer_run,
+            "materialTransferRun": material_transfer_run,
+            "materialTransferAccepted": material_transfer_accepted,
             "connectedComponentAnalysisRun": topology_available,
             "nonManifoldAnalysisRun": topology_available,
             "blockedBy": [
@@ -395,15 +420,16 @@ def build_clean_geometry_proposal_rejection(
                 else "partial_repair_result_not_clean"
                 if repair_result_available
                 else "repair_retopology_plan_not_executed",
-                "material_transfer_not_run"
-                if clean_acceptance_gate_available
+                "material_transfer_completed"
+                if material_transfer_accepted
+                else "material_transfer_not_run"
+                if material_uv_transfer_available
                 else "material_transfer_pending",
                 "provider_visual_fidelity_not_accepted"
                 if runtime_binding_accepted
                 else "simulation_binding_unavailable",
             ],
             "nextRequiredStages": [
-                "material_uv_transfer",
                 "visual_fidelity_review",
                 "single_shell_stitch_weld_proof",
                 "canonical_acceptance_quality_gate",
@@ -502,6 +528,16 @@ def build_clean_geometry_proposal_rejection(
             "simulationBindingRecordCount": runtime_binding_result_aggregate.get(
                 "runtimeBindingRecordCount", 0
             ),
+            "materialUvTransferStatus": material_uv_transfer_status,
+            "materialUvTransferRun": uv_transfer_run and material_transfer_run,
+            "materialTransferAccepted": material_transfer_accepted,
+            "materialTransferTransferredMaterialCount": material_uv_transfer_aggregate.get(
+                "transferredMaterialCount"
+            ),
+            "materialTransferMissingMaterialCount": material_uv_transfer_aggregate.get(
+                "missingMaterialCount"
+            ),
+            "materialTransferMissingUvCount": material_uv_transfer_aggregate.get("missingUvCount"),
             "cleanAcceptanceGateStatus": clean_acceptance_gate_status,
             "cleanAcceptanceGateQualityStatus": clean_acceptance_gate_quality.get("status"),
             "cleanAcceptanceGateRun": clean_acceptance_gate_run,
@@ -609,6 +645,7 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "repairRetopologyPlanGenerated": cleanup["repairRetopologyPlanGenerated"],
         "partialRepairResultGenerated": cleanup["partialRepairResultGenerated"],
         "runtimeBindingResultGenerated": cleanup["runtimeBindingResultGenerated"],
+        "materialUvTransferReportGenerated": cleanup["materialUvTransferReportGenerated"],
         "cleanAcceptanceGateGenerated": cleanup["cleanAcceptanceGateGenerated"],
         "retopologyRun": cleanup["retopologyRun"],
         "seamSplitRun": cleanup["seamSplitRun"],
@@ -622,6 +659,8 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "cleanAcceptanceGateAccepted": cleanup["cleanAcceptanceGateAccepted"],
         "visualFidelityReviewRun": cleanup["visualFidelityReviewRun"],
         "providerVisualFidelityAccepted": cleanup["providerVisualFidelityAccepted"],
+        "uvTransferRun": cleanup["uvTransferRun"],
+        "materialTransferRun": cleanup["materialTransferRun"],
         "materialTransferAccepted": cleanup["materialTransferAccepted"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
@@ -659,6 +698,13 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "runtimeBindingRecordCount": audit["runtimeBindingRecordCount"],
         "runtimeBindingMaxReconstructionError": audit["runtimeBindingMaxReconstructionError"],
         "runtimeBindingFailedOrWarnCheckCount": audit["runtimeBindingFailedOrWarnCheckCount"],
+        "materialUvTransferStatus": audit["materialUvTransferStatus"],
+        "materialUvTransferRun": audit["materialUvTransferRun"],
+        "materialTransferTransferredMaterialCount": audit[
+            "materialTransferTransferredMaterialCount"
+        ],
+        "materialTransferMissingMaterialCount": audit["materialTransferMissingMaterialCount"],
+        "materialTransferMissingUvCount": audit["materialTransferMissingUvCount"],
         "cleanAcceptanceGateStatus": audit["cleanAcceptanceGateStatus"],
         "cleanAcceptanceGateQualityStatus": audit["cleanAcceptanceGateQualityStatus"],
         "cleanAcceptanceGateFailedCheckCount": audit["cleanAcceptanceGateFailedCheckCount"],
@@ -803,7 +849,6 @@ def _required_before_canonical(
         ]
         if clean_acceptance_gate_run and not clean_acceptance_gate_accepted:
             required.insert(-1, "clean_acceptance_gate_rejected")
-            required.insert(-1, "material_transfer_not_run")
             required.insert(-1, "visual_fidelity_review_not_run")
             required.insert(-1, "single_shell_weld_not_proven")
         else:

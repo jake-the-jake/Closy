@@ -25,6 +25,7 @@ from closy_forge.proposals import (
     build_geometry_clean_acceptance_gate_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
+    build_geometry_material_uv_transfer_report,
     build_geometry_provider_registry,
     build_geometry_repair_result_report,
     build_geometry_repair_retopology_plan,
@@ -43,6 +44,7 @@ from closy_forge.proposals import (
     hash_geometry_clean_acceptance_gate,
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
+    hash_geometry_material_uv_transfer,
     hash_geometry_proposal,
     hash_geometry_repair_result,
     hash_geometry_repair_retopology_plan,
@@ -215,10 +217,48 @@ def test_clean_geometry_proposal_rejects_uncleaned_raw_visual_reference(
     assert quality["cleanProposalAvailable"] is False
 
 
-def test_geometry_clean_acceptance_gate_rejects_runtime_preview_without_clean_evidence() -> None:
+def test_geometry_material_uv_transfer_accepts_authored_runtime_preview_metadata() -> None:
     runtime_result = _runtime_ready_report()
     semantic_transfer = _semantic_transfer_report()
     texture_identity = _texture_identity_report()
+    render_materials = _render_materials_report()
+    runtime_mesh = _tiny_mesh()
+
+    report = build_geometry_material_uv_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        texture_identity_report=texture_identity,
+        render_materials=render_materials,
+        runtime_render_mesh=runtime_mesh,
+    )
+
+    assert report["reportId"] == "material_uv_transfer.runtime_bound_tshirt_visual_geometry_v1"
+    assert report["execution"]["uvTransferRun"] is True
+    assert report["execution"]["materialTransferRun"] is True
+    assert report["readiness"]["acceptedForMaterialPreview"] is True
+    assert report["readiness"]["acceptedForCleanProposal"] is False
+    assert report["aggregate"]["missingUvCount"] == 0
+    assert report["aggregate"]["missingMaterialCount"] == 0
+    assert report["integrity"]["geometryMaterialUvTransferHash"] == (
+        hash_geometry_material_uv_transfer(report)
+    )
+
+
+def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_transfer() -> None:
+    runtime_result = _runtime_ready_report()
+    semantic_transfer = _semantic_transfer_report()
+    texture_identity = _texture_identity_report()
+    material_transfer = build_geometry_material_uv_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        texture_identity_report=texture_identity,
+        render_materials=_render_materials_report(),
+        runtime_render_mesh=_tiny_mesh(),
+    )
     provider_registry = _provider_registry_report()
 
     gate = build_geometry_clean_acceptance_gate_report(
@@ -227,6 +267,7 @@ def test_geometry_clean_acceptance_gate_rejects_runtime_preview_without_clean_ev
         runtime_binding_result_report=runtime_result,
         semantic_transfer_report=semantic_transfer,
         texture_identity_report=texture_identity,
+        material_uv_transfer_report=material_transfer,
         provider_registry=provider_registry,
     )
 
@@ -235,13 +276,14 @@ def test_geometry_clean_acceptance_gate_rejects_runtime_preview_without_clean_ev
     assert gate["readiness"]["acceptedForRuntimeRender"] is True
     assert gate["readiness"]["acceptedForCleanProposal"] is False
     assert gate["readiness"]["acceptedForCanonical"] is False
-    assert gate["readiness"]["status"] == "clean_acceptance_rejected_fidelity_material_pending"
+    assert gate["readiness"]["status"] == "clean_acceptance_rejected_fidelity_weld_pending"
     assert gate["quality"]["status"] == "rejected"
     assert gate["aggregate"]["checkCount"] == 11
-    assert gate["aggregate"]["passedCheckCount"] == 6
+    assert gate["aggregate"]["passedCheckCount"] == 7
     assert gate["aggregate"]["failedCheckCount"] == 1
     assert gate["aggregate"]["warningCheckCount"] == 2
-    assert gate["aggregate"]["notRunCheckCount"] == 2
+    assert gate["aggregate"]["notRunCheckCount"] == 1
+    assert gate["execution"]["materialTransferRun"] is True
     assert set(CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS).issubset(
         gate["quality"]["rejectionReasons"]
     )
@@ -1017,8 +1059,50 @@ def _texture_identity_report() -> dict[str, object]:
         "textureIdentityId": "texture.synthetic_tshirt_identity_v1",
         "integrity": {"textureIdentityHash": "4" * 64},
         "sourceTextureAvailable": False,
+        "generatedAtlasAvailable": False,
         "textureProjectionRun": False,
-        "observedMaterialRegions": ["body", "rib"],
+        "observedMaterialRegions": [
+            {
+                "regionId": "texture.region.00",
+                "materialId": "material.cotton_jersey_reference_v1",
+                "label": "Fixture cotton jersey blue",
+                "evidenceKind": "authored_fixture_pbr_not_photo_recovered",
+                "pbr": {
+                    "baseColorFactor": [0.08, 0.26, 0.78, 1.0],
+                    "roughnessFactor": 0.86,
+                    "metallicFactor": 0.0,
+                },
+                "textureSource": "authored_color_only_until_source_projection",
+            }
+        ],
+        "pbrSafety": {
+            "materialModel": "mobile_safe_mesh_standard_pbr",
+            "maxTextureSizePx": 1024,
+            "unsupportedAdvancedShading": [
+                "transmission",
+                "dispersion",
+                "clearcoat",
+                "subsurface_scattering",
+            ],
+        },
+    }
+
+
+def _render_materials_report() -> dict[str, object]:
+    return {
+        "schemaVersion": 1,
+        "materials": [
+            {
+                "id": "material.cotton_jersey_reference_v1",
+                "label": "Fixture cotton jersey blue",
+                "pbr": {
+                    "baseColorFactor": [0.08, 0.26, 0.78, 1.0],
+                    "roughnessFactor": 0.86,
+                    "metallicFactor": 0.0,
+                },
+                "textureSource": "authored_color_only",
+            }
+        ],
     }
 
 

@@ -59,6 +59,7 @@ def subdivide_for_render(sim: MeshSet) -> tuple[MeshSet, list[RenderBindingSeed]
                 vertices=verts,
                 panel_uvs=uvs,
                 triangles=tris,
+                material_id=mesh.material_id,
             )
         )
     return MeshSet(render_meshes), bindings
