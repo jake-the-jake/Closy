@@ -1806,9 +1806,7 @@ def _provenance(
                     "providerGeometryAppearanceComparisonRun": inspection_report["readiness"][
                         "providerGeometryAppearanceComparisonRun"
                     ],
-                    "humanVisualReviewRun": inspection_report["readiness"][
-                        "humanVisualReviewRun"
-                    ],
+                    "humanVisualReviewRun": inspection_report["readiness"]["humanVisualReviewRun"],
                     "acceptedForVisualFidelity": False,
                     "acceptedForCleanProposal": False,
                 },

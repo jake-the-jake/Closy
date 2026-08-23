@@ -25,9 +25,10 @@ def test_demo_package_contains_deterministic_inspection_artifacts(tmp_path) -> N
     assert report["readiness"]["humanVisualReviewRun"] is False
     assert report["readiness"]["acceptedForVisualFidelity"] is False
     assert report["readiness"]["acceptedForCleanProposal"] is False
-    assert "clean_candidate_artifact_omitted_because_no_clean_candidate_exists" in report[
-        "limitations"
-    ]
+    assert (
+        "clean_candidate_artifact_omitted_because_no_clean_candidate_exists"
+        in report["limitations"]
+    )
 
     pattern_artifact = next(
         artifact for artifact in artifacts if artifact["artifactId"] == "pattern_panels_labels"

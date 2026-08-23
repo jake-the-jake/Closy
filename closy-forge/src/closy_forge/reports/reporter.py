@@ -30,9 +30,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     material_uv_transfer = read_json(package_dir / "reports" / "geometry_material_uv_transfer.json")
     visual_shell_review = read_json(package_dir / "reports" / "geometry_visual_shell_review.json")
     inspection_manifest = read_json(package_dir / "reports" / "inspection" / "manifest.json")
-    inspection_report = read_json(
-        package_dir / "reports" / "inspection" / "inspection_report.json"
-    )
+    inspection_report = read_json(package_dir / "reports" / "inspection" / "inspection_report.json")
     clean_acceptance_gate = read_json(
         package_dir / "reports" / "geometry_clean_acceptance_gate.json"
     )
@@ -367,9 +365,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "acceptedForVisualFidelity": inspection_report["readiness"][
                 "acceptedForVisualFidelity"
             ],
-            "acceptedForCleanProposal": inspection_report["readiness"][
-                "acceptedForCleanProposal"
-            ],
+            "acceptedForCleanProposal": inspection_report["readiness"]["acceptedForCleanProposal"],
         },
         "geometryCleanAcceptanceGate": {
             "reportId": clean_acceptance_gate["reportId"],

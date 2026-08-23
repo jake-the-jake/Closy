@@ -393,9 +393,7 @@ def write_inspection_artifacts(
         "integrity": {"inspectionReportHash": ""},
     }
     report["integrity"]["inspectionReportHash"] = hash_inspection_artifact_report(report)
-    write_canonical_json(
-        package_dir / "reports" / "inspection" / "inspection_report.json", report
-    )
+    write_canonical_json(package_dir / "reports" / "inspection" / "inspection_report.json", report)
     return manifest, report
 
 
@@ -552,6 +550,7 @@ def _mesh_svg(
 ) -> str:
     bounds = _combined_bounds(meshset, secondary_meshset)
     projected_bounds = _projected_bounds(bounds, view_id)
+
     def point(vertex: Vec3) -> tuple[float, float, float]:
         return _screen_point(_project(vertex, view_id), projected_bounds)
 
@@ -602,8 +601,7 @@ def _pattern_svg(pattern: dict[str, Any]) -> str:
     scale, tx, ty = _fit_2d_transform(all_samples)
     for panel_index, (panel, samples) in enumerate(panel_samples):
         points = " ".join(
-            f"{x * scale + tx:.3f},{HEIGHT - (y * scale + ty):.3f}"
-            for x, y in samples
+            f"{x * scale + tx:.3f},{HEIGHT - (y * scale + ty):.3f}" for x, y in samples
         )
         color = _PANEL_PALETTE[panel_index % len(_PANEL_PALETTE)]
         parts.append(
@@ -919,8 +917,7 @@ def _evidence_tiers(geometry_visual_shell_review: dict[str, Any]) -> list[dict[s
             "artifactIds": [
                 str(spec["artifactId"])
                 for spec in _REQUIRED_ARTIFACTS
-                if spec["evidenceTier"]
-                == "canonical_simulation_to_render_silhouette_preservation"
+                if spec["evidenceTier"] == "canonical_simulation_to_render_silhouette_preservation"
             ],
             "limitations": [
                 "representation silhouette only; side/depth artifacts retained separately"

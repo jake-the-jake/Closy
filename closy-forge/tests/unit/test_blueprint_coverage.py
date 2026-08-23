@@ -200,9 +200,9 @@ def test_bp47_checkpoint_is_partial_and_evidenced() -> None:
     assert "aac1c06" in bp47["commitSha"]
     assert "12 deterministic SVG inspection artifacts" in bp47["executableEvidence"]
     assert "acceptedForVisualFidelity=false" in bp47["executableEvidence"]
-    assert "provider/source/human visual fidelity tiers remain not_run" in bp47[
-        "executableEvidence"
-    ]
+    assert (
+        "provider/source/human visual fidelity tiers remain not_run" in bp47["executableEvidence"]
+    )
     assert "BP-48" in bp47["nextAction"]
 
 

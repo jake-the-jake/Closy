@@ -6170,9 +6170,7 @@ def _validate_inspection_artifacts(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
     artifact_manifest = _read_required_json(package_dir, "reports/inspection/manifest.json", issues)
-    report = _read_required_json(
-        package_dir, "reports/inspection/inspection_report.json", issues
-    )
+    report = _read_required_json(package_dir, "reports/inspection/inspection_report.json", issues)
     if artifact_manifest is None or report is None:
         return
 
