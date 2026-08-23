@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-closeout-plus-repo-ci-hygiene-v1"
-    assert payload["generatedBy"] == "BP-46 closeout plus repository CI hygiene pass"
+    assert payload["version"] == "bp47-inspection-artifacts-v1"
+    assert payload["generatedBy"] == "BP-47 deterministic inspection artifacts pass"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -72,6 +72,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
         "BP-05-01-PATTERN-FIRST",
         "BP-05-05-TRUTHFUL-EVIDENCE-TIERS",
         "BP-46-STITCHED-SHELL-OUTPUT",
+        "BP-47-INSPECTION-ARTIFACTS",
         "REPO-HYGIENE-GITLINKS",
         "REPO-HYGIENE-CI-DIAGNOSTICS",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
@@ -191,13 +192,28 @@ def test_repository_ci_diagnostics_checkpoint_is_complete() -> None:
     assert "tests/unit/test_ci_sanitized_diagnostics.py" in diagnostics["tests"]
 
 
-def test_markdown_ledger_matches_bp46_and_hygiene_checkpoint_state() -> None:
+def test_bp47_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    bp47 = rows_by_id["BP-47-INSPECTION-ARTIFACTS"]
+
+    assert bp47["status"] == "partial"
+    assert "aac1c06" in bp47["commitSha"]
+    assert "12 deterministic SVG inspection artifacts" in bp47["executableEvidence"]
+    assert "acceptedForVisualFidelity=false" in bp47["executableEvidence"]
+    assert "provider/source/human visual fidelity tiers remain not_run" in bp47[
+        "executableEvidence"
+    ]
+    assert "BP-48" in bp47["nextAction"]
+
+
+def test_markdown_ledger_matches_bp47_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `eb4c611`" in ledger
-    assert "Current active increment: `BP-47-INSPECTION-ARTIFACTS`" in ledger
-    assert "Next dependency-ready increment: `BP-47-INSPECTION-ARTIFACTS`" in ledger
+    assert "Latest completed implementation commit when last updated: `aac1c06`" in ledger
+    assert "Current active increment: `BP-48-PERSISTED-FRAMES-TANGENTS`" in ledger
+    assert "Next dependency-ready increment: `BP-48-PERSISTED-FRAMES-TANGENTS`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
+    assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| REPO-HYGIENE-CI-DIAGNOSTICS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger

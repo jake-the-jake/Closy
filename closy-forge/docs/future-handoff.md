@@ -29,4 +29,4 @@ The current deterministic fixture records:
 
 ## Next Implementation Direction
 
-Continue into texture identity scaffolding or richer pose/motion validation while improving simulation diagnostics. Synthetic capture, visual-observation and deterministic fitting scaffolding now exists, but real image ingestion, learned segmentation, self-collision and production-grade material calibration remain explicitly unavailable.
+Continue into BP-48 persisted normals, glTF tangents and richer pose/motion validation while improving simulation diagnostics. Synthetic capture, visual-observation, deterministic fitting and BP-47 SVG inspection artifacts now exist, but real image ingestion, learned segmentation, source/provider visual-fidelity evidence, self-collision and production-grade material calibration remain explicitly unavailable.
