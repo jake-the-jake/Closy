@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from closy_forge.binding.binary_format import HEADER_SIZE, RECORD_STRUCT
 from closy_forge.cli.main import EXIT_VALIDATION_FAILURE, main
-from closy_forge.package_io.canonical_json import canonical_dumps
+from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_demo, clone_package, issue_codes, read_json, write_json
 
@@ -126,7 +126,7 @@ def test_nonfinite_pattern_value_is_rejected(tmp_path) -> None:  # type: ignore[
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "nan.closygarment")
     pattern = read_json(corrupt / "pattern" / "pattern.json")
     pattern["panels"][0]["boundary"][0]["curve"]["points"][0][0] = float("nan")
-    (corrupt / "pattern" / "pattern.json").write_text(canonical_dumps(pattern), encoding="utf-8")
+    write_canonical_json(corrupt / "pattern" / "pattern.json", pattern)
     assert "nonfinite_numeric_value" in issue_codes(validate_package(corrupt))
 
 

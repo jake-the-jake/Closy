@@ -7,7 +7,7 @@ name = "closy-forge"
 version = "0.1.0"
 description = "Deterministic Closy garment foundry foundation and T-shirt vertical slice."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 authors = [{ name = "Closy" }]
 dependencies = []
 

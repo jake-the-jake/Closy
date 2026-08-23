@@ -10,6 +10,7 @@ from closy_forge.capture import build_synthetic_capture_record, score_capture_re
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
+from closy_forge.package_io.determinism import compare_package_trees
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
 from closy_forge.validation.validator import validate_package
@@ -108,6 +109,14 @@ def _parser() -> argparse.ArgumentParser:
     check.add_argument("--schema-dir", default=Path("schemas/v1"), type=Path)
     check.add_argument("--json", action="store_true")
     check.set_defaults(handler=_schemas_check)
+
+    packages = subparsers.add_parser("packages", help="Inspect built .closygarment packages.")
+    package_sub = packages.add_subparsers(dest="package_command")
+    diff = package_sub.add_parser("diff", help="Compare two package directories byte-for-byte.")
+    diff.add_argument("left", type=Path)
+    diff.add_argument("right", type=Path)
+    diff.add_argument("--json", action="store_true")
+    diff.set_defaults(handler=_packages_diff)
     return parser
 
 
@@ -200,6 +209,15 @@ def _schemas_check(args: argparse.Namespace) -> int:
     else:
         print(json.dumps(payload, indent=2, sort_keys=True))
     return EXIT_SUCCESS if fresh else EXIT_VALIDATION_FAILURE
+
+
+def _packages_diff(args: argparse.Namespace) -> int:
+    diff = compare_package_trees(args.left, args.right)
+    if args.json:
+        print(canonical_dumps(diff), end="")
+    else:
+        print(json.dumps(diff, indent=2, sort_keys=True))
+    return EXIT_SUCCESS if diff["status"] == "identical" else EXIT_VALIDATION_FAILURE
 
 
 def _params_from_args(args: argparse.Namespace) -> TShirtParameters:

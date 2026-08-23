@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from closy_forge.package_io.canonical_json import canonical_dumps
+from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 
 
@@ -29,7 +29,7 @@ def read_json(path: Path) -> dict[str, Any]:
 
 
 def write_json(path: Path, data: dict[str, Any]) -> None:
-    path.write_text(canonical_dumps(data), encoding="utf-8")
+    write_canonical_json(path, data)
 
 
 def issue_codes(report: dict[str, Any]) -> set[str]:

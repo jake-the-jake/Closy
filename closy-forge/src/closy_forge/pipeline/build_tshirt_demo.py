@@ -40,7 +40,11 @@ from closy_forge.garments.tshirt.semantic_graph import build_semantic_graph
 from closy_forge.geometry.glb_io import audit_glb, write_glb, write_indexed_glb
 from closy_forge.geometry.mesh_model import MeshSet, mesh_bounds
 from closy_forge.geometry.subdivision import subdivide_for_render
-from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
+from closy_forge.package_io.canonical_json import (
+    canonical_dumps,
+    write_canonical_json,
+    write_canonical_text,
+)
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 from closy_forge.package_io.writer import (
     EXCLUDED_FROM_CANONICAL_INVENTORY,
@@ -134,9 +138,9 @@ def build_demo_tshirt_package(
             staging / "reports" / "summary.json",
             _summary_json(context, pending_validation),
         )
-        (staging / "reports" / "summary.md").write_text(
+        write_canonical_text(
+            staging / "reports" / "summary.md",
             _summary_markdown(context, pending_validation),
-            encoding="utf-8",
         )
         final_validation = validate_package(staging)
         if final_validation["status"] != "passed":
@@ -147,9 +151,9 @@ def build_demo_tshirt_package(
             staging / "reports" / "summary.json",
             _summary_json(context, final_validation),
         )
-        (staging / "reports" / "summary.md").write_text(
+        write_canonical_text(
+            staging / "reports" / "summary.md",
             _summary_markdown(context, final_validation),
-            encoding="utf-8",
         )
         publish_staging(staging, output, force=force)
         return BuildResult(output, context["manifest"], final_validation)
@@ -431,8 +435,7 @@ def _write_package_contents(
         },
     )
     write_canonical_json(package_dir / "pattern" / "pattern.json", pattern)
-    (package_dir / "pattern" / "panels.svg").parent.mkdir(parents=True, exist_ok=True)
-    (package_dir / "pattern" / "panels.svg").write_text(_panels_svg(pattern), encoding="utf-8")
+    write_canonical_text(package_dir / "pattern" / "panels.svg", _panels_svg(pattern))
     write_glb(
         package_dir / "simulation" / "simulation_mesh.glb",
         simulation_mesh,

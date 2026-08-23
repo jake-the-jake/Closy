@@ -18,6 +18,17 @@ def test_cli_build_validate_report_workflow(tmp_path) -> None:  # type: ignore[n
     assert report["counts"]["warning"] == 1
 
 
+def test_generated_canonical_text_artifacts_use_lf_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    package = tmp_path / "demo_tshirt.closygarment"
+    assert main(["demo", "build-tshirt", "--output", str(package), "--json"]) == EXIT_SUCCESS
+    for path in package.rglob("*"):
+        if path.suffix not in {".json", ".svg", ".md"}:
+            continue
+        data = path.read_bytes()
+        assert b"\r\n" not in data, path
+        assert b"\r" not in data, path
+
+
 def test_generated_glbs_are_parseable(tmp_path) -> None:  # type: ignore[no-untyped-def]
     package = tmp_path / "demo_tshirt.closygarment"
     assert main(["demo", "build-tshirt", "--output", str(package)]) == EXIT_SUCCESS
@@ -34,6 +45,21 @@ def test_generated_glbs_are_parseable(tmp_path) -> None:  # type: ignore[no-unty
         audit = audit_glb(package / rel)
         assert audit["validGlb20"] is True
         assert audit["triangleEstimate"] > 0
+
+
+def test_cli_package_diff_reports_first_changed_file(tmp_path, capsys) -> None:  # type: ignore[no-untyped-def]
+    package_a = tmp_path / "demo_a.closygarment"
+    package_b = tmp_path / "demo_b.closygarment"
+    assert main(["demo", "build-tshirt", "--output", str(package_a), "--json"]) == EXIT_SUCCESS
+    assert main(["demo", "build-tshirt", "--output", str(package_b), "--json"]) == EXIT_SUCCESS
+    assert main(["packages", "diff", str(package_a), str(package_b), "--json"]) == EXIT_SUCCESS
+    changed = package_b / "reports" / "summary.md"
+    changed.write_bytes(changed.read_bytes() + b"drift\n")
+    assert main(["packages", "diff", str(package_a), str(package_b), "--json"]) != EXIT_SUCCESS
+    payload = json.loads(capsys.readouterr().out.splitlines()[-1])
+    assert payload["status"] == "different"
+    assert payload["changed"][0]["path"] == "reports/summary.md"
+    assert payload["changed"][0]["firstDifference"]["offset"] > 0
 
 
 def test_cli_build_synthetic_capture_workflow(tmp_path) -> None:  # type: ignore[no-untyped-def]

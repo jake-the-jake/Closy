@@ -6,7 +6,7 @@ Closy Forge is an isolated, headless Python project for canonical avatar-and-gar
 
 - `src/`: Expo React Native product app. TypeScript-only and mobile-facing.
 - `engine/`: separate C++17 rigid avatar/rendering prototype. It is not the Forge pipeline.
-- `closy-forge/`: Python 3.11+ deterministic contract and package toolchain.
+- `closy-forge/`: Python 3.11 deterministic contract and package toolchain.
 
 The boundary between Forge and the app is versioned files: `.closygarment` directories, GLBs, JSON contracts, binary binding files, and reports.
 
