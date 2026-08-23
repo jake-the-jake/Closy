@@ -58,6 +58,7 @@ from closy_forge.proposals import (
     build_proposal_runtime_binding,
     build_proposal_runtime_render_mesh,
     build_raw_geometry_topology_report,
+    build_stitched_shell_assets,
     hash_clean_geometry_proposal,
     hash_geometry_binding_candidate_report,
     hash_geometry_binding_validation_report,
@@ -70,9 +71,11 @@ from closy_forge.proposals import (
     hash_geometry_repair_retopology_plan,
     hash_geometry_runtime_binding_result,
     hash_geometry_semantic_transfer_report,
+    hash_geometry_stitched_shell_report,
     hash_geometry_visual_shell_review,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
+    hash_stitched_analysis_shell,
     reproject_cleanup_preview_to_settled_simulation,
 )
 from closy_forge.validation.issues import Severity, ValidationIssue
@@ -113,7 +116,9 @@ EXPECTED_FILES = [
     "simulation/settled_state.json",
     "simulation/settle_diagnostics.json",
     "simulation/material_physics.json",
+    "stitch/logical_stitched_analysis_shell.json",
     "render/fallback.glb",
+    "render/stitched_shell.glb",
     "render/mesh_manifest.json",
     "render/materials.json",
     "binding/sim_to_render.bin",
@@ -136,6 +141,7 @@ EXPECTED_FILES = [
     "reports/geometry_repair_result.json",
     "reports/geometry_runtime_binding_result.json",
     "reports/geometry_material_uv_transfer.json",
+    "reports/geometry_stitched_shell.json",
     "reports/geometry_visual_shell_review.json",
     "reports/geometry_clean_acceptance_gate.json",
     "reports/clean_geometry_proposal_quality.json",
@@ -291,6 +297,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_repair_result(package_dir, manifest, issues)
     _validate_geometry_runtime_binding_result(package_dir, manifest, issues)
     _validate_geometry_material_uv_transfer(package_dir, manifest, issues)
+    _validate_geometry_stitched_shell(package_dir, manifest, issues)
     _validate_geometry_visual_shell_review(package_dir, manifest, issues)
     _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
@@ -5371,6 +5378,227 @@ def _validate_geometry_material_uv_transfer(
         )
 
 
+def _validate_geometry_stitched_shell(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    constraints = _read_required_json(package_dir, "simulation/constraints.json", issues)
+    report = _read_required_json(package_dir, "reports/geometry_stitched_shell.json", issues)
+    analysis = _read_required_json(
+        package_dir, "stitch/logical_stitched_analysis_shell.json", issues
+    )
+    if simulation_manifest is None or constraints is None or report is None or analysis is None:
+        return
+
+    if report.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_garment_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell report must reference the package garment ID.",
+            )
+        )
+    if report.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_class_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell report must reference the package garment class.",
+            )
+        )
+
+    try:
+        settled_mesh = _meshset_from_manifest(simulation_manifest)
+        expected_report, expected_analysis, expected_mesh = build_stitched_shell_assets(
+            garment_id=str(manifest.get("garmentId", "")),
+            garment_class=str(manifest.get("garmentClass", "")),
+            source_simulation_mesh=settled_mesh,
+            constraints=constraints,
+            analysis_asset_path="stitch/logical_stitched_analysis_shell.json",
+            render_asset_path="render/stitched_shell.glb",
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_recompute_failed",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                str(exc),
+            )
+        )
+        return
+    if report.get("sourceSimulationMeshTopologyHash") != topology_hash(settled_mesh):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_source_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell source topology hash is stale.",
+            )
+        )
+    if report.get("sourceSimulationMeshContentHash") != geometry_content_hash(settled_mesh):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_source_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell source content hash is stale.",
+            )
+        )
+    if _nested_string(report, ["integrity", "geometryStitchedShellHash"], "") != (
+        hash_geometry_stitched_shell_report(report)
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_hash_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell report hash must match its canonical payload.",
+            )
+        )
+    if _nested_string(analysis, ["integrity", "stitchedAnalysisShellHash"], "") != (
+        hash_stitched_analysis_shell(analysis)
+    ):
+        issues.append(
+            _issue(
+                "stitched_analysis_shell_hash_mismatch",
+                "fatal",
+                "stitch/logical_stitched_analysis_shell.json",
+                "Stitched analysis shell hash must match its canonical payload.",
+            )
+        )
+
+    for key in [
+        "analysisAsset",
+        "renderAsset",
+        "execution",
+        "topologyAudit",
+        "readiness",
+        "quality",
+        "policy",
+    ]:
+        if report.get(key) != expected_report.get(key):
+            issues.append(
+                _issue(
+                    "geometry_stitched_shell_recompute_mismatch",
+                    "fatal",
+                    "reports/geometry_stitched_shell.json",
+                    f"Stitched shell field {key} is stale.",
+                )
+            )
+    for key in [
+        "sourceSimulationMeshTopologyHash",
+        "sourceSimulationMeshContentHash",
+        "logicalShellTopologyHash",
+        "logicalShellContentHash",
+        "logicalShell",
+        "sourceVertexMap",
+        "executedOperations",
+        "openingProof",
+        "topologyAudit",
+        "readiness",
+        "policy",
+    ]:
+        if analysis.get(key) != expected_analysis.get(key):
+            issues.append(
+                _issue(
+                    "stitched_analysis_shell_recompute_mismatch",
+                    "fatal",
+                    "stitch/logical_stitched_analysis_shell.json",
+                    f"Stitched analysis shell field {key} is stale.",
+                )
+            )
+
+    if report.get("analysisAsset", {}).get("payloadHash") != _nested_string(
+        analysis, ["integrity", "stitchedAnalysisShellHash"], ""
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_analysis_hash_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell report must reference the analysis asset hash.",
+            )
+        )
+    render_asset = report.get("renderAsset", {})
+    if render_asset.get("path") != "render/stitched_shell.glb":
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_render_path_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched render shell path must be render/stitched_shell.glb.",
+            )
+        )
+    if render_asset.get("topologyHash") != topology_hash(expected_mesh):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_render_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched render shell topology hash is stale.",
+            )
+        )
+    if render_asset.get("contentHash") != geometry_content_hash(expected_mesh):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_render_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched render shell content hash is stale.",
+            )
+        )
+    topology_audit = report.get("topologyAudit", {})
+    if report.get("readiness", {}).get("meshStitchOrWeldProven") is True and not (
+        topology_audit.get("finiteMesh") is True
+        and topology_audit.get("logicalShellCount") == 1
+        and topology_audit.get("nonManifoldEdgeCount") == 0
+        and topology_audit.get("duplicateFaceCount") == 0
+        and topology_audit.get("degenerateTriangleCount") == 0
+        and topology_audit.get("unexpectedBoundaryLoopCount") == 0
+        and topology_audit.get("boundaryLoopCount") == topology_audit.get("expectedOpeningCount")
+        and topology_audit.get("selfIntersectionCheckStatus") == "pass"
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_proof_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell cannot be proven while topology or self-intersection gates fail.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryStitchedShellAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryStitchedShellAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(report):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "Stitched shell report must not contain NaN or Infinity.",
+            )
+        )
+    if _contains_nonfinite(analysis):
+        issues.append(
+            _issue(
+                "stitched_analysis_shell_nonfinite_numeric_value",
+                "fatal",
+                "stitch/logical_stitched_analysis_shell.json",
+                "Stitched analysis shell must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_geometry_visual_shell_review(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -5385,6 +5613,9 @@ def _validate_geometry_visual_shell_review(
     )
     simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
     constraints = _read_required_json(package_dir, "simulation/constraints.json", issues)
+    stitched_shell = _read_required_json(
+        package_dir, "reports/geometry_stitched_shell.json", issues
+    )
     visual_shell = _read_required_json(
         package_dir, "reports/geometry_visual_shell_review.json", issues
     )
@@ -5394,6 +5625,7 @@ def _validate_geometry_visual_shell_review(
         or material_transfer is None
         or simulation_manifest is None
         or constraints is None
+        or stitched_shell is None
         or visual_shell is None
     ):
         return
@@ -5536,6 +5768,7 @@ def _validate_geometry_visual_shell_review(
             runtime_render_mesh=runtime_render_mesh,
             reference_simulation_mesh=settled_mesh,
             constraints=constraints,
+            stitched_shell_report=stitched_shell,
         )
     except Exception as exc:
         issues.append(
@@ -5575,6 +5808,12 @@ def _validate_geometry_visual_shell_review(
     readiness = visual_shell.get("readiness", {})
     quality = visual_shell.get("quality", {})
     policy = visual_shell.get("policy", {})
+    stitched_execution_run = bool(
+        stitched_shell.get("execution", {}).get("meshStitchOrWeldExecutionRun") is True
+    )
+    stitched_proven = bool(
+        stitched_shell.get("readiness", {}).get("meshStitchOrWeldProven") is True
+    )
     for name, block in [
         ("aggregate", aggregate),
         ("execution", execution),
@@ -5607,7 +5846,7 @@ def _validate_geometry_visual_shell_review(
         or execution.get("visualFidelityReviewRun") is not False
         or execution.get("singleShellWeldProofRun") is not False
         or execution.get("singleShellWeldExecutionRun") is not False
-        or execution.get("meshStitchOrWeldExecutionRun") is not False
+        or execution.get("meshStitchOrWeldExecutionRun") is not stitched_execution_run
     ):
         issues.append(
             _issue(
@@ -5636,7 +5875,7 @@ def _validate_geometry_visual_shell_review(
         or readiness.get("sourceImageVisualFidelityAccepted") is not False
         or readiness.get("providerAppearanceAccepted") is not False
         or readiness.get("singleShellWeldProven") is not False
-        or readiness.get("meshStitchOrWeldProven") is not False
+        or readiness.get("meshStitchOrWeldProven") is not stitched_proven
         or readiness.get("acceptedForCleanProposal") is not False
         or readiness.get("acceptedForCanonical") is not False
         or readiness.get("acceptedForRuntimeRender")
@@ -5663,8 +5902,8 @@ def _validate_geometry_visual_shell_review(
         or aggregate.get("stitchGraphConnectable") is not True
         or aggregate.get("singleShellWeldProofRun") is not False
         or aggregate.get("singleShellWeldProven") is not False
-        or aggregate.get("meshStitchOrWeldExecutionRun") is not False
-        or aggregate.get("meshStitchOrWeldProven") is not False
+        or aggregate.get("meshStitchOrWeldExecutionRun") is not stitched_execution_run
+        or aggregate.get("meshStitchOrWeldProven") is not stitched_proven
         or aggregate.get("acceptedForCleanProposal") is not False
         or aggregate.get("acceptedForCanonical") is not False
         or _int_or(aggregate.get("vertexCount"), 0) <= 0
@@ -5681,12 +5920,15 @@ def _validate_geometry_visual_shell_review(
     shell_proof = visual_shell.get("shellProof", {})
     if (
         not isinstance(shell_proof, dict)
-        or shell_proof.get("meshStitchOrWeldExecutionRun") is not False
-        or shell_proof.get("meshStitchOrWeldProven") is not False
-        or shell_proof.get("meshStitchOrWeldOutputAssetPath") is not None
-        or shell_proof.get("meshStitchOrWeldOutputTopologyHash") is not None
-        or shell_proof.get("meshStitchOrWeldOutputContentHash") is not None
-        or shell_proof.get("meshStitchOrWeldAudit") is not None
+        or shell_proof.get("meshStitchOrWeldExecutionRun") is not stitched_execution_run
+        or shell_proof.get("meshStitchOrWeldProven") is not stitched_proven
+        or shell_proof.get("meshStitchOrWeldOutputAssetPath")
+        != stitched_shell.get("renderAsset", {}).get("path")
+        or shell_proof.get("meshStitchOrWeldOutputTopologyHash")
+        != stitched_shell.get("renderAsset", {}).get("topologyHash")
+        or shell_proof.get("meshStitchOrWeldOutputContentHash")
+        != stitched_shell.get("renderAsset", {}).get("contentHash")
+        or shell_proof.get("meshStitchOrWeldAudit") != stitched_shell.get("topologyAudit")
         or shell_proof.get("singleShellWeldExecutionRun") is not False
         or shell_proof.get("singleShellWeldProofRun") is not False
         or shell_proof.get("singleShellWeldProven") is not False
@@ -5995,6 +6237,10 @@ def _validate_geometry_clean_acceptance_gate(
                 )
             )
 
+    visual_mesh_stitch_execution_run = bool(
+        visual_shell_review.get("execution", {}).get("meshStitchOrWeldExecutionRun") is True
+    )
+
     if (
         execution.get("cleanAcceptanceGateRun") is not True
         or execution.get("runtimeBindingEvidenceReviewed") is not True
@@ -6010,7 +6256,7 @@ def _validate_geometry_clean_acceptance_gate(
         or execution.get("materialTransferAccepted") is not True
         or execution.get("stitchGraphConnectivityCheckRun") is not True
         or execution.get("singleShellWeldProofRun") is not False
-        or execution.get("meshStitchOrWeldExecutionRun") is not False
+        or execution.get("meshStitchOrWeldExecutionRun") is not visual_mesh_stitch_execution_run
     ):
         issues.append(
             _issue(
@@ -7194,8 +7440,8 @@ def _validate_clean_geometry_proposal(
         "stitchGraphConnectable": visual_shell_readiness.get("stitchGraphConnectable"),
         "meshStitchOrWeldExecutionRun": visual_shell_execution.get("meshStitchOrWeldExecutionRun"),
         "meshStitchOrWeldProven": visual_shell_readiness.get("meshStitchOrWeldProven"),
-        "singleShellWeldProofRun": visual_shell_execution.get("meshStitchOrWeldExecutionRun"),
-        "singleShellWeldProven": visual_shell_readiness.get("meshStitchOrWeldProven"),
+        "singleShellWeldProofRun": visual_shell_execution.get("singleShellWeldProofRun"),
+        "singleShellWeldProven": visual_shell_readiness.get("singleShellWeldProven"),
     }
     for key, expected in expected_visual_flags.items():
         if cleanup.get(key) != expected:
@@ -7310,7 +7556,8 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("stitchGraphConnectivityCheckRun") is not True
         or cleanup.get("stitchGraphConnectable") is not True
         or cleanup.get("singleShellWeldProofRun") is not False
-        or cleanup.get("meshStitchOrWeldExecutionRun") is not False
+        or cleanup.get("meshStitchOrWeldExecutionRun")
+        is not visual_shell_execution.get("meshStitchOrWeldExecutionRun")
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -8252,6 +8499,7 @@ def _validate_glbs(package_dir: Path, issues: list[ValidationIssue]) -> None:
         "proposals/manual_runtime_retopology_preview.glb",
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",
+        "render/stitched_shell.glb",
     ]:
         try:
             audit = audit_glb(package_dir / rel)
@@ -8405,6 +8653,15 @@ def _validate_capabilities(manifest: dict[str, Any], issues: list[ValidationIssu
                 "fatal",
                 "manifest.json",
                 "Manifest must declare material/UV transfer evidence availability.",
+            )
+        )
+    if caps.get("geometryStitchedShellAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare stitched-shell output evidence availability.",
             )
         )
     if caps.get("geometryVisualShellReviewAvailable") is not True:

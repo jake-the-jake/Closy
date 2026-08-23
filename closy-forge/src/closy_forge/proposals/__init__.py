@@ -75,6 +75,12 @@ from closy_forge.proposals.geometry_semantic_transfer import (
     build_geometry_semantic_transfer_report,
     hash_geometry_semantic_transfer_report,
 )
+from closy_forge.proposals.geometry_stitched_shell import (
+    GEOMETRY_STITCHED_SHELL_VERSION,
+    build_stitched_shell_assets,
+    hash_geometry_stitched_shell_report,
+    hash_stitched_analysis_shell,
+)
 from closy_forge.proposals.geometry_visual_shell_review import (
     GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
     build_geometry_visual_shell_review_report,
@@ -112,6 +118,7 @@ __all__ = [
     "GEOMETRY_REPAIR_RESULT_VERSION",
     "GEOMETRY_RUNTIME_BINDING_RESULT_VERSION",
     "MANUAL_IMPORT_PROVIDER_ID",
+    "GEOMETRY_STITCHED_SHELL_VERSION",
     "NULL_GEOMETRY_PROVIDER_ID",
     "NULL_GEOMETRY_PROPOSAL_VERSION",
     "PROPOSAL_RUNTIME_BINDING_ALGORITHM",
@@ -139,6 +146,7 @@ __all__ = [
     "build_proposal_runtime_binding",
     "build_proposal_runtime_render_mesh",
     "build_geometry_semantic_transfer_report",
+    "build_stitched_shell_assets",
     "build_manual_geometry_proposal",
     "build_null_geometry_proposal",
     "build_raw_geometry_topology_report",
@@ -157,6 +165,8 @@ __all__ = [
     "hash_geometry_repair_result",
     "hash_geometry_runtime_binding_result",
     "hash_geometry_semantic_transfer_report",
+    "hash_geometry_stitched_shell_report",
+    "hash_stitched_analysis_shell",
     "hash_geometry_proposal",
     "hash_provider_registry",
     "hash_raw_geometry_topology_report",

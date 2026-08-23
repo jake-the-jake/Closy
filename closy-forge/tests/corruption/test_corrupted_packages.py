@@ -733,6 +733,35 @@ def test_geometry_material_uv_transfer_acceptance_claim_is_rejected(
     assert "geometry_material_uv_transfer_acceptance_invalid" in codes
 
 
+def test_geometry_stitched_shell_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_stitched_shell_hash.closygarment")
+    stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
+    stitched["topologyAudit"]["nonManifoldEdgeCount"] = 0
+    write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_stitched_shell_hash_mismatch" in codes
+    assert "geometry_stitched_shell_recompute_mismatch" in codes
+
+
+def test_geometry_stitched_shell_impossible_proof_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_stitched_shell_proof.closygarment"
+    )
+    stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
+    stitched["readiness"]["meshStitchOrWeldProven"] = True
+    stitched["readiness"]["status"] = "stitched_shell_proven"
+    stitched["quality"]["status"] = "pass"
+    write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_stitched_shell_hash_mismatch" in codes
+    assert "geometry_stitched_shell_recompute_mismatch" in codes
+    assert "geometry_stitched_shell_proof_invalid" in codes
+
+
 def test_geometry_visual_shell_review_hash_mismatch_is_rejected(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]

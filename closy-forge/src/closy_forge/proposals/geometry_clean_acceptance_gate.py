@@ -12,7 +12,7 @@ CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS = [
     "clean_acceptance_gate_rejected",
     "source_image_visual_comparison_not_run",
     "provider_appearance_comparison_not_run",
-    "mesh_stitch_or_weld_not_executed",
+    "mesh_stitch_or_weld_not_proven",
     "normal_continuity_warn",
     "tangent_continuity_warn",
     "provider_output_not_canonical_garment_truth",

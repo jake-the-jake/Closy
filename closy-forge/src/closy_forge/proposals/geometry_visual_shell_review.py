@@ -9,7 +9,8 @@ from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 
 GEOMETRY_VISUAL_SHELL_REVIEW_VERSION = (
-    "closy.geometry_visual_shell_review.truthful_representation_and_connectability_v3"
+    "closy.geometry_visual_shell_review."
+    "truthful_representation_connectability_and_stitched_artifact_v4"
 )
 
 _VISUAL_FIDELITY_THRESHOLD = 0.8
@@ -28,6 +29,7 @@ def build_geometry_visual_shell_review_report(
     runtime_render_mesh: MeshSet,
     reference_simulation_mesh: MeshSet | None = None,
     constraints: dict[str, Any] | None = None,
+    stitched_shell_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run deterministic representation and shell-connectability checks.
 
@@ -35,9 +37,11 @@ def build_geometry_visual_shell_review_report(
     rendered pass rasterizes deterministic orthographic silhouettes from the
     runtime render mesh and canonical settled simulation mesh, then compares
     pixels by IoU. That is representation-preservation evidence, not source
-    image or provider appearance fidelity. The shell pass proves the stitch
-    graph can connect panel components under bounded seam distances; it does
-    not execute a vertex/index weld and must not be treated as welded topology.
+    image or provider appearance fidelity. The shell pass keeps graph
+    connectability separate from material stitch output: when a stitched shell
+    report is supplied, this review records the output artifact and audit, but
+    still rejects clean acceptance unless topology/opening/self-intersection
+    gates prove the stitched shell.
     """
 
     semantic = semantic_transfer_report["aggregate"]
@@ -109,8 +113,27 @@ def build_geometry_visual_shell_review_report(
         and shell_metrics["rejectedStitchPairCount"] == 0
         and shell_metrics["acceptedStitchPairCount"] > 0
     )
-    mesh_stitch_or_weld_execution_run = False
-    mesh_stitch_or_weld_proven = False
+    mesh_stitch_or_weld_execution_run = bool(
+        stitched_shell_report is not None
+        and stitched_shell_report.get("execution", {}).get("meshStitchOrWeldExecutionRun") is True
+    )
+    mesh_stitch_or_weld_proven = bool(
+        stitched_shell_report is not None
+        and stitched_shell_report.get("readiness", {}).get("meshStitchOrWeldProven") is True
+    )
+    shell_proof_status = (
+        "pass"
+        if mesh_stitch_or_weld_proven
+        else "fail"
+        if mesh_stitch_or_weld_execution_run
+        else "not_run"
+    )
+    stitched_render_asset = (
+        stitched_shell_report.get("renderAsset", {}) if stitched_shell_report is not None else {}
+    )
+    stitched_topology_audit = (
+        stitched_shell_report.get("topologyAudit") if stitched_shell_report is not None else None
+    )
     source_image_visual_comparison_run = False
     source_image_visual_fidelity_accepted = False
     provider_appearance_comparison_run = False
@@ -246,15 +269,15 @@ def build_geometry_visual_shell_review_report(
             ],
         },
         "shellProof": {
-            "status": "not_run",
+            "status": shell_proof_status,
             "stitchGraphConnectivityCheckRun": shell_metrics["stitchGraphConnectivityCheckRun"],
             "stitchGraphConnectable": stitch_graph_connectable,
             "meshStitchOrWeldExecutionRun": mesh_stitch_or_weld_execution_run,
             "meshStitchOrWeldProven": mesh_stitch_or_weld_proven,
-            "meshStitchOrWeldOutputAssetPath": None,
-            "meshStitchOrWeldOutputTopologyHash": None,
-            "meshStitchOrWeldOutputContentHash": None,
-            "meshStitchOrWeldAudit": None,
+            "meshStitchOrWeldOutputAssetPath": stitched_render_asset.get("path"),
+            "meshStitchOrWeldOutputTopologyHash": stitched_render_asset.get("topologyHash"),
+            "meshStitchOrWeldOutputContentHash": stitched_render_asset.get("contentHash"),
+            "meshStitchOrWeldAudit": stitched_topology_audit,
             "singleShellWeldProofRun": False,
             "singleShellWeldProven": False,
             "vertexWeldedSingleShell": retopology["vertexWeldedSingleShell"],
@@ -355,8 +378,10 @@ def build_geometry_visual_shell_review_report(
                 "provider_appearance_comparison_not_run",
                 "human_visual_review_not_run",
                 None if stitch_graph_connectable else "stitch_graph_not_connectable",
-                "mesh_stitch_or_weld_not_executed",
-                "mesh_stitch_or_weld_not_proven",
+                "mesh_stitch_or_weld_not_executed"
+                if not mesh_stitch_or_weld_execution_run
+                else None,
+                "mesh_stitch_or_weld_not_proven" if not mesh_stitch_or_weld_proven else None,
                 "normal_continuity_warn" if normal_status == "warn" else None,
                 "tangent_continuity_warn" if tangent_status == "warn" else None,
             ],

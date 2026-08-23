@@ -349,11 +349,17 @@ def build_clean_geometry_proposal_rejection(
     stitch_graph_connectable = bool(
         visual_shell_review_readiness.get("stitchGraphConnectable", False)
     )
-    single_shell_weld_proof_run = bool(
+    mesh_stitch_or_weld_execution_run = bool(
         visual_shell_review_execution.get("meshStitchOrWeldExecutionRun", False)
     )
-    single_shell_weld_proven = bool(
+    mesh_stitch_or_weld_proven = bool(
         visual_shell_review_readiness.get("meshStitchOrWeldProven", False)
+    )
+    single_shell_weld_proof_run = bool(
+        visual_shell_review_execution.get("singleShellWeldProofRun", False)
+    )
+    single_shell_weld_proven = bool(
+        visual_shell_review_readiness.get("singleShellWeldProven", False)
     )
     validation_accepted = bool(binding_validation_readiness_accepts(binding_validation_report))
     rejection_reasons = _rejection_reasons(
@@ -369,7 +375,7 @@ def build_clean_geometry_proposal_rejection(
         clean_acceptance_gate_accepted,
         validation_accepted,
         visual_fidelity_accepted,
-        single_shell_weld_proven,
+        mesh_stitch_or_weld_proven,
     )
     required_before_canonical = _required_before_canonical(
         cleanup_run,
@@ -383,7 +389,7 @@ def build_clean_geometry_proposal_rejection(
         clean_acceptance_gate_accepted,
         validation_accepted,
         visual_fidelity_accepted,
-        single_shell_weld_proven,
+        mesh_stitch_or_weld_proven,
     )
     report: dict[str, Any] = {
         "schemaVersion": 1,
@@ -477,8 +483,8 @@ def build_clean_geometry_proposal_rejection(
             "providerAppearanceAccepted": provider_appearance_accepted,
             "stitchGraphConnectivityCheckRun": stitch_graph_connectivity_check_run,
             "stitchGraphConnectable": stitch_graph_connectable,
-            "meshStitchOrWeldExecutionRun": single_shell_weld_proof_run,
-            "meshStitchOrWeldProven": single_shell_weld_proven,
+            "meshStitchOrWeldExecutionRun": mesh_stitch_or_weld_execution_run,
+            "meshStitchOrWeldProven": mesh_stitch_or_weld_proven,
             "singleShellWeldProofRun": single_shell_weld_proof_run,
             "singleShellWeldProven": single_shell_weld_proven,
             "uvTransferRun": uv_transfer_run,
@@ -638,8 +644,8 @@ def build_clean_geometry_proposal_rejection(
             ),
             "stitchGraphConnectivityCheckRun": stitch_graph_connectivity_check_run,
             "stitchGraphConnectable": stitch_graph_connectable,
-            "meshStitchOrWeldExecutionRun": single_shell_weld_proof_run,
-            "meshStitchOrWeldProven": single_shell_weld_proven,
+            "meshStitchOrWeldExecutionRun": mesh_stitch_or_weld_execution_run,
+            "meshStitchOrWeldProven": mesh_stitch_or_weld_proven,
             "singleShellWeldProofRun": single_shell_weld_proof_run,
             "singleShellWeldProven": single_shell_weld_proven,
             "cleanAcceptanceGateStatus": clean_acceptance_gate_status,

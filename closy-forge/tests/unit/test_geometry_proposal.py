@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from closy_forge.appearance import build_texture_identity_report
+from closy_forge.avatar.reference_avatar import (
+    avatar_contract,
+    build_collision_mesh,
+    build_reference_avatar_mesh,
+)
 from closy_forge.binding.binary_format import write_binding
 from closy_forge.capture import build_synthetic_capture_record
 from closy_forge.fitting import fit_tshirt_parameters_from_visual_observations
@@ -37,6 +42,7 @@ from closy_forge.proposals import (
     build_proposal_runtime_binding,
     build_proposal_runtime_render_mesh,
     build_raw_geometry_topology_report,
+    build_stitched_shell_assets,
     clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
     hash_clean_geometry_proposal,
@@ -51,10 +57,13 @@ from closy_forge.proposals import (
     hash_geometry_repair_retopology_plan,
     hash_geometry_runtime_binding_result,
     hash_geometry_semantic_transfer_report,
+    hash_geometry_stitched_shell_report,
     hash_geometry_visual_shell_review,
     hash_raw_geometry_topology_report,
+    hash_stitched_analysis_shell,
     reproject_cleanup_preview_to_settled_simulation,
 )
+from closy_forge.simulation.reference_cloth_solver import settle_reference_cloth
 from closy_forge.visual_understanding import build_tshirt_visual_observations
 
 
@@ -344,6 +353,109 @@ def test_geometry_visual_shell_review_accepts_silhouette_and_stitch_graph() -> N
     assert "source_image_visual_comparison_not_run" in report["readiness"]["blockingReasons"]
     assert "mesh_stitch_or_weld_not_executed" in report["readiness"]["blockingReasons"]
     assert report["readiness"]["acceptedForCleanProposal"] is False
+    assert report["integrity"]["geometryVisualShellReviewHash"] == (
+        hash_geometry_visual_shell_review(report)
+    )
+
+
+def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven_topology() -> None:
+    pattern = build_tshirt_pattern(TShirtParameters())
+    rest_mesh, edge_maps = build_simulation_mesh(pattern)
+    constraints = build_constraints(pattern, edge_maps)
+    avatar = avatar_contract(build_reference_avatar_mesh(), build_collision_mesh())
+    settled = settle_reference_cloth(
+        rest_mesh,
+        constraints,
+        avatar,
+        {"dampingRatio": 0.18},
+    ).settled_mesh
+
+    report, analysis, stitched_mesh = build_stitched_shell_assets(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        source_simulation_mesh=settled,
+        constraints=constraints,
+        analysis_asset_path="stitch/logical_stitched_analysis_shell.json",
+        render_asset_path="render/stitched_shell.glb",
+    )
+
+    assert report["execution"]["meshStitchOrWeldExecutionRun"] is True
+    assert report["execution"]["sourceVertexClassRewriteRun"] is True
+    assert report["execution"]["faceIndexRewriteRun"] is True
+    assert report["execution"]["operationCount"] == len(constraints["constraints"])
+    assert report["topologyAudit"]["executedOperationCount"] == len(constraints["constraints"])
+    assert report["topologyAudit"]["logicalShellCount"] == 1
+    assert report["topologyAudit"]["maxPostStitchResidualMeters"] == 0.0
+    assert report["topologyAudit"]["vertexCount"] == stitched_mesh.vertex_count
+    assert report["topologyAudit"]["triangleCount"] == stitched_mesh.triangle_count
+    assert report["readiness"]["meshStitchOrWeldProven"] is False
+    assert report["readiness"]["acceptedForCleanProposal"] is False
+    assert "mesh_stitch_or_weld_not_proven" in report["readiness"]["blockingReasons"]
+    assert "self_intersection_not_run" in report["readiness"]["blockingReasons"]
+    assert (
+        report["analysisAsset"]["payloadHash"] == analysis["integrity"]["stitchedAnalysisShellHash"]
+    )
+    assert analysis["logicalShell"]["vertexCount"] == stitched_mesh.vertex_count
+    assert analysis["openingProof"]["expectedOpeningCount"] == 4
+    assert report["integrity"]["geometryStitchedShellHash"] == (
+        hash_geometry_stitched_shell_report(report)
+    )
+    assert analysis["integrity"]["stitchedAnalysisShellHash"] == (
+        hash_stitched_analysis_shell(analysis)
+    )
+
+
+def test_geometry_visual_shell_review_records_stitched_artifact_without_clean_proof() -> None:
+    runtime_result = _runtime_ready_report()
+    semantic_transfer = _semantic_transfer_report()
+    texture_identity = _texture_identity_report()
+    source_mesh = _stitched_pair_mesh()
+    constraints = {
+        "constraints": [
+            {
+                "id": "constraint.test_seam.000",
+                "seamId": "seam.test",
+                "spanA": {"meshIndex": 0, "vertexIndex": 1},
+                "spanB": {"meshIndex": 1, "vertexIndex": 0},
+            }
+        ]
+    }
+    stitched_report, _analysis, _mesh = build_stitched_shell_assets(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        source_simulation_mesh=source_mesh,
+        constraints=constraints,
+        analysis_asset_path="stitch/logical_stitched_analysis_shell.json",
+        render_asset_path="render/stitched_shell.glb",
+    )
+    material_transfer = build_geometry_material_uv_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        texture_identity_report=texture_identity,
+        render_materials=_render_materials_report(),
+        runtime_render_mesh=source_mesh,
+    )
+
+    report = build_geometry_visual_shell_review_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        material_uv_transfer_report=material_transfer,
+        runtime_render_mesh=source_mesh,
+        reference_simulation_mesh=source_mesh,
+        constraints=constraints,
+        stitched_shell_report=stitched_report,
+    )
+
+    assert report["shellProof"]["status"] == "fail"
+    assert report["shellProof"]["meshStitchOrWeldExecutionRun"] is True
+    assert report["shellProof"]["meshStitchOrWeldProven"] is False
+    assert report["shellProof"]["meshStitchOrWeldOutputAssetPath"] == "render/stitched_shell.glb"
+    assert "mesh_stitch_or_weld_not_executed" not in report["readiness"]["blockingReasons"]
+    assert "mesh_stitch_or_weld_not_proven" in report["readiness"]["blockingReasons"]
     assert report["integrity"]["geometryVisualShellReviewHash"] == (
         hash_geometry_visual_shell_review(report)
     )

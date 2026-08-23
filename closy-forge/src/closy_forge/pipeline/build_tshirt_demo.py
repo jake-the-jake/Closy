@@ -67,6 +67,7 @@ from closy_forge.proposals import (
     GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
     GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
     GEOMETRY_SEMANTIC_TRANSFER_VERSION,
+    GEOMETRY_STITCHED_SHELL_VERSION,
     GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
     PROVIDER_REGISTRY_VERSION,
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
@@ -87,6 +88,7 @@ from closy_forge.proposals import (
     build_proposal_runtime_binding,
     build_proposal_runtime_render_mesh,
     build_raw_geometry_topology_report,
+    build_stitched_shell_assets,
     clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
     provider_registry_quality_report,
@@ -357,6 +359,16 @@ def _write_package_contents(
         render_materials=render_materials,
         runtime_render_mesh=proposal_runtime_render_mesh,
     )
+    geometry_stitched_shell, stitched_analysis_shell, stitched_shell_mesh = (
+        build_stitched_shell_assets(
+            garment_id="garment.demo_tshirt.reference_v1",
+            garment_class="tshirt",
+            source_simulation_mesh=simulation_mesh,
+            constraints=constraints,
+            analysis_asset_path="stitch/logical_stitched_analysis_shell.json",
+            render_asset_path="render/stitched_shell.glb",
+        )
+    )
     geometry_visual_shell_review = build_geometry_visual_shell_review_report(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -366,6 +378,7 @@ def _write_package_contents(
         runtime_render_mesh=proposal_runtime_render_mesh,
         reference_simulation_mesh=simulation_mesh,
         constraints=constraints,
+        stitched_shell_report=geometry_stitched_shell,
     )
     geometry_clean_acceptance_gate = build_geometry_clean_acceptance_gate_report(
         garment_id="garment.demo_tshirt.reference_v1",
@@ -468,11 +481,21 @@ def _write_package_contents(
     )
     write_canonical_json(package_dir / "simulation" / "settle_diagnostics.json", settle.diagnostics)
     write_canonical_json(package_dir / "simulation" / "material_physics.json", material_physics)
+    write_canonical_json(
+        package_dir / "stitch" / "logical_stitched_analysis_shell.json",
+        stitched_analysis_shell,
+    )
     write_glb(
         package_dir / "render" / "fallback.glb",
         render_mesh,
         "closy_render_cotton_fixture_v1",
         (0.08, 0.26, 0.78, 1.0),
+    )
+    write_indexed_glb(
+        package_dir / "render" / "stitched_shell.glb",
+        stitched_shell_mesh,
+        "closy_stitched_shell_preview_v1",
+        (0.10, 0.36, 0.70, 1.0),
     )
     write_canonical_json(
         package_dir / "render" / "mesh_manifest.json", _mesh_manifest(render_mesh, "render")
@@ -509,6 +532,7 @@ def _write_package_contents(
         geometry_repair_result,
         geometry_runtime_binding_result,
         geometry_material_uv_transfer,
+        geometry_stitched_shell,
         geometry_visual_shell_review,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
@@ -544,6 +568,7 @@ def _write_package_contents(
         geometry_repair_result,
         geometry_runtime_binding_result,
         geometry_material_uv_transfer,
+        geometry_stitched_shell,
         geometry_visual_shell_review,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
@@ -582,6 +607,9 @@ def _write_package_contents(
         geometry_repair_result,
         geometry_runtime_binding_result,
         geometry_material_uv_transfer,
+        geometry_stitched_shell,
+        stitched_analysis_shell,
+        stitched_shell_mesh,
         geometry_visual_shell_review,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
@@ -615,6 +643,9 @@ def _write_package_contents(
         "geometryRepairResult": geometry_repair_result,
         "geometryRuntimeBindingResult": geometry_runtime_binding_result,
         "geometryMaterialUvTransfer": geometry_material_uv_transfer,
+        "geometryStitchedShell": geometry_stitched_shell,
+        "stitchedAnalysisShell": stitched_analysis_shell,
+        "stitchedShellMesh": stitched_shell_mesh,
         "geometryVisualShellReview": geometry_visual_shell_review,
         "geometryCleanAcceptanceGate": geometry_clean_acceptance_gate,
         "cleanGeometryProposal": clean_geometry_proposal,
@@ -738,6 +769,9 @@ def _manifest(
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
     geometry_material_uv_transfer: dict[str, Any],
+    geometry_stitched_shell: dict[str, Any],
+    stitched_analysis_shell: dict[str, Any],
+    stitched_shell_mesh: MeshSet,
     geometry_visual_shell_review: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
@@ -783,6 +817,9 @@ def _manifest(
             ),
             "geometryRuntimeBindingResult": "reports/geometry_runtime_binding_result.json",
             "geometryMaterialUvTransfer": "reports/geometry_material_uv_transfer.json",
+            "geometryStitchedShell": "reports/geometry_stitched_shell.json",
+            "stitchedAnalysisShell": "stitch/logical_stitched_analysis_shell.json",
+            "stitchedRenderShell": "render/stitched_shell.glb",
             "geometryVisualShellReview": "reports/geometry_visual_shell_review.json",
             "geometryCleanAcceptanceGate": "reports/geometry_clean_acceptance_gate.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
@@ -913,6 +950,21 @@ def _manifest(
             "geometryMaterialUvTransferPayloadHash": str(
                 geometry_material_uv_transfer["integrity"]["geometryMaterialUvTransferHash"]
             ),
+            "geometryStitchedShellHash": _hash_from_inventory(
+                inventory, "reports/geometry_stitched_shell.json"
+            ),
+            "geometryStitchedShellPayloadHash": str(
+                geometry_stitched_shell["integrity"]["geometryStitchedShellHash"]
+            ),
+            "stitchedAnalysisShellHash": _hash_from_inventory(
+                inventory, "stitch/logical_stitched_analysis_shell.json"
+            ),
+            "stitchedAnalysisShellPayloadHash": str(
+                stitched_analysis_shell["integrity"]["stitchedAnalysisShellHash"]
+            ),
+            "stitchedRenderShellHash": _hash_from_inventory(inventory, "render/stitched_shell.glb"),
+            "stitchedShellTopologyHash": topology_hash(stitched_shell_mesh),
+            "stitchedShellContentHash": geometry_content_hash(stitched_shell_mesh),
             "geometryVisualShellReviewHash": _hash_from_inventory(
                 inventory, "reports/geometry_visual_shell_review.json"
             ),
@@ -978,6 +1030,7 @@ def _manifest(
             "geometryRepairResult": GEOMETRY_REPAIR_RESULT_VERSION,
             "geometryRuntimeBindingResult": GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
             "geometryMaterialUvTransfer": GEOMETRY_MATERIAL_UV_TRANSFER_VERSION,
+            "geometryStitchedShell": GEOMETRY_STITCHED_SHELL_VERSION,
             "geometryVisualShellReview": GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
             "geometryCleanAcceptanceGate": GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
@@ -992,7 +1045,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_21_visual_shell_review_evidence",
+            "name": "implementation_24_stitched_shell_output_evidence",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1011,6 +1064,7 @@ def _manifest(
             "geometry_repair_result_partial_reprojection_not_clean",
             "geometry_runtime_binding_result_clean_acceptance_pending",
             "geometry_material_uv_transfer_authored_pbr_only",
+            "geometry_stitched_shell_output_not_clean_proven",
             "geometry_visual_shell_review_clean_rejected",
             "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
@@ -1018,7 +1072,7 @@ def _manifest(
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "21-visual-shell-review-evidence"},
+        "extensions": {"closyImplementation": "24-stitched-shell-output-evidence"},
     }
 
 
@@ -1057,6 +1111,7 @@ def _capabilities() -> dict[str, bool]:
         "geometryRepairResultAvailable": True,
         "geometryRuntimeBindingResultAvailable": True,
         "geometryMaterialUvTransferAvailable": True,
+        "geometryStitchedShellAvailable": True,
         "geometryVisualShellReviewAvailable": True,
         "geometryCleanAcceptanceGateAvailable": True,
         "providerProvenanceAvailable": True,
@@ -1101,6 +1156,7 @@ def _quality_reports(
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
     geometry_material_uv_transfer: dict[str, Any],
+    geometry_stitched_shell: dict[str, Any],
     geometry_visual_shell_review: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
@@ -1166,6 +1222,7 @@ def _quality_reports(
         "geometry_repair_result.json": geometry_repair_result,
         "geometry_runtime_binding_result.json": geometry_runtime_binding_result,
         "geometry_material_uv_transfer.json": geometry_material_uv_transfer,
+        "geometry_stitched_shell.json": geometry_stitched_shell,
         "geometry_visual_shell_review.json": geometry_visual_shell_review,
         "geometry_clean_acceptance_gate.json": geometry_clean_acceptance_gate,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
@@ -1256,6 +1313,7 @@ def _provenance(
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
     geometry_material_uv_transfer: dict[str, Any],
+    geometry_stitched_shell: dict[str, Any],
     geometry_visual_shell_review: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
@@ -1604,6 +1662,28 @@ def _provenance(
                 [str(geometry_material_uv_transfer["integrity"]["geometryMaterialUvTransferHash"])],
             ),
             _stage(
+                "geometry_stitched_shell",
+                GEOMETRY_STITCHED_SHELL_VERSION,
+                {
+                    "meshStitchOrWeldExecutionRun": geometry_stitched_shell["execution"][
+                        "meshStitchOrWeldExecutionRun"
+                    ],
+                    "sourceVertexClassRewriteRun": geometry_stitched_shell["execution"][
+                        "sourceVertexClassRewriteRun"
+                    ],
+                    "faceIndexRewriteRun": geometry_stitched_shell["execution"][
+                        "faceIndexRewriteRun"
+                    ],
+                    "analysisAssetPath": geometry_stitched_shell["analysisAsset"]["path"],
+                    "renderAssetPath": geometry_stitched_shell["renderAsset"]["path"],
+                    "meshStitchOrWeldProven": geometry_stitched_shell["readiness"][
+                        "meshStitchOrWeldProven"
+                    ],
+                    "status": geometry_stitched_shell["readiness"]["status"],
+                },
+                [str(geometry_stitched_shell["integrity"]["geometryStitchedShellHash"])],
+            ),
+            _stage(
                 "geometry_visual_shell_review",
                 GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
                 {
@@ -1854,6 +1934,7 @@ def _provenance(
             "manual_raw_geometry_proposal_not_canonical",
             "geometry_binding_candidate_not_runtime_binding",
             "geometry_binding_validation_rejected_runtime_binding",
+            "geometry_stitched_shell_output_not_clean_proven",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
         ],
@@ -1912,6 +1993,8 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_repair_result = context["geometryRepairResult"]
     geometry_runtime_binding_result = context["geometryRuntimeBindingResult"]
     geometry_material_uv_transfer = context["geometryMaterialUvTransfer"]
+    geometry_stitched_shell = context["geometryStitchedShell"]
+    stitched_shell_mesh = context["stitchedShellMesh"]
     geometry_visual_shell_review = context["geometryVisualShellReview"]
     geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
@@ -1930,6 +2013,8 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "simulationTriangles": sim_mesh.triangle_count,
             "renderVertices": render_mesh.vertex_count,
             "renderTriangles": render_mesh.triangle_count,
+            "stitchedShellVertices": stitched_shell_mesh.vertex_count,
+            "stitchedShellTriangles": stitched_shell_mesh.triangle_count,
             "inventoriedFiles": len(manifest["inventory"]),
         },
         "capture": {
@@ -2247,6 +2332,35 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "missingUvCount": geometry_material_uv_transfer["aggregate"]["missingUvCount"],
         },
+        "geometryStitchedShell": {
+            "reportId": geometry_stitched_shell["reportId"],
+            "status": geometry_stitched_shell["readiness"]["status"],
+            "meshStitchOrWeldExecutionRun": geometry_stitched_shell["execution"][
+                "meshStitchOrWeldExecutionRun"
+            ],
+            "sourceVertexClassRewriteRun": geometry_stitched_shell["execution"][
+                "sourceVertexClassRewriteRun"
+            ],
+            "faceIndexRewriteRun": geometry_stitched_shell["execution"]["faceIndexRewriteRun"],
+            "operationCount": geometry_stitched_shell["execution"]["operationCount"],
+            "meshStitchOrWeldProven": geometry_stitched_shell["readiness"][
+                "meshStitchOrWeldProven"
+            ],
+            "logicalShellCount": geometry_stitched_shell["topologyAudit"]["logicalShellCount"],
+            "boundaryLoopCount": geometry_stitched_shell["topologyAudit"]["boundaryLoopCount"],
+            "expectedOpeningCount": geometry_stitched_shell["topologyAudit"][
+                "expectedOpeningCount"
+            ],
+            "nonManifoldEdgeCount": geometry_stitched_shell["topologyAudit"][
+                "nonManifoldEdgeCount"
+            ],
+            "maxPostStitchResidualMeters": geometry_stitched_shell["topologyAudit"][
+                "maxPostStitchResidualMeters"
+            ],
+            "analysisAssetPath": geometry_stitched_shell["analysisAsset"]["path"],
+            "renderAssetPath": geometry_stitched_shell["renderAsset"]["path"],
+            "topologyHash": geometry_stitched_shell["renderAsset"]["topologyHash"],
+        },
         "geometryVisualShellReview": {
             "reportId": geometry_visual_shell_review["reportId"],
             "sourceGeometryRuntimeBindingResultId": geometry_visual_shell_review[
@@ -2522,6 +2636,12 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"materials={summary['geometryMaterialUvTransfer']['materialTransferRun']}, "
         f"preview accepted="
         f"{summary['geometryMaterialUvTransfer']['acceptedForMaterialPreview']}\n"
+        f"- Stitched shell: status=`{summary['geometryStitchedShell']['status']}`, "
+        f"executed={summary['geometryStitchedShell']['meshStitchOrWeldExecutionRun']}, "
+        f"proven={summary['geometryStitchedShell']['meshStitchOrWeldProven']}, "
+        f"loops={summary['geometryStitchedShell']['boundaryLoopCount']}/"
+        f"{summary['geometryStitchedShell']['expectedOpeningCount']}, "
+        f"non-manifold edges={summary['geometryStitchedShell']['nonManifoldEdgeCount']}\n"
         f"- Visual/shell review: status=`{summary['geometryVisualShellReview']['status']}`, "
         "representation silhouette="
         f"{summary['geometryVisualShellReview']['representationSilhouetteAccepted']}, "
@@ -2544,6 +2664,8 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"{counts['simulationTriangles']} triangles\n"
         f"- Render shell: {counts['renderVertices']} vertices, "
         f"{counts['renderTriangles']} triangles\n"
+        f"- Logical stitched shell: {counts['stitchedShellVertices']} vertices, "
+        f"{counts['stitchedShellTriangles']} triangles\n"
         f"- Cloth settle: {summary['settle']['convergenceState']} via "
         f"`{summary['settle']['solverVersion']}`\n"
         f"- Seam RMS residual: {summary['settle']['rmsSeamResidualMeters']:.8f} m\n"
