@@ -21,6 +21,12 @@ from closy_forge.proposals.geometry_binding_validation import (
     build_geometry_binding_validation_report,
     hash_geometry_binding_validation_report,
 )
+from closy_forge.proposals.geometry_clean_acceptance_gate import (
+    CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS,
+    GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
+    build_geometry_clean_acceptance_gate_report,
+    hash_geometry_clean_acceptance_gate,
+)
 from closy_forge.proposals.geometry_cleanup_plan import (
     GEOMETRY_CLEANUP_PLAN_VERSION,
     build_geometry_cleanup_plan,
@@ -82,6 +88,8 @@ from closy_forge.proposals.raw_geometry_topology import (
 
 __all__ = [
     "CLEAN_GEOMETRY_PROPOSAL_VERSION",
+    "CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS",
+    "GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION",
     "GEOMETRY_PROPOSAL_VERSION",
     "GEOMETRY_BINDING_CANDIDATE_VERSION",
     "GEOMETRY_BINDING_VALIDATION_VERSION",
@@ -105,6 +113,7 @@ __all__ = [
     "PARTIAL_SEMANTIC_TRANSFER_REJECTION_REASONS",
     "REQUIRED_CLEAN_REJECTION_REASONS",
     "build_clean_geometry_proposal_rejection",
+    "build_geometry_clean_acceptance_gate_report",
     "build_geometry_provider_registry",
     "build_geometry_binding_candidate_report",
     "build_geometry_binding_validation_report",
@@ -123,6 +132,7 @@ __all__ = [
     "cleanup_meshset_for_preview",
     "geometry_proposal_quality_report",
     "hash_clean_geometry_proposal",
+    "hash_geometry_clean_acceptance_gate",
     "hash_geometry_binding_candidate_report",
     "hash_geometry_binding_validation_report",
     "hash_geometry_cleanup_plan",

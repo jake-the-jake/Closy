@@ -27,6 +27,9 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     runtime_binding_result = read_json(
         package_dir / "reports" / "geometry_runtime_binding_result.json"
     )
+    clean_acceptance_gate = read_json(
+        package_dir / "reports" / "geometry_clean_acceptance_gate.json"
+    )
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
@@ -271,6 +274,36 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
                 "acceptedForCleanProposal"
             ],
         },
+        "geometryCleanAcceptanceGate": {
+            "reportId": clean_acceptance_gate["reportId"],
+            "sourceGeometryRuntimeBindingResultId": clean_acceptance_gate[
+                "sourceGeometryRuntimeBindingResultId"
+            ],
+            "status": clean_acceptance_gate["readiness"]["status"],
+            "cleanAcceptanceGateRun": clean_acceptance_gate["execution"]["cleanAcceptanceGateRun"],
+            "runtimeBindingEvidenceReviewed": clean_acceptance_gate["execution"][
+                "runtimeBindingEvidenceReviewed"
+            ],
+            "visualFidelityReviewRun": clean_acceptance_gate["execution"][
+                "visualFidelityReviewRun"
+            ],
+            "materialTransferRun": clean_acceptance_gate["execution"]["materialTransferRun"],
+            "singleShellWeldProofRun": clean_acceptance_gate["execution"][
+                "singleShellWeldProofRun"
+            ],
+            "checkCount": clean_acceptance_gate["aggregate"]["checkCount"],
+            "passedCheckCount": clean_acceptance_gate["aggregate"]["passedCheckCount"],
+            "failedCheckCount": clean_acceptance_gate["aggregate"]["failedCheckCount"],
+            "warningCheckCount": clean_acceptance_gate["aggregate"]["warningCheckCount"],
+            "notRunCheckCount": clean_acceptance_gate["aggregate"]["notRunCheckCount"],
+            "acceptedForCleanProposal": clean_acceptance_gate["readiness"][
+                "acceptedForCleanProposal"
+            ],
+            "acceptedForRuntimeRender": clean_acceptance_gate["readiness"][
+                "acceptedForRuntimeRender"
+            ],
+            "blockingReasons": clean_acceptance_gate["readiness"]["blockingReasons"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_proposal["proposalId"],
             "sourceRawProposalId": clean_proposal["sourceRawProposalId"],
@@ -299,6 +332,9 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "runtimeBindingResultGenerated": clean_proposal["cleanupPipeline"][
                 "runtimeBindingResultGenerated"
             ],
+            "cleanAcceptanceGateGenerated": clean_proposal["cleanupPipeline"][
+                "cleanAcceptanceGateGenerated"
+            ],
             "cleanupRun": clean_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_proposal["cleanupPipeline"]["repairRun"],
             "deformationReprojectionRun": clean_proposal["cleanupPipeline"][
@@ -311,6 +347,10 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             ],
             "simulationBindingRun": clean_proposal["cleanupPipeline"]["simulationBindingRun"],
             "runtimeBindingAccepted": clean_proposal["cleanupPipeline"]["runtimeBindingAccepted"],
+            "cleanAcceptanceGateRun": clean_proposal["cleanupPipeline"]["cleanAcceptanceGateRun"],
+            "cleanAcceptanceGateAccepted": clean_proposal["cleanupPipeline"][
+                "cleanAcceptanceGateAccepted"
+            ],
             "failureReason": clean_proposal["cleanGeometryAudit"]["failureReason"],
             "rejectionReasons": clean_proposal["quality"]["rejectionReasons"],
         },
@@ -374,6 +414,7 @@ def human_report(package_dir: Path) -> str:
     repair_plan = summary["geometryRepairRetopologyPlan"]
     repair_result = summary["geometryRepairResult"]
     runtime_binding_result = summary["geometryRuntimeBindingResult"]
+    clean_acceptance_gate = summary["geometryCleanAcceptanceGate"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     settle = summary["settle"]
@@ -454,6 +495,14 @@ def human_report(package_dir: Path) -> str:
                 f"records={runtime_binding_result['runtimeBindingRecordCount']}, "
                 f"accepted={runtime_binding_result['runtimeBindingAccepted']}, "
                 f"max reconstruction error={runtime_binding_result['maxReconstructionError']:.8f}"
+            ),
+            (
+                f"Clean acceptance gate: status={clean_acceptance_gate['status']}, "
+                f"passed={clean_acceptance_gate['passedCheckCount']}/"
+                f"{clean_acceptance_gate['checkCount']}, "
+                f"failed={clean_acceptance_gate['failedCheckCount']}, "
+                f"not run={clean_acceptance_gate['notRunCheckCount']}, "
+                f"accepted={clean_acceptance_gate['acceptedForCleanProposal']}"
             ),
             (
                 f"Clean proposal: {clean_proposal['qualityStatus']}, "

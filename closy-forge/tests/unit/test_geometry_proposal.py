@@ -11,6 +11,7 @@ from closy_forge.garments.tshirt.semantic_graph import build_semantic_graph
 from closy_forge.geometry.glb_io import write_glb, write_indexed_glb
 from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.proposals import (
+    CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS,
     PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
     PARTIAL_REPAIR_RESULT_REJECTION_REASONS,
@@ -21,6 +22,7 @@ from closy_forge.proposals import (
     build_clean_geometry_proposal_rejection,
     build_geometry_binding_candidate_report,
     build_geometry_binding_validation_report,
+    build_geometry_clean_acceptance_gate_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
@@ -38,6 +40,7 @@ from closy_forge.proposals import (
     hash_clean_geometry_proposal,
     hash_geometry_binding_candidate_report,
     hash_geometry_binding_validation_report,
+    hash_geometry_clean_acceptance_gate,
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
@@ -210,6 +213,41 @@ def test_clean_geometry_proposal_rejects_uncleaned_raw_visual_reference(
     assert clean["integrity"]["cleanGeometryProposalHash"] == hash_clean_geometry_proposal(clean)
     assert quality["status"] == "rejected"
     assert quality["cleanProposalAvailable"] is False
+
+
+def test_geometry_clean_acceptance_gate_rejects_runtime_preview_without_clean_evidence() -> None:
+    runtime_result = _runtime_ready_report()
+    semantic_transfer = _semantic_transfer_report()
+    texture_identity = _texture_identity_report()
+    provider_registry = _provider_registry_report()
+
+    gate = build_geometry_clean_acceptance_gate_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        texture_identity_report=texture_identity,
+        provider_registry=provider_registry,
+    )
+
+    assert gate["reportId"] == "clean_acceptance_gate.runtime_bound_tshirt_visual_geometry_v1"
+    assert gate["execution"]["cleanAcceptanceGateRun"] is True
+    assert gate["readiness"]["acceptedForRuntimeRender"] is True
+    assert gate["readiness"]["acceptedForCleanProposal"] is False
+    assert gate["readiness"]["acceptedForCanonical"] is False
+    assert gate["readiness"]["status"] == "clean_acceptance_rejected_fidelity_material_pending"
+    assert gate["quality"]["status"] == "rejected"
+    assert gate["aggregate"]["checkCount"] == 11
+    assert gate["aggregate"]["passedCheckCount"] == 6
+    assert gate["aggregate"]["failedCheckCount"] == 1
+    assert gate["aggregate"]["warningCheckCount"] == 2
+    assert gate["aggregate"]["notRunCheckCount"] == 2
+    assert set(CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS).issubset(
+        gate["quality"]["rejectionReasons"]
+    )
+    assert gate["integrity"]["geometryCleanAcceptanceGateHash"] == (
+        hash_geometry_clean_acceptance_gate(gate)
+    )
 
 
 def test_raw_geometry_topology_report_reads_glb_and_rejects_clean_readiness(
@@ -919,6 +957,83 @@ def _tiny_mesh() -> MeshSet:
             )
         ]
     )
+
+
+def _runtime_ready_report() -> dict[str, object]:
+    return {
+        "reportId": "runtime_binding_result.cleanup_preview_tshirt_visual_geometry_v1",
+        "integrity": {"geometryRuntimeBindingResultHash": "0" * 64},
+        "execution": {"runtimeBindingAccepted": True},
+        "readiness": {"acceptedForRuntimeRender": True},
+        "aggregate": {
+            "runtimeBindingRecordCount": 1308,
+            "runtimeRenderVertexCount": 1308,
+            "runtimeRenderTriangleCount": 872,
+            "maxReconstructionError": 0.0,
+            "rmsReconstructionError": 0.0,
+            "maxSeamPairDistanceMeters": 0.131918884,
+            "rmsSeamPairDistanceMeters": 0.033197204,
+            "maxNormalAngleDegrees": 57.5,
+            "maxTangentAngleDegrees": 61.25,
+        },
+        "retopology": {
+            "providerTopologyRetainedForRuntime": False,
+            "vertexWeldedSingleShell": False,
+        },
+        "seamContinuity": {
+            "normalContinuityStatus": "warn",
+            "tangentContinuityStatus": "warn",
+            "thresholds": {
+                "warnNormalAngleDegrees": 45.0,
+                "warnTangentAngleDegrees": 45.0,
+            },
+        },
+        "outputRenderAsset": {
+            "path": "proposals/manual_runtime_retopology_preview.glb",
+            "sourceAssetHash": "1" * 64,
+            "runtimePreviewUseAllowed": True,
+        },
+        "outputBinding": {
+            "path": "binding/proposal_sim_to_render.bin",
+            "sourceAssetHash": "2" * 64,
+        },
+    }
+
+
+def _semantic_transfer_report() -> dict[str, object]:
+    return {
+        "reportId": "semantic_transfer.cleanup_preview_tshirt_visual_geometry_v1",
+        "integrity": {"geometrySemanticTransferHash": "3" * 64},
+        "aggregate": {
+            "transferredPanelCount": 5,
+            "expectedPanelCount": 5,
+            "classificationCompleteness": 1.0,
+        },
+    }
+
+
+def _texture_identity_report() -> dict[str, object]:
+    return {
+        "textureIdentityId": "texture.synthetic_tshirt_identity_v1",
+        "integrity": {"textureIdentityHash": "4" * 64},
+        "sourceTextureAvailable": False,
+        "textureProjectionRun": False,
+        "observedMaterialRegions": ["body", "rib"],
+    }
+
+
+def _provider_registry_report() -> dict[str, object]:
+    return {
+        "registryId": "provider_registry.geometry_tshirt_reference_v1",
+        "integrity": {"providerRegistryHash": "5" * 64},
+        "policy": {
+            "allowExternalApis": False,
+            "allowTrainingUse": False,
+            "containsUserImagery": False,
+            "containsPersonalBodyData": False,
+            "approvedDomain": "avatar_and_garment_only",
+        },
+    }
 
 
 def _offset_mesh(meshset: MeshSet, delta: tuple[float, float, float]) -> MeshSet:

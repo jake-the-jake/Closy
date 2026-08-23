@@ -6,6 +6,9 @@ from typing import Any
 from closy_forge.contracts.common import COORDINATE_CONVENTION, FIXED_TIMESTAMP
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import sha256_bytes
+from closy_forge.proposals.geometry_clean_acceptance_gate import (
+    CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS,
+)
 
 CLEAN_GEOMETRY_PROPOSAL_VERSION = "closy.clean_geometry_proposal.rejection_report.v1"
 
@@ -79,6 +82,7 @@ def build_clean_geometry_proposal_rejection(
     repair_retopology_plan_report: dict[str, Any] | None = None,
     repair_result_report: dict[str, Any] | None = None,
     runtime_binding_result_report: dict[str, Any] | None = None,
+    clean_acceptance_gate_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
 
@@ -223,6 +227,24 @@ def build_clean_geometry_proposal_rejection(
         runtime_binding_result_execution = runtime_binding_result_report["execution"]
         runtime_binding_result_aggregate = runtime_binding_result_report["aggregate"]
         runtime_binding_result_quality = runtime_binding_result_report["quality"]
+    if clean_acceptance_gate_report is None:
+        clean_acceptance_gate_available = False
+        clean_acceptance_gate_id = None
+        clean_acceptance_gate_hash = None
+        clean_acceptance_gate_status = None
+        clean_acceptance_gate_execution: dict[str, Any] = {}
+        clean_acceptance_gate_aggregate: dict[str, Any] = {}
+        clean_acceptance_gate_quality: dict[str, Any] = {}
+    else:
+        clean_acceptance_gate_available = True
+        clean_acceptance_gate_id = clean_acceptance_gate_report["reportId"]
+        clean_acceptance_gate_hash = clean_acceptance_gate_report["integrity"][
+            "geometryCleanAcceptanceGateHash"
+        ]
+        clean_acceptance_gate_status = clean_acceptance_gate_report["readiness"]["status"]
+        clean_acceptance_gate_execution = clean_acceptance_gate_report["execution"]
+        clean_acceptance_gate_aggregate = clean_acceptance_gate_report["aggregate"]
+        clean_acceptance_gate_quality = clean_acceptance_gate_report["quality"]
     cleanup_run = bool(cleanup_result_execution.get("cleanupRun", False))
     semantic_transfer_run = bool(semantic_transfer_execution.get("semanticTransferRun", False))
     candidate_binding_run = bool(binding_candidate_execution.get("candidateBindingRun", False))
@@ -244,6 +266,12 @@ def build_clean_geometry_proposal_rejection(
     runtime_binding_accepted = bool(
         runtime_binding_result_execution.get("runtimeBindingAccepted", False)
     )
+    clean_acceptance_gate_run = bool(
+        clean_acceptance_gate_execution.get("cleanAcceptanceGateRun", False)
+    )
+    clean_acceptance_gate_accepted = bool(
+        clean_acceptance_gate_aggregate.get("acceptedForCleanProposal", False)
+    )
     validation_accepted = bool(binding_validation_readiness_accepts(binding_validation_report))
     rejection_reasons = _rejection_reasons(
         cleanup_run,
@@ -254,6 +282,8 @@ def build_clean_geometry_proposal_rejection(
         partial_repair_result_generated,
         runtime_binding_result_generated,
         runtime_binding_accepted,
+        clean_acceptance_gate_run,
+        clean_acceptance_gate_accepted,
         validation_accepted,
     )
     required_before_canonical = _required_before_canonical(
@@ -264,6 +294,8 @@ def build_clean_geometry_proposal_rejection(
         partial_repair_result_generated,
         runtime_binding_result_generated,
         runtime_binding_accepted,
+        clean_acceptance_gate_run,
+        clean_acceptance_gate_accepted,
         validation_accepted,
     )
     report: dict[str, Any] = {
@@ -294,6 +326,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceGeometryRepairResultHash": repair_result_hash,
         "sourceGeometryRuntimeBindingResultId": runtime_binding_result_id,
         "sourceGeometryRuntimeBindingResultHash": runtime_binding_result_hash,
+        "sourceGeometryCleanAcceptanceGateId": clean_acceptance_gate_id,
+        "sourceGeometryCleanAcceptanceGateHash": clean_acceptance_gate_hash,
         "rawProposal": {
             "available": raw_proposal["available"],
             "assetPath": raw_proposal["assetPath"],
@@ -312,6 +346,7 @@ def build_clean_geometry_proposal_rejection(
             "repairRetopologyPlanGenerated": repair_retopology_plan_available,
             "partialRepairResultGenerated": repair_result_available,
             "runtimeBindingResultGenerated": runtime_binding_result_available,
+            "cleanAcceptanceGateGenerated": clean_acceptance_gate_available,
             "cleanupRun": cleanup_run,
             "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
             "retopologyRun": bool(runtime_binding_result_execution.get("retopologyRun", False)),
@@ -337,28 +372,40 @@ def build_clean_geometry_proposal_rejection(
             "simulationBindingRun": runtime_binding_accepted,
             "runtimeBindingWritten": runtime_binding_written,
             "runtimeBindingAccepted": runtime_binding_accepted,
+            "cleanAcceptanceGateRun": clean_acceptance_gate_run,
+            "cleanAcceptanceGateAccepted": clean_acceptance_gate_accepted,
+            "visualFidelityReviewRun": bool(
+                clean_acceptance_gate_execution.get("visualFidelityReviewRun", False)
+            ),
+            "providerVisualFidelityAccepted": False,
             "uvTransferRun": False,
-            "materialTransferRun": False,
+            "materialTransferRun": bool(
+                clean_acceptance_gate_execution.get("materialTransferRun", False)
+            ),
+            "materialTransferAccepted": False,
             "connectedComponentAnalysisRun": topology_available,
             "nonManifoldAnalysisRun": topology_available,
             "blockedBy": [
                 "raw_visual_reference_only",
                 "clean_geometry_provider_unavailable",
-                "clean_geometry_acceptance_gate_not_run"
+                "clean_acceptance_gate_rejected"
+                if clean_acceptance_gate_available and clean_acceptance_gate_run
+                else "clean_geometry_acceptance_gate_not_run"
                 if runtime_binding_result_available and runtime_binding_accepted
                 else "partial_repair_result_not_clean"
                 if repair_result_available
                 else "repair_retopology_plan_not_executed",
+                "material_transfer_not_run"
+                if clean_acceptance_gate_available
+                else "material_transfer_pending",
                 "provider_visual_fidelity_not_accepted"
                 if runtime_binding_accepted
                 else "simulation_binding_unavailable",
             ],
             "nextRequiredStages": [
-                "clean_geometry_acceptance_quality_gate"
-                if runtime_binding_accepted
-                else "execute_seam_split_retopology_and_runtime_binding_adapter",
+                "material_uv_transfer",
                 "visual_fidelity_review",
-                "material_transfer",
+                "single_shell_stitch_weld_proof",
                 "canonical_acceptance_quality_gate",
             ],
         },
@@ -370,7 +417,7 @@ def build_clean_geometry_proposal_rejection(
             "acceptedForSimulation": False,
             "acceptedForRuntimeRender": False,
             "reason": "runtime_bound_visual_proposal_has_not_passed_clean_acceptance"
-            if runtime_binding_accepted
+            if runtime_binding_accepted or clean_acceptance_gate_available
             else "raw_manual_proposal_has_not_passed_cleanup_or_binding",
         },
         "cleanGeometryAudit": {
@@ -455,6 +502,19 @@ def build_clean_geometry_proposal_rejection(
             "simulationBindingRecordCount": runtime_binding_result_aggregate.get(
                 "runtimeBindingRecordCount", 0
             ),
+            "cleanAcceptanceGateStatus": clean_acceptance_gate_status,
+            "cleanAcceptanceGateQualityStatus": clean_acceptance_gate_quality.get("status"),
+            "cleanAcceptanceGateRun": clean_acceptance_gate_run,
+            "cleanAcceptanceGateAccepted": clean_acceptance_gate_accepted,
+            "cleanAcceptanceGateFailedCheckCount": clean_acceptance_gate_aggregate.get(
+                "failedCheckCount"
+            ),
+            "cleanAcceptanceGateWarningCheckCount": clean_acceptance_gate_aggregate.get(
+                "warningCheckCount"
+            ),
+            "cleanAcceptanceGateNotRunCheckCount": clean_acceptance_gate_aggregate.get(
+                "notRunCheckCount"
+            ),
             "failureReason": "clean_geometry_proposal_not_generated",
         },
         "canonicalization": {
@@ -494,6 +554,9 @@ def build_clean_geometry_proposal_rejection(
                 "geometry_runtime_binding_result_available_but_clean_not_accepted"
                 if runtime_binding_result_available
                 else "geometry_runtime_binding_result_not_generated",
+                "geometry_clean_acceptance_gate_rejected"
+                if clean_acceptance_gate_available
+                else "geometry_clean_acceptance_gate_not_generated",
                 "geometry_cleanup_plan_generated_without_execution"
                 if cleanup_plan_available
                 else "geometry_cleanup_plan_not_generated",
@@ -546,6 +609,7 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "repairRetopologyPlanGenerated": cleanup["repairRetopologyPlanGenerated"],
         "partialRepairResultGenerated": cleanup["partialRepairResultGenerated"],
         "runtimeBindingResultGenerated": cleanup["runtimeBindingResultGenerated"],
+        "cleanAcceptanceGateGenerated": cleanup["cleanAcceptanceGateGenerated"],
         "retopologyRun": cleanup["retopologyRun"],
         "seamSplitRun": cleanup["seamSplitRun"],
         "componentStitchingRun": cleanup["componentStitchingRun"],
@@ -554,6 +618,11 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "deformationReprojectionRun": cleanup["deformationReprojectionRun"],
         "runtimeBindingWritten": cleanup["runtimeBindingWritten"],
         "runtimeBindingAccepted": cleanup["runtimeBindingAccepted"],
+        "cleanAcceptanceGateRun": cleanup["cleanAcceptanceGateRun"],
+        "cleanAcceptanceGateAccepted": cleanup["cleanAcceptanceGateAccepted"],
+        "visualFidelityReviewRun": cleanup["visualFidelityReviewRun"],
+        "providerVisualFidelityAccepted": cleanup["providerVisualFidelityAccepted"],
+        "materialTransferAccepted": cleanup["materialTransferAccepted"],
         "connectedComponentAnalysisRun": cleanup["connectedComponentAnalysisRun"],
         "nonManifoldAnalysisRun": cleanup["nonManifoldAnalysisRun"],
         "connectedComponentCount": audit["connectedComponentCount"],
@@ -590,6 +659,11 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "runtimeBindingRecordCount": audit["runtimeBindingRecordCount"],
         "runtimeBindingMaxReconstructionError": audit["runtimeBindingMaxReconstructionError"],
         "runtimeBindingFailedOrWarnCheckCount": audit["runtimeBindingFailedOrWarnCheckCount"],
+        "cleanAcceptanceGateStatus": audit["cleanAcceptanceGateStatus"],
+        "cleanAcceptanceGateQualityStatus": audit["cleanAcceptanceGateQualityStatus"],
+        "cleanAcceptanceGateFailedCheckCount": audit["cleanAcceptanceGateFailedCheckCount"],
+        "cleanAcceptanceGateWarningCheckCount": audit["cleanAcceptanceGateWarningCheckCount"],
+        "cleanAcceptanceGateNotRunCheckCount": audit["cleanAcceptanceGateNotRunCheckCount"],
         "meshCount": audit["meshCount"],
         "triangleEstimate": audit["triangleEstimate"],
         "failureReason": audit["failureReason"],
@@ -629,8 +703,23 @@ def _rejection_reasons(
     partial_repair_result_generated: bool,
     runtime_binding_result_generated: bool,
     runtime_binding_accepted: bool,
+    clean_acceptance_gate_run: bool,
+    clean_acceptance_gate_accepted: bool,
     validation_accepted: bool,
 ) -> list[str]:
+    if (
+        cleanup_run
+        and semantic_transfer_run
+        and candidate_binding_run
+        and deformation_validation_run
+        and repair_retopology_plan_generated
+        and partial_repair_result_generated
+        and runtime_binding_result_generated
+        and runtime_binding_accepted
+        and clean_acceptance_gate_run
+        and not clean_acceptance_gate_accepted
+    ):
+        return CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS
     if (
         cleanup_run
         and semantic_transfer_run
@@ -684,6 +773,8 @@ def _required_before_canonical(
     partial_repair_result_generated: bool,
     runtime_binding_result_generated: bool,
     runtime_binding_accepted: bool,
+    clean_acceptance_gate_run: bool,
+    clean_acceptance_gate_accepted: bool,
     validation_accepted: bool,
 ) -> list[str]:
     required = [
@@ -710,6 +801,12 @@ def _required_before_canonical(
             for item in required
             if item not in {"partial_repair_incomplete", "retopology_not_run"}
         ]
-        required.insert(-1, "provider_visual_fidelity_not_accepted")
+        if clean_acceptance_gate_run and not clean_acceptance_gate_accepted:
+            required.insert(-1, "clean_acceptance_gate_rejected")
+            required.insert(-1, "material_transfer_not_run")
+            required.insert(-1, "visual_fidelity_review_not_run")
+            required.insert(-1, "single_shell_weld_not_proven")
+        else:
+            required.insert(-1, "provider_visual_fidelity_not_accepted")
     required.append("provider_output_not_canonical_garment_truth")
     return required

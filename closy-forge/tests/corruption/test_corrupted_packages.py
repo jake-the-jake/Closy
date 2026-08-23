@@ -687,6 +687,40 @@ def test_geometry_runtime_binding_result_clean_acceptance_claim_is_rejected(
     assert "geometry_runtime_binding_result_quality_status_invalid" in codes
 
 
+def test_geometry_clean_acceptance_gate_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_clean_acceptance_gate_hash.closygarment"
+    )
+    gate = read_json(corrupt / "reports" / "geometry_clean_acceptance_gate.json")
+    gate["aggregate"]["passedCheckCount"] = 11
+    write_json(corrupt / "reports" / "geometry_clean_acceptance_gate.json", gate)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_clean_acceptance_gate_hash_mismatch" in codes
+    assert "geometry_clean_acceptance_gate_recompute_mismatch" in codes
+    assert "geometry_clean_acceptance_gate_aggregate_invalid" in codes
+
+
+def test_geometry_clean_acceptance_gate_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_clean_acceptance_gate_ready.closygarment"
+    )
+    gate = read_json(corrupt / "reports" / "geometry_clean_acceptance_gate.json")
+    gate["readiness"]["acceptedForCleanProposal"] = True
+    gate["readiness"]["acceptedForCanonical"] = True
+    gate["readiness"]["status"] = "clean_acceptance_passed"
+    gate["quality"]["status"] = "pass"
+    write_json(corrupt / "reports" / "geometry_clean_acceptance_gate.json", gate)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_clean_acceptance_gate_hash_mismatch" in codes
+    assert "geometry_clean_acceptance_gate_recompute_mismatch" in codes
+    assert "geometry_clean_acceptance_gate_acceptance_invalid" in codes
+    assert "geometry_clean_acceptance_gate_quality_status_invalid" in codes
+
+
 def test_clean_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_clean_hash.closygarment")
     clean = read_json(corrupt / "proposals" / "clean_geometry_proposal.json")

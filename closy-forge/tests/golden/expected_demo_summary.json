@@ -2,7 +2,7 @@
   "bindingWarningCodes": [
     "self_collision_not_run"
   ],
-  "canonicalPackageDigest": "fb0c051c58b2f7fa3cc454fdd2f5cb566ca1566aeb815cb590ef2e1a00659223",
+  "canonicalPackageDigest": "3dcd8b1706b1005f1209ec764dfa332f46720b7a706436f30f2d8299aeac37ab",
   "counts": {
     "constraints": 74,
     "edges": 28,
@@ -45,7 +45,8 @@
     "sourceCaptureRecordAvailable": true,
     "textureIdentityEvidenceAvailable": true,
     "tshirtParameterFitAvailable": true,
-    "visualObservationsAvailable": true
+    "visualObservationsAvailable": true,
+    "geometryCleanAcceptanceGateAvailable": true
   },
   "capture": {
     "overallScore": 0.94265,
@@ -238,7 +239,10 @@
     "semanticTransferRun": true,
     "simulationBindingRun": true,
     "sourceRawProposalId": "proposal.manual_tshirt_raw_visual_geometry_v1",
-    "topologyDiagnosticsRun": true
+    "topologyDiagnosticsRun": true,
+    "cleanAcceptanceGateGenerated": true,
+    "cleanAcceptanceGateRun": true,
+    "cleanAcceptanceGateAccepted": false
   },
   "providerRegistry": {
     "cleanProposalProviderAvailable": false,
@@ -284,5 +288,32 @@
       "seam.neck_band.attachment"
     ]
   },
-  "simulationTopologyHash": "2da9de2919fe581dbd9d33ab55d59be4507247f10eb4dd63852d557056b75e9d"
+  "simulationTopologyHash": "2da9de2919fe581dbd9d33ab55d59be4507247f10eb4dd63852d557056b75e9d",
+  "geometryCleanAcceptanceGate": {
+    "reportId": "clean_acceptance_gate.runtime_bound_tshirt_visual_geometry_v1",
+    "sourceGeometryRuntimeBindingResultId": "runtime_binding_result.cleanup_preview_tshirt_visual_geometry_v1",
+    "status": "clean_acceptance_rejected_fidelity_material_pending",
+    "cleanAcceptanceGateRun": true,
+    "runtimeBindingEvidenceReviewed": true,
+    "visualFidelityReviewRun": false,
+    "materialTransferRun": false,
+    "singleShellWeldProofRun": false,
+    "checkCount": 11,
+    "passedCheckCount": 6,
+    "failedCheckCount": 1,
+    "warningCheckCount": 2,
+    "notRunCheckCount": 2,
+    "acceptedForCleanProposal": false,
+    "acceptedForRuntimeRender": true,
+    "blockingReasons": [
+      "clean_acceptance_gate_rejected",
+      "material_transfer_not_run",
+      "normal_continuity_warn",
+      "provider_output_not_canonical_garment_truth",
+      "single_shell_weld_not_proven",
+      "source_texture_projection_not_run",
+      "tangent_continuity_warn",
+      "visual_fidelity_review_not_run"
+    ]
+  }
 }

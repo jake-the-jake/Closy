@@ -36,6 +36,7 @@ from closy_forge.package_io.hashing import (
 )
 from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.proposals import (
+    CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS,
     PARTIAL_BINDING_VALIDATION_REJECTION_REASONS,
     PARTIAL_CLEANUP_REJECTION_REASONS,
     PARTIAL_REPAIR_RESULT_REJECTION_REASONS,
@@ -45,6 +46,7 @@ from closy_forge.proposals import (
     REQUIRED_CLEAN_REJECTION_REASONS,
     build_geometry_binding_candidate_report,
     build_geometry_binding_validation_report,
+    build_geometry_clean_acceptance_gate_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_repair_result_report,
@@ -57,6 +59,7 @@ from closy_forge.proposals import (
     hash_clean_geometry_proposal,
     hash_geometry_binding_candidate_report,
     hash_geometry_binding_validation_report,
+    hash_geometry_clean_acceptance_gate,
     hash_geometry_cleanup_plan,
     hash_geometry_cleanup_result,
     hash_geometry_proposal,
@@ -128,6 +131,7 @@ EXPECTED_FILES = [
     "reports/geometry_repair_retopology_plan.json",
     "reports/geometry_repair_result.json",
     "reports/geometry_runtime_binding_result.json",
+    "reports/geometry_clean_acceptance_gate.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
     "reports/semantic_quality.json",
@@ -280,6 +284,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_repair_retopology_plan(package_dir, manifest, issues)
     _validate_geometry_repair_result(package_dir, manifest, issues)
     _validate_geometry_runtime_binding_result(package_dir, manifest, issues)
+    _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
     _validate_semantic(package_dir, issues)
@@ -1449,6 +1454,11 @@ def _validate_geometry_proposal(
             "geometryRuntimeBindingResultAvailable",
             True,
             "geometry_runtime_binding_result_capability_missing",
+        ),
+        (
+            "geometryCleanAcceptanceGateAvailable",
+            True,
+            "geometry_clean_acceptance_gate_capability_missing",
         ),
         ("providerProvenanceAvailable", True, "provider_provenance_capability_missing"),
         ("cleanGeometryProposalAvailable", False, "clean_geometry_proposal_capability_invalid"),
@@ -5029,6 +5039,320 @@ def _validate_geometry_runtime_binding_result(
         )
 
 
+def _validate_geometry_clean_acceptance_gate(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    runtime_result = _read_required_json(
+        package_dir, "reports/geometry_runtime_binding_result.json", issues
+    )
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
+    texture_identity = _read_required_json(package_dir, "textures/texture_identity.json", issues)
+    provider_registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
+    clean_gate = _read_required_json(
+        package_dir, "reports/geometry_clean_acceptance_gate.json", issues
+    )
+    if (
+        runtime_result is None
+        or semantic_transfer is None
+        or texture_identity is None
+        or provider_registry is None
+        or clean_gate is None
+    ):
+        return
+
+    if clean_gate.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_garment_mismatch",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate must reference the package garment ID.",
+            )
+        )
+    if clean_gate.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_class_mismatch",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate must reference the package garment class.",
+            )
+        )
+
+    expected_sources = [
+        (
+            "sourceGeometryRuntimeBindingResultId",
+            runtime_result.get("reportId"),
+            "geometry_clean_acceptance_gate_runtime_source_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferId",
+            semantic_transfer.get("reportId"),
+            "geometry_clean_acceptance_gate_semantic_source_mismatch",
+        ),
+        (
+            "sourceTextureIdentityId",
+            texture_identity.get("textureIdentityId"),
+            "geometry_clean_acceptance_gate_texture_source_mismatch",
+        ),
+        (
+            "sourceProviderRegistryId",
+            provider_registry.get("registryId"),
+            "geometry_clean_acceptance_gate_registry_source_mismatch",
+        ),
+    ]
+    for field, expected_value, code in expected_sources:
+        if clean_gate.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_clean_acceptance_gate.json",
+                    f"Clean acceptance gate {field} must match its source artifact.",
+                )
+            )
+
+    expected_hashes = [
+        (
+            "sourceGeometryRuntimeBindingResultHash",
+            _nested_string(runtime_result, ["integrity", "geometryRuntimeBindingResultHash"], ""),
+            "geometry_clean_acceptance_gate_runtime_hash_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferHash",
+            _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], ""),
+            "geometry_clean_acceptance_gate_semantic_hash_mismatch",
+        ),
+        (
+            "sourceTextureIdentityHash",
+            _nested_string(texture_identity, ["integrity", "textureIdentityHash"], ""),
+            "geometry_clean_acceptance_gate_texture_hash_mismatch",
+        ),
+        (
+            "sourceProviderRegistryHash",
+            _nested_string(provider_registry, ["integrity", "providerRegistryHash"], ""),
+            "geometry_clean_acceptance_gate_registry_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if clean_gate.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_clean_acceptance_gate.json",
+                    f"Clean acceptance gate {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(clean_gate, ["integrity", "geometryCleanAcceptanceGateHash"], "") != (
+        hash_geometry_clean_acceptance_gate(clean_gate)
+    ):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_hash_mismatch",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate hash must match its canonical payload.",
+            )
+        )
+
+    candidate = clean_gate.get("candidate", {})
+    measurements = clean_gate.get("measurements", {})
+    thresholds = clean_gate.get("thresholds", {})
+    checks = clean_gate.get("checks", [])
+    aggregate = clean_gate.get("aggregate", {})
+    execution = clean_gate.get("execution", {})
+    readiness = clean_gate.get("readiness", {})
+    quality = clean_gate.get("quality", {})
+    policy = clean_gate.get("policy", {})
+    for name, block in [
+        ("candidate", candidate),
+        ("measurements", measurements),
+        ("thresholds", thresholds),
+        ("aggregate", aggregate),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_clean_acceptance_gate_block_invalid",
+                    "fatal",
+                    "reports/geometry_clean_acceptance_gate.json",
+                    f"Clean acceptance gate {name} block must be an object.",
+                )
+            )
+            return
+    if not isinstance(checks, list):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_block_invalid",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate checks block must be a list.",
+            )
+        )
+        return
+
+    expected_gate = build_geometry_clean_acceptance_gate_report(
+        garment_id=str(manifest.get("garmentId", "")),
+        garment_class=str(manifest.get("garmentClass", "")),
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        texture_identity_report=texture_identity,
+        provider_registry=provider_registry,
+    )
+    for key in [
+        "candidate",
+        "measurements",
+        "thresholds",
+        "checks",
+        "aggregate",
+        "execution",
+        "readiness",
+        "quality",
+        "policy",
+    ]:
+        if clean_gate.get(key) != expected_gate.get(key):
+            issues.append(
+                _issue(
+                    "geometry_clean_acceptance_gate_recompute_mismatch",
+                    "fatal",
+                    "reports/geometry_clean_acceptance_gate.json",
+                    f"Clean acceptance gate field {key} is stale.",
+                )
+            )
+
+    if (
+        execution.get("cleanAcceptanceGateRun") is not True
+        or execution.get("runtimeBindingEvidenceReviewed") is not True
+        or execution.get("semanticTransferEvidenceReviewed") is not True
+        or execution.get("materialEvidenceReviewed") is not True
+        or execution.get("policyReviewed") is not True
+        or execution.get("visualFidelityReviewRun") is not False
+        or execution.get("uvTransferRun") is not False
+        or execution.get("materialTransferRun") is not False
+        or execution.get("singleShellWeldProofRun") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_execution_state_invalid",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                (
+                    "Clean acceptance gate may review deterministic runtime evidence but "
+                    "cannot claim material transfer, visual review or single-shell proof."
+                ),
+            )
+        )
+    if (
+        readiness.get("status") != "clean_acceptance_rejected_fidelity_material_pending"
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("acceptedForSimulation") is not False
+        or readiness.get("acceptedForRuntimeRender")
+        != runtime_result.get("readiness", {}).get("acceptedForRuntimeRender")
+    ):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_acceptance_invalid",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate cannot accept D0 clean/canonical geometry.",
+            )
+        )
+    if quality.get("status") != "rejected":
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_quality_status_invalid",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "D0 clean acceptance gate must remain rejected.",
+            )
+        )
+    if (
+        _int_or(aggregate.get("checkCount"), -1) != len(checks)
+        or _int_or(aggregate.get("passedCheckCount"), -1)
+        != sum(check.get("status") == "pass" for check in checks)
+        or _int_or(aggregate.get("failedCheckCount"), -1)
+        != sum(check.get("status") == "fail" for check in checks)
+        or _int_or(aggregate.get("warningCheckCount"), -1)
+        != sum(check.get("status") == "warn" for check in checks)
+        or _int_or(aggregate.get("notRunCheckCount"), -1)
+        != sum(check.get("status") == "not_run" for check in checks)
+        or aggregate.get("acceptedForCleanProposal") is not False
+        or aggregate.get("acceptedForCanonical") is not False
+        or aggregate.get("acceptedForSimulation") is not False
+        or aggregate.get("acceptedForRuntimeRender")
+        != runtime_result.get("readiness", {}).get("acceptedForRuntimeRender")
+    ):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_aggregate_invalid",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate aggregate must mirror its checks and rejection state.",
+            )
+        )
+    blocking_reasons = readiness.get("blockingReasons", [])
+    rejection_reasons = quality.get("rejectionReasons", [])
+    if not isinstance(blocking_reasons, list):
+        blocking_reasons = []
+    if not isinstance(rejection_reasons, list):
+        rejection_reasons = []
+    for reason in CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS:
+        if reason not in blocking_reasons or reason not in rejection_reasons:
+            issues.append(
+                _issue(
+                    "geometry_clean_acceptance_gate_rejection_reason_missing",
+                    "fatal",
+                    "reports/geometry_clean_acceptance_gate.json",
+                    "Clean acceptance gate must retain all canonical rejection reasons.",
+                    reason,
+                )
+            )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+        or policy.get("providerOutputMayBecomeCanonicalWithoutGate") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_policy_violation",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryCleanAcceptanceGateAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryCleanAcceptanceGateAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(clean_gate):
+        issues.append(
+            _issue(
+                "geometry_clean_acceptance_gate_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_clean_acceptance_gate.json",
+                "Clean acceptance gate must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_runtime_binding_result_file_reference(
     package_dir: Path,
     expected_path: str,
@@ -5504,6 +5828,9 @@ def _validate_clean_geometry_proposal(
     runtime_binding_result = _read_required_json(
         package_dir, "reports/geometry_runtime_binding_result.json", issues
     )
+    clean_acceptance_gate = _read_required_json(
+        package_dir, "reports/geometry_clean_acceptance_gate.json", issues
+    )
     clean_proposal = _read_required_json(
         package_dir, "proposals/clean_geometry_proposal.json", issues
     )
@@ -5522,6 +5849,7 @@ def _validate_clean_geometry_proposal(
         or repair_plan is None
         or repair_result is None
         or runtime_binding_result is None
+        or clean_acceptance_gate is None
         or clean_proposal is None
     ):
         return
@@ -5604,6 +5932,15 @@ def _validate_clean_geometry_proposal(
                 "",
             ),
             "clean_geometry_proposal_runtime_binding_result_hash_mismatch",
+        ),
+        (
+            "sourceGeometryCleanAcceptanceGateHash",
+            _nested_string(
+                clean_acceptance_gate,
+                ["integrity", "geometryCleanAcceptanceGateHash"],
+                "",
+            ),
+            "clean_geometry_proposal_clean_acceptance_gate_hash_mismatch",
         ),
     ]
     for field, expected_hash, code in expected_hashes:
@@ -5717,6 +6054,17 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the runtime binding result ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryCleanAcceptanceGateId") != clean_acceptance_gate.get(
+        "reportId"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_clean_acceptance_gate_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the clean acceptance gate ID.",
             )
         )
 
@@ -5927,6 +6275,39 @@ def _validate_clean_geometry_proposal(
                     f"Clean proposal {key} must mirror the runtime binding result.",
                 )
             )
+    clean_gate_execution = clean_acceptance_gate.get("execution", {})
+    if cleanup.get("cleanAcceptanceGateGenerated") is not True:
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal cleanAcceptanceGateGenerated must be true.",
+            )
+        )
+    if cleanup.get("cleanAcceptanceGateRun") != clean_gate_execution.get("cleanAcceptanceGateRun"):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal cleanAcceptanceGateRun must mirror the clean acceptance gate.",
+            )
+        )
+    if cleanup.get("cleanAcceptanceGateAccepted") != clean_acceptance_gate.get("readiness", {}).get(
+        "acceptedForCleanProposal"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                (
+                    "Clean proposal cleanAcceptanceGateAccepted must mirror the clean "
+                    "acceptance gate."
+                ),
+            )
+        )
     if cleanup.get("deformationReprojectionRun") != repair_result_execution.get(
         "deformationReprojectionRun"
     ):
@@ -5970,6 +6351,9 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("tangentContinuityValidationRun") is not True
         or cleanup.get("runtimeBindingWritten") is not True
         or cleanup.get("runtimeBindingAccepted") is not True
+        or cleanup.get("cleanAcceptanceGateGenerated") is not True
+        or cleanup.get("cleanAcceptanceGateRun") is not True
+        or cleanup.get("cleanAcceptanceGateAccepted") is not False
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -6266,6 +6650,32 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    clean_gate_readiness = clean_acceptance_gate.get("readiness", {})
+    clean_gate_quality = clean_acceptance_gate.get("quality", {})
+    clean_gate_aggregate = clean_acceptance_gate.get("aggregate", {})
+    if (
+        isinstance(clean_gate_readiness, dict)
+        and isinstance(clean_gate_quality, dict)
+        and isinstance(clean_gate_aggregate, dict)
+    ):
+        expected_gate_fields = {
+            "cleanAcceptanceGateStatus": clean_gate_readiness.get("status"),
+            "cleanAcceptanceGateQualityStatus": clean_gate_quality.get("status"),
+            "cleanAcceptanceGateFailedCheckCount": clean_gate_aggregate.get("failedCheckCount"),
+            "cleanAcceptanceGateWarningCheckCount": clean_gate_aggregate.get("warningCheckCount"),
+            "cleanAcceptanceGateNotRunCheckCount": clean_gate_aggregate.get("notRunCheckCount"),
+        }
+        for key, expected in expected_gate_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_clean_acceptance_gate_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal clean acceptance gate field {key} is stale.",
+                    )
+                )
+
     rejection_reasons = quality.get("rejectionReasons", [])
     if not isinstance(rejection_reasons, list):
         rejection_reasons = []
@@ -6329,6 +6739,9 @@ def _validate_clean_geometry_proposal(
             "deformationReprojectionRun": cleanup.get("deformationReprojectionRun"),
             "runtimeBindingWritten": cleanup.get("runtimeBindingWritten"),
             "runtimeBindingAccepted": cleanup.get("runtimeBindingAccepted"),
+            "cleanAcceptanceGateGenerated": cleanup.get("cleanAcceptanceGateGenerated"),
+            "cleanAcceptanceGateRun": cleanup.get("cleanAcceptanceGateRun"),
+            "cleanAcceptanceGateAccepted": cleanup.get("cleanAcceptanceGateAccepted"),
             "connectedComponentAnalysisRun": cleanup.get("connectedComponentAnalysisRun"),
             "nonManifoldAnalysisRun": cleanup.get("nonManifoldAnalysisRun"),
             "cleanupPlanStatus": audit.get("cleanupPlanStatus"),
@@ -6368,6 +6781,13 @@ def _validate_clean_geometry_proposal(
             "runtimeBindingFailedOrWarnCheckCount": audit.get(
                 "runtimeBindingFailedOrWarnCheckCount"
             ),
+            "cleanAcceptanceGateStatus": audit.get("cleanAcceptanceGateStatus"),
+            "cleanAcceptanceGateQualityStatus": audit.get("cleanAcceptanceGateQualityStatus"),
+            "cleanAcceptanceGateFailedCheckCount": audit.get("cleanAcceptanceGateFailedCheckCount"),
+            "cleanAcceptanceGateWarningCheckCount": audit.get(
+                "cleanAcceptanceGateWarningCheckCount"
+            ),
+            "cleanAcceptanceGateNotRunCheckCount": audit.get("cleanAcceptanceGateNotRunCheckCount"),
             "failureReason": audit.get("failureReason"),
         }
         for key, expected in expected_quality.items():
@@ -7039,6 +7459,19 @@ def _meshset_from_state_and_manifest(state: dict[str, Any], manifest: dict[str, 
 
 
 def _required_clean_rejections_for_state(cleanup: dict[str, Any]) -> list[str]:
+    if (
+        cleanup.get("cleanupRun") is True
+        and cleanup.get("semanticTransferRun") is True
+        and cleanup.get("candidateBindingRun") is True
+        and cleanup.get("deformationValidationRun") is True
+        and cleanup.get("repairRetopologyPlanGenerated") is True
+        and cleanup.get("partialRepairResultGenerated") is True
+        and cleanup.get("runtimeBindingResultGenerated") is True
+        and cleanup.get("runtimeBindingAccepted") is True
+        and cleanup.get("cleanAcceptanceGateRun") is True
+        and cleanup.get("cleanAcceptanceGateAccepted") is False
+    ):
+        return CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS
     if (
         cleanup.get("cleanupRun") is True
         and cleanup.get("semanticTransferRun") is True

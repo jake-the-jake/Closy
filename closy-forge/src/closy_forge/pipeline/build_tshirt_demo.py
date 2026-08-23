@@ -54,6 +54,7 @@ from closy_forge.proposals import (
     CLEAN_GEOMETRY_PROPOSAL_VERSION,
     GEOMETRY_BINDING_CANDIDATE_VERSION,
     GEOMETRY_BINDING_VALIDATION_VERSION,
+    GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
     GEOMETRY_CLEANUP_PLAN_VERSION,
     GEOMETRY_CLEANUP_RESULT_VERSION,
     GEOMETRY_PROPOSAL_VERSION,
@@ -66,6 +67,7 @@ from closy_forge.proposals import (
     build_clean_geometry_proposal_rejection,
     build_geometry_binding_candidate_report,
     build_geometry_binding_validation_report,
+    build_geometry_clean_acceptance_gate_report,
     build_geometry_cleanup_plan,
     build_geometry_cleanup_result,
     build_geometry_provider_registry,
@@ -338,6 +340,14 @@ def _write_package_contents(
         settled_simulation_mesh_path="simulation/simulation_mesh.glb",
         constraints=constraints,
     )
+    geometry_clean_acceptance_gate = build_geometry_clean_acceptance_gate_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=geometry_runtime_binding_result,
+        semantic_transfer_report=geometry_semantic_transfer,
+        texture_identity_report=texture_identity,
+        provider_registry=provider_registry,
+    )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -352,6 +362,7 @@ def _write_package_contents(
         repair_retopology_plan_report=geometry_repair_retopology_plan,
         repair_result_report=geometry_repair_result,
         runtime_binding_result_report=geometry_runtime_binding_result,
+        clean_acceptance_gate_report=geometry_clean_acceptance_gate,
     )
     render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
     binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
@@ -467,6 +478,7 @@ def _write_package_contents(
         geometry_repair_retopology_plan,
         geometry_repair_result,
         geometry_runtime_binding_result,
+        geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -499,6 +511,7 @@ def _write_package_contents(
         geometry_repair_retopology_plan,
         geometry_repair_result,
         geometry_runtime_binding_result,
+        geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -534,6 +547,7 @@ def _write_package_contents(
         geometry_repair_retopology_plan,
         geometry_repair_result,
         geometry_runtime_binding_result,
+        geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
     )
@@ -564,6 +578,7 @@ def _write_package_contents(
         "geometryRepairRetopologyPlan": geometry_repair_retopology_plan,
         "geometryRepairResult": geometry_repair_result,
         "geometryRuntimeBindingResult": geometry_runtime_binding_result,
+        "geometryCleanAcceptanceGate": geometry_clean_acceptance_gate,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
         "inventory": inventory,
@@ -684,6 +699,7 @@ def _manifest(
     geometry_repair_retopology_plan: dict[str, Any],
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
+    geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -726,6 +742,7 @@ def _manifest(
                 "proposals/manual_runtime_retopology_preview.glb"
             ),
             "geometryRuntimeBindingResult": "reports/geometry_runtime_binding_result.json",
+            "geometryCleanAcceptanceGate": "reports/geometry_clean_acceptance_gate.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
             "semanticGraph": "semantic/garment_graph.json",
@@ -848,6 +865,12 @@ def _manifest(
             "geometryRuntimeBindingResultPayloadHash": str(
                 geometry_runtime_binding_result["integrity"]["geometryRuntimeBindingResultHash"]
             ),
+            "geometryCleanAcceptanceGateHash": _hash_from_inventory(
+                inventory, "reports/geometry_clean_acceptance_gate.json"
+            ),
+            "geometryCleanAcceptanceGatePayloadHash": str(
+                geometry_clean_acceptance_gate["integrity"]["geometryCleanAcceptanceGateHash"]
+            ),
             "proposalRuntimeBindingHash": _hash_from_inventory(
                 inventory, "binding/proposal_sim_to_render.bin"
             ),
@@ -900,6 +923,7 @@ def _manifest(
             "geometryRepairRetopologyPlan": GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
             "geometryRepairResult": GEOMETRY_REPAIR_RESULT_VERSION,
             "geometryRuntimeBindingResult": GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
+            "geometryCleanAcceptanceGate": GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
             "patternGenerator": "closy.tshirt.pattern.v1",
@@ -912,7 +936,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_18_geometry_runtime_binding_result",
+            "name": "implementation_19_geometry_clean_acceptance_gate",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -930,12 +954,13 @@ def _manifest(
             "geometry_binding_validation_rejected_runtime_binding",
             "geometry_repair_result_partial_reprojection_not_clean",
             "geometry_runtime_binding_result_clean_acceptance_pending",
+            "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "18-geometry-runtime-binding-result"},
+        "extensions": {"closyImplementation": "19-geometry-clean-acceptance-gate"},
     }
 
 
@@ -973,6 +998,7 @@ def _capabilities() -> dict[str, bool]:
         "geometryRepairRetopologyPlanAvailable": True,
         "geometryRepairResultAvailable": True,
         "geometryRuntimeBindingResultAvailable": True,
+        "geometryCleanAcceptanceGateAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
@@ -1014,6 +1040,7 @@ def _quality_reports(
     geometry_repair_retopology_plan: dict[str, Any],
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
+    geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
@@ -1076,6 +1103,7 @@ def _quality_reports(
         "geometry_repair_retopology_plan.json": geometry_repair_retopology_plan,
         "geometry_repair_result.json": geometry_repair_result,
         "geometry_runtime_binding_result.json": geometry_runtime_binding_result,
+        "geometry_clean_acceptance_gate.json": geometry_clean_acceptance_gate,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
         ),
@@ -1163,6 +1191,7 @@ def _provenance(
     geometry_repair_retopology_plan: dict[str, Any],
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
+    geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
@@ -1485,6 +1514,41 @@ def _provenance(
                 ],
             ),
             _stage(
+                "geometry_clean_acceptance_gate",
+                GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
+                {
+                    "sourceGeometryRuntimeBindingResultId": geometry_clean_acceptance_gate[
+                        "sourceGeometryRuntimeBindingResultId"
+                    ],
+                    "cleanAcceptanceGateRun": geometry_clean_acceptance_gate["execution"][
+                        "cleanAcceptanceGateRun"
+                    ],
+                    "runtimeBindingEvidenceReviewed": geometry_clean_acceptance_gate["execution"][
+                        "runtimeBindingEvidenceReviewed"
+                    ],
+                    "visualFidelityReviewRun": geometry_clean_acceptance_gate["execution"][
+                        "visualFidelityReviewRun"
+                    ],
+                    "materialTransferRun": geometry_clean_acceptance_gate["execution"][
+                        "materialTransferRun"
+                    ],
+                    "singleShellWeldProofRun": geometry_clean_acceptance_gate["execution"][
+                        "singleShellWeldProofRun"
+                    ],
+                    "acceptedForCleanProposal": geometry_clean_acceptance_gate["readiness"][
+                        "acceptedForCleanProposal"
+                    ],
+                    "status": geometry_clean_acceptance_gate["readiness"]["status"],
+                },
+                [
+                    str(
+                        geometry_clean_acceptance_gate["integrity"][
+                            "geometryCleanAcceptanceGateHash"
+                        ]
+                    )
+                ],
+            ),
+            _stage(
                 "clean_geometry_proposal_rejection",
                 CLEAN_GEOMETRY_PROPOSAL_VERSION,
                 {
@@ -1516,6 +1580,9 @@ def _provenance(
                     "sourceGeometryRuntimeBindingResultId": clean_geometry_proposal[
                         "sourceGeometryRuntimeBindingResultId"
                     ],
+                    "sourceGeometryCleanAcceptanceGateId": clean_geometry_proposal[
+                        "sourceGeometryCleanAcceptanceGateId"
+                    ],
                     "topologyDiagnosticsRun": True,
                     "cleanupPlanGenerated": True,
                     "cleanupResultGenerated": True,
@@ -1526,6 +1593,9 @@ def _provenance(
                     "partialRepairResultGenerated": True,
                     "runtimeBindingResultGenerated": clean_geometry_proposal["cleanupPipeline"][
                         "runtimeBindingResultGenerated"
+                    ],
+                    "cleanAcceptanceGateGenerated": clean_geometry_proposal["cleanupPipeline"][
+                        "cleanAcceptanceGateGenerated"
                     ],
                     "cleanupRun": True,
                     "repairRun": False,
@@ -1547,6 +1617,12 @@ def _provenance(
                     ],
                     "runtimeBindingAccepted": clean_geometry_proposal["cleanupPipeline"][
                         "runtimeBindingAccepted"
+                    ],
+                    "cleanAcceptanceGateRun": clean_geometry_proposal["cleanupPipeline"][
+                        "cleanAcceptanceGateRun"
+                    ],
+                    "cleanAcceptanceGateAccepted": clean_geometry_proposal["cleanupPipeline"][
+                        "cleanAcceptanceGateAccepted"
                     ],
                     "acceptedForCanonical": False,
                     "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
@@ -1668,6 +1744,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_repair_retopology_plan = context["geometryRepairRetopologyPlan"]
     geometry_repair_result = context["geometryRepairResult"]
     geometry_runtime_binding_result = context["geometryRuntimeBindingResult"]
+    geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     return {
@@ -1977,6 +2054,40 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "acceptedForCleanProposal"
             ],
         },
+        "geometryCleanAcceptanceGate": {
+            "reportId": geometry_clean_acceptance_gate["reportId"],
+            "sourceGeometryRuntimeBindingResultId": geometry_clean_acceptance_gate[
+                "sourceGeometryRuntimeBindingResultId"
+            ],
+            "status": geometry_clean_acceptance_gate["readiness"]["status"],
+            "cleanAcceptanceGateRun": geometry_clean_acceptance_gate["execution"][
+                "cleanAcceptanceGateRun"
+            ],
+            "runtimeBindingEvidenceReviewed": geometry_clean_acceptance_gate["execution"][
+                "runtimeBindingEvidenceReviewed"
+            ],
+            "visualFidelityReviewRun": geometry_clean_acceptance_gate["execution"][
+                "visualFidelityReviewRun"
+            ],
+            "materialTransferRun": geometry_clean_acceptance_gate["execution"][
+                "materialTransferRun"
+            ],
+            "singleShellWeldProofRun": geometry_clean_acceptance_gate["execution"][
+                "singleShellWeldProofRun"
+            ],
+            "checkCount": geometry_clean_acceptance_gate["aggregate"]["checkCount"],
+            "passedCheckCount": geometry_clean_acceptance_gate["aggregate"]["passedCheckCount"],
+            "failedCheckCount": geometry_clean_acceptance_gate["aggregate"]["failedCheckCount"],
+            "warningCheckCount": geometry_clean_acceptance_gate["aggregate"]["warningCheckCount"],
+            "notRunCheckCount": geometry_clean_acceptance_gate["aggregate"]["notRunCheckCount"],
+            "acceptedForCleanProposal": geometry_clean_acceptance_gate["readiness"][
+                "acceptedForCleanProposal"
+            ],
+            "acceptedForRuntimeRender": geometry_clean_acceptance_gate["readiness"][
+                "acceptedForRuntimeRender"
+            ],
+            "blockingReasons": geometry_clean_acceptance_gate["readiness"]["blockingReasons"],
+        },
         "cleanGeometryProposal": {
             "proposalId": clean_geometry_proposal["proposalId"],
             "sourceRawProposalId": clean_geometry_proposal["sourceRawProposalId"],
@@ -2011,6 +2122,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "runtimeBindingResultGenerated": clean_geometry_proposal["cleanupPipeline"][
                 "runtimeBindingResultGenerated"
             ],
+            "cleanAcceptanceGateGenerated": clean_geometry_proposal["cleanupPipeline"][
+                "cleanAcceptanceGateGenerated"
+            ],
             "cleanupRun": clean_geometry_proposal["cleanupPipeline"]["cleanupRun"],
             "repairRun": clean_geometry_proposal["cleanupPipeline"]["repairRun"],
             "deformationReprojectionRun": clean_geometry_proposal["cleanupPipeline"][
@@ -2030,6 +2144,12 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "runtimeBindingAccepted": clean_geometry_proposal["cleanupPipeline"][
                 "runtimeBindingAccepted"
+            ],
+            "cleanAcceptanceGateRun": clean_geometry_proposal["cleanupPipeline"][
+                "cleanAcceptanceGateRun"
+            ],
+            "cleanAcceptanceGateAccepted": clean_geometry_proposal["cleanupPipeline"][
+                "cleanAcceptanceGateAccepted"
             ],
             "failureReason": clean_geometry_proposal["cleanGeometryAudit"]["failureReason"],
             "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
@@ -2132,6 +2252,12 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"accepted={summary['geometryRuntimeBindingResult']['runtimeBindingAccepted']}, "
         f"max reconstruction error="
         f"{summary['geometryRuntimeBindingResult']['maxReconstructionError']:.8f}\n"
+        f"- Clean acceptance gate: status=`{summary['geometryCleanAcceptanceGate']['status']}`, "
+        f"passed={summary['geometryCleanAcceptanceGate']['passedCheckCount']}/"
+        f"{summary['geometryCleanAcceptanceGate']['checkCount']}, "
+        f"failed={summary['geometryCleanAcceptanceGate']['failedCheckCount']}, "
+        f"not run={summary['geometryCleanAcceptanceGate']['notRunCheckCount']}, "
+        f"accepted={summary['geometryCleanAcceptanceGate']['acceptedForCleanProposal']}\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"
