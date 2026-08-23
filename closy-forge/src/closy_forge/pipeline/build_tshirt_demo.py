@@ -37,9 +37,14 @@ from closy_forge.garments.tshirt.assembly import build_constraints, build_simula
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.garments.tshirt.pattern_generator import build_tshirt_pattern
 from closy_forge.garments.tshirt.semantic_graph import build_semantic_graph
-from closy_forge.geometry.glb_io import audit_glb, write_glb, write_indexed_glb
+from closy_forge.geometry.glb_io import audit_glb, read_glb_meshset, write_glb, write_indexed_glb
 from closy_forge.geometry.mesh_model import MeshSet, mesh_bounds
 from closy_forge.geometry.subdivision import subdivide_for_render
+from closy_forge.inspection import (
+    INSPECTION_ARTIFACT_REPORT_VERSION,
+    INSPECTION_RENDERER_VERSION,
+    write_inspection_artifacts,
+)
 from closy_forge.package_io.canonical_json import (
     canonical_dumps,
     write_canonical_json,
@@ -548,6 +553,26 @@ def _write_package_contents(
     for name, report in quality_reports.items():
         write_canonical_json(package_dir / "reports" / name, report)
 
+    inspection_manifest, inspection_report = write_inspection_artifacts(
+        package_dir,
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        pattern=pattern,
+        rest_mesh=rest_mesh,
+        settled_mesh=simulation_mesh,
+        render_mesh=render_mesh,
+        avatar_collision_mesh=collision_mesh,
+        manual_raw_mesh=read_glb_meshset(manual_proposal_asset),
+        cleanup_preview_mesh=read_glb_meshset(cleanup_preview_asset),
+        repair_preview_mesh=read_glb_meshset(repair_preview_asset),
+        runtime_bound_mesh=read_glb_meshset(proposal_runtime_render_asset),
+        logical_stitched_mesh=stitched_shell_mesh,
+        render_split_stitched_mesh=read_glb_meshset(package_dir / "render" / "stitched_shell.glb"),
+        geometry_stitched_shell=geometry_stitched_shell,
+        geometry_visual_shell_review=geometry_visual_shell_review,
+        clean_geometry_proposal=clean_geometry_proposal,
+    )
+
     provenance = _provenance(
         params,
         seed,
@@ -580,6 +605,7 @@ def _write_package_contents(
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
+        inspection_report,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
 
@@ -621,6 +647,8 @@ def _write_package_contents(
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
+        inspection_manifest,
+        inspection_report,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
     return {
@@ -657,6 +685,8 @@ def _write_package_contents(
         "geometryCleanAcceptanceGate": geometry_clean_acceptance_gate,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
+        "inspectionManifest": inspection_manifest,
+        "inspectionReport": inspection_report,
         "inventory": inventory,
     }
 
@@ -783,6 +813,8 @@ def _manifest(
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
+    inspection_manifest: dict[str, Any],
+    inspection_report: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -828,6 +860,8 @@ def _manifest(
             "stitchedAnalysisShell": "stitch/logical_stitched_analysis_shell.json",
             "stitchedRenderShell": "render/stitched_shell.glb",
             "geometryVisualShellReview": "reports/geometry_visual_shell_review.json",
+            "inspectionArtifactManifest": "reports/inspection/manifest.json",
+            "inspectionArtifactReport": "reports/inspection/inspection_report.json",
             "geometryCleanAcceptanceGate": "reports/geometry_clean_acceptance_gate.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
@@ -978,6 +1012,18 @@ def _manifest(
             "geometryVisualShellReviewPayloadHash": str(
                 geometry_visual_shell_review["integrity"]["geometryVisualShellReviewHash"]
             ),
+            "inspectionArtifactManifestHash": _hash_from_inventory(
+                inventory, "reports/inspection/manifest.json"
+            ),
+            "inspectionArtifactManifestPayloadHash": str(
+                inspection_manifest["integrity"]["inspectionManifestHash"]
+            ),
+            "inspectionArtifactReportHash": _hash_from_inventory(
+                inventory, "reports/inspection/inspection_report.json"
+            ),
+            "inspectionArtifactReportPayloadHash": str(
+                inspection_report["integrity"]["inspectionReportHash"]
+            ),
             "geometryCleanAcceptanceGateHash": _hash_from_inventory(
                 inventory, "reports/geometry_clean_acceptance_gate.json"
             ),
@@ -1039,6 +1085,8 @@ def _manifest(
             "geometryMaterialUvTransfer": GEOMETRY_MATERIAL_UV_TRANSFER_VERSION,
             "geometryStitchedShell": GEOMETRY_STITCHED_SHELL_VERSION,
             "geometryVisualShellReview": GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
+            "inspectionRenderer": INSPECTION_RENDERER_VERSION,
+            "inspectionArtifactReport": INSPECTION_ARTIFACT_REPORT_VERSION,
             "geometryCleanAcceptanceGate": GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
@@ -1052,7 +1100,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_24_stitched_shell_output_evidence",
+            "name": "implementation_25_bp47_inspection_artifacts",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1073,13 +1121,15 @@ def _manifest(
             "geometry_material_uv_transfer_authored_pbr_only",
             "geometry_stitched_shell_output_not_clean_proven",
             "geometry_visual_shell_review_clean_rejected",
+            "inspection_artifacts_not_visual_fidelity_acceptance",
+            "source_provider_human_visual_fidelity_not_run",
             "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "24-stitched-shell-output-evidence"},
+        "extensions": {"closyImplementation": "25-bp47-inspection-artifacts"},
     }
 
 
@@ -1120,6 +1170,8 @@ def _capabilities() -> dict[str, bool]:
         "geometryMaterialUvTransferAvailable": True,
         "geometryStitchedShellAvailable": True,
         "geometryVisualShellReviewAvailable": True,
+        "deterministicInspectionArtifactsAvailable": True,
+        "visualEvidenceTiersSeparated": True,
         "geometryCleanAcceptanceGateAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
@@ -1325,6 +1377,7 @@ def _provenance(
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
+    inspection_report: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -1741,6 +1794,27 @@ def _provenance(
                 [str(geometry_visual_shell_review["integrity"]["geometryVisualShellReviewHash"])],
             ),
             _stage(
+                "deterministic_inspection_artifacts",
+                INSPECTION_ARTIFACT_REPORT_VERSION,
+                {
+                    "rendererVersion": INSPECTION_RENDERER_VERSION,
+                    "manifestPath": inspection_report["manifestPath"],
+                    "artifactCount": inspection_report["metrics"]["artifactCount"],
+                    "topologyRepresentationInspectionRun": inspection_report["readiness"][
+                        "topologyRepresentationInspectionRun"
+                    ],
+                    "providerGeometryAppearanceComparisonRun": inspection_report["readiness"][
+                        "providerGeometryAppearanceComparisonRun"
+                    ],
+                    "humanVisualReviewRun": inspection_report["readiness"][
+                        "humanVisualReviewRun"
+                    ],
+                    "acceptedForVisualFidelity": False,
+                    "acceptedForCleanProposal": False,
+                },
+                [str(inspection_report["integrity"]["inspectionReportHash"])],
+            ),
+            _stage(
                 "geometry_clean_acceptance_gate",
                 GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
                 {
@@ -2003,6 +2077,8 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_stitched_shell = context["geometryStitchedShell"]
     stitched_shell_mesh = context["stitchedShellMesh"]
     geometry_visual_shell_review = context["geometryVisualShellReview"]
+    inspection_manifest = context["inspectionManifest"]
+    inspection_report = context["inspectionReport"]
     geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
@@ -2421,6 +2497,32 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "meshStitchOrWeldProven"
             ],
             "boundaryEdgeCount": geometry_visual_shell_review["aggregate"]["boundaryEdgeCount"],
+        },
+        "inspectionArtifacts": {
+            "manifestId": inspection_manifest["manifestId"],
+            "reportId": inspection_report["reportId"],
+            "rendererVersion": inspection_manifest["rendererVersion"],
+            "artifactCount": inspection_manifest["artifactCount"],
+            "topologyRepresentationInspectionRun": inspection_report["readiness"][
+                "topologyRepresentationInspectionRun"
+            ],
+            "canonicalSimulationToRenderSilhouetteRun": inspection_report["readiness"][
+                "canonicalSimulationToRenderSilhouetteRun"
+            ],
+            "providerGeometryAppearanceComparisonRun": inspection_report["readiness"][
+                "providerGeometryAppearanceComparisonRun"
+            ],
+            "sourceImageSilhouetteComparisonRun": inspection_report["readiness"][
+                "sourceImageSilhouetteComparisonRun"
+            ],
+            "sourceImageAppearanceComparisonRun": inspection_report["readiness"][
+                "sourceImageAppearanceComparisonRun"
+            ],
+            "humanVisualReviewRun": inspection_report["readiness"]["humanVisualReviewRun"],
+            "acceptedForVisualFidelity": inspection_report["readiness"][
+                "acceptedForVisualFidelity"
+            ],
+            "acceptedForCleanProposal": inspection_report["readiness"]["acceptedForCleanProposal"],
         },
         "geometryCleanAcceptanceGate": {
             "reportId": geometry_clean_acceptance_gate["reportId"],

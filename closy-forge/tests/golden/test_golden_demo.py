@@ -54,6 +54,8 @@ def test_demo_package_matches_structural_golden(tmp_path) -> None:  # type: igno
         assert summary["geometryStitchedShell"][key] == value
     for key, value in expected["geometryVisualShellReview"].items():
         assert summary["geometryVisualShellReview"][key] == value
+    for key, value in expected["inspectionArtifacts"].items():
+        assert summary["inspectionArtifacts"][key] == value
     for key, value in expected["geometryCleanAcceptanceGate"].items():
         assert summary["geometryCleanAcceptanceGate"][key] == value
     for key, value in expected["cleanGeometryProposal"].items():

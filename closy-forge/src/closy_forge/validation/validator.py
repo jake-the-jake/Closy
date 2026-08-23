@@ -27,6 +27,11 @@ from closy_forge.geometry.mesh_model import (
     sub,
 )
 from closy_forge.geometry.triangulation import validate_panel_boundary
+from closy_forge.inspection import (
+    hash_inspection_artifact_manifest,
+    hash_inspection_artifact_report,
+)
+from closy_forge.inspection.deterministic_renderer import required_artifact_specs
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json
 from closy_forge.package_io.hashing import (
     geometry_content_hash,
@@ -143,6 +148,20 @@ EXPECTED_FILES = [
     "reports/geometry_material_uv_transfer.json",
     "reports/geometry_stitched_shell.json",
     "reports/geometry_visual_shell_review.json",
+    "reports/inspection/manifest.json",
+    "reports/inspection/inspection_report.json",
+    "reports/inspection/pattern_panels_labels.svg",
+    "reports/inspection/rest_simulation_mesh_front.svg",
+    "reports/inspection/rest_simulation_mesh_side_depth.svg",
+    "reports/inspection/settled_garment_on_avatar_front.svg",
+    "reports/inspection/canonical_render_shell_front.svg",
+    "reports/inspection/manual_raw_proposal_front.svg",
+    "reports/inspection/cleanup_preview_front.svg",
+    "reports/inspection/repair_preview_front.svg",
+    "reports/inspection/runtime_bound_preview_front.svg",
+    "reports/inspection/logical_stitched_candidate_front.svg",
+    "reports/inspection/render_split_stitched_candidate_front.svg",
+    "reports/inspection/topology_problem_overlay_front.svg",
     "reports/geometry_clean_acceptance_gate.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
@@ -299,6 +318,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_material_uv_transfer(package_dir, manifest, issues)
     _validate_geometry_stitched_shell(package_dir, manifest, issues)
     _validate_geometry_visual_shell_review(package_dir, manifest, issues)
+    _validate_inspection_artifacts(package_dir, manifest, issues)
     _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
@@ -6142,6 +6162,329 @@ def _validate_geometry_visual_shell_review(
                 "fatal",
                 "reports/geometry_visual_shell_review.json",
                 "Visual/shell review report must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_inspection_artifacts(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    artifact_manifest = _read_required_json(package_dir, "reports/inspection/manifest.json", issues)
+    report = _read_required_json(
+        package_dir, "reports/inspection/inspection_report.json", issues
+    )
+    if artifact_manifest is None or report is None:
+        return
+
+    if artifact_manifest.get("garmentId") != manifest.get("garmentId") or report.get(
+        "garmentId"
+    ) != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "inspection_artifact_garment_mismatch",
+                "fatal",
+                "reports/inspection/inspection_report.json",
+                "Inspection artifacts must reference the package garment ID.",
+            )
+        )
+    if artifact_manifest.get("garmentClass") != manifest.get("garmentClass") or report.get(
+        "garmentClass"
+    ) != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "inspection_artifact_class_mismatch",
+                "fatal",
+                "reports/inspection/inspection_report.json",
+                "Inspection artifacts must reference the package garment class.",
+            )
+        )
+
+    if _nested_string(artifact_manifest, ["integrity", "inspectionManifestHash"], "") != (
+        hash_inspection_artifact_manifest(artifact_manifest)
+    ):
+        issues.append(
+            _issue(
+                "inspection_manifest_hash_mismatch",
+                "fatal",
+                "reports/inspection/manifest.json",
+                "Inspection artifact manifest hash must match its canonical payload.",
+            )
+        )
+    if _nested_string(report, ["integrity", "inspectionReportHash"], "") != (
+        hash_inspection_artifact_report(report)
+    ):
+        issues.append(
+            _issue(
+                "inspection_report_hash_mismatch",
+                "fatal",
+                "reports/inspection/inspection_report.json",
+                "Inspection artifact report hash must match its canonical payload.",
+            )
+        )
+    if report.get("manifestHash") != _nested_string(
+        artifact_manifest, ["integrity", "inspectionManifestHash"], ""
+    ):
+        issues.append(
+            _issue(
+                "inspection_report_manifest_hash_mismatch",
+                "fatal",
+                "reports/inspection/inspection_report.json",
+                "Inspection report must reference the inspection manifest hash.",
+            )
+        )
+
+    expected_specs = {str(spec["artifactId"]): spec for spec in required_artifact_specs()}
+    expected_ids = set(expected_specs)
+    artifacts = artifact_manifest.get("artifacts", [])
+    if not isinstance(artifacts, list):
+        issues.append(
+            _issue(
+                "inspection_artifacts_invalid",
+                "fatal",
+                "reports/inspection/manifest.json",
+                "Inspection artifact manifest artifacts must be a list.",
+            )
+        )
+        artifacts = []
+    actual_ids = {str(artifact.get("artifactId", "")) for artifact in artifacts}
+    if actual_ids != expected_ids:
+        issues.append(
+            _issue(
+                "inspection_artifact_set_mismatch",
+                "fatal",
+                "reports/inspection/manifest.json",
+                "Inspection artifact IDs must match the deterministic BP47 artifact set.",
+            )
+        )
+    if _int_or(artifact_manifest.get("artifactCount"), -1) != len(artifacts):
+        issues.append(
+            _issue(
+                "inspection_artifact_count_mismatch",
+                "fatal",
+                "reports/inspection/manifest.json",
+                "Inspection artifactCount must match artifact records.",
+            )
+        )
+
+    tier_status_by_name = {
+        str(tier.get("tier")): tier for tier in artifact_manifest.get("evidenceTiers", [])
+    }
+    report_tier_status_by_name = {
+        str(tier.get("tier")): tier for tier in report.get("evidenceTiers", [])
+    }
+    for tier in [
+        "topology_representation_inspection",
+        "canonical_simulation_to_render_silhouette_preservation",
+        "independent_provider_geometry_appearance_comparison",
+        "source_image_silhouette_comparison",
+        "source_image_appearance_texture_logo_comparison",
+        "human_visual_review",
+    ]:
+        if tier not in tier_status_by_name or tier not in report_tier_status_by_name:
+            issues.append(
+                _issue(
+                    "inspection_evidence_tier_missing",
+                    "fatal",
+                    "reports/inspection/inspection_report.json",
+                    "Inspection evidence tiers must remain explicit and separate.",
+                    tier,
+                )
+            )
+
+    for tier in [
+        "independent_provider_geometry_appearance_comparison",
+        "source_image_silhouette_comparison",
+        "source_image_appearance_texture_logo_comparison",
+        "human_visual_review",
+    ]:
+        for source in [tier_status_by_name, report_tier_status_by_name]:
+            tier_doc = source.get(tier, {})
+            if tier_doc.get("status") != "not_run" or tier_doc.get("accepted") is not False:
+                issues.append(
+                    _issue(
+                        "inspection_evidence_tier_overclaimed",
+                        "fatal",
+                        "reports/inspection/inspection_report.json",
+                        "Source/provider/human evidence tiers must remain not_run.",
+                        tier,
+                    )
+                )
+
+    readiness = report.get("readiness", {})
+    if (
+        not isinstance(readiness, dict)
+        or readiness.get("topologyRepresentationInspectionRun") is not True
+        or readiness.get("canonicalSimulationToRenderSilhouetteRun") is not True
+        or readiness.get("providerGeometryAppearanceComparisonRun") is not False
+        or readiness.get("sourceImageSilhouetteComparisonRun") is not False
+        or readiness.get("sourceImageAppearanceComparisonRun") is not False
+        or readiness.get("humanVisualReviewRun") is not False
+        or readiness.get("acceptedForVisualFidelity") is not False
+        or readiness.get("acceptedForCleanProposal") is not False
+    ):
+        issues.append(
+            _issue(
+                "inspection_readiness_overclaimed",
+                "fatal",
+                "reports/inspection/inspection_report.json",
+                "BP47 inspection artifacts cannot unlock visual fidelity or clean acceptance.",
+            )
+        )
+
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            continue
+        artifact_id = str(artifact.get("artifactId", ""))
+        spec = expected_specs.get(artifact_id)
+        if spec is None:
+            continue
+        rel = str(artifact.get("path", ""))
+        if rel != str(spec["path"]):
+            issues.append(
+                _issue(
+                    "inspection_artifact_path_mismatch",
+                    "fatal",
+                    "reports/inspection/manifest.json",
+                    "Inspection artifact path does not match its deterministic artifact ID.",
+                    artifact_id,
+                )
+            )
+            continue
+        path = package_dir / rel
+        if not path.exists():
+            issues.append(
+                _issue("inspection_artifact_missing", "fatal", rel, "Inspection artifact missing.")
+            )
+            continue
+        if artifact.get("contentHash") != sha256_file(path):
+            issues.append(
+                _issue(
+                    "inspection_artifact_hash_mismatch",
+                    "fatal",
+                    rel,
+                    "Inspection artifact content hash is stale.",
+                    artifact_id,
+                )
+            )
+        if artifact.get("byteSize") != path.stat().st_size:
+            issues.append(
+                _issue(
+                    "inspection_artifact_size_mismatch",
+                    "fatal",
+                    rel,
+                    "Inspection artifact byte size is stale.",
+                    artifact_id,
+                )
+            )
+        try:
+            svg_text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            svg_text = ""
+            issues.append(
+                _issue(
+                    "inspection_artifact_not_utf8_svg",
+                    "fatal",
+                    rel,
+                    "Inspection SVG must be UTF-8 text.",
+                    artifact_id,
+                )
+            )
+        if "<svg" not in svg_text or "</svg>" not in svg_text:
+            issues.append(
+                _issue(
+                    "inspection_artifact_svg_invalid",
+                    "fatal",
+                    rel,
+                    "Inspection artifact must decode as a simple SVG document.",
+                    artifact_id,
+                )
+            )
+        camera = artifact.get("camera", {})
+        if (
+            not isinstance(camera, dict)
+            or camera.get("viewId") != spec["viewId"]
+            or artifact.get("width") != 640
+            or artifact.get("height") != 480
+            or artifact.get("format") != "svg"
+            or artifact.get("colorSpace") != "srgb"
+            or artifact.get("overlayKind") != spec["overlayKind"]
+            or artifact.get("evidenceTier") != spec["evidenceTier"]
+            or artifact.get("syntheticPublicSafe") is not True
+        ):
+            issues.append(
+                _issue(
+                    "inspection_artifact_metadata_mismatch",
+                    "fatal",
+                    "reports/inspection/manifest.json",
+                    "Inspection artifact metadata must match its deterministic view contract.",
+                    artifact_id,
+                )
+            )
+        source_hashes = artifact.get("sourceAssetHashes", {})
+        if isinstance(source_hashes, dict):
+            for relpath, declared_hash in source_hashes.items():
+                source_path = package_dir / str(relpath)
+                if not source_path.exists():
+                    issues.append(
+                        _issue(
+                            "inspection_source_missing",
+                            "fatal",
+                            "reports/inspection/manifest.json",
+                            "Inspection artifact source file is missing.",
+                            str(relpath),
+                        )
+                    )
+                elif declared_hash != sha256_file(source_path):
+                    issues.append(
+                        _issue(
+                            "inspection_source_hash_mismatch",
+                            "fatal",
+                            "reports/inspection/manifest.json",
+                            "Inspection artifact source hash is stale.",
+                            str(relpath),
+                        )
+                    )
+    report_sources = report.get("sourceHashes", {})
+    if isinstance(report_sources, dict):
+        for relpath, declared_hash in report_sources.items():
+            source_path = package_dir / str(relpath)
+            if source_path.exists() and declared_hash != sha256_file(source_path):
+                issues.append(
+                    _issue(
+                        "inspection_report_source_hash_mismatch",
+                        "fatal",
+                        "reports/inspection/inspection_report.json",
+                        "Inspection report source hash is stale.",
+                        str(relpath),
+                    )
+                )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict):
+        if caps.get("deterministicInspectionArtifactsAvailable") is not True:
+            issues.append(
+                _issue(
+                    "inspection_artifact_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare deterministic inspection artifacts.",
+                )
+            )
+        if caps.get("visualEvidenceTiersSeparated") is not True:
+            issues.append(
+                _issue(
+                    "inspection_evidence_tier_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare separated visual evidence tiers.",
+                )
+            )
+    if _contains_nonfinite(artifact_manifest) or _contains_nonfinite(report):
+        issues.append(
+            _issue(
+                "inspection_artifact_nonfinite_numeric_value",
+                "fatal",
+                "reports/inspection/inspection_report.json",
+                "Inspection manifests and reports must not contain NaN or Infinity.",
             )
         )
 

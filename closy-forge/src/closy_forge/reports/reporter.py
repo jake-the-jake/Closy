@@ -29,6 +29,10 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     )
     material_uv_transfer = read_json(package_dir / "reports" / "geometry_material_uv_transfer.json")
     visual_shell_review = read_json(package_dir / "reports" / "geometry_visual_shell_review.json")
+    inspection_manifest = read_json(package_dir / "reports" / "inspection" / "manifest.json")
+    inspection_report = read_json(
+        package_dir / "reports" / "inspection" / "inspection_report.json"
+    )
     clean_acceptance_gate = read_json(
         package_dir / "reports" / "geometry_clean_acceptance_gate.json"
     )
@@ -338,6 +342,34 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
                 "meshStitchOrWeldExecutionRun"
             ],
             "meshStitchOrWeldProven": visual_shell_review["readiness"]["meshStitchOrWeldProven"],
+        },
+        "inspectionArtifacts": {
+            "manifestId": inspection_manifest["manifestId"],
+            "reportId": inspection_report["reportId"],
+            "rendererVersion": inspection_manifest["rendererVersion"],
+            "artifactCount": inspection_manifest["artifactCount"],
+            "topologyRepresentationInspectionRun": inspection_report["readiness"][
+                "topologyRepresentationInspectionRun"
+            ],
+            "canonicalSimulationToRenderSilhouetteRun": inspection_report["readiness"][
+                "canonicalSimulationToRenderSilhouetteRun"
+            ],
+            "providerGeometryAppearanceComparisonRun": inspection_report["readiness"][
+                "providerGeometryAppearanceComparisonRun"
+            ],
+            "sourceImageSilhouetteComparisonRun": inspection_report["readiness"][
+                "sourceImageSilhouetteComparisonRun"
+            ],
+            "sourceImageAppearanceComparisonRun": inspection_report["readiness"][
+                "sourceImageAppearanceComparisonRun"
+            ],
+            "humanVisualReviewRun": inspection_report["readiness"]["humanVisualReviewRun"],
+            "acceptedForVisualFidelity": inspection_report["readiness"][
+                "acceptedForVisualFidelity"
+            ],
+            "acceptedForCleanProposal": inspection_report["readiness"][
+                "acceptedForCleanProposal"
+            ],
         },
         "geometryCleanAcceptanceGate": {
             "reportId": clean_acceptance_gate["reportId"],
