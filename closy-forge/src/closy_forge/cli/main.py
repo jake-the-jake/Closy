@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from closy_forge.capture import build_synthetic_capture_record, score_capture_record
+from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
@@ -117,6 +118,18 @@ def _parser() -> argparse.ArgumentParser:
     diff.add_argument("right", type=Path)
     diff.add_argument("--json", action="store_true")
     diff.set_defaults(handler=_packages_diff)
+
+    ci = subparsers.add_parser("ci", help="CI-only diagnostics and guardrail helpers.")
+    ci_sub = ci.add_subparsers(dest="ci_command")
+    diagnostics = ci_sub.add_parser(
+        "diagnostics", help="Write privacy-safe allowlisted CI diagnostics."
+    )
+    diagnostics.add_argument("--source-dir", required=True, type=Path)
+    diagnostics.add_argument("--output", required=True, type=Path)
+    diagnostics.add_argument("--label", default="forge")
+    diagnostics.add_argument("--force", action="store_true")
+    diagnostics.add_argument("--json", action="store_true")
+    diagnostics.set_defaults(handler=_ci_diagnostics)
     return parser
 
 
@@ -218,6 +231,21 @@ def _packages_diff(args: argparse.Namespace) -> int:
     else:
         print(json.dumps(diff, indent=2, sort_keys=True))
     return EXIT_SUCCESS if diff["status"] == "identical" else EXIT_VALIDATION_FAILURE
+
+
+def _ci_diagnostics(args: argparse.Namespace) -> int:
+    summary = export_sanitized_ci_diagnostics(
+        args.source_dir,
+        args.output,
+        label=args.label,
+        force=args.force,
+    )
+    if args.json:
+        print(canonical_dumps(summary), end="")
+    else:
+        print(f"Wrote sanitized diagnostics to {args.output}")
+        print(f"Rejected inputs: {summary['rejectedInputCount']}")
+    return EXIT_SUCCESS
 
 
 def _params_from_args(args: argparse.Namespace) -> TShirtParameters:

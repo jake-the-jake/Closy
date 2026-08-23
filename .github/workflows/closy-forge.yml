@@ -62,10 +62,18 @@ jobs:
         run: |
           python -m closy_forge validate "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
           python -m closy_forge report "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
+      - name: Prepare sanitized determinism diagnostics
+        if: failure()
+        run: |
+          python -m closy_forge ci diagnostics \
+            --source-dir "$RUNNER_TEMP/closy-forge" \
+            --output "$RUNNER_TEMP/closy-forge-safe-diagnostics" \
+            --label "${{ matrix.os }}-py${{ matrix.python-version }}" \
+            --force
       - name: Upload determinism diagnostics
         if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: forge-diagnostics-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: ${{ runner.temp }}/closy-forge
+          path: ${{ runner.temp }}/closy-forge-safe-diagnostics
           if-no-files-found: ignore
