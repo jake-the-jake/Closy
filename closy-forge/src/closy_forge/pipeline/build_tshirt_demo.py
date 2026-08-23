@@ -105,6 +105,10 @@ from closy_forge.proposals import (
     provider_registry_quality_report,
     reproject_cleanup_preview_to_settled_simulation,
 )
+from closy_forge.rendering import (
+    FRAME_POSE_SUITE_VERSION,
+    build_render_frame_pose_suite_report,
+)
 from closy_forge.simulation.reference_cloth_solver import (
     settle_reference_cloth,
     simulation_state_json,
@@ -515,6 +519,24 @@ def _write_package_contents(
     write_canonical_json(package_dir / "render" / "materials.json", render_materials)
     write_binding(package_dir / "binding" / "sim_to_render.bin", binding)
     write_canonical_json(package_dir / "binding" / "binding_manifest.json", binding_manifest)
+    render_frame_pose_suite = build_render_frame_pose_suite_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        render_asset_path=package_dir / "render" / "fallback.glb",
+        render_asset_package_path="render/fallback.glb",
+        simulation_mesh_manifest_path=package_dir / "simulation" / "mesh_manifest.json",
+        render_mesh_manifest_path=package_dir / "render" / "mesh_manifest.json",
+        binding_asset_path=package_dir / "binding" / "sim_to_render.bin",
+        binding_manifest_path=package_dir / "binding" / "binding_manifest.json",
+        simulation_mesh=simulation_mesh,
+        render_mesh=render_mesh,
+        binding=binding,
+        binding_manifest=binding_manifest,
+    )
+    write_canonical_json(
+        package_dir / "reports" / "render_frame_pose_suite.json",
+        render_frame_pose_suite,
+    )
 
     quality_reports = _quality_reports(
         avatar_mesh,
@@ -546,6 +568,7 @@ def _write_package_contents(
         geometry_material_uv_transfer,
         geometry_stitched_shell,
         geometry_visual_shell_review,
+        render_frame_pose_suite,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -602,6 +625,7 @@ def _write_package_contents(
         geometry_material_uv_transfer,
         geometry_stitched_shell,
         geometry_visual_shell_review,
+        render_frame_pose_suite,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -644,6 +668,7 @@ def _write_package_contents(
         stitched_analysis_shell,
         stitched_shell_mesh,
         geometry_visual_shell_review,
+        render_frame_pose_suite,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -682,6 +707,7 @@ def _write_package_contents(
         "stitchedAnalysisShell": stitched_analysis_shell,
         "stitchedShellMesh": stitched_shell_mesh,
         "geometryVisualShellReview": geometry_visual_shell_review,
+        "renderFramePoseSuite": render_frame_pose_suite,
         "geometryCleanAcceptanceGate": geometry_clean_acceptance_gate,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
@@ -810,6 +836,7 @@ def _manifest(
     stitched_analysis_shell: dict[str, Any],
     stitched_shell_mesh: MeshSet,
     geometry_visual_shell_review: dict[str, Any],
+    render_frame_pose_suite: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -860,6 +887,7 @@ def _manifest(
             "stitchedAnalysisShell": "stitch/logical_stitched_analysis_shell.json",
             "stitchedRenderShell": "render/stitched_shell.glb",
             "geometryVisualShellReview": "reports/geometry_visual_shell_review.json",
+            "renderFramePoseSuite": "reports/render_frame_pose_suite.json",
             "inspectionArtifactManifest": "reports/inspection/manifest.json",
             "inspectionArtifactReport": "reports/inspection/inspection_report.json",
             "geometryCleanAcceptanceGate": "reports/geometry_clean_acceptance_gate.json",
@@ -1012,6 +1040,12 @@ def _manifest(
             "geometryVisualShellReviewPayloadHash": str(
                 geometry_visual_shell_review["integrity"]["geometryVisualShellReviewHash"]
             ),
+            "renderFramePoseSuiteHash": _hash_from_inventory(
+                inventory, "reports/render_frame_pose_suite.json"
+            ),
+            "renderFramePoseSuitePayloadHash": str(
+                render_frame_pose_suite["integrity"]["renderFramePoseSuiteHash"]
+            ),
             "inspectionArtifactManifestHash": _hash_from_inventory(
                 inventory, "reports/inspection/manifest.json"
             ),
@@ -1085,6 +1119,7 @@ def _manifest(
             "geometryMaterialUvTransfer": GEOMETRY_MATERIAL_UV_TRANSFER_VERSION,
             "geometryStitchedShell": GEOMETRY_STITCHED_SHELL_VERSION,
             "geometryVisualShellReview": GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
+            "renderFramePoseSuite": FRAME_POSE_SUITE_VERSION,
             "inspectionRenderer": INSPECTION_RENDERER_VERSION,
             "inspectionArtifactReport": INSPECTION_ARTIFACT_REPORT_VERSION,
             "geometryCleanAcceptanceGate": GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
@@ -1096,11 +1131,11 @@ def _manifest(
             "clothSettle": "closy.reference_xpbd_cpu.v1",
             "renderSubdivision": "closy.render_subdivision.v1",
             "binding": str(binding_manifest["algorithm"]),
-            "glbWriter": "closy.glb_writer.v1",
+            "glbWriter": "closy.glb_writer.v2.persistent_tangent_vec4",
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_25_bp47_inspection_artifacts",
+            "name": "implementation_26_bp48_frame_pose_suite",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1122,6 +1157,7 @@ def _manifest(
             "geometry_stitched_shell_output_not_clean_proven",
             "geometry_visual_shell_review_clean_rejected",
             "inspection_artifacts_not_visual_fidelity_acceptance",
+            "bp48_pose_suite_not_full_cloth_motion",
             "source_provider_human_visual_fidelity_not_run",
             "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
@@ -1170,6 +1206,8 @@ def _capabilities() -> dict[str, bool]:
         "geometryMaterialUvTransferAvailable": True,
         "geometryStitchedShellAvailable": True,
         "geometryVisualShellReviewAvailable": True,
+        "renderTangentsPersistedAvailable": True,
+        "poseSuiteBindingEvidenceAvailable": True,
         "deterministicInspectionArtifactsAvailable": True,
         "visualEvidenceTiersSeparated": True,
         "geometryCleanAcceptanceGateAvailable": True,
@@ -1217,6 +1255,7 @@ def _quality_reports(
     geometry_material_uv_transfer: dict[str, Any],
     geometry_stitched_shell: dict[str, Any],
     geometry_visual_shell_review: dict[str, Any],
+    render_frame_pose_suite: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -1283,6 +1322,7 @@ def _quality_reports(
         "geometry_material_uv_transfer.json": geometry_material_uv_transfer,
         "geometry_stitched_shell.json": geometry_stitched_shell,
         "geometry_visual_shell_review.json": geometry_visual_shell_review,
+        "render_frame_pose_suite.json": render_frame_pose_suite,
         "geometry_clean_acceptance_gate.json": geometry_clean_acceptance_gate,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
@@ -1333,6 +1373,8 @@ def _quality_reports(
             "status": "pass",
             "mesh": _mesh_counts(render_mesh),
             "renderShellSeparateFromSimulation": True,
+            "glbTangentsPersisted": render_frame_pose_suite["readiness"]["glbTangentsPersisted"],
+            "poseSuitePass": render_frame_pose_suite["readiness"]["poseSuitePass"],
         },
         "binding_quality.json": {
             "schemaVersion": 1,
@@ -1374,6 +1416,7 @@ def _provenance(
     geometry_material_uv_transfer: dict[str, Any],
     geometry_stitched_shell: dict[str, Any],
     geometry_visual_shell_review: dict[str, Any],
+    render_frame_pose_suite: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -1794,6 +1837,25 @@ def _provenance(
                 [str(geometry_visual_shell_review["integrity"]["geometryVisualShellReviewHash"])],
             ),
             _stage(
+                "render_frame_pose_suite",
+                FRAME_POSE_SUITE_VERSION,
+                {
+                    "renderAssetPath": render_frame_pose_suite["sourceAssets"]["renderAsset"][
+                        "path"
+                    ],
+                    "glbTangentsPersisted": render_frame_pose_suite["readiness"][
+                        "glbTangentsPersisted"
+                    ],
+                    "poseSuiteRun": render_frame_pose_suite["readiness"]["poseSuiteRun"],
+                    "poseSuitePass": render_frame_pose_suite["readiness"]["poseSuitePass"],
+                    "acceptedForRuntimeFramePreview": render_frame_pose_suite["readiness"][
+                        "acceptedForRuntimeFramePreview"
+                    ],
+                    "acceptedForCleanProposal": False,
+                },
+                [str(render_frame_pose_suite["integrity"]["renderFramePoseSuiteHash"])],
+            ),
+            _stage(
                 "deterministic_inspection_artifacts",
                 INSPECTION_ARTIFACT_REPORT_VERSION,
                 {
@@ -2075,6 +2137,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_stitched_shell = context["geometryStitchedShell"]
     stitched_shell_mesh = context["stitchedShellMesh"]
     geometry_visual_shell_review = context["geometryVisualShellReview"]
+    render_frame_pose_suite = context["renderFramePoseSuite"]
     inspection_manifest = context["inspectionManifest"]
     inspection_report = context["inspectionReport"]
     geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
@@ -2522,6 +2585,30 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "acceptedForCleanProposal": inspection_report["readiness"]["acceptedForCleanProposal"],
         },
+        "renderFramePoseSuite": {
+            "reportId": render_frame_pose_suite["reportId"],
+            "status": render_frame_pose_suite["readiness"]["status"],
+            "framePersistenceRun": render_frame_pose_suite["readiness"]["framePersistenceRun"],
+            "glbTangentsPersisted": render_frame_pose_suite["readiness"]["glbTangentsPersisted"],
+            "tangentAccessorType": render_frame_pose_suite["framePersistence"][
+                "tangentAccessorType"
+            ],
+            "normalAccessorPersisted": render_frame_pose_suite["framePersistence"][
+                "normalAccessorPersisted"
+            ],
+            "poseSuiteRun": render_frame_pose_suite["readiness"]["poseSuiteRun"],
+            "poseSuitePass": render_frame_pose_suite["readiness"]["poseSuitePass"],
+            "poseCount": render_frame_pose_suite["poseSuite"]["poseCount"],
+            "maxPoseBindingErrorMeters": render_frame_pose_suite["aggregate"][
+                "maxPoseBindingErrorMeters"
+            ],
+            "acceptedForRuntimeFramePreview": render_frame_pose_suite["readiness"][
+                "acceptedForRuntimeFramePreview"
+            ],
+            "acceptedForCleanProposal": render_frame_pose_suite["readiness"][
+                "acceptedForCleanProposal"
+            ],
+        },
         "geometryCleanAcceptanceGate": {
             "reportId": geometry_clean_acceptance_gate["reportId"],
             "sourceGeometryRuntimeBindingResultId": geometry_clean_acceptance_gate[
@@ -2756,6 +2843,13 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"{summary['geometryVisualShellReview']['acceptedForVisualFidelity']}, "
         f"stitch graph={summary['geometryVisualShellReview']['stitchGraphConnectable']}, "
         f"mesh stitch/weld={summary['geometryVisualShellReview']['meshStitchOrWeldProven']}\n"
+        f"- Render frame/pose suite: tangents="
+        f"{summary['renderFramePoseSuite']['glbTangentsPersisted']}, "
+        f"type=`{summary['renderFramePoseSuite']['tangentAccessorType']}`, "
+        f"poses={summary['renderFramePoseSuite']['poseCount']}, "
+        f"pose pass={summary['renderFramePoseSuite']['poseSuitePass']}, "
+        f"max pose binding error="
+        f"{summary['renderFramePoseSuite']['maxPoseBindingErrorMeters']:.8f}\n"
         f"- Clean acceptance gate: status=`{summary['geometryCleanAcceptanceGate']['status']}`, "
         f"passed={summary['geometryCleanAcceptanceGate']['passedCheckCount']}/"
         f"{summary['geometryCleanAcceptanceGate']['checkCount']}, "

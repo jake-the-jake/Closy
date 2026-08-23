@@ -83,6 +83,10 @@ from closy_forge.proposals import (
     hash_stitched_analysis_shell,
     reproject_cleanup_preview_to_settled_simulation,
 )
+from closy_forge.rendering import (
+    build_render_frame_pose_suite_report,
+    hash_render_frame_pose_suite_report,
+)
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
@@ -148,6 +152,7 @@ EXPECTED_FILES = [
     "reports/geometry_material_uv_transfer.json",
     "reports/geometry_stitched_shell.json",
     "reports/geometry_visual_shell_review.json",
+    "reports/render_frame_pose_suite.json",
     "reports/inspection/manifest.json",
     "reports/inspection/inspection_report.json",
     "reports/inspection/pattern_panels_labels.svg",
@@ -318,6 +323,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_material_uv_transfer(package_dir, manifest, issues)
     _validate_geometry_stitched_shell(package_dir, manifest, issues)
     _validate_geometry_visual_shell_review(package_dir, manifest, issues)
+    _validate_render_frame_pose_suite(package_dir, manifest, issues)
     _validate_inspection_artifacts(package_dir, manifest, issues)
     _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
@@ -6487,6 +6493,200 @@ def _validate_inspection_artifacts(
         )
 
 
+def _validate_render_frame_pose_suite(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    report = _read_required_json(package_dir, "reports/render_frame_pose_suite.json", issues)
+    sim_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    render_manifest = _read_required_json(package_dir, "render/mesh_manifest.json", issues)
+    binding_manifest = _read_required_json(package_dir, "binding/binding_manifest.json", issues)
+    if (
+        report is None
+        or sim_manifest is None
+        or render_manifest is None
+        or binding_manifest is None
+    ):
+        return
+    if report.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_garment_mismatch",
+                "fatal",
+                "reports/render_frame_pose_suite.json",
+                "Render frame/pose suite must reference the package garment ID.",
+            )
+        )
+    if report.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_class_mismatch",
+                "fatal",
+                "reports/render_frame_pose_suite.json",
+                "Render frame/pose suite must reference the package garment class.",
+            )
+        )
+    if _nested_string(report, ["integrity", "renderFramePoseSuiteHash"], "") != (
+        hash_render_frame_pose_suite_report(report)
+    ):
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_hash_mismatch",
+                "fatal",
+                "reports/render_frame_pose_suite.json",
+                "Render frame/pose suite hash must match its canonical payload.",
+            )
+        )
+    source_assets = report.get("sourceAssets", {})
+    if isinstance(source_assets, dict):
+        for asset in source_assets.values():
+            if not isinstance(asset, dict) or "path" not in asset or "sha256" not in asset:
+                continue
+            rel = str(asset["path"])
+            path = package_dir / rel
+            if not path.exists():
+                issues.append(
+                    _issue(
+                        "render_frame_pose_suite_source_missing",
+                        "fatal",
+                        "reports/render_frame_pose_suite.json",
+                        "A source artifact referenced by BP48 is missing.",
+                        rel,
+                    )
+                )
+            elif asset["sha256"] != sha256_file(path):
+                issues.append(
+                    _issue(
+                        "render_frame_pose_suite_source_hash_mismatch",
+                        "fatal",
+                        "reports/render_frame_pose_suite.json",
+                        "A source artifact hash referenced by BP48 is stale.",
+                        rel,
+                    )
+                )
+    try:
+        glb_audit = audit_glb(package_dir / "render" / "fallback.glb")
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_glb_parse_failed",
+                "fatal",
+                "render/fallback.glb",
+                str(exc),
+            )
+        )
+        glb_audit = {}
+    if glb_audit and not glb_audit.get("hasVec4Tangents", False):
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_tangent_accessor_missing",
+                "fatal",
+                "render/fallback.glb",
+                "BP48 requires every render GLB primitive to persist TANGENT as VEC4.",
+            )
+        )
+    readiness = report.get("readiness", {})
+    frame = report.get("framePersistence", {})
+    aggregate = report.get("aggregate", {})
+    if (
+        not isinstance(readiness, dict)
+        or readiness.get("framePersistenceRun") is not True
+        or readiness.get("glbTangentsPersisted") is not True
+        or readiness.get("poseSuiteRun") is not True
+        or readiness.get("poseSuitePass") is not True
+        or readiness.get("acceptedForRuntimeFramePreview") is not True
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or not isinstance(frame, dict)
+        or frame.get("tangentAccessorType") != "VEC4"
+        or not isinstance(aggregate, dict)
+        or aggregate.get("acceptedForRuntimeFramePreview") is not True
+    ):
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_readiness_invalid",
+                "fatal",
+                "reports/render_frame_pose_suite.json",
+                "BP48 may accept only runtime frame preview and must remain clean/canonical false.",
+            )
+        )
+    try:
+        binding = read_binding(package_dir / "binding" / "sim_to_render.bin")
+        expected = build_render_frame_pose_suite_report(
+            garment_id=str(manifest["garmentId"]),
+            garment_class=str(manifest["garmentClass"]),
+            render_asset_path=package_dir / "render" / "fallback.glb",
+            render_asset_package_path="render/fallback.glb",
+            simulation_mesh_manifest_path=package_dir / "simulation" / "mesh_manifest.json",
+            render_mesh_manifest_path=package_dir / "render" / "mesh_manifest.json",
+            binding_asset_path=package_dir / "binding" / "sim_to_render.bin",
+            binding_manifest_path=package_dir / "binding" / "binding_manifest.json",
+            simulation_mesh=_meshset_from_manifest(sim_manifest),
+            render_mesh=_meshset_from_manifest(render_manifest),
+            binding=binding,
+            binding_manifest=binding_manifest,
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_recompute_failed",
+                "fatal",
+                "reports/render_frame_pose_suite.json",
+                str(exc),
+            )
+        )
+        return
+    for key in [
+        "sourceAssets",
+        "sourceHashes",
+        "framePersistence",
+        "poseSuite",
+        "aggregate",
+        "execution",
+        "readiness",
+        "policy",
+        "limitations",
+    ]:
+        if report.get(key) != expected.get(key):
+            issues.append(
+                _issue(
+                    "render_frame_pose_suite_recompute_mismatch",
+                    "fatal",
+                    "reports/render_frame_pose_suite.json",
+                    "BP48 frame/pose evidence must recompute from package artifacts.",
+                    key,
+                )
+            )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict):
+        if caps.get("renderTangentsPersistedAvailable") is not True:
+            issues.append(
+                _issue(
+                    "render_tangents_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare persisted render tangent availability.",
+                )
+            )
+        if caps.get("poseSuiteBindingEvidenceAvailable") is not True:
+            issues.append(
+                _issue(
+                    "pose_suite_binding_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare pose-suite binding evidence availability.",
+                )
+            )
+    if _contains_nonfinite(report):
+        issues.append(
+            _issue(
+                "render_frame_pose_suite_nonfinite_numeric_value",
+                "fatal",
+                "reports/render_frame_pose_suite.json",
+                "Render frame/pose suite report must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_geometry_clean_acceptance_gate(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -9148,6 +9348,24 @@ def _validate_capabilities(manifest: dict[str, Any], issues: list[ValidationIssu
                 "fatal",
                 "manifest.json",
                 "Manifest must declare visual/shell review evidence availability.",
+            )
+        )
+    if caps.get("renderTangentsPersistedAvailable") is not True:
+        issues.append(
+            _issue(
+                "render_tangents_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare persisted render tangent evidence availability.",
+            )
+        )
+    if caps.get("poseSuiteBindingEvidenceAvailable") is not True:
+        issues.append(
+            _issue(
+                "pose_suite_binding_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare pose-suite binding evidence availability.",
             )
         )
     if caps.get("zeroOneStaticAvailable") or caps.get("zeroOneDynamicAvailable"):

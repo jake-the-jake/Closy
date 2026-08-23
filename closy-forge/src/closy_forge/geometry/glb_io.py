@@ -6,7 +6,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from .mesh_model import Mesh, MeshSet, Vec3, add, normalize, triangle_normal
+from .frame_attributes import expanded_triangle_frames, vertex_normals, vertex_tangents
+from .mesh_model import Mesh, MeshSet
 
 
 def _pad4(data: bytes, pad: bytes) -> bytes:
@@ -43,13 +44,14 @@ def write_glb(
         return len(buffer_views) - 1
 
     for mesh_i, mesh in enumerate(meshset.meshes):
-        normals = [triangle_normal(mesh.vertices, tri) for tri in mesh.triangles for _ in range(3)]
         expanded_vertices = [mesh.vertices[index] for tri in mesh.triangles for index in tri]
         expanded_uvs = [mesh.panel_uvs[index] for tri in mesh.triangles for index in tri]
         expanded_indices = [(i, i + 1, i + 2) for i in range(0, len(expanded_vertices), 3)]
+        normals, tangents = expanded_triangle_frames(mesh)
 
         pos_view = append_blob(_write_floats(expanded_vertices), 34962)
         norm_view = append_blob(_write_floats(normals), 34962)
+        tangent_view = append_blob(_write_floats(tangents), 34962)
         uv_view = append_blob(_write_floats(expanded_uvs), 34962)
         idx_view = append_blob(_write_indices(expanded_indices), 34963)
         mins = [min(v[i] for v in expanded_vertices) for i in range(3)]
@@ -68,6 +70,15 @@ def write_glb(
         norm_acc = len(accessors)
         accessors.append(
             {"bufferView": norm_view, "componentType": 5126, "count": len(normals), "type": "VEC3"}
+        )
+        tangent_acc = len(accessors)
+        accessors.append(
+            {
+                "bufferView": tangent_view,
+                "componentType": 5126,
+                "count": len(tangents),
+                "type": "VEC4",
+            }
         )
         uv_acc = len(accessors)
         accessors.append(
@@ -95,6 +106,7 @@ def write_glb(
                         "attributes": {
                             "POSITION": pos_acc,
                             "NORMAL": norm_acc,
+                            "TANGENT": tangent_acc,
                             "TEXCOORD_0": uv_acc,
                         },
                         "indices": idx_acc,
@@ -176,10 +188,12 @@ def write_indexed_glb(
         uvs = mesh.panel_uvs
         if len(uvs) != len(mesh.vertices):
             uvs = [(0.0, 0.0) for _ in mesh.vertices]
-        normals = _vertex_normals(mesh)
+        normals = vertex_normals(mesh)
+        tangents = vertex_tangents(mesh, normals)
 
         pos_view = append_blob(_write_floats(mesh.vertices), 34962)
         norm_view = append_blob(_write_floats(normals), 34962)
+        tangent_view = append_blob(_write_floats(tangents), 34962)
         uv_view = append_blob(_write_floats(uvs), 34962)
         idx_view = append_blob(_write_indices(mesh.triangles), 34963)
         mins = [min(v[i] for v in mesh.vertices) for i in range(3)]
@@ -198,6 +212,15 @@ def write_indexed_glb(
         norm_acc = len(accessors)
         accessors.append(
             {"bufferView": norm_view, "componentType": 5126, "count": len(normals), "type": "VEC3"}
+        )
+        tangent_acc = len(accessors)
+        accessors.append(
+            {
+                "bufferView": tangent_view,
+                "componentType": 5126,
+                "count": len(tangents),
+                "type": "VEC4",
+            }
         )
         uv_acc = len(accessors)
         accessors.append(
@@ -225,6 +248,7 @@ def write_indexed_glb(
                         "attributes": {
                             "POSITION": pos_acc,
                             "NORMAL": norm_acc,
+                            "TANGENT": tangent_acc,
                             "TEXCOORD_0": uv_acc,
                         },
                         "indices": idx_acc,
@@ -287,8 +311,24 @@ def audit_glb(path: Path) -> dict[str, Any]:
     mesh_count = len(gltf.get("meshes", []))
     primitive_count = sum(len(mesh.get("primitives", [])) for mesh in gltf.get("meshes", []))
     triangle_estimate = 0
+    semantic_attribute_counts: dict[str, int] = {}
+    semantic_accessor_counts: dict[str, int] = {}
+    semantic_accessor_types: dict[str, list[str]] = {}
     for mesh in gltf.get("meshes", []):
         for primitive in mesh.get("primitives", []):
+            attributes = primitive.get("attributes", {})
+            if isinstance(attributes, dict):
+                for semantic, accessor_index in attributes.items():
+                    semantic_attribute_counts[semantic] = (
+                        semantic_attribute_counts.get(semantic, 0) + 1
+                    )
+                    accessor = gltf["accessors"][int(accessor_index)]
+                    semantic_accessor_counts[semantic] = semantic_accessor_counts.get(
+                        semantic, 0
+                    ) + int(accessor.get("count", 0))
+                    semantic_accessor_types.setdefault(semantic, []).append(
+                        str(accessor.get("type", ""))
+                    )
             accessor_index = primitive.get("indices")
             if accessor_index is None:
                 accessor_index = primitive.get("attributes", {}).get("POSITION")
@@ -303,6 +343,14 @@ def audit_glb(path: Path) -> dict[str, Any]:
         "triangleEstimate": triangle_estimate,
         "materialCount": len(gltf.get("materials", [])),
         "nodeCount": len(gltf.get("nodes", [])),
+        "semanticAttributeCounts": semantic_attribute_counts,
+        "semanticAccessorCounts": semantic_accessor_counts,
+        "semanticAccessorTypes": {
+            semantic: sorted(set(types)) for semantic, types in semantic_accessor_types.items()
+        },
+        "hasVec4Tangents": semantic_attribute_counts.get("TANGENT", 0) == primitive_count
+        and semantic_accessor_counts.get("TANGENT", 0) > 0
+        and set(semantic_accessor_types.get("TANGENT", [])) == {"VEC4"},
     }
 
 
@@ -460,12 +508,3 @@ def _scalar_int(value: tuple[Any, ...]) -> int:
     if len(value) != 1:
         raise ValueError("expected_scalar_accessor")
     return int(value[0])
-
-
-def _vertex_normals(mesh: Mesh) -> list[Vec3]:
-    normals: list[Vec3] = [(0.0, 0.0, 0.0) for _ in mesh.vertices]
-    for tri in mesh.triangles:
-        normal = triangle_normal(mesh.vertices, tri)
-        for index in tri:
-            normals[index] = add(normals[index], normal)
-    return [normalize(normal) for normal in normals]
