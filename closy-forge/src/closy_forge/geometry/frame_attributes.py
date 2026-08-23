@@ -25,7 +25,7 @@ def vertex_normals(mesh: Mesh) -> list[Vec3]:
         normal = triangle_normal(mesh.vertices, tri)
         for index in tri:
             normals[index] = add(normals[index], normal)
-    return [normalize(normal) for normal in normals]
+    return [_quantize_vec3(normalize(normal)) for normal in normals]
 
 
 def vertex_tangents(mesh: Mesh, normals: list[Vec3] | None = None) -> list[Vec4]:
@@ -52,6 +52,8 @@ def expanded_triangle_frames(mesh: Mesh) -> tuple[list[Vec3], list[Vec4]]:
         normal = triangle_normal(mesh.vertices, tri)
         tangent, bitangent = triangle_tangent_frame(mesh.vertices, mesh.panel_uvs, tri)
         tangent4 = _orthonormal_tangent(normal, tangent, bitangent)
+        normal = _quantize_vec3(normal)
+        tangent4 = _quantize_vec4(tangent4)
         normals.extend([normal, normal, normal])
         tangents.extend([tangent4, tangent4, tangent4])
     return normals, tangents
@@ -73,7 +75,7 @@ def triangle_tangent_frame(
     if abs(denom) <= 1e-12:
         normal = triangle_normal(vertices, tri)
         tangent = _fallback_tangent(normal)
-        return tangent, normalize(cross(normal, tangent))
+        return tangent, _quantize_vec3(normalize(cross(normal, tangent)))
     inv = 1.0 / denom
     tangent = normalize(
         (
@@ -89,7 +91,7 @@ def triangle_tangent_frame(
             ((edge2[2] * duv1[0]) - (edge1[2] * duv2[0])) * inv,
         )
     )
-    return tangent, bitangent
+    return _quantize_vec3(tangent), _quantize_vec3(bitangent)
 
 
 def meshset_frame_metrics(meshset: MeshSet) -> dict[str, Any]:
@@ -148,12 +150,12 @@ def _orthonormal_tangent(normal: Vec3, tangent: Vec3, bitangent: Vec3) -> Vec4:
     projected = sub(tangent, scale(normal, _dot3(normal, tangent)))
     tangent3 = normalize(projected if _length3(projected) > 1e-12 else _fallback_tangent(normal))
     handedness = -1.0 if _dot3(cross(normal, tangent3), bitangent) < 0.0 else 1.0
-    return (tangent3[0], tangent3[1], tangent3[2], handedness)
+    return _quantize_vec4((tangent3[0], tangent3[1], tangent3[2], handedness))
 
 
 def _fallback_tangent(normal: Vec3) -> Vec3:
     reference = (1.0, 0.0, 0.0) if abs(normal[0]) < 0.9 else (0.0, 0.0, 1.0)
-    return normalize(cross(reference, normal))
+    return _quantize_vec3(normalize(cross(reference, normal)))
 
 
 def _dot3(left: Vec3, right: Vec3) -> float:
@@ -162,3 +164,16 @@ def _dot3(left: Vec3, right: Vec3) -> float:
 
 def _length3(value: Vec3) -> float:
     return sqrt(_dot3(value, value))
+
+
+def _quantize_vec3(value: Vec3) -> Vec3:
+    return (round(float(value[0]), 9), round(float(value[1]), 9), round(float(value[2]), 9))
+
+
+def _quantize_vec4(value: Vec4) -> Vec4:
+    return (
+        round(float(value[0]), 9),
+        round(float(value[1]), 9),
+        round(float(value[2]), 9),
+        1.0 if value[3] >= 0.0 else -1.0,
+    )

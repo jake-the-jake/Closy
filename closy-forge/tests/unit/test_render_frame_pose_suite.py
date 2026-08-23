@@ -26,7 +26,10 @@ def test_demo_package_persists_vec4_tangents_and_pose_suite(tmp_path) -> None:  
     assert report["readiness"]["acceptedForCleanProposal"] is False
     assert report["readiness"]["acceptedForCanonical"] is False
     assert report["poseSuite"]["poseCount"] == 4
-    assert report["aggregate"]["maxPoseBindingErrorMeters"] == 0.0
+    assert (
+        report["aggregate"]["maxPoseBindingErrorMeters"]
+        <= report["poseSuite"]["bindingToleranceMeters"]
+    )
     assert manifest["capabilities"]["renderTangentsPersistedAvailable"] is True
     assert manifest["capabilities"]["poseSuiteBindingEvidenceAvailable"] is True
 

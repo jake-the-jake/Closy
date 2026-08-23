@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from copy import deepcopy
-from math import cos, sin, sqrt
+from math import sqrt
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +30,11 @@ _POSE_IDS = [
 _BINDING_TOLERANCE_METERS = 1e-6
 _FRAME_LENGTH_TOLERANCE = 1e-6
 _FRAME_ORTHOGONAL_TOLERANCE = 1e-6
+_POSE_ROTATION_TRIG = {
+    0.16: (0.987227283376, 0.159318206614),
+    0.07: (0.997551000253, 0.069942847338),
+    0.035: (0.999387562523, 0.034992854604),
+}
 
 
 def build_render_frame_pose_suite_report(
@@ -303,7 +308,7 @@ def _pose_transform(pose_id: str) -> Callable[[str, Vec3], Vec3]:
             factor = (
                 1.018 if panel_id in {"panel.front", "panel.back", "panel.neck_band"} else 1.008
             )
-            return (x * factor, y, z * factor)
+            return _quantize_vec3((x * factor, y, z * factor))
         if pose_id == "left_sleeve_lift" and panel_id == "panel.sleeve.left":
             return _rotate_z(vertex, pivot=(-0.42, 1.18, 0.0), radians=0.16)
         if pose_id == "torso_twist_preview":
@@ -329,18 +334,16 @@ def _rotate_z(vertex: Vec3, *, pivot: Vec3, radians: float) -> Vec3:
     x, y, z = vertex
     px, py, pz = pivot
     dx, dy = x - px, y - py
-    c = cos(radians)
-    s = sin(radians)
-    return (px + (dx * c) - (dy * s), py + (dx * s) + (dy * c), pz + (z - pz))
+    c, s = _POSE_ROTATION_TRIG[radians]
+    return _quantize_vec3((px + (dx * c) - (dy * s), py + (dx * s) + (dy * c), pz + (z - pz)))
 
 
 def _rotate_y(vertex: Vec3, *, pivot: Vec3, radians: float) -> Vec3:
     x, y, z = vertex
     px, py, pz = pivot
     dx, dz = x - px, z - pz
-    c = cos(radians)
-    s = sin(radians)
-    return (px + (dx * c) + (dz * s), y, pz - (dx * s) + (dz * c))
+    c, s = _POSE_ROTATION_TRIG[radians]
+    return _quantize_vec3((px + (dx * c) + (dz * s), y, pz - (dx * s) + (dz * c)))
 
 
 def _point_cloud_error(left: list[Vec3], right: list[Vec3]) -> tuple[float, float]:
@@ -357,3 +360,7 @@ def _point_cloud_error(left: list[Vec3], right: list[Vec3]) -> tuple[float, floa
 
 def _round(value: float) -> float:
     return round(float(value), 9)
+
+
+def _quantize_vec3(value: Vec3) -> Vec3:
+    return (_round(value[0]), _round(value[1]), _round(value[2]))

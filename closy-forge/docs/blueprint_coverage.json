@@ -236,8 +236,8 @@
         "poseSuiteBindingEvidenceAvailable=true",
         "acceptedForRuntimeFramePreview=true",
         "acceptedForCleanProposal=false",
-        "pose suite max binding error 0.0",
-        "package digest 30daa00bf9dcd84568cb668b4db1abab3a529da7312df4af422358645c3213b3"
+        "pose suite max binding error 1e-09 within tolerance 1e-6",
+        "package digest b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329"
       ],
       "id": "BP-48-PERSISTED-FRAMES-TANGENTS",
       "implementationPaths": [
@@ -743,7 +743,7 @@
       "executableEvidence": [
         "static binding reconstruction passes",
         "fallback GLB NORMAL and VEC4 TANGENT accessors persist",
-        "four-pose render frame suite passes with max binding error 0.0"
+        "four-pose render frame suite passes with max binding error 1e-09 within tolerance 1e-6"
       ],
       "id": "BP-08-R-SIM-TO-RENDER-BINDING",
       "implementationPaths": [

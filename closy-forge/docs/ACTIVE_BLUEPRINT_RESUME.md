@@ -12,7 +12,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Draft PR: `https://github.com/jake-the-jake/Closy/pull/1`
 - Last remote green evidence before this resume record: GitHub Actions run `32665478422`, Ubuntu and Windows Forge Python 3.11 jobs passed at commit `f4bdc736e8343fb573ef2df83a371bf90eec51d2`.
 - Current remote evidence for BP48: pending until the BP48 implementation and ledger commits are pushed.
-- Last local package digest: `30daa00bf9dcd84568cb668b4db1abab3a529da7312df4af422358645c3213b3`
+- Last local package digest: `b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329`
 - Last local package inventory: 79 manifest-inventoried files; two temp package trees were byte-identical with 83 files per side.
 
 ## Current BP-46/BP-47/BP-48 Truth
@@ -21,6 +21,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - BP-46 still has `meshStitchOrWeldProven=false`, `acceptedForCleanProposal=false` and `acceptedForCanonical=false`.
 - BP-47 adds deterministic SVG inspection artifacts and separated evidence tiers, but does not provide decoded raster visual fidelity, source/provider appearance comparison or signed human review.
 - BP-48 adds persisted fallback GLB `NORMAL` and `VEC4` `TANGENT` accessors plus `reports/render_frame_pose_suite.json`.
+- BP-48 validates four deterministic pose snapshots within the `1e-6` binding tolerance; after deterministic quantization the observed max pose binding error is `1e-09`.
 - BP-48 records `renderTangentsPersistedAvailable=true`, `poseSuiteBindingEvidenceAvailable=true` and `acceptedForRuntimeFramePreview=true`.
 - BP-48 keeps `acceptedForCleanProposal=false` and does not complete Phase 6 or Gate C3.
 
@@ -65,7 +66,7 @@ Current blocking evidence:
 - `python -m mypy src`
 - `python -m pytest -q`
 - `python -m pytest --collect-only -q` collected 151 Forge tests.
-- deterministic temp-path `demo build-tshirt` produced digest `30daa00bf9dcd84568cb668b4db1abab3a529da7312df4af422358645c3213b3` twice.
+- deterministic temp-path `demo build-tshirt` produced digest `b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329` twice.
 - `python -m closy_forge packages diff` reported two temp packages identical, with 83 files on each side.
 - `python -m closy_forge validate` passed with the single current package validation warning `self_collision_not_run`.
 - `python -m closy_forge report` confirmed the same package digest, 79 inventoried files, BP48 frame/pose evidence and rejected clean-acceptance state.
