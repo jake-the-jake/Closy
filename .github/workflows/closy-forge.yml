@@ -47,18 +47,19 @@ jobs:
         run: python -m closy_forge schemas check --schema-dir schemas/v1
       - name: Build deterministic demo twice
         run: |
-          python -m closy_forge demo build-tshirt --output ../generated/ci/demo_a.closygarment --force
-          python -m closy_forge demo build-tshirt --output ../generated/ci/demo_b.closygarment --force
+          mkdir -p "$RUNNER_TEMP/closy-forge"
+          python -m closy_forge demo build-tshirt --output "$RUNNER_TEMP/closy-forge/demo_a.closygarment" --force
+          python -m closy_forge demo build-tshirt --output "$RUNNER_TEMP/closy-forge/demo_b.closygarment" --force
       - name: Compare deterministic outputs
-        run: python -m closy_forge packages diff ../generated/ci/demo_a.closygarment ../generated/ci/demo_b.closygarment --json
+        run: python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/demo_a.closygarment" "$RUNNER_TEMP/closy-forge/demo_b.closygarment" --json
       - name: Validate and report
         run: |
-          python -m closy_forge validate ../generated/ci/demo_a.closygarment
-          python -m closy_forge report ../generated/ci/demo_a.closygarment
+          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
+          python -m closy_forge report "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
       - name: Upload determinism diagnostics
         if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: forge-diagnostics-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: generated
+          path: ${{ runner.temp }}/closy-forge
           if-no-files-found: ignore
