@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp47-inspection-artifacts-v1"
-    assert payload["generatedBy"] == "BP-47 deterministic inspection artifacts pass"
+    assert payload["version"] == "bp48-render-frame-pose-suite-v1"
+    assert payload["generatedBy"] == "BP-48 persisted render frames and pose-suite pass"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -73,6 +73,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
         "BP-05-05-TRUTHFUL-EVIDENCE-TIERS",
         "BP-46-STITCHED-SHELL-OUTPUT",
         "BP-47-INSPECTION-ARTIFACTS",
+        "BP-48-PERSISTED-FRAMES-TANGENTS",
         "REPO-HYGIENE-GITLINKS",
         "REPO-HYGIENE-CI-DIAGNOSTICS",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
@@ -206,14 +207,27 @@ def test_bp47_checkpoint_is_partial_and_evidenced() -> None:
     assert "BP-48" in bp47["nextAction"]
 
 
-def test_markdown_ledger_matches_bp47_and_hygiene_checkpoint_state() -> None:
+def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    bp48 = rows_by_id["BP-48-PERSISTED-FRAMES-TANGENTS"]
+
+    assert bp48["status"] == "partial"
+    assert "0e743bb" in bp48["commitSha"]
+    assert "render/fallback.glb contains VEC4 TANGENT accessors" in bp48["executableEvidence"]
+    assert "poseSuiteBindingEvidenceAvailable=true" in bp48["executableEvidence"]
+    assert "acceptedForCleanProposal=false" in bp48["executableEvidence"]
+    assert "BP-49" in bp48["nextAction"]
+
+
+def test_markdown_ledger_matches_bp48_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `aac1c06`" in ledger
-    assert "Current active increment: `BP-48-PERSISTED-FRAMES-TANGENTS`" in ledger
-    assert "Next dependency-ready increment: `BP-48-PERSISTED-FRAMES-TANGENTS`" in ledger
+    assert "Latest completed implementation commit when last updated: `0e743bb`" in ledger
+    assert "Current active increment: `BP-49-RASTER-INGESTION-PRIVACY`" in ledger
+    assert "Next dependency-ready increment: `BP-49-RASTER-INGESTION-PRIVACY`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
+    assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
     assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| REPO-HYGIENE-CI-DIAGNOSTICS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
