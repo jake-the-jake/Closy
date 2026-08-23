@@ -5,11 +5,11 @@ from copy import deepcopy
 from math import sqrt
 from typing import Any
 
-from closy_forge.geometry.mesh_model import Mesh, MeshSet, cross, finite_mesh, sub
+from closy_forge.geometry.mesh_model import Mesh, MeshSet, cross, finite_mesh, mesh_bounds, sub
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 
-GEOMETRY_STITCHED_SHELL_VERSION = "closy.geometry_stitched_shell.logical_asset_v1"
+GEOMETRY_STITCHED_SHELL_VERSION = "closy.geometry_stitched_shell.logical_asset_v2"
 
 _PRE_STITCH_REPAIR_THRESHOLD_METERS = 0.15
 _POST_STITCH_TOLERANCE_METERS = 1e-8
@@ -50,6 +50,8 @@ def build_stitched_shell_assets(
         constraints=constraints,
     )
     proven = _audit_proves_stitched_shell(topology_audit)
+    opening_proof = _opening_proof(topology_audit)
+    execution = _execution_evidence(operations, constraints)
     analysis_shell: dict[str, Any] = {
         "schemaVersion": 1,
         "assetId": "stitched_analysis_shell.demo_tshirt_logical_v1",
@@ -75,29 +77,11 @@ def build_stitched_shell_assets(
         "logicalShell": _mesh_payload(stitched_mesh),
         "sourceVertexMap": source_vertex_map,
         "executedOperations": operations,
-        "openingProof": {
-            "expectedOpeningIds": _EXPECTED_OPENING_IDS,
-            "expectedOpeningCount": len(_EXPECTED_OPENING_IDS),
-            "topologicalBoundaryLoopCount": topology_audit["boundaryLoopCount"],
-            "missingExpectedOpeningIds": [],
-            "unexpectedBoundaryLoopCount": max(
-                0,
-                int(topology_audit["boundaryLoopCount"]) - len(_EXPECTED_OPENING_IDS),
-            ),
-            "status": "pass"
-            if int(topology_audit["boundaryLoopCount"]) == len(_EXPECTED_OPENING_IDS)
-            else "fail",
-            "limitations": [
-                (
-                    "opening IDs are semantic fixture IDs; full loop membership "
-                    "render overlays arrive in BP-47"
-                ),
-            ],
-        },
+        "openingProof": opening_proof,
         "topologyAudit": topology_audit,
         "readiness": {
             "status": "stitched_shell_proven" if proven else "stitched_shell_output_audit_failed",
-            "meshStitchOrWeldExecutionRun": True,
+            "meshStitchOrWeldExecutionRun": execution["meshStitchOrWeldExecutionRun"],
             "meshStitchOrWeldProven": proven,
             "acceptedForCleanProposal": False,
             "acceptedForCanonical": False,
@@ -135,14 +119,17 @@ def build_stitched_shell_assets(
             "topologyHash": topology_hash(stitched_mesh),
             "contentHash": geometry_content_hash(stitched_mesh),
         },
-        "execution": {
-            "meshStitchOrWeldExecutionRun": True,
-            "sourceVertexClassRewriteRun": True,
-            "faceIndexRewriteRun": True,
-            "analysisAssetWritten": True,
-            "renderAssetWritten": True,
-            "operationCount": len(operations),
-            "inputConstraintCount": len(constraints.get("constraints", [])),
+        "execution": execution,
+        "packageWriterEvidence": {
+            "status": "pending_package_writer",
+            "analysisAssetWritten": False,
+            "renderAssetWritten": False,
+            "analysisAssetPath": analysis_asset_path,
+            "renderAssetPath": render_asset_path,
+            "analysisAssetSha256": None,
+            "renderAssetSha256": None,
+            "analysisAssetByteSize": None,
+            "renderAssetByteSize": None,
         },
         "topologyAudit": topology_audit,
         "readiness": {
@@ -192,6 +179,15 @@ def audit_stitched_shell(
     non_manifold_edges = [edge for edge, count in edge_counts.items() if count > 2]
     duplicate_faces = _duplicate_face_count(mesh.triangles)
     degenerate_triangles = _degenerate_triangle_count(mesh)
+    boundary_components = _boundary_components(boundary_edges)
+    simple_boundary_cycles = [
+        component for component in boundary_components if component["isSimpleCycle"] is True
+    ]
+    boundary_branch_vertices = [
+        vertex_id
+        for component in boundary_components
+        for vertex_id in component["degreeViolationVertexIds"]
+    ]
     post_stitch_residuals = [
         float(operation["postStitchResidualMeters"])
         for operation in operations
@@ -202,7 +198,11 @@ def audit_stitched_shell(
         for operation in operations
         if operation["status"] == "executed"
     ]
-    boundary_loop_count = _boundary_loop_count(boundary_edges)
+    boundary_loop_count = len(boundary_components)
+    seam_coverage = _seam_span_coverage(operations, constraints)
+    provenance_coverage = _provenance_coverage(source_vertex_map, mesh)
+    binding_coverage = _binding_coverage(mesh)
+    displacement_metrics = _source_displacement_metrics(source_vertex_map, meshset)
     return {
         "auditVersion": "closy.stitched_shell_topology_audit.v1",
         "meshCount": len(meshset.meshes),
@@ -217,8 +217,16 @@ def audit_stitched_shell(
         "triangleCount": len(mesh.triangles),
         "boundaryEdgeCount": len(boundary_edges),
         "boundaryLoopCount": boundary_loop_count,
+        "simpleBoundaryCycleCount": len(simple_boundary_cycles),
+        "boundaryBranchVertexCount": len(boundary_branch_vertices),
+        "boundaryBranchVertexIds": boundary_branch_vertices,
         "expectedOpeningCount": len(_EXPECTED_OPENING_IDS),
-        "unexpectedBoundaryLoopCount": max(0, boundary_loop_count - len(_EXPECTED_OPENING_IDS)),
+        "unexpectedBoundaryLoopCount": max(
+            0,
+            len(simple_boundary_cycles) - len(_EXPECTED_OPENING_IDS),
+        ),
+        "missingExpectedOpeningCount": len(_EXPECTED_OPENING_IDS),
+        "provenOpeningCount": 0,
         "nonManifoldEdgeCount": len(non_manifold_edges),
         "nonManifoldVertexCount": _non_manifold_vertex_count(non_manifold_edges),
         "duplicateFaceCount": duplicate_faces,
@@ -228,9 +236,14 @@ def audit_stitched_shell(
         "normalInversionCheckStatus": "not_run",
         "selfIntersectionCheckStatus": "not_run",
         "hiddenInternalComponentCheckStatus": "not_run",
-        "uvMaterialPanelProvenanceCoverage": 1.0 if source_vertex_map else 0.0,
-        "bindingCoverage": 1.0 if source_vertex_map else 0.0,
-        "bindingReconstructionErrorMeters": 0.0,
+        "seamSpanCoverage": seam_coverage,
+        "uvMaterialPanelProvenanceCoverage": provenance_coverage["coverageRatio"],
+        "uvMaterialPanelProvenance": provenance_coverage,
+        "bindingCoverage": binding_coverage["coverageRatio"],
+        "bindingEvidence": binding_coverage,
+        "bindingReconstructionStatus": "not_run",
+        "bindingReconstructionErrorMeters": None,
+        "sourceDisplacement": displacement_metrics,
         "maxPreStitchDistanceMeters": _round(max(pre_stitch_distances, default=0.0)),
         "maxPostStitchResidualMeters": _round(max(post_stitch_residuals, default=0.0)),
         "postStitchToleranceMeters": _POST_STITCH_TOLERANCE_METERS,
@@ -270,10 +283,8 @@ def _build_logical_stitched_mesh(
         if distance <= _PRE_STITCH_REPAIR_THRESHOLD_METERS:
             union.union(a_global, b_global)
             status = "executed"
-            post_residual = 0.0
         else:
             status = "rejected_pre_stitch_gap"
-            post_residual = distance
         operations.append(
             {
                 "operationId": str(constraint.get("id", f"constraint.{len(operations):03d}")),
@@ -281,8 +292,10 @@ def _build_logical_stitched_mesh(
                 "status": status,
                 "spanA": deepcopy(span_a),
                 "spanB": deepcopy(span_b),
+                "sourceGlobalVertexA": a_global,
+                "sourceGlobalVertexB": b_global,
                 "preStitchDistanceMeters": _round(distance),
-                "postStitchResidualMeters": _round(post_residual),
+                "postStitchResidualMeters": None,
                 "preStitchRepairThresholdMeters": _PRE_STITCH_REPAIR_THRESHOLD_METERS,
                 "postStitchToleranceMeters": _POST_STITCH_TOLERANCE_METERS,
             }
@@ -308,8 +321,21 @@ def _build_logical_stitched_mesh(
         )
         for member in members:
             remap[member] = logical_index
-        logical_vertices.append(_round_vec3(avg_position))
+        emitted_position = _round_vec3(avg_position)
+        logical_vertices.append(emitted_position)
         logical_uvs.append(_round_vec2(avg_uv))
+        for record in source_records:
+            record["emittedLogicalPosition"] = [float(value) for value in emitted_position]
+            record["sourceToEmittedDisplacementMeters"] = _round(
+                _distance3(
+                    (
+                        float(record["position"][0]),
+                        float(record["position"][1]),
+                        float(record["position"][2]),
+                    ),
+                    emitted_position,
+                )
+            )
         source_vertex_map.append(
             {
                 "logicalVertexIndex": logical_index,
@@ -327,6 +353,17 @@ def _build_logical_stitched_mesh(
             )
             if len(set(remapped)) == 3:
                 logical_triangles.append(remapped)
+    for operation in operations:
+        if operation["status"] != "executed":
+            operation["postStitchResidualMeters"] = operation["preStitchDistanceMeters"]
+            continue
+        left = remap[int(operation["sourceGlobalVertexA"])]
+        right = remap[int(operation["sourceGlobalVertexB"])]
+        operation["logicalVertexIndexA"] = left
+        operation["logicalVertexIndexB"] = right
+        operation["postStitchResidualMeters"] = _round(
+            _distance3(logical_vertices[left], logical_vertices[right])
+        )
     stitched_mesh = MeshSet(
         [
             Mesh(
@@ -389,13 +426,27 @@ def _audit_proves_stitched_shell(audit: dict[str, Any]) -> bool:
     return (
         audit["finiteMesh"] is True
         and audit["logicalShellCount"] == 1
+        and audit["seamSpanCoverage"]["coverageRatio"] == 1.0
+        and audit["seamSpanCoverage"]["rejectedRequiredOperationCount"] == 0
+        and audit["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 0
         and audit["nonManifoldEdgeCount"] == 0
+        and audit["nonManifoldVertexCount"] == 0
         and audit["duplicateFaceCount"] == 0
         and audit["degenerateTriangleCount"] == 0
         and audit["unexpectedBoundaryLoopCount"] == 0
         and audit["boundaryLoopCount"] == len(_EXPECTED_OPENING_IDS)
+        and audit["simpleBoundaryCycleCount"] == len(_EXPECTED_OPENING_IDS)
+        and audit["boundaryBranchVertexCount"] == 0
+        and audit["missingExpectedOpeningCount"] == 0
         and audit["maxPostStitchResidualMeters"] <= _POST_STITCH_TOLERANCE_METERS
+        and audit["tJunctionCheckStatus"] == "pass"
+        and audit["inconsistentWindingCheckStatus"] == "pass"
+        and audit["normalInversionCheckStatus"] == "pass"
         and audit["selfIntersectionCheckStatus"] == "pass"
+        and audit["hiddenInternalComponentCheckStatus"] == "pass"
+        and audit["uvMaterialPanelProvenanceCoverage"] == 1.0
+        and audit["bindingCoverage"] == 1.0
+        and audit["bindingReconstructionStatus"] == "pass"
     )
 
 
@@ -403,8 +454,16 @@ def _blocking_reasons(audit: dict[str, Any]) -> list[str]:
     reasons: list[str] = []
     if audit["logicalShellCount"] != 1:
         reasons.append("stitched_shell_not_single_component")
+    if audit["seamSpanCoverage"]["coverageRatio"] < 1.0:
+        reasons.append("stitched_shell_required_seams_incomplete")
+    if audit["seamSpanCoverage"]["rejectedRequiredOperationCount"] > 0:
+        reasons.append("stitched_shell_required_operations_rejected")
+    if audit["seamSpanCoverage"]["duplicateExecutedOperationCount"] > 0:
+        reasons.append("stitched_shell_duplicate_operation_ids")
     if audit["nonManifoldEdgeCount"] > 0:
         reasons.append("stitched_shell_non_manifold_edges")
+    if audit["nonManifoldVertexCount"] > 0:
+        reasons.append("stitched_shell_non_manifold_vertices")
     if audit["duplicateFaceCount"] > 0:
         reasons.append("stitched_shell_duplicate_faces")
     if audit["degenerateTriangleCount"] > 0:
@@ -413,11 +472,234 @@ def _blocking_reasons(audit: dict[str, Any]) -> list[str]:
         _EXPECTED_OPENING_IDS
     ):
         reasons.append("stitched_shell_opening_loop_mismatch")
+    if audit["missingExpectedOpeningCount"] > 0:
+        reasons.append("stitched_shell_opening_semantics_missing")
+    if audit["boundaryBranchVertexCount"] > 0:
+        reasons.append("stitched_shell_branched_boundary_graph")
+    for field, code in [
+        ("tJunctionCheckStatus", "t_junction_audit_not_run"),
+        ("inconsistentWindingCheckStatus", "winding_audit_not_run"),
+        ("normalInversionCheckStatus", "normal_inversion_audit_not_run"),
+        ("hiddenInternalComponentCheckStatus", "hidden_internal_component_audit_not_run"),
+    ]:
+        if audit[field] == "not_run":
+            reasons.append(code)
     if audit["selfIntersectionCheckStatus"] == "not_run":
         reasons.append("self_intersection_not_run")
+    if audit["uvMaterialPanelProvenanceCoverage"] < 1.0:
+        reasons.append("uv_material_panel_provenance_incomplete")
+    if audit["bindingCoverage"] < 1.0:
+        reasons.append("binding_coverage_incomplete")
+    if audit["bindingReconstructionStatus"] != "pass":
+        reasons.append("binding_reconstruction_not_run")
     if not reasons:
         return []
     return sorted(set(reasons + ["mesh_stitch_or_weld_not_proven"]))
+
+
+def _execution_evidence(
+    operations: list[dict[str, Any]], constraints: dict[str, Any]
+) -> dict[str, Any]:
+    input_constraints = constraints.get("constraints", [])
+    input_constraint_count = len(input_constraints) if isinstance(input_constraints, list) else 0
+    executed_operation_count = sum(
+        1 for operation in operations if operation["status"] == "executed"
+    )
+    source_vertex_class_rewrite_run = executed_operation_count > 0
+    face_index_rewrite_run = executed_operation_count > 0
+    return {
+        "buildIntent": "logical_stitched_shell_and_conventional_render_asset",
+        "meshStitchOrWeldExecutionRun": (
+            input_constraint_count > 0
+            and executed_operation_count > 0
+            and source_vertex_class_rewrite_run
+            and face_index_rewrite_run
+        ),
+        "sourceVertexClassRewriteRun": source_vertex_class_rewrite_run,
+        "faceIndexRewriteRun": face_index_rewrite_run,
+        "analysisAssetWriteStatus": "declared_package_writer_required",
+        "renderAssetWriteStatus": "declared_package_writer_required",
+        "analysisAssetWritten": False,
+        "renderAssetWritten": False,
+        "operationCount": len(operations),
+        "executedOperationCount": executed_operation_count,
+        "inputConstraintCount": input_constraint_count,
+        "zeroConstraintExecutionClaimAllowed": False,
+    }
+
+
+def _opening_proof(topology_audit: dict[str, Any]) -> dict[str, Any]:
+    # Semantic opening assignment requires a simple boundary cycle and an explicit
+    # loop-to-opening map. BP-46 currently exposes the missing proof instead of
+    # deriving opening IDs from fixture expectations.
+    proven_opening_ids: list[str] = []
+    missing_ids = [
+        opening_id for opening_id in _EXPECTED_OPENING_IDS if opening_id not in proven_opening_ids
+    ]
+    return {
+        "expectedOpeningIds": _EXPECTED_OPENING_IDS,
+        "expectedOpeningCount": len(_EXPECTED_OPENING_IDS),
+        "topologicalBoundaryComponentCount": topology_audit["boundaryLoopCount"],
+        "simpleBoundaryCycleCount": topology_audit["simpleBoundaryCycleCount"],
+        "boundaryBranchVertexCount": topology_audit["boundaryBranchVertexCount"],
+        "provenOpeningIds": proven_opening_ids,
+        "provenOpeningCount": len(proven_opening_ids),
+        "missingExpectedOpeningIds": missing_ids,
+        "missingExpectedOpeningCount": len(missing_ids),
+        "unexpectedBoundaryLoopCount": topology_audit["unexpectedBoundaryLoopCount"],
+        "status": "pass"
+        if not missing_ids and topology_audit["unexpectedBoundaryLoopCount"] == 0
+        else "fail",
+        "limitations": [
+            (
+                "semantic loop-to-opening assignment is not implemented yet; "
+                "BP-47 inspection overlays may visualize these rejected boundaries"
+            ),
+        ],
+    }
+
+
+def _seam_span_coverage(
+    operations: list[dict[str, Any]], constraints: dict[str, Any]
+) -> dict[str, Any]:
+    input_constraints = constraints.get("constraints", [])
+    required_ids = [
+        str(constraint.get("id", f"constraint.{index:03d}"))
+        for index, constraint in enumerate(input_constraints)
+        if isinstance(constraint, dict) and constraint.get("enabled", True) is not False
+    ]
+    executed_ids = [
+        str(operation["operationId"])
+        for operation in operations
+        if operation["status"] == "executed"
+    ]
+    rejected_ids = [
+        str(operation["operationId"])
+        for operation in operations
+        if operation["status"] != "executed"
+    ]
+    duplicate_ids = sorted(
+        operation_id for operation_id, count in Counter(executed_ids).items() if count > 1
+    )
+    executed_set = set(executed_ids)
+    missing_ids = sorted(
+        operation_id for operation_id in required_ids if operation_id not in executed_set
+    )
+    denominator = len(required_ids)
+    numerator = len([operation_id for operation_id in required_ids if operation_id in executed_set])
+    return {
+        "requiredOperationCount": denominator,
+        "executedRequiredOperationCount": numerator,
+        "coverageRatio": _ratio(numerator, denominator),
+        "missingRequiredOperationIds": missing_ids,
+        "rejectedRequiredOperationIds": sorted(set(rejected_ids) & set(required_ids)),
+        "rejectedRequiredOperationCount": len(set(rejected_ids) & set(required_ids)),
+        "duplicateExecutedOperationIds": duplicate_ids,
+        "duplicateExecutedOperationCount": len(duplicate_ids),
+    }
+
+
+def _provenance_coverage(source_vertex_map: list[dict[str, Any]], mesh: Mesh) -> dict[str, Any]:
+    covered_vertices: set[int] = set()
+    duplicate_vertices: list[str] = []
+    for entry in source_vertex_map:
+        logical_index = int(entry["logicalVertexIndex"])
+        source_records = entry.get("sourceVertices", [])
+        valid_records = (
+            isinstance(source_records, list)
+            and len(source_records) > 0
+            and all(
+                isinstance(record, dict)
+                and isinstance(record.get("panelId"), str)
+                and isinstance(record.get("materialId"), str)
+                and _is_vec2(record.get("panelUv"))
+                for record in source_records
+            )
+        )
+        if valid_records and 0 <= logical_index < len(mesh.vertices):
+            if logical_index in covered_vertices:
+                duplicate_vertices.append(f"logicalVertex.{logical_index:06d}")
+            covered_vertices.add(logical_index)
+    required_vertices = len(mesh.vertices)
+    missing_vertices = [
+        f"logicalVertex.{index:06d}"
+        for index in range(required_vertices)
+        if index not in covered_vertices
+    ]
+    covered_faces = sum(
+        1 for tri in mesh.triangles if all(index in covered_vertices for index in tri)
+    )
+    return {
+        "requiredOutputVertexCount": required_vertices,
+        "coveredOutputVertexCount": len(covered_vertices),
+        "coverageRatio": _ratio(len(covered_vertices), required_vertices),
+        "missingOutputVertexIds": missing_vertices,
+        "duplicateOutputVertexIds": sorted(duplicate_vertices),
+        "requiredFaceCount": len(mesh.triangles),
+        "coveredFaceCount": covered_faces,
+        "faceCoverageRatio": _ratio(covered_faces, len(mesh.triangles)),
+    }
+
+
+def _binding_coverage(mesh: Mesh) -> dict[str, Any]:
+    required_vertices = len(mesh.vertices)
+    return {
+        "bindingStatus": "not_run",
+        "requiredRenderVertexCount": required_vertices,
+        "boundRenderVertexCount": 0,
+        "coverageRatio": 0.0,
+        "missingRenderVertexIds": [
+            f"logicalVertex.{index:06d}" for index in range(required_vertices)
+        ],
+        "bindingRecordCount": 0,
+        "bindingFormat": None,
+        "bindingAssetPath": None,
+        "reconstructionStatus": "not_run",
+        "maxReconstructionErrorMeters": None,
+        "rmsReconstructionErrorMeters": None,
+    }
+
+
+def _source_displacement_metrics(
+    source_vertex_map: list[dict[str, Any]], meshset: MeshSet
+) -> dict[str, Any]:
+    bounds = mesh_bounds(meshset)
+    extent = max(float(value) for value in bounds["size"])
+    displacements = [
+        float(record["sourceToEmittedDisplacementMeters"])
+        for entry in source_vertex_map
+        for record in entry.get("sourceVertices", [])
+        if isinstance(record, dict) and record.get("sourceToEmittedDisplacementMeters") is not None
+    ]
+    max_displacement = max(displacements, default=0.0)
+    rms = (
+        sqrt(sum(value * value for value in displacements) / len(displacements))
+        if displacements
+        else 0.0
+    )
+    outliers = []
+    for entry in source_vertex_map:
+        for record in entry.get("sourceVertices", []):
+            if float(record.get("sourceToEmittedDisplacementMeters", 0.0)) > 0.05:
+                outliers.append(
+                    {
+                        "logicalVertexIndex": entry["logicalVertexIndex"],
+                        "meshName": record.get("meshName"),
+                        "panelId": record.get("panelId"),
+                        "sourceVertexIndex": record.get("vertexIndex"),
+                        "displacementMeters": record.get("sourceToEmittedDisplacementMeters"),
+                    }
+                )
+    return {
+        "garmentExtentMeters": _round(extent),
+        "sourceVertexCount": len(displacements),
+        "maxSourceDisplacementMeters": _round(max_displacement),
+        "rmsSourceDisplacementMeters": _round(rms),
+        "maxSourceDisplacementToGarmentExtentRatio": _ratio(max_displacement, extent),
+        "outlierThresholdMeters": 0.05,
+        "outlierCount": len(outliers),
+        "outliers": outliers[:32],
+    }
 
 
 def _edge_counts(triangles: list[tuple[int, int, int]]) -> Counter[tuple[int, int]]:
@@ -437,27 +719,48 @@ def _component_count(mesh: Mesh) -> int:
     return union.component_count()
 
 
-def _boundary_loop_count(boundary_edges: list[tuple[int, int]]) -> int:
+def _boundary_components(boundary_edges: list[tuple[int, int]]) -> list[dict[str, Any]]:
     if not boundary_edges:
-        return 0
+        return []
     adjacency: dict[int, set[int]] = {}
     for left, right in boundary_edges:
         adjacency.setdefault(left, set()).add(right)
         adjacency.setdefault(right, set()).add(left)
     seen_vertices: set[int] = set()
-    loop_count = 0
+    components: list[dict[str, Any]] = []
     for start in sorted(adjacency):
         if start in seen_vertices:
             continue
-        loop_count += 1
+        component_vertices: set[int] = set()
         stack = [start]
         while stack:
             current = stack.pop()
-            if current in seen_vertices:
+            if current in component_vertices:
                 continue
-            seen_vertices.add(current)
-            stack.extend(sorted(adjacency.get(current, set()) - seen_vertices))
-    return loop_count
+            component_vertices.add(current)
+            stack.extend(sorted(adjacency.get(current, set()) - component_vertices))
+        seen_vertices.update(component_vertices)
+        component_edges = [
+            edge
+            for edge in boundary_edges
+            if edge[0] in component_vertices or edge[1] in component_vertices
+        ]
+        degree_violations = sorted(
+            vertex for vertex in component_vertices if len(adjacency.get(vertex, set())) != 2
+        )
+        components.append(
+            {
+                "componentIndex": len(components),
+                "vertexCount": len(component_vertices),
+                "edgeCount": len(component_edges),
+                "isSimpleCycle": len(degree_violations) == 0
+                and len(component_edges) == len(component_vertices),
+                "degreeViolationVertexIds": [
+                    f"logicalVertex.{vertex:06d}" for vertex in degree_violations
+                ],
+            }
+        )
+    return components
 
 
 def _duplicate_face_count(triangles: list[tuple[int, int, int]]) -> int:
@@ -492,6 +795,20 @@ def _distance3(a: tuple[float, float, float], b: tuple[float, float, float]) -> 
 
 def _round(value: float) -> float:
     return round(float(value), 9)
+
+
+def _ratio(numerator: float, denominator: float) -> float:
+    if denominator <= 0:
+        return 0.0
+    return _round(float(numerator) / float(denominator))
+
+
+def _is_vec2(value: Any) -> bool:
+    return (
+        isinstance(value, list | tuple)
+        and len(value) == 2
+        and all(isinstance(component, int | float) for component in value)
+    )
 
 
 def _round_vec3(value: tuple[float, float, float]) -> tuple[float, float, float]:

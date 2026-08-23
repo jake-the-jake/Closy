@@ -45,7 +45,12 @@ from closy_forge.package_io.canonical_json import (
     write_canonical_json,
     write_canonical_text,
 )
-from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
+from closy_forge.package_io.hashing import (
+    geometry_content_hash,
+    sha256_bytes,
+    sha256_file,
+    topology_hash,
+)
 from closy_forge.package_io.writer import (
     EXCLUDED_FROM_CANONICAL_INVENTORY,
     canonical_package_digest,
@@ -91,6 +96,7 @@ from closy_forge.proposals import (
     build_stitched_shell_assets,
     clean_geometry_proposal_quality_report,
     geometry_proposal_quality_report,
+    hash_geometry_stitched_shell_report,
     provider_registry_quality_report,
     reproject_cleanup_preview_to_settled_simulation,
 )
@@ -497,6 +503,7 @@ def _write_package_contents(
         "closy_stitched_shell_preview_v1",
         (0.10, 0.36, 0.70, 1.0),
     )
+    _record_stitched_shell_package_writer_evidence(geometry_stitched_shell, package_dir)
     write_canonical_json(
         package_dir / "render" / "mesh_manifest.json", _mesh_manifest(render_mesh, "render")
     )
@@ -2682,6 +2689,27 @@ def _mesh_counts(meshset: MeshSet) -> dict[str, int]:
         "vertexCount": meshset.vertex_count,
         "triangleCount": meshset.triangle_count,
     }
+
+
+def _record_stitched_shell_package_writer_evidence(
+    geometry_stitched_shell: dict[str, Any], package_dir: Path
+) -> None:
+    analysis_path = package_dir / "stitch" / "logical_stitched_analysis_shell.json"
+    render_path = package_dir / "render" / "stitched_shell.glb"
+    geometry_stitched_shell["packageWriterEvidence"] = {
+        "status": "written",
+        "analysisAssetWritten": analysis_path.exists(),
+        "renderAssetWritten": render_path.exists(),
+        "analysisAssetPath": "stitch/logical_stitched_analysis_shell.json",
+        "renderAssetPath": "render/stitched_shell.glb",
+        "analysisAssetSha256": sha256_file(analysis_path),
+        "renderAssetSha256": sha256_file(render_path),
+        "analysisAssetByteSize": analysis_path.stat().st_size,
+        "renderAssetByteSize": render_path.stat().st_size,
+    }
+    geometry_stitched_shell["integrity"]["geometryStitchedShellHash"] = (
+        hash_geometry_stitched_shell_report(geometry_stitched_shell)
+    )
 
 
 def _operation_removed_count(cleanup_result: dict[str, Any], operation_id: str) -> int:

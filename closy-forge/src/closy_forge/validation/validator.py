@@ -5523,6 +5523,21 @@ def _validate_geometry_stitched_shell(
             )
         )
     render_asset = report.get("renderAsset", {})
+    execution = report.get("execution", {})
+    if (
+        execution.get("analysisAssetWritten") is not False
+        or execution.get("renderAssetWritten") is not False
+        or execution.get("analysisAssetWriteStatus") != "declared_package_writer_required"
+        or execution.get("renderAssetWriteStatus") != "declared_package_writer_required"
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_builder_write_claim_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "The pure stitched-shell builder must not claim package files were written.",
+            )
+        )
     if render_asset.get("path") != "render/stitched_shell.glb":
         issues.append(
             _issue(
@@ -5530,6 +5545,38 @@ def _validate_geometry_stitched_shell(
                 "fatal",
                 "reports/geometry_stitched_shell.json",
                 "Stitched render shell path must be render/stitched_shell.glb.",
+            )
+        )
+    writer_evidence = report.get("packageWriterEvidence", {})
+    analysis_asset_path = package_dir / "stitch" / "logical_stitched_analysis_shell.json"
+    render_asset_path = package_dir / "render" / "stitched_shell.glb"
+    expected_writer_evidence = {
+        "status": "written",
+        "analysisAssetWritten": analysis_asset_path.exists(),
+        "renderAssetWritten": render_asset_path.exists(),
+        "analysisAssetPath": "stitch/logical_stitched_analysis_shell.json",
+        "renderAssetPath": "render/stitched_shell.glb",
+        "analysisAssetSha256": sha256_file(analysis_asset_path)
+        if analysis_asset_path.exists()
+        else None,
+        "renderAssetSha256": sha256_file(render_asset_path) if render_asset_path.exists() else None,
+        "analysisAssetByteSize": analysis_asset_path.stat().st_size
+        if analysis_asset_path.exists()
+        else None,
+        "renderAssetByteSize": render_asset_path.stat().st_size
+        if render_asset_path.exists()
+        else None,
+    }
+    if writer_evidence != expected_writer_evidence:
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_package_writer_evidence_mismatch",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                (
+                    "Stitched shell package-writer evidence must match the written "
+                    "analysis and GLB files."
+                ),
             )
         )
     if render_asset.get("topologyHash") != topology_hash(expected_mesh):
@@ -5551,15 +5598,104 @@ def _validate_geometry_stitched_shell(
             )
         )
     topology_audit = report.get("topologyAudit", {})
+    seam_coverage = topology_audit.get("seamSpanCoverage", {})
+    if (
+        not isinstance(seam_coverage, dict)
+        or seam_coverage.get("requiredOperationCount")
+        != topology_audit.get("sourceConstraintCount")
+        or seam_coverage.get("executedRequiredOperationCount")
+        != topology_audit.get("executedOperationCount")
+        or seam_coverage.get("coverageRatio") != 1.0
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_seam_coverage_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                (
+                    "Stitched shell seam coverage must expose exact "
+                    "required/executed operation counts."
+                ),
+            )
+        )
+    binding_evidence = topology_audit.get("bindingEvidence", {})
+    if (
+        not isinstance(binding_evidence, dict)
+        or topology_audit.get("bindingCoverage") != binding_evidence.get("coverageRatio")
+        or binding_evidence.get("requiredRenderVertexCount") != topology_audit.get("vertexCount")
+        or binding_evidence.get("bindingStatus") != "not_run"
+        or binding_evidence.get("boundRenderVertexCount") != 0
+        or topology_audit.get("bindingCoverage") != 0.0
+        or topology_audit.get("bindingReconstructionStatus") != "not_run"
+        or topology_audit.get("bindingReconstructionErrorMeters") is not None
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_binding_coverage_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                "BP-46 stitched shell must not claim binding coverage before a binding exists.",
+            )
+        )
+    provenance = topology_audit.get("uvMaterialPanelProvenance", {})
+    if (
+        not isinstance(provenance, dict)
+        or topology_audit.get("uvMaterialPanelProvenanceCoverage")
+        != provenance.get("coverageRatio")
+        or provenance.get("requiredOutputVertexCount") != topology_audit.get("vertexCount")
+        or provenance.get("coveredOutputVertexCount") != topology_audit.get("vertexCount")
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_provenance_coverage_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                (
+                    "Stitched shell provenance coverage must expose output-vertex "
+                    "numerator and denominator."
+                ),
+            )
+        )
+    opening_proof = analysis.get("openingProof", {})
+    if (
+        not isinstance(opening_proof, dict)
+        or opening_proof.get("status") != "fail"
+        or opening_proof.get("missingExpectedOpeningCount")
+        != len(opening_proof.get("expectedOpeningIds", []))
+        or opening_proof.get("provenOpeningCount") != 0
+    ):
+        issues.append(
+            _issue(
+                "stitched_analysis_shell_opening_proof_invalid",
+                "fatal",
+                "stitch/logical_stitched_analysis_shell.json",
+                "Opening proof must fail closed until semantic boundary loops are assigned.",
+            )
+        )
     if report.get("readiness", {}).get("meshStitchOrWeldProven") is True and not (
         topology_audit.get("finiteMesh") is True
         and topology_audit.get("logicalShellCount") == 1
+        and topology_audit.get("seamSpanCoverage", {}).get("coverageRatio") == 1.0
+        and topology_audit.get("seamSpanCoverage", {}).get("rejectedRequiredOperationCount") == 0
+        and topology_audit.get("seamSpanCoverage", {}).get("duplicateExecutedOperationCount") == 0
         and topology_audit.get("nonManifoldEdgeCount") == 0
+        and topology_audit.get("nonManifoldVertexCount") == 0
         and topology_audit.get("duplicateFaceCount") == 0
         and topology_audit.get("degenerateTriangleCount") == 0
         and topology_audit.get("unexpectedBoundaryLoopCount") == 0
         and topology_audit.get("boundaryLoopCount") == topology_audit.get("expectedOpeningCount")
+        and topology_audit.get("simpleBoundaryCycleCount")
+        == topology_audit.get("expectedOpeningCount")
+        and topology_audit.get("boundaryBranchVertexCount") == 0
+        and topology_audit.get("missingExpectedOpeningCount") == 0
+        and topology_audit.get("tJunctionCheckStatus") == "pass"
+        and topology_audit.get("inconsistentWindingCheckStatus") == "pass"
+        and topology_audit.get("normalInversionCheckStatus") == "pass"
         and topology_audit.get("selfIntersectionCheckStatus") == "pass"
+        and topology_audit.get("hiddenInternalComponentCheckStatus") == "pass"
+        and topology_audit.get("uvMaterialPanelProvenanceCoverage") == 1.0
+        and topology_audit.get("bindingCoverage") == 1.0
+        and topology_audit.get("bindingReconstructionStatus") == "pass"
     ):
         issues.append(
             _issue(

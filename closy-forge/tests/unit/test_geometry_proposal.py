@@ -382,10 +382,22 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["execution"]["meshStitchOrWeldExecutionRun"] is True
     assert report["execution"]["sourceVertexClassRewriteRun"] is True
     assert report["execution"]["faceIndexRewriteRun"] is True
+    assert report["execution"]["analysisAssetWritten"] is False
+    assert report["execution"]["renderAssetWritten"] is False
+    assert report["packageWriterEvidence"]["status"] == "pending_package_writer"
     assert report["execution"]["operationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["executedOperationCount"] == len(constraints["constraints"])
+    assert report["topologyAudit"]["seamSpanCoverage"]["coverageRatio"] == 1.0
+    assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 5
     assert report["topologyAudit"]["logicalShellCount"] == 1
     assert report["topologyAudit"]["maxPostStitchResidualMeters"] == 0.0
+    assert report["topologyAudit"]["bindingCoverage"] == 0.0
+    assert report["topologyAudit"]["bindingReconstructionStatus"] == "not_run"
+    assert report["topologyAudit"]["bindingEvidence"]["boundRenderVertexCount"] == 0
+    assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
+    assert report["topologyAudit"]["missingExpectedOpeningCount"] == 4
+    assert report["topologyAudit"]["boundaryBranchVertexCount"] == 7
+    assert report["topologyAudit"]["sourceDisplacement"]["maxSourceDisplacementMeters"] > 0.0
     assert report["topologyAudit"]["vertexCount"] == stitched_mesh.vertex_count
     assert report["topologyAudit"]["triangleCount"] == stitched_mesh.triangle_count
     assert report["readiness"]["meshStitchOrWeldProven"] is False
@@ -397,6 +409,13 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     )
     assert analysis["logicalShell"]["vertexCount"] == stitched_mesh.vertex_count
     assert analysis["openingProof"]["expectedOpeningCount"] == 4
+    assert analysis["openingProof"]["status"] == "fail"
+    assert analysis["openingProof"]["missingExpectedOpeningIds"] == [
+        "opening.neck",
+        "opening.hem",
+        "opening.cuff.left",
+        "opening.cuff.right",
+    ]
     assert report["integrity"]["geometryStitchedShellHash"] == (
         hash_geometry_stitched_shell_report(report)
     )

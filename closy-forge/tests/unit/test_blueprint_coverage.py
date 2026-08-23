@@ -45,7 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp45-truth-reset-v1"
+    assert payload["version"] == "bp46-closeout-proof-invariants-v1"
+    assert payload["generatedBy"] == "BP-46 closeout ledger and proof invariant pass"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -70,6 +71,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
     required_ids = {
         "BP-05-01-PATTERN-FIRST",
         "BP-05-05-TRUTHFUL-EVIDENCE-TIERS",
+        "BP-46-STITCHED-SHELL-OUTPUT",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
         *(
             f"BP-08-{stage}"
@@ -153,7 +155,31 @@ def test_phase_completion_is_not_overclaimed() -> None:
         assert rows_by_id[f"BP-17-PHASE-{index:02d}"]["status"] == "discovery_pending"
 
 
-def test_ledger_table_statuses_use_bp45_vocabulary() -> None:
+def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    bp46 = rows_by_id["BP-46-STITCHED-SHELL-OUTPUT"]
+
+    assert bp46["status"] == "partial"
+    assert "81fb02c" in bp46["commitSha"]
+    assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
+    assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
+    assert "non-manifold edges" in bp46["limitations"]
+    assert "BP-47" in bp46["nextAction"]
+
+
+def test_markdown_ledger_matches_bp46_checkpoint_state() -> None:
+    ledger = LEDGER_PATH.read_text(encoding="utf-8")
+
+    assert "Latest completed implementation commit when last updated: `81fb02c`" in ledger
+    assert "Current active increment: `BP-47-INSPECTION-ARTIFACTS`" in ledger
+    assert "Next dependency-ready increment: `BP-47-INSPECTION-ARTIFACTS`" in ledger
+    assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
+    assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
+    assert "| BP-08-K-CLOTH-SIMULATION | partial |" in ledger
+    assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
+
+
+def test_ledger_table_statuses_use_bp46_vocabulary() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
     table_statuses = {
         match.group(1)

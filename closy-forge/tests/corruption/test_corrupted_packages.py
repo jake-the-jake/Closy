@@ -762,6 +762,80 @@ def test_geometry_stitched_shell_impossible_proof_claim_is_rejected(
     assert "geometry_stitched_shell_proof_invalid" in codes
 
 
+def test_geometry_stitched_shell_binding_coverage_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_stitched_shell_binding_coverage.closygarment"
+    )
+    stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
+    audit = stitched["topologyAudit"]
+    audit["bindingCoverage"] = 1.0
+    audit["bindingReconstructionStatus"] = "pass"
+    audit["bindingReconstructionErrorMeters"] = 0.0
+    audit["bindingEvidence"]["bindingStatus"] = "pass"
+    audit["bindingEvidence"]["boundRenderVertexCount"] = audit["bindingEvidence"][
+        "requiredRenderVertexCount"
+    ]
+    audit["bindingEvidence"]["coverageRatio"] = 1.0
+    audit["bindingEvidence"]["missingRenderVertexIds"] = []
+    write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_stitched_shell_hash_mismatch" in codes
+    assert "geometry_stitched_shell_recompute_mismatch" in codes
+    assert "geometry_stitched_shell_binding_coverage_invalid" in codes
+
+
+def test_geometry_stitched_shell_builder_file_write_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_stitched_shell_builder_write.closygarment"
+    )
+    stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
+    stitched["execution"]["analysisAssetWritten"] = True
+    stitched["execution"]["renderAssetWritten"] = True
+    write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_stitched_shell_hash_mismatch" in codes
+    assert "geometry_stitched_shell_recompute_mismatch" in codes
+    assert "geometry_stitched_shell_builder_write_claim_invalid" in codes
+
+
+def test_geometry_stitched_shell_package_writer_hash_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_stitched_shell_writer_hash.closygarment"
+    )
+    stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
+    stitched["packageWriterEvidence"]["renderAssetSha256"] = "0" * 64
+    write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_stitched_shell_hash_mismatch" in codes
+    assert "geometry_stitched_shell_package_writer_evidence_mismatch" in codes
+
+
+def test_stitched_analysis_opening_proof_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_stitched_shell_opening_proof.closygarment"
+    )
+    analysis = read_json(corrupt / "stitch" / "logical_stitched_analysis_shell.json")
+    opening_proof = analysis["openingProof"]
+    opening_proof["status"] = "pass"
+    opening_proof["provenOpeningIds"] = opening_proof["expectedOpeningIds"]
+    opening_proof["provenOpeningCount"] = len(opening_proof["expectedOpeningIds"])
+    opening_proof["missingExpectedOpeningIds"] = []
+    opening_proof["missingExpectedOpeningCount"] = 0
+    write_json(corrupt / "stitch" / "logical_stitched_analysis_shell.json", analysis)
+    codes = issue_codes(validate_package(corrupt))
+    assert "stitched_analysis_shell_hash_mismatch" in codes
+    assert "stitched_analysis_shell_recompute_mismatch" in codes
+    assert "stitched_analysis_shell_opening_proof_invalid" in codes
+
+
 def test_geometry_visual_shell_review_hash_mismatch_is_rejected(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]
