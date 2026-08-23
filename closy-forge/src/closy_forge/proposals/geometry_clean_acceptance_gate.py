@@ -10,7 +10,7 @@ GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION = "closy.geometry_clean_acceptance_gate.r
 
 CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS = [
     "clean_acceptance_gate_rejected",
-    "visual_fidelity_review_not_run",
+    "visual_fidelity_review_not_accepted",
     "single_shell_weld_not_proven",
     "normal_continuity_warn",
     "tangent_continuity_warn",
@@ -29,6 +29,7 @@ def build_geometry_clean_acceptance_gate_report(
     semantic_transfer_report: dict[str, Any],
     texture_identity_report: dict[str, Any],
     material_uv_transfer_report: dict[str, Any] | None = None,
+    visual_shell_review_report: dict[str, Any] | None = None,
     provider_registry: dict[str, Any],
 ) -> dict[str, Any]:
     """Evaluate whether a runtime-bound visual proposal can become clean geometry.
@@ -59,6 +60,25 @@ def build_geometry_clean_acceptance_gate_report(
     material_transfer_run = bool(material_execution.get("materialTransferRun", False))
     uv_transfer_run = bool(material_execution.get("uvTransferRun", False))
     material_transfer_accepted = bool(material_readiness.get("acceptedForMaterialPreview", False))
+    visual_execution = (
+        visual_shell_review_report.get("execution", {})
+        if visual_shell_review_report is not None
+        else {}
+    )
+    visual_readiness = (
+        visual_shell_review_report.get("readiness", {})
+        if visual_shell_review_report is not None
+        else {}
+    )
+    visual_aggregate = (
+        visual_shell_review_report.get("aggregate", {})
+        if visual_shell_review_report is not None
+        else {}
+    )
+    visual_fidelity_review_run = bool(visual_execution.get("visualFidelityReviewRun", False))
+    visual_fidelity_accepted = bool(visual_readiness.get("acceptedForVisualFidelity", False))
+    single_shell_weld_proof_run = bool(visual_execution.get("singleShellWeldProofRun", False))
+    single_shell_weld_proven = bool(visual_readiness.get("singleShellWeldProven", False))
 
     checks = _checks(
         runtime_execution=runtime_execution,
@@ -69,6 +89,7 @@ def build_geometry_clean_acceptance_gate_report(
         semantic_aggregate=semantic_aggregate,
         texture_identity=texture_identity_report,
         material_uv_transfer=material_uv_transfer_report,
+        visual_shell_review=visual_shell_review_report,
         provider_registry=provider_registry,
     )
     accepted_for_clean = all(check["status"] == "pass" for check in checks)
@@ -97,6 +118,14 @@ def build_geometry_clean_acceptance_gate_report(
             "geometryMaterialUvTransferHash"
         ]
         if material_uv_transfer_report is not None
+        else None,
+        "sourceGeometryVisualShellReviewId": visual_shell_review_report["reportId"]
+        if visual_shell_review_report is not None
+        else None,
+        "sourceGeometryVisualShellReviewHash": visual_shell_review_report["integrity"][
+            "geometryVisualShellReviewHash"
+        ]
+        if visual_shell_review_report is not None
         else None,
         "sourceProviderRegistryId": provider_registry["registryId"],
         "sourceProviderRegistryHash": provider_registry["integrity"]["providerRegistryHash"],
@@ -142,8 +171,14 @@ def build_geometry_clean_acceptance_gate_report(
             ]
             if material_uv_transfer_report is not None
             else 0,
-            "visualFidelityReviewRun": False,
-            "visualFidelityScore": None,
+            "visualFidelityReviewRun": visual_fidelity_review_run,
+            "visualFidelityScore": visual_aggregate.get("visualFidelityScore"),
+            "visualFidelityAccepted": visual_fidelity_accepted,
+            "renderedPixelComparisonRun": bool(
+                visual_aggregate.get("renderedPixelComparisonRun", False)
+            ),
+            "singleShellWeldProofRun": single_shell_weld_proof_run,
+            "singleShellWeldProven": single_shell_weld_proven,
         },
         "thresholds": {
             "maxReconstructionErrorMeters": _MAX_RUNTIME_RECONSTRUCTION_ERROR_METERS,
@@ -173,25 +208,32 @@ def build_geometry_clean_acceptance_gate_report(
             "semanticTransferEvidenceReviewed": True,
             "materialEvidenceReviewed": True,
             "policyReviewed": True,
-            "visualFidelityReviewRun": False,
+            "visualFidelityReviewRun": visual_fidelity_review_run,
             "uvTransferRun": uv_transfer_run,
             "materialTransferRun": material_transfer_run,
             "materialTransferAccepted": material_transfer_accepted,
-            "singleShellWeldProofRun": False,
+            "singleShellWeldProofRun": single_shell_weld_proof_run,
+            "visualFidelityAccepted": visual_fidelity_accepted,
+            "singleShellWeldProven": single_shell_weld_proven,
         },
         "readiness": {
-            "status": "clean_acceptance_rejected_fidelity_weld_pending"
-            if material_transfer_accepted and not accepted_for_clean
-            else "clean_acceptance_rejected_fidelity_material_pending"
-            if not accepted_for_clean
-            else "clean_acceptance_passed",
+            "status": _readiness_status(
+                accepted_for_clean=accepted_for_clean,
+                material_transfer_accepted=material_transfer_accepted,
+                visual_fidelity_review_run=visual_fidelity_review_run,
+                visual_fidelity_accepted=visual_fidelity_accepted,
+                single_shell_weld_proven=single_shell_weld_proven,
+            ),
             "acceptedForCleanProposal": accepted_for_clean,
             "acceptedForCanonical": False,
             "acceptedForSimulation": False,
             "acceptedForRuntimeRender": runtime_readiness["acceptedForRuntimeRender"],
-            "nextExecutableStage": "visual_fidelity_review_and_single_shell_stitch_weld_proof"
-            if material_transfer_accepted
-            else "material_uv_transfer_and_visual_fidelity_review",
+            "nextExecutableStage": _next_executable_stage(
+                material_transfer_accepted=material_transfer_accepted,
+                visual_fidelity_review_run=visual_fidelity_review_run,
+                visual_fidelity_accepted=visual_fidelity_accepted,
+                single_shell_weld_proven=single_shell_weld_proven,
+            ),
             "blockingReasons": blocking_reasons,
         },
         "quality": {
@@ -212,7 +254,12 @@ def build_geometry_clean_acceptance_gate_report(
                     if texture_identity_report["textureProjectionRun"] is False
                     else None,
                     "material_transfer_not_run" if not material_transfer_run else None,
-                    "visual_fidelity_review_not_run",
+                    "visual_fidelity_review_not_accepted"
+                    if visual_fidelity_review_run
+                    else "visual_fidelity_review_not_run",
+                    "rendered_visual_fidelity_review_missing"
+                    if visual_fidelity_review_run and not visual_fidelity_accepted
+                    else None,
                     "single_shell_weld_not_proven",
                 ]
                 if reason is not None
@@ -252,6 +299,7 @@ def _checks(
     semantic_aggregate: dict[str, Any],
     texture_identity: dict[str, Any],
     material_uv_transfer: dict[str, Any] | None,
+    visual_shell_review: dict[str, Any] | None,
     provider_registry: dict[str, Any],
 ) -> list[dict[str, Any]]:
     if material_uv_transfer is None:
@@ -280,6 +328,40 @@ def _checks(
             ],
             "missingMaterialCount": material_uv_transfer["aggregate"]["missingMaterialCount"],
             "missingUvCount": material_uv_transfer["aggregate"]["missingUvCount"],
+        }
+    if visual_shell_review is None:
+        visual_check_status = "not_run"
+        visual_measured: Any = None
+        visual_reason = "no visual/shell review report exists yet"
+        shell_check_status = "fail"
+        shell_measured: Any = runtime_retopology["vertexWeldedSingleShell"]
+    else:
+        visual_check_status = (
+            "pass" if visual_shell_review["readiness"]["acceptedForVisualFidelity"] else "fail"
+        )
+        visual_measured = {
+            "visualFidelityReviewRun": visual_shell_review["execution"]["visualFidelityReviewRun"],
+            "renderedPixelComparisonRun": visual_shell_review["execution"][
+                "renderedPixelComparisonRun"
+            ],
+            "visualFidelityScore": visual_shell_review["aggregate"]["visualFidelityScore"],
+            "acceptedForVisualFidelity": visual_shell_review["readiness"][
+                "acceptedForVisualFidelity"
+            ],
+        }
+        visual_reason = (
+            "visual review ran but rendered pixel fidelity has not been accepted"
+            if visual_check_status == "fail"
+            else "visual fidelity accepted"
+        )
+        shell_check_status = (
+            "pass" if visual_shell_review["readiness"]["singleShellWeldProven"] else "fail"
+        )
+        shell_measured = {
+            "singleShellWeldProofRun": visual_shell_review["execution"]["singleShellWeldProofRun"],
+            "singleShellWeldProven": visual_shell_review["readiness"]["singleShellWeldProven"],
+            "semanticPanelShellCount": visual_shell_review["shellProof"]["semanticPanelShellCount"],
+            "vertexWeldedSingleShell": visual_shell_review["shellProof"]["vertexWeldedSingleShell"],
         }
     return [
         {
@@ -346,17 +428,15 @@ def _checks(
         },
         {
             "checkId": "visual_fidelity_review",
-            "status": "not_run",
-            "measured": None,
+            "status": visual_check_status,
+            "measured": visual_measured,
             "threshold": 0.8,
-            "reason": "no rendered visual comparison or human/metric review exists yet",
+            "reason": visual_reason,
         },
         {
             "checkId": "single_shell_stitch_weld_proof",
-            "status": "fail"
-            if runtime_retopology["vertexWeldedSingleShell"] is not True
-            else "pass",
-            "measured": runtime_retopology["vertexWeldedSingleShell"],
+            "status": shell_check_status,
+            "measured": shell_measured,
             "threshold": True,
         },
         {
@@ -391,7 +471,9 @@ def _reason_aliases(check_id: str, status: str) -> set[str]:
     if check_id == "material_transfer" and status == "fail":
         return {"material_transfer_failed"}
     if check_id == "visual_fidelity_review" and status == "not_run":
-        return {"visual_fidelity_review_not_run"}
+        return {"visual_fidelity_review_not_run", "visual_fidelity_review_not_accepted"}
+    if check_id == "visual_fidelity_review" and status == "fail":
+        return {"visual_fidelity_review_not_accepted"}
     if check_id == "single_shell_stitch_weld_proof" and status == "fail":
         return {"single_shell_weld_not_proven"}
     if check_id == "normal_continuity" and status == "warn":
@@ -399,6 +481,45 @@ def _reason_aliases(check_id: str, status: str) -> set[str]:
     if check_id == "tangent_continuity" and status == "warn":
         return {"tangent_continuity_warn"}
     return {f"{check_id}_{status}"}
+
+
+def _readiness_status(
+    *,
+    accepted_for_clean: bool,
+    material_transfer_accepted: bool,
+    visual_fidelity_review_run: bool,
+    visual_fidelity_accepted: bool,
+    single_shell_weld_proven: bool,
+) -> str:
+    if accepted_for_clean:
+        return "clean_acceptance_passed"
+    if not material_transfer_accepted:
+        return "clean_acceptance_rejected_fidelity_material_pending"
+    if visual_fidelity_review_run and not visual_fidelity_accepted:
+        return "clean_acceptance_rejected_visual_shell_failed"
+    if visual_fidelity_accepted and not single_shell_weld_proven:
+        return "clean_acceptance_rejected_single_shell_pending"
+    return "clean_acceptance_rejected_fidelity_weld_pending"
+
+
+def _next_executable_stage(
+    *,
+    material_transfer_accepted: bool,
+    visual_fidelity_review_run: bool,
+    visual_fidelity_accepted: bool,
+    single_shell_weld_proven: bool,
+) -> str:
+    if not material_transfer_accepted:
+        return "material_uv_transfer_and_visual_fidelity_review"
+    if not visual_fidelity_review_run:
+        return "visual_fidelity_review_and_single_shell_stitch_weld_proof"
+    if not visual_fidelity_accepted and not single_shell_weld_proven:
+        return "rendered_visual_fidelity_and_single_shell_weld_execution"
+    if not visual_fidelity_accepted:
+        return "rendered_visual_fidelity_acceptance"
+    if not single_shell_weld_proven:
+        return "single_shell_stitch_weld_execution"
+    return "canonical_acceptance_quality_gate"
 
 
 def _ratio(numerator: int, denominator: int) -> float:

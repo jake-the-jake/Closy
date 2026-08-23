@@ -54,6 +54,7 @@ from closy_forge.proposals import (
     build_geometry_repair_retopology_plan,
     build_geometry_runtime_binding_result_report,
     build_geometry_semantic_transfer_report,
+    build_geometry_visual_shell_review_report,
     build_proposal_runtime_binding,
     build_proposal_runtime_render_mesh,
     build_raw_geometry_topology_report,
@@ -69,6 +70,7 @@ from closy_forge.proposals import (
     hash_geometry_repair_retopology_plan,
     hash_geometry_runtime_binding_result,
     hash_geometry_semantic_transfer_report,
+    hash_geometry_visual_shell_review,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
     reproject_cleanup_preview_to_settled_simulation,
@@ -134,6 +136,7 @@ EXPECTED_FILES = [
     "reports/geometry_repair_result.json",
     "reports/geometry_runtime_binding_result.json",
     "reports/geometry_material_uv_transfer.json",
+    "reports/geometry_visual_shell_review.json",
     "reports/geometry_clean_acceptance_gate.json",
     "reports/clean_geometry_proposal_quality.json",
     "reports/provider_registry_quality.json",
@@ -288,6 +291,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_repair_result(package_dir, manifest, issues)
     _validate_geometry_runtime_binding_result(package_dir, manifest, issues)
     _validate_geometry_material_uv_transfer(package_dir, manifest, issues)
+    _validate_geometry_visual_shell_review(package_dir, manifest, issues)
     _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
     _validate_clean_geometry_proposal(package_dir, manifest, issues)
@@ -5367,6 +5371,324 @@ def _validate_geometry_material_uv_transfer(
         )
 
 
+def _validate_geometry_visual_shell_review(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    runtime_result = _read_required_json(
+        package_dir, "reports/geometry_runtime_binding_result.json", issues
+    )
+    semantic_transfer = _read_required_json(
+        package_dir, "reports/geometry_semantic_transfer.json", issues
+    )
+    material_transfer = _read_required_json(
+        package_dir, "reports/geometry_material_uv_transfer.json", issues
+    )
+    simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    visual_shell = _read_required_json(
+        package_dir, "reports/geometry_visual_shell_review.json", issues
+    )
+    if (
+        runtime_result is None
+        or semantic_transfer is None
+        or material_transfer is None
+        or simulation_manifest is None
+        or visual_shell is None
+    ):
+        return
+
+    if visual_shell.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_garment_mismatch",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review must reference the package garment ID.",
+            )
+        )
+    if visual_shell.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_class_mismatch",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review must reference the package garment class.",
+            )
+        )
+
+    expected_sources = [
+        (
+            "sourceGeometryRuntimeBindingResultId",
+            runtime_result.get("reportId"),
+            "geometry_visual_shell_review_runtime_source_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferId",
+            semantic_transfer.get("reportId"),
+            "geometry_visual_shell_review_semantic_source_mismatch",
+        ),
+        (
+            "sourceGeometryMaterialUvTransferId",
+            material_transfer.get("reportId"),
+            "geometry_visual_shell_review_material_uv_source_mismatch",
+        ),
+    ]
+    for field, expected_value, code in expected_sources:
+        if visual_shell.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_visual_shell_review.json",
+                    f"Visual/shell review {field} must match its source artifact.",
+                )
+            )
+
+    expected_hashes = [
+        (
+            "sourceGeometryRuntimeBindingResultHash",
+            _nested_string(runtime_result, ["integrity", "geometryRuntimeBindingResultHash"], ""),
+            "geometry_visual_shell_review_runtime_hash_mismatch",
+        ),
+        (
+            "sourceGeometrySemanticTransferHash",
+            _nested_string(semantic_transfer, ["integrity", "geometrySemanticTransferHash"], ""),
+            "geometry_visual_shell_review_semantic_hash_mismatch",
+        ),
+        (
+            "sourceGeometryMaterialUvTransferHash",
+            _nested_string(
+                material_transfer,
+                ["integrity", "geometryMaterialUvTransferHash"],
+                "",
+            ),
+            "geometry_visual_shell_review_material_uv_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if visual_shell.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/geometry_visual_shell_review.json",
+                    f"Visual/shell review {field} must match its source artifact.",
+                )
+            )
+
+    if _nested_string(visual_shell, ["integrity", "geometryVisualShellReviewHash"], "") != (
+        hash_geometry_visual_shell_review(visual_shell)
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_hash_mismatch",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review hash must match its canonical payload.",
+            )
+        )
+
+    try:
+        settled_mesh = _meshset_from_manifest(simulation_manifest)
+        runtime_render_mesh, _binding_seeds = build_proposal_runtime_render_mesh(settled_mesh)
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_mesh_rebuild_failed",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                str(exc),
+            )
+        )
+        return
+
+    if visual_shell.get("sourceRuntimeRenderMeshTopologyHash") != topology_hash(
+        runtime_render_mesh
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_runtime_topology_hash_mismatch",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review runtime render topology hash is stale.",
+            )
+        )
+    if visual_shell.get("sourceRuntimeRenderMeshContentHash") != geometry_content_hash(
+        runtime_render_mesh
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_runtime_content_hash_mismatch",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review runtime render content hash is stale.",
+            )
+        )
+
+    try:
+        expected_report = build_geometry_visual_shell_review_report(
+            garment_id=str(manifest.get("garmentId", "")),
+            garment_class=str(manifest.get("garmentClass", "")),
+            runtime_binding_result_report=runtime_result,
+            semantic_transfer_report=semantic_transfer,
+            material_uv_transfer_report=material_transfer,
+            runtime_render_mesh=runtime_render_mesh,
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_recompute_failed",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                str(exc),
+            )
+        )
+        return
+
+    for key in [
+        "candidate",
+        "visualFidelity",
+        "shellProof",
+        "aggregate",
+        "execution",
+        "readiness",
+        "quality",
+        "policy",
+    ]:
+        if visual_shell.get(key) != expected_report.get(key):
+            issues.append(
+                _issue(
+                    "geometry_visual_shell_review_recompute_mismatch",
+                    "fatal",
+                    "reports/geometry_visual_shell_review.json",
+                    f"Visual/shell review field {key} is stale.",
+                )
+            )
+
+    aggregate = visual_shell.get("aggregate", {})
+    execution = visual_shell.get("execution", {})
+    readiness = visual_shell.get("readiness", {})
+    quality = visual_shell.get("quality", {})
+    policy = visual_shell.get("policy", {})
+    for name, block in [
+        ("aggregate", aggregate),
+        ("execution", execution),
+        ("readiness", readiness),
+        ("quality", quality),
+        ("policy", policy),
+    ]:
+        if not isinstance(block, dict):
+            issues.append(
+                _issue(
+                    "geometry_visual_shell_review_block_invalid",
+                    "fatal",
+                    "reports/geometry_visual_shell_review.json",
+                    f"Visual/shell review {name} block must be an object.",
+                )
+            )
+            return
+
+    if (
+        execution.get("geometryVisualShellReviewGenerated") is not True
+        or execution.get("visualFidelityReviewRun") is not True
+        or execution.get("deterministicPreviewProxyReviewRun") is not True
+        or execution.get("renderedPixelComparisonRun") is not False
+        or execution.get("singleShellWeldProofRun") is not True
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_execution_state_invalid",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                (
+                    "Visual/shell review must run deterministic review and shell proof, "
+                    "but must not claim rendered pixel comparison."
+                ),
+            )
+        )
+    if (
+        readiness.get("status") != "visual_shell_review_completed_clean_rejected"
+        or readiness.get("acceptedForVisualFidelity") is not False
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+        or readiness.get("singleShellWeldProven") is not False
+        or readiness.get("acceptedForRuntimeRender")
+        != runtime_result.get("readiness", {}).get("acceptedForRuntimeRender")
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_acceptance_invalid",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                (
+                    "Visual/shell review cannot accept D0 visual fidelity, shell "
+                    "weld or clean geometry."
+                ),
+            )
+        )
+    if (
+        aggregate.get("visualFidelityReviewRun") is not True
+        or aggregate.get("renderedPixelComparisonRun") is not False
+        or aggregate.get("acceptedForVisualFidelity") is not False
+        or aggregate.get("singleShellWeldProofRun") is not True
+        or aggregate.get("singleShellWeldProven") is not False
+        or aggregate.get("acceptedForCleanProposal") is not False
+        or aggregate.get("acceptedForCanonical") is not False
+        or _int_or(aggregate.get("vertexCount"), 0) <= 0
+        or _int_or(aggregate.get("triangleCount"), 0) <= 0
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_aggregate_invalid",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review aggregate must record a completed but rejected review.",
+            )
+        )
+    if quality.get("status") != "reviewed_clean_rejected":
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_quality_status_invalid",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review quality must remain rejected for clean geometry.",
+            )
+        )
+    if (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("containsPersonalBodyData") is not False
+        or policy.get("approvedDomain") != "avatar_and_garment_only"
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_policy_violation",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review cannot permit external APIs, training use or user data.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict) and caps.get("geometryVisualShellReviewAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest capability geometryVisualShellReviewAvailable must be true.",
+            )
+        )
+    if _contains_nonfinite(visual_shell):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_nonfinite_numeric_value",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review report must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_geometry_clean_acceptance_gate(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -5380,6 +5702,9 @@ def _validate_geometry_clean_acceptance_gate(
     material_uv_transfer = _read_required_json(
         package_dir, "reports/geometry_material_uv_transfer.json", issues
     )
+    visual_shell_review = _read_required_json(
+        package_dir, "reports/geometry_visual_shell_review.json", issues
+    )
     provider_registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
     clean_gate = _read_required_json(
         package_dir, "reports/geometry_clean_acceptance_gate.json", issues
@@ -5389,6 +5714,7 @@ def _validate_geometry_clean_acceptance_gate(
         or semantic_transfer is None
         or texture_identity is None
         or material_uv_transfer is None
+        or visual_shell_review is None
         or provider_registry is None
         or clean_gate is None
     ):
@@ -5435,6 +5761,11 @@ def _validate_geometry_clean_acceptance_gate(
             "geometry_clean_acceptance_gate_material_uv_source_mismatch",
         ),
         (
+            "sourceGeometryVisualShellReviewId",
+            visual_shell_review.get("reportId"),
+            "geometry_clean_acceptance_gate_visual_shell_source_mismatch",
+        ),
+        (
             "sourceProviderRegistryId",
             provider_registry.get("registryId"),
             "geometry_clean_acceptance_gate_registry_source_mismatch",
@@ -5475,6 +5806,15 @@ def _validate_geometry_clean_acceptance_gate(
                 "",
             ),
             "geometry_clean_acceptance_gate_material_uv_hash_mismatch",
+        ),
+        (
+            "sourceGeometryVisualShellReviewHash",
+            _nested_string(
+                visual_shell_review,
+                ["integrity", "geometryVisualShellReviewHash"],
+                "",
+            ),
+            "geometry_clean_acceptance_gate_visual_shell_hash_mismatch",
         ),
         (
             "sourceProviderRegistryHash",
@@ -5552,6 +5892,7 @@ def _validate_geometry_clean_acceptance_gate(
         semantic_transfer_report=semantic_transfer,
         texture_identity_report=texture_identity,
         material_uv_transfer_report=material_uv_transfer,
+        visual_shell_review_report=visual_shell_review,
         provider_registry=provider_registry,
     )
     for key in [
@@ -5581,11 +5922,13 @@ def _validate_geometry_clean_acceptance_gate(
         or execution.get("semanticTransferEvidenceReviewed") is not True
         or execution.get("materialEvidenceReviewed") is not True
         or execution.get("policyReviewed") is not True
-        or execution.get("visualFidelityReviewRun") is not False
+        or execution.get("visualFidelityReviewRun") is not True
         or execution.get("uvTransferRun") is not True
         or execution.get("materialTransferRun") is not True
         or execution.get("materialTransferAccepted") is not True
-        or execution.get("singleShellWeldProofRun") is not False
+        or execution.get("singleShellWeldProofRun") is not True
+        or execution.get("visualFidelityAccepted") is not False
+        or execution.get("singleShellWeldProven") is not False
     ):
         issues.append(
             _issue(
@@ -5594,13 +5937,13 @@ def _validate_geometry_clean_acceptance_gate(
                 "reports/geometry_clean_acceptance_gate.json",
                 (
                     "Clean acceptance gate may review deterministic runtime evidence but "
-                    "must claim material/UV evidence only after the transfer report, while "
-                    "visual review and single-shell proof remain separate."
+                    "must keep visual fidelity and shell proof rejected until the review "
+                    "and weld evidence pass."
                 ),
             )
         )
     if (
-        readiness.get("status") != "clean_acceptance_rejected_fidelity_weld_pending"
+        readiness.get("status") != "clean_acceptance_rejected_visual_shell_failed"
         or readiness.get("acceptedForCleanProposal") is not False
         or readiness.get("acceptedForCanonical") is not False
         or readiness.get("acceptedForSimulation") is not False
@@ -6180,6 +6523,9 @@ def _validate_clean_geometry_proposal(
     material_uv_transfer = _read_required_json(
         package_dir, "reports/geometry_material_uv_transfer.json", issues
     )
+    visual_shell_review = _read_required_json(
+        package_dir, "reports/geometry_visual_shell_review.json", issues
+    )
     clean_acceptance_gate = _read_required_json(
         package_dir, "reports/geometry_clean_acceptance_gate.json", issues
     )
@@ -6202,6 +6548,7 @@ def _validate_clean_geometry_proposal(
         or repair_result is None
         or runtime_binding_result is None
         or material_uv_transfer is None
+        or visual_shell_review is None
         or clean_acceptance_gate is None
         or clean_proposal is None
     ):
@@ -6294,6 +6641,15 @@ def _validate_clean_geometry_proposal(
                 "",
             ),
             "clean_geometry_proposal_material_uv_transfer_hash_mismatch",
+        ),
+        (
+            "sourceGeometryVisualShellReviewHash",
+            _nested_string(
+                visual_shell_review,
+                ["integrity", "geometryVisualShellReviewHash"],
+                "",
+            ),
+            "clean_geometry_proposal_visual_shell_review_hash_mismatch",
         ),
         (
             "sourceGeometryCleanAcceptanceGateHash",
@@ -6427,6 +6783,17 @@ def _validate_clean_geometry_proposal(
                 "fatal",
                 "proposals/clean_geometry_proposal.json",
                 "Clean geometry proposal must reference the material/UV transfer report ID.",
+            )
+        )
+    if clean_proposal.get("sourceGeometryVisualShellReviewId") != visual_shell_review.get(
+        "reportId"
+    ):
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_visual_shell_review_source_mismatch",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean geometry proposal must reference the visual/shell review report ID.",
             )
         )
     if clean_proposal.get("sourceGeometryCleanAcceptanceGateId") != clean_acceptance_gate.get(
@@ -6652,6 +7019,9 @@ def _validate_clean_geometry_proposal(
     material_transfer_execution = material_uv_transfer.get("execution", {})
     material_transfer_readiness = material_uv_transfer.get("readiness", {})
     material_transfer_aggregate = material_uv_transfer.get("aggregate", {})
+    visual_shell_execution = visual_shell_review.get("execution", {})
+    visual_shell_readiness = visual_shell_review.get("readiness", {})
+    visual_shell_aggregate = visual_shell_review.get("aggregate", {})
     if cleanup.get("materialUvTransferReportGenerated") is not True:
         issues.append(
             _issue(
@@ -6702,6 +7072,41 @@ def _validate_clean_geometry_proposal(
                 "Clean proposal materialTransferRun must mirror the clean acceptance gate.",
             )
         )
+    if cleanup.get("visualShellReviewGenerated") is not True:
+        issues.append(
+            _issue(
+                "clean_geometry_proposal_cleanup_state_invalid",
+                "fatal",
+                "proposals/clean_geometry_proposal.json",
+                "Clean proposal visualShellReviewGenerated must be true.",
+            )
+        )
+    expected_visual_flags = {
+        "visualFidelityReviewRun": visual_shell_execution.get("visualFidelityReviewRun"),
+        "providerVisualFidelityAccepted": visual_shell_readiness.get("acceptedForVisualFidelity"),
+        "singleShellWeldProofRun": visual_shell_execution.get("singleShellWeldProofRun"),
+        "singleShellWeldProven": visual_shell_readiness.get("singleShellWeldProven"),
+    }
+    for key, expected in expected_visual_flags.items():
+        if cleanup.get(key) != expected:
+            issues.append(
+                _issue(
+                    "clean_geometry_proposal_cleanup_state_invalid",
+                    "fatal",
+                    "proposals/clean_geometry_proposal.json",
+                    f"Clean proposal {key} must mirror the visual/shell review report.",
+                )
+            )
+    for key in ["visualFidelityReviewRun", "singleShellWeldProofRun"]:
+        if cleanup.get(key) != clean_gate_execution.get(key):
+            issues.append(
+                _issue(
+                    "clean_geometry_proposal_cleanup_state_invalid",
+                    "fatal",
+                    "proposals/clean_geometry_proposal.json",
+                    f"Clean proposal {key} must mirror the clean acceptance gate.",
+                )
+            )
     if cleanup.get("cleanAcceptanceGateGenerated") is not True:
         issues.append(
             _issue(
@@ -6769,6 +7174,7 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("partialRepairResultGenerated") is not True
         or cleanup.get("runtimeBindingResultGenerated") is not True
         or cleanup.get("materialUvTransferReportGenerated") is not True
+        or cleanup.get("visualShellReviewGenerated") is not True
         or cleanup.get("retopologyRun") is not True
         or cleanup.get("seamSplitRun") is not True
         or cleanup.get("componentStitchingRun") is not True
@@ -6782,6 +7188,10 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("uvTransferRun") is not True
         or cleanup.get("materialTransferRun") is not True
         or cleanup.get("materialTransferAccepted") is not True
+        or cleanup.get("visualFidelityReviewRun") is not True
+        or cleanup.get("providerVisualFidelityAccepted") is not False
+        or cleanup.get("singleShellWeldProofRun") is not True
+        or cleanup.get("singleShellWeldProven") is not False
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):
@@ -7109,6 +7519,37 @@ def _validate_clean_geometry_proposal(
                     )
                 )
 
+    visual_shell_readiness = visual_shell_review.get("readiness", {})
+    visual_shell_quality = visual_shell_review.get("quality", {})
+    visual_shell_aggregate = visual_shell_review.get("aggregate", {})
+    if (
+        isinstance(visual_shell_readiness, dict)
+        and isinstance(visual_shell_quality, dict)
+        and isinstance(visual_shell_aggregate, dict)
+    ):
+        expected_visual_fields = {
+            "visualShellReviewStatus": visual_shell_readiness.get("status"),
+            "visualShellReviewQualityStatus": visual_shell_quality.get("status"),
+            "visualFidelityReviewRun": visual_shell_aggregate.get("visualFidelityReviewRun"),
+            "visualFidelityScore": visual_shell_aggregate.get("visualFidelityScore"),
+            "providerVisualFidelityAccepted": visual_shell_readiness.get(
+                "acceptedForVisualFidelity"
+            ),
+            "renderedPixelComparisonRun": visual_shell_aggregate.get("renderedPixelComparisonRun"),
+            "singleShellWeldProofRun": visual_shell_aggregate.get("singleShellWeldProofRun"),
+            "singleShellWeldProven": visual_shell_readiness.get("singleShellWeldProven"),
+        }
+        for key, expected in expected_visual_fields.items():
+            if audit.get(key) != expected:
+                issues.append(
+                    _issue(
+                        "clean_geometry_proposal_visual_shell_review_mismatch",
+                        "fatal",
+                        "proposals/clean_geometry_proposal.json",
+                        f"Clean proposal visual/shell review field {key} is stale.",
+                    )
+                )
+
     clean_gate_readiness = clean_acceptance_gate.get("readiness", {})
     clean_gate_quality = clean_acceptance_gate.get("quality", {})
     clean_gate_aggregate = clean_acceptance_gate.get("aggregate", {})
@@ -7191,6 +7632,7 @@ def _validate_clean_geometry_proposal(
             "partialRepairResultGenerated": cleanup.get("partialRepairResultGenerated"),
             "runtimeBindingResultGenerated": cleanup.get("runtimeBindingResultGenerated"),
             "materialUvTransferReportGenerated": cleanup.get("materialUvTransferReportGenerated"),
+            "visualShellReviewGenerated": cleanup.get("visualShellReviewGenerated"),
             "retopologyRun": cleanup.get("retopologyRun"),
             "seamSplitRun": cleanup.get("seamSplitRun"),
             "componentStitchingRun": cleanup.get("componentStitchingRun"),
@@ -7202,6 +7644,10 @@ def _validate_clean_geometry_proposal(
             "cleanAcceptanceGateGenerated": cleanup.get("cleanAcceptanceGateGenerated"),
             "cleanAcceptanceGateRun": cleanup.get("cleanAcceptanceGateRun"),
             "cleanAcceptanceGateAccepted": cleanup.get("cleanAcceptanceGateAccepted"),
+            "visualFidelityReviewRun": cleanup.get("visualFidelityReviewRun"),
+            "providerVisualFidelityAccepted": cleanup.get("providerVisualFidelityAccepted"),
+            "singleShellWeldProofRun": cleanup.get("singleShellWeldProofRun"),
+            "singleShellWeldProven": cleanup.get("singleShellWeldProven"),
             "uvTransferRun": cleanup.get("uvTransferRun"),
             "materialTransferRun": cleanup.get("materialTransferRun"),
             "materialTransferAccepted": cleanup.get("materialTransferAccepted"),
@@ -7253,6 +7699,10 @@ def _validate_clean_geometry_proposal(
                 "materialTransferMissingMaterialCount"
             ),
             "materialTransferMissingUvCount": audit.get("materialTransferMissingUvCount"),
+            "visualShellReviewStatus": audit.get("visualShellReviewStatus"),
+            "visualShellReviewQualityStatus": audit.get("visualShellReviewQualityStatus"),
+            "visualFidelityScore": audit.get("visualFidelityScore"),
+            "renderedPixelComparisonRun": audit.get("renderedPixelComparisonRun"),
             "cleanAcceptanceGateStatus": audit.get("cleanAcceptanceGateStatus"),
             "cleanAcceptanceGateQualityStatus": audit.get("cleanAcceptanceGateQualityStatus"),
             "cleanAcceptanceGateFailedCheckCount": audit.get("cleanAcceptanceGateFailedCheckCount"),
@@ -7836,6 +8286,15 @@ def _validate_capabilities(manifest: dict[str, Any], issues: list[ValidationIssu
                 "fatal",
                 "manifest.json",
                 "Manifest must declare material/UV transfer evidence availability.",
+            )
+        )
+    if caps.get("geometryVisualShellReviewAvailable") is not True:
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare visual/shell review evidence availability.",
             )
         )
     if caps.get("zeroOneStaticAvailable") or caps.get("zeroOneDynamicAvailable"):

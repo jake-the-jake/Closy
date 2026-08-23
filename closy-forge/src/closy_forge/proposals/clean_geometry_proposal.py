@@ -83,6 +83,7 @@ def build_clean_geometry_proposal_rejection(
     repair_result_report: dict[str, Any] | None = None,
     runtime_binding_result_report: dict[str, Any] | None = None,
     material_uv_transfer_report: dict[str, Any] | None = None,
+    visual_shell_review_report: dict[str, Any] | None = None,
     clean_acceptance_gate_report: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Record why a raw visual proposal is not yet a clean canonical mesh.
@@ -246,6 +247,26 @@ def build_clean_geometry_proposal_rejection(
         material_uv_transfer_execution = material_uv_transfer_report["execution"]
         material_uv_transfer_aggregate = material_uv_transfer_report["aggregate"]
         material_uv_transfer_readiness = material_uv_transfer_report["readiness"]
+    if visual_shell_review_report is None:
+        visual_shell_review_available = False
+        visual_shell_review_id = None
+        visual_shell_review_hash = None
+        visual_shell_review_status = None
+        visual_shell_review_execution: dict[str, Any] = {}
+        visual_shell_review_aggregate: dict[str, Any] = {}
+        visual_shell_review_readiness: dict[str, Any] = {}
+        visual_shell_review_quality: dict[str, Any] = {}
+    else:
+        visual_shell_review_available = True
+        visual_shell_review_id = visual_shell_review_report["reportId"]
+        visual_shell_review_hash = visual_shell_review_report["integrity"][
+            "geometryVisualShellReviewHash"
+        ]
+        visual_shell_review_status = visual_shell_review_report["readiness"]["status"]
+        visual_shell_review_execution = visual_shell_review_report["execution"]
+        visual_shell_review_aggregate = visual_shell_review_report["aggregate"]
+        visual_shell_review_readiness = visual_shell_review_report["readiness"]
+        visual_shell_review_quality = visual_shell_review_report["quality"]
     if clean_acceptance_gate_report is None:
         clean_acceptance_gate_available = False
         clean_acceptance_gate_id = None
@@ -295,6 +316,18 @@ def build_clean_geometry_proposal_rejection(
     uv_transfer_run = bool(material_uv_transfer_execution.get("uvTransferRun", False))
     material_transfer_accepted = bool(
         material_uv_transfer_readiness.get("acceptedForMaterialPreview", False)
+    )
+    visual_fidelity_review_run = bool(
+        visual_shell_review_execution.get("visualFidelityReviewRun", False)
+    )
+    visual_fidelity_accepted = bool(
+        visual_shell_review_readiness.get("acceptedForVisualFidelity", False)
+    )
+    single_shell_weld_proof_run = bool(
+        visual_shell_review_execution.get("singleShellWeldProofRun", False)
+    )
+    single_shell_weld_proven = bool(
+        visual_shell_review_readiness.get("singleShellWeldProven", False)
     )
     validation_accepted = bool(binding_validation_readiness_accepts(binding_validation_report))
     rejection_reasons = _rejection_reasons(
@@ -352,6 +385,8 @@ def build_clean_geometry_proposal_rejection(
         "sourceGeometryRuntimeBindingResultHash": runtime_binding_result_hash,
         "sourceGeometryMaterialUvTransferId": material_uv_transfer_id,
         "sourceGeometryMaterialUvTransferHash": material_uv_transfer_hash,
+        "sourceGeometryVisualShellReviewId": visual_shell_review_id,
+        "sourceGeometryVisualShellReviewHash": visual_shell_review_hash,
         "sourceGeometryCleanAcceptanceGateId": clean_acceptance_gate_id,
         "sourceGeometryCleanAcceptanceGateHash": clean_acceptance_gate_hash,
         "rawProposal": {
@@ -373,6 +408,7 @@ def build_clean_geometry_proposal_rejection(
             "partialRepairResultGenerated": repair_result_available,
             "runtimeBindingResultGenerated": runtime_binding_result_available,
             "materialUvTransferReportGenerated": material_uv_transfer_available,
+            "visualShellReviewGenerated": visual_shell_review_available,
             "cleanAcceptanceGateGenerated": clean_acceptance_gate_available,
             "cleanupRun": cleanup_run,
             "repairRun": bool(cleanup_result_execution.get("repairRun", False)),
@@ -401,10 +437,10 @@ def build_clean_geometry_proposal_rejection(
             "runtimeBindingAccepted": runtime_binding_accepted,
             "cleanAcceptanceGateRun": clean_acceptance_gate_run,
             "cleanAcceptanceGateAccepted": clean_acceptance_gate_accepted,
-            "visualFidelityReviewRun": bool(
-                clean_acceptance_gate_execution.get("visualFidelityReviewRun", False)
-            ),
-            "providerVisualFidelityAccepted": False,
+            "visualFidelityReviewRun": visual_fidelity_review_run,
+            "providerVisualFidelityAccepted": visual_fidelity_accepted,
+            "singleShellWeldProofRun": single_shell_weld_proof_run,
+            "singleShellWeldProven": single_shell_weld_proven,
             "uvTransferRun": uv_transfer_run,
             "materialTransferRun": material_transfer_run,
             "materialTransferAccepted": material_transfer_accepted,
@@ -425,13 +461,19 @@ def build_clean_geometry_proposal_rejection(
                 else "material_transfer_not_run"
                 if material_uv_transfer_available
                 else "material_transfer_pending",
+                "visual_shell_review_completed"
+                if visual_shell_review_available
+                else "visual_shell_review_pending",
                 "provider_visual_fidelity_not_accepted"
-                if runtime_binding_accepted
+                if runtime_binding_accepted and not visual_fidelity_accepted
                 else "simulation_binding_unavailable",
+                "single_shell_weld_not_proven"
+                if runtime_binding_accepted and not single_shell_weld_proven
+                else "single_shell_weld_ready",
             ],
             "nextRequiredStages": [
-                "visual_fidelity_review",
-                "single_shell_stitch_weld_proof",
+                "rendered_visual_fidelity_acceptance",
+                "single_shell_stitch_weld_execution",
                 "canonical_acceptance_quality_gate",
             ],
         },
@@ -538,6 +580,16 @@ def build_clean_geometry_proposal_rejection(
                 "missingMaterialCount"
             ),
             "materialTransferMissingUvCount": material_uv_transfer_aggregate.get("missingUvCount"),
+            "visualShellReviewStatus": visual_shell_review_status,
+            "visualShellReviewQualityStatus": visual_shell_review_quality.get("status"),
+            "visualFidelityReviewRun": visual_fidelity_review_run,
+            "visualFidelityScore": visual_shell_review_aggregate.get("visualFidelityScore"),
+            "providerVisualFidelityAccepted": visual_fidelity_accepted,
+            "renderedPixelComparisonRun": visual_shell_review_aggregate.get(
+                "renderedPixelComparisonRun"
+            ),
+            "singleShellWeldProofRun": single_shell_weld_proof_run,
+            "singleShellWeldProven": single_shell_weld_proven,
             "cleanAcceptanceGateStatus": clean_acceptance_gate_status,
             "cleanAcceptanceGateQualityStatus": clean_acceptance_gate_quality.get("status"),
             "cleanAcceptanceGateRun": clean_acceptance_gate_run,
@@ -646,6 +698,7 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "partialRepairResultGenerated": cleanup["partialRepairResultGenerated"],
         "runtimeBindingResultGenerated": cleanup["runtimeBindingResultGenerated"],
         "materialUvTransferReportGenerated": cleanup["materialUvTransferReportGenerated"],
+        "visualShellReviewGenerated": cleanup["visualShellReviewGenerated"],
         "cleanAcceptanceGateGenerated": cleanup["cleanAcceptanceGateGenerated"],
         "retopologyRun": cleanup["retopologyRun"],
         "seamSplitRun": cleanup["seamSplitRun"],
@@ -659,6 +712,8 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         "cleanAcceptanceGateAccepted": cleanup["cleanAcceptanceGateAccepted"],
         "visualFidelityReviewRun": cleanup["visualFidelityReviewRun"],
         "providerVisualFidelityAccepted": cleanup["providerVisualFidelityAccepted"],
+        "singleShellWeldProofRun": cleanup["singleShellWeldProofRun"],
+        "singleShellWeldProven": cleanup["singleShellWeldProven"],
         "uvTransferRun": cleanup["uvTransferRun"],
         "materialTransferRun": cleanup["materialTransferRun"],
         "materialTransferAccepted": cleanup["materialTransferAccepted"],
@@ -705,6 +760,10 @@ def clean_geometry_proposal_quality_report(proposal: dict[str, Any]) -> dict[str
         ],
         "materialTransferMissingMaterialCount": audit["materialTransferMissingMaterialCount"],
         "materialTransferMissingUvCount": audit["materialTransferMissingUvCount"],
+        "visualShellReviewStatus": audit["visualShellReviewStatus"],
+        "visualShellReviewQualityStatus": audit["visualShellReviewQualityStatus"],
+        "visualFidelityScore": audit["visualFidelityScore"],
+        "renderedPixelComparisonRun": audit["renderedPixelComparisonRun"],
         "cleanAcceptanceGateStatus": audit["cleanAcceptanceGateStatus"],
         "cleanAcceptanceGateQualityStatus": audit["cleanAcceptanceGateQualityStatus"],
         "cleanAcceptanceGateFailedCheckCount": audit["cleanAcceptanceGateFailedCheckCount"],
@@ -849,7 +908,7 @@ def _required_before_canonical(
         ]
         if clean_acceptance_gate_run and not clean_acceptance_gate_accepted:
             required.insert(-1, "clean_acceptance_gate_rejected")
-            required.insert(-1, "visual_fidelity_review_not_run")
+            required.insert(-1, "visual_fidelity_review_not_accepted")
             required.insert(-1, "single_shell_weld_not_proven")
         else:
             required.insert(-1, "provider_visual_fidelity_not_accepted")

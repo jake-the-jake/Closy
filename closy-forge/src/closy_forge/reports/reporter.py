@@ -28,6 +28,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
         package_dir / "reports" / "geometry_runtime_binding_result.json"
     )
     material_uv_transfer = read_json(package_dir / "reports" / "geometry_material_uv_transfer.json")
+    visual_shell_review = read_json(package_dir / "reports" / "geometry_visual_shell_review.json")
     clean_acceptance_gate = read_json(
         package_dir / "reports" / "geometry_clean_acceptance_gate.json"
     )
@@ -295,6 +296,23 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "missingMaterialCount": material_uv_transfer["aggregate"]["missingMaterialCount"],
             "missingUvCount": material_uv_transfer["aggregate"]["missingUvCount"],
         },
+        "geometryVisualShellReview": {
+            "reportId": visual_shell_review["reportId"],
+            "sourceGeometryRuntimeBindingResultId": visual_shell_review[
+                "sourceGeometryRuntimeBindingResultId"
+            ],
+            "status": visual_shell_review["readiness"]["status"],
+            "visualFidelityReviewRun": visual_shell_review["execution"]["visualFidelityReviewRun"],
+            "renderedPixelComparisonRun": visual_shell_review["execution"][
+                "renderedPixelComparisonRun"
+            ],
+            "visualFidelityScore": visual_shell_review["aggregate"]["visualFidelityScore"],
+            "acceptedForVisualFidelity": visual_shell_review["readiness"][
+                "acceptedForVisualFidelity"
+            ],
+            "singleShellWeldProofRun": visual_shell_review["execution"]["singleShellWeldProofRun"],
+            "singleShellWeldProven": visual_shell_review["readiness"]["singleShellWeldProven"],
+        },
         "geometryCleanAcceptanceGate": {
             "reportId": clean_acceptance_gate["reportId"],
             "sourceGeometryRuntimeBindingResultId": clean_acceptance_gate[
@@ -436,6 +454,7 @@ def human_report(package_dir: Path) -> str:
     repair_result = summary["geometryRepairResult"]
     runtime_binding_result = summary["geometryRuntimeBindingResult"]
     material_uv_transfer = summary["geometryMaterialUvTransfer"]
+    visual_shell_review = summary["geometryVisualShellReview"]
     clean_acceptance_gate = summary["geometryCleanAcceptanceGate"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
@@ -523,6 +542,12 @@ def human_report(package_dir: Path) -> str:
                 f"uv={material_uv_transfer['uvTransferRun']}, "
                 f"materials={material_uv_transfer['materialTransferRun']}, "
                 f"preview accepted={material_uv_transfer['acceptedForMaterialPreview']}"
+            ),
+            (
+                f"Visual/shell review: status={visual_shell_review['status']}, "
+                f"score={visual_shell_review['visualFidelityScore']:.6f}, "
+                f"rendered={visual_shell_review['renderedPixelComparisonRun']}, "
+                f"single shell={visual_shell_review['singleShellWeldProven']}"
             ),
             (
                 f"Clean acceptance gate: status={clean_acceptance_gate['status']}, "

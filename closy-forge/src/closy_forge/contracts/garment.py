@@ -34,6 +34,7 @@ CAPABILITIES_FIXTURE = {
     "geometryRepairResultAvailable": True,
     "geometryRuntimeBindingResultAvailable": True,
     "geometryMaterialUvTransferAvailable": True,
+    "geometryVisualShellReviewAvailable": True,
     "geometryCleanAcceptanceGateAvailable": True,
     "providerProvenanceAvailable": True,
     "geometryProviderRegistryAvailable": True,

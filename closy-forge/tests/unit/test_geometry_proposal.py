@@ -31,6 +31,7 @@ from closy_forge.proposals import (
     build_geometry_repair_retopology_plan,
     build_geometry_runtime_binding_result_report,
     build_geometry_semantic_transfer_report,
+    build_geometry_visual_shell_review_report,
     build_manual_geometry_proposal,
     build_null_geometry_proposal,
     build_proposal_runtime_binding,
@@ -50,6 +51,7 @@ from closy_forge.proposals import (
     hash_geometry_repair_retopology_plan,
     hash_geometry_runtime_binding_result,
     hash_geometry_semantic_transfer_report,
+    hash_geometry_visual_shell_review,
     hash_raw_geometry_topology_report,
     reproject_cleanup_preview_to_settled_simulation,
 )
@@ -246,6 +248,43 @@ def test_geometry_material_uv_transfer_accepts_authored_runtime_preview_metadata
     )
 
 
+def test_geometry_visual_shell_review_runs_without_clean_acceptance() -> None:
+    runtime_result = _runtime_ready_report()
+    semantic_transfer = _semantic_transfer_report()
+    texture_identity = _texture_identity_report()
+    material_transfer = build_geometry_material_uv_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        texture_identity_report=texture_identity,
+        render_materials=_render_materials_report(),
+        runtime_render_mesh=_tiny_mesh(),
+    )
+
+    report = build_geometry_visual_shell_review_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        material_uv_transfer_report=material_transfer,
+        runtime_render_mesh=_tiny_mesh(),
+    )
+
+    assert report["reportId"] == "visual_shell_review.runtime_bound_tshirt_visual_geometry_v1"
+    assert report["execution"]["visualFidelityReviewRun"] is True
+    assert report["execution"]["renderedPixelComparisonRun"] is False
+    assert report["execution"]["singleShellWeldProofRun"] is True
+    assert report["readiness"]["acceptedForVisualFidelity"] is False
+    assert report["readiness"]["singleShellWeldProven"] is False
+    assert report["readiness"]["acceptedForCleanProposal"] is False
+    assert "rendered_visual_fidelity_review_missing" in report["readiness"]["blockingReasons"]
+    assert "single_shell_weld_not_proven" in report["readiness"]["blockingReasons"]
+    assert report["integrity"]["geometryVisualShellReviewHash"] == (
+        hash_geometry_visual_shell_review(report)
+    )
+
+
 def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_transfer() -> None:
     runtime_result = _runtime_ready_report()
     semantic_transfer = _semantic_transfer_report()
@@ -259,6 +298,14 @@ def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_t
         render_materials=_render_materials_report(),
         runtime_render_mesh=_tiny_mesh(),
     )
+    visual_shell_review = build_geometry_visual_shell_review_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        material_uv_transfer_report=material_transfer,
+        runtime_render_mesh=_tiny_mesh(),
+    )
     provider_registry = _provider_registry_report()
 
     gate = build_geometry_clean_acceptance_gate_report(
@@ -268,6 +315,7 @@ def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_t
         semantic_transfer_report=semantic_transfer,
         texture_identity_report=texture_identity,
         material_uv_transfer_report=material_transfer,
+        visual_shell_review_report=visual_shell_review,
         provider_registry=provider_registry,
     )
 
@@ -276,14 +324,16 @@ def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_t
     assert gate["readiness"]["acceptedForRuntimeRender"] is True
     assert gate["readiness"]["acceptedForCleanProposal"] is False
     assert gate["readiness"]["acceptedForCanonical"] is False
-    assert gate["readiness"]["status"] == "clean_acceptance_rejected_fidelity_weld_pending"
+    assert gate["readiness"]["status"] == "clean_acceptance_rejected_visual_shell_failed"
     assert gate["quality"]["status"] == "rejected"
     assert gate["aggregate"]["checkCount"] == 11
     assert gate["aggregate"]["passedCheckCount"] == 7
-    assert gate["aggregate"]["failedCheckCount"] == 1
+    assert gate["aggregate"]["failedCheckCount"] == 2
     assert gate["aggregate"]["warningCheckCount"] == 2
-    assert gate["aggregate"]["notRunCheckCount"] == 1
+    assert gate["aggregate"]["notRunCheckCount"] == 0
     assert gate["execution"]["materialTransferRun"] is True
+    assert gate["execution"]["visualFidelityReviewRun"] is True
+    assert gate["execution"]["singleShellWeldProofRun"] is True
     assert set(CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS).issubset(
         gate["quality"]["rejectionReasons"]
     )

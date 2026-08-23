@@ -63,6 +63,7 @@ from closy_forge.proposals import (
     GEOMETRY_REPAIR_RETOPOLOGY_PLAN_VERSION,
     GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
     GEOMETRY_SEMANTIC_TRANSFER_VERSION,
+    GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
     PROVIDER_REGISTRY_VERSION,
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
     build_clean_geometry_proposal_rejection,
@@ -77,6 +78,7 @@ from closy_forge.proposals import (
     build_geometry_repair_retopology_plan,
     build_geometry_runtime_binding_result_report,
     build_geometry_semantic_transfer_report,
+    build_geometry_visual_shell_review_report,
     build_manual_geometry_proposal,
     build_proposal_runtime_binding,
     build_proposal_runtime_render_mesh,
@@ -351,6 +353,14 @@ def _write_package_contents(
         render_materials=render_materials,
         runtime_render_mesh=proposal_runtime_render_mesh,
     )
+    geometry_visual_shell_review = build_geometry_visual_shell_review_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=geometry_runtime_binding_result,
+        semantic_transfer_report=geometry_semantic_transfer,
+        material_uv_transfer_report=geometry_material_uv_transfer,
+        runtime_render_mesh=proposal_runtime_render_mesh,
+    )
     geometry_clean_acceptance_gate = build_geometry_clean_acceptance_gate_report(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -358,6 +368,7 @@ def _write_package_contents(
         semantic_transfer_report=geometry_semantic_transfer,
         texture_identity_report=texture_identity,
         material_uv_transfer_report=geometry_material_uv_transfer,
+        visual_shell_review_report=geometry_visual_shell_review,
         provider_registry=provider_registry,
     )
     clean_geometry_proposal = build_clean_geometry_proposal_rejection(
@@ -375,6 +386,7 @@ def _write_package_contents(
         repair_result_report=geometry_repair_result,
         runtime_binding_result_report=geometry_runtime_binding_result,
         material_uv_transfer_report=geometry_material_uv_transfer,
+        visual_shell_review_report=geometry_visual_shell_review,
         clean_acceptance_gate_report=geometry_clean_acceptance_gate,
     )
     render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
@@ -492,6 +504,7 @@ def _write_package_contents(
         geometry_repair_result,
         geometry_runtime_binding_result,
         geometry_material_uv_transfer,
+        geometry_visual_shell_review,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -526,6 +539,7 @@ def _write_package_contents(
         geometry_repair_result,
         geometry_runtime_binding_result,
         geometry_material_uv_transfer,
+        geometry_visual_shell_review,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -563,6 +577,7 @@ def _write_package_contents(
         geometry_repair_result,
         geometry_runtime_binding_result,
         geometry_material_uv_transfer,
+        geometry_visual_shell_review,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -595,6 +610,7 @@ def _write_package_contents(
         "geometryRepairResult": geometry_repair_result,
         "geometryRuntimeBindingResult": geometry_runtime_binding_result,
         "geometryMaterialUvTransfer": geometry_material_uv_transfer,
+        "geometryVisualShellReview": geometry_visual_shell_review,
         "geometryCleanAcceptanceGate": geometry_clean_acceptance_gate,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
@@ -717,6 +733,7 @@ def _manifest(
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
     geometry_material_uv_transfer: dict[str, Any],
+    geometry_visual_shell_review: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -761,6 +778,7 @@ def _manifest(
             ),
             "geometryRuntimeBindingResult": "reports/geometry_runtime_binding_result.json",
             "geometryMaterialUvTransfer": "reports/geometry_material_uv_transfer.json",
+            "geometryVisualShellReview": "reports/geometry_visual_shell_review.json",
             "geometryCleanAcceptanceGate": "reports/geometry_clean_acceptance_gate.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
@@ -890,6 +908,12 @@ def _manifest(
             "geometryMaterialUvTransferPayloadHash": str(
                 geometry_material_uv_transfer["integrity"]["geometryMaterialUvTransferHash"]
             ),
+            "geometryVisualShellReviewHash": _hash_from_inventory(
+                inventory, "reports/geometry_visual_shell_review.json"
+            ),
+            "geometryVisualShellReviewPayloadHash": str(
+                geometry_visual_shell_review["integrity"]["geometryVisualShellReviewHash"]
+            ),
             "geometryCleanAcceptanceGateHash": _hash_from_inventory(
                 inventory, "reports/geometry_clean_acceptance_gate.json"
             ),
@@ -949,6 +973,7 @@ def _manifest(
             "geometryRepairResult": GEOMETRY_REPAIR_RESULT_VERSION,
             "geometryRuntimeBindingResult": GEOMETRY_RUNTIME_BINDING_RESULT_VERSION,
             "geometryMaterialUvTransfer": GEOMETRY_MATERIAL_UV_TRANSFER_VERSION,
+            "geometryVisualShellReview": GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
             "geometryCleanAcceptanceGate": GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
@@ -962,7 +987,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_20_material_uv_transfer_evidence",
+            "name": "implementation_21_visual_shell_review_evidence",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -981,13 +1006,14 @@ def _manifest(
             "geometry_repair_result_partial_reprojection_not_clean",
             "geometry_runtime_binding_result_clean_acceptance_pending",
             "geometry_material_uv_transfer_authored_pbr_only",
+            "geometry_visual_shell_review_clean_rejected",
             "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "20-material-uv-transfer-evidence"},
+        "extensions": {"closyImplementation": "21-visual-shell-review-evidence"},
     }
 
 
@@ -1026,6 +1052,7 @@ def _capabilities() -> dict[str, bool]:
         "geometryRepairResultAvailable": True,
         "geometryRuntimeBindingResultAvailable": True,
         "geometryMaterialUvTransferAvailable": True,
+        "geometryVisualShellReviewAvailable": True,
         "geometryCleanAcceptanceGateAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
@@ -1069,6 +1096,7 @@ def _quality_reports(
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
     geometry_material_uv_transfer: dict[str, Any],
+    geometry_visual_shell_review: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -1133,6 +1161,7 @@ def _quality_reports(
         "geometry_repair_result.json": geometry_repair_result,
         "geometry_runtime_binding_result.json": geometry_runtime_binding_result,
         "geometry_material_uv_transfer.json": geometry_material_uv_transfer,
+        "geometry_visual_shell_review.json": geometry_visual_shell_review,
         "geometry_clean_acceptance_gate.json": geometry_clean_acceptance_gate,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
@@ -1222,6 +1251,7 @@ def _provenance(
     geometry_repair_result: dict[str, Any],
     geometry_runtime_binding_result: dict[str, Any],
     geometry_material_uv_transfer: dict[str, Any],
+    geometry_visual_shell_review: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -1569,6 +1599,35 @@ def _provenance(
                 [str(geometry_material_uv_transfer["integrity"]["geometryMaterialUvTransferHash"])],
             ),
             _stage(
+                "geometry_visual_shell_review",
+                GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
+                {
+                    "sourceGeometryRuntimeBindingResultId": geometry_visual_shell_review[
+                        "sourceGeometryRuntimeBindingResultId"
+                    ],
+                    "sourceGeometryMaterialUvTransferId": geometry_visual_shell_review[
+                        "sourceGeometryMaterialUvTransferId"
+                    ],
+                    "visualFidelityReviewRun": geometry_visual_shell_review["execution"][
+                        "visualFidelityReviewRun"
+                    ],
+                    "renderedPixelComparisonRun": geometry_visual_shell_review["execution"][
+                        "renderedPixelComparisonRun"
+                    ],
+                    "singleShellWeldProofRun": geometry_visual_shell_review["execution"][
+                        "singleShellWeldProofRun"
+                    ],
+                    "acceptedForVisualFidelity": geometry_visual_shell_review["readiness"][
+                        "acceptedForVisualFidelity"
+                    ],
+                    "singleShellWeldProven": geometry_visual_shell_review["readiness"][
+                        "singleShellWeldProven"
+                    ],
+                    "status": geometry_visual_shell_review["readiness"]["status"],
+                },
+                [str(geometry_visual_shell_review["integrity"]["geometryVisualShellReviewHash"])],
+            ),
+            _stage(
                 "geometry_clean_acceptance_gate",
                 GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
                 {
@@ -1635,6 +1694,9 @@ def _provenance(
                     "sourceGeometryRuntimeBindingResultId": clean_geometry_proposal[
                         "sourceGeometryRuntimeBindingResultId"
                     ],
+                    "sourceGeometryVisualShellReviewId": clean_geometry_proposal[
+                        "sourceGeometryVisualShellReviewId"
+                    ],
                     "sourceGeometryCleanAcceptanceGateId": clean_geometry_proposal[
                         "sourceGeometryCleanAcceptanceGateId"
                     ],
@@ -1648,6 +1710,9 @@ def _provenance(
                     "partialRepairResultGenerated": True,
                     "runtimeBindingResultGenerated": clean_geometry_proposal["cleanupPipeline"][
                         "runtimeBindingResultGenerated"
+                    ],
+                    "visualShellReviewGenerated": clean_geometry_proposal["cleanupPipeline"][
+                        "visualShellReviewGenerated"
                     ],
                     "cleanAcceptanceGateGenerated": clean_geometry_proposal["cleanupPipeline"][
                         "cleanAcceptanceGateGenerated"
@@ -1678,6 +1743,18 @@ def _provenance(
                     ],
                     "cleanAcceptanceGateAccepted": clean_geometry_proposal["cleanupPipeline"][
                         "cleanAcceptanceGateAccepted"
+                    ],
+                    "visualFidelityReviewRun": clean_geometry_proposal["cleanupPipeline"][
+                        "visualFidelityReviewRun"
+                    ],
+                    "providerVisualFidelityAccepted": clean_geometry_proposal["cleanupPipeline"][
+                        "providerVisualFidelityAccepted"
+                    ],
+                    "singleShellWeldProofRun": clean_geometry_proposal["cleanupPipeline"][
+                        "singleShellWeldProofRun"
+                    ],
+                    "singleShellWeldProven": clean_geometry_proposal["cleanupPipeline"][
+                        "singleShellWeldProven"
                     ],
                     "acceptedForCanonical": False,
                     "rejectionReasons": clean_geometry_proposal["quality"]["rejectionReasons"],
@@ -1800,6 +1877,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_repair_result = context["geometryRepairResult"]
     geometry_runtime_binding_result = context["geometryRuntimeBindingResult"]
     geometry_material_uv_transfer = context["geometryMaterialUvTransfer"]
+    geometry_visual_shell_review = context["geometryVisualShellReview"]
     geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
@@ -2134,6 +2212,30 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "missingUvCount": geometry_material_uv_transfer["aggregate"]["missingUvCount"],
         },
+        "geometryVisualShellReview": {
+            "reportId": geometry_visual_shell_review["reportId"],
+            "sourceGeometryRuntimeBindingResultId": geometry_visual_shell_review[
+                "sourceGeometryRuntimeBindingResultId"
+            ],
+            "status": geometry_visual_shell_review["readiness"]["status"],
+            "visualFidelityReviewRun": geometry_visual_shell_review["execution"][
+                "visualFidelityReviewRun"
+            ],
+            "renderedPixelComparisonRun": geometry_visual_shell_review["execution"][
+                "renderedPixelComparisonRun"
+            ],
+            "visualFidelityScore": geometry_visual_shell_review["aggregate"]["visualFidelityScore"],
+            "acceptedForVisualFidelity": geometry_visual_shell_review["readiness"][
+                "acceptedForVisualFidelity"
+            ],
+            "singleShellWeldProofRun": geometry_visual_shell_review["execution"][
+                "singleShellWeldProofRun"
+            ],
+            "singleShellWeldProven": geometry_visual_shell_review["readiness"][
+                "singleShellWeldProven"
+            ],
+            "boundaryEdgeCount": geometry_visual_shell_review["aggregate"]["boundaryEdgeCount"],
+        },
         "geometryCleanAcceptanceGate": {
             "reportId": geometry_clean_acceptance_gate["reportId"],
             "sourceGeometryRuntimeBindingResultId": geometry_clean_acceptance_gate[
@@ -2346,6 +2448,10 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"materials={summary['geometryMaterialUvTransfer']['materialTransferRun']}, "
         f"preview accepted="
         f"{summary['geometryMaterialUvTransfer']['acceptedForMaterialPreview']}\n"
+        f"- Visual/shell review: status=`{summary['geometryVisualShellReview']['status']}`, "
+        f"score={summary['geometryVisualShellReview']['visualFidelityScore']:.6f}, "
+        f"rendered={summary['geometryVisualShellReview']['renderedPixelComparisonRun']}, "
+        f"single shell={summary['geometryVisualShellReview']['singleShellWeldProven']}\n"
         f"- Clean acceptance gate: status=`{summary['geometryCleanAcceptanceGate']['status']}`, "
         f"passed={summary['geometryCleanAcceptanceGate']['passedCheckCount']}/"
         f"{summary['geometryCleanAcceptanceGate']['checkCount']}, "

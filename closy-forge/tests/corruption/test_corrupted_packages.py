@@ -733,6 +733,47 @@ def test_geometry_material_uv_transfer_acceptance_claim_is_rejected(
     assert "geometry_material_uv_transfer_acceptance_invalid" in codes
 
 
+def test_geometry_visual_shell_review_hash_mismatch_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_visual_shell_review_hash.closygarment"
+    )
+    review = read_json(corrupt / "reports" / "geometry_visual_shell_review.json")
+    review["visualFidelity"]["geometryProxyScore"] = 1.0
+    write_json(corrupt / "reports" / "geometry_visual_shell_review.json", review)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_visual_shell_review_hash_mismatch" in codes
+    assert "geometry_visual_shell_review_recompute_mismatch" in codes
+
+
+def test_geometry_visual_shell_review_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_visual_shell_review_ready.closygarment"
+    )
+    review = read_json(corrupt / "reports" / "geometry_visual_shell_review.json")
+    review["visualFidelity"]["acceptedForVisualFidelity"] = True
+    review["shellProof"]["singleShellWeldProven"] = True
+    review["aggregate"]["acceptedForVisualFidelity"] = True
+    review["aggregate"]["singleShellWeldProven"] = True
+    review["aggregate"]["acceptedForCleanProposal"] = True
+    review["aggregate"]["acceptedForCanonical"] = True
+    review["readiness"]["acceptedForVisualFidelity"] = True
+    review["readiness"]["acceptedForCleanProposal"] = True
+    review["readiness"]["acceptedForCanonical"] = True
+    review["readiness"]["singleShellWeldProven"] = True
+    review["quality"]["status"] = "pass"
+    write_json(corrupt / "reports" / "geometry_visual_shell_review.json", review)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_visual_shell_review_hash_mismatch" in codes
+    assert "geometry_visual_shell_review_recompute_mismatch" in codes
+    assert "geometry_visual_shell_review_acceptance_invalid" in codes
+    assert "geometry_visual_shell_review_aggregate_invalid" in codes
+    assert "geometry_visual_shell_review_quality_status_invalid" in codes
+
+
 def test_geometry_clean_acceptance_gate_acceptance_claim_is_rejected(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]
