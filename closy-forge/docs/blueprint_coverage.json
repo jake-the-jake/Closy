@@ -1,0 +1,2205 @@
+{
+  "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
+  "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
+  "generatedBy": "BP-48 persisted render frames and pose-suite pass",
+  "rows": [
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1",
+        "0e743bb"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "pattern/pattern.json",
+        "simulation/simulation_mesh.json",
+        "validation-report"
+      ],
+      "id": "BP-05-01-PATTERN-FIRST",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/garments/tshirt",
+        "closy-forge/src/closy_forge/validation"
+      ],
+      "limitations": "T-shirt fixture only.",
+      "nextAction": "Extend per family after capture/fitting slices.",
+      "sourceSection": "Core principles",
+      "status": "complete",
+      "summary": "Pattern, seams and simulation topology remain canonical garment truth.",
+      "tests": [
+        "tests/unit/test_curves_pattern_and_hashes.py",
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1",
+        "0e743bb"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "1308 render vertices",
+        "1308 binding records"
+      ],
+      "id": "BP-05-02-MULTI-REPRESENTATION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/binding",
+        "closy-forge/src/closy_forge/geometry/subdivision.py"
+      ],
+      "limitations": "No dense provider-derived accepted shell.",
+      "nextAction": "Preserve separation through provider work.",
+      "sourceSection": "Core principles",
+      "status": "complete",
+      "summary": "Keep pattern, simulation mesh, render shell and binding as separate representations.",
+      "tests": [
+        "tests/unit/test_binding_and_paths.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "0e743bb"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "raw proposal rejected for canonical use",
+        "clean proposal remains unavailable"
+      ],
+      "id": "BP-05-03-PROVIDER-DERIVATIVE-ONLY",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/proposals",
+        "closy-forge/src/closy_forge/validation/validator.py"
+      ],
+      "limitations": "No accepted clean provider mesh exists.",
+      "nextAction": "Execute actual clean topology only behind gates.",
+      "sourceSection": "Core principles",
+      "status": "complete",
+      "summary": "Provider output can only be proposal/derivative evidence, never canonical truth.",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py",
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "manifest zeroOne.required=false"
+      ],
+      "id": "BP-05-04-ZEROONE-OPTIONAL",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py"
+      ],
+      "limitations": "No ZeroOne repository discovery has been completed in this pass.",
+      "nextAction": "Perform read-only ZeroOne discovery.",
+      "sourceSection": "Core principles",
+      "status": "complete",
+      "summary": "ZeroOne is optional, derived and regenerable.",
+      "tests": [
+        "tests/integration/test_cli_and_package.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "81fb02cc15fcc7d7e392f23e1480f84e2702970e"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "representationSilhouetteAccepted=true",
+        "source/provider visual comparison=false",
+        "meshStitchOrWeldExecutionRun=true for BP-46 material output",
+        "meshStitchOrWeldProven=false until topology/binding/opening audits pass"
+      ],
+      "id": "BP-05-05-TRUTHFUL-EVIDENCE-TIERS",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/proposals/geometry_visual_shell_review.py",
+        "closy-forge/src/closy_forge/proposals/geometry_clean_acceptance_gate.py"
+      ],
+      "limitations": "Actual source/provider visual review remains absent; BP-46 material output exists but topology proof remains rejected.",
+      "nextAction": "Add inspection artifacts and topology/binding/opening proof without weakening clean gates.",
+      "sourceSection": "Core principles",
+      "status": "complete",
+      "summary": "Representation consistency, source/provider visual fidelity and mesh stitch/weld proof are separate evidence tiers.",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py",
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "81fb02c"
+      ],
+      "dependencies": [
+        "BP-45-IMPLEMENTATION-23",
+        "BP-08-M-MESH-ANALYSIS"
+      ],
+      "executableEvidence": [
+        "reports/geometry_stitched_shell.json",
+        "stitch/logical_stitched_analysis_shell.json",
+        "render/stitched_shell.glb",
+        "meshStitchOrWeldExecutionRun=true",
+        "meshStitchOrWeldProven=false",
+        "package digest f84091eb6bdd3f9e42e40a7319580cbf24699f41b1e3b7b306a2a564087771e0",
+        "remote Actions run 32653621760 passed Ubuntu and Windows"
+      ],
+      "id": "BP-46-STITCHED-SHELL-OUTPUT",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/proposals/geometry_stitched_shell.py",
+        "closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py",
+        "closy-forge/src/closy_forge/validation/validator.py",
+        "closy-forge/schemas/v1/geometry-stitched-shell.schema.json"
+      ],
+      "limitations": "Partial checkpoint only: non-manifold edges, duplicate faces, duplicate operation IDs, missing semantic opening proof, incomplete binding coverage and not-run topology audits block BP-46 proof.",
+      "nextAction": "Use BP-47 inspection artifacts during BP-48 frame/tangent work while keeping clean/canonical acceptance rejected.",
+      "sourceSection": "Execution checkpoints mapped to Phase 1, Phase 5, Phase 6 and Gate C3",
+      "status": "partial",
+      "summary": "BP-46 material stitched-shell output exists, but topology/opening/binding proof remains rejected.",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py",
+        "tests/corruption/test_corrupted_packages.py",
+        "tests/golden/test_golden_demo.py",
+        "tests/unit/test_blueprint_coverage.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "aac1c06"
+      ],
+      "dependencies": [
+        "BP-46-STITCHED-SHELL-OUTPUT",
+        "BP-45-IMPLEMENTATION-23"
+      ],
+      "executableEvidence": [
+        "reports/inspection/manifest.json",
+        "reports/inspection/inspection_report.json",
+        "12 deterministic SVG inspection artifacts",
+        "topologyRepresentationInspectionRun=true",
+        "canonicalSimulationToRenderSilhouetteRun=true",
+        "provider/source/human visual fidelity tiers remain not_run",
+        "acceptedForVisualFidelity=false",
+        "acceptedForCleanProposal=false",
+        "package digest 0e1af896bb27885139a1042064b4dc65fee2c565011b1b1a269d6acd0cf27821"
+      ],
+      "id": "BP-47-INSPECTION-ARTIFACTS",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/inspection/deterministic_renderer.py",
+        "closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py",
+        "closy-forge/src/closy_forge/validation/validator.py",
+        "closy-forge/src/closy_forge/reports/reporter.py",
+        "closy-forge/schemas/v1/inspection-artifact-manifest.schema.json",
+        "closy-forge/schemas/v1/inspection-artifact-report.schema.json"
+      ],
+      "limitations": "Partial BP47 checkpoint: artifacts are deterministic public-safe SVG inspection views, not decoded raster golden images, not source/provider appearance comparison, not human signed review, and not BP48 persisted normal/tangent frame evidence.",
+      "nextAction": "Proceed to BP-48 persisted normals, glTF tangents and dynamic pose-suite binding without promoting clean/canonical acceptance.",
+      "sourceSection": "Continuation prompt section 9 deterministic inspection renders and evidence tiers",
+      "status": "partial",
+      "summary": "Deterministic BP47 SVG inspection artifacts and separated evidence tiers exist for topology/representation review without promoting visual fidelity or clean acceptance.",
+      "tests": [
+        "tests/unit/test_inspection_artifacts.py",
+        "tests/unit/test_schema_freshness.py",
+        "tests/golden/test_golden_demo.py",
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "0e743bb"
+      ],
+      "dependencies": [
+        "BP-47-INSPECTION-ARTIFACTS",
+        "BP-08-R-SIM-TO-RENDER-BINDING"
+      ],
+      "executableEvidence": [
+        "reports/render_frame_pose_suite.json",
+        "render/fallback.glb contains NORMAL accessors",
+        "render/fallback.glb contains VEC4 TANGENT accessors",
+        "renderTangentsPersistedAvailable=true",
+        "poseSuiteBindingEvidenceAvailable=true",
+        "acceptedForRuntimeFramePreview=true",
+        "acceptedForCleanProposal=false",
+        "pose suite max binding error 1e-09 within tolerance 1e-6",
+        "package digest b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329"
+      ],
+      "id": "BP-48-PERSISTED-FRAMES-TANGENTS",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/geometry/frame_attributes.py",
+        "closy-forge/src/closy_forge/geometry/glb_io.py",
+        "closy-forge/src/closy_forge/rendering/frame_pose_suite.py",
+        "closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py",
+        "closy-forge/src/closy_forge/validation/validator.py",
+        "closy-forge/schemas/v1/render-frame-pose-suite.schema.json"
+      ],
+      "limitations": "Partial BP48 checkpoint: fallback GLB frames and a bounded four-pose suite are available for runtime preview, but stitched-shell binding, crack/sliding proof, performance/memory evidence, full cloth motion and clean/canonical acceptance remain incomplete.",
+      "nextAction": "Proceed to BP-49 local raster ingestion/privacy evidence while preserving deterministic synthetic fallback.",
+      "sourceSection": "Continuation prompt section 10 persisted render normals/tangents and pose-suite evidence",
+      "status": "partial",
+      "summary": "Persist fallback GLB normal/tangent frames and validate bounded pose-suite binding evidence without promoting clean/canonical acceptance.",
+      "tests": [
+        "tests/unit/test_render_frame_pose_suite.py",
+        "tests/unit/test_schema_freshness.py",
+        "tests/golden/test_golden_demo.py",
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-07-MODE-A",
+      "implementationPaths": null,
+      "limitations": "Flat/hung garment raster ingestion not implemented.",
+      "nextAction": "Implement real local raster ingestion before user imagery.",
+      "sourceSection": "Capture modes A-E",
+      "status": "not_started",
+      "summary": "Capture Mode A coverage.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-07-MODE-B",
+      "implementationPaths": null,
+      "limitations": "Worn-by-person image mode not implemented.",
+      "nextAction": "Implement real local raster ingestion before user imagery.",
+      "sourceSection": "Capture modes A-E",
+      "status": "not_started",
+      "summary": "Capture Mode B coverage.",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "synthetic four-view guided capture records"
+      ],
+      "id": "BP-07-MODE-C",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/capture/source_records.py"
+      ],
+      "limitations": "Synthetic metadata only; no real camera flow.",
+      "nextAction": "Implement real local raster ingestion before user imagery.",
+      "sourceSection": "Capture modes A-E",
+      "status": "partial",
+      "summary": "Capture Mode C coverage.",
+      "tests": [
+        "tests/unit/test_capture_quality.py"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-07-MODE-D",
+      "implementationPaths": null,
+      "limitations": "Short-video frame selection not implemented.",
+      "nextAction": "Implement real local raster ingestion before user imagery.",
+      "sourceSection": "Capture modes A-E",
+      "status": "not_started",
+      "summary": "Capture Mode D coverage.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-07-MODE-E",
+      "implementationPaths": null,
+      "limitations": "Single-image fallback not implemented.",
+      "nextAction": "Implement real local raster ingestion before user imagery.",
+      "sourceSection": "Capture modes A-E",
+      "status": "not_started",
+      "summary": "Capture Mode E coverage.",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "synthetic source records and privacy flags"
+      ],
+      "id": "BP-08-A-INGESTION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/capture/source_records.py"
+      ],
+      "limitations": "No real file ingestion/deletion propagation.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage A: Ingestion.",
+      "tests": [
+        "tests/unit/test_capture_quality.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "deterministic metadata quality score"
+      ],
+      "id": "BP-08-B-NORMALISATION-QC",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/capture/quality.py"
+      ],
+      "limitations": "No EXIF/raster transform pipeline.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage B: Normalisation Qc.",
+      "tests": [
+        "tests/unit/test_capture_quality.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "synthetic target garment masks and landmarks"
+      ],
+      "id": "BP-08-C-SEGMENTATION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/visual_understanding/tshirt_observations.py"
+      ],
+      "limitations": "No learned/provider segmentation or real masks.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage C: Segmentation.",
+      "tests": [
+        "tests/unit/test_visual_understanding.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "fixed avatar landmarks"
+      ],
+      "id": "BP-08-D-CAMERA-BODY",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/avatar/reference_avatar.py"
+      ],
+      "limitations": "No camera/body estimation.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage D: Camera Body.",
+      "tests": [
+        "tests/integration/test_cli_and_package.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "same synthetic four-view set"
+      ],
+      "id": "BP-08-E-MULTIVIEW-FUSION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/capture/source_records.py"
+      ],
+      "limitations": "No geometric registration/depth fusion.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage E: Multiview Fusion.",
+      "tests": [
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "stable T-shirt semantic IDs"
+      ],
+      "id": "BP-08-F-SEMANTIC-GRAPH",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/garments/tshirt/semantic_graph.py"
+      ],
+      "limitations": "T-shirt ontology only.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "complete",
+      "summary": "Stage F: Semantic Graph.",
+      "tests": [
+        "tests/unit/test_curves_pattern_and_hashes.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "panels, seams, openings validate"
+      ],
+      "id": "BP-08-G-PATTERN-REPRESENTATION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/garments/tshirt/pattern_generator.py"
+      ],
+      "limitations": "No imported pattern migration.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "complete",
+      "summary": "Stage G: Pattern Representation.",
+      "tests": [
+        "tests/unit/test_curves_pattern_and_hashes.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "310833b"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "closed-form fit from synthetic observations"
+      ],
+      "id": "BP-08-H-PATTERN-INFERENCE",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/fitting/tshirt_fit.py"
+      ],
+      "limitations": "Not image-conditioned optimization.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage H: Pattern Inference.",
+      "tests": [
+        "tests/unit/test_tshirt_fit.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "manual local GLB proposal chain, rejected clean/canonical"
+      ],
+      "id": "BP-08-I-GEOMETRY-PROVIDERS",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/proposals"
+      ],
+      "limitations": "No real external provider execution or accepted clean shell.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage I: Geometry Providers.",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "pattern-derived simulation mesh"
+      ],
+      "id": "BP-08-J-SIM-MESH-CONSTRUCTION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/garments/tshirt/assembly.py"
+      ],
+      "limitations": "Coarse fan triangulation.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "complete",
+      "summary": "Stage J: Sim Mesh Construction.",
+      "tests": [
+        "tests/integration/test_cli_and_package.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "bf1ae29"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "CPU settle with self_collision_not_run warning"
+      ],
+      "id": "BP-08-K-CLOTH-SIMULATION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/simulation/reference_cloth_solver.py"
+      ],
+      "limitations": "No self-collision/motion backend abstraction.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage K: Cloth Simulation.",
+      "tests": [
+        "tests/unit/test_reference_cloth_solver.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "310833b"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "closed-form fixture losses"
+      ],
+      "id": "BP-08-L-FIT-REFINEMENT",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/fitting/tshirt_fit.py"
+      ],
+      "limitations": "No iterative optimizer or real camera losses.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage L: Fit Refinement.",
+      "tests": [
+        "tests/unit/test_tshirt_fit.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "81fb02cc15fcc7d7e392f23e1480f84e2702970e"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "raw topology and clean gate reports",
+        "geometry_stitched_shell report exists",
+        "logical stitched analysis shell exists",
+        "conventional stitched GLB exists but is rejected for clean proof"
+      ],
+      "id": "BP-08-M-MESH-ANALYSIS",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/geometry/topology_diagnostics.py",
+        "closy-forge/src/closy_forge/proposals"
+      ],
+      "limitations": "Material stitched-shell artifacts now exist, but topology proof remains rejected due non-manifold edges, duplicate faces, missing semantic opening proof, incomplete binding coverage and not-run audits.",
+      "nextAction": "Implement deterministic inspection artifacts and independent topology/binding audits.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage M: Mesh Analysis.",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "f100fd5"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "runtime preview retopology from canonical panels"
+      ],
+      "id": "BP-08-N-GARMENT-RETOPOLOGY",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/geometry/subdivision.py"
+      ],
+      "limitations": "No semantic learned retopology.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage N: Garment Retopology.",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "b23e009"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "panel UV/material transfer evidence"
+      ],
+      "id": "BP-08-O-UV-STRATEGY",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/proposals/geometry_material_uv_transfer.py"
+      ],
+      "limitations": "No generated atlas/source projection.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage O: Uv Strategy.",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "a1fbd85"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "authored PBR material observations"
+      ],
+      "id": "BP-08-P-TEXTURE-PBR",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/appearance/texture_identity.py"
+      ],
+      "limitations": "No source texture recovery.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage P: Texture Pbr.",
+      "tests": [
+        "tests/unit/test_texture_identity.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "bf1ae29"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "single cotton jersey preset consumed by solver"
+      ],
+      "id": "BP-08-Q-MATERIAL-INFERENCE",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/simulation/reference_cloth_solver.py"
+      ],
+      "limitations": "No preset library/calibration.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage Q: Material Inference.",
+      "tests": [
+        "tests/unit/test_reference_cloth_solver.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "static binding reconstruction passes",
+        "fallback GLB NORMAL and VEC4 TANGENT accessors persist",
+        "four-pose render frame suite passes with max binding error 1e-09 within tolerance 1e-6"
+      ],
+      "id": "BP-08-R-SIM-TO-RENDER-BINDING",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/binding",
+        "closy-forge/src/closy_forge/geometry/frame_attributes.py",
+        "closy-forge/src/closy_forge/rendering/frame_pose_suite.py"
+      ],
+      "limitations": "Partial only: no stitched-shell binding, crack/sliding proof, runtime performance profile or dense production motion suite.",
+      "nextAction": "Add stitched-shell binding and richer motion/performance evidence before marking Stage R complete.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage R: Sim To Render Binding.",
+      "tests": [
+        "tests/unit/test_binding_and_paths.py",
+        "tests/unit/test_render_frame_pose_suite.py"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-08-S-LAYERING-ANIMATION",
+      "implementationPaths": null,
+      "limitations": "Single garment only.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "not_started",
+      "summary": "Stage S: Layering Animation.",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "empty correction record validates"
+      ],
+      "id": "BP-08-T-HUMAN-CORRECTION",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/visual_understanding/corrections.py"
+      ],
+      "limitations": "No applied correction UI/operations.",
+      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage T: Human Correction.",
+      "tests": [
+        "tests/unit/test_visual_understanding.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "aac1c06"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "summary, validation, clean gate, visual shell and BP47 inspection artifact reports",
+        "reports/inspection/manifest.json records 12 deterministic SVG artifacts",
+        "evidence tiers separate topology/canonical representation from provider/source/human visual fidelity"
+      ],
+      "id": "BP-08-U-QUALITY-PROVENANCE",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/reports",
+        "closy-forge/src/closy_forge/validation",
+        "closy-forge/src/closy_forge/inspection",
+        "closy-forge/schemas/v1/inspection-artifact-report.schema.json"
+      ],
+      "limitations": "No runtime performance, independent provider/source visual proof, human signed review, BP48 persisted tangent frames or accepted clean/canonical proposal yet.",
+      "nextAction": "Proceed to BP-48 persisted render frames, tangents and pose-suite binding.",
+      "sourceSection": "Stages A-U",
+      "status": "partial",
+      "summary": "Stage U: Quality Provenance.",
+      "tests": [
+        "tests/golden/test_golden_demo.py",
+        "tests/corruption/test_corrupted_packages.py",
+        "tests/unit/test_inspection_artifacts.py"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z1",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z1.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z2",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z2.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z3",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z3.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z4",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z4.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z5",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z5.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z6",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z6.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z7",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z7.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-Z8",
+      "implementationPaths": null,
+      "limitations": "No read-only ZeroOne discovery completed in this increment.",
+      "nextAction": "Inspect jake-the-jake/ZeroOne before claiming blocked or implemented status.",
+      "sourceSection": "ZeroOne Z1-Z8",
+      "status": "discovery_pending",
+      "summary": "ZeroOne stage Z8.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [
+        "ZeroOne repository discovery"
+      ],
+      "executableEvidence": null,
+      "id": "BP-09-GEOMOTREE",
+      "implementationPaths": null,
+      "limitations": "No GeomoTree contract inspected.",
+      "nextAction": "Perform ZeroOne repository discovery.",
+      "sourceSection": "ZeroOne GeomoTree",
+      "status": "discovery_pending",
+      "summary": "Garment-specific GeomoTree derivative nodes.",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "65-file deterministic package inventory"
+      ],
+      "id": "BP-10-PACKAGE-CONCEPT",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/package_io"
+      ],
+      "limitations": "One synthetic package profile.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "complete",
+      "summary": "Inspectable .closygarment package with canonical assets.",
+      "tests": [
+        "tests/integration/test_cli_and_package.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "build/validate/report commands"
+      ],
+      "id": "BP-11-SERVICE-LAYER",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/cli"
+      ],
+      "limitations": "No HTTP worker API.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "partial",
+      "summary": "Python sidecar remains CLI-first and isolated from Expo.",
+      "tests": [
+        "tests/integration/test_cli_and_package.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "e89b7c5"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "null/manual provider registry"
+      ],
+      "id": "BP-12-MODEL-STRATEGY",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/proposals/provider_registry.py"
+      ],
+      "limitations": "No real model weights or licensed provider.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "partial",
+      "summary": "Provider/model registry and baselines.",
+      "tests": [
+        "tests/unit/test_provider_registry.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "synthetic four-view fixture"
+      ],
+      "id": "BP-13-DATA-STRATEGY",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/capture/source_records.py"
+      ],
+      "limitations": "No dataset cards/splits/real samples.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "partial",
+      "summary": "Licensed dataset and split strategy.",
+      "tests": [
+        "tests/unit/test_capture_quality.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "golden digest cb12a0...",
+        "corruption guards"
+      ],
+      "id": "BP-14-EVALUATION",
+      "implementationPaths": [
+        "closy-forge/tests/golden",
+        "closy-forge/tests/corruption"
+      ],
+      "limitations": "No independent visual artifact suite.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "partial",
+      "summary": "Stage metrics and regression evidence.",
+      "tests": [
+        "tests/golden/test_golden_demo.py",
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "external processing/training flags are false"
+      ],
+      "id": "BP-15-SECURITY-PRIVACY",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/capture/source_records.py"
+      ],
+      "limitations": "No real deletion propagation service.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "partial",
+      "summary": "Privacy flags, consent placeholders and no real user data.",
+      "tests": [
+        "tests/unit/test_capture_quality.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "no external models in D0"
+      ],
+      "id": "BP-15-LICENSING",
+      "implementationPaths": [
+        "closy-forge/THIRD_PARTY.md",
+        "closy-forge/docs/provider-registry-v1.md"
+      ],
+      "limitations": "No model/dataset license registry.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "partial",
+      "summary": "Dependency and asset license discipline.",
+      "tests": [
+        "tests/unit/test_provider_registry.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "Python 3.11 Ubuntu/Windows Forge CI"
+      ],
+      "id": "BP-16-COMPUTE-D0",
+      "implementationPaths": [
+        "closy-forge/pyproject.toml",
+        ".github/workflows/closy-forge.yml"
+      ],
+      "limitations": "Python support intentionally >=3.11,<3.12.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "complete",
+      "summary": "CPU deterministic profile.",
+      "tests": [
+        "full Forge test suite"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-16-COMPUTE-D1",
+      "implementationPaths": null,
+      "limitations": "No GPU hardware/model requirement selected.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "discovery_pending",
+      "summary": "Moderate local GPU profile.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-16-COMPUTE-D2",
+      "implementationPaths": null,
+      "limitations": "No GPU worker available/authorized.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "discovery_pending",
+      "summary": "24GB NVIDIA/Linux worker profile.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-16-COMPUTE-D3",
+      "implementationPaths": null,
+      "limitations": "No cloud credentials/approval.",
+      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
+      "status": "discovery_pending",
+      "summary": "Cloud research profile.",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger row evidence, package reports and BP48 render frame/pose-suite evidence"
+      ],
+      "id": "BP-17-PHASE-00",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "complete",
+      "summary": "Blueprint phase 0.",
+      "tests": [
+        "Forge local tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358",
+        "aac1c06",
+        "0e743bb"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger row evidence, package reports, BP47 deterministic inspection artifacts and BP48 render frame/pose-suite evidence"
+      ],
+      "id": "BP-17-PHASE-01",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "Inspection artifacts and BP48 frame/pose evidence now exist, but Phase 1 remains partial until production cloth backend abstraction, self-collision, stitched-shell proof and richer motion evidence exist.",
+      "nextAction": "Proceed to BP-49 raster ingestion while preserving Phase 1 clean/canonical blockers.",
+      "sourceSection": "Phases 0-14",
+      "status": "partial",
+      "summary": "Blueprint phase 1.",
+      "tests": [
+        "Forge local tests",
+        "tests/unit/test_inspection_artifacts.py",
+        "tests/unit/test_render_frame_pose_suite.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger row evidence and package reports"
+      ],
+      "id": "BP-17-PHASE-02",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "partial",
+      "summary": "Blueprint phase 2.",
+      "tests": [
+        "Forge local tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger row evidence and package reports"
+      ],
+      "id": "BP-17-PHASE-03",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "partial",
+      "summary": "Blueprint phase 3.",
+      "tests": [
+        "Forge local tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "07b801c",
+        "ba4d358"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger row evidence and package reports"
+      ],
+      "id": "BP-17-PHASE-04",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "partial",
+      "summary": "Blueprint phase 4.",
+      "tests": [
+        "Forge local tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger row evidence and package reports"
+      ],
+      "id": "BP-17-PHASE-05",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "Provider/proposal path remains partial: BP-46 stitched output exists but clean topology proof and independent provider/source appearance evidence are absent.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "partial",
+      "summary": "Blueprint phase 5.",
+      "tests": [
+        "Forge local tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger row evidence and package reports"
+      ],
+      "id": "BP-17-PHASE-06",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "Binding/rendering remains partial: BP48 adds persisted fallback tangents and a bounded pose suite, but BP-46 stitched shell has no complete regenerated binding, crack/sliding proof or runtime performance evidence.",
+      "nextAction": "Add stitched-shell binding, crack/sliding checks and performance evidence.",
+      "sourceSection": "Phases 0-14",
+      "status": "partial",
+      "summary": "Blueprint phase 6.",
+      "tests": [
+        "Forge local tests",
+        "tests/unit/test_render_frame_pose_suite.py"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-07",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "not_started",
+      "summary": "Blueprint phase 7.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-08",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "not_started",
+      "summary": "Blueprint phase 8.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-09",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "not_started",
+      "summary": "Blueprint phase 9.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-10",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "discovery_pending",
+      "summary": "Blueprint phase 10.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-11",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "discovery_pending",
+      "summary": "Blueprint phase 11.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-12",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "not_started",
+      "summary": "Blueprint phase 12.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-13",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "not_started",
+      "summary": "Blueprint phase 13.",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-17-PHASE-14",
+      "implementationPaths": null,
+      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
+      "nextAction": "Advance dependency-ready prerequisites.",
+      "sourceSection": "Phases 0-14",
+      "status": "not_started",
+      "summary": "Blueprint phase 14.",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "deterministic package validates"
+      ],
+      "id": "BP-18-GATE-C1",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "T-shirt/fixed avatar profile only.",
+      "nextAction": "Do not mark gate passed without prerequisites.",
+      "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
+      "status": "complete",
+      "summary": "BP-18-GATE-C1",
+      "tests": [
+        "tests/integration/test_cli_and_package.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "raw/clean proposal boundary validates"
+      ],
+      "id": "BP-18-GATE-C2",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/proposals"
+      ],
+      "limitations": "No accepted clean generated mesh.",
+      "nextAction": "Do not mark gate passed without prerequisites.",
+      "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
+      "status": "complete",
+      "summary": "BP-18-GATE-C2",
+      "tests": [
+        "tests/unit/test_geometry_proposal.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "static binding reconstruction",
+        "fallback GLB VEC4 tangents persist",
+        "bounded four-pose suite validates binding reconstruction"
+      ],
+      "id": "BP-18-GATE-C3",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/binding",
+        "closy-forge/src/closy_forge/geometry/frame_attributes.py",
+        "closy-forge/src/closy_forge/rendering/frame_pose_suite.py"
+      ],
+      "limitations": "C3 remains partial: BP48 adds bounded fallback-frame evidence, but no stitched-shell binding, crack/sliding proof, runtime performance evidence or full production motion validation exists.",
+      "nextAction": "Do not mark gate passed without stitched-shell binding, crack/sliding checks and performance evidence.",
+      "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
+      "status": "partial",
+      "summary": "BP-18-GATE-C3",
+      "tests": [
+        "tests/unit/test_binding_and_paths.py",
+        "tests/unit/test_render_frame_pose_suite.py"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-18-GATE-Z1",
+      "implementationPaths": null,
+      "limitations": "ZeroOne repo not audited in this pass.",
+      "nextAction": "Do not mark gate passed without prerequisites.",
+      "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
+      "status": "discovery_pending",
+      "summary": "BP-18-GATE-Z1",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-18-GATE-Z2",
+      "implementationPaths": null,
+      "limitations": "Depends on Z1 and C3.",
+      "nextAction": "Do not mark gate passed without prerequisites.",
+      "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
+      "status": "discovery_pending",
+      "summary": "BP-18-GATE-Z2",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-18-GATE-P1",
+      "implementationPaths": null,
+      "limitations": "Local privacy work partial; product/legal authority not audited.",
+      "nextAction": "Do not mark gate passed without prerequisites.",
+      "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
+      "status": "discovery_pending",
+      "summary": "BP-18-GATE-P1",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-01",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 1.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-02",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 2.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-03",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "complete",
+      "summary": "Risk mitigation 3.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-04",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 4.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-05",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "complete",
+      "summary": "Risk mitigation 5.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-06",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 6.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-07",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 7.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-08",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "complete",
+      "summary": "Risk mitigation 8.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-19-RISK-09",
+      "implementationPaths": null,
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "discovery_pending",
+      "summary": "Risk mitigation 9.",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-10",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 10.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-11",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 11.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-12",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 12.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-13",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "partial",
+      "summary": "Risk mitigation 13.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "ledger/package guardrail evidence"
+      ],
+      "id": "BP-19-RISK-14",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "See ledger for specific remaining risk.",
+      "nextAction": "Keep risk evidence current with each increment.",
+      "sourceSection": "Risks and mitigations",
+      "status": "complete",
+      "summary": "Risk mitigation 14.",
+      "tests": [
+        "Forge validation/corruption tests"
+      ]
+    },
+    {
+      "commitSha": [
+        "be65157",
+        "e89b7c5",
+        "cf3c370",
+        "d949ac3",
+        "fd4c065",
+        "3642a25",
+        "c712b26",
+        "6370ab5",
+        "b688a6c",
+        "ec112e5",
+        "a101d64",
+        "44aabb6",
+        "f100fd5",
+        "159c63d",
+        "b23e009",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "deterministic T-shirt package plus proposal rejection chain"
+      ],
+      "id": "BP-20-RESEARCH-PROTOTYPE",
+      "implementationPaths": [
+        "closy-forge"
+      ],
+      "limitations": "Real images, source textures, mesh stitch/weld and clean provider mesh absent.",
+      "nextAction": "Do not promote success level without full prerequisites.",
+      "sourceSection": "Research/alpha/beta/production success levels",
+      "status": "partial",
+      "summary": "BP-20-RESEARCH-PROTOTYPE",
+      "tests": [
+        "Forge tests"
+      ]
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-20-ALPHA",
+      "implementationPaths": null,
+      "limitations": "Alpha requirements not met.",
+      "nextAction": "Do not promote success level without full prerequisites.",
+      "sourceSection": "Research/alpha/beta/production success levels",
+      "status": "not_started",
+      "summary": "BP-20-ALPHA",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-20-BETA",
+      "implementationPaths": null,
+      "limitations": "Beta requirements not met.",
+      "nextAction": "Do not promote success level without full prerequisites.",
+      "sourceSection": "Research/alpha/beta/production success levels",
+      "status": "not_started",
+      "summary": "BP-20-BETA",
+      "tests": null
+    },
+    {
+      "commitSha": null,
+      "dependencies": [],
+      "executableEvidence": null,
+      "id": "BP-20-PRODUCTION",
+      "implementationPaths": null,
+      "limitations": "Production requirements not met.",
+      "nextAction": "Do not promote success level without full prerequisites.",
+      "sourceSection": "Research/alpha/beta/production success levels",
+      "status": "not_started",
+      "summary": "BP-20-PRODUCTION",
+      "tests": null
+    },
+    {
+      "commitSha": [
+        "e02b85a5f6f2e165c7a0dec2777ff10531048d1b"
+      ],
+      "dependencies": [
+        "engine/CMakeLists.txt FetchContent declarations"
+      ],
+      "executableEvidence": [
+        "no generated engine _deps/*-src gitlinks",
+        "/engine/build/ ignore rule",
+        "repository hygiene regression test"
+      ],
+      "id": "REPO-HYGIENE-GITLINKS",
+      "implementationPaths": [
+        ".gitignore",
+        "engine/build/_deps/glfw-src",
+        "engine/build/_deps/glm-src",
+        "closy-forge/tests/unit/test_repository_hygiene.py"
+      ],
+      "limitations": "Broad historical engine/build generated files remain tracked; CI confirmation that checkout annotations disappear is pending until the hygiene commits are pushed.",
+      "nextAction": "Replace unsafe broad Forge failure-artifact upload with strict sanitized diagnostics.",
+      "sourceSection": "Continuation prompt section 8.1 repository hygiene",
+      "status": "complete",
+      "summary": "Remove malformed generated engine dependency gitlinks while preserving CMake FetchContent as the dependency source of truth.",
+      "tests": [
+        "tests/unit/test_repository_hygiene.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "eb4c6113a921037db4f39778f2fa224869fd7d99"
+      ],
+      "dependencies": [
+        "REPO-HYGIENE-GITLINKS"
+      ],
+      "executableEvidence": [
+        "closy-forge ci diagnostics command",
+        "fixed diagnostics output allowlist",
+        "workflow uploads sanitized diagnostics directory only"
+      ],
+      "id": "REPO-HYGIENE-CI-DIAGNOSTICS",
+      "implementationPaths": [
+        ".github/workflows/closy-forge.yml",
+        "closy-forge/src/closy_forge/ci/sanitized_diagnostics.py",
+        "closy-forge/src/closy_forge/cli/main.py",
+        "closy-forge/tests/unit/test_ci_sanitized_diagnostics.py"
+      ],
+      "limitations": "Remote CI confirmation is pending until the ledger checkpoint is pushed; artifact upload executes only on failure.",
+      "nextAction": "Continue BP-47/BP-48 evidence work after CI hygiene remains green.",
+      "sourceSection": "Continuation prompt section 8.2 CI diagnostics hygiene",
+      "status": "complete",
+      "summary": "Replace broad Forge failure-artifact upload with privacy-safe generated diagnostics.",
+      "tests": [
+        "tests/unit/test_ci_sanitized_diagnostics.py"
+      ]
+    },
+    {
+      "commitSha": [
+        "30f7d08",
+        "3dd65b1",
+        "8174b220d5cf6e320b101137a4901bcd461cd644"
+      ],
+      "dependencies": [],
+      "executableEvidence": [
+        "unsupported classes rejected",
+        "provider canonical acceptance rejected"
+      ],
+      "id": "BP-21-LOCKED-DECISIONS",
+      "implementationPaths": [
+        "closy-forge/docs",
+        "closy-forge/src/closy_forge/validation"
+      ],
+      "limitations": "Must be rechecked every increment.",
+      "nextAction": "Keep decisions locked unless explicit evidence changes.",
+      "sourceSection": "Locked decisions",
+      "status": "complete",
+      "summary": "Preserve garment/avatar-only product boundary, provider-derivative policy and optional ZeroOne.",
+      "tests": [
+        "tests/corruption/test_corrupted_packages.py"
+      ]
+    }
+  ],
+  "statusVocabulary": [
+    "not_started",
+    "scaffold",
+    "partial",
+    "implemented_unverified",
+    "complete",
+    "discovery_pending",
+    "blocked_external",
+    "not_applicable"
+  ],
+  "version": "bp48-render-frame-pose-suite-v1"
+}

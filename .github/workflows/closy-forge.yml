@@ -1,0 +1,79 @@
+name: Closy Forge
+
+on:
+  pull_request:
+    paths:
+      - "closy-forge/**"
+      - "docs/closy-garment-package-v1.md"
+      - ".github/workflows/closy-forge.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "closy-forge/**"
+      - "docs/closy-garment-package-v1.md"
+      - ".github/workflows/closy-forge.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  forge:
+    name: Forge ${{ matrix.os }} Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11"]
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Forge dev environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Format check
+        run: python -m ruff format --check .
+      - name: Lint
+        run: python -m ruff check .
+      - name: Type check
+        run: python -m mypy src
+      - name: Test
+        run: python -m pytest
+      - name: Check schemas
+        run: python -m closy_forge schemas check --schema-dir schemas/v1
+      - name: Build deterministic demo twice
+        run: |
+          mkdir -p "$RUNNER_TEMP/closy-forge"
+          python -m closy_forge demo build-tshirt --output "$RUNNER_TEMP/closy-forge/demo_a.closygarment" --force
+          python -m closy_forge demo build-tshirt --output "$RUNNER_TEMP/closy-forge/demo_b.closygarment" --force
+      - name: Compare deterministic outputs
+        run: python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/demo_a.closygarment" "$RUNNER_TEMP/closy-forge/demo_b.closygarment" --json
+      - name: Validate and report
+        run: |
+          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
+          python -m closy_forge report "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
+      - name: Prepare sanitized determinism diagnostics
+        if: failure()
+        run: |
+          python -m closy_forge ci diagnostics \
+            --source-dir "$RUNNER_TEMP/closy-forge" \
+            --output "$RUNNER_TEMP/closy-forge-safe-diagnostics" \
+            --label "${{ matrix.os }}-py${{ matrix.python-version }}" \
+            --force
+      - name: Upload determinism diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: forge-diagnostics-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: ${{ runner.temp }}/closy-forge-safe-diagnostics
+          if-no-files-found: ignore

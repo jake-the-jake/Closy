@@ -38,6 +38,19 @@ yarn-error.*
 /generated/avatar_requests/*.json
 /generated/avatar_renders/*.png
 
+# Closy Forge local environments and generated garment packages
+/__pycache__/
+__pycache__/
+*.py[cod]
+*.egg-info/
+/closy-forge/.venv/
+/closy-forge/.mypy_cache/
+/closy-forge/.pytest_cache/
+/closy-forge/.ruff_cache/
+/closy-forge/generated/
+/generated/garments/*.closygarment/
+/generated/ci/*.closygarment/
+
 # typescript
 *.tsbuildinfo
 
@@ -46,3 +59,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Generated CMake/MSVC engine build tree; dependencies are declared in engine/CMakeLists.txt.
+/engine/build/
