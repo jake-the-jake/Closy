@@ -364,6 +364,8 @@ def _write_package_contents(
         semantic_transfer_report=geometry_semantic_transfer,
         material_uv_transfer_report=geometry_material_uv_transfer,
         runtime_render_mesh=proposal_runtime_render_mesh,
+        reference_simulation_mesh=simulation_mesh,
+        constraints=constraints,
     )
     geometry_clean_acceptance_gate = build_geometry_clean_acceptance_gate_report(
         garment_id="garment.demo_tshirt.reference_v1",

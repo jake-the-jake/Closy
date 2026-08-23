@@ -285,6 +285,55 @@ def test_geometry_visual_shell_review_runs_without_clean_acceptance() -> None:
     )
 
 
+def test_geometry_visual_shell_review_accepts_silhouette_and_stitch_graph() -> None:
+    runtime_result = _runtime_ready_report()
+    semantic_transfer = _semantic_transfer_report()
+    texture_identity = _texture_identity_report()
+    material_transfer = build_geometry_material_uv_transfer_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        texture_identity_report=texture_identity,
+        render_materials=_render_materials_report(),
+        runtime_render_mesh=_stitched_pair_mesh(),
+    )
+
+    report = build_geometry_visual_shell_review_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        runtime_binding_result_report=runtime_result,
+        semantic_transfer_report=semantic_transfer,
+        material_uv_transfer_report=material_transfer,
+        runtime_render_mesh=_stitched_pair_mesh(),
+        reference_simulation_mesh=_stitched_pair_mesh(),
+        constraints={
+            "constraints": [
+                {
+                    "id": "constraint.test_seam.000",
+                    "seamId": "seam.test",
+                    "spanA": {"meshIndex": 0, "vertexIndex": 1},
+                    "spanB": {"meshIndex": 1, "vertexIndex": 0},
+                }
+            ]
+        },
+    )
+
+    assert report["execution"]["renderedPixelComparisonRun"] is True
+    assert report["visualFidelity"]["renderedPixelComparison"]["minimumIou"] == 1.0
+    assert report["readiness"]["acceptedForVisualFidelity"] is True
+    assert report["shellProof"]["singleShellWeldExecutionRun"] is True
+    assert report["shellProof"]["initialShellCount"] == 2
+    assert report["shellProof"]["postStitchShellCount"] == 1
+    assert report["readiness"]["singleShellWeldProven"] is True
+    assert "visual_fidelity_review_not_accepted" not in report["readiness"]["blockingReasons"]
+    assert "single_shell_weld_not_proven" not in report["readiness"]["blockingReasons"]
+    assert report["readiness"]["acceptedForCleanProposal"] is False
+    assert report["integrity"]["geometryVisualShellReviewHash"] == (
+        hash_geometry_visual_shell_review(report)
+    )
+
+
 def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_transfer() -> None:
     runtime_result = _runtime_ready_report()
     semantic_transfer = _semantic_transfer_report()
@@ -1208,5 +1257,26 @@ def _quad_mesh() -> MeshSet:
                 panel_uvs=[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)],
                 triangles=[(0, 1, 2), (0, 2, 3)],
             )
+        ]
+    )
+
+
+def _stitched_pair_mesh() -> MeshSet:
+    return MeshSet(
+        [
+            Mesh(
+                name="left_panel_triangle",
+                panel_id="panel.left",
+                vertices=[(0.0, 0.0, 0.0), (0.5, 0.0, 0.0), (0.0, 0.5, 0.0)],
+                panel_uvs=[(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)],
+                triangles=[(0, 1, 2)],
+            ),
+            Mesh(
+                name="right_panel_triangle",
+                panel_id="panel.right",
+                vertices=[(0.5, 0.0, 0.0), (1.0, 0.0, 0.0), (1.0, 0.5, 0.0)],
+                panel_uvs=[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)],
+                triangles=[(0, 1, 2)],
+            ),
         ]
     )

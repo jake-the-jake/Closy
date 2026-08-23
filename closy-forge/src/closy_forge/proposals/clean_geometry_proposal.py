@@ -342,6 +342,8 @@ def build_clean_geometry_proposal_rejection(
         clean_acceptance_gate_run,
         clean_acceptance_gate_accepted,
         validation_accepted,
+        visual_fidelity_accepted,
+        single_shell_weld_proven,
     )
     required_before_canonical = _required_before_canonical(
         cleanup_run,
@@ -354,6 +356,8 @@ def build_clean_geometry_proposal_rejection(
         clean_acceptance_gate_run,
         clean_acceptance_gate_accepted,
         validation_accepted,
+        visual_fidelity_accepted,
+        single_shell_weld_proven,
     )
     report: dict[str, Any] = {
         "schemaVersion": 1,
@@ -466,6 +470,8 @@ def build_clean_geometry_proposal_rejection(
                 else "visual_shell_review_pending",
                 "provider_visual_fidelity_not_accepted"
                 if runtime_binding_accepted and not visual_fidelity_accepted
+                else "provider_visual_fidelity_ready"
+                if runtime_binding_accepted
                 else "simulation_binding_unavailable",
                 "single_shell_weld_not_proven"
                 if runtime_binding_accepted and not single_shell_weld_proven
@@ -811,6 +817,8 @@ def _rejection_reasons(
     clean_acceptance_gate_run: bool,
     clean_acceptance_gate_accepted: bool,
     validation_accepted: bool,
+    visual_fidelity_accepted: bool,
+    single_shell_weld_proven: bool,
 ) -> list[str]:
     if (
         cleanup_run
@@ -824,7 +832,13 @@ def _rejection_reasons(
         and clean_acceptance_gate_run
         and not clean_acceptance_gate_accepted
     ):
-        return CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS
+        reasons = list(CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS)
+        if not visual_fidelity_accepted:
+            reasons.insert(1, "visual_fidelity_review_not_accepted")
+            reasons.insert(2, "provider_visual_fidelity_not_accepted")
+        if not single_shell_weld_proven:
+            reasons.insert(-1, "single_shell_weld_not_proven")
+        return reasons
     if (
         cleanup_run
         and semantic_transfer_run
@@ -881,6 +895,8 @@ def _required_before_canonical(
     clean_acceptance_gate_run: bool,
     clean_acceptance_gate_accepted: bool,
     validation_accepted: bool,
+    visual_fidelity_accepted: bool,
+    single_shell_weld_proven: bool,
 ) -> list[str]:
     required = [
         "partial_repair_incomplete" if partial_repair_result_generated else "repair_not_run",
@@ -908,8 +924,10 @@ def _required_before_canonical(
         ]
         if clean_acceptance_gate_run and not clean_acceptance_gate_accepted:
             required.insert(-1, "clean_acceptance_gate_rejected")
-            required.insert(-1, "visual_fidelity_review_not_accepted")
-            required.insert(-1, "single_shell_weld_not_proven")
+            if not visual_fidelity_accepted:
+                required.insert(-1, "visual_fidelity_review_not_accepted")
+            if not single_shell_weld_proven:
+                required.insert(-1, "single_shell_weld_not_proven")
         else:
             required.insert(-1, "provider_visual_fidelity_not_accepted")
     required.append("provider_output_not_canonical_garment_truth")

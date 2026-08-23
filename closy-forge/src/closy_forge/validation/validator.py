@@ -5384,6 +5384,7 @@ def _validate_geometry_visual_shell_review(
         package_dir, "reports/geometry_material_uv_transfer.json", issues
     )
     simulation_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    constraints = _read_required_json(package_dir, "simulation/constraints.json", issues)
     visual_shell = _read_required_json(
         package_dir, "reports/geometry_visual_shell_review.json", issues
     )
@@ -5392,6 +5393,7 @@ def _validate_geometry_visual_shell_review(
         or semantic_transfer is None
         or material_transfer is None
         or simulation_manifest is None
+        or constraints is None
         or visual_shell is None
     ):
         return
@@ -5532,6 +5534,8 @@ def _validate_geometry_visual_shell_review(
             semantic_transfer_report=semantic_transfer,
             material_uv_transfer_report=material_transfer,
             runtime_render_mesh=runtime_render_mesh,
+            reference_simulation_mesh=settled_mesh,
+            constraints=constraints,
         )
     except Exception as exc:
         issues.append(
@@ -5591,7 +5595,6 @@ def _validate_geometry_visual_shell_review(
         execution.get("geometryVisualShellReviewGenerated") is not True
         or execution.get("visualFidelityReviewRun") is not True
         or execution.get("deterministicPreviewProxyReviewRun") is not True
-        or execution.get("renderedPixelComparisonRun") is not False
         or execution.get("singleShellWeldProofRun") is not True
     ):
         issues.append(
@@ -5601,16 +5604,24 @@ def _validate_geometry_visual_shell_review(
                 "reports/geometry_visual_shell_review.json",
                 (
                     "Visual/shell review must run deterministic review and shell proof, "
-                    "but must not claim rendered pixel comparison."
+                    "and must leave clean/canonical acceptance to the clean gate."
                 ),
+            )
+        )
+    rendered_pixel_run = execution.get("renderedPixelComparisonRun")
+    if not isinstance(rendered_pixel_run, bool):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_execution_state_invalid",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                "Visual/shell review renderedPixelComparisonRun must be a boolean.",
             )
         )
     if (
         readiness.get("status") != "visual_shell_review_completed_clean_rejected"
-        or readiness.get("acceptedForVisualFidelity") is not False
         or readiness.get("acceptedForCleanProposal") is not False
         or readiness.get("acceptedForCanonical") is not False
-        or readiness.get("singleShellWeldProven") is not False
         or readiness.get("acceptedForRuntimeRender")
         != runtime_result.get("readiness", {}).get("acceptedForRuntimeRender")
     ):
@@ -5619,18 +5630,12 @@ def _validate_geometry_visual_shell_review(
                 "geometry_visual_shell_review_acceptance_invalid",
                 "fatal",
                 "reports/geometry_visual_shell_review.json",
-                (
-                    "Visual/shell review cannot accept D0 visual fidelity, shell "
-                    "weld or clean geometry."
-                ),
+                ("Visual/shell review cannot accept clean or canonical geometry."),
             )
         )
     if (
         aggregate.get("visualFidelityReviewRun") is not True
-        or aggregate.get("renderedPixelComparisonRun") is not False
-        or aggregate.get("acceptedForVisualFidelity") is not False
         or aggregate.get("singleShellWeldProofRun") is not True
-        or aggregate.get("singleShellWeldProven") is not False
         or aggregate.get("acceptedForCleanProposal") is not False
         or aggregate.get("acceptedForCanonical") is not False
         or _int_or(aggregate.get("vertexCount"), 0) <= 0
@@ -5927,8 +5932,6 @@ def _validate_geometry_clean_acceptance_gate(
         or execution.get("materialTransferRun") is not True
         or execution.get("materialTransferAccepted") is not True
         or execution.get("singleShellWeldProofRun") is not True
-        or execution.get("visualFidelityAccepted") is not False
-        or execution.get("singleShellWeldProven") is not False
     ):
         issues.append(
             _issue(
@@ -5937,13 +5940,16 @@ def _validate_geometry_clean_acceptance_gate(
                 "reports/geometry_clean_acceptance_gate.json",
                 (
                     "Clean acceptance gate may review deterministic runtime evidence but "
-                    "must keep visual fidelity and shell proof rejected until the review "
-                    "and weld evidence pass."
+                    "must keep clean/canonical acceptance separate."
                 ),
             )
         )
     if (
-        readiness.get("status") != "clean_acceptance_rejected_visual_shell_failed"
+        readiness.get("status")
+        not in {
+            "clean_acceptance_rejected_visual_shell_failed",
+            "clean_acceptance_rejected_continuity_warn",
+        }
         or readiness.get("acceptedForCleanProposal") is not False
         or readiness.get("acceptedForCanonical") is not False
         or readiness.get("acceptedForSimulation") is not False
@@ -7189,9 +7195,7 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("materialTransferRun") is not True
         or cleanup.get("materialTransferAccepted") is not True
         or cleanup.get("visualFidelityReviewRun") is not True
-        or cleanup.get("providerVisualFidelityAccepted") is not False
         or cleanup.get("singleShellWeldProofRun") is not True
-        or cleanup.get("singleShellWeldProven") is not False
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):

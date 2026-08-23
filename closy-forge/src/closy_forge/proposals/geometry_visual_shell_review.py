@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from math import sqrt
 from typing import Any
 
 from closy_forge.geometry.mesh_model import MeshSet, finite_mesh, mesh_bounds
@@ -8,10 +9,13 @@ from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 
 GEOMETRY_VISUAL_SHELL_REVIEW_VERSION = (
-    "closy.geometry_visual_shell_review.runtime_proxy_and_shell_proof_v1"
+    "closy.geometry_visual_shell_review.rendered_silhouette_and_stitch_graph_v2"
 )
 
 _VISUAL_FIDELITY_THRESHOLD = 0.8
+_SILHOUETTE_IOU_THRESHOLD = 0.94
+_SILHOUETTE_RASTER_SIZE = 64
+_STITCH_DISTANCE_THRESHOLD_METERS = 0.15
 
 
 def build_geometry_visual_shell_review_report(
@@ -22,13 +26,16 @@ def build_geometry_visual_shell_review_report(
     semantic_transfer_report: dict[str, Any],
     material_uv_transfer_report: dict[str, Any],
     runtime_render_mesh: MeshSet,
+    reference_simulation_mesh: MeshSet | None = None,
+    constraints: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run deterministic preview-fidelity and shell-proof checks.
 
-    This is a review artifact, not a rendered screenshot acceptance artifact.
-    It proves that Closy reviewed the runtime-bound preview, material transfer
-    and shell state, while keeping clean/canonical acceptance blocked until a
-    rendered visual-fidelity comparison and real single-shell stitch/weld pass.
+    This remains a CI-safe geometry artifact rather than a GPU screenshot. The
+    rendered pass rasterizes deterministic orthographic silhouettes from the
+    runtime render mesh and canonical settled simulation mesh, then compares
+    pixels by IoU. The shell pass proves the stitch graph can collapse to one
+    connected garment shell under bounded seam distances.
     """
 
     semantic = semantic_transfer_report["aggregate"]
@@ -72,17 +79,33 @@ def build_geometry_visual_shell_review_report(
         + (normal_score * 0.06)
         + (tangent_score * 0.06)
     )
-    rendered_pixel_comparison_run = False
+    rendered_pixel_comparison = _rendered_silhouette_comparison(
+        runtime_render_mesh,
+        reference_simulation_mesh,
+    )
+    rendered_pixel_comparison_run = rendered_pixel_comparison["renderedPixelComparisonRun"]
+    rendered_silhouette_score = float(rendered_pixel_comparison["meanIou"])
+    rendered_silhouette_minimum_iou = float(rendered_pixel_comparison["minimumIou"])
+    visual_fidelity_score = _round(
+        (geometry_proxy_score * 0.45) + (rendered_silhouette_score * 0.55)
+    )
     accepted_for_visual_fidelity = (
         rendered_pixel_comparison_run
-        and geometry_proxy_score >= _VISUAL_FIDELITY_THRESHOLD
+        and visual_fidelity_score >= _VISUAL_FIDELITY_THRESHOLD
+        and rendered_silhouette_minimum_iou >= _SILHOUETTE_IOU_THRESHOLD
         and mesh_finite
     )
 
-    shell_metrics = _shell_metrics(runtime_render_mesh)
+    shell_metrics = _shell_metrics(
+        runtime_render_mesh,
+        stitch_source_mesh=reference_simulation_mesh,
+        constraints=constraints,
+    )
     single_shell_weld_proven = (
-        retopology["vertexWeldedSingleShell"] is True
-        and shell_metrics["semanticPanelShellCount"] == 1
+        shell_metrics["singleShellWeldExecutionRun"] is True
+        and shell_metrics["postStitchShellCount"] == 1
+        and shell_metrics["rejectedStitchPairCount"] == 0
+        and shell_metrics["acceptedStitchPairCount"] > 0
     )
     blocking_reasons = []
     if not accepted_for_visual_fidelity:
@@ -131,10 +154,15 @@ def build_geometry_visual_shell_review_report(
             "reviewKind": "deterministic_runtime_geometry_proxy",
             "visualFidelityReviewRun": True,
             "renderedPixelComparisonRun": rendered_pixel_comparison_run,
-            "renderedReferenceAvailable": False,
+            "renderedReferenceAvailable": rendered_pixel_comparison["renderedReferenceAvailable"],
             "geometryProxyScore": geometry_proxy_score,
+            "renderedSilhouetteScore": rendered_silhouette_score,
+            "renderedSilhouetteMinimumIou": rendered_silhouette_minimum_iou,
+            "renderedPixelComparison": rendered_pixel_comparison,
+            "visualFidelityScore": visual_fidelity_score,
             "acceptedForVisualFidelity": accepted_for_visual_fidelity,
             "threshold": _VISUAL_FIDELITY_THRESHOLD,
+            "minimumViewIouThreshold": _SILHOUETTE_IOU_THRESHOLD,
             "factors": {
                 "runtimeBindingAccepted": runtime_binding_accepted,
                 "semanticPanelCoverage": semantic_panel_coverage,
@@ -145,9 +173,9 @@ def build_geometry_visual_shell_review_report(
                 "tangentContinuityStatus": tangent_status,
             },
             "limitations": [
-                "no_rendered_pixel_comparison",
                 "no_human_visual_review",
-                "proxy_score_cannot_accept_clean_geometry",
+                "no_source_photo_pixel_comparison",
+                "silhouette_comparison_only_not_texture_fidelity",
             ],
         },
         "shellProof": {
@@ -155,7 +183,14 @@ def build_geometry_visual_shell_review_report(
             "singleShellWeldProofRun": True,
             "singleShellWeldProven": single_shell_weld_proven,
             "vertexWeldedSingleShell": retopology["vertexWeldedSingleShell"],
+            "singleShellWeldExecutionRun": shell_metrics["singleShellWeldExecutionRun"],
+            "proofMesh": shell_metrics["proofMesh"],
             "semanticPanelShellCount": shell_metrics["semanticPanelShellCount"],
+            "initialShellCount": shell_metrics["initialShellCount"],
+            "postStitchShellCount": shell_metrics["postStitchShellCount"],
+            "acceptedStitchPairCount": shell_metrics["acceptedStitchPairCount"],
+            "rejectedStitchPairCount": shell_metrics["rejectedStitchPairCount"],
+            "stitchDistanceThresholdMeters": _STITCH_DISTANCE_THRESHOLD_METERS,
             "meshCount": shell_metrics["meshCount"],
             "boundaryEdgeCount": shell_metrics["boundaryEdgeCount"],
             "seamConstraintCount": seam_constraint_count,
@@ -164,7 +199,7 @@ def build_geometry_visual_shell_review_report(
         "aggregate": {
             "visualFidelityReviewRun": True,
             "renderedPixelComparisonRun": rendered_pixel_comparison_run,
-            "visualFidelityScore": geometry_proxy_score,
+            "visualFidelityScore": visual_fidelity_score,
             "acceptedForVisualFidelity": accepted_for_visual_fidelity,
             "singleShellWeldProofRun": True,
             "singleShellWeldProven": single_shell_weld_proven,
@@ -185,6 +220,7 @@ def build_geometry_visual_shell_review_report(
             "deterministicPreviewProxyReviewRun": True,
             "renderedPixelComparisonRun": rendered_pixel_comparison_run,
             "singleShellWeldProofRun": True,
+            "singleShellWeldExecutionRun": shell_metrics["singleShellWeldExecutionRun"],
         },
         "readiness": {
             "status": "visual_shell_review_completed_clean_rejected",
@@ -194,7 +230,9 @@ def build_geometry_visual_shell_review_report(
             "acceptedForSimulation": False,
             "acceptedForRuntimeRender": runtime_readiness["acceptedForRuntimeRender"],
             "singleShellWeldProven": single_shell_weld_proven,
-            "nextExecutableStage": "rendered_visual_fidelity_and_single_shell_weld_execution",
+            "nextExecutableStage": "canonical_acceptance_quality_gate"
+            if accepted_for_visual_fidelity and single_shell_weld_proven
+            else "rendered_visual_fidelity_and_single_shell_weld_execution",
             "blockingReasons": sorted(set(blocking_reasons)),
         },
         "quality": {
@@ -202,8 +240,11 @@ def build_geometry_visual_shell_review_report(
             "acceptedForVisualFidelity": accepted_for_visual_fidelity,
             "acceptedForCleanProposal": False,
             "warnings": [
-                "rendered_visual_fidelity_review_missing",
-                "single_shell_weld_not_proven",
+                None
+                if rendered_pixel_comparison_run
+                else "rendered_visual_fidelity_review_missing",
+                None if accepted_for_visual_fidelity else "visual_fidelity_review_not_accepted",
+                None if single_shell_weld_proven else "single_shell_weld_not_proven",
                 "normal_continuity_warn" if normal_status == "warn" else None,
                 "tangent_continuity_warn" if tangent_status == "warn" else None,
             ],
@@ -232,7 +273,12 @@ def hash_geometry_visual_shell_review(report: dict[str, Any]) -> str:
     return sha256_bytes(canonical_dumps(payload).encode("utf-8"))
 
 
-def _shell_metrics(meshset: MeshSet) -> dict[str, Any]:
+def _shell_metrics(
+    meshset: MeshSet,
+    *,
+    stitch_source_mesh: MeshSet | None,
+    constraints: dict[str, Any] | None,
+) -> dict[str, Any]:
     mesh_shells: list[dict[str, Any]] = []
     boundary_edge_count = 0
     for mesh in sorted(meshset.meshes, key=lambda item: (item.panel_id, item.name)):
@@ -253,12 +299,237 @@ def _shell_metrics(meshset: MeshSet) -> dict[str, Any]:
                 "materialId": mesh.material_id,
             }
         )
+    proof_mesh = stitch_source_mesh if stitch_source_mesh is not None else meshset
+    initial_shell_count, post_stitch_shell_count, stitch_metrics = _stitch_graph_shell_counts(
+        proof_mesh,
+        constraints,
+    )
     return {
         "meshCount": len(meshset.meshes),
-        "semanticPanelShellCount": len({mesh.panel_id for mesh in meshset.meshes}),
+        "proofMesh": "settled_simulation_stitch_graph"
+        if stitch_source_mesh is not None
+        else "runtime_render_mesh_topology_only",
+        "semanticPanelShellCount": post_stitch_shell_count,
+        "initialShellCount": initial_shell_count,
+        "postStitchShellCount": post_stitch_shell_count,
+        "singleShellWeldExecutionRun": constraints is not None and stitch_source_mesh is not None,
+        "acceptedStitchPairCount": stitch_metrics["acceptedStitchPairCount"],
+        "rejectedStitchPairCount": stitch_metrics["rejectedStitchPairCount"],
+        "maxAcceptedStitchDistanceMeters": stitch_metrics["maxAcceptedStitchDistanceMeters"],
+        "maxRejectedStitchDistanceMeters": stitch_metrics["maxRejectedStitchDistanceMeters"],
         "boundaryEdgeCount": boundary_edge_count,
         "meshShells": mesh_shells,
     }
+
+
+def _stitch_graph_shell_counts(
+    meshset: MeshSet,
+    constraints: dict[str, Any] | None,
+) -> tuple[int, int, dict[str, Any]]:
+    offsets: list[int] = []
+    total_vertices = 0
+    for mesh in meshset.meshes:
+        offsets.append(total_vertices)
+        total_vertices += len(mesh.vertices)
+    union = _UnionFind(total_vertices)
+    for mesh_index, mesh in enumerate(meshset.meshes):
+        offset = offsets[mesh_index]
+        for tri in mesh.triangles:
+            union.union(offset + tri[0], offset + tri[1])
+            union.union(offset + tri[1], offset + tri[2])
+            union.union(offset + tri[2], offset + tri[0])
+    initial_shell_count = union.component_count()
+    accepted_distances: list[float] = []
+    rejected_distances: list[float] = []
+    if constraints is not None:
+        for constraint in constraints.get("constraints", []):
+            if not isinstance(constraint, dict):
+                continue
+            span_a = constraint.get("spanA")
+            span_b = constraint.get("spanB")
+            if not isinstance(span_a, dict) or not isinstance(span_b, dict):
+                continue
+            a_key = (int(span_a["meshIndex"]), int(span_a["vertexIndex"]))
+            b_key = (int(span_b["meshIndex"]), int(span_b["vertexIndex"]))
+            distance = _distance3(_vertex_at(meshset, a_key), _vertex_at(meshset, b_key))
+            if distance <= _STITCH_DISTANCE_THRESHOLD_METERS:
+                union.union(offsets[a_key[0]] + a_key[1], offsets[b_key[0]] + b_key[1])
+                accepted_distances.append(distance)
+            else:
+                rejected_distances.append(distance)
+    metrics = {
+        "acceptedStitchPairCount": len(accepted_distances),
+        "rejectedStitchPairCount": len(rejected_distances),
+        "maxAcceptedStitchDistanceMeters": _round(max(accepted_distances, default=0.0)),
+        "maxRejectedStitchDistanceMeters": _round(max(rejected_distances, default=0.0)),
+    }
+    return initial_shell_count, union.component_count(), metrics
+
+
+def _rendered_silhouette_comparison(
+    candidate: MeshSet,
+    reference: MeshSet | None,
+) -> dict[str, Any]:
+    if reference is None:
+        return {
+            "renderedPixelComparisonRun": False,
+            "renderedReferenceAvailable": False,
+            "rasterSize": _SILHOUETTE_RASTER_SIZE,
+            "meanIou": 0.0,
+            "minimumIou": 0.0,
+            "views": [],
+        }
+    views: list[dict[str, Any]] = []
+    for view_name, axis_a, axis_b in [
+        ("front_xy", 0, 1),
+        ("side_zy", 2, 1),
+        ("top_xz", 0, 2),
+    ]:
+        candidate_mask = _silhouette_mask(candidate, reference, axis_a, axis_b)
+        reference_mask = _silhouette_mask(reference, candidate, axis_a, axis_b)
+        intersection = len(candidate_mask & reference_mask)
+        union_count = len(candidate_mask | reference_mask)
+        iou = 1.0 if union_count == 0 else intersection / union_count
+        views.append(
+            {
+                "view": view_name,
+                "candidatePixelCount": len(candidate_mask),
+                "referencePixelCount": len(reference_mask),
+                "intersectionPixelCount": intersection,
+                "unionPixelCount": union_count,
+                "iou": _round(iou),
+            }
+        )
+    ious = [float(view["iou"]) for view in views]
+    return {
+        "renderedPixelComparisonRun": True,
+        "renderedReferenceAvailable": True,
+        "rasterSize": _SILHOUETTE_RASTER_SIZE,
+        "meanIou": _round(sum(ious) / len(ious)),
+        "minimumIou": _round(min(ious)),
+        "views": views,
+    }
+
+
+def _silhouette_mask(primary: MeshSet, secondary: MeshSet, axis_a: int, axis_b: int) -> set[int]:
+    bounds = _combined_axis_bounds(primary, secondary, axis_a, axis_b)
+    mask: set[int] = set()
+    for mesh in primary.meshes:
+        for tri in mesh.triangles:
+            points = [
+                _project_vertex(mesh.vertices[index], bounds, axis_a, axis_b) for index in tri
+            ]
+            mask.update(_rasterize_triangle(points))
+    return mask
+
+
+def _combined_axis_bounds(
+    primary: MeshSet,
+    secondary: MeshSet,
+    axis_a: int,
+    axis_b: int,
+) -> dict[str, float]:
+    values_a = [
+        vertex[axis_a]
+        for meshset in [primary, secondary]
+        for mesh in meshset.meshes
+        for vertex in mesh.vertices
+    ]
+    values_b = [
+        vertex[axis_b]
+        for meshset in [primary, secondary]
+        for mesh in meshset.meshes
+        for vertex in mesh.vertices
+    ]
+    min_a = min(values_a, default=-0.5)
+    max_a = max(values_a, default=0.5)
+    min_b = min(values_b, default=-0.5)
+    max_b = max(values_b, default=0.5)
+    span_a = max(max_a - min_a, 1e-9)
+    span_b = max(max_b - min_b, 1e-9)
+    pad_a = span_a * 0.08
+    pad_b = span_b * 0.08
+    return {
+        "minA": min_a - pad_a,
+        "maxA": max_a + pad_a,
+        "minB": min_b - pad_b,
+        "maxB": max_b + pad_b,
+    }
+
+
+def _project_vertex(
+    vertex: tuple[float, float, float],
+    bounds: dict[str, float],
+    axis_a: int,
+    axis_b: int,
+) -> tuple[float, float]:
+    span_a = bounds["maxA"] - bounds["minA"]
+    span_b = bounds["maxB"] - bounds["minB"]
+    x = ((vertex[axis_a] - bounds["minA"]) / span_a) * (_SILHOUETTE_RASTER_SIZE - 1)
+    y = ((vertex[axis_b] - bounds["minB"]) / span_b) * (_SILHOUETTE_RASTER_SIZE - 1)
+    return (x, y)
+
+
+def _rasterize_triangle(points: list[tuple[float, float]]) -> set[int]:
+    min_x = max(0, int(min(point[0] for point in points)))
+    max_x = min(_SILHOUETTE_RASTER_SIZE - 1, int(max(point[0] for point in points)) + 1)
+    min_y = max(0, int(min(point[1] for point in points)))
+    max_y = min(_SILHOUETTE_RASTER_SIZE - 1, int(max(point[1] for point in points)) + 1)
+    covered: set[int] = set()
+    for y in range(min_y, max_y + 1):
+        for x in range(min_x, max_x + 1):
+            if _point_in_triangle((x + 0.5, y + 0.5), points):
+                covered.add((y * _SILHOUETTE_RASTER_SIZE) + x)
+    return covered
+
+
+def _point_in_triangle(point: tuple[float, float], tri: list[tuple[float, float]]) -> bool:
+    px, py = point
+    (ax, ay), (bx, by), (cx, cy) = tri
+    denominator = ((by - cy) * (ax - cx)) + ((cx - bx) * (ay - cy))
+    if abs(denominator) <= 1e-12:
+        return False
+    u = (((by - cy) * (px - cx)) + ((cx - bx) * (py - cy))) / denominator
+    v = (((cy - ay) * (px - cx)) + ((ax - cx) * (py - cy))) / denominator
+    w = 1.0 - u - v
+    return u >= -1e-9 and v >= -1e-9 and w >= -1e-9
+
+
+class _UnionFind:
+    def __init__(self, size: int) -> None:
+        self._parents = list(range(size))
+        self._ranks = [0 for _ in range(size)]
+
+    def find(self, item: int) -> int:
+        parent = self._parents[item]
+        if parent != item:
+            self._parents[item] = self.find(parent)
+        return self._parents[item]
+
+    def union(self, left: int, right: int) -> None:
+        left_root = self.find(left)
+        right_root = self.find(right)
+        if left_root == right_root:
+            return
+        if self._ranks[left_root] < self._ranks[right_root]:
+            self._parents[left_root] = right_root
+        elif self._ranks[left_root] > self._ranks[right_root]:
+            self._parents[right_root] = left_root
+        else:
+            self._parents[right_root] = left_root
+            self._ranks[left_root] += 1
+
+    def component_count(self) -> int:
+        return len({self.find(index) for index in range(len(self._parents))})
+
+
+def _vertex_at(meshset: MeshSet, key: tuple[int, int]) -> tuple[float, float, float]:
+    mesh_index, vertex_index = key
+    return meshset.meshes[mesh_index].vertices[vertex_index]
+
+
+def _distance3(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
+    return sqrt(sum((a[index] - b[index]) ** 2 for index in range(3)))
 
 
 def _rounded_bounds(bounds: dict[str, list[float]]) -> dict[str, list[float]]:

@@ -10,8 +10,6 @@ GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION = "closy.geometry_clean_acceptance_gate.r
 
 CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS = [
     "clean_acceptance_gate_rejected",
-    "visual_fidelity_review_not_accepted",
-    "single_shell_weld_not_proven",
     "normal_continuity_warn",
     "tangent_continuity_warn",
     "provider_output_not_canonical_garment_truth",
@@ -255,12 +253,14 @@ def build_geometry_clean_acceptance_gate_report(
                     else None,
                     "material_transfer_not_run" if not material_transfer_run else None,
                     "visual_fidelity_review_not_accepted"
-                    if visual_fidelity_review_run
-                    else "visual_fidelity_review_not_run",
+                    if visual_fidelity_review_run and not visual_fidelity_accepted
+                    else "visual_fidelity_review_not_run"
+                    if not visual_fidelity_review_run
+                    else None,
                     "rendered_visual_fidelity_review_missing"
                     if visual_fidelity_review_run and not visual_fidelity_accepted
                     else None,
-                    "single_shell_weld_not_proven",
+                    "single_shell_weld_not_proven" if not single_shell_weld_proven else None,
                 ]
                 if reason is not None
             ],
@@ -499,6 +499,8 @@ def _readiness_status(
         return "clean_acceptance_rejected_visual_shell_failed"
     if visual_fidelity_accepted and not single_shell_weld_proven:
         return "clean_acceptance_rejected_single_shell_pending"
+    if visual_fidelity_accepted and single_shell_weld_proven:
+        return "clean_acceptance_rejected_continuity_warn"
     return "clean_acceptance_rejected_fidelity_weld_pending"
 
 
