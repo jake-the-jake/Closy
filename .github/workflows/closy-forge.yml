@@ -13,10 +13,14 @@ on:
       - "docs/closy-garment-package-v1.md"
       - ".github/workflows/closy-forge.yml"
 
+permissions:
+  contents: read
+
 jobs:
   forge:
     name: Forge ${{ matrix.os }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -28,6 +32,8 @@ jobs:
         working-directory: closy-forge
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
