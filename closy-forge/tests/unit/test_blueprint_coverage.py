@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-closeout-proof-invariants-v1"
-    assert payload["generatedBy"] == "BP-46 closeout ledger and proof invariant pass"
+    assert payload["version"] == "bp46-closeout-plus-gitlink-hygiene-v1"
+    assert payload["generatedBy"] == "BP-46 closeout plus repository gitlink hygiene pass"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -72,6 +72,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
         "BP-05-01-PATTERN-FIRST",
         "BP-05-05-TRUTHFUL-EVIDENCE-TIERS",
         "BP-46-STITCHED-SHELL-OUTPUT",
+        "REPO-HYGIENE-GITLINKS",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
         *(
             f"BP-08-{stage}"
@@ -167,13 +168,25 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "BP-47" in bp46["nextAction"]
 
 
-def test_markdown_ledger_matches_bp46_checkpoint_state() -> None:
+def test_repository_gitlink_hygiene_checkpoint_is_complete() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    hygiene = rows_by_id["REPO-HYGIENE-GITLINKS"]
+
+    assert hygiene["status"] == "complete"
+    assert "e02b85a5f6f2e165c7a0dec2777ff10531048d1b" in hygiene["commitSha"]
+    assert "no generated engine _deps/*-src gitlinks" in hygiene["executableEvidence"]
+    assert ".gitignore" in hygiene["implementationPaths"]
+    assert "tests/unit/test_repository_hygiene.py" in hygiene["tests"]
+
+
+def test_markdown_ledger_matches_bp46_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `81fb02c`" in ledger
-    assert "Current active increment: `BP-47-INSPECTION-ARTIFACTS`" in ledger
-    assert "Next dependency-ready increment: `BP-47-INSPECTION-ARTIFACTS`" in ledger
+    assert "Latest completed implementation commit when last updated: `e02b85a`" in ledger
+    assert "Current active increment: `REPO-HYGIENE-CI-DIAGNOSTICS`" in ledger
+    assert "Next dependency-ready increment: `REPO-HYGIENE-CI-DIAGNOSTICS`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
+    assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
     assert "| BP-08-K-CLOTH-SIMULATION | partial |" in ledger
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger

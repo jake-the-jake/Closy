@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-46 closeout ledger and proof invariant pass",
+  "generatedBy": "BP-46 closeout plus repository gitlink hygiene pass",
   "rows": [
     {
       "commitSha": [
@@ -2007,6 +2007,34 @@
     },
     {
       "commitSha": [
+        "e02b85a5f6f2e165c7a0dec2777ff10531048d1b"
+      ],
+      "dependencies": [
+        "engine/CMakeLists.txt FetchContent declarations"
+      ],
+      "executableEvidence": [
+        "no generated engine _deps/*-src gitlinks",
+        "/engine/build/ ignore rule",
+        "repository hygiene regression test"
+      ],
+      "id": "REPO-HYGIENE-GITLINKS",
+      "implementationPaths": [
+        ".gitignore",
+        "engine/build/_deps/glfw-src",
+        "engine/build/_deps/glm-src",
+        "closy-forge/tests/unit/test_repository_hygiene.py"
+      ],
+      "limitations": "Broad historical engine/build generated files remain tracked; CI confirmation that checkout annotations disappear is pending until the hygiene commits are pushed.",
+      "nextAction": "Replace unsafe broad Forge failure-artifact upload with strict sanitized diagnostics.",
+      "sourceSection": "Continuation prompt section 8.1 repository hygiene",
+      "status": "complete",
+      "summary": "Remove malformed generated engine dependency gitlinks while preserving CMake FetchContent as the dependency source of truth.",
+      "tests": [
+        "tests/unit/test_repository_hygiene.py"
+      ]
+    },
+    {
+      "commitSha": [
         "30f7d08",
         "3dd65b1",
         "8174b220d5cf6e320b101137a4901bcd461cd644"
@@ -2041,5 +2069,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp46-closeout-proof-invariants-v1"
+  "version": "bp46-closeout-plus-gitlink-hygiene-v1"
 }
