@@ -5550,6 +5550,8 @@ def _validate_geometry_visual_shell_review(
 
     for key in [
         "candidate",
+        "representationEvidence",
+        "appearanceEvidence",
         "visualFidelity",
         "shellProof",
         "aggregate",
@@ -5579,6 +5581,9 @@ def _validate_geometry_visual_shell_review(
         ("readiness", readiness),
         ("quality", quality),
         ("policy", policy),
+        ("representationEvidence", visual_shell.get("representationEvidence", {})),
+        ("appearanceEvidence", visual_shell.get("appearanceEvidence", {})),
+        ("shellProof", visual_shell.get("shellProof", {})),
     ]:
         if not isinstance(block, dict):
             issues.append(
@@ -5593,9 +5598,16 @@ def _validate_geometry_visual_shell_review(
 
     if (
         execution.get("geometryVisualShellReviewGenerated") is not True
-        or execution.get("visualFidelityReviewRun") is not True
         or execution.get("deterministicPreviewProxyReviewRun") is not True
-        or execution.get("singleShellWeldProofRun") is not True
+        or execution.get("representationSilhouetteComparisonRun") is not True
+        or execution.get("stitchGraphConnectivityCheckRun") is not True
+        or execution.get("sourceImageVisualComparisonRun") is not False
+        or execution.get("providerAppearanceComparisonRun") is not False
+        or execution.get("humanVisualReviewRun") is not False
+        or execution.get("visualFidelityReviewRun") is not False
+        or execution.get("singleShellWeldProofRun") is not False
+        or execution.get("singleShellWeldExecutionRun") is not False
+        or execution.get("meshStitchOrWeldExecutionRun") is not False
     ):
         issues.append(
             _issue(
@@ -5620,6 +5632,11 @@ def _validate_geometry_visual_shell_review(
         )
     if (
         readiness.get("status") != "visual_shell_review_completed_clean_rejected"
+        or readiness.get("acceptedForVisualFidelity") is not False
+        or readiness.get("sourceImageVisualFidelityAccepted") is not False
+        or readiness.get("providerAppearanceAccepted") is not False
+        or readiness.get("singleShellWeldProven") is not False
+        or readiness.get("meshStitchOrWeldProven") is not False
         or readiness.get("acceptedForCleanProposal") is not False
         or readiness.get("acceptedForCanonical") is not False
         or readiness.get("acceptedForRuntimeRender")
@@ -5634,8 +5651,20 @@ def _validate_geometry_visual_shell_review(
             )
         )
     if (
-        aggregate.get("visualFidelityReviewRun") is not True
-        or aggregate.get("singleShellWeldProofRun") is not True
+        aggregate.get("visualFidelityReviewRun") is not False
+        or aggregate.get("representationSilhouetteComparisonRun") is not True
+        or aggregate.get("representationSilhouetteAccepted") is not True
+        or aggregate.get("sourceImageVisualComparisonRun") is not False
+        or aggregate.get("sourceImageVisualFidelityAccepted") is not False
+        or aggregate.get("providerAppearanceComparisonRun") is not False
+        or aggregate.get("providerAppearanceAccepted") is not False
+        or aggregate.get("humanVisualReviewRun") is not False
+        or aggregate.get("stitchGraphConnectivityCheckRun") is not True
+        or aggregate.get("stitchGraphConnectable") is not True
+        or aggregate.get("singleShellWeldProofRun") is not False
+        or aggregate.get("singleShellWeldProven") is not False
+        or aggregate.get("meshStitchOrWeldExecutionRun") is not False
+        or aggregate.get("meshStitchOrWeldProven") is not False
         or aggregate.get("acceptedForCleanProposal") is not False
         or aggregate.get("acceptedForCanonical") is not False
         or _int_or(aggregate.get("vertexCount"), 0) <= 0
@@ -5647,6 +5676,51 @@ def _validate_geometry_visual_shell_review(
                 "fatal",
                 "reports/geometry_visual_shell_review.json",
                 "Visual/shell review aggregate must record a completed but rejected review.",
+            )
+        )
+    shell_proof = visual_shell.get("shellProof", {})
+    if (
+        not isinstance(shell_proof, dict)
+        or shell_proof.get("meshStitchOrWeldExecutionRun") is not False
+        or shell_proof.get("meshStitchOrWeldProven") is not False
+        or shell_proof.get("meshStitchOrWeldOutputAssetPath") is not None
+        or shell_proof.get("meshStitchOrWeldOutputTopologyHash") is not None
+        or shell_proof.get("meshStitchOrWeldOutputContentHash") is not None
+        or shell_proof.get("meshStitchOrWeldAudit") is not None
+        or shell_proof.get("singleShellWeldExecutionRun") is not False
+        or shell_proof.get("singleShellWeldProofRun") is not False
+        or shell_proof.get("singleShellWeldProven") is not False
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_weld_claim_invalid",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                (
+                    "Visual/shell review cannot claim mesh stitch/weld execution without "
+                    "an output asset audit."
+                ),
+            )
+        )
+    appearance = visual_shell.get("appearanceEvidence", {})
+    if (
+        not isinstance(appearance, dict)
+        or appearance.get("sourceImageVisualComparisonRun") is not False
+        or appearance.get("sourceImageVisualFidelityAccepted") is not False
+        or appearance.get("providerAppearanceComparisonRun") is not False
+        or appearance.get("providerAppearanceAccepted") is not False
+        or appearance.get("humanVisualReviewRun") is not False
+        or appearance.get("humanVisualReviewResult") != "not_run"
+    ):
+        issues.append(
+            _issue(
+                "geometry_visual_shell_review_visual_fidelity_claim_invalid",
+                "fatal",
+                "reports/geometry_visual_shell_review.json",
+                (
+                    "Source/provider/human visual-fidelity claims require independent "
+                    "reference evidence."
+                ),
             )
         )
     if quality.get("status") != "reviewed_clean_rejected":
@@ -5927,11 +6001,16 @@ def _validate_geometry_clean_acceptance_gate(
         or execution.get("semanticTransferEvidenceReviewed") is not True
         or execution.get("materialEvidenceReviewed") is not True
         or execution.get("policyReviewed") is not True
-        or execution.get("visualFidelityReviewRun") is not True
+        or execution.get("visualFidelityReviewRun") is not False
+        or execution.get("representationSilhouetteComparisonRun") is not True
+        or execution.get("sourceImageVisualComparisonRun") is not False
+        or execution.get("providerAppearanceComparisonRun") is not False
         or execution.get("uvTransferRun") is not True
         or execution.get("materialTransferRun") is not True
         or execution.get("materialTransferAccepted") is not True
-        or execution.get("singleShellWeldProofRun") is not True
+        or execution.get("stitchGraphConnectivityCheckRun") is not True
+        or execution.get("singleShellWeldProofRun") is not False
+        or execution.get("meshStitchOrWeldExecutionRun") is not False
     ):
         issues.append(
             _issue(
@@ -5947,7 +6026,10 @@ def _validate_geometry_clean_acceptance_gate(
     if (
         readiness.get("status")
         not in {
+            "clean_acceptance_rejected_representation_failed",
+            "clean_acceptance_rejected_independent_visual_not_run",
             "clean_acceptance_rejected_visual_shell_failed",
+            "clean_acceptance_rejected_mesh_stitch_weld_pending",
             "clean_acceptance_rejected_continuity_warn",
         }
         or readiness.get("acceptedForCleanProposal") is not False
@@ -7090,8 +7172,30 @@ def _validate_clean_geometry_proposal(
     expected_visual_flags = {
         "visualFidelityReviewRun": visual_shell_execution.get("visualFidelityReviewRun"),
         "providerVisualFidelityAccepted": visual_shell_readiness.get("acceptedForVisualFidelity"),
-        "singleShellWeldProofRun": visual_shell_execution.get("singleShellWeldProofRun"),
-        "singleShellWeldProven": visual_shell_readiness.get("singleShellWeldProven"),
+        "representationSilhouetteComparisonRun": visual_shell_execution.get(
+            "representationSilhouetteComparisonRun"
+        ),
+        "representationSilhouetteAccepted": visual_shell_readiness.get(
+            "representationSilhouetteAccepted"
+        ),
+        "sourceImageVisualComparisonRun": visual_shell_execution.get(
+            "sourceImageVisualComparisonRun"
+        ),
+        "sourceImageVisualFidelityAccepted": visual_shell_readiness.get(
+            "sourceImageVisualFidelityAccepted"
+        ),
+        "providerAppearanceComparisonRun": visual_shell_execution.get(
+            "providerAppearanceComparisonRun"
+        ),
+        "providerAppearanceAccepted": visual_shell_readiness.get("providerAppearanceAccepted"),
+        "stitchGraphConnectivityCheckRun": visual_shell_execution.get(
+            "stitchGraphConnectivityCheckRun"
+        ),
+        "stitchGraphConnectable": visual_shell_readiness.get("stitchGraphConnectable"),
+        "meshStitchOrWeldExecutionRun": visual_shell_execution.get("meshStitchOrWeldExecutionRun"),
+        "meshStitchOrWeldProven": visual_shell_readiness.get("meshStitchOrWeldProven"),
+        "singleShellWeldProofRun": visual_shell_execution.get("meshStitchOrWeldExecutionRun"),
+        "singleShellWeldProven": visual_shell_readiness.get("meshStitchOrWeldProven"),
     }
     for key, expected in expected_visual_flags.items():
         if cleanup.get(key) != expected:
@@ -7103,7 +7207,11 @@ def _validate_clean_geometry_proposal(
                     f"Clean proposal {key} must mirror the visual/shell review report.",
                 )
             )
-    for key in ["visualFidelityReviewRun", "singleShellWeldProofRun"]:
+    for key in [
+        "visualFidelityReviewRun",
+        "singleShellWeldProofRun",
+        "meshStitchOrWeldExecutionRun",
+    ]:
         if cleanup.get(key) != clean_gate_execution.get(key):
             issues.append(
                 _issue(
@@ -7194,8 +7302,15 @@ def _validate_clean_geometry_proposal(
         or cleanup.get("uvTransferRun") is not True
         or cleanup.get("materialTransferRun") is not True
         or cleanup.get("materialTransferAccepted") is not True
-        or cleanup.get("visualFidelityReviewRun") is not True
-        or cleanup.get("singleShellWeldProofRun") is not True
+        or cleanup.get("representationSilhouetteComparisonRun") is not True
+        or cleanup.get("representationSilhouetteAccepted") is not True
+        or cleanup.get("visualFidelityReviewRun") is not False
+        or cleanup.get("sourceImageVisualComparisonRun") is not False
+        or cleanup.get("providerAppearanceComparisonRun") is not False
+        or cleanup.get("stitchGraphConnectivityCheckRun") is not True
+        or cleanup.get("stitchGraphConnectable") is not True
+        or cleanup.get("singleShellWeldProofRun") is not False
+        or cleanup.get("meshStitchOrWeldExecutionRun") is not False
         or cleanup.get("connectedComponentAnalysisRun") is not True
         or cleanup.get("nonManifoldAnalysisRun") is not True
     ):

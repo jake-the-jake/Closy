@@ -306,12 +306,38 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "renderedPixelComparisonRun": visual_shell_review["execution"][
                 "renderedPixelComparisonRun"
             ],
+            "representationSilhouetteComparisonRun": visual_shell_review["execution"][
+                "representationSilhouetteComparisonRun"
+            ],
+            "representationSilhouetteAccepted": visual_shell_review["readiness"][
+                "representationSilhouetteAccepted"
+            ],
             "visualFidelityScore": visual_shell_review["aggregate"]["visualFidelityScore"],
             "acceptedForVisualFidelity": visual_shell_review["readiness"][
                 "acceptedForVisualFidelity"
             ],
+            "sourceImageVisualComparisonRun": visual_shell_review["execution"][
+                "sourceImageVisualComparisonRun"
+            ],
+            "sourceImageVisualFidelityAccepted": visual_shell_review["readiness"][
+                "sourceImageVisualFidelityAccepted"
+            ],
+            "providerAppearanceComparisonRun": visual_shell_review["execution"][
+                "providerAppearanceComparisonRun"
+            ],
+            "providerAppearanceAccepted": visual_shell_review["readiness"][
+                "providerAppearanceAccepted"
+            ],
+            "stitchGraphConnectivityCheckRun": visual_shell_review["execution"][
+                "stitchGraphConnectivityCheckRun"
+            ],
+            "stitchGraphConnectable": visual_shell_review["readiness"]["stitchGraphConnectable"],
             "singleShellWeldProofRun": visual_shell_review["execution"]["singleShellWeldProofRun"],
             "singleShellWeldProven": visual_shell_review["readiness"]["singleShellWeldProven"],
+            "meshStitchOrWeldExecutionRun": visual_shell_review["execution"][
+                "meshStitchOrWeldExecutionRun"
+            ],
+            "meshStitchOrWeldProven": visual_shell_review["readiness"]["meshStitchOrWeldProven"],
         },
         "geometryCleanAcceptanceGate": {
             "reportId": clean_acceptance_gate["reportId"],
@@ -329,6 +355,15 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "materialTransferRun": clean_acceptance_gate["execution"]["materialTransferRun"],
             "singleShellWeldProofRun": clean_acceptance_gate["execution"][
                 "singleShellWeldProofRun"
+            ],
+            "representationSilhouetteComparisonRun": clean_acceptance_gate["execution"][
+                "representationSilhouetteComparisonRun"
+            ],
+            "representationSilhouetteAccepted": clean_acceptance_gate["execution"][
+                "representationSilhouetteAccepted"
+            ],
+            "meshStitchOrWeldExecutionRun": clean_acceptance_gate["execution"][
+                "meshStitchOrWeldExecutionRun"
             ],
             "checkCount": clean_acceptance_gate["aggregate"]["checkCount"],
             "passedCheckCount": clean_acceptance_gate["aggregate"]["passedCheckCount"],
@@ -545,9 +580,12 @@ def human_report(package_dir: Path) -> str:
             ),
             (
                 f"Visual/shell review: status={visual_shell_review['status']}, "
-                f"score={visual_shell_review['visualFidelityScore']:.6f}, "
-                f"rendered={visual_shell_review['renderedPixelComparisonRun']}, "
-                f"single shell={visual_shell_review['singleShellWeldProven']}"
+                "representation silhouette="
+                f"{visual_shell_review['representationSilhouetteAccepted']}, "
+                "source/provider visual fidelity="
+                f"{visual_shell_review['acceptedForVisualFidelity']}, "
+                f"stitch graph={visual_shell_review['stitchGraphConnectable']}, "
+                f"mesh stitch/weld={visual_shell_review['meshStitchOrWeldProven']}"
             ),
             (
                 f"Clean acceptance gate: status={clean_acceptance_gate['status']}, "

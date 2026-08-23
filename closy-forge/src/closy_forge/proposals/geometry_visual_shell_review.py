@@ -9,7 +9,7 @@ from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 
 GEOMETRY_VISUAL_SHELL_REVIEW_VERSION = (
-    "closy.geometry_visual_shell_review.rendered_silhouette_and_stitch_graph_v2"
+    "closy.geometry_visual_shell_review.truthful_representation_and_connectability_v3"
 )
 
 _VISUAL_FIDELITY_THRESHOLD = 0.8
@@ -29,13 +29,15 @@ def build_geometry_visual_shell_review_report(
     reference_simulation_mesh: MeshSet | None = None,
     constraints: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Run deterministic preview-fidelity and shell-proof checks.
+    """Run deterministic representation and shell-connectability checks.
 
     This remains a CI-safe geometry artifact rather than a GPU screenshot. The
     rendered pass rasterizes deterministic orthographic silhouettes from the
     runtime render mesh and canonical settled simulation mesh, then compares
-    pixels by IoU. The shell pass proves the stitch graph can collapse to one
-    connected garment shell under bounded seam distances.
+    pixels by IoU. That is representation-preservation evidence, not source
+    image or provider appearance fidelity. The shell pass proves the stitch
+    graph can connect panel components under bounded seam distances; it does
+    not execute a vertex/index weld and must not be treated as welded topology.
     """
 
     semantic = semantic_transfer_report["aggregate"]
@@ -86,12 +88,12 @@ def build_geometry_visual_shell_review_report(
     rendered_pixel_comparison_run = rendered_pixel_comparison["renderedPixelComparisonRun"]
     rendered_silhouette_score = float(rendered_pixel_comparison["meanIou"])
     rendered_silhouette_minimum_iou = float(rendered_pixel_comparison["minimumIou"])
-    visual_fidelity_score = _round(
+    representation_silhouette_score = _round(
         (geometry_proxy_score * 0.45) + (rendered_silhouette_score * 0.55)
     )
-    accepted_for_visual_fidelity = (
+    representation_silhouette_accepted = (
         rendered_pixel_comparison_run
-        and visual_fidelity_score >= _VISUAL_FIDELITY_THRESHOLD
+        and representation_silhouette_score >= _VISUAL_FIDELITY_THRESHOLD
         and rendered_silhouette_minimum_iou >= _SILHOUETTE_IOU_THRESHOLD
         and mesh_finite
     )
@@ -101,19 +103,42 @@ def build_geometry_visual_shell_review_report(
         stitch_source_mesh=reference_simulation_mesh,
         constraints=constraints,
     )
-    single_shell_weld_proven = (
-        shell_metrics["singleShellWeldExecutionRun"] is True
+    stitch_graph_connectable = (
+        shell_metrics["stitchGraphConnectivityCheckRun"] is True
         and shell_metrics["postStitchShellCount"] == 1
         and shell_metrics["rejectedStitchPairCount"] == 0
         and shell_metrics["acceptedStitchPairCount"] > 0
     )
+    mesh_stitch_or_weld_execution_run = False
+    mesh_stitch_or_weld_proven = False
+    source_image_visual_comparison_run = False
+    source_image_visual_fidelity_accepted = False
+    provider_appearance_comparison_run = False
+    provider_appearance_accepted = False
+    human_visual_review_run = False
+    human_visual_review_result = "not_run"
+
     blocking_reasons = []
-    if not accepted_for_visual_fidelity:
-        blocking_reasons.append("visual_fidelity_review_not_accepted")
+    if not representation_silhouette_accepted:
+        blocking_reasons.append("representation_silhouette_not_accepted")
     if not rendered_pixel_comparison_run:
-        blocking_reasons.append("rendered_visual_fidelity_review_missing")
-    if not single_shell_weld_proven:
-        blocking_reasons.append("single_shell_weld_not_proven")
+        blocking_reasons.append("representation_silhouette_comparison_not_run")
+    if not source_image_visual_comparison_run:
+        blocking_reasons.append("source_image_visual_comparison_not_run")
+    if not source_image_visual_fidelity_accepted:
+        blocking_reasons.append("source_image_visual_fidelity_not_accepted")
+    if not provider_appearance_comparison_run:
+        blocking_reasons.append("provider_appearance_comparison_not_run")
+    if not provider_appearance_accepted:
+        blocking_reasons.append("provider_appearance_not_accepted")
+    if not human_visual_review_run:
+        blocking_reasons.append("human_visual_review_not_run")
+    if not stitch_graph_connectable:
+        blocking_reasons.append("stitch_graph_not_connectable")
+    if not mesh_stitch_or_weld_execution_run:
+        blocking_reasons.append("mesh_stitch_or_weld_not_executed")
+    if not mesh_stitch_or_weld_proven:
+        blocking_reasons.append("mesh_stitch_or_weld_not_proven")
     blocking_reasons.append("provider_output_not_canonical_garment_truth")
 
     report: dict[str, Any] = {
@@ -149,18 +174,59 @@ def build_geometry_visual_shell_review_report(
             "reviewedRepresentation": "runtime_bound_panel_subdivision_preview",
             "bounds": bounds,
         },
+        "representationEvidence": {
+            "status": "pass" if representation_silhouette_accepted else "fail",
+            "reviewKind": "deterministic_runtime_representation_consistency",
+            "representationSilhouetteComparisonRun": rendered_pixel_comparison_run,
+            "representationSilhouetteAccepted": representation_silhouette_accepted,
+            "representationSilhouetteScore": representation_silhouette_score,
+            "representationSilhouetteMinimumIou": rendered_silhouette_minimum_iou,
+            "renderedReferenceAvailable": rendered_pixel_comparison["renderedReferenceAvailable"],
+            "renderedPixelComparison": rendered_pixel_comparison,
+            "threshold": _VISUAL_FIDELITY_THRESHOLD,
+            "minimumViewIouThreshold": _SILHOUETTE_IOU_THRESHOLD,
+            "limitations": [
+                "compares_runtime_preview_to_canonical_settled_simulation_mesh",
+                "not_source_photo_visual_fidelity",
+                "not_independent_provider_appearance_fidelity",
+                "not_texture_logo_or_material_detail_fidelity",
+            ],
+        },
+        "appearanceEvidence": {
+            "status": "not_run",
+            "sourceImageVisualComparisonRun": source_image_visual_comparison_run,
+            "sourceImageVisualFidelityAccepted": source_image_visual_fidelity_accepted,
+            "providerAppearanceComparisonRun": provider_appearance_comparison_run,
+            "providerAppearanceAccepted": provider_appearance_accepted,
+            "humanVisualReviewRun": human_visual_review_run,
+            "humanVisualReviewResult": human_visual_review_result,
+            "independentReferenceAvailable": False,
+            "comparisonTier": "not_run",
+            "limitations": [
+                "no_source_photo_pixel_comparison",
+                "no_independent_provider_target_comparison",
+                "no_human_visual_review",
+            ],
+        },
         "visualFidelity": {
-            "status": "pass" if accepted_for_visual_fidelity else "fail",
-            "reviewKind": "deterministic_runtime_geometry_proxy",
-            "visualFidelityReviewRun": True,
+            "status": "not_run",
+            "reviewKind": "independent_source_or_provider_visual_fidelity",
+            "visualFidelityReviewRun": False,
             "renderedPixelComparisonRun": rendered_pixel_comparison_run,
             "renderedReferenceAvailable": rendered_pixel_comparison["renderedReferenceAvailable"],
             "geometryProxyScore": geometry_proxy_score,
             "renderedSilhouetteScore": rendered_silhouette_score,
             "renderedSilhouetteMinimumIou": rendered_silhouette_minimum_iou,
             "renderedPixelComparison": rendered_pixel_comparison,
-            "visualFidelityScore": visual_fidelity_score,
-            "acceptedForVisualFidelity": accepted_for_visual_fidelity,
+            "visualFidelityScore": 0.0,
+            "acceptedForVisualFidelity": False,
+            "representationSilhouetteAccepted": representation_silhouette_accepted,
+            "sourceImageVisualComparisonRun": source_image_visual_comparison_run,
+            "sourceImageVisualFidelityAccepted": source_image_visual_fidelity_accepted,
+            "providerAppearanceComparisonRun": provider_appearance_comparison_run,
+            "providerAppearanceAccepted": provider_appearance_accepted,
+            "humanVisualReviewRun": human_visual_review_run,
+            "humanVisualReviewResult": human_visual_review_result,
             "threshold": _VISUAL_FIDELITY_THRESHOLD,
             "minimumViewIouThreshold": _SILHOUETTE_IOU_THRESHOLD,
             "factors": {
@@ -175,15 +241,24 @@ def build_geometry_visual_shell_review_report(
             "limitations": [
                 "no_human_visual_review",
                 "no_source_photo_pixel_comparison",
+                "no_independent_provider_appearance_comparison",
                 "silhouette_comparison_only_not_texture_fidelity",
             ],
         },
         "shellProof": {
-            "status": "pass" if single_shell_weld_proven else "fail",
-            "singleShellWeldProofRun": True,
-            "singleShellWeldProven": single_shell_weld_proven,
+            "status": "not_run",
+            "stitchGraphConnectivityCheckRun": shell_metrics["stitchGraphConnectivityCheckRun"],
+            "stitchGraphConnectable": stitch_graph_connectable,
+            "meshStitchOrWeldExecutionRun": mesh_stitch_or_weld_execution_run,
+            "meshStitchOrWeldProven": mesh_stitch_or_weld_proven,
+            "meshStitchOrWeldOutputAssetPath": None,
+            "meshStitchOrWeldOutputTopologyHash": None,
+            "meshStitchOrWeldOutputContentHash": None,
+            "meshStitchOrWeldAudit": None,
+            "singleShellWeldProofRun": False,
+            "singleShellWeldProven": False,
             "vertexWeldedSingleShell": retopology["vertexWeldedSingleShell"],
-            "singleShellWeldExecutionRun": shell_metrics["singleShellWeldExecutionRun"],
+            "singleShellWeldExecutionRun": False,
             "proofMesh": shell_metrics["proofMesh"],
             "semanticPanelShellCount": shell_metrics["semanticPanelShellCount"],
             "initialShellCount": shell_metrics["initialShellCount"],
@@ -197,12 +272,25 @@ def build_geometry_visual_shell_review_report(
             "evidence": shell_metrics["meshShells"],
         },
         "aggregate": {
-            "visualFidelityReviewRun": True,
+            "visualFidelityReviewRun": False,
             "renderedPixelComparisonRun": rendered_pixel_comparison_run,
-            "visualFidelityScore": visual_fidelity_score,
-            "acceptedForVisualFidelity": accepted_for_visual_fidelity,
-            "singleShellWeldProofRun": True,
-            "singleShellWeldProven": single_shell_weld_proven,
+            "representationSilhouetteComparisonRun": rendered_pixel_comparison_run,
+            "representationSilhouetteAccepted": representation_silhouette_accepted,
+            "representationSilhouetteScore": representation_silhouette_score,
+            "visualFidelityScore": 0.0,
+            "acceptedForVisualFidelity": False,
+            "sourceImageVisualComparisonRun": source_image_visual_comparison_run,
+            "sourceImageVisualFidelityAccepted": source_image_visual_fidelity_accepted,
+            "providerAppearanceComparisonRun": provider_appearance_comparison_run,
+            "providerAppearanceAccepted": provider_appearance_accepted,
+            "humanVisualReviewRun": human_visual_review_run,
+            "humanVisualReviewResult": human_visual_review_result,
+            "stitchGraphConnectivityCheckRun": shell_metrics["stitchGraphConnectivityCheckRun"],
+            "stitchGraphConnectable": stitch_graph_connectable,
+            "singleShellWeldProofRun": False,
+            "singleShellWeldProven": False,
+            "meshStitchOrWeldExecutionRun": mesh_stitch_or_weld_execution_run,
+            "meshStitchOrWeldProven": mesh_stitch_or_weld_proven,
             "acceptedForCleanProposal": False,
             "acceptedForCanonical": False,
             "acceptedForRuntimeRender": runtime_readiness["acceptedForRuntimeRender"],
@@ -216,35 +304,59 @@ def build_geometry_visual_shell_review_report(
             "runtimeBindingEvidenceReviewed": True,
             "semanticTransferEvidenceReviewed": True,
             "materialUvTransferEvidenceReviewed": True,
-            "visualFidelityReviewRun": True,
+            "visualFidelityReviewRun": False,
             "deterministicPreviewProxyReviewRun": True,
             "renderedPixelComparisonRun": rendered_pixel_comparison_run,
-            "singleShellWeldProofRun": True,
-            "singleShellWeldExecutionRun": shell_metrics["singleShellWeldExecutionRun"],
+            "representationSilhouetteComparisonRun": rendered_pixel_comparison_run,
+            "sourceImageVisualComparisonRun": source_image_visual_comparison_run,
+            "providerAppearanceComparisonRun": provider_appearance_comparison_run,
+            "humanVisualReviewRun": human_visual_review_run,
+            "stitchGraphConnectivityCheckRun": shell_metrics["stitchGraphConnectivityCheckRun"],
+            "singleShellWeldProofRun": False,
+            "singleShellWeldExecutionRun": False,
+            "meshStitchOrWeldExecutionRun": mesh_stitch_or_weld_execution_run,
         },
         "readiness": {
             "status": "visual_shell_review_completed_clean_rejected",
-            "acceptedForVisualFidelity": accepted_for_visual_fidelity,
+            "acceptedForVisualFidelity": False,
+            "representationSilhouetteAccepted": representation_silhouette_accepted,
+            "sourceImageVisualFidelityAccepted": source_image_visual_fidelity_accepted,
+            "providerAppearanceAccepted": provider_appearance_accepted,
             "acceptedForCleanProposal": False,
             "acceptedForCanonical": False,
             "acceptedForSimulation": False,
             "acceptedForRuntimeRender": runtime_readiness["acceptedForRuntimeRender"],
-            "singleShellWeldProven": single_shell_weld_proven,
+            "stitchGraphConnectable": stitch_graph_connectable,
+            "singleShellWeldProven": False,
+            "meshStitchOrWeldProven": mesh_stitch_or_weld_proven,
             "nextExecutableStage": "canonical_acceptance_quality_gate"
-            if accepted_for_visual_fidelity and single_shell_weld_proven
-            else "rendered_visual_fidelity_and_single_shell_weld_execution",
+            if (
+                source_image_visual_fidelity_accepted
+                and provider_appearance_accepted
+                and mesh_stitch_or_weld_proven
+            )
+            else "source_or_provider_visual_fidelity_and_mesh_stitch_weld_execution",
             "blockingReasons": sorted(set(blocking_reasons)),
         },
         "quality": {
             "status": "reviewed_clean_rejected",
-            "acceptedForVisualFidelity": accepted_for_visual_fidelity,
+            "acceptedForVisualFidelity": False,
+            "representationSilhouetteAccepted": representation_silhouette_accepted,
+            "stitchGraphConnectable": stitch_graph_connectable,
             "acceptedForCleanProposal": False,
             "warnings": [
                 None
                 if rendered_pixel_comparison_run
-                else "rendered_visual_fidelity_review_missing",
-                None if accepted_for_visual_fidelity else "visual_fidelity_review_not_accepted",
-                None if single_shell_weld_proven else "single_shell_weld_not_proven",
+                else "representation_silhouette_comparison_not_run",
+                None
+                if representation_silhouette_accepted
+                else "representation_silhouette_not_accepted",
+                "source_image_visual_comparison_not_run",
+                "provider_appearance_comparison_not_run",
+                "human_visual_review_not_run",
+                None if stitch_graph_connectable else "stitch_graph_not_connectable",
+                "mesh_stitch_or_weld_not_executed",
+                "mesh_stitch_or_weld_not_proven",
                 "normal_continuity_warn" if normal_status == "warn" else None,
                 "tangent_continuity_warn" if tangent_status == "warn" else None,
             ],
@@ -312,7 +424,8 @@ def _shell_metrics(
         "semanticPanelShellCount": post_stitch_shell_count,
         "initialShellCount": initial_shell_count,
         "postStitchShellCount": post_stitch_shell_count,
-        "singleShellWeldExecutionRun": constraints is not None and stitch_source_mesh is not None,
+        "stitchGraphConnectivityCheckRun": constraints is not None
+        and stitch_source_mesh is not None,
         "acceptedStitchPairCount": stitch_metrics["acceptedStitchPairCount"],
         "rejectedStitchPairCount": stitch_metrics["rejectedStitchPairCount"],
         "maxAcceptedStitchDistanceMeters": stitch_metrics["maxAcceptedStitchDistanceMeters"],

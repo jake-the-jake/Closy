@@ -1619,8 +1619,29 @@ def _provenance(
                     "renderedPixelComparisonRun": geometry_visual_shell_review["execution"][
                         "renderedPixelComparisonRun"
                     ],
+                    "representationSilhouetteComparisonRun": geometry_visual_shell_review[
+                        "execution"
+                    ]["representationSilhouetteComparisonRun"],
+                    "representationSilhouetteAccepted": geometry_visual_shell_review["readiness"][
+                        "representationSilhouetteAccepted"
+                    ],
+                    "sourceImageVisualComparisonRun": geometry_visual_shell_review["execution"][
+                        "sourceImageVisualComparisonRun"
+                    ],
+                    "providerAppearanceComparisonRun": geometry_visual_shell_review["execution"][
+                        "providerAppearanceComparisonRun"
+                    ],
+                    "stitchGraphConnectivityCheckRun": geometry_visual_shell_review["execution"][
+                        "stitchGraphConnectivityCheckRun"
+                    ],
+                    "stitchGraphConnectable": geometry_visual_shell_review["readiness"][
+                        "stitchGraphConnectable"
+                    ],
                     "singleShellWeldProofRun": geometry_visual_shell_review["execution"][
                         "singleShellWeldProofRun"
+                    ],
+                    "meshStitchOrWeldExecutionRun": geometry_visual_shell_review["execution"][
+                        "meshStitchOrWeldExecutionRun"
                     ],
                     "acceptedForVisualFidelity": geometry_visual_shell_review["readiness"][
                         "acceptedForVisualFidelity"
@@ -1653,6 +1674,15 @@ def _provenance(
                     ],
                     "singleShellWeldProofRun": geometry_clean_acceptance_gate["execution"][
                         "singleShellWeldProofRun"
+                    ],
+                    "representationSilhouetteComparisonRun": geometry_clean_acceptance_gate[
+                        "execution"
+                    ]["representationSilhouetteComparisonRun"],
+                    "representationSilhouetteAccepted": geometry_clean_acceptance_gate["execution"][
+                        "representationSilhouetteAccepted"
+                    ],
+                    "meshStitchOrWeldExecutionRun": geometry_clean_acceptance_gate["execution"][
+                        "meshStitchOrWeldExecutionRun"
                     ],
                     "acceptedForCleanProposal": geometry_clean_acceptance_gate["readiness"][
                         "acceptedForCleanProposal"
@@ -2229,15 +2259,45 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "renderedPixelComparisonRun": geometry_visual_shell_review["execution"][
                 "renderedPixelComparisonRun"
             ],
+            "representationSilhouetteComparisonRun": geometry_visual_shell_review["execution"][
+                "representationSilhouetteComparisonRun"
+            ],
+            "representationSilhouetteAccepted": geometry_visual_shell_review["readiness"][
+                "representationSilhouetteAccepted"
+            ],
             "visualFidelityScore": geometry_visual_shell_review["aggregate"]["visualFidelityScore"],
             "acceptedForVisualFidelity": geometry_visual_shell_review["readiness"][
                 "acceptedForVisualFidelity"
+            ],
+            "sourceImageVisualComparisonRun": geometry_visual_shell_review["execution"][
+                "sourceImageVisualComparisonRun"
+            ],
+            "sourceImageVisualFidelityAccepted": geometry_visual_shell_review["readiness"][
+                "sourceImageVisualFidelityAccepted"
+            ],
+            "providerAppearanceComparisonRun": geometry_visual_shell_review["execution"][
+                "providerAppearanceComparisonRun"
+            ],
+            "providerAppearanceAccepted": geometry_visual_shell_review["readiness"][
+                "providerAppearanceAccepted"
+            ],
+            "stitchGraphConnectivityCheckRun": geometry_visual_shell_review["execution"][
+                "stitchGraphConnectivityCheckRun"
+            ],
+            "stitchGraphConnectable": geometry_visual_shell_review["readiness"][
+                "stitchGraphConnectable"
             ],
             "singleShellWeldProofRun": geometry_visual_shell_review["execution"][
                 "singleShellWeldProofRun"
             ],
             "singleShellWeldProven": geometry_visual_shell_review["readiness"][
                 "singleShellWeldProven"
+            ],
+            "meshStitchOrWeldExecutionRun": geometry_visual_shell_review["execution"][
+                "meshStitchOrWeldExecutionRun"
+            ],
+            "meshStitchOrWeldProven": geometry_visual_shell_review["readiness"][
+                "meshStitchOrWeldProven"
             ],
             "boundaryEdgeCount": geometry_visual_shell_review["aggregate"]["boundaryEdgeCount"],
         },
@@ -2261,6 +2321,15 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "singleShellWeldProofRun": geometry_clean_acceptance_gate["execution"][
                 "singleShellWeldProofRun"
+            ],
+            "representationSilhouetteComparisonRun": geometry_clean_acceptance_gate["execution"][
+                "representationSilhouetteComparisonRun"
+            ],
+            "representationSilhouetteAccepted": geometry_clean_acceptance_gate["execution"][
+                "representationSilhouetteAccepted"
+            ],
+            "meshStitchOrWeldExecutionRun": geometry_clean_acceptance_gate["execution"][
+                "meshStitchOrWeldExecutionRun"
             ],
             "checkCount": geometry_clean_acceptance_gate["aggregate"]["checkCount"],
             "passedCheckCount": geometry_clean_acceptance_gate["aggregate"]["passedCheckCount"],
@@ -2454,9 +2523,12 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"preview accepted="
         f"{summary['geometryMaterialUvTransfer']['acceptedForMaterialPreview']}\n"
         f"- Visual/shell review: status=`{summary['geometryVisualShellReview']['status']}`, "
-        f"score={summary['geometryVisualShellReview']['visualFidelityScore']:.6f}, "
-        f"rendered={summary['geometryVisualShellReview']['renderedPixelComparisonRun']}, "
-        f"single shell={summary['geometryVisualShellReview']['singleShellWeldProven']}\n"
+        "representation silhouette="
+        f"{summary['geometryVisualShellReview']['representationSilhouetteAccepted']}, "
+        "source/provider visual fidelity="
+        f"{summary['geometryVisualShellReview']['acceptedForVisualFidelity']}, "
+        f"stitch graph={summary['geometryVisualShellReview']['stitchGraphConnectable']}, "
+        f"mesh stitch/weld={summary['geometryVisualShellReview']['meshStitchOrWeldProven']}\n"
         f"- Clean acceptance gate: status=`{summary['geometryCleanAcceptanceGate']['status']}`, "
         f"passed={summary['geometryCleanAcceptanceGate']['passedCheckCount']}/"
         f"{summary['geometryCleanAcceptanceGate']['checkCount']}, "

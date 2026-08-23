@@ -272,14 +272,22 @@ def test_geometry_visual_shell_review_runs_without_clean_acceptance() -> None:
     )
 
     assert report["reportId"] == "visual_shell_review.runtime_bound_tshirt_visual_geometry_v1"
-    assert report["execution"]["visualFidelityReviewRun"] is True
+    assert report["execution"]["visualFidelityReviewRun"] is False
     assert report["execution"]["renderedPixelComparisonRun"] is False
-    assert report["execution"]["singleShellWeldProofRun"] is True
+    assert report["execution"]["representationSilhouetteComparisonRun"] is False
+    assert report["execution"]["sourceImageVisualComparisonRun"] is False
+    assert report["execution"]["providerAppearanceComparisonRun"] is False
+    assert report["execution"]["singleShellWeldProofRun"] is False
+    assert report["execution"]["meshStitchOrWeldExecutionRun"] is False
     assert report["readiness"]["acceptedForVisualFidelity"] is False
+    assert report["readiness"]["representationSilhouetteAccepted"] is False
     assert report["readiness"]["singleShellWeldProven"] is False
+    assert report["readiness"]["meshStitchOrWeldProven"] is False
     assert report["readiness"]["acceptedForCleanProposal"] is False
-    assert "rendered_visual_fidelity_review_missing" in report["readiness"]["blockingReasons"]
-    assert "single_shell_weld_not_proven" in report["readiness"]["blockingReasons"]
+    assert "representation_silhouette_comparison_not_run" in report["readiness"]["blockingReasons"]
+    assert "source_image_visual_comparison_not_run" in report["readiness"]["blockingReasons"]
+    assert "provider_appearance_comparison_not_run" in report["readiness"]["blockingReasons"]
+    assert "mesh_stitch_or_weld_not_executed" in report["readiness"]["blockingReasons"]
     assert report["integrity"]["geometryVisualShellReviewHash"] == (
         hash_geometry_visual_shell_review(report)
     )
@@ -321,13 +329,20 @@ def test_geometry_visual_shell_review_accepts_silhouette_and_stitch_graph() -> N
 
     assert report["execution"]["renderedPixelComparisonRun"] is True
     assert report["visualFidelity"]["renderedPixelComparison"]["minimumIou"] == 1.0
-    assert report["readiness"]["acceptedForVisualFidelity"] is True
-    assert report["shellProof"]["singleShellWeldExecutionRun"] is True
+    assert report["readiness"]["representationSilhouetteAccepted"] is True
+    assert report["readiness"]["acceptedForVisualFidelity"] is False
+    assert report["shellProof"]["stitchGraphConnectivityCheckRun"] is True
+    assert report["shellProof"]["stitchGraphConnectable"] is True
+    assert report["shellProof"]["singleShellWeldExecutionRun"] is False
+    assert report["shellProof"]["meshStitchOrWeldExecutionRun"] is False
     assert report["shellProof"]["initialShellCount"] == 2
     assert report["shellProof"]["postStitchShellCount"] == 1
-    assert report["readiness"]["singleShellWeldProven"] is True
-    assert "visual_fidelity_review_not_accepted" not in report["readiness"]["blockingReasons"]
-    assert "single_shell_weld_not_proven" not in report["readiness"]["blockingReasons"]
+    assert report["readiness"]["stitchGraphConnectable"] is True
+    assert report["readiness"]["singleShellWeldProven"] is False
+    assert report["readiness"]["meshStitchOrWeldProven"] is False
+    assert "representation_silhouette_not_accepted" not in report["readiness"]["blockingReasons"]
+    assert "source_image_visual_comparison_not_run" in report["readiness"]["blockingReasons"]
+    assert "mesh_stitch_or_weld_not_executed" in report["readiness"]["blockingReasons"]
     assert report["readiness"]["acceptedForCleanProposal"] is False
     assert report["integrity"]["geometryVisualShellReviewHash"] == (
         hash_geometry_visual_shell_review(report)
@@ -373,16 +388,18 @@ def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_t
     assert gate["readiness"]["acceptedForRuntimeRender"] is True
     assert gate["readiness"]["acceptedForCleanProposal"] is False
     assert gate["readiness"]["acceptedForCanonical"] is False
-    assert gate["readiness"]["status"] == "clean_acceptance_rejected_visual_shell_failed"
+    assert gate["readiness"]["status"] == "clean_acceptance_rejected_representation_failed"
     assert gate["quality"]["status"] == "rejected"
-    assert gate["aggregate"]["checkCount"] == 11
+    assert gate["aggregate"]["checkCount"] == 13
     assert gate["aggregate"]["passedCheckCount"] == 7
     assert gate["aggregate"]["failedCheckCount"] == 2
     assert gate["aggregate"]["warningCheckCount"] == 2
-    assert gate["aggregate"]["notRunCheckCount"] == 0
+    assert gate["aggregate"]["notRunCheckCount"] == 2
     assert gate["execution"]["materialTransferRun"] is True
-    assert gate["execution"]["visualFidelityReviewRun"] is True
-    assert gate["execution"]["singleShellWeldProofRun"] is True
+    assert gate["execution"]["visualFidelityReviewRun"] is False
+    assert gate["execution"]["representationSilhouetteComparisonRun"] is False
+    assert gate["execution"]["singleShellWeldProofRun"] is False
+    assert gate["execution"]["meshStitchOrWeldExecutionRun"] is False
     assert set(CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS).issubset(
         gate["quality"]["rejectionReasons"]
     )
