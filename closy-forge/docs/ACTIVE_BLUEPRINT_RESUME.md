@@ -4,21 +4,21 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 
 ## Current State
 
-- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-SEMANTIC-OPENING-AUDIT`
-- Exact subtask: execute a deterministic semantic opening assignment audit over stitched-shell boundary components while keeping clean/canonical acceptance rejected.
+- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-LOGICAL-BINDING-AUDIT`
+- Exact subtask: execute deterministic logical source-vertex reconstruction coverage for the stitched analysis shell while keeping clean/canonical acceptance rejected.
 - Current branch: `codex/closy-forge-foundation-proof-closeout`
 - Parent branch: `codex/closy-forge-phase-4-texture`
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
-- Latest implementation commit SHA: `de35156de35831f467c7809fea727195a548ddce`
-- Latest implementation commit subject: `Add BP46 semantic opening audit`
-- Latest evidence commit SHA before this update: `eef64ef1ead7adbe7db4132043e388856ed9b513`
-- Record based on SHA: `eef64ef1ead7adbe7db4132043e388856ed9b513`; this resume file itself belongs to the follow-up foundation-proof remote-evidence truth-sync commit.
+- Latest implementation commit SHA: `0ced19b3efdf69a7ba55cb330c66e8da44a68669`
+- Latest implementation commit subject: `Add BP46 logical binding audit`
+- Latest evidence commit SHA before this update: `ce90ebfe8bb6c9fd52c5f5438b1ad9b7be56e0f1`
+- Record based on SHA: `0ced19b3efdf69a7ba55cb330c66e8da44a68669`; this resume file itself belongs to the follow-up foundation-proof logical-binding evidence commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof evidence: GitHub Actions run `32761608825` passed at commit `eef64ef1ead7adbe7db4132043e388856ed9b513`; Ubuntu job `97541503765` passed in 7m48s and Windows job `97541503927` passed in 11m28s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9`, and validation/report with only `self_collision_not_run`.
-- Current local BP46 semantic-opening evidence after `eef64ef`: focused BP46 semantic/topology tests passed, golden structural test passed, the wider geometry/integration/golden/corruption suite passed, and full `pytest -q` passed after 193 collected Forge tests.
-- Current local package digest after semantic opening audit: two OS-temp package builds were byte-identical with 89 files each and digest `36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9`.
+- Current local BP46 logical-binding evidence after `0ced19b`: focused BP46 semantic/topology/binding corruption tests passed, golden structural test passed, the wider geometry/integration/golden/corruption suite passed, `ruff format --check .`, `ruff check .`, `mypy src`, and schema freshness checks passed.
+- Current local package digest after logical binding audit: two OS-temp package builds were byte-identical with 89 files each and digest `d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state remains rejected; clean/canonical acceptance remains false.
 - Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
@@ -29,6 +29,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - BP-46 still has `meshStitchOrWeldProven=false`, `acceptedForCleanProposal=false` and `acceptedForCanonical=false`.
 - BP-46 now records five executed deterministic topology audits: T-junctions, inconsistent winding, normal inversions, triangle self-intersections and hidden/internal components.
 - BP-46 now records a deterministic semantic opening assignment audit over stitched-shell boundary components.
+- BP-46 now records deterministic logical source-vertex reconstruction coverage for the stitched analysis shell: `bindingCoverage=1.0`, `bindingReconstructionStatus=pass`, `bindingMode=logical_source_vertex_centroid_map`, `boundRenderVertexCount=149`, `requiredRenderVertexCount=149` and `maxReconstructionErrorMeters=0.0`.
 - Current BP-46 candidate results: `executedTopologyAuditCount=5`, `tJunctionCheckStatus=pass`, `hiddenInternalComponentCheckStatus=pass`, `inconsistentWindingCheckStatus=fail`, `normalInversionCheckStatus=fail` and `selfIntersectionCheckStatus=fail`.
 - Current BP-46 failing audit counts: 29 inconsistent shared edges, 40 inverted adjacent normal pairs and 321 self-intersection pairs.
 - Current semantic opening audit results: `semanticOpeningAssignmentStatus=fail`, `boundaryComponentCount=3`, `simpleBoundaryCycleCount=2`, `candidateOpeningMappings=[]`, `panelEdgeProvenanceStatus=fail`, `provenOpeningIds=[]` and all four expected openings are listed in `missingExpectedOpeningIds`.
@@ -47,7 +48,7 @@ Current blocking evidence:
 - Boundary graph contains branch vertices.
 - Seam operation IDs include duplicates.
 - Semantic opening assignment now executes but fails closed because the boundary graph has branch vertices, only three components, only two simple cycles, no candidate opening mappings and missing panel-edge provenance.
-- Stitched-shell binding coverage is incomplete.
+- Production stitched-shell binding, crack/sliding proof and dense runtime binding evidence remain incomplete; the current logical source-vertex reconstruction audit passes only for the stitched analysis shell.
 - Executed winding, normal-inversion and self-intersection audits fail.
 - Full cloth motion, crack/sliding proof, runtime performance/memory profiling and mobile fallback negotiation are not implemented.
 
@@ -63,17 +64,20 @@ Current blocking evidence:
 
 ## Checks Completed At Current Local Checkpoint
 
-- Local `.venv\Scripts\ruff.exe format --check src\closy_forge\proposals\geometry_stitched_shell.py tests\unit\test_geometry_proposal.py` reported 2 files already formatted.
-- Local `.venv\Scripts\ruff.exe check src\closy_forge\proposals\geometry_stitched_shell.py tests\unit\test_geometry_proposal.py` passed.
+- Local `.venv\Scripts\ruff.exe format src\closy_forge\proposals\geometry_stitched_shell.py src\closy_forge\validation\validator.py tests\unit\test_geometry_proposal.py tests\corruption\test_corrupted_packages.py` ran; 1 file reformatted and 3 files were unchanged.
+- Local `.venv\Scripts\ruff.exe check src\closy_forge\proposals\geometry_stitched_shell.py src\closy_forge\validation\validator.py tests\unit\test_geometry_proposal.py tests\corruption\test_corrupted_packages.py` passed.
 - Local `.venv\Scripts\mypy.exe src` passed over 89 source files.
-- Local `.venv\Scripts\pytest.exe tests\unit\test_geometry_proposal.py::test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven_topology tests\unit\test_geometry_proposal.py::test_stitched_shell_topology_audits_fail_on_synthetic_defects -q` passed.
-- Local `.venv\Scripts\pytest.exe tests\golden\test_golden_demo.py::test_demo_package_matches_structural_golden -q` passed after updating the structural digest to `36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9`.
+- Local `.venv\Scripts\pytest.exe tests\unit\test_geometry_proposal.py::test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven_topology tests\unit\test_geometry_proposal.py::test_stitched_shell_topology_audits_fail_on_synthetic_defects tests\corruption\test_corrupted_packages.py::test_geometry_stitched_shell_binding_coverage_claim_is_rejected -q` passed.
+- Local `.venv\Scripts\pytest.exe tests\golden\test_golden_demo.py::test_demo_package_matches_structural_golden -q` passed after updating the structural digest to `d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb`.
 - Local `.venv\Scripts\pytest.exe tests\unit\test_geometry_proposal.py tests\integration\test_cli_and_package.py tests\golden\test_golden_demo.py tests\corruption\test_corrupted_packages.py -q` passed.
-- Local package smoke after `de35156` built two OS-temp packages with 89 files each, `packages diff --json` status `identical`, `validate --json` status `passed`, and only `self_collision_not_run`.
+- Local `.venv\Scripts\ruff.exe format --check .` passed over 112 files.
+- Local `.venv\Scripts\ruff.exe check .` passed.
+- Local `closy-forge schemas check --schema-dir schemas\v1 --json` reported fresh schemas.
+- Local package smoke after `0ced19b` built two OS-temp packages with 89 files each, `packages diff --json` status `identical`, `validate --json` status `passed`, digest `d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb`, and only `self_collision_not_run`.
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- No required checks remain unrun for the `eef64ef` semantic-opening evidence checkpoint. Future implementation commits require fresh local and remote validation.
+- Remote CI has not yet run for the `0ced19b` logical-binding checkpoint. Future implementation commits require fresh local and remote validation.
 
 ## Next Exact Command
 
@@ -84,4 +88,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Commit and push this remote-evidence truth-sync, update draft PR #5, then continue BP-46 topology repair and stitched-shell binding proof without promoting clean/canonical acceptance until evidence passes.
+Commit and push this logical-binding evidence truth-sync, update draft PR #5, then continue BP-46 topology repair, semantic opening proof, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
