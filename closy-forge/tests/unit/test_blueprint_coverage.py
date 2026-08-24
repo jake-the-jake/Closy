@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp51-multiview-capture-fusion-local-v1"
-    assert payload["generatedBy"] == "BP-51 multiview capture fusion local evidence"
+    assert payload["version"] == "bp52-image-conditioned-fitting-local-v1"
+    assert payload["generatedBy"] == "BP-52 image-conditioned fitting local evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -77,6 +77,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
         "BP-49-RASTER-INGESTION-PRIVACY",
         "BP-50-PIXEL-PARSING-CORRECTIONS",
         "BP-51-MULTIVIEW-CAPTURE-FUSION",
+        "BP-52-IMAGE-CONDITIONED-FITTING",
         "REPO-HYGIENE-GITLINKS",
         "REPO-HYGIENE-CI-DIAGNOSTICS",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
@@ -270,7 +271,7 @@ def test_bp50_checkpoint_is_partial_and_evidenced() -> None:
     assert "34023a0" in phase2["commitSha"]
     assert "77bea09" in phase2["commitSha"]
     assert any("BP51 D0 multiview pairing" in item for item in phase2["executableEvidence"])
-    assert any("remote Actions run 32718341703" in item for item in phase2["executableEvidence"])
+    assert any("remote Actions run 32719446390" in item for item in phase2["executableEvidence"])
     assert "BP-52" in phase2["nextAction"]
 
 
@@ -288,13 +289,13 @@ def test_bp51_checkpoint_is_partial_and_evidenced() -> None:
     assert any("fail-closed Phase-2 quality gate" in item for item in bp51["executableEvidence"])
     assert any("fused correction replay" in item for item in bp51["executableEvidence"])
     assert any("185 collected Forge tests" in item for item in bp51["executableEvidence"])
-    assert any("remote Actions run 32718341703" in item for item in bp51["executableEvidence"])
+    assert any("remote Actions run 32719446390" in item for item in bp51["executableEvidence"])
     assert (
         "closy-forge/src/closy_forge/visual_understanding/multiview_fusion.py"
         in bp51["implementationPaths"]
     )
     assert "tests/integration/test_cli_and_package.py" in bp51["tests"]
-    assert "remote Ubuntu/Windows Forge CI" in bp51["nextAction"]
+    assert "BP52 fitting" in bp51["nextAction"]
 
     assert "34023a0" in multiview["commitSha"]
     assert any("D0 anchor/bbox registration" in item for item in multiview["executableEvidence"])
@@ -303,19 +304,48 @@ def test_bp51_checkpoint_is_partial_and_evidenced() -> None:
     assert any("before/after fusion hashes" in item for item in correction["executableEvidence"])
 
 
-def test_markdown_ledger_matches_bp51_and_hygiene_checkpoint_state() -> None:
+def test_bp52_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    bp52 = rows_by_id["BP-52-IMAGE-CONDITIONED-FITTING"]
+    phase3 = rows_by_id["BP-17-PHASE-03"]
+    inference = rows_by_id["BP-08-H-PATTERN-INFERENCE"]
+    refinement = rows_by_id["BP-08-L-FIT-REFINEMENT"]
+
+    assert bp52["status"] == "partial"
+    assert "e23820eddaf6d6599a3b125ee1a083dc97ef4acd" in bp52["commitSha"]
+    assert any("hash-links visual observations" in item for item in bp52["executableEvidence"])
+    assert any("multiview silhouette IoU 0.939980" in item for item in bp52["executableEvidence"])
+    assert any("held-out rear view" in item for item in bp52["executableEvidence"])
+    assert any("189 tests" in item for item in bp52["executableEvidence"])
+    assert any("85 files each" in item for item in bp52["executableEvidence"])
+    assert "settled-render or drape comparison" in bp52["limitations"]
+    assert "BP-53" in bp52["nextAction"]
+
+    assert "e23820e" in phase3["commitSha"]
+    assert any("BP52 image-conditioned D0 fitting" in item for item in phase3["executableEvidence"])
+    assert "tests/unit/test_tshirt_fit.py" in phase3["tests"]
+    assert "e23820e" in inference["commitSha"]
+    assert any("priors separated" in item for item in inference["executableEvidence"])
+    assert "e23820e" in refinement["commitSha"]
+    assert any(
+        "iterative D0 optimisation trace" in item for item in refinement["executableEvidence"]
+    )
+
+
+def test_markdown_ledger_matches_bp52_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `34023a0`" in ledger
+    assert "Latest completed implementation commit when last updated: `e23820e`" in ledger
     assert "Local verification passed `ruff format --check .` over 112 files" in ledger
-    assert "Current active increment: `BP-51-MULTIVIEW-CAPTURE-FUSION`" in ledger
-    assert "Next dependency-ready increment: `BP-52-IMAGE-CONDITIONED-FITTING`" in ledger
+    assert "Current active increment: `BP-52-IMAGE-CONDITIONED-FITTING`" in ledger
+    assert "Next dependency-ready increment: `BP-53-SOURCE-TEXTURE-PBR-RECOVERY`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
     assert "| BP-49-RASTER-INGESTION-PRIVACY | partial |" in ledger
     assert "| BP-50-PIXEL-PARSING-CORRECTIONS | partial |" in ledger
     assert "| BP-51-MULTIVIEW-CAPTURE-FUSION | partial |" in ledger
+    assert "| BP-52-IMAGE-CONDITIONED-FITTING | partial |" in ledger
     assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| REPO-HYGIENE-CI-DIAGNOSTICS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
