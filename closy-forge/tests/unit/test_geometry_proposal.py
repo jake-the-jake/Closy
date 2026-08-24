@@ -398,6 +398,19 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["missingExpectedOpeningCount"] == 4
     assert report["topologyAudit"]["boundaryBranchVertexCount"] == 7
+    assert report["topologyAudit"]["semanticOpeningAssignmentStatus"] == "fail"
+    assert report["topologyAudit"]["semanticOpeningAudit"]["boundaryComponentCount"] == 3
+    assert report["topologyAudit"]["semanticOpeningAudit"]["simpleBoundaryCycleCount"] == 2
+    assert report["topologyAudit"]["semanticOpeningAudit"]["panelEdgeProvenanceStatus"] == "fail"
+    assert report["topologyAudit"]["semanticOpeningAudit"]["failureReasons"] == [
+        "boundary_branch_vertices_present",
+        "boundary_component_count_mismatch",
+        "panel_edge_provenance_missing",
+        "semantic_assignment_incomplete",
+        "simple_boundary_cycle_count_mismatch",
+    ]
+    assert report["topologyAudit"]["boundaryComponents"][0]["isSimpleCycle"] is False
+    assert report["topologyAudit"]["boundaryComponents"][0]["perimeterMeters"] > 0.0
     assert report["topologyAudit"]["executedTopologyAuditCount"] == 5
     assert report["topologyAudit"]["tJunctionCheckStatus"] == "pass"
     assert report["topologyAudit"]["tJunctionAudit"]["tJunctionCount"] == 0
@@ -418,6 +431,8 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["readiness"]["acceptedForCleanProposal"] is False
     assert "mesh_stitch_or_weld_not_proven" in report["readiness"]["blockingReasons"]
     assert "self_intersections_detected" in report["readiness"]["blockingReasons"]
+    assert "semantic_opening_assignment_failed" in report["readiness"]["blockingReasons"]
+    assert "opening_panel_edge_provenance_missing" in report["readiness"]["blockingReasons"]
     assert "self_intersection_not_run" not in report["readiness"]["blockingReasons"]
     assert (
         report["analysisAsset"]["payloadHash"] == analysis["integrity"]["stitchedAnalysisShellHash"]
@@ -425,6 +440,9 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert analysis["logicalShell"]["vertexCount"] == stitched_mesh.vertex_count
     assert analysis["openingProof"]["expectedOpeningCount"] == 4
     assert analysis["openingProof"]["status"] == "fail"
+    assert analysis["openingProof"]["semanticOpeningAssignmentRun"] is True
+    assert analysis["openingProof"]["semanticOpeningAssignmentStatus"] == "fail"
+    assert analysis["openingProof"]["candidateOpeningMappings"] == []
     assert analysis["openingProof"]["missingExpectedOpeningIds"] == [
         "opening.neck",
         "opening.hem",

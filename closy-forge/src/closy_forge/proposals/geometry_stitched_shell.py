@@ -185,7 +185,7 @@ def audit_stitched_shell(
     normal_inversion_audit = _normal_inversion_audit(mesh)
     self_intersection_audit = _self_intersection_audit(mesh, tolerance)
     hidden_internal_audit = _hidden_internal_component_audit(mesh, edge_counts)
-    boundary_components = _boundary_components(boundary_edges)
+    boundary_components = _boundary_components(mesh, boundary_edges)
     simple_boundary_cycles = [
         component for component in boundary_components if component["isSimpleCycle"] is True
     ]
@@ -209,6 +209,7 @@ def audit_stitched_shell(
     provenance_coverage = _provenance_coverage(source_vertex_map, mesh)
     binding_coverage = _binding_coverage(mesh)
     displacement_metrics = _source_displacement_metrics(source_vertex_map, meshset)
+    semantic_opening_audit = _semantic_opening_audit(boundary_components)
     return {
         "auditVersion": "closy.stitched_shell_topology_audit.v1",
         "meshCount": len(meshset.meshes),
@@ -223,6 +224,7 @@ def audit_stitched_shell(
         "triangleCount": len(mesh.triangles),
         "boundaryEdgeCount": len(boundary_edges),
         "boundaryLoopCount": boundary_loop_count,
+        "boundaryComponents": boundary_components,
         "simpleBoundaryCycleCount": len(simple_boundary_cycles),
         "boundaryBranchVertexCount": len(boundary_branch_vertices),
         "boundaryBranchVertexIds": boundary_branch_vertices,
@@ -231,8 +233,10 @@ def audit_stitched_shell(
             0,
             len(simple_boundary_cycles) - len(_EXPECTED_OPENING_IDS),
         ),
-        "missingExpectedOpeningCount": len(_EXPECTED_OPENING_IDS),
-        "provenOpeningCount": 0,
+        "missingExpectedOpeningCount": semantic_opening_audit["missingExpectedOpeningCount"],
+        "provenOpeningCount": semantic_opening_audit["provenOpeningCount"],
+        "semanticOpeningAssignmentStatus": semantic_opening_audit["status"],
+        "semanticOpeningAudit": semantic_opening_audit,
         "nonManifoldEdgeCount": len(non_manifold_edges),
         "nonManifoldVertexCount": _non_manifold_vertex_count(non_manifold_edges),
         "duplicateFaceCount": duplicate_faces,
@@ -450,6 +454,7 @@ def _audit_proves_stitched_shell(audit: dict[str, Any]) -> bool:
         and audit["boundaryLoopCount"] == len(_EXPECTED_OPENING_IDS)
         and audit["simpleBoundaryCycleCount"] == len(_EXPECTED_OPENING_IDS)
         and audit["boundaryBranchVertexCount"] == 0
+        and audit["semanticOpeningAssignmentStatus"] == "pass"
         and audit["missingExpectedOpeningCount"] == 0
         and audit["maxPostStitchResidualMeters"] <= _POST_STITCH_TOLERANCE_METERS
         and audit["tJunctionCheckStatus"] == "pass"
@@ -487,6 +492,10 @@ def _blocking_reasons(audit: dict[str, Any]) -> list[str]:
         reasons.append("stitched_shell_opening_loop_mismatch")
     if audit["missingExpectedOpeningCount"] > 0:
         reasons.append("stitched_shell_opening_semantics_missing")
+    if audit["semanticOpeningAssignmentStatus"] == "fail":
+        reasons.append("semantic_opening_assignment_failed")
+        if audit["semanticOpeningAudit"]["panelEdgeProvenanceStatus"] == "fail":
+            reasons.append("opening_panel_edge_provenance_missing")
     if audit["boundaryBranchVertexCount"] > 0:
         reasons.append("stitched_shell_branched_boundary_graph")
     for field, not_run_code, fail_code in [
@@ -558,33 +567,24 @@ def _execution_evidence(
 
 
 def _opening_proof(topology_audit: dict[str, Any]) -> dict[str, Any]:
-    # Semantic opening assignment requires a simple boundary cycle and an explicit
-    # loop-to-opening map. BP-46 currently exposes the missing proof instead of
-    # deriving opening IDs from fixture expectations.
-    proven_opening_ids: list[str] = []
-    missing_ids = [
-        opening_id for opening_id in _EXPECTED_OPENING_IDS if opening_id not in proven_opening_ids
-    ]
+    semantic_audit = topology_audit["semanticOpeningAudit"]
     return {
         "expectedOpeningIds": _EXPECTED_OPENING_IDS,
         "expectedOpeningCount": len(_EXPECTED_OPENING_IDS),
         "topologicalBoundaryComponentCount": topology_audit["boundaryLoopCount"],
         "simpleBoundaryCycleCount": topology_audit["simpleBoundaryCycleCount"],
         "boundaryBranchVertexCount": topology_audit["boundaryBranchVertexCount"],
-        "provenOpeningIds": proven_opening_ids,
-        "provenOpeningCount": len(proven_opening_ids),
-        "missingExpectedOpeningIds": missing_ids,
-        "missingExpectedOpeningCount": len(missing_ids),
+        "semanticOpeningAssignmentRun": True,
+        "semanticOpeningAssignmentStatus": semantic_audit["status"],
+        "semanticOpeningAuditVersion": semantic_audit["auditVersion"],
+        "provenOpeningIds": semantic_audit["provenOpeningIds"],
+        "provenOpeningCount": semantic_audit["provenOpeningCount"],
+        "missingExpectedOpeningIds": semantic_audit["missingExpectedOpeningIds"],
+        "missingExpectedOpeningCount": semantic_audit["missingExpectedOpeningCount"],
+        "candidateOpeningMappings": semantic_audit["candidateOpeningMappings"],
+        "failureReasons": semantic_audit["failureReasons"],
         "unexpectedBoundaryLoopCount": topology_audit["unexpectedBoundaryLoopCount"],
-        "status": "pass"
-        if not missing_ids and topology_audit["unexpectedBoundaryLoopCount"] == 0
-        else "fail",
-        "limitations": [
-            (
-                "semantic loop-to-opening assignment is not implemented yet; "
-                "BP-47 inspection overlays may visualize these rejected boundaries"
-            ),
-        ],
+        "status": semantic_audit["status"],
     }
 
 
@@ -748,7 +748,84 @@ def _component_count(mesh: Mesh) -> int:
     return union.component_count()
 
 
-def _boundary_components(boundary_edges: list[tuple[int, int]]) -> list[dict[str, Any]]:
+def _semantic_opening_audit(boundary_components: list[dict[str, Any]]) -> dict[str, Any]:
+    simple_components = [
+        component for component in boundary_components if component["isSimpleCycle"] is True
+    ]
+    failure_reasons: list[str] = []
+    if len(boundary_components) != len(_EXPECTED_OPENING_IDS):
+        failure_reasons.append("boundary_component_count_mismatch")
+    if len(simple_components) != len(_EXPECTED_OPENING_IDS):
+        failure_reasons.append("simple_boundary_cycle_count_mismatch")
+    if any(component["degreeViolationVertexIds"] for component in boundary_components):
+        failure_reasons.append("boundary_branch_vertices_present")
+
+    candidate_mappings = _candidate_opening_mappings(simple_components)
+    if len(candidate_mappings) != len(_EXPECTED_OPENING_IDS):
+        failure_reasons.append("semantic_assignment_incomplete")
+
+    # Panel/edge provenance is required before a geometric boundary component can
+    # become a proven semantic garment opening. The current stitched candidate
+    # does not yet carry ordered panel-edge provenance for each boundary cycle.
+    panel_edge_provenance_status = "fail"
+    failure_reasons.append("panel_edge_provenance_missing")
+
+    proven_opening_ids: list[str] = []
+    if not failure_reasons and panel_edge_provenance_status == "pass":
+        proven_opening_ids = _EXPECTED_OPENING_IDS.copy()
+    missing_ids = [
+        opening_id for opening_id in _EXPECTED_OPENING_IDS if opening_id not in proven_opening_ids
+    ]
+    return {
+        "auditVersion": "closy.stitched_shell_semantic_opening_assignment.v1",
+        "status": "pass" if not missing_ids else "fail",
+        "expectedOpeningIds": _EXPECTED_OPENING_IDS,
+        "expectedOpeningCount": len(_EXPECTED_OPENING_IDS),
+        "boundaryComponentCount": len(boundary_components),
+        "simpleBoundaryCycleCount": len(simple_components),
+        "candidateOpeningMappings": candidate_mappings,
+        "candidateMappingCount": len(candidate_mappings),
+        "panelEdgeProvenanceStatus": panel_edge_provenance_status,
+        "provenOpeningIds": proven_opening_ids,
+        "provenOpeningCount": len(proven_opening_ids),
+        "missingExpectedOpeningIds": missing_ids,
+        "missingExpectedOpeningCount": len(missing_ids),
+        "failureReasons": sorted(set(failure_reasons)),
+    }
+
+
+def _candidate_opening_mappings(boundary_components: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if len(boundary_components) != len(_EXPECTED_OPENING_IDS):
+        return []
+    sorted_by_y = sorted(
+        boundary_components,
+        key=lambda component: float(component["bounds"]["center"][1]),
+    )
+    hem = sorted_by_y[0]
+    neck = sorted_by_y[-1]
+    remaining = sorted(
+        sorted_by_y[1:-1],
+        key=lambda component: float(component["bounds"]["center"][0]),
+    )
+    candidates = [
+        ("opening.hem", hem),
+        ("opening.neck", neck),
+        ("opening.cuff.left", remaining[0]),
+        ("opening.cuff.right", remaining[1]),
+    ]
+    return [
+        {
+            "openingId": opening_id,
+            "componentIndex": component["componentIndex"],
+            "componentBounds": component["bounds"],
+            "perimeterMeters": component["perimeterMeters"],
+            "assignmentStatus": "candidate_requires_panel_edge_provenance",
+        }
+        for opening_id, component in candidates
+    ]
+
+
+def _boundary_components(mesh: Mesh, boundary_edges: list[tuple[int, int]]) -> list[dict[str, Any]]:
     if not boundary_edges:
         return []
     adjacency: dict[int, set[int]] = {}
@@ -772,24 +849,68 @@ def _boundary_components(boundary_edges: list[tuple[int, int]]) -> list[dict[str
         component_edges = [
             edge
             for edge in boundary_edges
-            if edge[0] in component_vertices or edge[1] in component_vertices
+            if edge[0] in component_vertices and edge[1] in component_vertices
         ]
         degree_violations = sorted(
             vertex for vertex in component_vertices if len(adjacency.get(vertex, set())) != 2
         )
+        ordered_vertices = sorted(component_vertices)
+        ordered_edges = sorted(component_edges)
         components.append(
             {
                 "componentIndex": len(components),
                 "vertexCount": len(component_vertices),
                 "edgeCount": len(component_edges),
+                "vertexIds": [f"logicalVertex.{vertex:06d}" for vertex in ordered_vertices],
+                "edgeIds": [f"logicalEdge.{edge[0]:06d}.{edge[1]:06d}" for edge in ordered_edges],
                 "isSimpleCycle": len(degree_violations) == 0
                 and len(component_edges) == len(component_vertices),
                 "degreeViolationVertexIds": [
                     f"logicalVertex.{vertex:06d}" for vertex in degree_violations
                 ],
+                "bounds": _component_bounds(mesh, ordered_vertices),
+                "perimeterMeters": _round(
+                    sum(
+                        _distance3(mesh.vertices[left], mesh.vertices[right])
+                        for left, right in ordered_edges
+                    )
+                ),
             }
         )
     return components
+
+
+def _component_bounds(mesh: Mesh, vertex_indices: list[int]) -> dict[str, list[float]]:
+    if not vertex_indices:
+        zero = [0.0, 0.0, 0.0]
+        return {"min": zero, "max": zero, "center": zero, "size": zero}
+    vertices = [mesh.vertices[index] for index in vertex_indices]
+    mins = (
+        min(vertex[0] for vertex in vertices),
+        min(vertex[1] for vertex in vertices),
+        min(vertex[2] for vertex in vertices),
+    )
+    maxs = (
+        max(vertex[0] for vertex in vertices),
+        max(vertex[1] for vertex in vertices),
+        max(vertex[2] for vertex in vertices),
+    )
+    center = (
+        (mins[0] + maxs[0]) / 2.0,
+        (mins[1] + maxs[1]) / 2.0,
+        (mins[2] + maxs[2]) / 2.0,
+    )
+    size = (
+        maxs[0] - mins[0],
+        maxs[1] - mins[1],
+        maxs[2] - mins[2],
+    )
+    return {
+        "min": [_round(value) for value in mins],
+        "max": [_round(value) for value in maxs],
+        "center": [_round(value) for value in center],
+        "size": [_round(value) for value in size],
+    }
 
 
 def _duplicate_face_count(triangles: list[tuple[int, int, int]]) -> int:
