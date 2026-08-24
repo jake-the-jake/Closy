@@ -137,6 +137,11 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "textureProjectionRun": texture["textureProjectionRun"],
             "materialRegionCount": len(texture["observedMaterialRegions"]),
             "recommendedAtlasSizePx": texture["projectionPlan"]["recommendedAtlasSizePx"],
+            "sourceProjectionCount": texture["sourceViewProjection"]["projectionCount"],
+            "visibleProjectionCount": texture["sourceViewProjection"]["visibleProjectionCount"],
+            "meanVisibleConfidence": texture["visibleRegionConfidence"]["meanVisibleConfidence"],
+            "pbrSourceBackedMapCount": texture["pbrMaterialMaps"]["sourceBackedMapCount"],
+            "pbrPlaceholderMapCount": texture["pbrMaterialMaps"]["placeholderMapCount"],
         },
         "geometryProposal": {
             "proposalId": proposal["proposalId"],
@@ -600,7 +605,12 @@ def human_report(package_dir: Path) -> str:
             (
                 f"Texture identity: {texture['status']}, "
                 f"{texture['materialRegionCount']} PBR material observations, "
-                f"source textures available={texture['sourceTextureAvailable']}"
+                f"source textures available={texture['sourceTextureAvailable']}, "
+                f"visible projections={texture['visibleProjectionCount']}/"
+                f"{texture['sourceProjectionCount']}, "
+                f"mean confidence={texture['meanVisibleConfidence']:.6f}, "
+                f"PBR maps source-backed/placeholders="
+                f"{texture['pbrSourceBackedMapCount']}/{texture['pbrPlaceholderMapCount']}"
             ),
             (
                 f"Geometry proposal: {proposal['qualityStatus']} via "

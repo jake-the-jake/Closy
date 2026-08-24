@@ -106,6 +106,10 @@ EXPECTED_FILES = [
     "source/multiview_fusion.json",
     "fitting/tshirt_fit.json",
     "textures/texture_identity.json",
+    "textures/source_projection.json",
+    "textures/generated_atlas.json",
+    "textures/pbr_material_maps.json",
+    "textures/conventional_fallback_materials.json",
     "proposals/raw_geometry_proposal.json",
     "proposals/manual_raw_visual_proposal.glb",
     "proposals/manual_cleanup_preview.glb",
@@ -1349,6 +1353,7 @@ def _validate_texture_identity(
 ) -> None:
     capture_record = _read_required_json(package_dir, "source/capture_record.json", issues)
     visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    fusion = _read_required_json(package_dir, "source/multiview_fusion.json", issues)
     fit_report = _read_required_json(package_dir, "fitting/tshirt_fit.json", issues)
     render_materials = _read_required_json(package_dir, "render/materials.json", issues)
     texture = _read_required_json(package_dir, "textures/texture_identity.json", issues)
@@ -1356,6 +1361,7 @@ def _validate_texture_identity(
     if (
         capture_record is None
         or visual is None
+        or fusion is None
         or fit_report is None
         or render_materials is None
         or texture is None
@@ -1363,6 +1369,7 @@ def _validate_texture_identity(
         return
     declared_capture_hash = _nested_string(capture_record, ["immutability", "sourceRecordHash"], "")
     declared_visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
+    declared_fusion_hash = _nested_string(fusion, ["integrity", "multiviewFusionRecordHash"], "")
     declared_fit_hash = _nested_string(fit_report, ["integrity", "fitReportHash"], "")
     if texture.get("sourceRecordId") != capture_record.get("recordId"):
         issues.append(
@@ -1398,6 +1405,46 @@ def _validate_texture_identity(
                 "fatal",
                 "textures/texture_identity.json",
                 "Texture identity must reference the visual observation hash.",
+            )
+        )
+    if texture.get("sourceMultiviewFusionId") != fusion.get("fusionRecordId"):
+        issues.append(
+            _issue(
+                "texture_identity_fusion_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "BP53 texture identity must reference the multiview fusion ID.",
+            )
+        )
+    if texture.get("sourceMultiviewFusionHash") != declared_fusion_hash:
+        issues.append(
+            _issue(
+                "texture_identity_fusion_hash_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "BP53 texture identity must reference the multiview fusion hash.",
+            )
+        )
+    if texture.get("sourceFusedEvidenceHash") != _nested_string(
+        fusion, ["fusedEvidence", "evidenceHash"], ""
+    ):
+        issues.append(
+            _issue(
+                "texture_identity_fused_evidence_hash_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "BP53 texture identity must reference the fused visual evidence hash.",
+            )
+        )
+    if texture.get("sourceCorrectedVisualRecordHash") != fusion.get(
+        "sourceCorrectedVisualRecordHash"
+    ):
+        issues.append(
+            _issue(
+                "texture_identity_corrected_visual_hash_mismatch",
+                "fatal",
+                "textures/texture_identity.json",
+                "BP53 texture identity must reference the corrected visual record hash.",
             )
         )
     if texture.get("sourceFitReportId") != fit_report.get("fitReportId"):
@@ -1438,19 +1485,21 @@ def _validate_texture_identity(
                 "Texture identity report must pass for this canonical fixture.",
             )
         )
-    if (
-        texture.get("sourceTextureAvailable") is not False
-        or texture.get("generatedAtlasAvailable") is not False
-        or texture.get("textureProjectionRun") is not False
-    ):
+    texture_state = (
+        texture.get("sourceTextureAvailable") is True
+        and texture.get("generatedAtlasAvailable") is True
+        and texture.get("textureProjectionRun") is True
+    )
+    if not texture_state:
         issues.append(
             _issue(
                 "texture_identity_source_state_invalid",
                 "fatal",
                 "textures/texture_identity.json",
-                "Implementation 04 texture identity must not claim source texture projection.",
+                "BP53 texture identity must run source projection and generate atlas metadata.",
             )
         )
+    _validate_texture_projection_artifacts(package_dir, texture, issues)
     material_ids = {
         str(material.get("id"))
         for material in render_materials.get("materials", [])
@@ -1551,18 +1600,33 @@ def _validate_texture_identity(
                 "Manifest must declare PBR material observation availability.",
             )
         )
-    if (
-        texture.get("sourceTextureAvailable") is False
-        and caps.get("sourceImageTextureAvailable") is not False
-    ):
+    if caps.get("sourceImageTextureAvailable") is not True:
         issues.append(
             _issue(
                 "texture_source_capability_contradiction",
                 "fatal",
                 "manifest.json",
-                "sourceImageTextureAvailable must remain false without source texture evidence.",
+                "sourceImageTextureAvailable must be true for BP53 source texture evidence.",
             )
         )
+    for key, code in [
+        ("sourceTextureProjectionAvailable", "source_texture_projection_capability_missing"),
+        ("pbrMaterialMapExportAvailable", "pbr_map_export_capability_missing"),
+        ("logoPrintPreservationMaskAvailable", "logo_print_mask_capability_missing"),
+        (
+            "controlledTextureInpaintingInterfaceAvailable",
+            "controlled_inpainting_capability_missing",
+        ),
+    ]:
+        if caps.get(key) is not True:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "manifest.json",
+                    f"Manifest capability {key} must be true for BP53.",
+                )
+            )
     if _contains_nonfinite(texture):
         issues.append(
             _issue(
@@ -1621,6 +1685,191 @@ def _validate_texture_region_pbr(region: dict[str, Any], issues: list[Validation
                     str(region.get("regionId", "")),
                 )
             )
+
+
+def _validate_texture_projection_artifacts(
+    package_dir: Path, texture: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    expected_paths = {
+        "sourceProjection": "textures/source_projection.json",
+        "generatedAtlas": "textures/generated_atlas.json",
+        "pbrMaterialMaps": "textures/pbr_material_maps.json",
+        "conventionalFallbackMaterials": "textures/conventional_fallback_materials.json",
+    }
+    artifact_refs = texture.get("artifactRefs")
+    if not isinstance(artifact_refs, dict):
+        issues.append(
+            _issue(
+                "texture_artifact_refs_missing",
+                "fatal",
+                "textures/texture_identity.json",
+                "BP53 texture identity must include artifactRefs.",
+            )
+        )
+        return
+
+    artifacts: dict[str, dict[str, Any]] = {}
+    for key, relpath in expected_paths.items():
+        ref = artifact_refs.get(key)
+        if not isinstance(ref, dict):
+            issues.append(
+                _issue(
+                    "texture_artifact_ref_missing",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    f"BP53 texture artifact ref {key} is required.",
+                )
+            )
+            continue
+        if ref.get("path") != relpath:
+            issues.append(
+                _issue(
+                    "texture_artifact_ref_path_invalid",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    f"BP53 texture artifact ref {key} must point to {relpath}.",
+                )
+            )
+            continue
+        artifact = _read_required_json(package_dir, relpath, issues)
+        if artifact is None:
+            continue
+        artifacts[key] = artifact
+        declared_file_hash = str(ref.get("sha256", ""))
+        actual_file_hash = _json_hash(artifact)
+        if declared_file_hash != actual_file_hash:
+            issues.append(
+                _issue(
+                    "texture_artifact_ref_hash_mismatch",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    "Texture artifact ref hash must match the canonical artifact payload.",
+                    relpath,
+                )
+            )
+        declared_internal_hash = _nested_string(artifact, ["integrity", "artifactHash"], "")
+        if declared_internal_hash != _json_hash_with_blank(artifact, "artifactHash"):
+            issues.append(
+                _issue(
+                    "texture_artifact_internal_hash_mismatch",
+                    "fatal",
+                    relpath,
+                    "Texture artifact internal hash must match the canonical payload.",
+                )
+            )
+
+    source_projection = artifacts.get("sourceProjection", {})
+    projections = source_projection.get("projections", [])
+    if not isinstance(projections, list) or not projections:
+        issues.append(
+            _issue(
+                "texture_source_projection_missing",
+                "fatal",
+                "textures/source_projection.json",
+                "BP53 source projection artifact must include projection records.",
+            )
+        )
+        projections = []
+    visible_count = sum(
+        1
+        for projection in projections
+        if isinstance(projection, dict) and projection.get("visibleSourceEvidence") is True
+    )
+    if visible_count <= 0:
+        issues.append(
+            _issue(
+                "texture_source_projection_visible_evidence_missing",
+                "fatal",
+                "textures/source_projection.json",
+                "BP53 source projection must include at least one visible source-backed region.",
+            )
+        )
+    if _nested_string(source_projection, ["policy", "rawPixelsExported"], "true") != "":
+        policy = source_projection.get("policy", {})
+        if not isinstance(policy, dict) or policy.get("rawPixelsExported") is not False:
+            issues.append(
+                _issue(
+                    "texture_source_projection_exports_raw_pixels",
+                    "fatal",
+                    "textures/source_projection.json",
+                    "Texture projection artifacts must not export raw source pixels.",
+                )
+            )
+    for projection in projections:
+        if not isinstance(projection, dict):
+            continue
+        for point in projection.get("sourceProjectionCoordinates", []):
+            _validate_normalised_point(point, "texture_projection_point_out_of_range", issues)
+        for point in projection.get("targetProjectionCoordinates", []):
+            _validate_normalised_point(point, "texture_projection_point_out_of_range", issues)
+
+    controlled = texture.get("controlledInpainting", {})
+    if (
+        not isinstance(controlled, dict)
+        or controlled.get("visibleEvidenceOverwriteAllowed") is not False
+    ):
+        issues.append(
+            _issue(
+                "texture_inpainting_overwrite_policy_invalid",
+                "fatal",
+                "textures/texture_identity.json",
+                "Controlled texture inpainting must forbid visible source evidence overwrite.",
+            )
+        )
+    for operation in (
+        controlled.get("allowedOperations", []) if isinstance(controlled, dict) else []
+    ):
+        if (
+            isinstance(operation, dict)
+            and operation.get("overwriteVisibleSourceEvidence") is not False
+        ):
+            issues.append(
+                _issue(
+                    "texture_inpainting_visible_overwrite_allowed",
+                    "fatal",
+                    "textures/texture_identity.json",
+                    "Allowed inpainting operations must never overwrite visible source evidence.",
+                )
+            )
+    if _int_or(controlled.get("overwriteVisibleSourceEvidenceRejectedCount"), 0) <= 0:
+        issues.append(
+            _issue(
+                "texture_inpainting_rejection_evidence_missing",
+                "fatal",
+                "textures/texture_identity.json",
+                "Controlled texture inpainting must include visible-overwrite rejection evidence.",
+            )
+        )
+
+    atlas = artifacts.get("generatedAtlas", {})
+    if atlas.get("rawSourcePixelsEmbedded") is not False:
+        issues.append(
+            _issue(
+                "texture_atlas_raw_pixels_embedded",
+                "fatal",
+                "textures/generated_atlas.json",
+                "Generated atlas artifact must remain a portable summary, not raw pixels.",
+            )
+        )
+    pbr_maps = artifacts.get("pbrMaterialMaps", {})
+    if _int_or(pbr_maps.get("materialMapCount"), 0) <= 0:
+        issues.append(
+            _issue(
+                "texture_pbr_maps_missing",
+                "fatal",
+                "textures/pbr_material_maps.json",
+                "BP53 PBR material-map artifact must contain material map records.",
+            )
+        )
+    if _int_or(_mapping(pbr_maps.get("aggregate")).get("advancedShaderFeatureCount"), 1) != 0:
+        issues.append(
+            _issue(
+                "texture_pbr_advanced_shader_feature_invalid",
+                "fatal",
+                "textures/pbr_material_maps.json",
+                "BP53 PBR maps must remain mobile-safe and avoid advanced shader features.",
+            )
+        )
 
 
 def _validate_geometry_proposal(
@@ -10056,6 +10305,19 @@ def _nested_string(data: dict[str, Any], path: list[str], fallback: str) -> str:
 
 def _json_hash(data: dict[str, Any]) -> str:
     return sha256_bytes(canonical_dumps(data).encode("utf-8"))
+
+
+def _json_hash_with_blank(data: dict[str, Any], hash_key: str) -> str:
+    clone = dict(data)
+    integrity = clone.get("integrity")
+    if isinstance(integrity, dict):
+        clone["integrity"] = dict(integrity)
+        clone["integrity"][hash_key] = ""
+    return _json_hash(clone)
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, dict) else {}
 
 
 def _vec3(value: Any) -> Vec3:
