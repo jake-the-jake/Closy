@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-50 pixel parsing and applied correction local evidence",
+  "generatedBy": "BP-50 remote CI evidence truth sync",
   "rows": [
     {
       "commitSha": [
@@ -305,7 +305,8 @@
     },
     {
       "commitSha": [
-        "e90a38e"
+        "e90a38e",
+        "0da8cea"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -317,7 +318,8 @@
         "T-shirt torso/sleeve semantic parts, neckline/hem/cuff openings and required landmarks",
         "mask IoU, boundary F-score, semantic-part IoU, landmark error, opening precision/recall, confidence calibration, missing evidence and view consistency metrics",
         "non-empty structured correction replay with before/after hashes, confidence delta and stale-hash rejection",
-        "deterministic package digest 8be718fdbf929a0f5112526fd4ae67d4f056ac3605d8e9ffd0593cee1b99708c with 83 files per package tree"
+        "deterministic package digest 8be718fdbf929a0f5112526fd4ae67d4f056ac3605d8e9ffd0593cee1b99708c with 83 files per package tree",
+        "remote Actions run 32710390547 passed Ubuntu job 97380328078 and Windows job 97380328390 with 182 tests per OS"
       ],
       "id": "BP-50-PIXEL-PARSING-CORRECTIONS",
       "implementationPaths": [
@@ -2329,5 +2331,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp50-pixel-parsing-corrections-v1"
+  "version": "bp50-remote-ci-truth-sync-v1"
 }

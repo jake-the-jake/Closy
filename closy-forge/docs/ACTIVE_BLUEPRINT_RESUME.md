@@ -13,12 +13,12 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Record based on SHA: `e90a38e`
 - Draft PR: `https://github.com/jake-the-jake/Closy/pull/2`
 - Parent draft PR: `https://github.com/jake-the-jake/Closy/pull/1`
-- Last remote green evidence: GitHub Actions run `32703047068`; Ubuntu job `97358325037` and Windows job `97358324733` passed at commit `9f8ebf61a764b00671c552b26ef9e847a888ea5a`.
-- Last remote matrix details: Ubuntu job ran 5m02s and Windows job ran 6m58s; Supabase Preview was skipped as expected for this Forge-only branch.
+- Last remote green evidence: GitHub Actions run `32710390547`; Ubuntu job `97380328078` and Windows job `97380328390` passed at commit `0da8cea73ef0ffac2b0915876ec6de78bdc7f9b2`.
+- Last remote matrix details: Ubuntu job ran 6m52s and Windows job ran 9m05s; each ran 111 format-checked files, 88 mypy source files, 182 tests, fresh schemas, identical 83-file package trees, digest `8be718fdbf929a0f5112526fd4ae67d4f056ac3605d8e9ffd0593cee1b99708c`, and validation with only `self_collision_not_run`. Supabase Preview was skipped as expected for this Forge-only branch.
 - Latest local BP50 evidence after `e90a38e`: `ruff format --check .` reported 111 files already formatted; `ruff check .` passed; `mypy src` passed over 88 source files; schema check reported `{"issues":[],"status":"fresh"}`; focused BP50/golden tests passed 16 tests; full `pytest -q` passed 182 collected tests after updating the stale raster-fit shoulder-width expectation in commit `5013a1e`; two temp package builds were byte-identical with digest `8be718fdbf929a0f5112526fd4ae67d4f056ac3605d8e9ffd0593cee1b99708c`, 83 package files, validation status `passed` and one formal warning.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state: 13 checks with 9 pass, 1 fail, 2 warnings and 1 not-run; clean/canonical acceptance remains rejected.
-- Current in-progress uncommitted work, if this file is read before the next commit: BP50 resume/ledger correction to record the full 182-test local pass after commit `5013a1e`.
+- Current in-progress uncommitted work, if this file is read before the next commit: BP50 remote evidence truth-sync for run `32710390547`.
 - Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
 
 ## Current BP-46/BP-47/BP-48/BP-49/BP-50 Truth
@@ -84,7 +84,7 @@ Current blocking evidence:
 ## Current Checks Not Yet Run After This Resume Update
 
 - Blueprint coverage tests have not yet run for this BP50 ledger/coverage/resume update if this file is read before the next validation command.
-- Remote CI has not yet run for implementation commit `e90a38e`, evidence-doc commit `29a6315` or test-expectation commit `5013a1e` if this file is read before those commits are pushed.
+- Remote CI has not yet run for this BP50 remote-evidence truth-sync commit if this file is read before it is pushed.
 - BP51 multiview capture/fusion behavior is not implemented yet.
 
 ## Next Exact Command

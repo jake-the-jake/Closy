@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp50-pixel-parsing-corrections-v1"
-    assert payload["generatedBy"] == "BP-50 pixel parsing and applied correction local evidence"
+    assert payload["version"] == "bp50-remote-ci-truth-sync-v1"
+    assert payload["generatedBy"] == "BP-50 remote CI evidence truth sync"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -247,8 +247,10 @@ def test_bp50_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp50["status"] == "partial"
     assert "e90a38e" in bp50["commitSha"]
+    assert "0da8cea" in bp50["commitSha"]
     assert any("target garment, person/body proxy" in item for item in bp50["executableEvidence"])
     assert any("structured correction replay" in item for item in bp50["executableEvidence"])
+    assert any("remote Actions run 32710390547" in item for item in bp50["executableEvidence"])
     assert "tests/unit/test_visual_understanding.py" in bp50["tests"]
     assert "BP-51" in bp50["nextAction"]
 
