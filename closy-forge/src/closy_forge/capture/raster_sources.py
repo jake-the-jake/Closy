@@ -1070,17 +1070,18 @@ def _fixture_path(root: Path, relative_text: str) -> Path:
     relative = Path(relative_text)
     if relative.is_absolute() or any(part in {"..", ""} for part in relative.parts):
         raise RasterIngestError("path_traversal_rejected")
-    resolved = (root / relative).resolve(strict=False)
+    candidate = root / relative
+    resolved = candidate.resolve(strict=False)
     if not _is_relative_to(resolved, root):
         raise RasterIngestError("path_traversal_rejected")
-    return resolved
+    return candidate
 
 
 def _ensure_regular_fixture_file(path: Path) -> None:
-    if not path.exists():
-        raise RasterIngestError("source_file_missing")
     if path.is_symlink():
         raise RasterIngestError("symlink_rejected")
+    if not path.exists():
+        raise RasterIngestError("source_file_missing")
     if not path.is_file():
         raise RasterIngestError("source_file_not_regular")
     if path.stat().st_nlink > 1:
