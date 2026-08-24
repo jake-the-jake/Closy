@@ -223,7 +223,8 @@
     },
     {
       "commitSha": [
-        "34023a0"
+        "34023a0",
+        "77bea09"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -239,7 +240,8 @@
         "fail-closed Phase-2 quality gate with missing-rear rejection before expensive downstream work",
         "fused correction replay with before/after fusion hashes, correction propagation and stale-fusion safeguards",
         "deterministic package digest 8b9c00555f2ad904154640c77399e167ecb6da929d0c707a677a6d49f3c7c94a with 85 files per package tree",
-        "local verification passed 184 collected Forge tests, fresh schemas, ruff, mypy over 89 source files, package diff/validate/report"
+        "local verification passed 185 collected Forge tests, fresh schemas, ruff, mypy over 89 source files, package diff/validate/report",
+        "remote Actions run 32718341703 passed Ubuntu job 97404255213 and Windows job 97404255335 with 185 tests per OS"
       ],
       "id": "BP-51-MULTIVIEW-CAPTURE-FUSION",
       "implementationPaths": [
@@ -1425,14 +1427,16 @@
         "0db14ee",
         "fcf64dc",
         "e90a38e",
-        "34023a0"
+        "34023a0",
+        "77bea09"
       ],
       "dependencies": [],
       "executableEvidence": [
         "BP49 local raster fixture ingest evidence",
         "BP50 decoded-pixel visual parsing, masks, parts, openings, landmarks and correction replay",
         "BP51 D0 multiview pairing, cross-view identity, fused evidence, fused correction replay and pre-downstream quality gate",
-        "package digest 8b9c00555f2ad904154640c77399e167ecb6da929d0c707a677a6d49f3c7c94a"
+        "package digest 8b9c00555f2ad904154640c77399e167ecb6da929d0c707a677a6d49f3c7c94a",
+        "remote Actions run 32718341703 passed Ubuntu/Windows with 185 tests per OS"
       ],
       "id": "BP-17-PHASE-02",
       "implementationPaths": [

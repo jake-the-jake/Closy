@@ -268,7 +268,9 @@ def test_bp50_checkpoint_is_partial_and_evidenced() -> None:
     )
     assert "e90a38e" in phase2["commitSha"]
     assert "34023a0" in phase2["commitSha"]
+    assert "77bea09" in phase2["commitSha"]
     assert any("BP51 D0 multiview pairing" in item for item in phase2["executableEvidence"])
+    assert any("remote Actions run 32718341703" in item for item in phase2["executableEvidence"])
     assert "BP-52" in phase2["nextAction"]
 
 
@@ -280,11 +282,13 @@ def test_bp51_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp51["status"] == "partial"
     assert "34023a0" in bp51["commitSha"]
+    assert "77bea09" in bp51["commitSha"]
     assert any("front/rear required pairing" in item for item in bp51["executableEvidence"])
     assert any("cross-view garment identity" in item for item in bp51["executableEvidence"])
     assert any("fail-closed Phase-2 quality gate" in item for item in bp51["executableEvidence"])
     assert any("fused correction replay" in item for item in bp51["executableEvidence"])
-    assert any("184 collected Forge tests" in item for item in bp51["executableEvidence"])
+    assert any("185 collected Forge tests" in item for item in bp51["executableEvidence"])
+    assert any("remote Actions run 32718341703" in item for item in bp51["executableEvidence"])
     assert (
         "closy-forge/src/closy_forge/visual_understanding/multiview_fusion.py"
         in bp51["implementationPaths"]
