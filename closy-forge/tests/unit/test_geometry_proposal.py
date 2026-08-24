@@ -389,7 +389,13 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["execution"]["operationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["executedOperationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["seamSpanCoverage"]["coverageRatio"] == 1.0
-    assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 5
+    assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 0
+    assert report["topologyAudit"]["seamSpanCoverage"]["missingRequiredOperationIds"] == []
+    assert report["topologyAudit"]["topologyRepairEvidence"]["duplicateFaceCullRun"] is True
+    assert report["topologyAudit"]["topologyRepairEvidence"]["status"] == "pass"
+    assert report["topologyAudit"]["topologyRepairEvidence"]["inputTriangleCount"] == 218
+    assert report["topologyAudit"]["topologyRepairEvidence"]["outputTriangleCount"] == 210
+    assert report["topologyAudit"]["topologyRepairEvidence"]["removedDuplicateFaceCount"] == 8
     assert report["topologyAudit"]["logicalShellCount"] == 1
     assert report["topologyAudit"]["maxPostStitchResidualMeters"] == 0.0
     assert report["topologyAudit"]["bindingCoverage"] == 1.0
@@ -407,10 +413,14 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["bindingEvidence"]["missingRenderVertexIds"] == []
     assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["missingExpectedOpeningCount"] == 4
-    assert report["topologyAudit"]["boundaryBranchVertexCount"] == 7
+    assert report["topologyAudit"]["duplicateFaceCount"] == 0
+    assert report["topologyAudit"]["nonManifoldEdgeCount"] == 17
+    assert report["topologyAudit"]["boundaryLoopCount"] == 1
+    assert report["topologyAudit"]["simpleBoundaryCycleCount"] == 0
+    assert report["topologyAudit"]["boundaryBranchVertexCount"] == 11
     assert report["topologyAudit"]["semanticOpeningAssignmentStatus"] == "fail"
-    assert report["topologyAudit"]["semanticOpeningAudit"]["boundaryComponentCount"] == 3
-    assert report["topologyAudit"]["semanticOpeningAudit"]["simpleBoundaryCycleCount"] == 2
+    assert report["topologyAudit"]["semanticOpeningAudit"]["boundaryComponentCount"] == 1
+    assert report["topologyAudit"]["semanticOpeningAudit"]["simpleBoundaryCycleCount"] == 0
     assert report["topologyAudit"]["semanticOpeningAudit"]["panelEdgeProvenanceStatus"] == "fail"
     assert report["topologyAudit"]["semanticOpeningAudit"]["failureReasons"] == [
         "boundary_branch_vertices_present",
@@ -427,9 +437,9 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["inconsistentWindingCheckStatus"] == "fail"
     assert report["topologyAudit"]["inconsistentWindingAudit"]["inconsistentSharedEdgeCount"] == 29
     assert report["topologyAudit"]["normalInversionCheckStatus"] == "fail"
-    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 40
+    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 32
     assert report["topologyAudit"]["selfIntersectionCheckStatus"] == "fail"
-    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 321
+    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 310
     assert report["topologyAudit"]["hiddenInternalComponentCheckStatus"] == "pass"
     assert (
         report["topologyAudit"]["hiddenInternalComponentAudit"]["internalClosedComponentCount"] == 0
@@ -443,6 +453,8 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert "self_intersections_detected" in report["readiness"]["blockingReasons"]
     assert "semantic_opening_assignment_failed" in report["readiness"]["blockingReasons"]
     assert "opening_panel_edge_provenance_missing" in report["readiness"]["blockingReasons"]
+    assert "stitched_shell_duplicate_faces" not in report["readiness"]["blockingReasons"]
+    assert "stitched_shell_duplicate_operation_ids" not in report["readiness"]["blockingReasons"]
     assert "self_intersection_not_run" not in report["readiness"]["blockingReasons"]
     assert "binding_coverage_incomplete" not in report["readiness"]["blockingReasons"]
     assert "binding_reconstruction_not_run" not in report["readiness"]["blockingReasons"]
@@ -450,6 +462,7 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
         report["analysisAsset"]["payloadHash"] == analysis["integrity"]["stitchedAnalysisShellHash"]
     )
     assert analysis["logicalShell"]["vertexCount"] == stitched_mesh.vertex_count
+    assert analysis["logicalShell"]["triangleCount"] == 210
     assert analysis["openingProof"]["expectedOpeningCount"] == 4
     assert analysis["openingProof"]["status"] == "fail"
     assert analysis["openingProof"]["semanticOpeningAssignmentRun"] is True

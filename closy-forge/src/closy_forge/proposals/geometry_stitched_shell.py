@@ -39,7 +39,7 @@ def build_stitched_shell_assets(
     has defects such as non-manifold seam edges or self-intersection not-run.
     """
 
-    stitched_mesh, source_vertex_map, operations = _build_logical_stitched_mesh(
+    stitched_mesh, source_vertex_map, operations, topology_repair = _build_logical_stitched_mesh(
         source_simulation_mesh,
         constraints,
     )
@@ -48,6 +48,7 @@ def build_stitched_shell_assets(
         source_vertex_map=source_vertex_map,
         operations=operations,
         constraints=constraints,
+        topology_repair=topology_repair,
     )
     proven = _audit_proves_stitched_shell(topology_audit)
     opening_proof = _opening_proof(topology_audit)
@@ -172,6 +173,7 @@ def audit_stitched_shell(
     source_vertex_map: list[dict[str, Any]],
     operations: list[dict[str, Any]],
     constraints: dict[str, Any],
+    topology_repair: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     mesh = meshset.meshes[0]
     edge_counts = _edge_counts(mesh.triangles)
@@ -253,6 +255,7 @@ def audit_stitched_shell(
         "selfIntersectionAudit": self_intersection_audit,
         "hiddenInternalComponentCheckStatus": hidden_internal_audit["status"],
         "hiddenInternalComponentAudit": hidden_internal_audit,
+        "topologyRepairEvidence": topology_repair or _no_topology_repair_evidence(mesh),
         "seamSpanCoverage": seam_coverage,
         "uvMaterialPanelProvenanceCoverage": provenance_coverage["coverageRatio"],
         "uvMaterialPanelProvenance": provenance_coverage,
@@ -273,7 +276,7 @@ def audit_stitched_shell(
 def _build_logical_stitched_mesh(
     source_mesh: MeshSet,
     constraints: dict[str, Any],
-) -> tuple[MeshSet, list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[MeshSet, list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     offsets: list[int] = []
     total_vertices = 0
     for mesh in source_mesh.meshes:
@@ -281,12 +284,15 @@ def _build_logical_stitched_mesh(
         total_vertices += len(mesh.vertices)
     union = _UnionFind(total_vertices)
     operations: list[dict[str, Any]] = []
-    for constraint in sorted(
-        constraints.get("constraints", []),
-        key=lambda item: str(item.get("id", "")) if isinstance(item, dict) else "",
+    indexed_constraints = [
+        (index, constraint)
+        for index, constraint in enumerate(constraints.get("constraints", []))
+        if isinstance(constraint, dict)
+    ]
+    for constraint_index, constraint in sorted(
+        indexed_constraints,
+        key=lambda item: (str(item[1].get("id", "")), item[0]),
     ):
-        if not isinstance(constraint, dict):
-            continue
         span_a = constraint.get("spanA")
         span_b = constraint.get("spanB")
         if not isinstance(span_a, dict) or not isinstance(span_b, dict):
@@ -304,7 +310,10 @@ def _build_logical_stitched_mesh(
             status = "rejected_pre_stitch_gap"
         operations.append(
             {
-                "operationId": str(constraint.get("id", f"constraint.{len(operations):03d}")),
+                "operationId": _constraint_operation_id(constraint, constraint_index),
+                "sourceConstraintId": str(
+                    constraint.get("id", f"constraint.{constraint_index:03d}")
+                ),
                 "seamId": str(constraint.get("seamId", "unknown")),
                 "status": status,
                 "spanA": deepcopy(span_a),
@@ -360,9 +369,10 @@ def _build_logical_stitched_mesh(
             }
         )
     logical_triangles: list[tuple[int, int, int]] = []
+    source_face_records: list[dict[str, Any]] = []
     for mesh_index, mesh in enumerate(source_mesh.meshes):
         offset = offsets[mesh_index]
-        for tri in mesh.triangles:
+        for triangle_index, tri in enumerate(mesh.triangles):
             remapped = (
                 remap[offset + tri[0]],
                 remap[offset + tri[1]],
@@ -370,6 +380,19 @@ def _build_logical_stitched_mesh(
             )
             if len(set(remapped)) == 3:
                 logical_triangles.append(remapped)
+                source_face_records.append(
+                    {
+                        "sourceMeshIndex": mesh_index,
+                        "sourceMeshName": mesh.name,
+                        "sourceTriangleIndex": triangle_index,
+                        "sourceTriangle": [int(value) for value in tri],
+                        "logicalTriangle": [int(value) for value in remapped],
+                    }
+                )
+    logical_triangles, topology_repair = _cull_duplicate_logical_faces(
+        logical_triangles,
+        source_face_records,
+    )
     for operation in operations:
         if operation["status"] != "executed":
             operation["postStitchResidualMeters"] = operation["preStitchDistanceMeters"]
@@ -393,7 +416,60 @@ def _build_logical_stitched_mesh(
             )
         ]
     )
-    return stitched_mesh, source_vertex_map, operations
+    topology_repair["topologyHashAfterRepair"] = topology_hash(stitched_mesh)
+    topology_repair["contentHashAfterRepair"] = geometry_content_hash(stitched_mesh)
+    return stitched_mesh, source_vertex_map, operations, topology_repair
+
+
+def _constraint_operation_id(constraint: dict[str, Any], constraint_index: int) -> str:
+    source_id = str(constraint.get("id", f"constraint.{constraint_index:03d}"))
+    return f"{source_id}#instance.{constraint_index:03d}"
+
+
+def _cull_duplicate_logical_faces(
+    triangles: list[tuple[int, int, int]],
+    source_face_records: list[dict[str, Any]],
+) -> tuple[list[tuple[int, int, int]], dict[str, Any]]:
+    unique_triangles: list[tuple[int, int, int]] = []
+    kept_by_key: dict[tuple[int, int, int], dict[str, Any]] = {}
+    removed: list[dict[str, Any]] = []
+    for triangle, record in zip(triangles, source_face_records, strict=True):
+        sorted_triangle = sorted(triangle)
+        key = (sorted_triangle[0], sorted_triangle[1], sorted_triangle[2])
+        if key in kept_by_key:
+            removed.append(
+                {
+                    "duplicateLogicalTriangle": [int(value) for value in triangle],
+                    "duplicateSource": record,
+                    "keptSource": kept_by_key[key],
+                }
+            )
+            continue
+        kept_by_key[key] = record
+        unique_triangles.append(triangle)
+    return unique_triangles, {
+        "auditVersion": "closy.stitched_shell_topology_repair.duplicate_face_culling_v1",
+        "duplicateFaceCullRun": True,
+        "status": "pass",
+        "inputTriangleCount": len(triangles),
+        "outputTriangleCount": len(unique_triangles),
+        "removedDuplicateFaceCount": len(removed),
+        "removedDuplicateFaces": removed[:16],
+        "removedDuplicateFaceSampleLimit": 16,
+    }
+
+
+def _no_topology_repair_evidence(mesh: Mesh) -> dict[str, Any]:
+    return {
+        "auditVersion": "closy.stitched_shell_topology_repair.duplicate_face_culling_v1",
+        "duplicateFaceCullRun": False,
+        "status": "not_run",
+        "inputTriangleCount": len(mesh.triangles),
+        "outputTriangleCount": len(mesh.triangles),
+        "removedDuplicateFaceCount": 0,
+        "removedDuplicateFaces": [],
+        "removedDuplicateFaceSampleLimit": 16,
+    }
 
 
 def _mesh_payload(meshset: MeshSet) -> dict[str, Any]:
@@ -595,7 +671,7 @@ def _seam_span_coverage(
 ) -> dict[str, Any]:
     input_constraints = constraints.get("constraints", [])
     required_ids = [
-        str(constraint.get("id", f"constraint.{index:03d}"))
+        _constraint_operation_id(constraint, index)
         for index, constraint in enumerate(input_constraints)
         if isinstance(constraint, dict) and constraint.get("enabled", True) is not False
     ]
