@@ -91,6 +91,7 @@ from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
     hash_correction_record,
+    hash_fused_evidence,
     hash_multiview_fusion_record,
     hash_visual_observations,
 )
@@ -984,10 +985,17 @@ def _validate_fitting(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
     visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    fusion = _read_required_json(package_dir, "source/multiview_fusion.json", issues)
     fit_report = _read_required_json(package_dir, "fitting/tshirt_fit.json", issues)
-    if visual is None or fit_report is None:
+    if visual is None or fusion is None or fit_report is None:
         return
     declared_visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
+    declared_fusion_hash = _nested_string(
+        fusion,
+        ["integrity", "multiviewFusionRecordHash"],
+        "",
+    )
+    declared_fused_hash = hash_fused_evidence(fusion.get("fusedEvidence", {}))
     if fit_report.get("sourceVisualUnderstandingId") != visual.get("visualUnderstandingId"):
         issues.append(
             _issue(
@@ -1004,6 +1012,44 @@ def _validate_fitting(
                 "fatal",
                 "fitting/tshirt_fit.json",
                 "Fit report must reference the visual observation hash.",
+            )
+        )
+    if fit_report.get("sourceMultiviewFusionId") != fusion.get("fusionRecordId"):
+        issues.append(
+            _issue(
+                "fitting_multiview_fusion_id_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit report must reference the multiview fusion record ID.",
+            )
+        )
+    if fit_report.get("sourceMultiviewFusionHash") != declared_fusion_hash:
+        issues.append(
+            _issue(
+                "fitting_multiview_fusion_hash_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit report must reference the multiview fusion record hash.",
+            )
+        )
+    if fit_report.get("sourceFusedEvidenceHash") != declared_fused_hash:
+        issues.append(
+            _issue(
+                "fitting_fused_evidence_hash_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit report must reference the fused visual evidence hash.",
+            )
+        )
+    if fit_report.get("sourceCorrectedVisualRecordHash") != fusion.get(
+        "sourceCorrectedVisualRecordHash"
+    ):
+        issues.append(
+            _issue(
+                "fitting_corrected_visual_hash_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit report must reference the corrected visual record hash.",
             )
         )
     if _nested_string(fit_report, ["integrity", "fitReportHash"], "") != hash_tshirt_fit_report(
@@ -1038,7 +1084,9 @@ def _validate_fitting(
         )
     else:
         try:
-            TShirtParameters(**{key: float(value) for key, value in fitted_parameters.items()})
+            TShirtParameters(
+                **{key: float(value) for key, value in fitted_parameters.items()}
+            ).validate()
         except (TypeError, ValueError) as exc:
             issues.append(
                 _issue(
@@ -1093,6 +1141,156 @@ def _validate_fitting(
                     "Parameter delta exceeds fit threshold.",
                 )
             )
+        if _float_or(losses.get("multiviewSilhouetteMeanIoU"), 0.0) < _float_or(
+            thresholds.get("minimumMultiviewSilhouetteMeanIoU"), 1.0
+        ):
+            issues.append(
+                _issue(
+                    "tshirt_fit_multiview_silhouette_too_low",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    "Multiview silhouette IoU is below fit threshold.",
+                )
+            )
+        for loss_key, threshold_key, code, message in [
+            (
+                "boundaryErrorNormalised",
+                "maximumBoundaryErrorNormalised",
+                "tshirt_fit_boundary_error_too_high",
+                "Boundary error exceeds fit threshold.",
+            ),
+            (
+                "landmarkErrorNormalised",
+                "maximumLandmarkErrorNormalised",
+                "tshirt_fit_landmark_error_too_high",
+                "Landmark error exceeds fit threshold.",
+            ),
+            (
+                "openingAlignmentErrorNormalised",
+                "maximumOpeningAlignmentErrorNormalised",
+                "tshirt_fit_opening_alignment_too_high",
+                "Opening alignment error exceeds fit threshold.",
+            ),
+            (
+                "cameraBodyAlignmentErrorNormalised",
+                "maximumCameraBodyAlignmentErrorNormalised",
+                "tshirt_fit_camera_alignment_too_high",
+                "Camera/body alignment error exceeds fit threshold.",
+            ),
+            (
+                "seamLengthEasePenalty",
+                "maximumSeamLengthEasePenalty",
+                "tshirt_fit_seam_ease_penalty_too_high",
+                "Seam/length/ease penalty exceeds fit threshold.",
+            ),
+            (
+                "parameterErrorMeters",
+                "maximumParameterErrorMeters",
+                "tshirt_fit_parameter_error_too_high",
+                "Independent parameter error exceeds fit threshold.",
+            ),
+            (
+                "confidenceWeightedLoss",
+                "maximumConfidenceWeightedLoss",
+                "tshirt_fit_confidence_weighted_loss_too_high",
+                "Confidence-weighted fit loss exceeds fit threshold.",
+            ),
+        ]:
+            if _float_or(losses.get(loss_key), 1.0) > _float_or(thresholds.get(threshold_key), 0.0):
+                issues.append(_issue(code, "fatal", "fitting/tshirt_fit.json", message))
+    evidence_separation = fit_report.get("evidenceSeparation", {})
+    if (
+        not isinstance(evidence_separation, dict)
+        or evidence_separation.get("expectedParametersFromFixtureSource") is not False
+    ):
+        issues.append(
+            _issue(
+                "tshirt_fit_evidence_separation_missing",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit must separate observed evidence from prior/fixture parameters.",
+            )
+        )
+    else:
+        observed_evidence = evidence_separation.get("observedEvidence", [])
+        if not isinstance(observed_evidence, list) or len(observed_evidence) < 2:
+            issues.append(
+                _issue(
+                    "tshirt_fit_observed_evidence_incomplete",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    "BP52 fit must list visual and fused observed evidence.",
+                )
+            )
+    if not isinstance(fit_report.get("boundedParameterSpace"), dict):
+        issues.append(
+            _issue(
+                "tshirt_fit_bounded_parameter_space_missing",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit must declare bounded T-shirt parameter space.",
+            )
+        )
+    trace = fit_report.get("optimizationTrace", [])
+    if not isinstance(trace, list) or len(trace) < 4:
+        issues.append(
+            _issue(
+                "tshirt_fit_optimization_trace_incomplete",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit must include an iterative optimisation trace.",
+            )
+        )
+    convergence = fit_report.get("convergence", {})
+    if not isinstance(convergence, dict) or convergence.get("status") != "converged_d0_synthetic":
+        issues.append(
+            _issue(
+                "tshirt_fit_not_converged",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit convergence diagnostics must report D0 convergence.",
+            )
+        )
+    alternatives = fit_report.get("alternatives", [])
+    if not isinstance(alternatives, list) or len(alternatives) < 2:
+        issues.append(
+            _issue(
+                "tshirt_fit_alternatives_missing",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit must include multiple hypotheses for ambiguous evidence.",
+            )
+        )
+    held_out = fit_report.get("heldOutEvaluation", {})
+    if not isinstance(held_out, dict) or held_out.get("status") != "pass":
+        issues.append(
+            _issue(
+                "tshirt_fit_held_out_evaluation_failed",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit must pass held-out view evaluation for this fixture.",
+            )
+        )
+    perturbation = fit_report.get("perturbationEvaluation", {})
+    if not isinstance(perturbation, dict) or perturbation.get("status") != "pass":
+        issues.append(
+            _issue(
+                "tshirt_fit_perturbation_evaluation_failed",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit must pass deterministic perturbation evaluation.",
+            )
+        )
+    settled = fit_report.get("settledRenderComparison", {})
+    if not isinstance(settled, dict) or "status" not in settled:
+        issues.append(
+            _issue(
+                "tshirt_fit_settled_render_comparison_status_missing",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 fit must report settled-render/drape comparison status truthfully.",
+            )
+        )
     caps = manifest.get("capabilities", {})
     if not isinstance(caps, dict):
         return
@@ -1114,6 +1312,27 @@ def _validate_fitting(
                 "Manifest must declare fitting quality scoring availability.",
             )
         )
+    for key, code in [
+        ("imageConditionedFittingAvailable", "image_conditioned_fitting_capability_missing"),
+        ("multiviewFittingLossAvailable", "multiview_fitting_loss_capability_missing"),
+        ("confidenceWeightedFittingAvailable", "confidence_weighted_fitting_capability_missing"),
+        ("fittingPriorsSeparatedAvailable", "fitting_priors_separated_capability_missing"),
+        ("fittingOptimizationTraceAvailable", "fitting_optimization_trace_capability_missing"),
+        ("fitAlternativesAvailable", "fit_alternatives_capability_missing"),
+        (
+            "heldOutPerturbationFitEvaluationAvailable",
+            "held_out_perturbation_fit_capability_missing",
+        ),
+    ]:
+        if caps.get(key) is not True:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "manifest.json",
+                    f"Manifest capability {key} must be true for BP52 fitting.",
+                )
+            )
     if _contains_nonfinite(fit_report):
         issues.append(
             _issue(

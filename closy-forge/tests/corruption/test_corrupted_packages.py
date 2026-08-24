@@ -334,6 +334,22 @@ def test_tshirt_fit_loss_threshold_is_rejected(tmp_path) -> None:  # type: ignor
     assert "tshirt_fit_landmark_loss_too_high" in issue_codes(validate_package(corrupt))
 
 
+def test_tshirt_fit_multiview_source_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_fit_fusion_hash.closygarment")
+    fit = read_json(corrupt / "fitting" / "tshirt_fit.json")
+    fit["sourceMultiviewFusionHash"] = "0" * 64
+    write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
+    assert "fitting_multiview_fusion_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_tshirt_fit_fixture_expected_parameters_are_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_fit_evidence.closygarment")
+    fit = read_json(corrupt / "fitting" / "tshirt_fit.json")
+    fit["evidenceSeparation"]["expectedParametersFromFixtureSource"] = True
+    write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
+    assert "tshirt_fit_evidence_separation_missing" in issue_codes(validate_package(corrupt))
+
+
 def test_texture_identity_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_texture_hash.closygarment")
     texture = read_json(corrupt / "textures" / "texture_identity.json")
