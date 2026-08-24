@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp53-source-texture-pbr-recovery-local-v1"
-    assert payload["generatedBy"] == "BP-53 source texture PBR recovery local evidence"
+    assert payload["version"] == "bp53-source-texture-pbr-recovery-remote-v1"
+    assert payload["generatedBy"] == "BP-53 source texture PBR recovery remote CI evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -346,6 +346,7 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert any("sourceTextureAvailable=true" in item for item in bp53["executableEvidence"])
     assert any("16 source projections" in item for item in bp53["executableEvidence"])
     assert any("89 files each" in item for item in bp53["executableEvidence"])
+    assert any("remote Actions run 32741055846" in item for item in bp53["executableEvidence"])
     assert "private-user source textures" in bp53["limitations"]
     assert "foundation-proof closeout" in bp53["nextAction"]
 

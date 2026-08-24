@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-53 source texture PBR recovery local evidence",
+  "generatedBy": "BP-53 source texture PBR recovery remote CI evidence",
   "rows": [
     {
       "commitSha": [
@@ -324,7 +324,8 @@
         "source projection bundle emits textures/source_projection.json, textures/generated_atlas.json, textures/pbr_material_maps.json and textures/conventional_fallback_materials.json with canonical artifact hashes",
         "report records sourceTextureAvailable=true, generatedAtlasAvailable=true, textureProjectionRun=true, 16 source projections, 16 visible projections, mean visible confidence 0.925, one source-backed PBR map and five truthful placeholder maps",
         "controlled inpainting interface rejects visible-evidence overwrite and only marks hidden/unseen regions as generated placeholders",
-        "local full pytest exited 0 after 192 collected Forge tests; two OS-temp BP53 package builds are byte-identical with 89 files each, digest a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e and only self_collision_not_run formal warning"
+        "local full pytest exited 0 after 192 collected Forge tests; two OS-temp BP53 package builds are byte-identical with 89 files each, digest a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e and only self_collision_not_run formal warning",
+        "remote Actions run 32741055846 passed Ubuntu job 97475348702 and Windows job 97475348519 with 192 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e and only self_collision_not_run formal warning"
       ],
       "id": "BP-53-SOURCE-TEXTURE-PBR-RECOVERY",
       "implementationPaths": [
@@ -1609,7 +1610,8 @@
       "dependencies": [],
       "executableEvidence": [
         "ledger row evidence and package reports",
-        "BP53 D0 source texture identity and PBR recovery emits texture projection, generated atlas, PBR map and conventional fallback artifacts"
+        "BP53 D0 source texture identity and PBR recovery emits texture projection, generated atlas, PBR map and conventional fallback artifacts",
+        "remote Actions run 32741055846 passed Ubuntu/Windows with 192 tests per OS, fresh schemas, identical 89-file package trees and only self_collision_not_run formal warning"
       ],
       "id": "BP-17-PHASE-04",
       "implementationPaths": [
@@ -2527,5 +2529,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp53-source-texture-pbr-recovery-local-v1"
+  "version": "bp53-source-texture-pbr-recovery-remote-v1"
 }

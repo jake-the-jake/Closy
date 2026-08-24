@@ -11,17 +11,18 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Phase-4 branch point: `bb496684f4ba9c41fdfe5c69bc272679aaecafac`
 - Latest implementation commit SHA: `9fc004d429d9187bfd427586ca43af65e54ec2f5`
 - Latest implementation commit subject: `Add BP53 source texture recovery`
-- Record based on SHA: `9fc004d429d9187bfd427586ca43af65e54ec2f5`; this resume file itself belongs to the follow-up BP53 local-evidence truth-sync commit.
-- Draft PR: not yet created for Phase 4 at the time this resume record was edited; create it after the BP53 truth-sync commit is pushed, targeting `codex/closy-forge-phase-3-fitting`.
+- Record based on SHA: `cbd675ea93dc46600db3ca4a1932c8a642888b9e`; this resume file itself belongs to the follow-up BP53 remote-evidence truth-sync commit.
+- Draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Parent draft PR: `https://github.com/jake-the-jake/Closy/pull/3`, draft/open, stacked on `codex/closy-forge-phase-2-capture`.
 - Grandparent draft PR: `https://github.com/jake-the-jake/Closy/pull/2`, draft/open, stacked on `codex/closy-forge-phase-0`.
 - Last remote green evidence inherited from Phase 3: GitHub Actions run `32729539416`; Ubuntu job `97438405296` and Windows job `97438405597` passed at commit `bb496684f4ba9c41fdfe5c69bc272679aaecafac`.
 - Last remote Phase-3 matrix details: each OS ran 112 format-checked files, 89 mypy source files, 189 tests, fresh schemas, identical 85-file package trees, digest `1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790`, and validation/report with only `self_collision_not_run`.
 - Current local BP53 evidence after `9fc004d`: `ruff format --check .` reported 112 files already formatted; `ruff check .` passed; `mypy src` passed over 89 source files; schema export wrote 49 schemas; schema check reported `{"issues":[],"status":"fresh"}`; focused BP53 texture/integration/golden/corruption tests passed; full `pytest -q` exited 0 after 192 collected tests; two OS-temp package builds were byte-identical with 89 files each and digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`; `packages diff`, `validate --json` and `report --json` passed with one formal warning.
+- Last remote BP53 evidence before this truth-sync update: GitHub Actions run `32741055846` passed at commit `cbd675ea93dc46600db3ca4a1932c8a642888b9e`; Ubuntu job `97475348702` passed in 5m8s and Windows job `97475348519` passed in 7m47s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
 - Current BP53 package texture summary: `sourceTextureAvailable=true`, `generatedAtlasAvailable=true`, `textureProjectionRun=true`, `sourceProjectionCount=16`, `visibleProjectionCount=16`, `meanVisibleConfidence=0.925`, `pbrSourceBackedMapCount=1`, `pbrPlaceholderMapCount=5`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state remains rejected; clean/canonical acceptance remains false.
-- Current in-progress uncommitted work, if this file is read before the next commit: BP53 local-evidence truth-sync update.
+- Current in-progress uncommitted work, if this file is read before the next commit: BP53 remote-evidence truth-sync update.
 - Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
 
 ## Current BP-46/BP-47/BP-48/BP-49/BP-50/BP-51/BP-52/BP-53 Truth
@@ -103,8 +104,7 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for the BP53 Phase-4 branch.
-- Remote CI has not yet run for this BP53 local-evidence truth-sync commit if this file is read before it is pushed.
+- Remote CI has not yet run for this BP53 remote-evidence truth-sync commit if this file is read before it is pushed.
 
 ## Next Exact Command
 
@@ -115,4 +115,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Validate this BP53 local-evidence truth-sync update, commit it, push normally to `codex/closy-forge-phase-4-texture`, create/update the Phase-4 draft PR against `codex/closy-forge-phase-3-fitting`, inspect remote Ubuntu/Windows Forge CI, then freeze Phase 4 after remote green and branch `codex/closy-forge-foundation-proof-closeout`.
+Validate this BP53 remote-evidence truth-sync update, commit it, push normally to `codex/closy-forge-phase-4-texture`, update the Phase-4 draft PR against `codex/closy-forge-phase-3-fitting`, inspect remote Ubuntu/Windows Forge CI, then freeze Phase 4 after remote green and branch `codex/closy-forge-foundation-proof-closeout`.
