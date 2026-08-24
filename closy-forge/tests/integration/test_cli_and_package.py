@@ -105,6 +105,14 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["multiviewFusion"]["fusedLandmarkCount"] == 10
     assert payload["multiviewFusion"]["expensiveDownstreamAllowed"] is True
     assert payload["fitting"]["status"] == "pass"
+    assert payload["fitting"]["method"] == (
+        "deterministic_multiview_image_conditioned_from_fused_raster_evidence"
+    )
+    assert payload["fitting"]["multiviewSilhouetteMeanIoU"] >= 0.93
+    assert payload["fitting"]["confidenceWeightedLoss"] <= 0.03
+    assert payload["fitting"]["optimizationIterations"] == 4
+    assert payload["fitting"]["heldOutStatus"] == "pass"
+    assert payload["fitting"]["perturbationStatus"] == "pass"
     assert payload["texture"]["sourceTextureAvailable"] is False
     assert payload["texture"]["materialRegionCount"] == 2
     assert payload["geometryProposal"]["qualityStatus"] == "accepted_visual_reference"

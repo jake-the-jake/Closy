@@ -114,10 +114,20 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
         "fitting": {
             "fitReportId": fitting["fitReportId"],
             "fitterVersion": fitting["fitterVersion"],
+            "method": fitting["method"],
             "status": fitting["status"],
             "accepted": fitting["accepted"],
             "landmarkRmsNormalised": fitting["losses"]["landmarkRmsNormalised"],
             "maskWidthErrorMeters": fitting["losses"]["maskWidthErrorMeters"],
+            "multiviewSilhouetteMeanIoU": fitting["losses"].get("multiviewSilhouetteMeanIoU"),
+            "boundaryErrorNormalised": fitting["losses"].get("boundaryErrorNormalised"),
+            "openingAlignmentErrorNormalised": fitting["losses"].get(
+                "openingAlignmentErrorNormalised"
+            ),
+            "confidenceWeightedLoss": fitting["losses"].get("confidenceWeightedLoss"),
+            "optimizationIterations": fitting.get("convergence", {}).get("iterationCount", 0),
+            "heldOutStatus": fitting.get("heldOutEvaluation", {}).get("status"),
+            "perturbationStatus": fitting.get("perturbationEvaluation", {}).get("status"),
         },
         "texture": {
             "textureIdentityId": texture["textureIdentityId"],
@@ -583,7 +593,9 @@ def human_report(package_dir: Path) -> str:
             ),
             (
                 f"Fitting: {fitting['status']} via {fitting['fitterVersion']}, "
-                f"landmark RMS {fitting['landmarkRmsNormalised']:.6f}"
+                f"landmark RMS {fitting['landmarkRmsNormalised']:.6f}, "
+                f"multiview IoU={fitting['multiviewSilhouetteMeanIoU']:.6f}, "
+                f"optimisation iterations={fitting['optimizationIterations']}"
             ),
             (
                 f"Texture identity: {texture['status']}, "

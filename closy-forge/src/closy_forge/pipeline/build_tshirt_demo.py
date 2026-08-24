@@ -204,7 +204,11 @@ def _write_package_contents(
     multiview_fusion = build_multiview_fusion_record(
         capture_record, visual_observations, correction_record
     )
-    fit_report = fit_tshirt_parameters_from_visual_observations(visual_observations, prior=params)
+    fit_report = fit_tshirt_parameters_from_visual_observations(
+        visual_observations,
+        multiview_fusion=multiview_fusion,
+        prior=params,
+    )
     render_materials = _render_materials()
     texture_identity = build_texture_identity_report(
         capture_record=capture_record,
@@ -1158,7 +1162,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "bp51_multiview_capture_fusion_d0_fixture",
+            "name": "bp52_image_conditioned_tshirt_fitting_d0_fixture",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1168,9 +1172,11 @@ def _manifest(
             "synthetic_capture_metadata_only",
             "d0_pixel_parser_synthetic_fixture_only",
             "d0_multiview_fusion_synthetic_fixture_only",
+            "d0_image_conditioned_fitting_synthetic_fixture_only",
             "local_algorithmic_parser_not_trained_model",
             "private_user_raster_processing_not_enabled",
             "synthetic_fit_not_trained_from_real_images",
+            "settled_render_or_drape_comparison_not_run",
             "source_texture_projection_not_run",
             "manual_raw_geometry_proposal_not_canonical",
             "partial_geometry_cleanup_not_clean_proposal",
@@ -1230,6 +1236,14 @@ def _capabilities() -> dict[str, bool]:
         "learnedSegmentationModelAvailable": False,
         "tshirtParameterFitAvailable": True,
         "fittingQualityScored": True,
+        "imageConditionedFittingAvailable": True,
+        "multiviewFittingLossAvailable": True,
+        "confidenceWeightedFittingAvailable": True,
+        "fittingPriorsSeparatedAvailable": True,
+        "fittingOptimizationTraceAvailable": True,
+        "fitAlternativesAvailable": True,
+        "heldOutPerturbationFitEvaluationAvailable": True,
+        "settledRenderFitComparisonAvailable": False,
         "textureIdentityEvidenceAvailable": True,
         "pbrMaterialObservationAvailable": True,
         "geometryProposalInterfaceAvailable": True,
@@ -1397,10 +1411,16 @@ def _quality_reports(
             "status": fit_report["status"],
             "fitReportId": fit_report["fitReportId"],
             "sourceVisualUnderstandingId": fit_report["sourceVisualUnderstandingId"],
+            "sourceMultiviewFusionId": fit_report.get("sourceMultiviewFusionId"),
             "accepted": fit_report["accepted"],
             "method": fit_report["method"],
+            "imageConditioned": fit_report["method"].startswith("deterministic_multiview"),
             "losses": fit_report["losses"],
             "thresholds": fit_report["thresholds"],
+            "convergence": fit_report.get("convergence"),
+            "heldOutEvaluation": fit_report.get("heldOutEvaluation"),
+            "perturbationEvaluation": fit_report.get("perturbationEvaluation"),
+            "settledRenderComparison": fit_report.get("settledRenderComparison"),
             "warnings": fit_report["warnings"],
         },
         "texture_quality.json": {
@@ -1616,8 +1636,19 @@ def _provenance(
                     "method": fit_report["method"],
                     "accepted": bool(fit_report["accepted"]),
                     "status": fit_report["status"],
+                    "sourceMultiviewFusionId": fit_report.get("sourceMultiviewFusionId"),
+                    "multiviewSilhouetteMeanIoU": fit_report["losses"].get(
+                        "multiviewSilhouetteMeanIoU"
+                    ),
+                    "optimizationIterations": fit_report.get("convergence", {}).get(
+                        "iterationCount",
+                        0,
+                    ),
                 },
-                [str(fit_report["integrity"]["fitReportHash"])],
+                [
+                    str(fit_report["integrity"]["fitReportHash"]),
+                    str(multiview_fusion["integrity"]["multiviewFusionRecordHash"]),
+                ],
             ),
             _stage(
                 "synthetic_texture_identity_scaffold",
@@ -2368,10 +2399,23 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
         "fitting": {
             "fitReportId": fit_report["fitReportId"],
             "fitterVersion": fit_report["fitterVersion"],
+            "method": fit_report["method"],
             "status": fit_report["status"],
             "accepted": fit_report["accepted"],
             "landmarkRmsNormalised": fit_report["losses"]["landmarkRmsNormalised"],
             "maskWidthErrorMeters": fit_report["losses"]["maskWidthErrorMeters"],
+            "multiviewSilhouetteMeanIoU": fit_report["losses"].get("multiviewSilhouetteMeanIoU"),
+            "boundaryErrorNormalised": fit_report["losses"].get("boundaryErrorNormalised"),
+            "openingAlignmentErrorNormalised": fit_report["losses"].get(
+                "openingAlignmentErrorNormalised"
+            ),
+            "confidenceWeightedLoss": fit_report["losses"].get("confidenceWeightedLoss"),
+            "optimizationIterations": fit_report.get("convergence", {}).get(
+                "iterationCount",
+                0,
+            ),
+            "heldOutStatus": fit_report.get("heldOutEvaluation", {}).get("status"),
+            "perturbationStatus": fit_report.get("perturbationEvaluation", {}).get("status"),
             "fittedParameters": fit_report["fittedParameters"],
         },
         "texture": {
@@ -2972,7 +3016,9 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"downstream allowed={summary['multiviewFusion']['expensiveDownstreamAllowed']}\n"
         f"- Fitting: {summary['fitting']['status']} via "
         f"`{summary['fitting']['fitterVersion']}`, landmark RMS "
-        f"{summary['fitting']['landmarkRmsNormalised']:.6f}\n"
+        f"{summary['fitting']['landmarkRmsNormalised']:.6f}, "
+        f"multiview IoU={summary['fitting']['multiviewSilhouetteMeanIoU']:.6f}, "
+        f"optimisation iterations={summary['fitting']['optimizationIterations']}\n"
         f"- Texture identity: {summary['texture']['status']}, "
         f"{summary['texture']['materialRegionCount']} PBR material observations, "
         f"source textures available={summary['texture']['sourceTextureAvailable']}\n"
