@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp48-render-frame-pose-suite-v1"
-    assert payload["generatedBy"] == "BP-48 persisted render frames and pose-suite pass"
+    assert payload["version"] == "bp49-raster-ingestion-privacy-v1"
+    assert payload["generatedBy"] == "BP-49 privacy-safe local raster fixture ingestion"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -74,6 +74,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
         "BP-46-STITCHED-SHELL-OUTPUT",
         "BP-47-INSPECTION-ARTIFACTS",
         "BP-48-PERSISTED-FRAMES-TANGENTS",
+        "BP-49-RASTER-INGESTION-PRIVACY",
         "REPO-HYGIENE-GITLINKS",
         "REPO-HYGIENE-CI-DIAGNOSTICS",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
@@ -219,15 +220,31 @@ def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
     assert "BP-49" in bp48["nextAction"]
 
 
-def test_markdown_ledger_matches_bp48_and_hygiene_checkpoint_state() -> None:
+def test_bp49_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    bp49 = rows_by_id["BP-49-RASTER-INGESTION-PRIVACY"]
+
+    assert bp49["status"] == "partial"
+    assert "0db14ee" in bp49["commitSha"]
+    assert "fixture-only synthetic_fixture_raster_v1 profile" in bp49["executableEvidence"]
+    assert (
+        "pixel-derived PNG exposure/sharpness/alpha/resolution/framing quality"
+        in bp49["executableEvidence"]
+    )
+    assert "tests/unit/test_raster_sources.py" in bp49["tests"]
+    assert "BP-50" in bp49["nextAction"]
+
+
+def test_markdown_ledger_matches_bp49_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `0e743bb`" in ledger
-    assert "Current active increment: `BP-49-RASTER-INGESTION-PRIVACY`" in ledger
-    assert "Next dependency-ready increment: `BP-49-RASTER-INGESTION-PRIVACY`" in ledger
+    assert "Latest completed implementation commit when last updated: `0db14ee`" in ledger
+    assert "Current active increment: `BP-50-PIXEL-PARSING-CORRECTIONS`" in ledger
+    assert "Next dependency-ready increment: `BP-50-PIXEL-PARSING-CORRECTIONS`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
+    assert "| BP-49-RASTER-INGESTION-PRIVACY | partial |" in ledger
     assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| REPO-HYGIENE-CI-DIAGNOSTICS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
