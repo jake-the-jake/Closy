@@ -117,7 +117,7 @@ from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
     CORRECTION_RECORD_VERSION,
     TSHIRT_VISUAL_OBSERVATION_VERSION,
-    build_empty_correction_record,
+    build_default_applied_correction_record,
     build_tshirt_visual_observations,
 )
 
@@ -198,7 +198,7 @@ def _write_package_contents(
     )
     capture_quality = score_capture_record(capture_record)
     visual_observations = build_tshirt_visual_observations(capture_record)
-    correction_record = build_empty_correction_record(visual_observations)
+    correction_record = build_default_applied_correction_record(visual_observations)
     fit_report = fit_tshirt_parameters_from_visual_observations(visual_observations, prior=params)
     render_materials = _render_materials()
     texture_identity = build_texture_identity_report(
@@ -1135,7 +1135,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "implementation_26_bp48_frame_pose_suite",
+            "name": "bp50_pixel_parsing_corrections_d0_fixture",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1143,7 +1143,9 @@ def _manifest(
         "warnings": [
             "self_collision_not_run",
             "synthetic_capture_metadata_only",
-            "synthetic_visual_observations_not_real_segmentation",
+            "d0_pixel_parser_synthetic_fixture_only",
+            "local_algorithmic_parser_not_trained_model",
+            "private_user_raster_processing_not_enabled",
             "synthetic_fit_not_trained_from_real_images",
             "source_texture_projection_not_run",
             "manual_raw_geometry_proposal_not_canonical",
@@ -1165,7 +1167,7 @@ def _manifest(
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "25-bp47-inspection-artifacts"},
+        "extensions": {"closyImplementation": "bp50-pixel-parsing-corrections"},
     }
 
 
@@ -1186,6 +1188,14 @@ def _capabilities() -> dict[str, bool]:
         "garmentMaskAvailable": True,
         "garmentLandmarksAvailable": True,
         "editableCorrectionRecordAvailable": True,
+        "localRasterFixtureIngestionAvailable": True,
+        "pixelDerivedVisualParsingAvailable": True,
+        "targetGarmentPersonBackgroundMasksAvailable": True,
+        "tshirtSemanticPartMasksAvailable": True,
+        "tshirtOpeningBoundaryEvidenceAvailable": True,
+        "structuredCorrectionReplayAvailable": True,
+        "privateUserRasterProcessingAvailable": False,
+        "learnedSegmentationModelAvailable": False,
         "tshirtParameterFitAvailable": True,
         "fittingQualityScored": True,
         "textureIdentityEvidenceAvailable": True,
@@ -1277,14 +1287,55 @@ def _quality_reports(
             "schemaVersion": 1,
             "status": "pass",
             "visualUnderstandingId": visual_observations["visualUnderstandingId"],
+            "stageVersion": visual_observations["stageVersion"],
             "sourceRecordId": visual_observations["sourceRecordId"],
+            "providerAlgorithmVersion": visual_observations["provider"].get("algorithmVersion"),
             "maskCount": visual_observations["aggregate"]["maskCount"],
+            "targetGarmentMaskCount": visual_observations["aggregate"].get(
+                "targetGarmentMaskCount",
+                0,
+            ),
+            "personBodyProxyMaskCount": visual_observations["aggregate"].get(
+                "personBodyProxyMaskCount",
+                0,
+            ),
+            "backgroundMaskCount": visual_observations["aggregate"].get(
+                "backgroundMaskCount",
+                0,
+            ),
+            "occlusionUncertaintyMaskCount": visual_observations["aggregate"].get(
+                "occlusionUncertaintyMaskCount",
+                0,
+            ),
+            "semanticPartCount": visual_observations["aggregate"].get("semanticPartCount", 0),
+            "openingBoundaryCount": visual_observations["aggregate"].get(
+                "openingBoundaryCount",
+                0,
+            ),
+            "pixelDerivedViewCount": visual_observations["aggregate"].get(
+                "pixelDerivedViewCount",
+                0,
+            ),
             "observedLandmarkCount": len(visual_observations["aggregate"]["observedLandmarks"]),
             "requiredLandmarkCount": len(visual_observations["aggregate"]["requiredLandmarks"]),
             "meanMaskConfidence": visual_observations["aggregate"]["meanMaskConfidence"],
             "meanLandmarkConfidence": visual_observations["aggregate"]["meanLandmarkConfidence"],
+            "metrics": {
+                "meanMaskIoU": visual_observations["aggregate"].get("meanMaskIoU"),
+                "meanBoundaryFScore": visual_observations["aggregate"].get("meanBoundaryFScore"),
+                "meanSemanticPartIoU": visual_observations["aggregate"].get("meanSemanticPartIoU"),
+                "meanLandmarkErrorNormalised": visual_observations["aggregate"].get(
+                    "meanLandmarkErrorNormalised"
+                ),
+                "openingPrecision": visual_observations["aggregate"].get("openingPrecision"),
+                "openingRecall": visual_observations["aggregate"].get("openingRecall"),
+            },
             "correctionRecordId": correction_record["correctionRecordId"],
             "correctionOperationCount": len(correction_record["operations"]),
+            "correctionApplicationStatus": correction_record.get("application", {}).get("status"),
+            "correctedVisualRecordHash": correction_record.get("application", {}).get(
+                "afterVisualRecordHash"
+            ),
             "warnings": visual_observations["warnings"],
         },
         "fitting_quality.json": {
@@ -2173,13 +2224,49 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
         },
         "visualUnderstanding": {
             "visualUnderstandingId": visual_observations["visualUnderstandingId"],
+            "stageVersion": visual_observations["stageVersion"],
+            "providerAlgorithmVersion": visual_observations["provider"].get("algorithmVersion"),
             "maskCount": visual_observations["aggregate"]["maskCount"],
+            "targetGarmentMaskCount": visual_observations["aggregate"].get(
+                "targetGarmentMaskCount",
+                0,
+            ),
+            "personBodyProxyMaskCount": visual_observations["aggregate"].get(
+                "personBodyProxyMaskCount",
+                0,
+            ),
+            "backgroundMaskCount": visual_observations["aggregate"].get(
+                "backgroundMaskCount",
+                0,
+            ),
+            "occlusionUncertaintyMaskCount": visual_observations["aggregate"].get(
+                "occlusionUncertaintyMaskCount",
+                0,
+            ),
+            "semanticPartCount": visual_observations["aggregate"].get("semanticPartCount", 0),
+            "openingBoundaryCount": visual_observations["aggregate"].get(
+                "openingBoundaryCount",
+                0,
+            ),
+            "pixelDerivedViewCount": visual_observations["aggregate"].get(
+                "pixelDerivedViewCount",
+                0,
+            ),
             "observedLandmarkCount": len(visual_observations["aggregate"]["observedLandmarks"]),
             "requiredLandmarkCount": len(visual_observations["aggregate"]["requiredLandmarks"]),
             "meanMaskConfidence": visual_observations["aggregate"]["meanMaskConfidence"],
             "meanLandmarkConfidence": visual_observations["aggregate"]["meanLandmarkConfidence"],
+            "meanMaskIoU": visual_observations["aggregate"].get("meanMaskIoU"),
+            "meanBoundaryFScore": visual_observations["aggregate"].get("meanBoundaryFScore"),
+            "meanSemanticPartIoU": visual_observations["aggregate"].get("meanSemanticPartIoU"),
+            "meanLandmarkErrorNormalised": visual_observations["aggregate"].get(
+                "meanLandmarkErrorNormalised"
+            ),
+            "openingPrecision": visual_observations["aggregate"].get("openingPrecision"),
+            "openingRecall": visual_observations["aggregate"].get("openingRecall"),
             "correctionRecordId": correction_record["correctionRecordId"],
             "correctionOperationCount": len(correction_record["operations"]),
+            "correctionApplicationStatus": correction_record.get("application", {}).get("status"),
         },
         "fitting": {
             "fitReportId": fit_report["fitReportId"],
@@ -2774,9 +2861,13 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Synthetic capture: {summary['capture']['viewCount']} metadata-only views, "
         f"quality {summary['capture']['overallScore']:.6f} "
         f"({summary['capture']['overallStatus']})\n"
-        f"- Visual observations: {summary['visualUnderstanding']['maskCount']} masks, "
+        "- Visual observations: "
+        f"{summary['visualUnderstanding']['maskCount']} pixel-derived masks, "
         f"{summary['visualUnderstanding']['observedLandmarkCount']} T-shirt landmarks, "
-        f"{summary['visualUnderstanding']['correctionOperationCount']} corrections\n"
+        f"{summary['visualUnderstanding']['semanticPartCount']} parts, "
+        f"{summary['visualUnderstanding']['openingBoundaryCount']} openings, "
+        f"{summary['visualUnderstanding']['correctionOperationCount']} applied corrections, "
+        f"mean IoU={summary['visualUnderstanding']['meanMaskIoU']:.6f}\n"
         f"- Fitting: {summary['fitting']['status']} via "
         f"`{summary['fitting']['fitterVersion']}`, landmark RMS "
         f"{summary['fitting']['landmarkRmsNormalised']:.6f}\n"

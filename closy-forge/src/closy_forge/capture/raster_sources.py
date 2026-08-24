@@ -52,6 +52,16 @@ class RasterIngestResult:
     privacy_report: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class DecodedRasterPixels:
+    width: int
+    height: int
+    mime: str
+    rgba: bytes
+    pixel_hash: str
+    decoded_content_sha256: str
+
+
 def ingest_raster_fixture_manifest(
     *,
     manifest_path: Path,
@@ -429,6 +439,39 @@ def inspect_raster(path: Path, *, declared_mime: str) -> dict[str, Any]:
         ),
         **parsed,
     }
+
+
+def decode_raster_fixture_pixels(path: Path, *, declared_mime: str) -> DecodedRasterPixels:
+    """Decode approved fixture PNG pixels for D0 visual-understanding tests.
+
+    JPEG remains structural-only in the stdlib profile, so this helper fails
+    closed for JPEG instead of pretending decoded pixels are available.
+    """
+
+    audit = inspect_raster(path, declared_mime=declared_mime)
+    if audit["verifiedMime"] != "image/png":
+        raise RasterIngestError("decoded_pixels_unavailable_for_mime")
+    data = path.read_bytes()
+    chunks = _png_chunks(data)
+    width, height, bit_depth, color_type, compression, filter_method, interlace = struct.unpack(
+        ">IIBBBBB", chunks[0][1]
+    )
+    if bit_depth != 8 or color_type not in {0, 2, 4, 6}:
+        raise RasterIngestError("unsupported_png_color_type_or_bit_depth")
+    if compression != 0 or filter_method != 0 or interlace != 0:
+        raise RasterIngestError("unsupported_png_compression_or_filter")
+    rgba = _decode_png_rgba(chunks, width, height, color_type)
+    pixel_hash = sha256_bytes(b"CLOSY_PNG_RGBA_V1" + rgba)
+    if pixel_hash != audit["pixelHash"]:
+        raise RasterIngestError("decoded_pixel_hash_mismatch")
+    return DecodedRasterPixels(
+        width=width,
+        height=height,
+        mime=str(audit["verifiedMime"]),
+        rgba=rgba,
+        pixel_hash=pixel_hash,
+        decoded_content_sha256=str(audit["decodedContentSha256"]),
+    )
 
 
 def _parse_png(data: bytes) -> dict[str, Any]:

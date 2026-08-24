@@ -22,7 +22,7 @@ from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
 from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
-    build_empty_correction_record,
+    build_default_applied_correction_record,
     build_tshirt_visual_observations,
 )
 
@@ -195,7 +195,7 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
     record = build_synthetic_capture_record(seed=args.seed)
     quality = score_capture_record(record)
     visual = build_tshirt_visual_observations(record)
-    correction = build_empty_correction_record(visual)
+    correction = build_default_applied_correction_record(visual)
     write_canonical_json(record_path, record)
     write_canonical_json(quality_path, quality)
     write_canonical_json(visual_path, visual)

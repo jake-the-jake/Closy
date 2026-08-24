@@ -469,10 +469,14 @@ def schema_registry() -> dict[str, dict[str, Any]]:
                 "provider": _object(
                     {
                         "type": {"const": "deterministic_synthetic_fixture"},
+                        "algorithmId": {"type": "string"},
+                        "algorithmVersion": {"type": "string"},
+                        "modelIdentity": {"type": "string"},
                         "automaticSegmentation": {"const": False},
                         "interactiveEditable": {"const": True},
                         "externalApis": {"const": False},
                         "trainingUse": {"const": False},
+                        "settings": {"type": "object", "additionalProperties": True},
                     },
                     [
                         "type",
@@ -529,6 +533,8 @@ def schema_registry() -> dict[str, dict[str, Any]]:
                 ),
                 "allowedOperations": {"type": "array", "items": {"type": "string"}},
                 "operations": {"type": "array", "items": {"type": "object"}},
+                "application": {"type": "object", "additionalProperties": True},
+                "privacyAudit": {"type": "object", "additionalProperties": True},
                 "integrity": _object({"correctionRecordHash": _sha256()}, ["correctionRecordHash"]),
             },
             [
@@ -542,6 +548,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
                 "privacy",
                 "allowedOperations",
                 "operations",
+                "application",
                 "integrity",
             ],
         ),

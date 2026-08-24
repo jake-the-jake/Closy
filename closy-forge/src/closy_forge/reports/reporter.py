@@ -66,13 +66,32 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
         },
         "visualUnderstanding": {
             "visualUnderstandingId": visual["visualUnderstandingId"],
+            "stageVersion": visual["stageVersion"],
+            "providerAlgorithmVersion": visual["provider"].get("algorithmVersion"),
             "maskCount": visual["aggregate"]["maskCount"],
+            "targetGarmentMaskCount": visual["aggregate"].get("targetGarmentMaskCount", 0),
+            "personBodyProxyMaskCount": visual["aggregate"].get("personBodyProxyMaskCount", 0),
+            "backgroundMaskCount": visual["aggregate"].get("backgroundMaskCount", 0),
+            "occlusionUncertaintyMaskCount": visual["aggregate"].get(
+                "occlusionUncertaintyMaskCount",
+                0,
+            ),
+            "semanticPartCount": visual["aggregate"].get("semanticPartCount", 0),
+            "openingBoundaryCount": visual["aggregate"].get("openingBoundaryCount", 0),
+            "pixelDerivedViewCount": visual["aggregate"].get("pixelDerivedViewCount", 0),
             "observedLandmarkCount": len(visual["aggregate"]["observedLandmarks"]),
             "requiredLandmarkCount": len(visual["aggregate"]["requiredLandmarks"]),
             "meanMaskConfidence": visual["aggregate"]["meanMaskConfidence"],
             "meanLandmarkConfidence": visual["aggregate"]["meanLandmarkConfidence"],
+            "meanMaskIoU": visual["aggregate"].get("meanMaskIoU"),
+            "meanBoundaryFScore": visual["aggregate"].get("meanBoundaryFScore"),
+            "meanSemanticPartIoU": visual["aggregate"].get("meanSemanticPartIoU"),
+            "meanLandmarkErrorNormalised": visual["aggregate"].get("meanLandmarkErrorNormalised"),
+            "openingPrecision": visual["aggregate"].get("openingPrecision"),
+            "openingRecall": visual["aggregate"].get("openingRecall"),
             "correctionRecordId": correction["correctionRecordId"],
             "correctionOperationCount": len(correction["operations"]),
+            "correctionApplicationStatus": correction.get("application", {}).get("status"),
         },
         "fitting": {
             "fitReportId": fitting["fitReportId"],
@@ -529,9 +548,12 @@ def human_report(package_dir: Path) -> str:
                 f"quality {capture['overallScore']:.6f} ({capture['overallStatus']})"
             ),
             (
-                f"Visual observations: {visual['maskCount']} masks, "
+                f"Visual observations: {visual['maskCount']} pixel-derived masks, "
                 f"{visual['observedLandmarkCount']} landmarks, "
-                f"{visual['correctionOperationCount']} corrections"
+                f"{visual['semanticPartCount']} parts, "
+                f"{visual['openingBoundaryCount']} openings, "
+                f"{visual['correctionOperationCount']} applied corrections, "
+                f"mean IoU={visual['meanMaskIoU']:.6f}"
             ),
             (
                 f"Fitting: {fitting['status']} via {fitting['fitterVersion']}, "

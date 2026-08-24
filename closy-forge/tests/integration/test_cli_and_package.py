@@ -76,7 +76,10 @@ def test_cli_build_synthetic_capture_workflow(tmp_path) -> None:  # type: ignore
     assert quality["overallStatus"] == "pass"
     assert quality["sourceRecordHash"] == record["immutability"]["sourceRecordHash"]
     assert visual["sourceRecordHash"] == record["immutability"]["sourceRecordHash"]
+    assert visual["aggregate"]["maskCount"] == 16
     assert correction["visualRecordHash"] == visual["integrity"]["visualRecordHash"]
+    assert correction["application"]["status"] == "applied"
+    assert len(correction["operations"]) == 4
 
 
 def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ignore[no-untyped-def]
@@ -87,7 +90,11 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     payload = json.loads(captured.out.splitlines()[-1])
     assert payload["garmentId"] == "garment.demo_tshirt.reference_v1"
     assert payload["capture"]["overallStatus"] == "pass"
-    assert payload["visualUnderstanding"]["maskCount"] == 4
+    assert payload["visualUnderstanding"]["maskCount"] == 16
+    assert payload["visualUnderstanding"]["pixelDerivedViewCount"] == 4
+    assert payload["visualUnderstanding"]["semanticPartCount"] == 12
+    assert payload["visualUnderstanding"]["openingBoundaryCount"] == 16
+    assert payload["visualUnderstanding"]["correctionOperationCount"] == 4
     assert payload["fitting"]["status"] == "pass"
     assert payload["texture"]["sourceTextureAvailable"] is False
     assert payload["texture"]["materialRegionCount"] == 2
