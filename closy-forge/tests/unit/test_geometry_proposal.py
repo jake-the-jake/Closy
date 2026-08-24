@@ -63,6 +63,7 @@ from closy_forge.proposals import (
     hash_stitched_analysis_shell,
     reproject_cleanup_preview_to_settled_simulation,
 )
+from closy_forge.proposals.geometry_stitched_shell import audit_stitched_shell
 from closy_forge.simulation.reference_cloth_solver import settle_reference_cloth
 from closy_forge.visual_understanding import build_tshirt_visual_observations
 
@@ -397,13 +398,27 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["missingExpectedOpeningCount"] == 4
     assert report["topologyAudit"]["boundaryBranchVertexCount"] == 7
+    assert report["topologyAudit"]["executedTopologyAuditCount"] == 5
+    assert report["topologyAudit"]["tJunctionCheckStatus"] == "pass"
+    assert report["topologyAudit"]["tJunctionAudit"]["tJunctionCount"] == 0
+    assert report["topologyAudit"]["inconsistentWindingCheckStatus"] == "fail"
+    assert report["topologyAudit"]["inconsistentWindingAudit"]["inconsistentSharedEdgeCount"] == 29
+    assert report["topologyAudit"]["normalInversionCheckStatus"] == "fail"
+    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 40
+    assert report["topologyAudit"]["selfIntersectionCheckStatus"] == "fail"
+    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 321
+    assert report["topologyAudit"]["hiddenInternalComponentCheckStatus"] == "pass"
+    assert (
+        report["topologyAudit"]["hiddenInternalComponentAudit"]["internalClosedComponentCount"] == 0
+    )
     assert report["topologyAudit"]["sourceDisplacement"]["maxSourceDisplacementMeters"] > 0.0
     assert report["topologyAudit"]["vertexCount"] == stitched_mesh.vertex_count
     assert report["topologyAudit"]["triangleCount"] == stitched_mesh.triangle_count
     assert report["readiness"]["meshStitchOrWeldProven"] is False
     assert report["readiness"]["acceptedForCleanProposal"] is False
     assert "mesh_stitch_or_weld_not_proven" in report["readiness"]["blockingReasons"]
-    assert "self_intersection_not_run" in report["readiness"]["blockingReasons"]
+    assert "self_intersections_detected" in report["readiness"]["blockingReasons"]
+    assert "self_intersection_not_run" not in report["readiness"]["blockingReasons"]
     assert (
         report["analysisAsset"]["payloadHash"] == analysis["integrity"]["stitchedAnalysisShellHash"]
     )
@@ -422,6 +437,46 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert analysis["integrity"]["stitchedAnalysisShellHash"] == (
         hash_stitched_analysis_shell(analysis)
     )
+
+
+def test_stitched_shell_topology_audits_fail_on_synthetic_defects() -> None:
+    mesh = Mesh(
+        name="synthetic_topology_defects",
+        panel_id="panel.synthetic",
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.5, 0.0, 0.0),
+            (0.5, 0.4, 0.0),
+            (0.8, 0.0, 0.0),
+            (2.0, 0.0, 0.0),
+            (3.0, 0.0, 0.0),
+            (2.5, 0.8, 0.0),
+            (2.5, 0.3, 0.8),
+        ],
+        panel_uvs=[(0.0, 0.0) for _ in range(10)],
+        triangles=[
+            (0, 1, 2),
+            (3, 4, 5),
+            (6, 7, 8),
+            (6, 9, 7),
+            (7, 9, 8),
+            (8, 9, 6),
+        ],
+    )
+    audit = audit_stitched_shell(
+        MeshSet([mesh]),
+        source_vertex_map=[],
+        operations=[],
+        constraints={"constraints": []},
+    )
+
+    assert audit["executedTopologyAuditCount"] == 5
+    assert audit["tJunctionCheckStatus"] == "fail"
+    assert audit["tJunctionAudit"]["tJunctionCount"] >= 1
+    assert audit["hiddenInternalComponentCheckStatus"] == "fail"
+    assert audit["hiddenInternalComponentAudit"]["internalClosedComponentCount"] == 1
 
 
 def test_geometry_visual_shell_review_records_stitched_artifact_without_clean_proof() -> None:

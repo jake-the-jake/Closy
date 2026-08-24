@@ -179,6 +179,12 @@ def audit_stitched_shell(
     non_manifold_edges = [edge for edge, count in edge_counts.items() if count > 2]
     duplicate_faces = _duplicate_face_count(mesh.triangles)
     degenerate_triangles = _degenerate_triangle_count(mesh)
+    tolerance = _topology_tolerance(meshset)
+    t_junction_audit = _t_junction_audit(mesh, tolerance)
+    winding_audit = _winding_audit(mesh)
+    normal_inversion_audit = _normal_inversion_audit(mesh)
+    self_intersection_audit = _self_intersection_audit(mesh, tolerance)
+    hidden_internal_audit = _hidden_internal_component_audit(mesh, edge_counts)
     boundary_components = _boundary_components(boundary_edges)
     simple_boundary_cycles = [
         component for component in boundary_components if component["isSimpleCycle"] is True
@@ -231,11 +237,18 @@ def audit_stitched_shell(
         "nonManifoldVertexCount": _non_manifold_vertex_count(non_manifold_edges),
         "duplicateFaceCount": duplicate_faces,
         "degenerateTriangleCount": degenerate_triangles,
-        "tJunctionCheckStatus": "not_run",
-        "inconsistentWindingCheckStatus": "not_run",
-        "normalInversionCheckStatus": "not_run",
-        "selfIntersectionCheckStatus": "not_run",
-        "hiddenInternalComponentCheckStatus": "not_run",
+        "topologyAuditToleranceMeters": tolerance,
+        "executedTopologyAuditCount": 5,
+        "tJunctionCheckStatus": t_junction_audit["status"],
+        "tJunctionAudit": t_junction_audit,
+        "inconsistentWindingCheckStatus": winding_audit["status"],
+        "inconsistentWindingAudit": winding_audit,
+        "normalInversionCheckStatus": normal_inversion_audit["status"],
+        "normalInversionAudit": normal_inversion_audit,
+        "selfIntersectionCheckStatus": self_intersection_audit["status"],
+        "selfIntersectionAudit": self_intersection_audit,
+        "hiddenInternalComponentCheckStatus": hidden_internal_audit["status"],
+        "hiddenInternalComponentAudit": hidden_internal_audit,
         "seamSpanCoverage": seam_coverage,
         "uvMaterialPanelProvenanceCoverage": provenance_coverage["coverageRatio"],
         "uvMaterialPanelProvenance": provenance_coverage,
@@ -476,16 +489,32 @@ def _blocking_reasons(audit: dict[str, Any]) -> list[str]:
         reasons.append("stitched_shell_opening_semantics_missing")
     if audit["boundaryBranchVertexCount"] > 0:
         reasons.append("stitched_shell_branched_boundary_graph")
-    for field, code in [
-        ("tJunctionCheckStatus", "t_junction_audit_not_run"),
-        ("inconsistentWindingCheckStatus", "winding_audit_not_run"),
-        ("normalInversionCheckStatus", "normal_inversion_audit_not_run"),
-        ("hiddenInternalComponentCheckStatus", "hidden_internal_component_audit_not_run"),
+    for field, not_run_code, fail_code in [
+        ("tJunctionCheckStatus", "t_junction_audit_not_run", "t_junctions_detected"),
+        (
+            "inconsistentWindingCheckStatus",
+            "winding_audit_not_run",
+            "inconsistent_winding_detected",
+        ),
+        (
+            "normalInversionCheckStatus",
+            "normal_inversion_audit_not_run",
+            "normal_inversions_detected",
+        ),
+        (
+            "hiddenInternalComponentCheckStatus",
+            "hidden_internal_component_audit_not_run",
+            "hidden_internal_components_detected",
+        ),
     ]:
         if audit[field] == "not_run":
-            reasons.append(code)
+            reasons.append(not_run_code)
+        elif audit[field] == "fail":
+            reasons.append(fail_code)
     if audit["selfIntersectionCheckStatus"] == "not_run":
         reasons.append("self_intersection_not_run")
+    elif audit["selfIntersectionCheckStatus"] == "fail":
+        reasons.append("self_intersections_detected")
     if audit["uvMaterialPanelProvenanceCoverage"] < 1.0:
         reasons.append("uv_material_panel_provenance_incomplete")
     if audit["bindingCoverage"] < 1.0:
@@ -781,12 +810,333 @@ def _degenerate_triangle_count(mesh: Mesh) -> int:
     return count
 
 
+def _topology_tolerance(meshset: MeshSet) -> float:
+    bounds = mesh_bounds(meshset)
+    extent = max(float(value) for value in bounds["size"])
+    return _round(max(1e-7, extent * 1e-6))
+
+
+def _t_junction_audit(mesh: Mesh, tolerance: float) -> dict[str, Any]:
+    edges = sorted(_edge_counts(mesh.triangles))
+    offenders: list[dict[str, Any]] = []
+    for vertex_index, vertex in enumerate(mesh.vertices):
+        for left, right in edges:
+            if vertex_index in (left, right):
+                continue
+            distance, parameter = _point_segment_distance_parameter(
+                vertex,
+                mesh.vertices[left],
+                mesh.vertices[right],
+            )
+            if distance <= tolerance and tolerance < parameter < 1.0 - tolerance:
+                offenders.append(
+                    {
+                        "vertexId": f"logicalVertex.{vertex_index:06d}",
+                        "edge": [
+                            f"logicalVertex.{left:06d}",
+                            f"logicalVertex.{right:06d}",
+                        ],
+                        "distanceMeters": _round(distance),
+                        "edgeParameter": _round(parameter),
+                    }
+                )
+    return {
+        "auditVersion": "closy.stitched_shell_t_junction_audit.deterministic_v1",
+        "status": "pass" if not offenders else "fail",
+        "toleranceMeters": tolerance,
+        "candidateVertexCount": len(mesh.vertices),
+        "candidateEdgeCount": len(edges),
+        "tJunctionCount": len(offenders),
+        "offenders": offenders[:32],
+    }
+
+
+def _winding_audit(mesh: Mesh) -> dict[str, Any]:
+    oriented_edges: dict[tuple[int, int], list[tuple[int, int, int, int]]] = {}
+    for tri_index, tri in enumerate(mesh.triangles):
+        for edge_index, (left, right) in enumerate(
+            [(tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])]
+        ):
+            key = (left, right) if left <= right else (right, left)
+            oriented_edges.setdefault(key, []).append((tri_index, edge_index, left, right))
+    offenders: list[dict[str, Any]] = []
+    for edge, uses in sorted(oriented_edges.items()):
+        if len(uses) != 2:
+            continue
+        first, second = uses
+        same_direction = first[2] == second[2] and first[3] == second[3]
+        if same_direction:
+            offenders.append(
+                {
+                    "edge": [
+                        f"logicalVertex.{edge[0]:06d}",
+                        f"logicalVertex.{edge[1]:06d}",
+                    ],
+                    "triangleIds": [
+                        f"triangle.{first[0]:06d}",
+                        f"triangle.{second[0]:06d}",
+                    ],
+                }
+            )
+    return {
+        "auditVersion": "closy.stitched_shell_winding_audit.shared_edge_v1",
+        "status": "pass" if not offenders else "fail",
+        "manifoldSharedEdgeCount": sum(1 for uses in oriented_edges.values() if len(uses) == 2),
+        "inconsistentSharedEdgeCount": len(offenders),
+        "offenders": offenders[:32],
+    }
+
+
+def _normal_inversion_audit(mesh: Mesh) -> dict[str, Any]:
+    normals = [_triangle_normal_raw(mesh, tri) for tri in mesh.triangles]
+    edge_to_triangles: dict[tuple[int, int], list[int]] = {}
+    for tri_index, tri in enumerate(mesh.triangles):
+        for left, right in [(tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])]:
+            edge = (left, right) if left <= right else (right, left)
+            edge_to_triangles.setdefault(edge, []).append(tri_index)
+    offenders: list[dict[str, Any]] = []
+    threshold = -0.35
+    for edge, triangle_ids in sorted(edge_to_triangles.items()):
+        if len(triangle_ids) != 2:
+            continue
+        dot_value = _dot(normals[triangle_ids[0]], normals[triangle_ids[1]])
+        if dot_value < threshold:
+            offenders.append(
+                {
+                    "edge": [
+                        f"logicalVertex.{edge[0]:06d}",
+                        f"logicalVertex.{edge[1]:06d}",
+                    ],
+                    "triangleIds": [
+                        f"triangle.{triangle_ids[0]:06d}",
+                        f"triangle.{triangle_ids[1]:06d}",
+                    ],
+                    "normalDot": _round(dot_value),
+                }
+            )
+    return {
+        "auditVersion": "closy.stitched_shell_normal_inversion_audit.shared_edge_v1",
+        "status": "pass" if not offenders else "fail",
+        "normalDotFailThreshold": threshold,
+        "invertedAdjacentPairCount": len(offenders),
+        "offenders": offenders[:32],
+    }
+
+
+def _self_intersection_audit(mesh: Mesh, tolerance: float) -> dict[str, Any]:
+    offenders: list[dict[str, Any]] = []
+    skipped_shared_feature_pairs = 0
+    checked_pairs = 0
+    triangle_bounds = [_triangle_bounds(mesh.vertices, tri) for tri in mesh.triangles]
+    for left_index, left_tri in enumerate(mesh.triangles):
+        left_vertices = set(left_tri)
+        for right_index in range(left_index + 1, len(mesh.triangles)):
+            right_tri = mesh.triangles[right_index]
+            if left_vertices & set(right_tri):
+                skipped_shared_feature_pairs += 1
+                continue
+            if not _bounds_overlap(
+                triangle_bounds[left_index],
+                triangle_bounds[right_index],
+                tolerance,
+            ):
+                continue
+            checked_pairs += 1
+            if _triangles_intersect(mesh.vertices, left_tri, right_tri, tolerance):
+                offenders.append(
+                    {
+                        "triangleIds": [
+                            f"triangle.{left_index:06d}",
+                            f"triangle.{right_index:06d}",
+                        ]
+                    }
+                )
+    return {
+        "auditVersion": "closy.stitched_shell_self_intersection_audit.segment_triangle_v1",
+        "status": "pass" if not offenders else "fail",
+        "toleranceMeters": tolerance,
+        "trianglePairCount": len(mesh.triangles) * (len(mesh.triangles) - 1) // 2,
+        "skippedSharedFeaturePairCount": skipped_shared_feature_pairs,
+        "checkedDisjointBoundingBoxPairCount": checked_pairs,
+        "selfIntersectionPairCount": len(offenders),
+        "offenders": offenders[:32],
+    }
+
+
+def _hidden_internal_component_audit(
+    mesh: Mesh, edge_counts: Counter[tuple[int, int]]
+) -> dict[str, Any]:
+    boundary_vertices = {
+        vertex for edge, count in edge_counts.items() if count == 1 for vertex in edge
+    }
+    components = _mesh_components(mesh)
+    internal_components: list[dict[str, Any]] = []
+    for component in components:
+        component_vertices = set(component["vertexIndices"])
+        boundary_count = len(component_vertices & boundary_vertices)
+        if boundary_count == 0 and component["triangleCount"] > 0:
+            internal_components.append(
+                {
+                    "componentIndex": component["componentIndex"],
+                    "vertexCount": component["vertexCount"],
+                    "triangleCount": component["triangleCount"],
+                }
+            )
+    return {
+        "auditVersion": "closy.stitched_shell_hidden_internal_component_audit.v1",
+        "status": "pass" if not internal_components else "fail",
+        "componentCount": len(components),
+        "internalClosedComponentCount": len(internal_components),
+        "internalComponents": internal_components[:32],
+    }
+
+
+def _mesh_components(mesh: Mesh) -> list[dict[str, Any]]:
+    union = _UnionFind(len(mesh.vertices))
+    for tri in mesh.triangles:
+        union.union(tri[0], tri[1])
+        union.union(tri[1], tri[2])
+        union.union(tri[2], tri[0])
+    vertices_by_root: dict[int, list[int]] = {}
+    for vertex_index in range(len(mesh.vertices)):
+        vertices_by_root.setdefault(union.find(vertex_index), []).append(vertex_index)
+    components: list[dict[str, Any]] = []
+    for root in sorted(vertices_by_root, key=lambda item: min(vertices_by_root[item])):
+        vertex_indices = vertices_by_root[root]
+        vertex_set = set(vertex_indices)
+        triangle_count = sum(1 for tri in mesh.triangles if set(tri) <= vertex_set)
+        components.append(
+            {
+                "componentIndex": len(components),
+                "vertexIndices": vertex_indices,
+                "vertexCount": len(vertex_indices),
+                "triangleCount": triangle_count,
+            }
+        )
+    return components
+
+
 def _non_manifold_vertex_count(non_manifold_edges: list[tuple[int, int]]) -> int:
     vertices: set[int] = set()
     for left, right in non_manifold_edges:
         vertices.add(left)
         vertices.add(right)
     return len(vertices)
+
+
+def _point_segment_distance_parameter(
+    point: tuple[float, float, float],
+    start: tuple[float, float, float],
+    end: tuple[float, float, float],
+) -> tuple[float, float]:
+    segment = sub(end, start)
+    length_sq = _dot(segment, segment)
+    if length_sq <= 1e-18:
+        return _distance3(point, start), 0.0
+    parameter = max(0.0, min(1.0, _dot(sub(point, start), segment) / length_sq))
+    projection = (
+        start[0] + segment[0] * parameter,
+        start[1] + segment[1] * parameter,
+        start[2] + segment[2] * parameter,
+    )
+    return _distance3(point, projection), parameter
+
+
+def _triangle_normal_raw(mesh: Mesh, tri: tuple[int, int, int]) -> tuple[float, float, float]:
+    a, b, c = mesh.vertices[tri[0]], mesh.vertices[tri[1]], mesh.vertices[tri[2]]
+    normal = cross(sub(b, a), sub(c, a))
+    length = sqrt(_dot(normal, normal))
+    if length <= 1e-18:
+        return (0.0, 0.0, 0.0)
+    return (normal[0] / length, normal[1] / length, normal[2] / length)
+
+
+def _triangle_bounds(
+    vertices: list[tuple[float, float, float]], tri: tuple[int, int, int]
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    tri_vertices = [vertices[index] for index in tri]
+    mins = (
+        min(vertex[0] for vertex in tri_vertices),
+        min(vertex[1] for vertex in tri_vertices),
+        min(vertex[2] for vertex in tri_vertices),
+    )
+    maxs = (
+        max(vertex[0] for vertex in tri_vertices),
+        max(vertex[1] for vertex in tri_vertices),
+        max(vertex[2] for vertex in tri_vertices),
+    )
+    return mins, maxs
+
+
+def _bounds_overlap(
+    left: tuple[tuple[float, float, float], tuple[float, float, float]],
+    right: tuple[tuple[float, float, float], tuple[float, float, float]],
+    tolerance: float,
+) -> bool:
+    left_min, left_max = left
+    right_min, right_max = right
+    return all(
+        left_min[axis] <= right_max[axis] + tolerance
+        and right_min[axis] <= left_max[axis] + tolerance
+        for axis in range(3)
+    )
+
+
+def _triangles_intersect(
+    vertices: list[tuple[float, float, float]],
+    left: tuple[int, int, int],
+    right: tuple[int, int, int],
+    tolerance: float,
+) -> bool:
+    left_vertices = [vertices[index] for index in left]
+    right_vertices = [vertices[index] for index in right]
+    for start, end in _triangle_segments(left_vertices):
+        if _segment_intersects_triangle(start, end, right_vertices, tolerance):
+            return True
+    for start, end in _triangle_segments(right_vertices):
+        if _segment_intersects_triangle(start, end, left_vertices, tolerance):
+            return True
+    return False
+
+
+def _triangle_segments(
+    vertices: list[tuple[float, float, float]],
+) -> list[tuple[tuple[float, float, float], tuple[float, float, float]]]:
+    return [
+        (vertices[0], vertices[1]),
+        (vertices[1], vertices[2]),
+        (vertices[2], vertices[0]),
+    ]
+
+
+def _segment_intersects_triangle(
+    start: tuple[float, float, float],
+    end: tuple[float, float, float],
+    triangle: list[tuple[float, float, float]],
+    tolerance: float,
+) -> bool:
+    direction = sub(end, start)
+    edge1 = sub(triangle[1], triangle[0])
+    edge2 = sub(triangle[2], triangle[0])
+    h = cross(direction, edge2)
+    determinant = _dot(edge1, h)
+    if abs(determinant) <= tolerance:
+        return False
+    inv_det = 1.0 / determinant
+    s = sub(start, triangle[0])
+    u = inv_det * _dot(s, h)
+    if u < -tolerance or u > 1.0 + tolerance:
+        return False
+    q = cross(s, edge1)
+    v = inv_det * _dot(direction, q)
+    if v < -tolerance or u + v > 1.0 + tolerance:
+        return False
+    segment_parameter = inv_det * _dot(edge2, q)
+    return -tolerance <= segment_parameter <= 1.0 + tolerance
+
+
+def _dot(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
 
 def _distance3(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
