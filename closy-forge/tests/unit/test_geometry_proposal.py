@@ -391,6 +391,39 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["seamSpanCoverage"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 0
     assert report["topologyAudit"]["seamSpanCoverage"]["missingRequiredOperationIds"] == []
+    assert report["topologyAudit"]["orderedSeamCorrespondenceStatus"] == "fail"
+    ordered_correspondence = report["topologyAudit"]["orderedSeamCorrespondenceAudit"]
+    assert ordered_correspondence["sourceConstraintCount"] == len(constraints["constraints"])
+    assert ordered_correspondence["executedOperationCount"] == len(constraints["constraints"])
+    assert ordered_correspondence["distanceToleranceMeters"] == 0.039266651
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 74
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.131918884
+    assert ordered_correspondence["postStitchResidualDistributionMeters"]["max"] == 0.0
+    assert ordered_correspondence["unmatchedCorrespondenceCount"] == 0
+    assert ordered_correspondence["duplicatedOperationIdCount"] == 0
+    assert ordered_correspondence["reversedCorrespondenceCount"] == 54
+    assert ordered_correspondence["reusedBoundaryVertexCount"] == 15
+    assert ordered_correspondence["reusedBoundarySpanCount"] == 2
+    assert ordered_correspondence["multiSpanFanoutSeamIds"] == ["seam.neck_band.attachment"]
+    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] == 21
+    assert ordered_correspondence["failureReasons"] == [
+        "boundary_spans_reused_across_seams",
+        "multi_span_seams_require_ordered_partition",
+        "pre_stitch_distance_exceeds_local_edge_tolerance",
+        "source_boundary_vertices_reused_without_span_partition",
+    ]
+    assert ordered_correspondence["reusedBoundarySpans"] == [
+        {
+            "meshIndex": 2,
+            "boundaryId": "edge.sleeve_cap.left",
+            "seamIds": ["seam.armhole.left.back", "seam.armhole.left.front"],
+        },
+        {
+            "meshIndex": 3,
+            "boundaryId": "edge.sleeve_cap.right",
+            "seamIds": ["seam.armhole.right.back", "seam.armhole.right.front"],
+        },
+    ]
     assert report["topologyAudit"]["topologyRepairEvidence"]["duplicateFaceCullRun"] is True
     assert report["topologyAudit"]["topologyRepairEvidence"]["status"] == "pass"
     assert report["topologyAudit"]["topologyRepairEvidence"]["inputTriangleCount"] == 218
@@ -450,6 +483,7 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["readiness"]["meshStitchOrWeldProven"] is False
     assert report["readiness"]["acceptedForCleanProposal"] is False
     assert "mesh_stitch_or_weld_not_proven" in report["readiness"]["blockingReasons"]
+    assert "ordered_seam_correspondence_failed" in report["readiness"]["blockingReasons"]
     assert "self_intersections_detected" in report["readiness"]["blockingReasons"]
     assert "semantic_opening_assignment_failed" in report["readiness"]["blockingReasons"]
     assert "opening_panel_edge_provenance_missing" in report["readiness"]["blockingReasons"]

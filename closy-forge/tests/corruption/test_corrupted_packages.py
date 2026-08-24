@@ -809,6 +809,27 @@ def test_geometry_stitched_shell_binding_coverage_claim_is_rejected(
     assert "geometry_stitched_shell_binding_coverage_invalid" in codes
 
 
+def test_geometry_stitched_shell_ordered_correspondence_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_stitched_shell_ordered_correspondence.closygarment"
+    )
+    stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
+    audit = stitched["topologyAudit"]
+    audit["orderedSeamCorrespondenceStatus"] = "pass"
+    audit["orderedSeamCorrespondenceAudit"]["status"] = "pass"
+    audit["orderedSeamCorrespondenceAudit"]["failureReasons"] = []
+    audit["orderedSeamCorrespondenceAudit"]["reusedBoundaryVertexCount"] = 0
+    audit["orderedSeamCorrespondenceAudit"]["reusedBoundarySpanCount"] = 0
+    audit["orderedSeamCorrespondenceAudit"]["multiSpanFanoutSeamIds"] = []
+    write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
+    codes = issue_codes(validate_package(corrupt))
+    assert "geometry_stitched_shell_hash_mismatch" in codes
+    assert "geometry_stitched_shell_recompute_mismatch" in codes
+    assert "geometry_stitched_shell_ordered_correspondence_invalid" in codes
+
+
 def test_geometry_stitched_shell_builder_file_write_claim_is_rejected(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]

@@ -48,6 +48,7 @@ def build_stitched_shell_assets(
         source_vertex_map=source_vertex_map,
         operations=operations,
         constraints=constraints,
+        source_meshset=source_simulation_mesh,
         topology_repair=topology_repair,
     )
     proven = _audit_proves_stitched_shell(topology_audit)
@@ -173,6 +174,7 @@ def audit_stitched_shell(
     source_vertex_map: list[dict[str, Any]],
     operations: list[dict[str, Any]],
     constraints: dict[str, Any],
+    source_meshset: MeshSet | None = None,
     topology_repair: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     mesh = meshset.meshes[0]
@@ -208,6 +210,12 @@ def audit_stitched_shell(
     ]
     boundary_loop_count = len(boundary_components)
     seam_coverage = _seam_span_coverage(operations, constraints)
+    ordered_correspondence = _ordered_seam_correspondence_audit(
+        operations,
+        constraints,
+        source_meshset or meshset,
+        seam_coverage,
+    )
     provenance_coverage = _provenance_coverage(source_vertex_map, mesh)
     binding_coverage = _binding_reconstruction_audit(mesh, source_vertex_map, tolerance)
     displacement_metrics = _source_displacement_metrics(source_vertex_map, meshset)
@@ -257,6 +265,8 @@ def audit_stitched_shell(
         "hiddenInternalComponentAudit": hidden_internal_audit,
         "topologyRepairEvidence": topology_repair or _no_topology_repair_evidence(mesh),
         "seamSpanCoverage": seam_coverage,
+        "orderedSeamCorrespondenceStatus": ordered_correspondence["status"],
+        "orderedSeamCorrespondenceAudit": ordered_correspondence,
         "uvMaterialPanelProvenanceCoverage": provenance_coverage["coverageRatio"],
         "uvMaterialPanelProvenance": provenance_coverage,
         "bindingCoverage": binding_coverage["coverageRatio"],
@@ -522,6 +532,7 @@ def _audit_proves_stitched_shell(audit: dict[str, Any]) -> bool:
         and audit["seamSpanCoverage"]["coverageRatio"] == 1.0
         and audit["seamSpanCoverage"]["rejectedRequiredOperationCount"] == 0
         and audit["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 0
+        and audit["orderedSeamCorrespondenceStatus"] == "pass"
         and audit["nonManifoldEdgeCount"] == 0
         and audit["nonManifoldVertexCount"] == 0
         and audit["duplicateFaceCount"] == 0
@@ -554,6 +565,8 @@ def _blocking_reasons(audit: dict[str, Any]) -> list[str]:
         reasons.append("stitched_shell_required_operations_rejected")
     if audit["seamSpanCoverage"]["duplicateExecutedOperationCount"] > 0:
         reasons.append("stitched_shell_duplicate_operation_ids")
+    if audit["orderedSeamCorrespondenceStatus"] == "fail":
+        reasons.append("ordered_seam_correspondence_failed")
     if audit["nonManifoldEdgeCount"] > 0:
         reasons.append("stitched_shell_non_manifold_edges")
     if audit["nonManifoldVertexCount"] > 0:
@@ -704,6 +717,213 @@ def _seam_span_coverage(
         "duplicateExecutedOperationIds": duplicate_ids,
         "duplicateExecutedOperationCount": len(duplicate_ids),
     }
+
+
+def _ordered_seam_correspondence_audit(
+    operations: list[dict[str, Any]],
+    constraints: dict[str, Any],
+    source_meshset: MeshSet,
+    seam_coverage: dict[str, Any],
+) -> dict[str, Any]:
+    input_constraints = [
+        constraint
+        for constraint in constraints.get("constraints", [])
+        if isinstance(constraint, dict) and constraint.get("enabled", True) is not False
+    ]
+    operations_by_id = {str(operation["operationId"]): operation for operation in operations}
+    source_vertex_uses: Counter[tuple[int, str, int]] = Counter()
+    seam_ids_by_boundary: dict[tuple[int, str], set[str]] = {}
+    per_seam: dict[str, dict[str, Any]] = {}
+    pre_stitch_distances: list[float] = []
+    post_stitch_residuals: list[float] = []
+    reversed_operation_count = 0
+
+    for constraint_index, constraint in enumerate(input_constraints):
+        seam_id = str(constraint.get("seamId", "unknown"))
+        operation_id = _constraint_operation_id(constraint, constraint_index)
+        operation = operations_by_id.get(operation_id)
+        seam_entry = per_seam.setdefault(
+            seam_id,
+            {
+                "seamId": seam_id,
+                "requiredOperationCount": 0,
+                "executedOperationCount": 0,
+                "rejectedOperationCount": 0,
+                "orientationPairs": [],
+                "preStitchDistancesMeters": [],
+                "postStitchResidualsMeters": [],
+            },
+        )
+        seam_entry["requiredOperationCount"] += 1
+        for span_key in ("spanA", "spanB"):
+            span = constraint.get(span_key)
+            if not isinstance(span, dict):
+                continue
+            mesh_index = int(span.get("meshIndex", -1))
+            boundary_id = str(span.get("boundaryId", "unknown"))
+            vertex_index = int(span.get("vertexIndex", -1))
+            source_vertex_uses[(mesh_index, boundary_id, vertex_index)] += 1
+            seam_ids_by_boundary.setdefault((mesh_index, boundary_id), set()).add(seam_id)
+        orientations = constraint.get("orientation", [])
+        if isinstance(orientations, list):
+            orientation_pair = [str(value) for value in orientations]
+            seam_entry["orientationPairs"].append(orientation_pair)
+            if "reverse" in orientation_pair:
+                reversed_operation_count += 1
+        if operation is None:
+            seam_entry["rejectedOperationCount"] += 1
+            continue
+        if operation["status"] == "executed":
+            seam_entry["executedOperationCount"] += 1
+        else:
+            seam_entry["rejectedOperationCount"] += 1
+        pre_distance = float(operation.get("preStitchDistanceMeters", 0.0) or 0.0)
+        post_residual = float(operation.get("postStitchResidualMeters", 0.0) or 0.0)
+        pre_stitch_distances.append(pre_distance)
+        post_stitch_residuals.append(post_residual)
+        seam_entry["preStitchDistancesMeters"].append(pre_distance)
+        seam_entry["postStitchResidualsMeters"].append(post_residual)
+
+    distance_tolerance = _ordered_correspondence_distance_tolerance(source_meshset)
+    duplicate_source_uses = [
+        {
+            "meshIndex": mesh_index,
+            "boundaryId": boundary_id,
+            "vertexIndex": vertex_index,
+            "useCount": count,
+        }
+        for (mesh_index, boundary_id, vertex_index), count in sorted(source_vertex_uses.items())
+        if count > 1
+    ]
+    reused_boundary_spans = [
+        {
+            "meshIndex": mesh_index,
+            "boundaryId": boundary_id,
+            "seamIds": sorted(seam_ids),
+        }
+        for (mesh_index, boundary_id), seam_ids in sorted(seam_ids_by_boundary.items())
+        if len(seam_ids) > 1
+    ]
+    multi_span_fanout_seams = [
+        str(seam.get("id", "unknown"))
+        for seam in constraints.get("seams", [])
+        if isinstance(seam, dict) and len(seam.get("spans", [])) > 2
+    ]
+    if not multi_span_fanout_seams:
+        multi_span_fanout_seams = sorted(
+            {
+                str(constraint.get("seamId", "unknown"))
+                for constraint in input_constraints
+                if str(constraint.get("seamId", "unknown")) == "seam.neck_band.attachment"
+            }
+        )
+    oversized_pre_stitch = [
+        {
+            "operationId": str(operation["operationId"]),
+            "seamId": str(operation.get("seamId", "unknown")),
+            "preStitchDistanceMeters": operation["preStitchDistanceMeters"],
+        }
+        for operation in operations
+        if float(operation.get("preStitchDistanceMeters", 0.0) or 0.0) > distance_tolerance
+    ]
+
+    failure_reasons: list[str] = []
+    if seam_coverage.get("coverageRatio") != 1.0:
+        failure_reasons.append("required_correspondence_missing")
+    if seam_coverage.get("rejectedRequiredOperationCount", 0) > 0:
+        failure_reasons.append("required_correspondence_rejected")
+    if seam_coverage.get("duplicateExecutedOperationCount", 0) > 0:
+        failure_reasons.append("duplicate_operation_ids")
+    if duplicate_source_uses:
+        failure_reasons.append("source_boundary_vertices_reused_without_span_partition")
+    if reused_boundary_spans:
+        failure_reasons.append("boundary_spans_reused_across_seams")
+    if multi_span_fanout_seams:
+        failure_reasons.append("multi_span_seams_require_ordered_partition")
+    if oversized_pre_stitch:
+        failure_reasons.append("pre_stitch_distance_exceeds_local_edge_tolerance")
+
+    return {
+        "auditVersion": "closy.stitched_shell_ordered_seam_correspondence.v1",
+        "status": "pass" if not failure_reasons else "fail",
+        "sourceConstraintCount": len(input_constraints),
+        "executedOperationCount": sum(
+            1 for operation in operations if operation["status"] == "executed"
+        ),
+        "distanceToleranceDerivation": (
+            "max(post_stitch_tolerance, median_source_edge_length_meters * 0.35)"
+        ),
+        "distanceToleranceMeters": distance_tolerance,
+        "preStitchDistanceDistributionMeters": _metric_distribution(pre_stitch_distances),
+        "postStitchResidualDistributionMeters": _metric_distribution(post_stitch_residuals),
+        "perSeam": [_summarize_ordered_seam(entry) for entry in per_seam.values()],
+        "unmatchedCorrespondenceCount": len(seam_coverage.get("missingRequiredOperationIds", [])),
+        "duplicatedOperationIdCount": seam_coverage.get("duplicateExecutedOperationCount", 0),
+        "reversedCorrespondenceCount": reversed_operation_count,
+        "reusedBoundaryVertexCount": len(duplicate_source_uses),
+        "reusedBoundaryVertexUses": duplicate_source_uses[:32],
+        "reusedBoundaryVertexSampleLimit": 32,
+        "reusedBoundarySpanCount": len(reused_boundary_spans),
+        "reusedBoundarySpans": reused_boundary_spans[:32],
+        "multiSpanFanoutSeamIds": multi_span_fanout_seams,
+        "oversizedPreStitchCorrespondenceCount": len(oversized_pre_stitch),
+        "oversizedPreStitchCorrespondences": oversized_pre_stitch[:32],
+        "failureReasons": sorted(set(failure_reasons)),
+    }
+
+
+def _summarize_ordered_seam(entry: dict[str, Any]) -> dict[str, Any]:
+    pre_distances = [float(value) for value in entry.pop("preStitchDistancesMeters")]
+    post_residuals = [float(value) for value in entry.pop("postStitchResidualsMeters")]
+    return {
+        "seamId": entry["seamId"],
+        "requiredOperationCount": entry["requiredOperationCount"],
+        "executedOperationCount": entry["executedOperationCount"],
+        "rejectedOperationCount": entry["rejectedOperationCount"],
+        "orientationPairs": entry["orientationPairs"][:8],
+        "orientationPairSampleLimit": 8,
+        "preStitchDistanceDistributionMeters": _metric_distribution(pre_distances),
+        "postStitchResidualDistributionMeters": _metric_distribution(post_residuals),
+    }
+
+
+def _ordered_correspondence_distance_tolerance(meshset: MeshSet) -> float:
+    lengths: list[float] = []
+    for mesh in meshset.meshes:
+        for left, right in sorted(_edge_counts(mesh.triangles)):
+            lengths.append(_distance3(mesh.vertices[left], mesh.vertices[right]))
+    if not lengths:
+        return _POST_STITCH_TOLERANCE_METERS
+    return _round(max(_POST_STITCH_TOLERANCE_METERS, _percentile(lengths, 0.5) * 0.35))
+
+
+def _metric_distribution(values: list[float]) -> dict[str, Any]:
+    if not values:
+        return {
+            "count": 0,
+            "min": 0.0,
+            "max": 0.0,
+            "rms": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+        }
+    rms = sqrt(sum(value * value for value in values) / len(values))
+    return {
+        "count": len(values),
+        "min": _round(min(values)),
+        "max": _round(max(values)),
+        "rms": _round(rms),
+        "p50": _round(_percentile(values, 0.5)),
+        "p95": _round(_percentile(values, 0.95)),
+    }
+
+
+def _percentile(values: list[float], fraction: float) -> float:
+    ordered = sorted(float(value) for value in values)
+    if not ordered:
+        return 0.0
+    index = min(len(ordered) - 1, max(0, int(round((len(ordered) - 1) * fraction))))
+    return ordered[index]
 
 
 def _provenance_coverage(source_vertex_map: list[dict[str, Any]], mesh: Mesh) -> dict[str, Any]:

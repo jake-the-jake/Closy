@@ -6272,6 +6272,50 @@ def _validate_geometry_stitched_shell(
                 ),
             )
         )
+    ordered_correspondence = topology_audit.get("orderedSeamCorrespondenceAudit", {})
+    if (
+        not isinstance(ordered_correspondence, dict)
+        or topology_audit.get("orderedSeamCorrespondenceStatus")
+        != ordered_correspondence.get("status")
+        or ordered_correspondence.get("sourceConstraintCount")
+        != topology_audit.get("sourceConstraintCount")
+        or ordered_correspondence.get("executedOperationCount")
+        != topology_audit.get("executedOperationCount")
+        or ordered_correspondence.get("duplicatedOperationIdCount")
+        != seam_coverage.get("duplicateExecutedOperationCount")
+        or ordered_correspondence.get("unmatchedCorrespondenceCount")
+        != len(seam_coverage.get("missingRequiredOperationIds", []))
+        or ordered_correspondence.get("status") not in {"pass", "fail"}
+        or not isinstance(ordered_correspondence.get("distanceToleranceMeters"), int | float)
+        or not isinstance(ordered_correspondence.get("preStitchDistanceDistributionMeters"), dict)
+        or not isinstance(ordered_correspondence.get("postStitchResidualDistributionMeters"), dict)
+        or (
+            ordered_correspondence.get("status") == "pass"
+            and (
+                ordered_correspondence.get("failureReasons") != []
+                or ordered_correspondence.get("reusedBoundaryVertexCount") != 0
+                or ordered_correspondence.get("reusedBoundarySpanCount") != 0
+                or ordered_correspondence.get("oversizedPreStitchCorrespondenceCount") != 0
+                or ordered_correspondence.get("multiSpanFanoutSeamIds") != []
+            )
+        )
+        or (
+            ordered_correspondence.get("status") == "fail"
+            and not ordered_correspondence.get("failureReasons")
+        )
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_ordered_correspondence_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                (
+                    "BP-46 stitched shell ordered seam correspondence must expose "
+                    "truthful executed/missing/duplicate counts and fail closed when "
+                    "spans are reused without partitioning."
+                ),
+            )
+        )
     binding_evidence = topology_audit.get("bindingEvidence", {})
     if (
         not isinstance(binding_evidence, dict)
@@ -6353,6 +6397,7 @@ def _validate_geometry_stitched_shell(
         and topology_audit.get("seamSpanCoverage", {}).get("coverageRatio") == 1.0
         and topology_audit.get("seamSpanCoverage", {}).get("rejectedRequiredOperationCount") == 0
         and topology_audit.get("seamSpanCoverage", {}).get("duplicateExecutedOperationCount") == 0
+        and topology_audit.get("orderedSeamCorrespondenceStatus") == "pass"
         and topology_audit.get("nonManifoldEdgeCount") == 0
         and topology_audit.get("nonManifoldVertexCount") == 0
         and topology_audit.get("duplicateFaceCount") == 0
