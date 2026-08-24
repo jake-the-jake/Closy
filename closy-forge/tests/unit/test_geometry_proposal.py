@@ -392,9 +392,19 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 5
     assert report["topologyAudit"]["logicalShellCount"] == 1
     assert report["topologyAudit"]["maxPostStitchResidualMeters"] == 0.0
-    assert report["topologyAudit"]["bindingCoverage"] == 0.0
-    assert report["topologyAudit"]["bindingReconstructionStatus"] == "not_run"
-    assert report["topologyAudit"]["bindingEvidence"]["boundRenderVertexCount"] == 0
+    assert report["topologyAudit"]["bindingCoverage"] == 1.0
+    assert report["topologyAudit"]["bindingReconstructionStatus"] == "pass"
+    assert report["topologyAudit"]["bindingReconstructionErrorMeters"] == 0.0
+    assert report["topologyAudit"]["bindingEvidence"]["bindingStatus"] == "pass"
+    assert (
+        report["topologyAudit"]["bindingEvidence"]["bindingMode"]
+        == "logical_source_vertex_centroid_map"
+    )
+    assert (
+        report["topologyAudit"]["bindingEvidence"]["boundRenderVertexCount"]
+        == report["topologyAudit"]["vertexCount"]
+    )
+    assert report["topologyAudit"]["bindingEvidence"]["missingRenderVertexIds"] == []
     assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["missingExpectedOpeningCount"] == 4
     assert report["topologyAudit"]["boundaryBranchVertexCount"] == 7
@@ -434,6 +444,8 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert "semantic_opening_assignment_failed" in report["readiness"]["blockingReasons"]
     assert "opening_panel_edge_provenance_missing" in report["readiness"]["blockingReasons"]
     assert "self_intersection_not_run" not in report["readiness"]["blockingReasons"]
+    assert "binding_coverage_incomplete" not in report["readiness"]["blockingReasons"]
+    assert "binding_reconstruction_not_run" not in report["readiness"]["blockingReasons"]
     assert (
         report["analysisAsset"]["payloadHash"] == analysis["integrity"]["stitchedAnalysisShellHash"]
     )

@@ -6277,18 +6277,39 @@ def _validate_geometry_stitched_shell(
         not isinstance(binding_evidence, dict)
         or topology_audit.get("bindingCoverage") != binding_evidence.get("coverageRatio")
         or binding_evidence.get("requiredRenderVertexCount") != topology_audit.get("vertexCount")
-        or binding_evidence.get("bindingStatus") != "not_run"
-        or binding_evidence.get("boundRenderVertexCount") != 0
-        or topology_audit.get("bindingCoverage") != 0.0
-        or topology_audit.get("bindingReconstructionStatus") != "not_run"
-        or topology_audit.get("bindingReconstructionErrorMeters") is not None
+        or binding_evidence.get("bindingStatus") != "pass"
+        or binding_evidence.get("bindingMode") != "logical_source_vertex_centroid_map"
+        or binding_evidence.get("bindingFormat") != "logical_source_vertex_centroid_map_v1"
+        or binding_evidence.get("bindingAssetPath")
+        != "stitch/logical_stitched_analysis_shell.json#sourceVertexMap"
+        or binding_evidence.get("boundRenderVertexCount") != topology_audit.get("vertexCount")
+        or topology_audit.get("bindingCoverage") != 1.0
+        or binding_evidence.get("missingRenderVertexIds") != []
+        or binding_evidence.get("duplicateRenderVertexIds") != []
+        or binding_evidence.get("invalidBindingRecordIds") != []
+        or binding_evidence.get("bindingRecordCount") != topology_audit.get("vertexCount")
+        or binding_evidence.get("topologyHash") != topology_hash(expected_mesh)
+        or binding_evidence.get("contentHash") != geometry_content_hash(expected_mesh)
+        or topology_audit.get("bindingReconstructionStatus") != "pass"
+        or binding_evidence.get("reconstructionStatus") != "pass"
+        or topology_audit.get("bindingReconstructionErrorMeters")
+        != binding_evidence.get("maxReconstructionErrorMeters")
+        or not isinstance(binding_evidence.get("maxReconstructionErrorMeters"), int | float)
+        or not isinstance(binding_evidence.get("rmsReconstructionErrorMeters"), int | float)
+        or not isinstance(binding_evidence.get("reconstructionToleranceMeters"), int | float)
+        or float(binding_evidence.get("maxReconstructionErrorMeters", 1.0))
+        > float(binding_evidence.get("reconstructionToleranceMeters", 0.0))
+        or binding_evidence.get("failureReasons") != []
     ):
         issues.append(
             _issue(
                 "geometry_stitched_shell_binding_coverage_invalid",
                 "fatal",
                 "reports/geometry_stitched_shell.json",
-                "BP-46 stitched shell must not claim binding coverage before a binding exists.",
+                (
+                    "BP-46 stitched shell binding evidence must execute and expose "
+                    "complete logical source-vertex reconstruction coverage."
+                ),
             )
         )
     provenance = topology_audit.get("uvMaterialPanelProvenance", {})

@@ -207,7 +207,7 @@ def audit_stitched_shell(
     boundary_loop_count = len(boundary_components)
     seam_coverage = _seam_span_coverage(operations, constraints)
     provenance_coverage = _provenance_coverage(source_vertex_map, mesh)
-    binding_coverage = _binding_coverage(mesh)
+    binding_coverage = _binding_reconstruction_audit(mesh, source_vertex_map, tolerance)
     displacement_metrics = _source_displacement_metrics(source_vertex_map, meshset)
     semantic_opening_audit = _semantic_opening_audit(boundary_components)
     return {
@@ -258,8 +258,8 @@ def audit_stitched_shell(
         "uvMaterialPanelProvenance": provenance_coverage,
         "bindingCoverage": binding_coverage["coverageRatio"],
         "bindingEvidence": binding_coverage,
-        "bindingReconstructionStatus": "not_run",
-        "bindingReconstructionErrorMeters": None,
+        "bindingReconstructionStatus": binding_coverage["reconstructionStatus"],
+        "bindingReconstructionErrorMeters": binding_coverage["maxReconstructionErrorMeters"],
         "sourceDisplacement": displacement_metrics,
         "maxPreStitchDistanceMeters": _round(max(pre_stitch_distances, default=0.0)),
         "maxPostStitchResidualMeters": _round(max(post_stitch_residuals, default=0.0)),
@@ -528,8 +528,10 @@ def _blocking_reasons(audit: dict[str, Any]) -> list[str]:
         reasons.append("uv_material_panel_provenance_incomplete")
     if audit["bindingCoverage"] < 1.0:
         reasons.append("binding_coverage_incomplete")
-    if audit["bindingReconstructionStatus"] != "pass":
+    if audit["bindingReconstructionStatus"] == "not_run":
         reasons.append("binding_reconstruction_not_run")
+    elif audit["bindingReconstructionStatus"] == "fail":
+        reasons.append("binding_reconstruction_failed")
     if not reasons:
         return []
     return sorted(set(reasons + ["mesh_stitch_or_weld_not_proven"]))
@@ -670,22 +672,92 @@ def _provenance_coverage(source_vertex_map: list[dict[str, Any]], mesh: Mesh) ->
     }
 
 
-def _binding_coverage(mesh: Mesh) -> dict[str, Any]:
+def _binding_reconstruction_audit(
+    mesh: Mesh, source_vertex_map: list[dict[str, Any]], tolerance: float
+) -> dict[str, Any]:
     required_vertices = len(mesh.vertices)
+    covered_vertices: set[int] = set()
+    duplicate_vertices: list[str] = []
+    invalid_records: list[str] = []
+    errors: list[float] = []
+    sample_records: list[dict[str, Any]] = []
+    for entry in source_vertex_map:
+        logical_index = int(entry.get("logicalVertexIndex", -1))
+        source_records = entry.get("sourceVertices", [])
+        vertex_id = f"logicalVertex.{logical_index:06d}"
+        if (
+            logical_index < 0
+            or logical_index >= required_vertices
+            or not isinstance(source_records, list)
+            or not source_records
+            or not all(_is_vec3(record.get("position")) for record in source_records)
+        ):
+            invalid_records.append(vertex_id)
+            continue
+        if logical_index in covered_vertices:
+            duplicate_vertices.append(vertex_id)
+        covered_vertices.add(logical_index)
+        reconstructed = _round_vec3(
+            (
+                sum(float(record["position"][0]) for record in source_records)
+                / len(source_records),
+                sum(float(record["position"][1]) for record in source_records)
+                / len(source_records),
+                sum(float(record["position"][2]) for record in source_records)
+                / len(source_records),
+            )
+        )
+        target = mesh.vertices[logical_index]
+        error = _distance3(target, reconstructed)
+        errors.append(error)
+        if len(sample_records) < 8:
+            sample_records.append(
+                {
+                    "logicalVertexId": vertex_id,
+                    "sourceVertexCount": len(source_records),
+                    "reconstructedPosition": [float(value) for value in reconstructed],
+                    "targetPosition": [float(value) for value in target],
+                    "reconstructionErrorMeters": _round(error),
+                }
+            )
+    missing_vertices = [
+        f"logicalVertex.{index:06d}"
+        for index in range(required_vertices)
+        if index not in covered_vertices
+    ]
+    max_error = max(errors, default=0.0)
+    rms_error = sqrt(sum(error * error for error in errors) / len(errors)) if errors else 0.0
+    failure_reasons: list[str] = []
+    if missing_vertices:
+        failure_reasons.append("missing_binding_records")
+    if duplicate_vertices:
+        failure_reasons.append("duplicate_binding_records")
+    if invalid_records:
+        failure_reasons.append("invalid_binding_records")
+    if max_error > tolerance:
+        failure_reasons.append("reconstruction_error_above_tolerance")
+    reconstruction_status = "pass" if not failure_reasons else "fail"
     return {
-        "bindingStatus": "not_run",
+        "auditVersion": "closy.stitched_shell_logical_binding_audit.source_vertex_centroid_v1",
+        "bindingStatus": reconstruction_status,
+        "bindingMode": "logical_source_vertex_centroid_map",
         "requiredRenderVertexCount": required_vertices,
-        "boundRenderVertexCount": 0,
-        "coverageRatio": 0.0,
-        "missingRenderVertexIds": [
-            f"logicalVertex.{index:06d}" for index in range(required_vertices)
-        ],
-        "bindingRecordCount": 0,
-        "bindingFormat": None,
-        "bindingAssetPath": None,
-        "reconstructionStatus": "not_run",
-        "maxReconstructionErrorMeters": None,
-        "rmsReconstructionErrorMeters": None,
+        "boundRenderVertexCount": len(covered_vertices),
+        "coverageRatio": _ratio(len(covered_vertices), required_vertices),
+        "missingRenderVertexIds": missing_vertices,
+        "duplicateRenderVertexIds": sorted(duplicate_vertices),
+        "invalidBindingRecordIds": sorted(invalid_records),
+        "bindingRecordCount": len(source_vertex_map),
+        "bindingFormat": "logical_source_vertex_centroid_map_v1",
+        "bindingAssetPath": "stitch/logical_stitched_analysis_shell.json#sourceVertexMap",
+        "reconstructionStatus": reconstruction_status,
+        "reconstructionToleranceMeters": tolerance,
+        "maxReconstructionErrorMeters": _round(max_error),
+        "rmsReconstructionErrorMeters": _round(rms_error),
+        "topologyHash": topology_hash(MeshSet([mesh])),
+        "contentHash": geometry_content_hash(MeshSet([mesh])),
+        "failureReasons": failure_reasons,
+        "sampleRecords": sample_records,
     }
 
 
@@ -1278,6 +1350,14 @@ def _is_vec2(value: Any) -> bool:
     return (
         isinstance(value, list | tuple)
         and len(value) == 2
+        and all(isinstance(component, int | float) for component in value)
+    )
+
+
+def _is_vec3(value: Any) -> bool:
+    return (
+        isinstance(value, list | tuple)
+        and len(value) == 3
         and all(isinstance(component, int | float) for component in value)
     )
 

@@ -794,15 +794,14 @@ def test_geometry_stitched_shell_binding_coverage_claim_is_rejected(
     )
     stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
     audit = stitched["topologyAudit"]
-    audit["bindingCoverage"] = 1.0
-    audit["bindingReconstructionStatus"] = "pass"
-    audit["bindingReconstructionErrorMeters"] = 0.0
-    audit["bindingEvidence"]["bindingStatus"] = "pass"
-    audit["bindingEvidence"]["boundRenderVertexCount"] = audit["bindingEvidence"][
-        "requiredRenderVertexCount"
-    ]
-    audit["bindingEvidence"]["coverageRatio"] = 1.0
-    audit["bindingEvidence"]["missingRenderVertexIds"] = []
+    audit["bindingCoverage"] = 0.5
+    audit["bindingReconstructionStatus"] = "fail"
+    audit["bindingReconstructionErrorMeters"] = 0.25
+    audit["bindingEvidence"]["bindingStatus"] = "fail"
+    audit["bindingEvidence"]["boundRenderVertexCount"] -= 1
+    audit["bindingEvidence"]["coverageRatio"] = 0.5
+    audit["bindingEvidence"]["missingRenderVertexIds"] = ["logicalVertex.000000"]
+    audit["bindingEvidence"]["failureReasons"] = ["missing_binding_records"]
     write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
     codes = issue_codes(validate_package(corrupt))
     assert "geometry_stitched_shell_hash_mismatch" in codes
