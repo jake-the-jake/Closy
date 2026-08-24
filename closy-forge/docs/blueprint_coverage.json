@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-46 duplicate topology repair remote CI evidence",
+  "generatedBy": "BP-46 ordered seam correspondence local evidence",
   "rows": [
     {
       "commitSha": [
@@ -129,7 +129,8 @@
         "2057d4ff6a1532476d6661c89274970c03fa68ff",
         "9a8675602de1c39169a058b1ec1992613182260d",
         "01146285610dab4e110f6221e642b009bf9e90c4",
-        "c6fa323506712305a4b5a73bbad118e8d9e1e626"
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -140,14 +141,15 @@
         "BP46 topology-audit closeout executes deterministic topology checks while preserving meshStitchOrWeldProven=false",
         "BP46 semantic opening audit executes boundary-component assignment and fails closed while preserving meshStitchOrWeldProven=false",
         "BP46 logical source-vertex reconstruction audit records bindingCoverage=1.0 and bindingReconstructionStatus=pass while preserving meshStitchOrWeldProven=false",
-        "BP46 duplicate topology repair records duplicateFaceCount=0, duplicateExecutedOperationCount=0 and removedDuplicateFaceCount=8 while preserving meshStitchOrWeldProven=false"
+        "BP46 duplicate topology repair records duplicateFaceCount=0, duplicateExecutedOperationCount=0 and removedDuplicateFaceCount=8 while preserving meshStitchOrWeldProven=false",
+        "BP46 ordered seam correspondence audit records reused/split-needed spans and oversized pre-stitch distances while preserving meshStitchOrWeldProven=false"
       ],
       "id": "BP-05-05-TRUTHFUL-EVIDENCE-TIERS",
       "implementationPaths": [
         "closy-forge/src/closy_forge/proposals/geometry_visual_shell_review.py",
         "closy-forge/src/closy_forge/proposals/geometry_clean_acceptance_gate.py"
       ],
-      "limitations": "Actual source/provider visual review remains absent; BP-46 material output exists, logical source-vertex reconstruction passes and duplicate topology is repaired, but manifold topology, winding/normal/self-intersection checks and semantic opening proof remain rejected.",
+      "limitations": "Actual source/provider visual review remains absent; BP-46 material output exists, logical source-vertex reconstruction passes and duplicate topology is repaired, but ordered seam correspondence, manifold topology, winding/normal/self-intersection checks and semantic opening proof remain rejected.",
       "nextAction": "Continue BP-46 topology/opening/production binding proof without weakening clean gates.",
       "sourceSection": "Core principles",
       "status": "complete",
@@ -167,7 +169,8 @@
         "2057d4ff6a1532476d6661c89274970c03fa68ff",
         "9a8675602de1c39169a058b1ec1992613182260d",
         "01146285610dab4e110f6221e642b009bf9e90c4",
-        "c6fa323506712305a4b5a73bbad118e8d9e1e626"
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369"
       ],
       "dependencies": [
         "BP-45-IMPLEMENTATION-23",
@@ -198,7 +201,12 @@
         "topology repair evidence records duplicateFaceCullRun=true, status=pass, inputTriangleCount=218, outputTriangleCount=210 and removedDuplicateFaceCount=8",
         "seam span coverage records duplicateExecutedOperationCount=0 and missingRequiredOperationIds=[] after operation instance IDs are disambiguated",
         "local duplicate-topology package smoke builds are byte-identical with 89 files each, digest c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78 and only self_collision_not_run formal warning",
-        "remote Actions run 32777652602 passed at c6fa323 on Ubuntu job 97592313066 and Windows job 97592313591 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78"
+        "remote Actions run 32777652602 passed at c6fa323 on Ubuntu job 97592313066 and Windows job 97592313591 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78",
+        "remote docs-verification Actions run 32778840554 passed at a51eb91 on Ubuntu job 97596082459 and Windows job 97596082034 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78",
+        "ordered seam correspondence audit records status=fail, distanceToleranceMeters=0.039266651, reusedBoundaryVertexCount=15, reusedBoundarySpanCount=2, multiSpanFanoutSeamIds=[seam.neck_band.attachment] and oversizedPreStitchCorrespondenceCount=21",
+        "ordered seam correspondence failure reasons are boundary_spans_reused_across_seams, multi_span_seams_require_ordered_partition, pre_stitch_distance_exceeds_local_edge_tolerance and source_boundary_vertices_reused_without_span_partition",
+        "local ordered-correspondence full pytest exited 0 after 194 collected Forge tests",
+        "local ordered-correspondence package smoke builds are byte-identical with 89 files each, digest a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f and only self_collision_not_run formal warning"
       ],
       "id": "BP-46-STITCHED-SHELL-OUTPUT",
       "implementationPaths": [
@@ -207,8 +215,8 @@
         "closy-forge/src/closy_forge/validation/validator.py",
         "closy-forge/schemas/v1/geometry-stitched-shell.schema.json"
       ],
-      "limitations": "Partial checkpoint only: non-manifold edges, non-manifold vertices, branched boundary graph, failed semantic opening proof, missing panel-edge provenance, no production stitched-shell binding/crack-sliding proof, and executed winding/normal/self-intersection audit failures block BP-46 proof.",
-      "nextAction": "Continue BP-46 proof closeout with semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof before any clean/canonical acceptance.",
+      "limitations": "Partial checkpoint only: ordered seam correspondence fails because reused/split-needed spans remain, and non-manifold edges, non-manifold vertices, branched boundary graph, failed semantic opening proof, missing panel-edge provenance, no production stitched-shell binding/crack-sliding proof, and executed winding/normal/self-intersection audit failures block BP-46 proof.",
+      "nextAction": "Continue BP-46 proof closeout with ordered seam-span partitioning, semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof before any clean/canonical acceptance.",
       "sourceSection": "Execution checkpoints mapped to Phase 1, Phase 5, Phase 6 and Gate C3",
       "status": "partial",
       "summary": "BP-46 material stitched-shell output exists, but topology/opening/binding proof remains rejected.",
@@ -922,7 +930,8 @@
         "eef64ef1ead7adbe7db4132043e388856ed9b513",
         "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
         "01146285610dab4e110f6221e642b009bf9e90c4",
-        "c6fa323506712305a4b5a73bbad118e8d9e1e626"
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1145,7 +1154,8 @@
         "BP46 stitched-shell report now records executed topology audits and blocking failure reasons instead of avoidable not_run statuses",
         "BP46 stitched-shell report now records semantic opening assignment status, boundary components, panel-edge provenance status and missing expected openings",
         "BP46 stitched-shell report now records logical binding reconstruction coverage and error metrics",
-        "BP46 stitched-shell report now records topologyRepairEvidence for duplicate logical-face culling and unique seam operation IDs"
+        "BP46 stitched-shell report now records topologyRepairEvidence for duplicate logical-face culling and unique seam operation IDs",
+        "BP46 stitched-shell report now records ordered seam correspondence status, scale-derived tolerance, reused boundary spans and pre/post stitch distance distributions"
       ],
       "id": "BP-08-U-QUALITY-PROVENANCE",
       "implementationPaths": [
@@ -1714,7 +1724,8 @@
         "eef64ef1ead7adbe7db4132043e388856ed9b513",
         "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
         "01146285610dab4e110f6221e642b009bf9e90c4",
-        "c6fa323506712305a4b5a73bbad118e8d9e1e626"
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -2465,13 +2476,14 @@
         "BP46 topology-audit closeout improves rejection evidence while preserving clean/canonical false",
         "BP46 semantic-opening closeout records fail-closed opening assignment evidence while preserving clean/canonical false",
         "BP46 logical-binding closeout records source-vertex reconstruction coverage while preserving clean/canonical false",
-        "BP46 duplicate-topology closeout removes duplicate logical faces and duplicate seam operation IDs while preserving clean/canonical false"
+        "BP46 duplicate-topology closeout removes duplicate logical faces and duplicate seam operation IDs while preserving clean/canonical false",
+        "BP46 ordered seam correspondence closeout records reused/split-needed span blockers while preserving clean/canonical false"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
         "closy-forge"
       ],
-      "limitations": "Private-user real images, learned texture generation, source/provider visual-fidelity acceptance, production mesh stitch/weld proof and clean provider mesh remain absent.",
+      "limitations": "Private-user real images, learned texture generation, source/provider visual-fidelity acceptance, production mesh stitch/weld proof and clean provider mesh remain absent; BP-46 ordered seam-span partitioning is still required.",
       "nextAction": "Do not promote success level without full prerequisites; continue BP-46/BP-48 topology/opening/production-binding proof closeout.",
       "sourceSection": "Research/alpha/beta/production success levels",
       "status": "partial",
@@ -2612,5 +2624,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp46-duplicate-topology-repair-remote-v1"
+  "version": "bp46-ordered-seam-correspondence-local-v1"
 }

@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-duplicate-topology-repair-remote-v1"
-    assert payload["generatedBy"] == "BP-46 duplicate topology repair remote CI evidence"
+    assert payload["version"] == "bp46-ordered-seam-correspondence-local-v1"
+    assert payload["generatedBy"] == "BP-46 ordered seam correspondence local evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -178,6 +178,7 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "9a8675602de1c39169a058b1ec1992613182260d" in bp46["commitSha"]
     assert "01146285610dab4e110f6221e642b009bf9e90c4" in bp46["commitSha"]
     assert "c6fa323506712305a4b5a73bbad118e8d9e1e626" in bp46["commitSha"]
+    assert "704a10e2f166ba340ba078324f0d5a1fcc6af369" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
     assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
     assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
@@ -206,7 +207,21 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
         "c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78" in item
         for item in bp46["executableEvidence"]
     )
+    assert any(
+        "a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any(
+        "ordered seam correspondence audit records status=fail" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("reusedBoundaryVertexCount=15" in item for item in bp46["executableEvidence"])
+    assert any("reusedBoundarySpanCount=2" in item for item in bp46["executableEvidence"])
+    assert any(
+        "oversizedPreStitchCorrespondenceCount=21" in item for item in bp46["executableEvidence"]
+    )
     assert any("193 collected Forge tests" in item for item in bp46["executableEvidence"])
+    assert any("194 collected Forge tests" in item for item in bp46["executableEvidence"])
     assert any("89 files each" in item for item in bp46["executableEvidence"])
     assert any("remote Actions run 32761608825" in item for item in bp46["executableEvidence"])
     assert any("97541503765" in item for item in bp46["executableEvidence"])
@@ -220,11 +235,19 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert any("remote Actions run 32777652602" in item for item in bp46["executableEvidence"])
     assert any("97592313066" in item for item in bp46["executableEvidence"])
     assert any("97592313591" in item for item in bp46["executableEvidence"])
+    assert any(
+        "remote docs-verification Actions run 32778840554" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("97596082459" in item for item in bp46["executableEvidence"])
+    assert any("97596082034" in item for item in bp46["executableEvidence"])
     assert "non-manifold edges" in bp46["limitations"]
+    assert "ordered seam correspondence fails" in bp46["limitations"]
     assert "duplicate faces" not in bp46["limitations"]
     assert "duplicate operation IDs" not in bp46["limitations"]
     assert "not-run topology audits" not in bp46["limitations"]
     assert "incomplete binding coverage" not in bp46["limitations"]
+    assert "ordered seam-span partitioning" in bp46["nextAction"]
     assert "semantic opening proof" in bp46["nextAction"]
 
 
@@ -416,7 +439,7 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
 def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `0114628`" in ledger
+    assert "Latest completed implementation commit when last updated: `704a10e`" in ledger
     assert "executedTopologyAuditCount=5" in ledger
     assert "semanticOpeningAssignmentStatus=fail" in ledger
     assert "boundaryComponentCount=1" in ledger
@@ -425,10 +448,15 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "duplicateFaceCount=0" in ledger
     assert "duplicateExecutedOperationCount=0" in ledger
     assert "removedDuplicateFaceCount=8" in ledger
+    assert "orderedSeamCorrespondenceStatus=fail" in ledger
+    assert "reusedBoundaryVertexCount=15" in ledger
+    assert "oversizedPreStitchCorrespondenceCount=21" in ledger
     assert "c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78" in ledger
+    assert "a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f" in ledger
     assert "Forge run `32777652602`" in ledger
+    assert "Forge run `32778840554`" in ledger
     assert (
-        "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-DUPLICATE-TOPOLOGY-REPAIR`"
+        "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-ORDERED-SEAM-CORRESPONDENCE`"
         in ledger
     )
     assert "Next dependency-ready increment: continue `FOUNDATION-PROOF-CLOSEOUT`" in ledger
