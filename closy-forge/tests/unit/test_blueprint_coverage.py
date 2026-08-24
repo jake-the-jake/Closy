@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-semantic-opening-audit-local-v1"
-    assert payload["generatedBy"] == "BP-46 semantic opening audit local evidence"
+    assert payload["version"] == "bp46-semantic-opening-audit-remote-v1"
+    assert payload["generatedBy"] == "BP-46 semantic opening audit remote CI evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -172,6 +172,7 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "81fb02c" in bp46["commitSha"]
     assert "d0801291ecdaeda4d04ab5897327abcbf9e95ad1" in bp46["commitSha"]
     assert "de35156de35831f467c7809fea727195a548ddce" in bp46["commitSha"]
+    assert "eef64ef1ead7adbe7db4132043e388856ed9b513" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
     assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
     assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
@@ -189,6 +190,9 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     )
     assert any("193 collected Forge tests" in item for item in bp46["executableEvidence"])
     assert any("89 files each" in item for item in bp46["executableEvidence"])
+    assert any("remote Actions run 32761608825" in item for item in bp46["executableEvidence"])
+    assert any("97541503765" in item for item in bp46["executableEvidence"])
+    assert any("97541503927" in item for item in bp46["executableEvidence"])
     assert "non-manifold edges" in bp46["limitations"]
     assert "not-run topology audits" not in bp46["limitations"]
     assert "semantic opening proof" in bp46["nextAction"]

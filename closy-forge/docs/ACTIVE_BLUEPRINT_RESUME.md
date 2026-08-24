@@ -11,12 +11,13 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
 - Latest implementation commit SHA: `de35156de35831f467c7809fea727195a548ddce`
 - Latest implementation commit subject: `Add BP46 semantic opening audit`
-- Record based on SHA: `de35156de35831f467c7809fea727195a548ddce`; this resume file itself belongs to the follow-up foundation-proof truth-sync commit.
+- Latest evidence commit SHA before this update: `eef64ef1ead7adbe7db4132043e388856ed9b513`
+- Record based on SHA: `eef64ef1ead7adbe7db4132043e388856ed9b513`; this resume file itself belongs to the follow-up foundation-proof remote-evidence truth-sync commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
-- Last remote foundation-proof evidence: GitHub Actions run `32755020665` passed at commit `f05bede38329786915a2d4202fe76b78375ae874`; Ubuntu job `97520443283` passed in 8m1s and Windows job `97520443396` passed in 10m47s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `fde07c5ec2958e0fddbf02197186567fa3aee943ad570044028945c813e3a817`, and validation/report with only `self_collision_not_run`.
-- Current local BP46 semantic-opening evidence after `de35156`: focused BP46 semantic/topology tests passed, golden structural test passed, the wider geometry/integration/golden/corruption suite passed, and full `pytest -q` passed after 193 collected Forge tests.
+- Last remote foundation-proof evidence: GitHub Actions run `32761608825` passed at commit `eef64ef1ead7adbe7db4132043e388856ed9b513`; Ubuntu job `97541503765` passed in 7m48s and Windows job `97541503927` passed in 11m28s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9`, and validation/report with only `self_collision_not_run`.
+- Current local BP46 semantic-opening evidence after `eef64ef`: focused BP46 semantic/topology tests passed, golden structural test passed, the wider geometry/integration/golden/corruption suite passed, and full `pytest -q` passed after 193 collected Forge tests.
 - Current local package digest after semantic opening audit: two OS-temp package builds were byte-identical with 89 files each and digest `36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state remains rejected; clean/canonical acceptance remains false.
@@ -72,7 +73,7 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet rerun after this semantic-opening truth-sync update.
+- No required checks remain unrun for the `eef64ef` semantic-opening evidence checkpoint. Future implementation commits require fresh local and remote validation.
 
 ## Next Exact Command
 
@@ -83,4 +84,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Validate this semantic-opening truth-sync update, commit it, push normally to `codex/closy-forge-foundation-proof-closeout`, update draft PR #5, inspect remote Ubuntu/Windows Forge CI, then continue BP-46 topology repair and stitched-shell binding proof without promoting clean/canonical acceptance until evidence passes.
+Commit and push this remote-evidence truth-sync, update draft PR #5, then continue BP-46 topology repair and stitched-shell binding proof without promoting clean/canonical acceptance until evidence passes.
