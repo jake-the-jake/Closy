@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-52 image-conditioned fitting local evidence",
+  "generatedBy": "BP-52 image-conditioned fitting remote CI evidence",
   "rows": [
     {
       "commitSha": [
@@ -281,7 +281,8 @@
         "losses report multiview silhouette IoU 0.939980, boundary error 0.018125, landmark error 0.002972, opening alignment 0.002106 and confidence-weighted loss 0.019326",
         "held-out rear view and deterministic perturbation evaluations pass; settled-render/drape comparison is truthfully not_run_dependency_pending",
         "local full pytest exited 0 after collecting 189 tests",
-        "two OS-temp BP52 package builds are byte-identical with 85 files each, digest 1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790 and only self_collision_not_run formal warning"
+        "two OS-temp BP52 package builds are byte-identical with 85 files each, digest 1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790 and only self_collision_not_run formal warning",
+        "remote Actions run 32728354755 passed Ubuntu job 97434656635 and Windows job 97434656119 with 189 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 85-file package trees and only self_collision_not_run formal warning"
       ],
       "id": "BP-52-IMAGE-CONDITIONED-FITTING",
       "implementationPaths": [
@@ -1523,7 +1524,8 @@
         "BP52 image-conditioned D0 fitting consumes BP51 fused multiview evidence",
         "package digest 1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790 from local BP52 smoke build",
         "schema export/freshness, ruff, mypy, focused unit/integration/golden/corruption tests and full pytest after 189 collected tests passed locally",
-        "deterministic package diff reported identical 85-file package trees"
+        "deterministic package diff reported identical 85-file package trees",
+        "remote Actions run 32728354755 passed Ubuntu/Windows with 189 tests per OS, fresh schemas, identical 85-file package trees and only self_collision_not_run formal warning"
       ],
       "id": "BP-17-PHASE-03",
       "implementationPaths": [
@@ -2462,5 +2464,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp52-image-conditioned-fitting-local-v1"
+  "version": "bp52-image-conditioned-fitting-remote-v1"
 }

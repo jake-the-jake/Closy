@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp52-image-conditioned-fitting-local-v1"
-    assert payload["generatedBy"] == "BP-52 image-conditioned fitting local evidence"
+    assert payload["version"] == "bp52-image-conditioned-fitting-remote-v1"
+    assert payload["generatedBy"] == "BP-52 image-conditioned fitting remote CI evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -318,6 +318,7 @@ def test_bp52_checkpoint_is_partial_and_evidenced() -> None:
     assert any("held-out rear view" in item for item in bp52["executableEvidence"])
     assert any("189 tests" in item for item in bp52["executableEvidence"])
     assert any("85 files each" in item for item in bp52["executableEvidence"])
+    assert any("remote Actions run 32728354755" in item for item in bp52["executableEvidence"])
     assert "settled-render or drape comparison" in bp52["limitations"]
     assert "BP-53" in bp52["nextAction"]
 

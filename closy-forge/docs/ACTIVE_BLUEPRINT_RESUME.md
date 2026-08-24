@@ -10,16 +10,17 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Parent branch: `codex/closy-forge-phase-2-capture`
 - Latest implementation commit SHA: `e23820eddaf6d6599a3b125ee1a083dc97ef4acd`
 - Latest implementation commit subject: `Add BP52 image-conditioned fitting`
-- Record based on SHA: `e23820eddaf6d6599a3b125ee1a083dc97ef4acd`; this resume file itself belongs to the follow-up evidence-doc commit.
-- Draft PR: not yet created for Phase 3 at the time of this resume update; create it against `codex/closy-forge-phase-2-capture` after the evidence-doc commit is pushed.
+- Record based on SHA: `c6c94f7ac2fcbde388c9e2b70dd69ae802d7add3`; this resume file itself belongs to the follow-up remote-evidence truth-sync commit.
+- Draft PR: `https://github.com/jake-the-jake/Closy/pull/3`, draft/open, stacked on `codex/closy-forge-phase-2-capture`.
 - Parent draft PR: `https://github.com/jake-the-jake/Closy/pull/2`
 - Last remote green evidence inherited from Phase 2: GitHub Actions run `32719446390`; Ubuntu job `97407535366` and Windows job `97407535566` passed at commit `f6051f9b8ae79e47d47fe1dee7c2cf8da2f1521e`.
 - Last remote Phase-2 matrix details: each OS ran 112 format-checked files, 89 mypy source files, 185 tests, fresh schemas, identical 85-file package trees, digest `8b9c00555f2ad904154640c77399e167ecb6da929d0c707a677a6d49f3c7c94a`, and validation with only `self_collision_not_run`.
 - Current local BP52 evidence after `e23820e`: `ruff format --check .` reported 112 files already formatted; `ruff check .` passed; `mypy src` passed over 89 source files; schema export wrote 49 schemas; schema check reported `{"issues":[],"status":"fresh"}`; focused BP52 unit/integration/golden/corruption tests passed; full `pytest -q` exited 0 after collecting 189 tests; two OS-temp package builds were byte-identical with 85 files each and digest `1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790`; `packages diff`, `validate --json` and `report --json` passed with one formal warning.
 - A full local `pytest -q` started immediately after BP52 implementation exposed one variant-prior regression in `test_bounded_tshirt_variants_validate_and_keep_stable_semantics`; the committed BP52 fix separated prior movement from the `maximumParameterDeltaMeters` threshold, and the final clean local suite above now passes.
+- Last remote BP52 evidence before this truth-sync update: GitHub Actions run `32728354755` passed at commit `c6c94f7ac2fcbde388c9e2b70dd69ae802d7add3`; Ubuntu job `97434656635` passed in 6m57s and Windows job `97434656119` passed in 10m5s. Each OS ran 112 format-checked files, 89 mypy source files, 189 tests, fresh schemas, identical 85-file package trees and validation/report with only `self_collision_not_run`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state: 13 checks with 9 pass, 1 fail, 2 warnings and 1 not-run; clean/canonical acceptance remains rejected.
-- Current in-progress uncommitted work, if this file is read before the next commit: BP52 evidence-doc/coverage ledger update.
+- Current in-progress uncommitted work, if this file is read before the next commit: BP52 remote-evidence truth-sync update.
 - Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
 
 ## Current BP-46/BP-47/BP-48/BP-49/BP-50/BP-51/BP-52 Truth
@@ -99,16 +100,15 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote BP52 CI has not yet run.
-- Phase-3 draft PR has not yet been created because the branch had no commits until `e23820e`; create it after this evidence-doc commit.
+- Remote CI has not yet run for this BP52 remote-evidence truth-sync commit if this file is read before it is pushed.
 
 ## Next Exact Command
 
 ```powershell
 cd E:\apps\Closy\closy-forge
-git diff --check -- docs\ACTIVE_BLUEPRINT_RESUME.md docs\MASTER_BLUEPRINT_PROGRESS.md docs\blueprint_coverage.json tests\unit\test_blueprint_coverage.py
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_blueprint_coverage.py -q
 ```
 
 ## Next Safe Action
 
-Validate this BP52 evidence-doc update, commit it, push normally to `codex/closy-forge-phase-3-fitting`, create/update the draft Phase-3 PR targeting `codex/closy-forge-phase-2-capture`, inspect remote Ubuntu/Windows Forge CI, then branch Phase 4 for BP-53 only after BP52 remote green.
+Validate this BP52 remote-evidence truth-sync update, commit it, push normally to `codex/closy-forge-phase-3-fitting`, update draft PR #3, inspect remote Ubuntu/Windows Forge CI, then branch Phase 4 for BP-53 only after the truth-sync commit is also remote green.
