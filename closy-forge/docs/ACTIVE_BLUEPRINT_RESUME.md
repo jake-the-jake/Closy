@@ -11,12 +11,12 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
 - Latest implementation commit SHA: `01146285610dab4e110f6221e642b009bf9e90c4`
 - Latest implementation commit subject: `Repair BP46 stitched shell duplicate topology`
-- Latest evidence commit SHA before this update: `9a8675602de1c39169a058b1ec1992613182260d`
-- Record based on SHA: `01146285610dab4e110f6221e642b009bf9e90c4`; this resume file itself belongs to the follow-up foundation-proof duplicate-topology evidence truth-sync commit.
+- Latest evidence commit SHA before this update: `c6fa323506712305a4b5a73bbad118e8d9e1e626`
+- Record based on SHA: `c6fa323506712305a4b5a73bbad118e8d9e1e626`; this resume file itself belongs to the follow-up foundation-proof duplicate-topology remote-evidence truth-sync commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
-- Last remote foundation-proof evidence: GitHub Actions run `32772212216` passed at commit `9a8675602de1c39169a058b1ec1992613182260d`; Ubuntu job `97574933614` passed in 8m12s and Windows job `97574933467` passed in 10m37s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb`, and validation/report with only `self_collision_not_run`.
+- Last remote foundation-proof evidence: GitHub Actions run `32777652602` passed at commit `c6fa323506712305a4b5a73bbad118e8d9e1e626`; Ubuntu job `97592313066` passed in 7m46s and Windows job `97592313591` passed in 9m20s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`, and validation/report with only `self_collision_not_run`.
 - Current local BP46 duplicate-topology repair evidence after `0114628`: focused BP46 topology/binding corruption tests passed, golden structural test passed, coverage ledger test passed, full `pytest -q` passed with 193 collected tests, `ruff format --check .` over 112 files passed, `ruff check .` passed, `mypy src` passed, and schema freshness checks passed.
 - Current local package digest after duplicate topology repair: two OS-temp package builds were byte-identical with 89 files each and digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
@@ -76,7 +76,7 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for `0114628` plus this evidence-doc update.
+- Remote CI has not yet run for this duplicate-topology remote-evidence doc update.
 
 ## Next Exact Command
 
@@ -87,4 +87,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Commit and push this duplicate-topology evidence truth-sync, update draft PR #5, then continue BP-46 semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
+Commit and push this duplicate-topology remote-evidence truth-sync, update draft PR #5, then continue BP-46 semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
