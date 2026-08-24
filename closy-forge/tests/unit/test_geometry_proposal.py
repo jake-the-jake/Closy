@@ -386,6 +386,8 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["execution"]["analysisAssetWritten"] is False
     assert report["execution"]["renderAssetWritten"] is False
     assert report["packageWriterEvidence"]["status"] == "pending_package_writer"
+    assert len(pattern["seams"]) == 13
+    assert len(constraints["constraints"]) == 63
     assert report["execution"]["operationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["executedOperationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["seamSpanCoverage"]["coverageRatio"] == 1.0
@@ -395,33 +397,75 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     ordered_correspondence = report["topologyAudit"]["orderedSeamCorrespondenceAudit"]
     assert ordered_correspondence["sourceConstraintCount"] == len(constraints["constraints"])
     assert ordered_correspondence["executedOperationCount"] == len(constraints["constraints"])
-    assert ordered_correspondence["distanceToleranceMeters"] == 0.039266651
-    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 74
-    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.131918884
+    assert ordered_correspondence["distanceToleranceMeters"] == 0.035577926
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 63
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.093647491
     assert ordered_correspondence["postStitchResidualDistributionMeters"]["max"] == 0.0
     assert ordered_correspondence["unmatchedCorrespondenceCount"] == 0
     assert ordered_correspondence["duplicatedOperationIdCount"] == 0
-    assert ordered_correspondence["reversedCorrespondenceCount"] == 54
-    assert ordered_correspondence["reusedBoundaryVertexCount"] == 15
-    assert ordered_correspondence["reusedBoundarySpanCount"] == 2
-    assert ordered_correspondence["multiSpanFanoutSeamIds"] == ["seam.neck_band.attachment"]
-    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] == 21
+    assert ordered_correspondence["reversedCorrespondenceCount"] == 47
+    assert ordered_correspondence["reusedBoundaryVertexCount"] == 0
+    assert ordered_correspondence["reusedBoundarySpanCount"] == 0
+    assert ordered_correspondence["reusedBoundarySpans"] == []
+    assert ordered_correspondence["multiSpanFanoutSeamIds"] == []
+    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] == 16
     assert ordered_correspondence["failureReasons"] == [
-        "boundary_spans_reused_across_seams",
-        "multi_span_seams_require_ordered_partition",
         "pre_stitch_distance_exceeds_local_edge_tolerance",
-        "source_boundary_vertices_reused_without_span_partition",
     ]
-    assert ordered_correspondence["reusedBoundarySpans"] == [
+    assert ordered_correspondence["boundarySpanPartitions"] == [
         {
             "meshIndex": 2,
             "boundaryId": "edge.sleeve_cap.left",
             "seamIds": ["seam.armhole.left.back", "seam.armhole.left.front"],
+            "status": "partitioned",
+            "partitions": [
+                {
+                    "seamId": "seam.armhole.left.back",
+                    "sampleRange": [3, 5],
+                    "partitionId": "sleeve_cap.left.back",
+                },
+                {
+                    "seamId": "seam.armhole.left.front",
+                    "sampleRange": [0, 3],
+                    "partitionId": "sleeve_cap.left.front",
+                },
+            ],
         },
         {
             "meshIndex": 3,
             "boundaryId": "edge.sleeve_cap.right",
             "seamIds": ["seam.armhole.right.back", "seam.armhole.right.front"],
+            "status": "partitioned",
+            "partitions": [
+                {
+                    "seamId": "seam.armhole.right.back",
+                    "sampleRange": [0, 3],
+                    "partitionId": "sleeve_cap.right.back",
+                },
+                {
+                    "seamId": "seam.armhole.right.front",
+                    "sampleRange": [3, 5],
+                    "partitionId": "sleeve_cap.right.front",
+                },
+            ],
+        },
+        {
+            "meshIndex": 4,
+            "boundaryId": "edge.neck_band.long.bottom",
+            "seamIds": ["seam.neck_band.attachment", "seam.neck_band.attachment.back"],
+            "status": "partitioned",
+            "partitions": [
+                {
+                    "seamId": "seam.neck_band.attachment",
+                    "sampleRange": [0, 5],
+                    "partitionId": "neck_band.front",
+                },
+                {
+                    "seamId": "seam.neck_band.attachment.back",
+                    "sampleRange": [5, 10],
+                    "partitionId": "neck_band.back",
+                },
+            ],
         },
     ]
     assert report["topologyAudit"]["topologyRepairEvidence"]["duplicateFaceCullRun"] is True
@@ -447,12 +491,13 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["missingExpectedOpeningCount"] == 4
     assert report["topologyAudit"]["duplicateFaceCount"] == 0
-    assert report["topologyAudit"]["nonManifoldEdgeCount"] == 17
-    assert report["topologyAudit"]["boundaryLoopCount"] == 1
+    assert report["topologyAudit"]["nonManifoldEdgeCount"] == 4
+    assert report["topologyAudit"]["nonManifoldVertexCount"] == 6
+    assert report["topologyAudit"]["boundaryLoopCount"] == 2
     assert report["topologyAudit"]["simpleBoundaryCycleCount"] == 0
-    assert report["topologyAudit"]["boundaryBranchVertexCount"] == 11
+    assert report["topologyAudit"]["boundaryBranchVertexCount"] == 4
     assert report["topologyAudit"]["semanticOpeningAssignmentStatus"] == "fail"
-    assert report["topologyAudit"]["semanticOpeningAudit"]["boundaryComponentCount"] == 1
+    assert report["topologyAudit"]["semanticOpeningAudit"]["boundaryComponentCount"] == 2
     assert report["topologyAudit"]["semanticOpeningAudit"]["simpleBoundaryCycleCount"] == 0
     assert report["topologyAudit"]["semanticOpeningAudit"]["panelEdgeProvenanceStatus"] == "fail"
     assert report["topologyAudit"]["semanticOpeningAudit"]["failureReasons"] == [
@@ -468,11 +513,11 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["tJunctionCheckStatus"] == "pass"
     assert report["topologyAudit"]["tJunctionAudit"]["tJunctionCount"] == 0
     assert report["topologyAudit"]["inconsistentWindingCheckStatus"] == "fail"
-    assert report["topologyAudit"]["inconsistentWindingAudit"]["inconsistentSharedEdgeCount"] == 29
+    assert report["topologyAudit"]["inconsistentWindingAudit"]["inconsistentSharedEdgeCount"] == 36
     assert report["topologyAudit"]["normalInversionCheckStatus"] == "fail"
-    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 32
+    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 27
     assert report["topologyAudit"]["selfIntersectionCheckStatus"] == "fail"
-    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 310
+    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 320
     assert report["topologyAudit"]["hiddenInternalComponentCheckStatus"] == "pass"
     assert (
         report["topologyAudit"]["hiddenInternalComponentAudit"]["internalClosedComponentCount"] == 0

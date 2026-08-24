@@ -20,11 +20,16 @@ def _line(
     }
 
 
-def _quad(edge_id: str, points: list[tuple[float, float]], target: float) -> dict[str, Any]:
+def _quad(
+    edge_id: str,
+    points: list[tuple[float, float]],
+    target: float,
+    minimum_samples: int = 5,
+) -> dict[str, Any]:
     return {
         "id": edge_id,
         "curve": {"type": "quadratic_bezier", "points": [list(p) for p in points]},
-        "sampleCount": _samples(0.20, target, 5),
+        "sampleCount": _samples(0.20, target, minimum_samples),
     }
 
 
@@ -225,8 +230,19 @@ def _sleeve_panel(side: str, params: TShirtParameters, target: float) -> dict[st
     }
 
 
-def _span(panel: str, edge: str, orientation: str = "forward") -> dict[str, str]:
-    return {"panelId": panel, "edgeId": edge, "orientation": orientation}
+def _span(
+    panel: str,
+    edge: str,
+    orientation: str = "forward",
+    sample_range: tuple[int, int] | None = None,
+    partition_id: str | None = None,
+) -> dict[str, Any]:
+    span: dict[str, Any] = {"panelId": panel, "edgeId": edge, "orientation": orientation}
+    if sample_range is not None:
+        span["sampleRange"] = [sample_range[0], sample_range[1]]
+    if partition_id is not None:
+        span["partitionId"] = partition_id
+    return span
 
 
 def _seams() -> list[dict[str, Any]]:
@@ -275,7 +291,12 @@ def _seams() -> list[dict[str, Any]]:
             "id": "seam.armhole.left.front",
             "spans": [
                 _span("panel.front", "edge.armhole.left.front"),
-                _span("panel.sleeve.left", "edge.sleeve_cap.left"),
+                _span(
+                    "panel.sleeve.left",
+                    "edge.sleeve_cap.left",
+                    sample_range=(0, 3),
+                    partition_id="sleeve_cap.left.front",
+                ),
             ],
             "stitchType": "lockstitch",
             "easeRatio": 1.08,
@@ -285,7 +306,13 @@ def _seams() -> list[dict[str, Any]]:
             "id": "seam.armhole.left.back",
             "spans": [
                 _span("panel.back", "edge.armhole.left.back"),
-                _span("panel.sleeve.left", "edge.sleeve_cap.left", "reverse"),
+                _span(
+                    "panel.sleeve.left",
+                    "edge.sleeve_cap.left",
+                    "reverse",
+                    sample_range=(3, 5),
+                    partition_id="sleeve_cap.left.back",
+                ),
             ],
             "stitchType": "lockstitch",
             "easeRatio": 1.08,
@@ -295,7 +322,13 @@ def _seams() -> list[dict[str, Any]]:
             "id": "seam.armhole.right.front",
             "spans": [
                 _span("panel.front", "edge.armhole.right.front"),
-                _span("panel.sleeve.right", "edge.sleeve_cap.right", "reverse"),
+                _span(
+                    "panel.sleeve.right",
+                    "edge.sleeve_cap.right",
+                    "reverse",
+                    sample_range=(3, 5),
+                    partition_id="sleeve_cap.right.front",
+                ),
             ],
             "stitchType": "lockstitch",
             "easeRatio": 1.08,
@@ -305,7 +338,12 @@ def _seams() -> list[dict[str, Any]]:
             "id": "seam.armhole.right.back",
             "spans": [
                 _span("panel.back", "edge.armhole.right.back"),
-                _span("panel.sleeve.right", "edge.sleeve_cap.right"),
+                _span(
+                    "panel.sleeve.right",
+                    "edge.sleeve_cap.right",
+                    sample_range=(0, 3),
+                    partition_id="sleeve_cap.right.back",
+                ),
             ],
             "stitchType": "lockstitch",
             "easeRatio": 1.08,
@@ -340,16 +378,38 @@ def _seams() -> list[dict[str, Any]]:
             "stitchType": "lockstitch",
             "easeRatio": 1.0,
             "attachmentOrder": 50,
+            "simulationEnabled": False,
+            "simulationStatus": "disabled_reference_solver_trim_closure_pending",
         },
         {
             "id": "seam.neck_band.attachment",
             "spans": [
                 _span("panel.front", "edge.neck.front"),
-                _span("panel.back", "edge.neck.back"),
-                _span("panel.neck_band", "edge.neck_band.long.bottom"),
+                _span(
+                    "panel.neck_band",
+                    "edge.neck_band.long.bottom",
+                    sample_range=(0, 5),
+                    partition_id="neck_band.front",
+                ),
             ],
             "stitchType": "rib_attachment",
             "easeRatio": 0.92,
             "attachmentOrder": 51,
+        },
+        {
+            "id": "seam.neck_band.attachment.back",
+            "spans": [
+                _span("panel.back", "edge.neck.back"),
+                _span(
+                    "panel.neck_band",
+                    "edge.neck_band.long.bottom",
+                    sample_range=(5, 10),
+                    partition_id="neck_band.back",
+                ),
+            ],
+            "stitchType": "rib_attachment",
+            "easeRatio": 0.92,
+            "attachmentOrder": 52,
+            "parentSeamId": "seam.neck_band.attachment",
         },
     ]

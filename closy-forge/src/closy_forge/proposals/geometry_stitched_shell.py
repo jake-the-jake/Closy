@@ -732,7 +732,7 @@ def _ordered_seam_correspondence_audit(
     ]
     operations_by_id = {str(operation["operationId"]): operation for operation in operations}
     source_vertex_uses: Counter[tuple[int, str, int]] = Counter()
-    seam_ids_by_boundary: dict[tuple[int, str], set[str]] = {}
+    seam_span_partitions: dict[tuple[int, str], set[tuple[str, tuple[int, int] | None, str]]] = {}
     per_seam: dict[str, dict[str, Any]] = {}
     pre_stitch_distances: list[float] = []
     post_stitch_residuals: list[float] = []
@@ -763,7 +763,13 @@ def _ordered_seam_correspondence_audit(
             boundary_id = str(span.get("boundaryId", "unknown"))
             vertex_index = int(span.get("vertexIndex", -1))
             source_vertex_uses[(mesh_index, boundary_id, vertex_index)] += 1
-            seam_ids_by_boundary.setdefault((mesh_index, boundary_id), set()).add(seam_id)
+            seam_span_partitions.setdefault((mesh_index, boundary_id), set()).add(
+                (
+                    seam_id,
+                    _span_sample_range(span),
+                    str(span.get("partitionId", "")),
+                )
+            )
         orientations = constraint.get("orientation", [])
         if isinstance(orientations, list):
             orientation_pair = [str(value) for value in orientations]
@@ -795,28 +801,15 @@ def _ordered_seam_correspondence_audit(
         for (mesh_index, boundary_id, vertex_index), count in sorted(source_vertex_uses.items())
         if count > 1
     ]
+    boundary_span_partitions = _summarize_boundary_span_partitions(seam_span_partitions)
     reused_boundary_spans = [
-        {
-            "meshIndex": mesh_index,
-            "boundaryId": boundary_id,
-            "seamIds": sorted(seam_ids),
-        }
-        for (mesh_index, boundary_id), seam_ids in sorted(seam_ids_by_boundary.items())
-        if len(seam_ids) > 1
+        partition for partition in boundary_span_partitions if partition["status"] == "overlap"
     ]
     multi_span_fanout_seams = [
         str(seam.get("id", "unknown"))
         for seam in constraints.get("seams", [])
         if isinstance(seam, dict) and len(seam.get("spans", [])) > 2
     ]
-    if not multi_span_fanout_seams:
-        multi_span_fanout_seams = sorted(
-            {
-                str(constraint.get("seamId", "unknown"))
-                for constraint in input_constraints
-                if str(constraint.get("seamId", "unknown")) == "seam.neck_band.attachment"
-            }
-        )
     oversized_pre_stitch = [
         {
             "operationId": str(operation["operationId"]),
@@ -865,11 +858,80 @@ def _ordered_seam_correspondence_audit(
         "reusedBoundaryVertexSampleLimit": 32,
         "reusedBoundarySpanCount": len(reused_boundary_spans),
         "reusedBoundarySpans": reused_boundary_spans[:32],
+        "boundarySpanPartitions": boundary_span_partitions[:32],
+        "boundarySpanPartitionSampleLimit": 32,
         "multiSpanFanoutSeamIds": multi_span_fanout_seams,
         "oversizedPreStitchCorrespondenceCount": len(oversized_pre_stitch),
         "oversizedPreStitchCorrespondences": oversized_pre_stitch[:32],
         "failureReasons": sorted(set(failure_reasons)),
     }
+
+
+def _span_sample_range(span: dict[str, Any]) -> tuple[int, int] | None:
+    value = span.get("sampleRange")
+    if not isinstance(value, list) or len(value) != 2:
+        return None
+    return (int(value[0]), int(value[1]))
+
+
+def _summarize_boundary_span_partitions(
+    partitions: dict[tuple[int, str], set[tuple[str, tuple[int, int] | None, str]]],
+) -> list[dict[str, Any]]:
+    summaries: list[dict[str, Any]] = []
+    for (mesh_index, boundary_id), records in sorted(partitions.items()):
+        seam_ids = sorted({record[0] for record in records})
+        if len(seam_ids) <= 1:
+            continue
+        partition_records = [
+            {
+                "seamId": seam_id,
+                "sampleRange": list(sample_range) if sample_range is not None else None,
+                "partitionId": partition_id or None,
+            }
+            for seam_id, sample_range, partition_id in sorted(
+                records,
+                key=lambda item: (
+                    item[0],
+                    item[1] is None,
+                    item[1] or (-1, -1),
+                    item[2],
+                ),
+            )
+        ]
+        status = "partitioned" if _partition_records_are_disjoint(records) else "overlap"
+        summaries.append(
+            {
+                "meshIndex": mesh_index,
+                "boundaryId": boundary_id,
+                "seamIds": seam_ids,
+                "status": status,
+                "partitions": partition_records,
+            }
+        )
+    return summaries
+
+
+def _partition_records_are_disjoint(
+    records: set[tuple[str, tuple[int, int] | None, str]],
+) -> bool:
+    intervals: list[tuple[int, int, str]] = []
+    for seam_id, sample_range, _partition_id in records:
+        if sample_range is None:
+            return False
+        start, end = sample_range
+        if end <= start:
+            return False
+        intervals.append((start, end, seam_id))
+    intervals.sort()
+    active_end = -1
+    active_seam = ""
+    for start, end, seam_id in intervals:
+        if active_end > start and active_seam != seam_id:
+            return False
+        if end > active_end:
+            active_end = end
+            active_seam = seam_id
+    return True
 
 
 def _summarize_ordered_seam(entry: dict[str, Any]) -> dict[str, Any]:

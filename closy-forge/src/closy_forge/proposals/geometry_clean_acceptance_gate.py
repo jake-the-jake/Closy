@@ -606,7 +606,9 @@ def _blocking_reasons(checks: list[dict[str, Any]]) -> list[str]:
         if status in {"fail", "warn", "not_run"}:
             reasons.update(_reason_aliases(str(check["checkId"]), str(status)))
     if any(check["status"] != "pass" for check in checks):
-        reasons.add("clean_acceptance_gate_rejected")
+        # Rejected clean-geometry candidates retain the canonical blocker set
+        # until promotion, even when a variant-specific continuity metric passes.
+        reasons.update(CLEAN_ACCEPTANCE_GATE_REJECTION_REASONS)
     return sorted(reasons)
 
 

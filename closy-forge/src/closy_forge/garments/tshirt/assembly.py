@@ -32,6 +32,8 @@ def build_constraints(
     constraints = []
     mesh_panel_index = {panel["id"]: i for i, panel in enumerate(pattern["panels"])}
     for seam in pattern["seams"]:
+        if seam.get("simulationEnabled", True) is False:
+            continue
         spans = seam["spans"]
         if len(spans) < 2:
             continue
@@ -47,18 +49,16 @@ def build_constraints(
                         "id": f"constraint.{seam['id']}.{ordinal:03d}",
                         "schemaVersion": 1,
                         "seamId": seam["id"],
-                        "spanA": {
-                            "panelId": spans[0]["panelId"],
-                            "boundaryId": spans[0]["edgeId"],
-                            "vertexIndex": a,
-                            "meshIndex": mesh_panel_index[spans[0]["panelId"]],
-                        },
-                        "spanB": {
-                            "panelId": other_span["panelId"],
-                            "boundaryId": other_span["edgeId"],
-                            "vertexIndex": b,
-                            "meshIndex": mesh_panel_index[other_span["panelId"]],
-                        },
+                        "spanA": _constraint_span_payload(
+                            spans[0],
+                            a,
+                            mesh_panel_index[spans[0]["panelId"]],
+                        ),
+                        "spanB": _constraint_span_payload(
+                            other_span,
+                            b,
+                            mesh_panel_index[other_span["panelId"]],
+                        ),
                         "orientation": [spans[0]["orientation"], other_span["orientation"]],
                         "restEaseRatio": seam["easeRatio"],
                         "stitchType": seam["stitchType"],
@@ -75,8 +75,27 @@ def build_constraints(
     }
 
 
-def _span_vertices(span: dict[str, str], edge_maps: dict[str, dict[str, list[int]]]) -> list[int]:
+def _constraint_span_payload(
+    span: dict[str, Any], vertex_index: int, mesh_index: int
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "panelId": span["panelId"],
+        "boundaryId": span["edgeId"],
+        "vertexIndex": vertex_index,
+        "meshIndex": mesh_index,
+    }
+    if "sampleRange" in span:
+        payload["sampleRange"] = list(span["sampleRange"])
+    if "partitionId" in span:
+        payload["partitionId"] = span["partitionId"]
+    return payload
+
+
+def _span_vertices(span: dict[str, Any], edge_maps: dict[str, dict[str, list[int]]]) -> list[int]:
     ids = list(edge_maps[span["panelId"]][span["edgeId"]])
+    if "sampleRange" in span:
+        start, end = span["sampleRange"]
+        ids = ids[int(start) : int(end)]
     if span["orientation"] == "reverse":
         ids.reverse()
     return ids
