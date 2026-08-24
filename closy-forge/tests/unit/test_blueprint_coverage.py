@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp52-image-conditioned-fitting-remote-v1"
-    assert payload["generatedBy"] == "BP-52 image-conditioned fitting remote CI evidence"
+    assert payload["version"] == "bp53-source-texture-pbr-recovery-local-v1"
+    assert payload["generatedBy"] == "BP-53 source texture PBR recovery local evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -78,6 +78,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
         "BP-50-PIXEL-PARSING-CORRECTIONS",
         "BP-51-MULTIVIEW-CAPTURE-FUSION",
         "BP-52-IMAGE-CONDITIONED-FITTING",
+        "BP-53-SOURCE-TEXTURE-PBR-RECOVERY",
         "REPO-HYGIENE-GITLINKS",
         "REPO-HYGIENE-CI-DIAGNOSTICS",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
@@ -333,13 +334,38 @@ def test_bp52_checkpoint_is_partial_and_evidenced() -> None:
     )
 
 
-def test_markdown_ledger_matches_bp52_and_hygiene_checkpoint_state() -> None:
+def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    bp53 = rows_by_id["BP-53-SOURCE-TEXTURE-PBR-RECOVERY"]
+    phase4 = rows_by_id["BP-17-PHASE-04"]
+    texture = rows_by_id["BP-08-P-TEXTURE-PBR"]
+    risk = rows_by_id["BP-19-RISK-04"]
+
+    assert bp53["status"] == "partial"
+    assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in bp53["commitSha"]
+    assert any("sourceTextureAvailable=true" in item for item in bp53["executableEvidence"])
+    assert any("16 source projections" in item for item in bp53["executableEvidence"])
+    assert any("89 files each" in item for item in bp53["executableEvidence"])
+    assert "private-user source textures" in bp53["limitations"]
+    assert "foundation-proof closeout" in bp53["nextAction"]
+
+    assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in phase4["commitSha"]
+    assert any("BP53 D0 source texture identity" in item for item in phase4["executableEvidence"])
+    assert "tests/unit/test_texture_identity.py" in phase4["tests"]
+    assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in texture["commitSha"]
+    assert any("textureProjectionRun=true" in item for item in texture["executableEvidence"])
+    assert "hidden regions remain placeholders" in texture["limitations"]
+    assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in risk["commitSha"]
+    assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
+
+
+def test_markdown_ledger_matches_bp53_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `e23820e`" in ledger
+    assert "Latest completed implementation commit when last updated: `9fc004d`" in ledger
     assert "Local verification passed `ruff format --check .` over 112 files" in ledger
-    assert "Current active increment: `BP-52-IMAGE-CONDITIONED-FITTING`" in ledger
-    assert "Next dependency-ready increment: `BP-53-SOURCE-TEXTURE-PBR-RECOVERY`" in ledger
+    assert "Current active increment: `BP-53-SOURCE-TEXTURE-PBR-RECOVERY`" in ledger
+    assert "Next dependency-ready increment: `FOUNDATION-PROOF-CLOSEOUT`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
@@ -347,6 +373,7 @@ def test_markdown_ledger_matches_bp52_and_hygiene_checkpoint_state() -> None:
     assert "| BP-50-PIXEL-PARSING-CORRECTIONS | partial |" in ledger
     assert "| BP-51-MULTIVIEW-CAPTURE-FUSION | partial |" in ledger
     assert "| BP-52-IMAGE-CONDITIONED-FITTING | partial |" in ledger
+    assert "| BP-53-SOURCE-TEXTURE-PBR-RECOVERY | partial |" in ledger
     assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| REPO-HYGIENE-CI-DIAGNOSTICS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
