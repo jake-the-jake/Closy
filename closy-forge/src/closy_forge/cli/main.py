@@ -6,7 +6,13 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from closy_forge.capture import build_synthetic_capture_record, score_capture_record
+from closy_forge.capture import (
+    RasterIngestError,
+    build_synthetic_capture_record,
+    delete_raster_fixture_registry,
+    ingest_raster_fixture_manifest,
+    score_capture_record,
+)
 from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.tshirt.parameters import TShirtParameters
@@ -16,7 +22,8 @@ from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
 from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
-    build_empty_correction_record,
+    build_default_applied_correction_record,
+    build_multiview_fusion_record,
     build_tshirt_visual_observations,
 )
 
@@ -90,6 +97,30 @@ def _parser() -> argparse.ArgumentParser:
     )
     capture_demo.add_argument("--json", action="store_true", help="Print machine-readable result.")
     capture_demo.set_defaults(handler=_build_synthetic_capture)
+    capture_raster = capture_sub.add_parser(
+        "ingest-raster-fixture",
+        help="Ingest allowlisted local synthetic PNG/JPEG fixtures into private records.",
+    )
+    capture_raster.add_argument("--manifest", required=True, type=Path)
+    capture_raster.add_argument("--input-root", required=True, type=Path)
+    capture_raster.add_argument("--private-registry", required=True, type=Path)
+    capture_raster.add_argument("--portable-output", required=True, type=Path)
+    capture_raster.add_argument("--force", action="store_true")
+    capture_raster.add_argument(
+        "--json", action="store_true", help="Print machine-readable result."
+    )
+    capture_raster.set_defaults(handler=_ingest_raster_fixture)
+    capture_delete = capture_sub.add_parser(
+        "delete-raster-fixture",
+        help="Delete Forge-managed private raster fixture records and write a tombstone.",
+    )
+    capture_delete.add_argument("--private-registry", required=True, type=Path)
+    capture_delete.add_argument("--tombstone", required=True, type=Path)
+    capture_delete.add_argument("--force", action="store_true")
+    capture_delete.add_argument(
+        "--json", action="store_true", help="Print machine-readable result."
+    )
+    capture_delete.set_defaults(handler=_delete_raster_fixture)
 
     validate = subparsers.add_parser("validate", help="Validate a .closygarment package from disk.")
     validate.add_argument("package", type=Path)
@@ -158,18 +189,22 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
     quality_path = output / "capture_quality.json"
     visual_path = output / "visual_observations.json"
     correction_path = output / "correction_record.json"
+    fusion_path = output / "multiview_fusion.json"
     if not args.force and any(
-        path.exists() for path in [record_path, quality_path, visual_path, correction_path]
+        path.exists()
+        for path in [record_path, quality_path, visual_path, correction_path, fusion_path]
     ):
         raise FileExistsError(f"{output} already contains capture fixture files; pass --force")
     record = build_synthetic_capture_record(seed=args.seed)
     quality = score_capture_record(record)
     visual = build_tshirt_visual_observations(record)
-    correction = build_empty_correction_record(visual)
+    correction = build_default_applied_correction_record(visual)
+    fusion = build_multiview_fusion_record(record, visual, correction)
     write_canonical_json(record_path, record)
     write_canonical_json(quality_path, quality)
     write_canonical_json(visual_path, visual)
     write_canonical_json(correction_path, correction)
+    write_canonical_json(fusion_path, fusion)
     payload = {
         "status": "built",
         "output": str(output),
@@ -181,6 +216,8 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
         "maskCount": visual["aggregate"]["maskCount"],
         "landmarkCount": len(visual["aggregate"]["observedLandmarks"]),
         "correctionOperationCount": len(correction["operations"]),
+        "fusionStatus": fusion["qualityGate"]["status"],
+        "fusionCacheKey": fusion["orchestration"]["cacheKey"],
     }
     if args.json:
         print(canonical_dumps(payload), end="")
@@ -188,6 +225,46 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
         print(f"Built synthetic capture fixture in {output}")
         print(f"Record: {payload['recordId']}")
         print(f"Quality: {payload['qualityStatus']} {payload['qualityScore']}")
+    return EXIT_SUCCESS
+
+
+def _ingest_raster_fixture(args: argparse.Namespace) -> int:
+    try:
+        payload = ingest_raster_fixture_manifest(
+            manifest_path=args.manifest,
+            input_root=args.input_root,
+            private_registry_dir=args.private_registry,
+            portable_output_dir=args.portable_output,
+            force=args.force,
+        )
+    except RasterIngestError as exc:
+        print(f"closy-forge: raster_ingest_failed:{exc.code}", file=sys.stderr)
+        return EXIT_BUILD_FAILURE
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print("Ingested synthetic raster fixtures")
+        print(f"Record: {payload['recordId']}")
+        print(f"Quality: {payload['qualityStatus']}")
+    return EXIT_SUCCESS
+
+
+def _delete_raster_fixture(args: argparse.Namespace) -> int:
+    try:
+        payload = delete_raster_fixture_registry(
+            private_registry_dir=args.private_registry,
+            tombstone_path=args.tombstone,
+            force=args.force,
+        )
+    except RasterIngestError as exc:
+        print(f"closy-forge: raster_delete_failed:{exc.code}", file=sys.stderr)
+        return EXIT_BUILD_FAILURE
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print("Deleted Forge-managed raster fixture registry records")
+        print(f"Record: {payload['recordId']}")
+        print(f"Status: {payload['status']}")
     return EXIT_SUCCESS
 
 

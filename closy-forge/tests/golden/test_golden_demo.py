@@ -26,6 +26,8 @@ def test_demo_package_matches_structural_golden(tmp_path) -> None:  # type: igno
         assert summary["capture"][key] == value
     for key, value in expected["visualUnderstanding"].items():
         assert summary["visualUnderstanding"][key] == value
+    for key, value in expected["multiviewFusion"].items():
+        assert summary["multiviewFusion"][key] == value
     for key, value in expected["fitting"].items():
         assert summary["fitting"][key] == value
     for key, value in expected["texture"].items():

@@ -91,6 +91,7 @@ from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
     hash_correction_record,
+    hash_multiview_fusion_record,
     hash_visual_observations,
 )
 
@@ -101,6 +102,7 @@ EXPECTED_FILES = [
     "source/capture_quality.json",
     "source/visual_observations.json",
     "source/correction_record.json",
+    "source/multiview_fusion.json",
     "fitting/tshirt_fit.json",
     "textures/texture_identity.json",
     "proposals/raw_geometry_proposal.json",
@@ -137,6 +139,7 @@ EXPECTED_FILES = [
     "reports/avatar_quality.json",
     "reports/capture_quality.json",
     "reports/visual_understanding_quality.json",
+    "reports/multiview_fusion_quality.json",
     "reports/fitting_quality.json",
     "reports/texture_quality.json",
     "reports/geometry_proposal_quality.json",
@@ -308,6 +311,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_avatar(package_dir, issues)
     _validate_capture(package_dir, manifest, issues)
     _validate_visual_understanding(package_dir, manifest, issues)
+    _validate_multiview_fusion(package_dir, manifest, issues)
     _validate_fitting(package_dir, manifest, issues)
     _validate_texture_identity(package_dir, manifest, issues)
     _validate_geometry_proposal(package_dir, manifest, issues)
@@ -818,6 +822,162 @@ def _validate_visual_understanding(
                 "Visual observations and correction records must not contain NaN or Infinity.",
             )
         )
+
+
+def _validate_multiview_fusion(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    capture_record = _read_required_json(package_dir, "source/capture_record.json", issues)
+    visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
+    correction = _read_required_json(package_dir, "source/correction_record.json", issues)
+    fusion = _read_required_json(package_dir, "source/multiview_fusion.json", issues)
+    quality = _read_required_json(package_dir, "reports/multiview_fusion_quality.json", issues)
+    if (
+        capture_record is None
+        or visual is None
+        or correction is None
+        or fusion is None
+        or quality is None
+    ):
+        return
+    capture_hash = _nested_string(capture_record, ["immutability", "sourceRecordHash"], "")
+    visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
+    correction_hash = _nested_string(correction, ["integrity", "correctionRecordHash"], "")
+    corrected_hash = _nested_string(
+        correction, ["application", "afterVisualRecordHash"], visual_hash
+    )
+    if fusion.get("sourceRecordHash") != capture_hash:
+        issues.append(
+            _issue(
+                "multiview_capture_hash_mismatch",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Multiview fusion must reference the capture record hash.",
+            )
+        )
+    if fusion.get("sourceVisualRecordHash") != visual_hash:
+        issues.append(
+            _issue(
+                "multiview_visual_hash_mismatch",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Multiview fusion must reference the visual record hash.",
+            )
+        )
+    if fusion.get("sourceCorrectionRecordHash") != correction_hash:
+        issues.append(
+            _issue(
+                "multiview_correction_hash_mismatch",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Multiview fusion must reference the correction record hash.",
+            )
+        )
+    if fusion.get("sourceCorrectedVisualRecordHash") != corrected_hash:
+        issues.append(
+            _issue(
+                "multiview_corrected_visual_hash_mismatch",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Multiview fusion must reference the corrected visual hash.",
+            )
+        )
+    if _nested_string(
+        fusion, ["integrity", "multiviewFusionRecordHash"], ""
+    ) != hash_multiview_fusion_record(fusion):
+        issues.append(
+            _issue(
+                "multiview_fusion_hash_mismatch",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Multiview fusion hash must match its canonical payload.",
+            )
+        )
+    required_pairs = fusion.get("viewPairing", {}).get("requiredPairs", [])
+    if (
+        not isinstance(required_pairs, list)
+        or not required_pairs
+        or required_pairs[0].get("status") != "pass"
+    ):
+        issues.append(
+            _issue(
+                "multiview_front_rear_pair_missing",
+                "fatal",
+                "source/multiview_fusion.json",
+                "BP51 requires a passing front/rear capture pair.",
+            )
+        )
+    quality_gate = fusion.get("qualityGate", {})
+    if _nested_string(fusion, ["qualityGate", "status"], "") != "passed_d0_synthetic":
+        issues.append(
+            _issue(
+                "multiview_quality_gate_not_passed",
+                "fatal",
+                "source/multiview_fusion.json",
+                "BP51 D0 synthetic multiview quality gate must pass before fitting.",
+            )
+        )
+    if quality_gate.get("readiness", {}).get("expensiveDownstreamAllowed") is not True:
+        issues.append(
+            _issue(
+                "multiview_downstream_gate_closed",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Multiview fusion must explicitly allow downstream fitting for this fixture.",
+            )
+        )
+    fused = fusion.get("fusedEvidence", {})
+    if not isinstance(fused, dict):
+        fused = {}
+    if len(fused.get("masks", [])) < 4 or len(fused.get("landmarks", [])) < 10:
+        issues.append(
+            _issue(
+                "multiview_fused_evidence_incomplete",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Fused masks and landmarks are incomplete.",
+            )
+        )
+    if quality.get("fusionRecordId") != fusion.get("fusionRecordId"):
+        issues.append(
+            _issue(
+                "multiview_quality_source_mismatch",
+                "fatal",
+                "reports/multiview_fusion_quality.json",
+                "Multiview quality report must reference the fusion record.",
+            )
+        )
+    if _contains_nonfinite(fusion):
+        issues.append(
+            _issue(
+                "multiview_fusion_nonfinite_numeric_value",
+                "fatal",
+                "source/multiview_fusion.json",
+                "Multiview fusion record must not contain NaN or Infinity.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if not isinstance(caps, dict):
+        return
+    for key, code in [
+        ("frontRearCapturePairingAvailable", "front_rear_pairing_capability_missing"),
+        ("viewOrientationScaleEvidenceAvailable", "orientation_scale_capability_missing"),
+        ("crossViewGarmentIdentityAvailable", "cross_view_identity_capability_missing"),
+        ("semanticIdentityTrackingAvailable", "semantic_identity_capability_missing"),
+        ("multiviewVisualFusionAvailable", "multiview_fusion_capability_missing"),
+        ("phase2QualityGateAvailable", "phase2_quality_gate_capability_missing"),
+        ("multiviewCorrectionReplayAvailable", "multiview_correction_capability_missing"),
+        ("phase2ResumeCacheAvailable", "phase2_resume_cache_capability_missing"),
+    ]:
+        if caps.get(key) is not True:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "manifest.json",
+                    f"Manifest capability {key} must be true for this fixture.",
+                )
+            )
 
 
 def _validate_fitting(

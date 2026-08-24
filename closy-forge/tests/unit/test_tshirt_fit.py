@@ -22,5 +22,5 @@ def test_tshirt_fit_report_is_deterministic_and_bounded() -> None:
         <= first["thresholds"]["maximumLandmarkRmsNormalised"]
     )
     assert first["fittedParameters"]["garment_body_length"] == 0.68
-    assert first["fittedParameters"]["shoulder_width"] == 0.7
+    assert first["fittedParameters"]["shoulder_width"] == 0.699417
     assert len(first["alternatives"]) == 2

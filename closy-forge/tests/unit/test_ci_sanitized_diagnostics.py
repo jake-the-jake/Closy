@@ -51,6 +51,14 @@ def test_sanitized_ci_diagnostics_writes_allowlisted_summaries(tmp_path: Path) -
         r"C:\Users\Alice\Pictures\private-face.png",
         encoding="utf-8",
     )
+    (source / "unc.txt").write_text(
+        r"\\nas01\homes\Alice\captures\front.png",
+        encoding="utf-8",
+    )
+    (source / "mixed.txt").write_text(
+        "images/../private_capture.png",
+        encoding="utf-8",
+    )
     raw_token = "AbCDefGhIJklMNopQRstUVwxYZ0123456789abcdEFGHijklMNOP"
     (source / "opaque.txt").write_text(raw_token, encoding="utf-8")
     (source / "plain.txt").write_text("plain diagnostic text", encoding="utf-8")
@@ -92,6 +100,7 @@ def test_sanitized_ci_diagnostics_writes_allowlisted_summaries(tmp_path: Path) -
     assert rejections["countsByCode"]["forbidden_magic_bytes_rejected"] >= 1
     assert rejections["countsByCode"]["embedded_capture_payload_rejected"] >= 1
     assert rejections["countsByCode"]["absolute_path_text_rejected"] >= 1
+    assert rejections["countsByCode"]["path_traversal_text_rejected"] >= 1
     assert rejections["countsByCode"]["secret_like_text_rejected"] >= 1
     if symlink_created:
         assert rejections["countsByCode"]["symlink_rejected"] >= 1

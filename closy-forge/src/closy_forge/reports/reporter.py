@@ -13,6 +13,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     capture = read_json(package_dir / "source" / "capture_quality.json")
     visual = read_json(package_dir / "source" / "visual_observations.json")
     correction = read_json(package_dir / "source" / "correction_record.json")
+    multiview = read_json(package_dir / "source" / "multiview_fusion.json")
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     texture = read_json(package_dir / "textures" / "texture_identity.json")
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
@@ -66,13 +67,49 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
         },
         "visualUnderstanding": {
             "visualUnderstandingId": visual["visualUnderstandingId"],
+            "stageVersion": visual["stageVersion"],
+            "providerAlgorithmVersion": visual["provider"].get("algorithmVersion"),
             "maskCount": visual["aggregate"]["maskCount"],
+            "targetGarmentMaskCount": visual["aggregate"].get("targetGarmentMaskCount", 0),
+            "personBodyProxyMaskCount": visual["aggregate"].get("personBodyProxyMaskCount", 0),
+            "backgroundMaskCount": visual["aggregate"].get("backgroundMaskCount", 0),
+            "occlusionUncertaintyMaskCount": visual["aggregate"].get(
+                "occlusionUncertaintyMaskCount",
+                0,
+            ),
+            "semanticPartCount": visual["aggregate"].get("semanticPartCount", 0),
+            "openingBoundaryCount": visual["aggregate"].get("openingBoundaryCount", 0),
+            "pixelDerivedViewCount": visual["aggregate"].get("pixelDerivedViewCount", 0),
             "observedLandmarkCount": len(visual["aggregate"]["observedLandmarks"]),
             "requiredLandmarkCount": len(visual["aggregate"]["requiredLandmarks"]),
             "meanMaskConfidence": visual["aggregate"]["meanMaskConfidence"],
             "meanLandmarkConfidence": visual["aggregate"]["meanLandmarkConfidence"],
+            "meanMaskIoU": visual["aggregate"].get("meanMaskIoU"),
+            "meanBoundaryFScore": visual["aggregate"].get("meanBoundaryFScore"),
+            "meanSemanticPartIoU": visual["aggregate"].get("meanSemanticPartIoU"),
+            "meanLandmarkErrorNormalised": visual["aggregate"].get("meanLandmarkErrorNormalised"),
+            "openingPrecision": visual["aggregate"].get("openingPrecision"),
+            "openingRecall": visual["aggregate"].get("openingRecall"),
             "correctionRecordId": correction["correctionRecordId"],
             "correctionOperationCount": len(correction["operations"]),
+            "correctionApplicationStatus": correction.get("application", {}).get("status"),
+        },
+        "multiviewFusion": {
+            "fusionRecordId": multiview["fusionRecordId"],
+            "stageVersion": multiview["stageVersion"],
+            "status": multiview["qualityGate"]["status"],
+            "viewCount": multiview["fusedEvidence"]["viewCount"],
+            "requiredPairStatus": multiview["viewPairing"]["requiredPairs"][0]["status"],
+            "optionalRoleCount": len(multiview["viewPairing"]["optionalRoles"]),
+            "fusedMaskCount": len(multiview["fusedEvidence"]["masks"]),
+            "fusedLandmarkCount": len(multiview["fusedEvidence"]["landmarks"]),
+            "fusedOpeningCount": len(multiview["fusedEvidence"]["openings"]),
+            "registrationStatus": multiview["registration"]["status"],
+            "correctionReplayStatus": multiview["correctionReplay"]["status"],
+            "expensiveDownstreamAllowed": multiview["qualityGate"]["readiness"][
+                "expensiveDownstreamAllowed"
+            ],
+            "cacheKey": multiview["orchestration"]["cacheKey"],
         },
         "fitting": {
             "fitReportId": fitting["fitReportId"],
@@ -504,6 +541,7 @@ def human_report(package_dir: Path) -> str:
     binding = summary["binding"]
     capture = summary["capture"]
     visual = summary["visualUnderstanding"]
+    multiview = summary["multiviewFusion"]
     fitting = summary["fitting"]
     texture = summary["texture"]
     proposal = summary["geometryProposal"]
@@ -529,9 +567,19 @@ def human_report(package_dir: Path) -> str:
                 f"quality {capture['overallScore']:.6f} ({capture['overallStatus']})"
             ),
             (
-                f"Visual observations: {visual['maskCount']} masks, "
+                f"Visual observations: {visual['maskCount']} pixel-derived masks, "
                 f"{visual['observedLandmarkCount']} landmarks, "
-                f"{visual['correctionOperationCount']} corrections"
+                f"{visual['semanticPartCount']} parts, "
+                f"{visual['openingBoundaryCount']} openings, "
+                f"{visual['correctionOperationCount']} applied corrections, "
+                f"mean IoU={visual['meanMaskIoU']:.6f}"
+            ),
+            (
+                f"Multiview fusion: {multiview['status']}, "
+                f"{multiview['viewCount']} views, "
+                f"{multiview['fusedMaskCount']} fused masks, "
+                f"{multiview['fusedLandmarkCount']} fused landmarks, downstream allowed="
+                f"{multiview['expensiveDownstreamAllowed']}"
             ),
             (
                 f"Fitting: {fitting['status']} via {fitting['fitterVersion']}, "
@@ -620,6 +668,7 @@ def human_report(package_dir: Path) -> str:
                 f"passed={clean_acceptance_gate['passedCheckCount']}/"
                 f"{clean_acceptance_gate['checkCount']}, "
                 f"failed={clean_acceptance_gate['failedCheckCount']}, "
+                f"warnings={clean_acceptance_gate['warningCheckCount']}, "
                 f"not run={clean_acceptance_gate['notRunCheckCount']}, "
                 f"accepted={clean_acceptance_gate['acceptedForCleanProposal']}"
             ),

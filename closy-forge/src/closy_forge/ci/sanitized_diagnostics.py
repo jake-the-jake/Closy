@@ -56,7 +56,10 @@ FORBIDDEN_MAGIC = {
 IDENTITY_NAME_RE = re.compile(
     r"(?i)(@|passport|license|licence|driver|face|selfie|profile|private|secret|token)"
 )
-ABSOLUTE_PATH_RE = re.compile(r"([A-Za-z]:\\[^\"'\s]+|/(?:home|Users|tmp|var|private)/[^\"'\s]+)")
+ABSOLUTE_PATH_RE = re.compile(
+    r"([A-Za-z]:(?:\\|/)[^\"'\s]+|\\\\[^\\\s]+\\[^\"'\s]+|/(?:home|Users|tmp|var|private)/[^\"'\s]+)"
+)
+TRAVERSAL_TEXT_RE = re.compile(r"(^|[\\/])\.\.([\\/]|$)")
 HIGH_ENTROPY_RE = re.compile(r"[A-Za-z0-9_+/=-]{32,}")
 BASE64_CAPTURE_RE = re.compile(r"(data:image/|iVBORw0KGgo|/9j/|R0lGOD|Z2xURg)")
 
@@ -200,6 +203,8 @@ def _classify_input(path: Path, source: Path) -> Rejection | None:
         return Rejection("secret_like_text_rejected", suffix)
     if ABSOLUTE_PATH_RE.search(text):
         return Rejection("absolute_path_text_rejected", suffix)
+    if TRAVERSAL_TEXT_RE.search(text.replace("\\", "/")):
+        return Rejection("path_traversal_text_rejected", suffix)
     return None
 
 
@@ -273,6 +278,8 @@ def _assert_output_allowlist(output: Path) -> None:
         text = payload.decode("utf-8")
         if ABSOLUTE_PATH_RE.search(text):
             raise ValueError("diagnostics output contains an absolute path")
+        if TRAVERSAL_TEXT_RE.search(text.replace("\\", "/")):
+            raise ValueError("diagnostics output contains path traversal text")
         if BASE64_CAPTURE_RE.search(text):
             raise ValueError("diagnostics output contains embedded capture payload")
         if _contains_high_entropy_secret(text):
