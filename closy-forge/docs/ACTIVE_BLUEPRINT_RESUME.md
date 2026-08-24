@@ -4,22 +4,24 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 
 ## Current State
 
-- Active blueprint checkpoint: `BP-50-PIXEL-PARSING-CORRECTIONS`
-- Exact subtask: begin deterministic D0 pixel-derived garment/person/background parsing, T-shirt landmark/opening extraction and non-empty correction replay from BP49 normalized raster fixture evidence.
+- Active blueprint checkpoint: `BP-51-MULTIVIEW-CAPTURE-FUSION`
+- Exact subtask: implement deterministic D0 front/rear/side or three-quarter capture pairing, camera/view records, cross-view garment identity checks, semantic identity tracking, fused masks/landmarks/boundaries/confidence, fused correction replay and quality-gate rejection before expensive downstream work.
 - Current branch: `codex/closy-forge-phase-2-capture`
 - Parent branch: `codex/closy-forge-phase-0`
-- Evidence implementation commit SHA: `fcf64dce8a2117c78df7d1a01f3cefad118b5093`
-- Record based on SHA: `fcf64dce8a2117c78df7d1a01f3cefad118b5093`
+- Latest implementation commit SHA: `e90a38e`
+- Latest implementation commit subject: `Add BP50 raster parsing and corrections`
+- Record based on SHA: `e90a38e`
 - Draft PR: `https://github.com/jake-the-jake/Closy/pull/2`
 - Parent draft PR: `https://github.com/jake-the-jake/Closy/pull/1`
-- Last remote green evidence: GitHub Actions run `32700668662`; Ubuntu job `97351342200` and Windows job `97351342416` passed at commit `fcf64dce8a2117c78df7d1a01f3cefad118b5093`.
-- Last remote matrix details: 110 files formatted, 87 mypy source files, 174 tests on each OS, fresh schemas, two identical 83-file package trees on each OS, package digest `b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329`, package validation status `passed`.
+- Last remote green evidence: GitHub Actions run `32703047068`; Ubuntu job `97358325037` and Windows job `97358324733` passed at commit `9f8ebf61a764b00671c552b26ef9e847a888ea5a`.
+- Last remote matrix details: Ubuntu job ran 5m02s and Windows job ran 6m58s; Supabase Preview was skipped as expected for this Forge-only branch.
+- Latest local BP50 evidence after `e90a38e`: `ruff format --check .` reported 111 files already formatted; `ruff check .` passed; `mypy src` passed over 88 source files; schema check reported `{"issues":[],"status":"fresh"}`; focused BP50/golden tests passed 16 tests; two temp package builds were byte-identical with digest `8be718fdbf929a0f5112526fd4ae67d4f056ac3605d8e9ffd0593cee1b99708c`, 83 package files, validation status `passed` and one formal warning.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state: 13 checks with 9 pass, 1 fail, 2 warnings and 1 not-run; clean/canonical acceptance remains rejected.
-- Current in-progress uncommitted work, if this file is read before the next commit: report/ledger truth-sync for clean-gate warning count display and BP49 remote evidence.
+- Current in-progress uncommitted work, if this file is read before the next commit: BP50 ledger, machine coverage and resume evidence updates that cite implementation commit `e90a38e`.
 - Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
 
-## Current BP-46/BP-47/BP-48/BP-49 Truth
+## Current BP-46/BP-47/BP-48/BP-49/BP-50 Truth
 
 - BP-46 still has `meshStitchOrWeldExecutionRun=true` backed by `stitch/logical_stitched_analysis_shell.json`, `render/stitched_shell.glb` and `reports/geometry_stitched_shell.json`.
 - BP-46 still has `meshStitchOrWeldProven=false`, `acceptedForCleanProposal=false` and `acceptedForCanonical=false`.
@@ -30,7 +32,10 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - BP-48 keeps `acceptedForCleanProposal=false` and does not complete Phase 6 or Gate C3.
 - BP-49 implements only `synthetic_fixture_raster_v1` for project-authored local PNG/JPEG fixtures. It rejects user imagery, provider upload, network/API/training use, arbitrary paths, traversal, symlinks, hardlinks, duplicate source hashes, bad/corrupt images, animated PNGs, unsupported profiles and portable source leakage.
 - BP-49 writes private ingest/lifecycle/normalization/quality records, portable privacy-safe summaries and deletion tombstones; PNG quality is pixel-derived, while JPEG pixel quality remains structural-only until an approved decoder dependency is added.
-- BP-50 masks, applied correction replay, multiview fusion and private-user Gate P1 remain incomplete.
+- BP-50 derives visual observations from decoded project-authored raster fixture pixels rather than analytic T-shirt parameter polygons.
+- BP-50 emits target-garment, person/body proxy, background and occlusion masks; torso/sleeve semantic parts; neckline/hem/cuff opening boundaries; required landmarks; confidence; missing-evidence/view-consistency records; and fixture metrics.
+- BP-50 applies non-empty structured correction replay with include/exclude, landmark, left/right, view, semantic, confidence, occlusion and print-preservation operations, before/after hashes and stale-input rejection.
+- BP-50 is still D0/local synthetic-fixture-only. Learned segmentation, provider upload, private-user Gate P1, source pixel export, multiview fusion and Phase-2 completion remain incomplete.
 
 Current blocking evidence:
 
@@ -50,42 +55,44 @@ Current blocking evidence:
 
 ## Files And Functions Involved
 
+- `closy-forge/src/closy_forge/visual_understanding/raster_parser.py`
+- `closy-forge/src/closy_forge/visual_understanding/tshirt_observations.py`
+- `closy-forge/src/closy_forge/visual_understanding/corrections.py`
 - `closy-forge/src/closy_forge/capture/raster_sources.py`
 - `closy-forge/src/closy_forge/reports/reporter.py`
 - `closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py`
-- `closy-forge/src/closy_forge/proposals/geometry_clean_acceptance_gate.py`
-- `closy-forge/src/closy_forge/validation/validator.py`
+- `closy-forge/src/closy_forge/cli/main.py`
+- `closy-forge/src/closy_forge/contracts/schema_registry.py`
 - `closy-forge/docs/MASTER_BLUEPRINT_PROGRESS.md`
 - `closy-forge/docs/blueprint_coverage.json`
-- `closy-forge/docs/raster-ingestion-v1.md`
-- `closy-forge/tests/unit/test_raster_sources.py`
-- `closy-forge/tests/unit/test_geometry_proposal.py`
+- `closy-forge/tests/unit/test_visual_understanding.py`
 - `closy-forge/tests/integration/test_cli_and_package.py`
+- `closy-forge/tests/golden/test_golden_demo.py`
 - `closy-forge/tests/unit/test_blueprint_coverage.py`
 
-## Checks Completed At Last Green Checkpoint
+## Checks Completed At Last Local BP50 Checkpoint
 
-- Local `.venv\Scripts\python.exe -m pytest tests\unit\test_raster_sources.py -q` passed 21 raster tests after the symlink guard fix.
-- Local `.venv\Scripts\python.exe -m ruff format --check .` reported 110 files already formatted.
+- Local `.venv\Scripts\python.exe -m ruff format --check .` reported 111 files already formatted.
 - Local `.venv\Scripts\python.exe -m ruff check .` passed.
-- Local `.venv\Scripts\python.exe -m mypy src` passed over 87 source files.
+- Local `.venv\Scripts\python.exe -m mypy src` passed over 88 source files.
 - Local `.venv\Scripts\python.exe -m closy_forge schemas check --schema-dir schemas/v1 --json` reported `{"issues":[],"status":"fresh"}`.
-- Local `.venv\Scripts\python.exe -m pytest -q` passed the full Forge suite.
-- Remote Forge run `32700668662` passed Ubuntu and Windows with 174 tests each, fresh schemas, deterministic package diff status `identical`, digest `b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329`, and one formal package warning `self_collision_not_run`.
+- Local `.venv\Scripts\python.exe -m pytest tests\unit\test_visual_understanding.py tests\integration\test_cli_and_package.py tests\golden\test_golden_demo.py -q` passed 16 focused/golden tests.
+- Local deterministic package sanity built two temp packages, diffed them identical with 83 files each, validated with one formal `self_collision_not_run` warning, and reported digest `8be718fdbf929a0f5112526fd4ae67d4f056ac3605d8e9ffd0593cee1b99708c`.
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Focused report/coverage tests have not yet run for the clean-gate warning-count display change if this file is read before the next commit.
-- Remote CI has not yet run for the report/ledger truth-sync commit if this file is read before that commit is pushed.
-- BP50 pixel parsing and correction replay tests are not implemented yet.
+- Blueprint coverage tests have not yet run for this BP50 ledger/coverage/resume update if this file is read before the next validation command.
+- Full `pytest -q` has not yet run after this BP50 ledger/coverage/resume update.
+- Remote CI has not yet run for implementation commit `e90a38e` or the BP50 evidence-doc commit if this file is read before those commits are pushed.
+- BP51 multiview capture/fusion behavior is not implemented yet.
 
 ## Next Exact Command
 
 ```powershell
 cd E:\apps\Closy\closy-forge
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_geometry_proposal.py tests\integration\test_cli_and_package.py tests\unit\test_blueprint_coverage.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_blueprint_coverage.py tests\unit\test_visual_understanding.py tests\integration\test_cli_and_package.py tests\golden\test_golden_demo.py -q
 ```
 
 ## Next Safe Action
 
-Validate and commit the clean-gate warning-count report/truth-sync change, push normally to `codex/closy-forge-phase-2-capture`, update draft PR #2 with the green run and truth-sync facts, inspect the new Ubuntu/Windows checks, then begin BP50 deterministic D0 pixel parsing and applied correction replay without crossing Gate P1 or promoting any clean/canonical geometry claim.
+Validate and commit the BP50 ledger/coverage/resume update, push normally to `codex/closy-forge-phase-2-capture`, update draft PR #2 with the BP50 facts, inspect the new Ubuntu/Windows checks, then continue into BP51 deterministic D0 multiview capture/fusion without crossing Gate P1 or promoting any clean/canonical geometry claim.

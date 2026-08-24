@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp49-remote-ci-truth-sync-v2"
-    assert payload["generatedBy"] == "BP-49 remote CI and clean-gate warning-count truth sync"
+    assert payload["version"] == "bp50-pixel-parsing-corrections-v1"
+    assert payload["generatedBy"] == "BP-50 pixel parsing and applied correction local evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -75,6 +75,7 @@ def test_blueprint_coverage_maps_required_sections() -> None:
         "BP-47-INSPECTION-ARTIFACTS",
         "BP-48-PERSISTED-FRAMES-TANGENTS",
         "BP-49-RASTER-INGESTION-PRIVACY",
+        "BP-50-PIXEL-PARSING-CORRECTIONS",
         "REPO-HYGIENE-GITLINKS",
         "REPO-HYGIENE-CI-DIAGNOSTICS",
         *(f"BP-07-MODE-{mode}" for mode in "ABCDE"),
@@ -234,20 +235,50 @@ def test_bp49_checkpoint_is_partial_and_evidenced() -> None:
     )
     assert any("remote Actions run 32700668662" in item for item in bp49["executableEvidence"])
     assert "tests/unit/test_raster_sources.py" in bp49["tests"]
-    assert "BP-50" in bp49["nextAction"]
+    assert "BP-51" in bp49["nextAction"]
+
+
+def test_bp50_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    bp50 = rows_by_id["BP-50-PIXEL-PARSING-CORRECTIONS"]
+    segmentation = rows_by_id["BP-08-C-SEGMENTATION"]
+    correction = rows_by_id["BP-08-T-HUMAN-CORRECTION"]
+    phase2 = rows_by_id["BP-17-PHASE-02"]
+
+    assert bp50["status"] == "partial"
+    assert "e90a38e" in bp50["commitSha"]
+    assert any("target garment, person/body proxy" in item for item in bp50["executableEvidence"])
+    assert any("structured correction replay" in item for item in bp50["executableEvidence"])
+    assert "tests/unit/test_visual_understanding.py" in bp50["tests"]
+    assert "BP-51" in bp50["nextAction"]
+
+    assert "e90a38e" in segmentation["commitSha"]
+    assert (
+        "closy-forge/src/closy_forge/visual_understanding/raster_parser.py"
+        in segmentation["implementationPaths"]
+    )
+    assert any("16 decoded-pixel masks" in item for item in segmentation["executableEvidence"])
+    assert "e90a38e" in correction["commitSha"]
+    assert any(
+        "non-empty structured correction replay" in item
+        for item in correction["executableEvidence"]
+    )
+    assert "e90a38e" in phase2["commitSha"]
+    assert "BP-51" in phase2["nextAction"]
 
 
 def test_markdown_ledger_matches_bp49_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `fcf64dc`" in ledger
-    assert "Remote Forge run `32700668662` passed Ubuntu job `97351342200`" in ledger
-    assert "Current active increment: `BP-50-PIXEL-PARSING-CORRECTIONS`" in ledger
-    assert "Next dependency-ready increment: `BP-50-PIXEL-PARSING-CORRECTIONS`" in ledger
+    assert "Latest completed implementation commit when last updated: `e90a38e`" in ledger
+    assert "Local verification passed `ruff format --check .` over 111 files" in ledger
+    assert "Current active increment: `BP-51-MULTIVIEW-CAPTURE-FUSION`" in ledger
+    assert "Next dependency-ready increment: `BP-51-MULTIVIEW-CAPTURE-FUSION`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
     assert "| BP-49-RASTER-INGESTION-PRIVACY | partial |" in ledger
+    assert "| BP-50-PIXEL-PARSING-CORRECTIONS | partial |" in ledger
     assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| REPO-HYGIENE-CI-DIAGNOSTICS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
