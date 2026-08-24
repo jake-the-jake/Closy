@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp53-source-texture-pbr-recovery-remote-v1"
-    assert payload["generatedBy"] == "BP-53 source texture PBR recovery remote CI evidence"
+    assert payload["version"] == "bp46-topology-audit-closeout-local-v1"
+    assert payload["generatedBy"] == "BP-46 topology audit closeout local evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -170,10 +170,19 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp46["status"] == "partial"
     assert "81fb02c" in bp46["commitSha"]
+    assert "d0801291ecdaeda4d04ab5897327abcbf9e95ad1" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
     assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
+    assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
+    assert any(
+        "winding, normal-inversion and self-intersection" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("193 collected Forge tests" in item for item in bp46["executableEvidence"])
+    assert any("89 files each" in item for item in bp46["executableEvidence"])
     assert "non-manifold edges" in bp46["limitations"]
-    assert "BP-47" in bp46["nextAction"]
+    assert "not-run topology audits" not in bp46["limitations"]
+    assert "semantic opening mapping" in bp46["nextAction"]
 
 
 def test_repository_gitlink_hygiene_checkpoint_is_complete() -> None:
@@ -343,10 +352,11 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp53["status"] == "partial"
     assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in bp53["commitSha"]
+    assert "93f2e6587cc4f5f3237aba669870648a01118a09" in bp53["commitSha"]
     assert any("sourceTextureAvailable=true" in item for item in bp53["executableEvidence"])
     assert any("16 source projections" in item for item in bp53["executableEvidence"])
     assert any("89 files each" in item for item in bp53["executableEvidence"])
-    assert any("remote Actions run 32741055846" in item for item in bp53["executableEvidence"])
+    assert any("remote Actions run 32742283522" in item for item in bp53["executableEvidence"])
     assert "private-user source textures" in bp53["limitations"]
     assert "foundation-proof closeout" in bp53["nextAction"]
 
@@ -363,10 +373,10 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
 def test_markdown_ledger_matches_bp53_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `9fc004d`" in ledger
-    assert "Local verification passed `ruff format --check .` over 112 files" in ledger
-    assert "Current active increment: `BP-53-SOURCE-TEXTURE-PBR-RECOVERY`" in ledger
-    assert "Next dependency-ready increment: `FOUNDATION-PROOF-CLOSEOUT`" in ledger
+    assert "Latest completed implementation commit when last updated: `d080129`" in ledger
+    assert "executedTopologyAuditCount=5" in ledger
+    assert "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-TOPOLOGY-AUDITS`" in ledger
+    assert "Next dependency-ready increment: continue `FOUNDATION-PROOF-CLOSEOUT`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
