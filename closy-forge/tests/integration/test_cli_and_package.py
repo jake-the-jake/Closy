@@ -72,6 +72,7 @@ def test_cli_build_synthetic_capture_workflow(tmp_path) -> None:  # type: ignore
     quality = json.loads((output / "capture_quality.json").read_text(encoding="utf-8"))
     visual = json.loads((output / "visual_observations.json").read_text(encoding="utf-8"))
     correction = json.loads((output / "correction_record.json").read_text(encoding="utf-8"))
+    fusion = json.loads((output / "multiview_fusion.json").read_text(encoding="utf-8"))
     assert record["recordType"] == "synthetic_fixture_capture"
     assert quality["overallStatus"] == "pass"
     assert quality["sourceRecordHash"] == record["immutability"]["sourceRecordHash"]
@@ -80,6 +81,9 @@ def test_cli_build_synthetic_capture_workflow(tmp_path) -> None:  # type: ignore
     assert correction["visualRecordHash"] == visual["integrity"]["visualRecordHash"]
     assert correction["application"]["status"] == "applied"
     assert len(correction["operations"]) == 4
+    assert fusion["sourceCorrectionRecordHash"] == correction["integrity"]["correctionRecordHash"]
+    assert fusion["qualityGate"]["status"] == "passed_d0_synthetic"
+    assert fusion["orchestration"]["expensiveDownstreamAllowed"] is True
 
 
 def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ignore[no-untyped-def]
@@ -95,6 +99,11 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["visualUnderstanding"]["semanticPartCount"] == 12
     assert payload["visualUnderstanding"]["openingBoundaryCount"] == 16
     assert payload["visualUnderstanding"]["correctionOperationCount"] == 4
+    assert payload["multiviewFusion"]["status"] == "passed_d0_synthetic"
+    assert payload["multiviewFusion"]["viewCount"] == 4
+    assert payload["multiviewFusion"]["fusedMaskCount"] == 4
+    assert payload["multiviewFusion"]["fusedLandmarkCount"] == 10
+    assert payload["multiviewFusion"]["expensiveDownstreamAllowed"] is True
     assert payload["fitting"]["status"] == "pass"
     assert payload["texture"]["sourceTextureAvailable"] is False
     assert payload["texture"]["materialRegionCount"] == 2

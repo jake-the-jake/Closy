@@ -13,6 +13,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     capture = read_json(package_dir / "source" / "capture_quality.json")
     visual = read_json(package_dir / "source" / "visual_observations.json")
     correction = read_json(package_dir / "source" / "correction_record.json")
+    multiview = read_json(package_dir / "source" / "multiview_fusion.json")
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     texture = read_json(package_dir / "textures" / "texture_identity.json")
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
@@ -92,6 +93,23 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "correctionRecordId": correction["correctionRecordId"],
             "correctionOperationCount": len(correction["operations"]),
             "correctionApplicationStatus": correction.get("application", {}).get("status"),
+        },
+        "multiviewFusion": {
+            "fusionRecordId": multiview["fusionRecordId"],
+            "stageVersion": multiview["stageVersion"],
+            "status": multiview["qualityGate"]["status"],
+            "viewCount": multiview["fusedEvidence"]["viewCount"],
+            "requiredPairStatus": multiview["viewPairing"]["requiredPairs"][0]["status"],
+            "optionalRoleCount": len(multiview["viewPairing"]["optionalRoles"]),
+            "fusedMaskCount": len(multiview["fusedEvidence"]["masks"]),
+            "fusedLandmarkCount": len(multiview["fusedEvidence"]["landmarks"]),
+            "fusedOpeningCount": len(multiview["fusedEvidence"]["openings"]),
+            "registrationStatus": multiview["registration"]["status"],
+            "correctionReplayStatus": multiview["correctionReplay"]["status"],
+            "expensiveDownstreamAllowed": multiview["qualityGate"]["readiness"][
+                "expensiveDownstreamAllowed"
+            ],
+            "cacheKey": multiview["orchestration"]["cacheKey"],
         },
         "fitting": {
             "fitReportId": fitting["fitReportId"],
@@ -523,6 +541,7 @@ def human_report(package_dir: Path) -> str:
     binding = summary["binding"]
     capture = summary["capture"]
     visual = summary["visualUnderstanding"]
+    multiview = summary["multiviewFusion"]
     fitting = summary["fitting"]
     texture = summary["texture"]
     proposal = summary["geometryProposal"]
@@ -554,6 +573,13 @@ def human_report(package_dir: Path) -> str:
                 f"{visual['openingBoundaryCount']} openings, "
                 f"{visual['correctionOperationCount']} applied corrections, "
                 f"mean IoU={visual['meanMaskIoU']:.6f}"
+            ),
+            (
+                f"Multiview fusion: {multiview['status']}, "
+                f"{multiview['viewCount']} views, "
+                f"{multiview['fusedMaskCount']} fused masks, "
+                f"{multiview['fusedLandmarkCount']} fused landmarks, downstream allowed="
+                f"{multiview['expensiveDownstreamAllowed']}"
             ),
             (
                 f"Fitting: {fitting['status']} via {fitting['fitterVersion']}, "

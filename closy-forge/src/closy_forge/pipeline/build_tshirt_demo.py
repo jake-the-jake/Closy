@@ -116,8 +116,10 @@ from closy_forge.simulation.reference_cloth_solver import (
 from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
     CORRECTION_RECORD_VERSION,
+    MULTIVIEW_FUSION_VERSION,
     TSHIRT_VISUAL_OBSERVATION_VERSION,
     build_default_applied_correction_record,
+    build_multiview_fusion_record,
     build_tshirt_visual_observations,
 )
 
@@ -199,6 +201,9 @@ def _write_package_contents(
     capture_quality = score_capture_record(capture_record)
     visual_observations = build_tshirt_visual_observations(capture_record)
     correction_record = build_default_applied_correction_record(visual_observations)
+    multiview_fusion = build_multiview_fusion_record(
+        capture_record, visual_observations, correction_record
+    )
     fit_report = fit_tshirt_parameters_from_visual_observations(visual_observations, prior=params)
     render_materials = _render_materials()
     texture_identity = build_texture_identity_report(
@@ -430,6 +435,7 @@ def _write_package_contents(
     write_canonical_json(package_dir / "source" / "capture_quality.json", capture_quality)
     write_canonical_json(package_dir / "source" / "visual_observations.json", visual_observations)
     write_canonical_json(package_dir / "source" / "correction_record.json", correction_record)
+    write_canonical_json(package_dir / "source" / "multiview_fusion.json", multiview_fusion)
     write_canonical_json(package_dir / "fitting" / "tshirt_fit.json", fit_report)
     write_canonical_json(package_dir / "textures" / "texture_identity.json", texture_identity)
     write_canonical_json(
@@ -553,6 +559,7 @@ def _write_package_contents(
         capture_quality,
         visual_observations,
         correction_record,
+        multiview_fusion,
         fit_report,
         texture_identity,
         geometry_proposal,
@@ -610,6 +617,7 @@ def _write_package_contents(
         capture_quality,
         visual_observations,
         correction_record,
+        multiview_fusion,
         fit_report,
         texture_identity,
         geometry_proposal,
@@ -651,6 +659,7 @@ def _write_package_contents(
         capture_quality,
         visual_observations,
         correction_record,
+        multiview_fusion,
         fit_report,
         texture_identity,
         geometry_proposal,
@@ -690,6 +699,7 @@ def _write_package_contents(
         "captureQuality": capture_quality,
         "visualObservations": visual_observations,
         "correctionRecord": correction_record,
+        "multiviewFusion": multiview_fusion,
         "fitReport": fit_report,
         "textureIdentity": texture_identity,
         "geometryProposal": geometry_proposal,
@@ -819,6 +829,7 @@ def _manifest(
     capture_quality: dict[str, Any],
     visual_observations: dict[str, Any],
     correction_record: dict[str, Any],
+    multiview_fusion: dict[str, Any],
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
@@ -864,6 +875,8 @@ def _manifest(
             "sourceCaptureQuality": "source/capture_quality.json",
             "sourceVisualObservations": "source/visual_observations.json",
             "sourceCorrectionRecord": "source/correction_record.json",
+            "sourceMultiviewFusion": "source/multiview_fusion.json",
+            "multiviewFusionQuality": "reports/multiview_fusion_quality.json",
             "tshirtFitReport": "fitting/tshirt_fit.json",
             "textureIdentity": "textures/texture_identity.json",
             "rawGeometryProposal": "proposals/raw_geometry_proposal.json",
@@ -934,6 +947,15 @@ def _manifest(
             ),
             "sourceCorrectionRecordPayloadHash": str(
                 correction_record["integrity"]["correctionRecordHash"]
+            ),
+            "sourceMultiviewFusionHash": _hash_from_inventory(
+                inventory, "source/multiview_fusion.json"
+            ),
+            "sourceMultiviewFusionPayloadHash": str(
+                multiview_fusion["integrity"]["multiviewFusionRecordHash"]
+            ),
+            "multiviewFusionQualityHash": _hash_from_inventory(
+                inventory, "reports/multiview_fusion_quality.json"
             ),
             "tshirtFitReportHash": _hash_from_inventory(inventory, "fitting/tshirt_fit.json"),
             "tshirtFitReportPayloadHash": str(fit_report["integrity"]["fitReportHash"]),
@@ -1104,6 +1126,7 @@ def _manifest(
             "captureQualityScorer": CAPTURE_QUALITY_SCORER_VERSION,
             "visualObservations": TSHIRT_VISUAL_OBSERVATION_VERSION,
             "correctionRecord": CORRECTION_RECORD_VERSION,
+            "multiviewFusion": MULTIVIEW_FUSION_VERSION,
             "tshirtFit": TSHIRT_FIT_REPORT_VERSION,
             "textureIdentity": TEXTURE_IDENTITY_VERSION,
             "geometryProposal": GEOMETRY_PROPOSAL_VERSION,
@@ -1135,7 +1158,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "bp50_pixel_parsing_corrections_d0_fixture",
+            "name": "bp51_multiview_capture_fusion_d0_fixture",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1144,6 +1167,7 @@ def _manifest(
             "self_collision_not_run",
             "synthetic_capture_metadata_only",
             "d0_pixel_parser_synthetic_fixture_only",
+            "d0_multiview_fusion_synthetic_fixture_only",
             "local_algorithmic_parser_not_trained_model",
             "private_user_raster_processing_not_enabled",
             "synthetic_fit_not_trained_from_real_images",
@@ -1167,7 +1191,7 @@ def _manifest(
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "bp50-pixel-parsing-corrections"},
+        "extensions": {"closyImplementation": "bp51-multiview-capture-fusion"},
     }
 
 
@@ -1194,6 +1218,14 @@ def _capabilities() -> dict[str, bool]:
         "tshirtSemanticPartMasksAvailable": True,
         "tshirtOpeningBoundaryEvidenceAvailable": True,
         "structuredCorrectionReplayAvailable": True,
+        "frontRearCapturePairingAvailable": True,
+        "viewOrientationScaleEvidenceAvailable": True,
+        "crossViewGarmentIdentityAvailable": True,
+        "semanticIdentityTrackingAvailable": True,
+        "multiviewVisualFusionAvailable": True,
+        "phase2QualityGateAvailable": True,
+        "multiviewCorrectionReplayAvailable": True,
+        "phase2ResumeCacheAvailable": True,
         "privateUserRasterProcessingAvailable": False,
         "learnedSegmentationModelAvailable": False,
         "tshirtParameterFitAvailable": True,
@@ -1250,6 +1282,7 @@ def _quality_reports(
     capture_quality: dict[str, Any],
     visual_observations: dict[str, Any],
     correction_record: dict[str, Any],
+    multiview_fusion: dict[str, Any],
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
@@ -1337,6 +1370,27 @@ def _quality_reports(
                 "afterVisualRecordHash"
             ),
             "warnings": visual_observations["warnings"],
+        },
+        "multiview_fusion_quality.json": {
+            "schemaVersion": 1,
+            "status": multiview_fusion["qualityGate"]["status"],
+            "fusionRecordId": multiview_fusion["fusionRecordId"],
+            "stageVersion": multiview_fusion["stageVersion"],
+            "sourceVisualUnderstandingId": multiview_fusion["sourceVisualUnderstandingId"],
+            "sourceCorrectionRecordId": multiview_fusion["sourceCorrectionRecordId"],
+            "requiredPairStatus": multiview_fusion["viewPairing"]["requiredPairs"][0]["status"],
+            "optionalRoleCount": len(multiview_fusion["viewPairing"]["optionalRoles"]),
+            "fusedMaskCount": len(multiview_fusion["fusedEvidence"]["masks"]),
+            "fusedLandmarkCount": len(multiview_fusion["fusedEvidence"]["landmarks"]),
+            "fusedOpeningCount": len(multiview_fusion["fusedEvidence"]["openings"]),
+            "registrationStatus": multiview_fusion["registration"]["status"],
+            "qualityGateStatus": multiview_fusion["qualityGate"]["status"],
+            "expensiveDownstreamAllowed": multiview_fusion["qualityGate"]["readiness"][
+                "expensiveDownstreamAllowed"
+            ],
+            "correctionReplayStatus": multiview_fusion["correctionReplay"]["status"],
+            "cacheKey": multiview_fusion["orchestration"]["cacheKey"],
+            "warnings": multiview_fusion["warnings"],
         },
         "fitting_quality.json": {
             "schemaVersion": 1,
@@ -1452,6 +1506,7 @@ def _provenance(
     capture_quality: dict[str, Any],
     visual_observations: dict[str, Any],
     correction_record: dict[str, Any],
+    multiview_fusion: dict[str, Any],
     fit_report: dict[str, Any],
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
@@ -1513,10 +1568,13 @@ def _provenance(
                 [_json_hash(capture_quality)],
             ),
             _stage(
-                "synthetic_visual_observations",
+                "pixel_derived_visual_observations",
                 TSHIRT_VISUAL_OBSERVATION_VERSION,
                 {
-                    "maskRepresentation": "normalised_polygon",
+                    "maskRepresentation": "decoded_pixel_rle_summary",
+                    "pixelDerivedViewCount": visual_observations["aggregate"].get(
+                        "pixelDerivedViewCount", 0
+                    ),
                     "requiredLandmarkCount": len(
                         visual_observations["aggregate"]["requiredLandmarks"]
                     ),
@@ -1525,10 +1583,31 @@ def _provenance(
                 [str(visual_observations["integrity"]["visualRecordHash"])],
             ),
             _stage(
-                "empty_correction_record",
+                "applied_correction_record",
                 CORRECTION_RECORD_VERSION,
-                {"editable": True, "operationCount": 0, "externalApis": False},
+                {
+                    "editable": True,
+                    "operationCount": len(correction_record["operations"]),
+                    "applicationStatus": correction_record.get("application", {}).get("status"),
+                    "externalApis": False,
+                },
                 [str(correction_record["integrity"]["correctionRecordHash"])],
+            ),
+            _stage(
+                "multiview_capture_fusion",
+                MULTIVIEW_FUSION_VERSION,
+                {
+                    "qualityGateStatus": multiview_fusion["qualityGate"]["status"],
+                    "viewCount": multiview_fusion["fusedEvidence"]["viewCount"],
+                    "fusedMaskCount": len(multiview_fusion["fusedEvidence"]["masks"]),
+                    "fusedLandmarkCount": len(multiview_fusion["fusedEvidence"]["landmarks"]),
+                    "expensiveDownstreamAllowed": multiview_fusion["qualityGate"]["readiness"][
+                        "expensiveDownstreamAllowed"
+                    ],
+                    "cacheKey": multiview_fusion["orchestration"]["cacheKey"],
+                    "externalApis": False,
+                },
+                [str(multiview_fusion["integrity"]["multiviewFusionRecordHash"])],
             ),
             _stage(
                 "tshirt_visual_parameter_fit",
@@ -2172,6 +2251,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     capture_quality = context["captureQuality"]
     visual_observations = context["visualObservations"]
     correction_record = context["correctionRecord"]
+    multiview_fusion = context["multiviewFusion"]
     fit_report = context["fitReport"]
     texture_identity = context["textureIdentity"]
     geometry_proposal = context["geometryProposal"]
@@ -2267,6 +2347,23 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "correctionRecordId": correction_record["correctionRecordId"],
             "correctionOperationCount": len(correction_record["operations"]),
             "correctionApplicationStatus": correction_record.get("application", {}).get("status"),
+        },
+        "multiviewFusion": {
+            "fusionRecordId": multiview_fusion["fusionRecordId"],
+            "stageVersion": multiview_fusion["stageVersion"],
+            "status": multiview_fusion["qualityGate"]["status"],
+            "viewCount": multiview_fusion["fusedEvidence"]["viewCount"],
+            "requiredPairStatus": multiview_fusion["viewPairing"]["requiredPairs"][0]["status"],
+            "optionalRoleCount": len(multiview_fusion["viewPairing"]["optionalRoles"]),
+            "fusedMaskCount": len(multiview_fusion["fusedEvidence"]["masks"]),
+            "fusedLandmarkCount": len(multiview_fusion["fusedEvidence"]["landmarks"]),
+            "fusedOpeningCount": len(multiview_fusion["fusedEvidence"]["openings"]),
+            "registrationStatus": multiview_fusion["registration"]["status"],
+            "correctionReplayStatus": multiview_fusion["correctionReplay"]["status"],
+            "expensiveDownstreamAllowed": multiview_fusion["qualityGate"]["readiness"][
+                "expensiveDownstreamAllowed"
+            ],
+            "cacheKey": multiview_fusion["orchestration"]["cacheKey"],
         },
         "fitting": {
             "fitReportId": fit_report["fitReportId"],
@@ -2868,6 +2965,11 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"{summary['visualUnderstanding']['openingBoundaryCount']} openings, "
         f"{summary['visualUnderstanding']['correctionOperationCount']} applied corrections, "
         f"mean IoU={summary['visualUnderstanding']['meanMaskIoU']:.6f}\n"
+        f"- Multiview fusion: {summary['multiviewFusion']['status']}, "
+        f"{summary['multiviewFusion']['viewCount']} views, "
+        f"{summary['multiviewFusion']['fusedMaskCount']} fused masks, "
+        f"{summary['multiviewFusion']['fusedLandmarkCount']} fused landmarks, "
+        f"downstream allowed={summary['multiviewFusion']['expensiveDownstreamAllowed']}\n"
         f"- Fitting: {summary['fitting']['status']} via "
         f"`{summary['fitting']['fitterVersion']}`, landmark RMS "
         f"{summary['fitting']['landmarkRmsNormalised']:.6f}\n"

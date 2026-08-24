@@ -10,6 +10,7 @@ import pytest
 from closy_forge.capture import (
     build_synthetic_capture_record,
     decode_raster_fixture_pixels,
+    hash_capture_record,
 )
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.visual_understanding import (
@@ -21,9 +22,13 @@ from closy_forge.visual_understanding import (
     build_applied_correction_record,
     build_default_applied_correction_record,
     build_empty_correction_record,
+    build_multiview_fusion_record,
+    build_phase2_capture_quality_gate,
     build_project_authored_tshirt_pixel_views,
     build_tshirt_visual_observations,
     hash_correction_record,
+    hash_fused_evidence,
+    hash_multiview_fusion_record,
     hash_visual_observations,
     parse_tshirt_raster_pixel_views,
     render_project_authored_tshirt_rgba,
@@ -141,6 +146,51 @@ def test_non_empty_corrections_apply_and_change_structured_artifact_hashes() -> 
     assert correction["integrity"]["correctionRecordHash"] == hash_correction_record(correction)
     front = _view(corrected, "front")
     assert front["protectedPrintRegions"][0]["regionId"] == "print.region.front_center_demo"
+
+
+def test_bp51_multiview_fusion_pairs_views_and_replays_corrections() -> None:
+    capture = build_synthetic_capture_record(seed=101)
+    visual = build_tshirt_visual_observations(capture)
+    correction = build_default_applied_correction_record(visual)
+    fusion = build_multiview_fusion_record(capture, visual, correction)
+
+    assert fusion["stageVersion"] == "closy.visual_understanding.multiview_fusion.d0_v1"
+    assert fusion["integrity"]["multiviewFusionRecordHash"] == hash_multiview_fusion_record(fusion)
+    assert fusion["qualityGate"]["status"] == "passed_d0_synthetic"
+    assert fusion["qualityGate"]["readiness"]["expensiveDownstreamAllowed"] is True
+    assert fusion["viewPairing"]["requiredPairs"][0]["status"] == "pass"
+    assert len(fusion["viewPairing"]["optionalRoles"]) == 2
+    assert fusion["crossViewIdentity"]["status"] == "pass"
+    assert fusion["registration"]["status"] == "pass"
+    assert len(fusion["fusedEvidence"]["masks"]) == 4
+    assert len(fusion["fusedEvidence"]["landmarks"]) == 10
+    assert len(fusion["fusedEvidence"]["openings"]) == 4
+    assert fusion["fusedEvidence"]["evidenceHash"] == hash_fused_evidence(fusion["fusedEvidence"])
+    assert fusion["correctionReplay"]["status"] == "applied_to_fused_evidence"
+    assert (
+        fusion["correctionReplay"]["beforeFusionHash"]
+        != fusion["correctionReplay"]["afterFusionHash"]
+    )
+    assert "fused.opening.opening.cuff.right" in fusion["correctionReplay"]["affectedFusedEntities"]
+    assert fusion["orchestration"]["cacheable"] is True
+    assert fusion["orchestration"]["resume"]["status"] == "complete"
+    assert fusion["privacy"]["rawPixelsExported"] is False
+
+
+def test_bp51_quality_gate_rejects_missing_rear_before_downstream() -> None:
+    capture = build_synthetic_capture_record(seed=101)
+    capture["views"] = [
+        view for view in capture["views"] if isinstance(view, dict) and view["label"] != "back"
+    ]
+    capture["captureSession"]["viewCount"] = len(capture["views"])
+    capture["immutability"]["sourceRecordHash"] = hash_capture_record(capture)
+    visual = build_tshirt_visual_observations(capture)
+    gate = build_phase2_capture_quality_gate(capture, visual)
+
+    assert gate["status"] == "rejected_before_downstream"
+    assert gate["readiness"]["expensiveDownstreamAllowed"] is False
+    assert gate["missingRequiredEvidence"] == ["back"]
+    assert "required_front_rear_pair_present" in gate["blockingReasons"]
 
 
 def test_correction_order_is_deterministic_and_semantically_observable() -> None:

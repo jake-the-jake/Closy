@@ -23,6 +23,7 @@ from closy_forge.reports.reporter import human_report, summarize_package
 from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
     build_default_applied_correction_record,
+    build_multiview_fusion_record,
     build_tshirt_visual_observations,
 )
 
@@ -188,18 +189,22 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
     quality_path = output / "capture_quality.json"
     visual_path = output / "visual_observations.json"
     correction_path = output / "correction_record.json"
+    fusion_path = output / "multiview_fusion.json"
     if not args.force and any(
-        path.exists() for path in [record_path, quality_path, visual_path, correction_path]
+        path.exists()
+        for path in [record_path, quality_path, visual_path, correction_path, fusion_path]
     ):
         raise FileExistsError(f"{output} already contains capture fixture files; pass --force")
     record = build_synthetic_capture_record(seed=args.seed)
     quality = score_capture_record(record)
     visual = build_tshirt_visual_observations(record)
     correction = build_default_applied_correction_record(visual)
+    fusion = build_multiview_fusion_record(record, visual, correction)
     write_canonical_json(record_path, record)
     write_canonical_json(quality_path, quality)
     write_canonical_json(visual_path, visual)
     write_canonical_json(correction_path, correction)
+    write_canonical_json(fusion_path, fusion)
     payload = {
         "status": "built",
         "output": str(output),
@@ -211,6 +216,8 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
         "maskCount": visual["aggregate"]["maskCount"],
         "landmarkCount": len(visual["aggregate"]["observedLandmarks"]),
         "correctionOperationCount": len(correction["operations"]),
+        "fusionStatus": fusion["qualityGate"]["status"],
+        "fusionCacheKey": fusion["orchestration"]["cacheKey"],
     }
     if args.json:
         print(canonical_dumps(payload), end="")
