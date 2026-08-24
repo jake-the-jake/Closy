@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-topology-audit-closeout-local-v1"
-    assert payload["generatedBy"] == "BP-46 topology audit closeout local evidence"
+    assert payload["version"] == "bp46-semantic-opening-audit-local-v1"
+    assert payload["generatedBy"] == "BP-46 semantic opening audit local evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -171,6 +171,7 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert bp46["status"] == "partial"
     assert "81fb02c" in bp46["commitSha"]
     assert "d0801291ecdaeda4d04ab5897327abcbf9e95ad1" in bp46["commitSha"]
+    assert "de35156de35831f467c7809fea727195a548ddce" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
     assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
     assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
@@ -178,11 +179,19 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
         "winding, normal-inversion and self-intersection" in item
         for item in bp46["executableEvidence"]
     )
+    assert any(
+        "semanticOpeningAssignmentStatus=fail" in item for item in bp46["executableEvidence"]
+    )
+    assert any("panelEdgeProvenanceStatus=fail" in item for item in bp46["executableEvidence"])
+    assert any(
+        "36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9" in item
+        for item in bp46["executableEvidence"]
+    )
     assert any("193 collected Forge tests" in item for item in bp46["executableEvidence"])
     assert any("89 files each" in item for item in bp46["executableEvidence"])
     assert "non-manifold edges" in bp46["limitations"]
     assert "not-run topology audits" not in bp46["limitations"]
-    assert "semantic opening mapping" in bp46["nextAction"]
+    assert "semantic opening proof" in bp46["nextAction"]
 
 
 def test_repository_gitlink_hygiene_checkpoint_is_complete() -> None:
@@ -370,12 +379,18 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
 
 
-def test_markdown_ledger_matches_bp53_and_hygiene_checkpoint_state() -> None:
+def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `d080129`" in ledger
+    assert "Latest completed implementation commit when last updated: `de35156`" in ledger
     assert "executedTopologyAuditCount=5" in ledger
-    assert "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-TOPOLOGY-AUDITS`" in ledger
+    assert "semanticOpeningAssignmentStatus=fail" in ledger
+    assert "boundaryComponentCount=3" in ledger
+    assert "36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9" in ledger
+    assert (
+        "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-SEMANTIC-OPENING-AUDIT`"
+        in ledger
+    )
     assert "Next dependency-ready increment: continue `FOUNDATION-PROOF-CLOSEOUT`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
