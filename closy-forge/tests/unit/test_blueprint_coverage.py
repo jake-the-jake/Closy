@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-ordered-seam-correspondence-local-v1"
-    assert payload["generatedBy"] == "BP-46 ordered seam correspondence local evidence"
+    assert payload["version"] == "bp46-ordered-seam-correspondence-remote-v1"
+    assert payload["generatedBy"] == "BP-46 ordered seam correspondence remote evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -241,6 +241,12 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     )
     assert any("97596082459" in item for item in bp46["executableEvidence"])
     assert any("97596082034" in item for item in bp46["executableEvidence"])
+    assert any(
+        "remote ordered-correspondence Actions run 32782411096" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("97607120382" in item for item in bp46["executableEvidence"])
+    assert any("97607120119" in item for item in bp46["executableEvidence"])
     assert "non-manifold edges" in bp46["limitations"]
     assert "ordered seam correspondence fails" in bp46["limitations"]
     assert "duplicate faces" not in bp46["limitations"]

@@ -4,20 +4,21 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 
 ## Current State
 
-- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-ORDERED-SEAM-CORRESPONDENCE`
-- Exact subtask: add ordered seam-correspondence evidence that fails closed on reused/split-needed spans and oversized pre-stitch distances while keeping clean/canonical acceptance rejected.
+- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-ORDERED-SEAM-REMOTE-EVIDENCE`
+- Exact subtask: record remote Ubuntu/Windows evidence for ordered seam-correspondence audit failure while keeping clean/canonical acceptance rejected.
 - Current branch: `codex/closy-forge-foundation-proof-closeout`
 - Parent branch: `codex/closy-forge-phase-4-texture`
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
 - Latest implementation commit SHA: `704a10e2f166ba340ba078324f0d5a1fcc6af369`
 - Latest implementation commit subject: `Add BP46 ordered seam correspondence audit`
-- Latest evidence commit SHA before this update: `a51eb915c597c77257e1f77b26823d8bfd0a3d3b`
-- Record based on SHA: `704a10e2f166ba340ba078324f0d5a1fcc6af369`; this resume file itself belongs to the follow-up foundation-proof ordered seam-correspondence truth-sync commit.
+- Latest evidence commit SHA before this update: `f80cc326aabd73278a809a1ee1f403d0dbc1f1a5`
+- Record based on SHA: `f80cc326aabd73278a809a1ee1f403d0dbc1f1a5`; this resume file itself belongs to the follow-up foundation-proof ordered seam-correspondence remote-evidence truth-sync commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof implementation evidence: GitHub Actions run `32777652602` passed at commit `c6fa323506712305a4b5a73bbad118e8d9e1e626`; Ubuntu job `97592313066` passed in 7m46s and Windows job `97592313591` passed in 9m20s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof docs evidence: GitHub Actions run `32778840554` passed at commit `a51eb915c597c77257e1f77b26823d8bfd0a3d3b`; Ubuntu job `97596082459` passed in 7m51s and Windows job `97596082034` passed in 10m28s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`, and validation/report with only `self_collision_not_run`.
+- Last remote foundation-proof ordered-correspondence evidence: GitHub Actions run `32782411096` passed at commit `f80cc326aabd73278a809a1ee1f403d0dbc1f1a5`; Ubuntu job `97607120382` passed in 7m54s with 194 tests in 450.96s, and Windows job `97607120119` passed in 11m30s with 194 tests in 637.74s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f`, and validation/report with only `self_collision_not_run`.
 - Current local BP46 ordered seam-correspondence evidence after `704a10e`: focused BP46 topology/corruption/golden tests passed, full `pytest -q` exited 0 with 194 collected tests, `ruff format --check .` over 112 files passed, `ruff check .` passed, `mypy src` passed over 89 source files, and schema freshness checks passed.
 - Current local package digest after ordered seam-correspondence audit: two OS-temp package builds were byte-identical with 89 files each and digest `a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
@@ -81,10 +82,11 @@ Current blocking evidence:
 - Local focused BP46 ordered-correspondence tests after `704a10e` passed: `tests\unit\test_geometry_proposal.py::test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven_topology`, `tests\unit\test_geometry_proposal.py::test_stitched_shell_topology_audits_fail_on_synthetic_defects`, `tests\corruption\test_corrupted_packages.py::test_geometry_stitched_shell_ordered_correspondence_claim_is_rejected`, and `tests\golden\test_golden_demo.py::test_demo_package_matches_structural_golden`.
 - Local `$env:PYTHONPATH=(Get-Location).Path; .\.venv\Scripts\pytest.exe -q` passed after `704a10e`; collect-only output enumerates 194 tests.
 - Local ordered-correspondence package smoke after `704a10e` built two OS-temp packages with 89 files each, `packages diff --json` status `identical`, `validate --json` status `passed`, digest `a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f`, and only `self_collision_not_run`.
+- Remote ordered-correspondence Forge run `32782411096` passed at `f80cc32` on Ubuntu job `97607120382` and Windows job `97607120119` with 194 tests per OS, fresh schemas, identical 89-file package trees, digest `a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f`, and only `self_collision_not_run`.
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for this ordered seam-correspondence evidence doc update.
+- Remote CI has not yet run for this remote-evidence docs-only truth-sync update.
 
 ## Next Exact Command
 

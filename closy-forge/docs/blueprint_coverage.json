@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-46 ordered seam correspondence local evidence",
+  "generatedBy": "BP-46 ordered seam correspondence remote evidence",
   "rows": [
     {
       "commitSha": [
@@ -130,7 +130,8 @@
         "9a8675602de1c39169a058b1ec1992613182260d",
         "01146285610dab4e110f6221e642b009bf9e90c4",
         "c6fa323506712305a4b5a73bbad118e8d9e1e626",
-        "704a10e2f166ba340ba078324f0d5a1fcc6af369"
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369",
+        "f80cc326aabd73278a809a1ee1f403d0dbc1f1a5"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -206,7 +207,8 @@
         "ordered seam correspondence audit records status=fail, distanceToleranceMeters=0.039266651, reusedBoundaryVertexCount=15, reusedBoundarySpanCount=2, multiSpanFanoutSeamIds=[seam.neck_band.attachment] and oversizedPreStitchCorrespondenceCount=21",
         "ordered seam correspondence failure reasons are boundary_spans_reused_across_seams, multi_span_seams_require_ordered_partition, pre_stitch_distance_exceeds_local_edge_tolerance and source_boundary_vertices_reused_without_span_partition",
         "local ordered-correspondence full pytest exited 0 after 194 collected Forge tests",
-        "local ordered-correspondence package smoke builds are byte-identical with 89 files each, digest a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f and only self_collision_not_run formal warning"
+        "local ordered-correspondence package smoke builds are byte-identical with 89 files each, digest a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f and only self_collision_not_run formal warning",
+        "remote ordered-correspondence Actions run 32782411096 passed at f80cc32 on Ubuntu job 97607120382 and Windows job 97607120119 with 194 tests per OS, fresh schemas, identical 89-file package trees and digest a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f"
       ],
       "id": "BP-46-STITCHED-SHELL-OUTPUT",
       "implementationPaths": [
@@ -2624,5 +2626,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp46-ordered-seam-correspondence-local-v1"
+  "version": "bp46-ordered-seam-correspondence-remote-v1"
 }
