@@ -526,6 +526,13 @@ def test_geometry_clean_acceptance_gate_rejects_runtime_preview_after_material_t
     assert gate["aggregate"]["failedCheckCount"] == 2
     assert gate["aggregate"]["warningCheckCount"] == 2
     assert gate["aggregate"]["notRunCheckCount"] == 2
+    assert (
+        gate["aggregate"]["passedCheckCount"]
+        + gate["aggregate"]["failedCheckCount"]
+        + gate["aggregate"]["warningCheckCount"]
+        + gate["aggregate"]["notRunCheckCount"]
+        == gate["aggregate"]["checkCount"]
+    )
     assert gate["execution"]["materialTransferRun"] is True
     assert gate["execution"]["visualFidelityReviewRun"] is False
     assert gate["execution"]["representationSilhouetteComparisonRun"] is False

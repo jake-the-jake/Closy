@@ -620,6 +620,7 @@ def human_report(package_dir: Path) -> str:
                 f"passed={clean_acceptance_gate['passedCheckCount']}/"
                 f"{clean_acceptance_gate['checkCount']}, "
                 f"failed={clean_acceptance_gate['failedCheckCount']}, "
+                f"warnings={clean_acceptance_gate['warningCheckCount']}, "
                 f"not run={clean_acceptance_gate['notRunCheckCount']}, "
                 f"accepted={clean_acceptance_gate['acceptedForCleanProposal']}"
             ),

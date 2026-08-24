@@ -7,12 +7,15 @@ from closy_forge.geometry.glb_io import audit_glb
 from closy_forge.validation.validator import validate_package
 
 
-def test_cli_build_validate_report_workflow(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_cli_build_validate_report_workflow(tmp_path, capsys) -> None:  # type: ignore[no-untyped-def]
     package = tmp_path / "demo_tshirt.closygarment"
     assert main(["demo", "build-tshirt", "--output", str(package), "--json"]) == EXIT_SUCCESS
     assert package.exists()
     assert main(["validate", str(package), "--json"]) == EXIT_SUCCESS
     assert main(["report", str(package)]) == EXIT_SUCCESS
+    captured = capsys.readouterr()
+    assert "Clean acceptance gate:" in captured.out
+    assert "warnings=2" in captured.out
     report = validate_package(package)
     assert report["status"] == "passed"
     assert report["counts"]["warning"] == 1

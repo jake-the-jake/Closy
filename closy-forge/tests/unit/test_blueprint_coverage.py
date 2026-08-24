@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp49-raster-ingestion-privacy-v1"
-    assert payload["generatedBy"] == "BP-49 privacy-safe local raster fixture ingestion"
+    assert payload["version"] == "bp49-remote-ci-truth-sync-v2"
+    assert payload["generatedBy"] == "BP-49 remote CI and clean-gate warning-count truth sync"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -226,11 +226,13 @@ def test_bp49_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp49["status"] == "partial"
     assert "0db14ee" in bp49["commitSha"]
+    assert "fcf64dce8a2117c78df7d1a01f3cefad118b5093" in bp49["commitSha"]
     assert "fixture-only synthetic_fixture_raster_v1 profile" in bp49["executableEvidence"]
     assert (
         "pixel-derived PNG exposure/sharpness/alpha/resolution/framing quality"
         in bp49["executableEvidence"]
     )
+    assert any("remote Actions run 32700668662" in item for item in bp49["executableEvidence"])
     assert "tests/unit/test_raster_sources.py" in bp49["tests"]
     assert "BP-50" in bp49["nextAction"]
 
@@ -238,7 +240,8 @@ def test_bp49_checkpoint_is_partial_and_evidenced() -> None:
 def test_markdown_ledger_matches_bp49_and_hygiene_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `0db14ee`" in ledger
+    assert "Latest completed implementation commit when last updated: `fcf64dc`" in ledger
+    assert "Remote Forge run `32700668662` passed Ubuntu job `97351342200`" in ledger
     assert "Current active increment: `BP-50-PIXEL-PARSING-CORRECTIONS`" in ledger
     assert "Next dependency-ready increment: `BP-50-PIXEL-PARSING-CORRECTIONS`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger

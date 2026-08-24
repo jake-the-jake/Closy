@@ -2854,6 +2854,7 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"passed={summary['geometryCleanAcceptanceGate']['passedCheckCount']}/"
         f"{summary['geometryCleanAcceptanceGate']['checkCount']}, "
         f"failed={summary['geometryCleanAcceptanceGate']['failedCheckCount']}, "
+        f"warnings={summary['geometryCleanAcceptanceGate']['warningCheckCount']}, "
         f"not run={summary['geometryCleanAcceptanceGate']['notRunCheckCount']}, "
         f"accepted={summary['geometryCleanAcceptanceGate']['acceptedForCleanProposal']}\n"
         f"- Clean proposal: {summary['cleanGeometryProposal']['qualityStatus']}, "

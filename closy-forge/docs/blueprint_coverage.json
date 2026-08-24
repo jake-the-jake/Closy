@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-49 privacy-safe local raster fixture ingestion",
+  "generatedBy": "BP-49 remote CI and clean-gate warning-count truth sync",
   "rows": [
     {
       "commitSha": [
@@ -263,7 +263,8 @@
     },
     {
       "commitSha": [
-        "0db14ee"
+        "0db14ee",
+        "fcf64dce8a2117c78df7d1a01f3cefad118b5093"
       ],
       "dependencies": [
         "BP-08-A-INGESTION",
@@ -276,7 +277,9 @@
         "pixel-derived PNG exposure/sharpness/alpha/resolution/framing quality",
         "private registry excludes source paths from portable summaries",
         "deletion tombstone flow is idempotent and non-recoverable",
-        "external API and training policy fail closed"
+        "external API and training policy fail closed",
+        "remote Actions run 32700668662 passed Ubuntu job 97351342200 and Windows job 97351342416 with 174 tests per OS",
+        "cross-OS deterministic package digest b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329 with 83 files per package tree"
       ],
       "id": "BP-49-RASTER-INGESTION-PRIVACY",
       "implementationPaths": [
@@ -293,7 +296,7 @@
       "nextAction": "Proceed to BP-50 pixel-derived garment parsing and applied corrections using the normalized raster fixture evidence.",
       "sourceSection": "Continuation prompt section 10 BP-49 privacy-safe local PNG/JPEG ingestion",
       "status": "partial",
-      "summary": "Add a fail-closed local raster fixture ingest path with private source records, normalization evidence, pixel-derived PNG quality, privacy reports, schemas, CLI commands and deletion tombstones.",
+      "summary": "Add a fail-closed local raster fixture ingest path with private source records, normalization evidence, pixel-derived PNG quality, privacy reports, schemas, CLI commands, deletion tombstones and cross-OS symlink/hardlink/traversal guard evidence.",
       "tests": [
         "tests/unit/test_raster_sources.py",
         "tests/unit/test_ci_sanitized_diagnostics.py",
@@ -2200,7 +2203,7 @@
         "engine/build/_deps/glm-src",
         "closy-forge/tests/unit/test_repository_hygiene.py"
       ],
-      "limitations": "Broad historical engine/build generated files remain tracked; CI confirmation that checkout annotations disappear is pending until the hygiene commits are pushed.",
+      "limitations": "Broad historical engine/build generated files remain tracked and were not deleted as a side effect; remote checkout evidence is clean for the malformed generated gitlinks in run 32669470115.",
       "nextAction": "Replace unsafe broad Forge failure-artifact upload with strict sanitized diagnostics.",
       "sourceSection": "Continuation prompt section 8.1 repository hygiene",
       "status": "complete",
@@ -2219,7 +2222,8 @@
       "executableEvidence": [
         "closy-forge ci diagnostics command",
         "fixed diagnostics output allowlist",
-        "workflow uploads sanitized diagnostics directory only"
+        "workflow uploads sanitized diagnostics directory only",
+        "failed run 32668079403 exercised sanitized diagnostics artifact 9500652729"
       ],
       "id": "REPO-HYGIENE-CI-DIAGNOSTICS",
       "implementationPaths": [
@@ -2228,8 +2232,8 @@
         "closy-forge/src/closy_forge/cli/main.py",
         "closy-forge/tests/unit/test_ci_sanitized_diagnostics.py"
       ],
-      "limitations": "Remote CI confirmation is pending until the ledger checkpoint is pushed; artifact upload executes only on failure.",
-      "nextAction": "Continue BP-47/BP-48 evidence work after CI hygiene remains green.",
+      "limitations": "Green runs skip failure-only upload by design; failed run 32668079403 remotely exercised the sanitized path, and green run 32669470115 confirmed normal success skips the failure artifact path.",
+      "nextAction": "Continue BP-50 raster masks/corrections using the sanitized diagnostics guardrails.",
       "sourceSection": "Continuation prompt section 8.2 CI diagnostics hygiene",
       "status": "complete",
       "summary": "Replace broad Forge failure-artifact upload with privacy-safe generated diagnostics.",
@@ -2273,5 +2277,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp49-raster-ingestion-privacy-v1"
+  "version": "bp49-remote-ci-truth-sync-v2"
 }
