@@ -113,7 +113,10 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["fitting"]["optimizationIterations"] == 4
     assert payload["fitting"]["heldOutStatus"] == "pass"
     assert payload["fitting"]["perturbationStatus"] == "pass"
-    assert payload["texture"]["sourceTextureAvailable"] is False
+    assert payload["texture"]["sourceTextureAvailable"] is True
+    assert payload["texture"]["textureProjectionRun"] is True
+    assert payload["texture"]["visibleProjectionCount"] > 0
+    assert payload["texture"]["pbrSourceBackedMapCount"] >= 1
     assert payload["texture"]["materialRegionCount"] == 2
     assert payload["geometryProposal"]["qualityStatus"] == "accepted_visual_reference"
     assert payload["geometryProposal"]["acceptedForCanonical"] is False

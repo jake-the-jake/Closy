@@ -405,6 +405,7 @@ def _part_record(
         "maskHash": hash_mask(
             mask, width=pixel_view.width, height=pixel_view.height, semantic_id=semantic_id
         ),
+        "colorEvidence": _color_evidence(pixel_view, semantic_id, mask),
         "confidence": _round(0.93 if mask else 0.0),
         "source": "decoded_pixel_color_class",
         "missing": not mask,
@@ -710,6 +711,37 @@ def _runs(mask: set[int]) -> list[list[int]]:
         previous = index
     runs.append([start, length])
     return runs
+
+
+def _color_evidence(
+    pixel_view: RasterFixtureView, semantic_id: str, mask: set[int]
+) -> dict[str, Any]:
+    if not mask:
+        mean_rgba = [0, 0, 0, 0]
+    else:
+        totals = [0, 0, 0, 0]
+        for pixel_index in sorted(mask):
+            offset = pixel_index * 4
+            for channel in range(4):
+                totals[channel] += pixel_view.rgba[offset + channel]
+        mean_rgba = [round(total / len(mask)) for total in totals]
+    base_color = [_round(channel / 255.0) for channel in mean_rgba]
+    payload = {
+        "viewId": pixel_view.view_id,
+        "semanticId": semantic_id,
+        "pixelCount": len(mask),
+        "meanRgba8bit": mean_rgba,
+    }
+    return {
+        "source": "decoded_pixel_mean_rgba_summary",
+        "sourcePixelsPortable": False,
+        "pixelSampleCount": len(mask),
+        "meanRgba8bit": mean_rgba,
+        "meanBaseColorFactor": base_color,
+        "colorEvidenceHash": sha256_bytes(
+            b"CLOSY_PART_COLOR_EVIDENCE_V1" + canonical_dumps(payload).encode("utf-8")
+        ),
+    }
 
 
 def _pixel_hash(width: int, height: int, rgba: bytes) -> str:

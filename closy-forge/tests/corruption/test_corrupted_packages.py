@@ -377,9 +377,17 @@ def test_texture_identity_unknown_material_is_rejected(tmp_path) -> None:  # typ
 def test_texture_source_capability_contradiction_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_texture_capability.closygarment")
     manifest = read_json(corrupt / "manifest.json")
-    manifest["capabilities"]["sourceImageTextureAvailable"] = True
+    manifest["capabilities"]["sourceImageTextureAvailable"] = False
     write_json(corrupt / "manifest.json", manifest)
     assert "texture_source_capability_contradiction" in issue_codes(validate_package(corrupt))
+
+
+def test_texture_artifact_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_texture_artifact.closygarment")
+    projection = read_json(corrupt / "textures" / "source_projection.json")
+    projection["projections"][0]["confidence"] = 0.123
+    write_json(corrupt / "textures" / "source_projection.json", projection)
+    assert "texture_artifact_ref_hash_mismatch" in issue_codes(validate_package(corrupt))
 
 
 def test_geometry_proposal_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]

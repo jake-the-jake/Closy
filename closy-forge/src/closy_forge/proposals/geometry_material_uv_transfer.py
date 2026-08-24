@@ -8,7 +8,7 @@ from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 
 GEOMETRY_MATERIAL_UV_TRANSFER_VERSION = (
-    "closy.geometry_material_uv_transfer.authored_pbr_runtime_preview_v1"
+    "closy.geometry_material_uv_transfer.source_projection_runtime_preview_v1"
 )
 
 
@@ -24,10 +24,10 @@ def build_geometry_material_uv_transfer_report(
 ) -> dict[str, Any]:
     """Record UV/material evidence carried onto the runtime render shell.
 
-    This is deliberately not source-photo texture projection. D0 has authored
-    fixture PBR/material-region evidence and panel UVs, so this report proves
-    those metadata paths are transferred while leaving visual fidelity, real
-    source-pixel projection and clean single-shell acceptance to later gates.
+    D0 now has privacy-safe source-view projection summaries, generated atlas
+    metadata and PBR placeholders. This report proves those texture/material
+    metadata paths are transferred while leaving clean single-shell acceptance
+    and production visual fidelity to later gates.
     """
 
     material_regions = _material_regions(texture_identity_report)
@@ -92,10 +92,15 @@ def build_geometry_material_uv_transfer_report(
             "runtimePreviewUseAllowed": runtime_binding_result_report["outputRenderAsset"][
                 "runtimePreviewUseAllowed"
             ],
-            "materialRepresentation": "authored_fixture_pbr_regions_with_panel_uv_metadata",
+            "materialRepresentation": "source_projected_pbr_regions_with_panel_uv_metadata"
+            if texture_identity_report["textureProjectionRun"]
+            else "authored_fixture_pbr_regions_with_panel_uv_metadata",
             "sourceTextureProjectionAvailable": texture_identity_report["sourceTextureAvailable"],
             "sourceTextureProjectionRun": texture_identity_report["textureProjectionRun"],
             "generatedAtlasAvailable": texture_identity_report["generatedAtlasAvailable"],
+            "generatedAtlasArtifactPath": texture_identity_report.get("artifactRefs", {})
+            .get("generatedAtlas", {})
+            .get("path"),
             "canonicalUseAllowed": False,
         },
         "uvTransfer": {
@@ -129,6 +134,7 @@ def build_geometry_material_uv_transfer_report(
             "materialModel": texture_identity_report["pbrSafety"]["materialModel"],
             "maxTextureSizePx": texture_identity_report["pbrSafety"]["maxTextureSizePx"],
             "sourceTextureProjectionRun": texture_identity_report["textureProjectionRun"],
+            "generatedAtlasTransferRun": texture_identity_report["generatedAtlasAvailable"],
             "transferredMaterials": _transferred_materials(
                 runtime_material_ids,
                 render_material_by_id,
@@ -164,7 +170,7 @@ def build_geometry_material_uv_transfer_report(
             "uvTransferRun": True,
             "materialTransferRun": True,
             "sourceTextureProjectionRun": texture_identity_report["textureProjectionRun"],
-            "generatedAtlasTransferRun": False,
+            "generatedAtlasTransferRun": texture_identity_report["generatedAtlasAvailable"],
             "visualFidelityReviewRun": False,
             "singleShellWeldProofRun": False,
         },
@@ -190,8 +196,9 @@ def build_geometry_material_uv_transfer_report(
             "acceptedForCleanProposal": False,
             "warnings": [
                 "authored_pbr_materials_not_source_photo_projected",
-                "source_texture_projection_not_run",
-                "generated_texture_atlas_not_available",
+                "d0_source_texture_projection_synthetic_fixture_only",
+                "raw_source_pixels_not_packaged",
+                "pbr_maps_placeholder_where_source_evidence_absent",
                 "visual_fidelity_review_not_run",
                 "single_shell_weld_not_proven",
             ],

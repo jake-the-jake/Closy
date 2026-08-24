@@ -7,7 +7,7 @@ from typing import Any
 
 from closy_forge.appearance import (
     TEXTURE_IDENTITY_VERSION,
-    build_texture_identity_report,
+    build_texture_identity_bundle,
 )
 from closy_forge.avatar.reference_avatar import (
     avatar_contract,
@@ -210,12 +210,14 @@ def _write_package_contents(
         prior=params,
     )
     render_materials = _render_materials()
-    texture_identity = build_texture_identity_report(
+    texture_bundle = build_texture_identity_bundle(
         capture_record=capture_record,
         visual_observations=visual_observations,
         fit_report=fit_report,
         render_materials=render_materials,
+        multiview_fusion=multiview_fusion,
     )
+    texture_identity = texture_bundle.report
     manual_proposal_asset = package_dir / "proposals" / "manual_raw_visual_proposal.glb"
     write_glb(
         manual_proposal_asset,
@@ -442,6 +444,8 @@ def _write_package_contents(
     write_canonical_json(package_dir / "source" / "multiview_fusion.json", multiview_fusion)
     write_canonical_json(package_dir / "fitting" / "tshirt_fit.json", fit_report)
     write_canonical_json(package_dir / "textures" / "texture_identity.json", texture_identity)
+    for texture_path, texture_payload in texture_bundle.artifacts.items():
+        write_canonical_json(package_dir / texture_path, texture_payload)
     write_canonical_json(
         package_dir / "proposals" / "raw_geometry_proposal.json", geometry_proposal
     )
@@ -883,6 +887,10 @@ def _manifest(
             "multiviewFusionQuality": "reports/multiview_fusion_quality.json",
             "tshirtFitReport": "fitting/tshirt_fit.json",
             "textureIdentity": "textures/texture_identity.json",
+            "sourceTextureProjection": "textures/source_projection.json",
+            "generatedTextureAtlas": "textures/generated_atlas.json",
+            "pbrMaterialMaps": "textures/pbr_material_maps.json",
+            "conventionalFallbackMaterials": "textures/conventional_fallback_materials.json",
             "rawGeometryProposal": "proposals/raw_geometry_proposal.json",
             "rawGeometryProposalAsset": "proposals/manual_raw_visual_proposal.glb",
             "rawGeometryTopology": "reports/raw_geometry_topology.json",
@@ -967,6 +975,30 @@ def _manifest(
                 inventory, "textures/texture_identity.json"
             ),
             "textureIdentityPayloadHash": str(texture_identity["integrity"]["textureIdentityHash"]),
+            "sourceTextureProjectionHash": _hash_from_inventory(
+                inventory, "textures/source_projection.json"
+            ),
+            "sourceTextureProjectionPayloadHash": str(
+                texture_identity["artifactRefs"]["sourceProjection"]["sha256"]
+            ),
+            "generatedTextureAtlasHash": _hash_from_inventory(
+                inventory, "textures/generated_atlas.json"
+            ),
+            "generatedTextureAtlasPayloadHash": str(
+                texture_identity["artifactRefs"]["generatedAtlas"]["sha256"]
+            ),
+            "pbrMaterialMapsHash": _hash_from_inventory(
+                inventory, "textures/pbr_material_maps.json"
+            ),
+            "pbrMaterialMapsPayloadHash": str(
+                texture_identity["artifactRefs"]["pbrMaterialMaps"]["sha256"]
+            ),
+            "conventionalFallbackMaterialsHash": _hash_from_inventory(
+                inventory, "textures/conventional_fallback_materials.json"
+            ),
+            "conventionalFallbackMaterialsPayloadHash": str(
+                texture_identity["artifactRefs"]["conventionalFallbackMaterials"]["sha256"]
+            ),
             "rawGeometryProposalHash": _hash_from_inventory(
                 inventory, "proposals/raw_geometry_proposal.json"
             ),
@@ -1162,7 +1194,7 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "bp52_image_conditioned_tshirt_fitting_d0_fixture",
+            "name": "bp53_source_texture_pbr_recovery_d0_fixture",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1177,7 +1209,10 @@ def _manifest(
             "private_user_raster_processing_not_enabled",
             "synthetic_fit_not_trained_from_real_images",
             "settled_render_or_drape_comparison_not_run",
-            "source_texture_projection_not_run",
+            "d0_source_texture_recovery_synthetic_fixture_only",
+            "raw_source_pixels_not_packaged",
+            "pbr_maps_placeholder_where_source_evidence_absent",
+            "hidden_texture_regions_not_hallucinated",
             "manual_raw_geometry_proposal_not_canonical",
             "partial_geometry_cleanup_not_clean_proposal",
             "geometry_semantic_transfer_not_simulation_binding",
@@ -1185,7 +1220,7 @@ def _manifest(
             "geometry_binding_validation_rejected_runtime_binding",
             "geometry_repair_result_partial_reprojection_not_clean",
             "geometry_runtime_binding_result_clean_acceptance_pending",
-            "geometry_material_uv_transfer_authored_pbr_only",
+            "geometry_material_uv_transfer_source_projection_preview_only",
             "geometry_stitched_shell_output_not_clean_proven",
             "geometry_visual_shell_review_clean_rejected",
             "inspection_artifacts_not_visual_fidelity_acceptance",
@@ -1197,7 +1232,7 @@ def _manifest(
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "bp51-multiview-capture-fusion"},
+        "extensions": {"closyImplementation": "bp53-source-texture-pbr-recovery"},
     }
 
 
@@ -1211,7 +1246,7 @@ def _capabilities() -> dict[str, bool]:
         "bindingReconstructionValidated": True,
         "actualClothSettleAvailable": True,
         "selfCollisionAvailable": False,
-        "sourceImageTextureAvailable": False,
+        "sourceImageTextureAvailable": True,
         "sourceCaptureRecordAvailable": True,
         "captureQualityScored": True,
         "visualObservationsAvailable": True,
@@ -1246,6 +1281,10 @@ def _capabilities() -> dict[str, bool]:
         "settledRenderFitComparisonAvailable": False,
         "textureIdentityEvidenceAvailable": True,
         "pbrMaterialObservationAvailable": True,
+        "sourceTextureProjectionAvailable": True,
+        "pbrMaterialMapExportAvailable": True,
+        "logoPrintPreservationMaskAvailable": True,
+        "controlledTextureInpaintingInterfaceAvailable": True,
         "geometryProposalInterfaceAvailable": True,
         "rawGeometryProposalRecordAvailable": True,
         "geometryProposalQualityScored": True,
@@ -1432,6 +1471,15 @@ def _quality_reports(
             "textureProjectionRun": texture_identity["textureProjectionRun"],
             "materialRegionCount": len(texture_identity["observedMaterialRegions"]),
             "recommendedAtlasSizePx": texture_identity["projectionPlan"]["recommendedAtlasSizePx"],
+            "sourceProjectionCount": texture_identity["sourceViewProjection"]["projectionCount"],
+            "visibleProjectionCount": texture_identity["sourceViewProjection"][
+                "visibleProjectionCount"
+            ],
+            "meanVisibleConfidence": texture_identity["visibleRegionConfidence"][
+                "meanVisibleConfidence"
+            ],
+            "pbrSourceBackedMapCount": texture_identity["pbrMaterialMaps"]["sourceBackedMapCount"],
+            "pbrPlaceholderMapCount": texture_identity["pbrMaterialMaps"]["placeholderMapCount"],
             "warnings": texture_identity["warnings"],
         },
         "geometry_proposal_quality.json": geometry_proposal_quality_report(geometry_proposal),
@@ -1651,13 +1699,20 @@ def _provenance(
                 ],
             ),
             _stage(
-                "synthetic_texture_identity_scaffold",
+                "source_texture_pbr_recovery",
                 TEXTURE_IDENTITY_VERSION,
                 {
-                    "sourceTextureAvailable": False,
-                    "generatedAtlasAvailable": False,
-                    "textureProjectionRun": False,
+                    "sourceTextureAvailable": texture_identity["sourceTextureAvailable"],
+                    "generatedAtlasAvailable": texture_identity["generatedAtlasAvailable"],
+                    "textureProjectionRun": texture_identity["textureProjectionRun"],
                     "materialRegionCount": len(texture_identity["observedMaterialRegions"]),
+                    "visibleProjectionCount": texture_identity["sourceViewProjection"][
+                        "visibleProjectionCount"
+                    ],
+                    "sourceBackedPbrMapCount": texture_identity["pbrMaterialMaps"][
+                        "sourceBackedMapCount"
+                    ],
+                    "rawPixelsExported": False,
                 },
                 [str(texture_identity["integrity"]["textureIdentityHash"])],
             ),
@@ -2426,6 +2481,15 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "textureProjectionRun": texture_identity["textureProjectionRun"],
             "materialRegionCount": len(texture_identity["observedMaterialRegions"]),
             "recommendedAtlasSizePx": texture_identity["projectionPlan"]["recommendedAtlasSizePx"],
+            "sourceProjectionCount": texture_identity["sourceViewProjection"]["projectionCount"],
+            "visibleProjectionCount": texture_identity["sourceViewProjection"][
+                "visibleProjectionCount"
+            ],
+            "meanVisibleConfidence": texture_identity["visibleRegionConfidence"][
+                "meanVisibleConfidence"
+            ],
+            "pbrSourceBackedMapCount": texture_identity["pbrMaterialMaps"]["sourceBackedMapCount"],
+            "pbrPlaceholderMapCount": texture_identity["pbrMaterialMaps"]["placeholderMapCount"],
         },
         "geometryProposal": {
             "proposalId": geometry_proposal["proposalId"],
@@ -3021,7 +3085,13 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"optimisation iterations={summary['fitting']['optimizationIterations']}\n"
         f"- Texture identity: {summary['texture']['status']}, "
         f"{summary['texture']['materialRegionCount']} PBR material observations, "
-        f"source textures available={summary['texture']['sourceTextureAvailable']}\n"
+        f"source textures available={summary['texture']['sourceTextureAvailable']}, "
+        f"visible projections={summary['texture']['visibleProjectionCount']}/"
+        f"{summary['texture']['sourceProjectionCount']}, "
+        f"mean confidence={summary['texture']['meanVisibleConfidence']:.6f}, "
+        f"PBR maps source-backed/placeholders="
+        f"{summary['texture']['pbrSourceBackedMapCount']}/"
+        f"{summary['texture']['pbrPlaceholderMapCount']}\n"
         f"- Geometry proposal: {summary['geometryProposal']['qualityStatus']} via "
         f"`{summary['geometryProposal']['providerId']}`, "
         f"raw available={summary['geometryProposal']['rawProposalAvailable']}\n"
