@@ -11,6 +11,14 @@ python -m closy_forge report generated/garments/demo_tshirt.closygarment
 python -m closy_forge capture build-synthetic --output generated/capture/synthetic_tshirt --force
 ```
 
+The BP-49 raster path is fixture-only and keeps private registry records
+separate from portable reports:
+
+```bash
+python -m closy_forge capture ingest-raster-fixture --manifest fixtures/raster_manifest.json --input-root fixtures --private-registry generated/private/raster --portable-output generated/capture/raster --force
+python -m closy_forge capture delete-raster-fixture --private-registry generated/private/raster --tombstone generated/private/raster_tombstone.json --force
+```
+
 After installation, the console script is equivalent:
 
 ```bash
@@ -72,6 +80,7 @@ See:
 - `docs/package-contract-v1.md` for the package tree and manifest rules.
 - `docs/tshirt-pattern-v1.md` for the deterministic T-shirt pattern contract.
 - `docs/capture-records-v1.md` for synthetic source records, capture quality scoring, visual observations and correction records.
+- `docs/raster-ingestion-v1.md` for BP-49 local synthetic PNG/JPEG fixture ingestion, privacy separation and deletion tombstones.
 - `docs/texture-identity-v1.md` for synthetic texture identity and mobile-safe PBR evidence.
 - `docs/geometry-proposal-contract-v1.md` for the raw/clean visual-geometry proposal boundary.
 - `docs/cloth-settle-reference-v1.md` for the CPU reference settle backend.

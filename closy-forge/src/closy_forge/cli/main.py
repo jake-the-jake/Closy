@@ -6,7 +6,13 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from closy_forge.capture import build_synthetic_capture_record, score_capture_record
+from closy_forge.capture import (
+    RasterIngestError,
+    build_synthetic_capture_record,
+    delete_raster_fixture_registry,
+    ingest_raster_fixture_manifest,
+    score_capture_record,
+)
 from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.tshirt.parameters import TShirtParameters
@@ -90,6 +96,30 @@ def _parser() -> argparse.ArgumentParser:
     )
     capture_demo.add_argument("--json", action="store_true", help="Print machine-readable result.")
     capture_demo.set_defaults(handler=_build_synthetic_capture)
+    capture_raster = capture_sub.add_parser(
+        "ingest-raster-fixture",
+        help="Ingest allowlisted local synthetic PNG/JPEG fixtures into private records.",
+    )
+    capture_raster.add_argument("--manifest", required=True, type=Path)
+    capture_raster.add_argument("--input-root", required=True, type=Path)
+    capture_raster.add_argument("--private-registry", required=True, type=Path)
+    capture_raster.add_argument("--portable-output", required=True, type=Path)
+    capture_raster.add_argument("--force", action="store_true")
+    capture_raster.add_argument(
+        "--json", action="store_true", help="Print machine-readable result."
+    )
+    capture_raster.set_defaults(handler=_ingest_raster_fixture)
+    capture_delete = capture_sub.add_parser(
+        "delete-raster-fixture",
+        help="Delete Forge-managed private raster fixture records and write a tombstone.",
+    )
+    capture_delete.add_argument("--private-registry", required=True, type=Path)
+    capture_delete.add_argument("--tombstone", required=True, type=Path)
+    capture_delete.add_argument("--force", action="store_true")
+    capture_delete.add_argument(
+        "--json", action="store_true", help="Print machine-readable result."
+    )
+    capture_delete.set_defaults(handler=_delete_raster_fixture)
 
     validate = subparsers.add_parser("validate", help="Validate a .closygarment package from disk.")
     validate.add_argument("package", type=Path)
@@ -188,6 +218,46 @@ def _build_synthetic_capture(args: argparse.Namespace) -> int:
         print(f"Built synthetic capture fixture in {output}")
         print(f"Record: {payload['recordId']}")
         print(f"Quality: {payload['qualityStatus']} {payload['qualityScore']}")
+    return EXIT_SUCCESS
+
+
+def _ingest_raster_fixture(args: argparse.Namespace) -> int:
+    try:
+        payload = ingest_raster_fixture_manifest(
+            manifest_path=args.manifest,
+            input_root=args.input_root,
+            private_registry_dir=args.private_registry,
+            portable_output_dir=args.portable_output,
+            force=args.force,
+        )
+    except RasterIngestError as exc:
+        print(f"closy-forge: raster_ingest_failed:{exc.code}", file=sys.stderr)
+        return EXIT_BUILD_FAILURE
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print("Ingested synthetic raster fixtures")
+        print(f"Record: {payload['recordId']}")
+        print(f"Quality: {payload['qualityStatus']}")
+    return EXIT_SUCCESS
+
+
+def _delete_raster_fixture(args: argparse.Namespace) -> int:
+    try:
+        payload = delete_raster_fixture_registry(
+            private_registry_dir=args.private_registry,
+            tombstone_path=args.tombstone,
+            force=args.force,
+        )
+    except RasterIngestError as exc:
+        print(f"closy-forge: raster_delete_failed:{exc.code}", file=sys.stderr)
+        return EXIT_BUILD_FAILURE
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print("Deleted Forge-managed raster fixture registry records")
+        print(f"Record: {payload['recordId']}")
+        print(f"Status: {payload['status']}")
     return EXIT_SUCCESS
 
 
