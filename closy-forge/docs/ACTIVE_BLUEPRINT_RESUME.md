@@ -11,12 +11,12 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
 - Latest implementation commit SHA: `0ced19b3efdf69a7ba55cb330c66e8da44a68669`
 - Latest implementation commit subject: `Add BP46 logical binding audit`
-- Latest evidence commit SHA before this update: `ce90ebfe8bb6c9fd52c5f5438b1ad9b7be56e0f1`
-- Record based on SHA: `0ced19b3efdf69a7ba55cb330c66e8da44a68669`; this resume file itself belongs to the follow-up foundation-proof logical-binding evidence commit.
+- Latest evidence commit SHA before this update: `2057d4ff6a1532476d6661c89274970c03fa68ff`
+- Record based on SHA: `2057d4ff6a1532476d6661c89274970c03fa68ff`; this resume file itself belongs to the follow-up foundation-proof logical-binding remote-evidence truth-sync commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
-- Last remote foundation-proof evidence: GitHub Actions run `32761608825` passed at commit `eef64ef1ead7adbe7db4132043e388856ed9b513`; Ubuntu job `97541503765` passed in 7m48s and Windows job `97541503927` passed in 11m28s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9`, and validation/report with only `self_collision_not_run`.
+- Last remote foundation-proof evidence: GitHub Actions run `32770764532` passed at commit `2057d4ff6a1532476d6661c89274970c03fa68ff`; Ubuntu job `97570351707` passed in 6m29s and Windows job `97570351408` passed in 10m09s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb`, and validation/report with only `self_collision_not_run`.
 - Current local BP46 logical-binding evidence after `0ced19b`: focused BP46 semantic/topology/binding corruption tests passed, golden structural test passed, the wider geometry/integration/golden/corruption suite passed, `ruff format --check .`, `ruff check .`, `mypy src`, and schema freshness checks passed.
 - Current local package digest after logical binding audit: two OS-temp package builds were byte-identical with 89 files each and digest `d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
@@ -77,7 +77,7 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for the `0ced19b` logical-binding checkpoint. Future implementation commits require fresh local and remote validation.
+- No required checks remain unrun for the `2057d4f` logical-binding evidence checkpoint. Future implementation commits require fresh local and remote validation.
 
 ## Next Exact Command
 
@@ -88,4 +88,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Commit and push this logical-binding evidence truth-sync, update draft PR #5, then continue BP-46 topology repair, semantic opening proof, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
+Commit and push this remote-evidence truth-sync, update draft PR #5, then continue BP-46 topology repair, semantic opening proof, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.

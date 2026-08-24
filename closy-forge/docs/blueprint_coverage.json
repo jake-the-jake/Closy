@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-46 logical binding audit local evidence",
+  "generatedBy": "BP-46 logical binding audit remote CI evidence",
   "rows": [
     {
       "commitSha": [
@@ -125,7 +125,8 @@
         "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
         "de35156de35831f467c7809fea727195a548ddce",
         "eef64ef1ead7adbe7db4132043e388856ed9b513",
-        "0ced19b3efdf69a7ba55cb330c66e8da44a68669"
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "2057d4ff6a1532476d6661c89274970c03fa68ff"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -158,7 +159,8 @@
         "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
         "de35156de35831f467c7809fea727195a548ddce",
         "eef64ef1ead7adbe7db4132043e388856ed9b513",
-        "0ced19b3efdf69a7ba55cb330c66e8da44a68669"
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "2057d4ff6a1532476d6661c89274970c03fa68ff"
       ],
       "dependencies": [
         "BP-45-IMPLEMENTATION-23",
@@ -183,7 +185,8 @@
         "two OS-temp BP46 semantic-opening package builds are byte-identical with 89 files each, digest 36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9 and only self_collision_not_run formal warning",
         "remote Actions run 32761608825 passed at eef64ef on Ubuntu job 97541503765 and Windows job 97541503927 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest 36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9",
         "logical binding audit records bindingCoverage=1.0, bindingReconstructionStatus=pass, bindingMode=logical_source_vertex_centroid_map, boundRenderVertexCount=149, requiredRenderVertexCount=149 and maxReconstructionErrorMeters=0.0",
-        "two OS-temp BP46 logical-binding package builds are byte-identical with 89 files each, digest d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb and only self_collision_not_run formal warning"
+        "two OS-temp BP46 logical-binding package builds are byte-identical with 89 files each, digest d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb and only self_collision_not_run formal warning",
+        "remote Actions run 32770764532 passed at 2057d4f on Ubuntu job 97570351707 and Windows job 97570351408 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb"
       ],
       "id": "BP-46-STITCHED-SHELL-OUTPUT",
       "implementationPaths": [
@@ -2585,5 +2588,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp46-logical-binding-audit-local-v1"
+  "version": "bp46-logical-binding-audit-remote-v1"
 }
