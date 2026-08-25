@@ -6272,23 +6272,88 @@ def _validate_geometry_stitched_shell(
                 ),
             )
         )
+    ordered_correspondence = topology_audit.get("orderedSeamCorrespondenceAudit", {})
+    if (
+        not isinstance(ordered_correspondence, dict)
+        or topology_audit.get("orderedSeamCorrespondenceStatus")
+        != ordered_correspondence.get("status")
+        or ordered_correspondence.get("sourceConstraintCount")
+        != topology_audit.get("sourceConstraintCount")
+        or ordered_correspondence.get("executedOperationCount")
+        != topology_audit.get("executedOperationCount")
+        or ordered_correspondence.get("duplicatedOperationIdCount")
+        != seam_coverage.get("duplicateExecutedOperationCount")
+        or ordered_correspondence.get("unmatchedCorrespondenceCount")
+        != len(seam_coverage.get("missingRequiredOperationIds", []))
+        or ordered_correspondence.get("status") not in {"pass", "fail"}
+        or not isinstance(ordered_correspondence.get("distanceToleranceMeters"), int | float)
+        or not isinstance(ordered_correspondence.get("preStitchDistanceDistributionMeters"), dict)
+        or not isinstance(ordered_correspondence.get("postStitchResidualDistributionMeters"), dict)
+        or (
+            ordered_correspondence.get("status") == "pass"
+            and (
+                ordered_correspondence.get("failureReasons") != []
+                or ordered_correspondence.get("reusedBoundaryVertexCount") != 0
+                or ordered_correspondence.get("reusedBoundarySpanCount") != 0
+                or ordered_correspondence.get("oversizedPreStitchCorrespondenceCount") != 0
+                or ordered_correspondence.get("multiSpanFanoutSeamIds") != []
+            )
+        )
+        or (
+            ordered_correspondence.get("status") == "fail"
+            and not ordered_correspondence.get("failureReasons")
+        )
+    ):
+        issues.append(
+            _issue(
+                "geometry_stitched_shell_ordered_correspondence_invalid",
+                "fatal",
+                "reports/geometry_stitched_shell.json",
+                (
+                    "BP-46 stitched shell ordered seam correspondence must expose "
+                    "truthful executed/missing/duplicate counts and fail closed when "
+                    "spans are reused without partitioning."
+                ),
+            )
+        )
     binding_evidence = topology_audit.get("bindingEvidence", {})
     if (
         not isinstance(binding_evidence, dict)
         or topology_audit.get("bindingCoverage") != binding_evidence.get("coverageRatio")
         or binding_evidence.get("requiredRenderVertexCount") != topology_audit.get("vertexCount")
-        or binding_evidence.get("bindingStatus") != "not_run"
-        or binding_evidence.get("boundRenderVertexCount") != 0
-        or topology_audit.get("bindingCoverage") != 0.0
-        or topology_audit.get("bindingReconstructionStatus") != "not_run"
-        or topology_audit.get("bindingReconstructionErrorMeters") is not None
+        or binding_evidence.get("bindingStatus") != "pass"
+        or binding_evidence.get("bindingMode") != "logical_source_vertex_centroid_map"
+        or binding_evidence.get("bindingFormat") != "logical_source_vertex_centroid_map_v1"
+        or binding_evidence.get("bindingAssetPath")
+        != "stitch/logical_stitched_analysis_shell.json#sourceVertexMap"
+        or binding_evidence.get("boundRenderVertexCount") != topology_audit.get("vertexCount")
+        or topology_audit.get("bindingCoverage") != 1.0
+        or binding_evidence.get("missingRenderVertexIds") != []
+        or binding_evidence.get("duplicateRenderVertexIds") != []
+        or binding_evidence.get("invalidBindingRecordIds") != []
+        or binding_evidence.get("bindingRecordCount") != topology_audit.get("vertexCount")
+        or binding_evidence.get("topologyHash") != topology_hash(expected_mesh)
+        or binding_evidence.get("contentHash") != geometry_content_hash(expected_mesh)
+        or topology_audit.get("bindingReconstructionStatus") != "pass"
+        or binding_evidence.get("reconstructionStatus") != "pass"
+        or topology_audit.get("bindingReconstructionErrorMeters")
+        != binding_evidence.get("maxReconstructionErrorMeters")
+        or not isinstance(binding_evidence.get("maxReconstructionErrorMeters"), int | float)
+        or not isinstance(binding_evidence.get("rmsReconstructionErrorMeters"), int | float)
+        or not isinstance(binding_evidence.get("reconstructionToleranceMeters"), int | float)
+        or float(binding_evidence.get("maxReconstructionErrorMeters", 1.0))
+        > float(binding_evidence.get("reconstructionToleranceMeters", 0.0))
+        or binding_evidence.get("failureReasons") != []
     ):
         issues.append(
             _issue(
                 "geometry_stitched_shell_binding_coverage_invalid",
                 "fatal",
                 "reports/geometry_stitched_shell.json",
-                "BP-46 stitched shell must not claim binding coverage before a binding exists.",
+                (
+                    "BP-46 stitched shell binding evidence must execute and expose "
+                    "complete logical source-vertex reconstruction coverage."
+                ),
             )
         )
     provenance = topology_audit.get("uvMaterialPanelProvenance", {})
@@ -6311,19 +6376,67 @@ def _validate_geometry_stitched_shell(
             )
         )
     opening_proof = analysis.get("openingProof", {})
-    if (
-        not isinstance(opening_proof, dict)
-        or opening_proof.get("status") != "fail"
-        or opening_proof.get("missingExpectedOpeningCount")
-        != len(opening_proof.get("expectedOpeningIds", []))
-        or opening_proof.get("provenOpeningCount") != 0
-    ):
+    expected_opening_ids = (
+        opening_proof.get("expectedOpeningIds", []) if isinstance(opening_proof, dict) else []
+    )
+    source_opening_provenance = (
+        opening_proof.get("sourceOpeningEdgeProvenance", {})
+        if isinstance(opening_proof, dict)
+        else {}
+    )
+    source_opening_provenance_valid = (
+        isinstance(source_opening_provenance, dict)
+        and opening_proof.get("panelEdgeProvenanceStatus") == "pass"
+        and source_opening_provenance.get("status") == "pass"
+        and source_opening_provenance.get("recordedOpeningCount") == len(expected_opening_ids)
+        and source_opening_provenance.get("missingOpeningIds") == []
+        and source_opening_provenance.get("missingBoundaryEdges") == []
+        and source_opening_provenance.get("missingLogicalVertices") == []
+        and source_opening_provenance.get("unexpectedSeamOwnedOpeningEdges") == []
+        and source_opening_provenance.get("unexpectedOpeningBoundaryEdges") == []
+    )
+    semantic_opening_audit = topology_audit.get("semanticOpeningAudit", {})
+    candidate_mappings = (
+        opening_proof.get("candidateOpeningMappings", []) if isinstance(opening_proof, dict) else []
+    )
+    opening_proof_valid = (
+        isinstance(opening_proof, dict)
+        and isinstance(semantic_opening_audit, dict)
+        and opening_proof.get("status") == "pass"
+        and opening_proof.get("semanticOpeningAssignmentStatus") == "pass"
+        and semantic_opening_audit.get("status") == "pass"
+        and opening_proof.get("expectedOpeningIds") == expected_opening_ids
+        and opening_proof.get("topologicalBoundaryComponentCount")
+        == topology_audit.get("boundaryLoopCount")
+        and opening_proof.get("simpleBoundaryCycleCount")
+        == topology_audit.get("simpleBoundaryCycleCount")
+        and opening_proof.get("boundaryBranchVertexCount")
+        == topology_audit.get("boundaryBranchVertexCount")
+        and opening_proof.get("missingExpectedOpeningCount") == 0
+        and opening_proof.get("provenOpeningCount") == len(expected_opening_ids)
+        and opening_proof.get("provenOpeningIds") == expected_opening_ids
+        and opening_proof.get("missingExpectedOpeningIds") == []
+        and isinstance(candidate_mappings, list)
+        and len(candidate_mappings) == len(expected_opening_ids)
+        and all(
+            isinstance(mapping, dict)
+            and mapping.get("openingId") in expected_opening_ids
+            and mapping.get("assignmentStatus") == "pass"
+            and mapping.get("orderedLoopVertexIds")
+            and mapping.get("orderedLoopEdgeIds")
+            and mapping.get("contributingSourcePanelEdgeIds")
+            for mapping in candidate_mappings
+        )
+        and opening_proof.get("failureReasons") == []
+        and source_opening_provenance_valid
+    )
+    if not opening_proof_valid:
         issues.append(
             _issue(
                 "stitched_analysis_shell_opening_proof_invalid",
                 "fatal",
                 "stitch/logical_stitched_analysis_shell.json",
-                "Opening proof must fail closed until semantic boundary loops are assigned.",
+                "Opening proof must match recomputed semantic boundary-loop evidence.",
             )
         )
     if report.get("readiness", {}).get("meshStitchOrWeldProven") is True and not (
@@ -6332,10 +6445,18 @@ def _validate_geometry_stitched_shell(
         and topology_audit.get("seamSpanCoverage", {}).get("coverageRatio") == 1.0
         and topology_audit.get("seamSpanCoverage", {}).get("rejectedRequiredOperationCount") == 0
         and topology_audit.get("seamSpanCoverage", {}).get("duplicateExecutedOperationCount") == 0
+        and topology_audit.get("orderedSeamCorrespondenceStatus") == "pass"
         and topology_audit.get("nonManifoldEdgeCount") == 0
         and topology_audit.get("nonManifoldVertexCount") == 0
         and topology_audit.get("duplicateFaceCount") == 0
         and topology_audit.get("degenerateTriangleCount") == 0
+        and topology_audit.get("surfaceTopologyStatus") == "pass"
+        and topology_audit.get("eulerCharacteristic") == -2
+        and topology_audit.get("genus") == 0
+        and topology_audit.get("isolatedVertexCount") == 0
+        and topology_audit.get("zeroLengthEdgeCount") == 0
+        and topology_audit.get("smallTriangleCount") == 0
+        and topology_audit.get("vertexLinkStatus") == "pass"
         and topology_audit.get("unexpectedBoundaryLoopCount") == 0
         and topology_audit.get("boundaryLoopCount") == topology_audit.get("expectedOpeningCount")
         and topology_audit.get("simpleBoundaryCycleCount")

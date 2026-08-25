@@ -63,6 +63,7 @@ from closy_forge.proposals import (
     hash_stitched_analysis_shell,
     reproject_cleanup_preview_to_settled_simulation,
 )
+from closy_forge.proposals.geometry_stitched_shell import audit_stitched_shell
 from closy_forge.simulation.reference_cloth_solver import settle_reference_cloth
 from closy_forge.visual_understanding import build_tshirt_visual_observations
 
@@ -358,7 +359,7 @@ def test_geometry_visual_shell_review_accepts_silhouette_and_stitch_graph() -> N
     )
 
 
-def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven_topology() -> None:
+def test_geometry_stitched_shell_proves_conforming_topology_and_semantic_openings() -> None:
     pattern = build_tshirt_pattern(TShirtParameters())
     rest_mesh, edge_maps = build_simulation_mesh(pattern)
     constraints = build_constraints(pattern, edge_maps)
@@ -385,43 +386,409 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["execution"]["analysisAssetWritten"] is False
     assert report["execution"]["renderAssetWritten"] is False
     assert report["packageWriterEvidence"]["status"] == "pending_package_writer"
+    assert len(pattern["seams"]) == 13
+    assert len(constraints["constraints"]) == 63
     assert report["execution"]["operationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["executedOperationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["seamSpanCoverage"]["coverageRatio"] == 1.0
-    assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 5
+    assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 0
+    assert report["topologyAudit"]["seamSpanCoverage"]["missingRequiredOperationIds"] == []
+    assert report["topologyAudit"]["orderedSeamCorrespondenceStatus"] == "pass"
+    ordered_correspondence = report["topologyAudit"]["orderedSeamCorrespondenceAudit"]
+    assert ordered_correspondence["sourceConstraintCount"] == len(constraints["constraints"])
+    assert ordered_correspondence["executedOperationCount"] == len(constraints["constraints"])
+    assert ordered_correspondence["distanceToleranceMeters"] == 0.032551892
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 63
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.030415545
+    assert ordered_correspondence["postStitchResidualDistributionMeters"]["max"] == 0.0
+    assert ordered_correspondence["unmatchedCorrespondenceCount"] == 0
+    assert ordered_correspondence["duplicatedOperationIdCount"] == 0
+    assert ordered_correspondence["reversedCorrespondenceCount"] == 47
+    assert ordered_correspondence["reusedBoundaryVertexCount"] == 0
+    assert ordered_correspondence["reusedBoundarySpanCount"] == 0
+    assert ordered_correspondence["reusedBoundarySpans"] == []
+    assert ordered_correspondence["multiSpanFanoutSeamIds"] == []
+    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] == 0
+    assert ordered_correspondence["failureReasons"] == []
+    assert ordered_correspondence["boundarySpanPartitions"] == [
+        {
+            "meshIndex": 2,
+            "boundaryId": "edge.sleeve_cap.left",
+            "seamIds": ["seam.armhole.left.back", "seam.armhole.left.front"],
+            "status": "partitioned",
+            "partitions": [
+                {
+                    "seamId": "seam.armhole.left.back",
+                    "sampleRange": [3, 5],
+                    "partitionId": "sleeve_cap.left.back",
+                },
+                {
+                    "seamId": "seam.armhole.left.front",
+                    "sampleRange": [0, 3],
+                    "partitionId": "sleeve_cap.left.front",
+                },
+            ],
+        },
+        {
+            "meshIndex": 3,
+            "boundaryId": "edge.sleeve_cap.right",
+            "seamIds": ["seam.armhole.right.back", "seam.armhole.right.front"],
+            "status": "partitioned",
+            "partitions": [
+                {
+                    "seamId": "seam.armhole.right.back",
+                    "sampleRange": [0, 3],
+                    "partitionId": "sleeve_cap.right.back",
+                },
+                {
+                    "seamId": "seam.armhole.right.front",
+                    "sampleRange": [3, 5],
+                    "partitionId": "sleeve_cap.right.front",
+                },
+            ],
+        },
+        {
+            "meshIndex": 4,
+            "boundaryId": "edge.neck_band.long.bottom",
+            "seamIds": ["seam.neck_band.attachment", "seam.neck_band.attachment.back"],
+            "status": "partitioned",
+            "partitions": [
+                {
+                    "seamId": "seam.neck_band.attachment",
+                    "sampleRange": [0, 5],
+                    "partitionId": "neck_band.front",
+                },
+                {
+                    "seamId": "seam.neck_band.attachment.back",
+                    "sampleRange": [5, 10],
+                    "partitionId": "neck_band.back",
+                },
+            ],
+        },
+    ]
+    assert report["topologyAudit"]["topologyRepairEvidence"]["duplicateFaceCullRun"] is True
+    assert report["topologyAudit"]["topologyRepairEvidence"]["status"] == "pass"
+    assert report["topologyAudit"]["topologyRepairEvidence"]["inputTriangleCount"] == 120
+    assert report["topologyAudit"]["topologyRepairEvidence"]["outputTriangleCount"] == 120
+    assert report["topologyAudit"]["topologyRepairEvidence"]["removedDuplicateFaceCount"] == 0
+    assert (
+        report["topologyAudit"]["topologyRepairEvidence"]["topologyConstruction"]
+        == "deterministic_conforming_tshirt_grid_with_three_holes"
+    )
     assert report["topologyAudit"]["logicalShellCount"] == 1
     assert report["topologyAudit"]["maxPostStitchResidualMeters"] == 0.0
-    assert report["topologyAudit"]["bindingCoverage"] == 0.0
-    assert report["topologyAudit"]["bindingReconstructionStatus"] == "not_run"
-    assert report["topologyAudit"]["bindingEvidence"]["boundRenderVertexCount"] == 0
-    assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
-    assert report["topologyAudit"]["missingExpectedOpeningCount"] == 4
-    assert report["topologyAudit"]["boundaryBranchVertexCount"] == 7
-    assert report["topologyAudit"]["sourceDisplacement"]["maxSourceDisplacementMeters"] > 0.0
-    assert report["topologyAudit"]["vertexCount"] == stitched_mesh.vertex_count
-    assert report["topologyAudit"]["triangleCount"] == stitched_mesh.triangle_count
-    assert report["readiness"]["meshStitchOrWeldProven"] is False
-    assert report["readiness"]["acceptedForCleanProposal"] is False
-    assert "mesh_stitch_or_weld_not_proven" in report["readiness"]["blockingReasons"]
-    assert "self_intersection_not_run" in report["readiness"]["blockingReasons"]
+    assert report["topologyAudit"]["bindingCoverage"] == 1.0
+    assert report["topologyAudit"]["bindingReconstructionStatus"] == "pass"
+    assert report["topologyAudit"]["bindingReconstructionErrorMeters"] == 0.0
+    assert report["topologyAudit"]["bindingEvidence"]["bindingStatus"] == "pass"
     assert (
-        report["analysisAsset"]["payloadHash"] == analysis["integrity"]["stitchedAnalysisShellHash"]
+        report["topologyAudit"]["bindingEvidence"]["bindingMode"]
+        == "logical_source_vertex_centroid_map"
     )
-    assert analysis["logicalShell"]["vertexCount"] == stitched_mesh.vertex_count
-    assert analysis["openingProof"]["expectedOpeningCount"] == 4
-    assert analysis["openingProof"]["status"] == "fail"
-    assert analysis["openingProof"]["missingExpectedOpeningIds"] == [
+    assert (
+        report["topologyAudit"]["bindingEvidence"]["boundRenderVertexCount"]
+        == report["topologyAudit"]["vertexCount"]
+    )
+    assert report["topologyAudit"]["bindingEvidence"]["missingRenderVertexIds"] == []
+    assert report["topologyAudit"]["uvMaterialPanelProvenance"]["coverageRatio"] == 1.0
+    assert report["topologyAudit"]["missingExpectedOpeningCount"] == 0
+    assert report["topologyAudit"]["provenOpeningCount"] == 4
+    assert report["topologyAudit"]["duplicateFaceCount"] == 0
+    assert report["topologyAudit"]["nonManifoldEdgeCount"] == 0
+    assert report["topologyAudit"]["nonManifoldVertexCount"] == 0
+    assert report["topologyAudit"]["boundaryLoopCount"] == 4
+    assert report["topologyAudit"]["simpleBoundaryCycleCount"] == 4
+    assert report["topologyAudit"]["boundaryBranchVertexCount"] == 0
+    assert report["topologyAudit"]["eulerCharacteristic"] == -2
+    assert report["topologyAudit"]["genus"] == 0
+    assert report["topologyAudit"]["surfaceTopologyStatus"] == "pass"
+    assert report["topologyAudit"]["surfaceTopologyAudit"]["orientableSurfaceRelationStatus"] == (
+        "pass"
+    )
+    assert report["topologyAudit"]["isolatedVertexCount"] == 0
+    assert report["topologyAudit"]["zeroLengthEdgeCount"] == 0
+    assert report["topologyAudit"]["smallTriangleCount"] == 0
+    assert report["topologyAudit"]["vertexLinkStatus"] == "pass"
+    assert report["topologyAudit"]["semanticOpeningAssignmentStatus"] == "pass"
+    assert report["topologyAudit"]["semanticOpeningAudit"]["boundaryComponentCount"] == 4
+    assert report["topologyAudit"]["semanticOpeningAudit"]["simpleBoundaryCycleCount"] == 4
+    assert report["topologyAudit"]["semanticOpeningAudit"]["panelEdgeProvenanceStatus"] == "pass"
+    source_opening_provenance = report["topologyAudit"]["semanticOpeningAudit"][
+        "sourceOpeningEdgeProvenance"
+    ]
+    assert source_opening_provenance["status"] == "pass"
+    assert source_opening_provenance["recordedOpeningCount"] == 4
+    assert source_opening_provenance["missingOpeningIds"] == []
+    assert source_opening_provenance["missingBoundaryEdges"] == []
+    assert source_opening_provenance["missingLogicalVertices"] == []
+    assert [record["openingId"] for record in source_opening_provenance["records"]] == [
         "opening.neck",
         "opening.hem",
         "opening.cuff.left",
         "opening.cuff.right",
     ]
+    assert source_opening_provenance["records"][0]["boundaryEdges"][0] == {
+        "edgeId": "edge.neck_band.long.top",
+        "panelId": "panel.neck_band",
+        "meshIndex": 4,
+        "sourceVertexCount": 20,
+        "logicalVertexCount": 6,
+        "logicalVertexIds": [
+            "logicalVertex.000057",
+            "logicalVertex.000058",
+            "logicalVertex.000059",
+            "logicalVertex.000066",
+            "logicalVertex.000068",
+            "logicalVertex.000075",
+        ],
+        "status": "mapped",
+    }
+    assert report["topologyAudit"]["semanticOpeningAudit"]["failureReasons"] == []
+    assert report["topologyAudit"]["semanticOpeningAudit"]["candidateMappingCount"] == 4
+    assert {
+        mapping["openingId"]: mapping["assignmentStatus"]
+        for mapping in report["topologyAudit"]["semanticOpeningAudit"]["candidateOpeningMappings"]
+    } == {
+        "opening.neck": "pass",
+        "opening.hem": "pass",
+        "opening.cuff.left": "pass",
+        "opening.cuff.right": "pass",
+    }
+    assert report["topologyAudit"]["boundaryComponents"][0]["isSimpleCycle"] is True
+    assert report["topologyAudit"]["boundaryComponents"][0]["perimeterMeters"] > 0.0
+    assert report["topologyAudit"]["executedTopologyAuditCount"] == 6
+    assert report["topologyAudit"]["tJunctionCheckStatus"] == "pass"
+    assert report["topologyAudit"]["tJunctionAudit"]["tJunctionCount"] == 0
+    assert report["topologyAudit"]["inconsistentWindingCheckStatus"] == "pass"
+    assert report["topologyAudit"]["inconsistentWindingAudit"]["inconsistentSharedEdgeCount"] == 0
+    assert report["topologyAudit"]["normalInversionCheckStatus"] == "pass"
+    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 0
+    assert report["topologyAudit"]["selfIntersectionCheckStatus"] == "pass"
+    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 0
+    assert report["topologyAudit"]["hiddenInternalComponentCheckStatus"] == "pass"
+    assert (
+        report["topologyAudit"]["hiddenInternalComponentAudit"]["internalClosedComponentCount"] == 0
+    )
+    assert report["topologyAudit"]["sourceDisplacement"]["maxSourceDisplacementMeters"] > 0.0
+    assert report["topologyAudit"]["vertexCount"] == stitched_mesh.vertex_count
+    assert report["topologyAudit"]["triangleCount"] == stitched_mesh.triangle_count
+    assert report["readiness"]["meshStitchOrWeldProven"] is True
+    assert report["readiness"]["acceptedForCleanProposal"] is False
+    assert report["readiness"]["blockingReasons"] == []
+    assert "ordered_seam_correspondence_failed" not in report["readiness"]["blockingReasons"]
+    assert "opening_panel_edge_provenance_missing" not in report["readiness"]["blockingReasons"]
+    assert "stitched_shell_duplicate_faces" not in report["readiness"]["blockingReasons"]
+    assert "stitched_shell_duplicate_operation_ids" not in report["readiness"]["blockingReasons"]
+    assert "self_intersection_not_run" not in report["readiness"]["blockingReasons"]
+    assert "binding_coverage_incomplete" not in report["readiness"]["blockingReasons"]
+    assert "binding_reconstruction_not_run" not in report["readiness"]["blockingReasons"]
+    assert (
+        report["analysisAsset"]["payloadHash"] == analysis["integrity"]["stitchedAnalysisShellHash"]
+    )
+    assert analysis["logicalShell"]["vertexCount"] == stitched_mesh.vertex_count
+    assert analysis["logicalShell"]["triangleCount"] == 120
+    assert analysis["openingProof"]["expectedOpeningCount"] == 4
+    assert analysis["openingProof"]["status"] == "pass"
+    assert analysis["openingProof"]["semanticOpeningAssignmentRun"] is True
+    assert analysis["openingProof"]["semanticOpeningAssignmentStatus"] == "pass"
+    assert len(analysis["openingProof"]["candidateOpeningMappings"]) == 4
+    assert analysis["openingProof"]["panelEdgeProvenanceStatus"] == "pass"
+    assert analysis["openingProof"]["sourceOpeningEdgeProvenance"]["status"] == "pass"
+    assert analysis["openingProof"]["missingExpectedOpeningIds"] == []
     assert report["integrity"]["geometryStitchedShellHash"] == (
         hash_geometry_stitched_shell_report(report)
     )
     assert analysis["integrity"]["stitchedAnalysisShellHash"] == (
         hash_stitched_analysis_shell(analysis)
     )
+
+
+def test_stitched_shell_topology_audits_fail_on_synthetic_defects() -> None:
+    mesh = Mesh(
+        name="synthetic_topology_defects",
+        panel_id="panel.synthetic",
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.5, 0.0, 0.0),
+            (0.5, 0.4, 0.0),
+            (0.8, 0.0, 0.0),
+            (2.0, 0.0, 0.0),
+            (3.0, 0.0, 0.0),
+            (2.5, 0.8, 0.0),
+            (2.5, 0.3, 0.8),
+        ],
+        panel_uvs=[(0.0, 0.0) for _ in range(10)],
+        triangles=[
+            (0, 1, 2),
+            (3, 4, 5),
+            (6, 7, 8),
+            (6, 9, 7),
+            (7, 9, 8),
+            (8, 9, 6),
+        ],
+    )
+    audit = audit_stitched_shell(
+        MeshSet([mesh]),
+        source_vertex_map=[],
+        operations=[],
+        constraints={"constraints": []},
+    )
+
+    assert audit["executedTopologyAuditCount"] == 6
+    assert audit["tJunctionCheckStatus"] == "fail"
+    assert audit["tJunctionAudit"]["tJunctionCount"] >= 1
+    assert audit["hiddenInternalComponentCheckStatus"] == "fail"
+    assert audit["hiddenInternalComponentAudit"]["internalClosedComponentCount"] == 1
+    assert audit["surfaceTopologyStatus"] == "fail"
+    assert "isolated_vertices_present" not in audit["surfaceTopologyAudit"]["failureReasons"]
+
+
+def test_stitched_shell_surface_topology_rejects_invalid_fan_and_isolated_vertex() -> None:
+    mesh = Mesh(
+        name="synthetic_invalid_vertex_fan",
+        panel_id="panel.synthetic",
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (-1.0, 0.0, 0.0),
+            (0.0, -1.0, 0.0),
+            (2.0, 2.0, 0.0),
+        ],
+        panel_uvs=[(0.0, 0.0) for _ in range(6)],
+        triangles=[
+            (0, 1, 2),
+            (0, 3, 4),
+        ],
+    )
+
+    audit = audit_stitched_shell(
+        MeshSet([mesh]),
+        source_vertex_map=[],
+        operations=[],
+        constraints={"constraints": []},
+    )
+
+    assert audit["surfaceTopologyStatus"] == "fail"
+    assert audit["isolatedVertexCount"] == 1
+    assert audit["vertexLinkStatus"] == "fail"
+    assert "isolated_vertices_present" in audit["surfaceTopologyAudit"]["failureReasons"]
+    assert "vertex_links_invalid" in audit["surfaceTopologyAudit"]["failureReasons"]
+
+
+def test_stitched_shell_surface_topology_rejects_zero_edge_and_near_zero_face() -> None:
+    mesh = Mesh(
+        name="synthetic_zero_edge_near_zero_face",
+        panel_id="panel.synthetic",
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (0.0, 0.0000000000001, 0.0),
+        ],
+        panel_uvs=[(0.0, 0.0) for _ in range(4)],
+        triangles=[
+            (0, 1, 2),
+            (0, 2, 3),
+        ],
+    )
+
+    audit = audit_stitched_shell(
+        MeshSet([mesh]),
+        source_vertex_map=[],
+        operations=[],
+        constraints={"constraints": []},
+    )
+
+    assert audit["surfaceTopologyStatus"] == "fail"
+    assert audit["zeroLengthEdgeCount"] >= 1
+    assert audit["smallTriangleCount"] >= 1
+    assert "zero_length_edges_present" in audit["surfaceTopologyAudit"]["failureReasons"]
+    assert "near_zero_area_faces_present" in audit["surfaceTopologyAudit"]["failureReasons"]
+
+
+def test_stitched_shell_opening_provenance_rejects_seam_owned_neck_edge() -> None:
+    pattern = build_tshirt_pattern(TShirtParameters())
+    pattern["openings"][0]["boundaryEdges"] = ["edge.neck_band.long.bottom"]
+    rest_mesh, edge_maps = build_simulation_mesh(pattern)
+    constraints = build_constraints(pattern, edge_maps)
+    avatar = avatar_contract(build_reference_avatar_mesh(), build_collision_mesh())
+    settled = settle_reference_cloth(
+        rest_mesh,
+        constraints,
+        avatar,
+        {"dampingRatio": 0.18},
+    ).settled_mesh
+
+    report, analysis, _stitched_mesh = build_stitched_shell_assets(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        source_simulation_mesh=settled,
+        constraints=constraints,
+        analysis_asset_path="stitch/logical_stitched_analysis_shell.json",
+        render_asset_path="render/stitched_shell.glb",
+    )
+
+    provenance = report["topologyAudit"]["semanticOpeningAudit"]["sourceOpeningEdgeProvenance"]
+    assert provenance["status"] == "fail"
+    assert provenance["unexpectedSeamOwnedOpeningEdges"] == [
+        {"openingId": "opening.neck", "edgeId": "edge.neck_band.long.bottom"}
+    ]
+    assert provenance["unexpectedOpeningBoundaryEdges"] == [
+        {
+            "openingId": "opening.neck",
+            "expectedEdgeIds": ["edge.neck_band.long.top"],
+            "actualEdgeIds": ["edge.neck_band.long.bottom"],
+        }
+    ]
+    assert report["topologyAudit"]["semanticOpeningAssignmentStatus"] == "fail"
+    assert analysis["openingProof"]["status"] == "fail"
+
+
+def test_stitched_shell_opening_provenance_rejects_swapped_cuff_edges() -> None:
+    pattern = build_tshirt_pattern(TShirtParameters())
+    for opening in pattern["openings"]:
+        if opening["id"] == "opening.cuff.left":
+            opening["boundaryEdges"] = ["edge.cuff.right"]
+        if opening["id"] == "opening.cuff.right":
+            opening["boundaryEdges"] = ["edge.cuff.left"]
+    rest_mesh, edge_maps = build_simulation_mesh(pattern)
+    constraints = build_constraints(pattern, edge_maps)
+    avatar = avatar_contract(build_reference_avatar_mesh(), build_collision_mesh())
+    settled = settle_reference_cloth(
+        rest_mesh,
+        constraints,
+        avatar,
+        {"dampingRatio": 0.18},
+    ).settled_mesh
+
+    report, analysis, _stitched_mesh = build_stitched_shell_assets(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        source_simulation_mesh=settled,
+        constraints=constraints,
+        analysis_asset_path="stitch/logical_stitched_analysis_shell.json",
+        render_asset_path="render/stitched_shell.glb",
+    )
+
+    provenance = report["topologyAudit"]["semanticOpeningAudit"]["sourceOpeningEdgeProvenance"]
+    assert provenance["status"] == "fail"
+    assert provenance["unexpectedOpeningBoundaryEdges"] == [
+        {
+            "openingId": "opening.cuff.left",
+            "expectedEdgeIds": ["edge.cuff.left"],
+            "actualEdgeIds": ["edge.cuff.right"],
+        },
+        {
+            "openingId": "opening.cuff.right",
+            "expectedEdgeIds": ["edge.cuff.right"],
+            "actualEdgeIds": ["edge.cuff.left"],
+        },
+    ]
+    assert report["topologyAudit"]["semanticOpeningAssignmentStatus"] == "fail"
+    assert analysis["openingProof"]["status"] == "fail"
 
 
 def test_geometry_visual_shell_review_records_stitched_artifact_without_clean_proof() -> None:

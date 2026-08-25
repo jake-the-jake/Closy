@@ -9,6 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 FORGE_ROOT = REPO_ROOT / "closy-forge"
 COVERAGE_PATH = FORGE_ROOT / "docs" / "blueprint_coverage.json"
 LEDGER_PATH = FORGE_ROOT / "docs" / "MASTER_BLUEPRINT_PROGRESS.md"
+ACTIVE_RESUME_PATH = FORGE_ROOT / "docs" / "ACTIVE_BLUEPRINT_RESUME.md"
 
 STATUS_VOCABULARY = {
     "not_started",
@@ -45,8 +46,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp53-source-texture-pbr-recovery-remote-v1"
-    assert payload["generatedBy"] == "BP-53 source texture PBR recovery remote CI evidence"
+    assert payload["version"] == "bp46-conforming-stitched-shell-truth-sync-v1"
+    assert payload["generatedBy"] == "BP-46 conforming stitched shell proof truth sync"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -169,11 +170,65 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     bp46 = rows_by_id["BP-46-STITCHED-SHELL-OUTPUT"]
 
     assert bp46["status"] == "partial"
-    assert "81fb02c" in bp46["commitSha"]
+    assert "62443b685604bc4afe9a8fac9f926db78814d5a9" in bp46["commitSha"]
+    assert "997232e" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
-    assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
-    assert "non-manifold edges" in bp46["limitations"]
-    assert "BP-47" in bp46["nextAction"]
+    assert not any(item == "meshStitchOrWeldProven=false" for item in bp46["executableEvidence"])
+    assert not any(item == "executedTopologyAuditCount=5" for item in bp46["executableEvidence"])
+    assert any("meshStitchOrWeldProven=true" in item for item in bp46["executableEvidence"])
+    assert any("status=stitched_shell_proven" in item for item in bp46["executableEvidence"])
+    assert any("vertexCount=81" in item for item in bp46["executableEvidence"])
+    assert any("triangleCount=120" in item for item in bp46["executableEvidence"])
+    assert any("boundaryLoopCount=4" in item for item in bp46["executableEvidence"])
+    assert any("simpleBoundaryCycleCount=4" in item for item in bp46["executableEvidence"])
+    assert any("nonManifoldEdgeCount=0" in item for item in bp46["executableEvidence"])
+    assert any("nonManifoldVertexCount=0" in item for item in bp46["executableEvidence"])
+    assert any("boundaryBranchVertexCount=0" in item for item in bp46["executableEvidence"])
+    assert any("executedTopologyAuditCount=6" in item for item in bp46["executableEvidence"])
+    assert any("surfaceTopologyStatus=pass" in item for item in bp46["executableEvidence"])
+    assert any("eulerCharacteristic=-2" in item for item in bp46["executableEvidence"])
+    assert any("genus=0" in item for item in bp46["executableEvidence"])
+    assert any("vertexLinkStatus=pass" in item for item in bp46["executableEvidence"])
+    assert any(
+        "semanticOpeningAssignmentStatus=pass" in item for item in bp46["executableEvidence"]
+    )
+    assert any(
+        "opening.neck" in item and "opening.hem" in item and "opening.cuff.left" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("bindingCoverage=1.0" in item for item in bp46["executableEvidence"])
+    assert any("bindingReconstructionStatus=pass" in item for item in bp46["executableEvidence"])
+    assert any(
+        "5e5904ad7be00434e8b366823dec4e559da3525feb9e57088f563b7cd713caab" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any(
+        "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("89 physical files" in item for item in bp46["executableEvidence"])
+    assert any("85 manifest-inventoried files" in item for item in bp46["executableEvidence"])
+    assert any(
+        "single_shell_stitch_weld_proof now passes" in item for item in bp46["executableEvidence"]
+    )
+    assert any("mesh_stitch_or_weld_not_proven" in item for item in bp46["executableEvidence"])
+    assert any(
+        "remote opening-provenance Actions run 32802914666" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("remote Actions run 32777652602" in item for item in bp46["executableEvidence"])
+    assert "topology/opening proof now passes" in bp46["limitations"]
+    assert "clean/canonical acceptance remains false" in bp46["limitations"]
+    assert "production stitched-shell sim-to-render binding" in bp46["limitations"]
+    assert "missing panel-edge provenance" not in bp46["limitations"]
+    assert "pre-stitch distances still exceed" not in bp46["limitations"]
+    assert "non-manifold edges" not in bp46["limitations"]
+    assert "failed semantic opening" not in bp46["limitations"]
+    assert "winding/normal/self-intersection audit failures" not in bp46["limitations"]
+    assert "pre-stitch distance reduction" not in bp46["nextAction"]
+    assert "freeze PR #5" in bp46["nextAction"]
+    assert "Phase 5 provider branch" in bp46["nextAction"]
+    assert "Phase 6 branch" in bp46["nextAction"]
 
 
 def test_repository_gitlink_hygiene_checkpoint_is_complete() -> None:
@@ -209,7 +264,7 @@ def test_bp47_checkpoint_is_partial_and_evidenced() -> None:
     assert (
         "provider/source/human visual fidelity tiers remain not_run" in bp47["executableEvidence"]
     )
-    assert "BP-48" in bp47["nextAction"]
+    assert "D0-fidelity branch" in bp47["nextAction"]
 
 
 def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
@@ -221,7 +276,7 @@ def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
     assert "render/fallback.glb contains VEC4 TANGENT accessors" in bp48["executableEvidence"]
     assert "poseSuiteBindingEvidenceAvailable=true" in bp48["executableEvidence"]
     assert "acceptedForCleanProposal=false" in bp48["executableEvidence"]
-    assert "BP-49" in bp48["nextAction"]
+    assert "Phase 6 branch" in bp48["nextAction"]
 
 
 def test_bp49_checkpoint_is_partial_and_evidenced() -> None:
@@ -273,7 +328,7 @@ def test_bp50_checkpoint_is_partial_and_evidenced() -> None:
     assert "77bea09" in phase2["commitSha"]
     assert any("BP51 D0 multiview pairing" in item for item in phase2["executableEvidence"])
     assert any("remote Actions run 32719446390" in item for item in phase2["executableEvidence"])
-    assert "BP-52" in phase2["nextAction"]
+    assert "already consumed by BP52/BP53" in phase2["nextAction"]
 
 
 def test_bp51_checkpoint_is_partial_and_evidenced() -> None:
@@ -319,9 +374,13 @@ def test_bp52_checkpoint_is_partial_and_evidenced() -> None:
     assert any("held-out rear view" in item for item in bp52["executableEvidence"])
     assert any("189 tests" in item for item in bp52["executableEvidence"])
     assert any("85 files each" in item for item in bp52["executableEvidence"])
-    assert any("remote Actions run 32728354755" in item for item in bp52["executableEvidence"])
+    assert any(
+        "final remote Actions run 32729539416" in item for item in bp52["executableEvidence"]
+    )
+    assert any("97438405296" in item for item in bp52["executableEvidence"])
+    assert any("97438405597" in item for item in bp52["executableEvidence"])
     assert "settled-render or drape comparison" in bp52["limitations"]
-    assert "BP-53" in bp52["nextAction"]
+    assert "D0-fidelity branch" in bp52["nextAction"]
 
     assert "e23820e" in phase3["commitSha"]
     assert any("BP52 image-conditioned D0 fitting" in item for item in phase3["executableEvidence"])
@@ -343,10 +402,11 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp53["status"] == "partial"
     assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in bp53["commitSha"]
+    assert "93f2e6587cc4f5f3237aba669870648a01118a09" in bp53["commitSha"]
     assert any("sourceTextureAvailable=true" in item for item in bp53["executableEvidence"])
     assert any("16 source projections" in item for item in bp53["executableEvidence"])
     assert any("89 files each" in item for item in bp53["executableEvidence"])
-    assert any("remote Actions run 32741055846" in item for item in bp53["executableEvidence"])
+    assert any("remote Actions run 32742283522" in item for item in bp53["executableEvidence"])
     assert "private-user source textures" in bp53["limitations"]
     assert "foundation-proof closeout" in bp53["nextAction"]
 
@@ -360,13 +420,37 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
 
 
-def test_markdown_ledger_matches_bp53_and_hygiene_checkpoint_state() -> None:
+def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `9fc004d`" in ledger
-    assert "Local verification passed `ruff format --check .` over 112 files" in ledger
-    assert "Current active increment: `BP-53-SOURCE-TEXTURE-PBR-RECOVERY`" in ledger
-    assert "Next dependency-ready increment: `FOUNDATION-PROOF-CLOSEOUT`" in ledger
+    assert "Latest completed implementation commit when last updated: `62443b6`" in ledger
+    assert "Latest completed evidence-sync commit before this update: `997232e`" in ledger
+    assert "executedTopologyAuditCount=6" in ledger
+    assert "semanticOpeningAssignmentStatus=pass" in ledger
+    assert "boundaryLoopCount=4" in ledger
+    assert "simpleBoundaryCycleCount=4" in ledger
+    assert "meshStitchOrWeldProven=true" in ledger
+    assert "surfaceTopologyStatus=pass" in ledger
+    assert "eulerCharacteristic=-2" in ledger
+    assert "genus=0" in ledger
+    assert "bindingCoverage=1.0" in ledger
+    assert "bindingReconstructionStatus=pass" in ledger
+    assert "boundRenderVertexCount=81" in ledger
+    assert "requiredRenderVertexCount=81" in ledger
+    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in ledger
+    assert "5e5904ad7be00434e8b366823dec4e559da3525feb9e57088f563b7cd713caab" in ledger
+    assert "single_shell_stitch_weld_proof" in ledger
+    assert "clean_acceptance_rejected_independent_visual_not_run" in ledger
+    assert "21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584" in ledger
+    assert "32825954590" in ledger
+    assert "97733884808" in ledger
+    assert "97733884930" in ledger
+    assert (
+        "Current active increment: "
+        "`FOUNDATION-PROOF-CLOSEOUT-BP46-REMOTE-EVIDENCE-AND-PR5-FREEZE`" in ledger
+    )
+    assert "Next dependency-ready increment: after local and remote validation" in ledger
+    assert "`codex/closy-forge-phase-5-provider`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
@@ -380,6 +464,38 @@ def test_markdown_ledger_matches_bp53_and_hygiene_checkpoint_state() -> None:
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
     assert "| BP-08-K-CLOTH-SIMULATION | partial |" in ledger
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
+
+
+def test_active_resume_points_to_bp46_remote_validation_and_phase5_branching() -> None:
+    resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
+
+    assert (
+        "Active blueprint checkpoint: "
+        "`FOUNDATION-PROOF-CLOSEOUT-BP46-REMOTE-EVIDENCE-AND-PR5-FREEZE`" in resume
+    )
+    assert "Record based on SHA: `62443b685604bc4afe9a8fac9f926db78814d5a9`" in resume
+    assert "GitHub Actions run `32825954590` passed" in resume
+    assert "97733884808" in resume
+    assert "97733884930" in resume
+    assert "meshStitchOrWeldProven=true" in resume
+    assert "semanticOpeningAssignmentStatus=pass" in resume
+    assert "surfaceTopologyStatus=pass" in resume
+    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in resume
+    assert "opening-provenance remote-evidence truth-sync update" not in resume
+    assert "Commit and push this opening-provenance remote-evidence truth-sync" not in resume
+    assert (
+        "continue BP-46 conforming stitched-shell topology and semantic opening proof first"
+        not in resume
+    )
+    assert (
+        "Remote Ubuntu/Windows CI has not yet run for this BP46 conforming-shell truth-sync update"
+        in resume
+    )
+    assert (
+        "Local format/lint/mypy/full pytest/schema/package determinism has passed as recorded above"
+        in resume
+    )
+    assert "Create the Phase 5 provider branch only from that exact verified head" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:

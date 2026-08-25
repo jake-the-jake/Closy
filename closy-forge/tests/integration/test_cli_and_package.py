@@ -160,7 +160,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryBindingValidation"]["validationRecordCount"] == 223
     assert payload["geometryBindingValidation"]["failedCheckCount"] == 1
     assert payload["geometryBindingValidation"]["notRunCheckCount"] == 4
-    assert payload["geometryBindingValidation"]["maxCleanupToSettledOffsetMeters"] == 0.944948063
+    assert payload["geometryBindingValidation"]["maxCleanupToSettledOffsetMeters"] == 0.928427989
     assert payload["geometryBindingValidation"]["acceptedForCleanProposal"] is False
     assert payload["geometryRepairRetopologyPlan"]["status"] == (
         "repair_retopology_plan_generated_execution_pending"
@@ -170,7 +170,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryRepairRetopologyPlan"]["retopologyRun"] is False
     assert payload["geometryRepairRetopologyPlan"]["seamSplitRun"] is False
     assert payload["geometryRepairRetopologyPlan"]["requiredOperationCount"] == 8
-    assert payload["geometryRepairRetopologyPlan"]["deformationFailedVertexCount"] == 210
+    assert payload["geometryRepairRetopologyPlan"]["deformationFailedVertexCount"] == 203
     assert (
         payload["geometryRepairRetopologyPlan"]["estimatedRepairComplexity"]
         == "retopology_required"

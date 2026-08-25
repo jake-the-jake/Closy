@@ -77,5 +77,5 @@ def _map_point(point: Vec2, transform: str) -> Vec3:
     if transform == "sleeve.right":
         return (0.36 + y, 1.34 - 0.10 * y, -x * 0.75)
     if transform == "neck_band":
-        return (x, 1.42 + 0.02 * y, 0.04 + y * 0.08)
+        return (x, 1.42 + 0.02 * y, 0.04 + y)
     raise ValueError(f"unknown transform {transform}")

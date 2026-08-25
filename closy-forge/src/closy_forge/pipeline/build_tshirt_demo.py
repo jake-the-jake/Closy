@@ -110,6 +110,7 @@ from closy_forge.rendering import (
     build_render_frame_pose_suite_report,
 )
 from closy_forge.simulation.reference_cloth_solver import (
+    SOLVER_VERSION,
     settle_reference_cloth,
     simulation_state_json,
 )
@@ -789,7 +790,7 @@ def _material_physics() -> dict[str, Any]:
         "thicknessMeters": 0.0016,
         "clothSettleRun": True,
         "settleBackend": "deterministic_cpu_reference_xpbd",
-        "settleSolverVersion": "closy.reference_xpbd_cpu.v1",
+        "settleSolverVersion": SOLVER_VERSION,
     }
 
 
@@ -1187,7 +1188,7 @@ def _manifest(
             "patternGenerator": "closy.tshirt.pattern.v1",
             "curveSampler": "closy.curve_sampler.v1",
             "panelTriangulator": "closy.fan_triangulator.v1",
-            "clothSettle": "closy.reference_xpbd_cpu.v1",
+            "clothSettle": SOLVER_VERSION,
             "renderSubdivision": "closy.render_subdivision.v1",
             "binding": str(binding_manifest["algorithm"]),
             "glbWriter": "closy.glb_writer.v2.persistent_tangent_vec4",
@@ -2256,7 +2257,7 @@ def _provenance(
             ),
             _stage(
                 "reference_cloth_settle",
-                "closy.reference_xpbd_cpu.v1",
+                SOLVER_VERSION,
                 {
                     "clothSettleRun": True,
                     "convergenceState": str(settle_diagnostics["convergenceState"]),

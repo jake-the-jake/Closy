@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-53 source texture PBR recovery remote CI evidence",
+  "generatedBy": "BP-46 conforming stitched shell proof truth sync",
   "rows": [
     {
       "commitSha": [
@@ -121,22 +121,36 @@
     {
       "commitSha": [
         "8174b220d5cf6e320b101137a4901bcd461cd644",
-        "81fb02cc15fcc7d7e392f23e1480f84e2702970e"
+        "81fb02cc15fcc7d7e392f23e1480f84e2702970e",
+        "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
+        "de35156de35831f467c7809fea727195a548ddce",
+        "eef64ef1ead7adbe7db4132043e388856ed9b513",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "2057d4ff6a1532476d6661c89274970c03fa68ff",
+        "9a8675602de1c39169a058b1ec1992613182260d",
+        "01146285610dab4e110f6221e642b009bf9e90c4",
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369",
+        "f80cc326aabd73278a809a1ee1f403d0dbc1f1a5",
+        "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
+        "22176b42817d84bf2303a6b1ee54c8936a204c07",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
         "representationSilhouetteAccepted=true",
         "source/provider visual comparison=false",
         "meshStitchOrWeldExecutionRun=true for BP-46 material output",
-        "meshStitchOrWeldProven=false until topology/binding/opening audits pass"
+        "historical BP46 topology/opening audits preserved fail-closed meshStitchOrWeldProven=false until the conforming shell proof landed",
+        "BP46 conforming stitched shell records meshStitchOrWeldProven=true, four semantic opening loops, surfaceTopologyStatus=pass and executedTopologyAuditCount=6 while keeping source/provider visual fidelity separate"
       ],
       "id": "BP-05-05-TRUTHFUL-EVIDENCE-TIERS",
       "implementationPaths": [
         "closy-forge/src/closy_forge/proposals/geometry_visual_shell_review.py",
         "closy-forge/src/closy_forge/proposals/geometry_clean_acceptance_gate.py"
       ],
-      "limitations": "Actual source/provider visual review remains absent; BP-46 material output exists but topology proof remains rejected.",
-      "nextAction": "Add inspection artifacts and topology/binding/opening proof without weakening clean gates.",
+      "limitations": "Actual source/provider visual review remains absent; BP-46 material stitched-shell proof now passes, but this does not promote source/provider appearance acceptance, human review, clean/canonical acceptance or production runtime binding evidence.",
+      "nextAction": "Keep stitched-shell proof, source/provider visual fidelity, provider-output authority and clean/canonical gates separate during the Phase 5 provider branch and later Phase 6 binding work.",
       "sourceSection": "Core principles",
       "status": "complete",
       "summary": "Representation consistency, source/provider visual fidelity and mesh stitch/weld proof are separate evidence tiers.",
@@ -147,7 +161,23 @@
     },
     {
       "commitSha": [
-        "81fb02c"
+        "81fb02c",
+        "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
+        "de35156de35831f467c7809fea727195a548ddce",
+        "eef64ef1ead7adbe7db4132043e388856ed9b513",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "2057d4ff6a1532476d6661c89274970c03fa68ff",
+        "9a8675602de1c39169a058b1ec1992613182260d",
+        "01146285610dab4e110f6221e642b009bf9e90c4",
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369",
+        "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
+        "8790567cc8b8a9d8db2214ec7133bbe1281f6dca",
+        "49afef27df5caa69265d21244e8b82b527371c54",
+        "22176b42817d84bf2303a6b1ee54c8936a204c07",
+        "be9024dc4ce65bb862db6945ad29a891da442b46",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9",
+        "997232e"
       ],
       "dependencies": [
         "BP-45-IMPLEMENTATION-23",
@@ -158,9 +188,55 @@
         "stitch/logical_stitched_analysis_shell.json",
         "render/stitched_shell.glb",
         "meshStitchOrWeldExecutionRun=true",
-        "meshStitchOrWeldProven=false",
         "package digest f84091eb6bdd3f9e42e40a7319580cbf24699f41b1e3b7b306a2a564087771e0",
-        "remote Actions run 32653621760 passed Ubuntu and Windows"
+        "remote Actions run 32653621760 passed Ubuntu and Windows",
+        "T-junction and hidden/internal component audits pass on the current stitched candidate",
+        "earlier winding, normal-inversion and self-intersection audits executed and failed deterministically with counts 29, 32 and 310 before ordered seam partitioning",
+        "earlier semanticOpeningAssignmentStatus=fail with boundaryComponentCount=1, simpleBoundaryCycleCount=0 and candidateOpeningMappings=[] before ordered seam partitioning",
+        "earlier panelEdgeProvenanceStatus=fail before source opening provenance propagation; provenOpeningIds=[] and all four expected openings remained missing",
+        "earlier opening proof recorded semanticOpeningAssignmentRun=true and blocking reasons semantic_opening_assignment_failed plus opening_panel_edge_provenance_missing before source provenance propagation",
+        "local package digest 36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9 with only self_collision_not_run formal warning",
+        "local full pytest exited 0 after 193 collected Forge tests",
+        "two OS-temp BP46 semantic-opening package builds are byte-identical with 89 files each, digest 36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9 and only self_collision_not_run formal warning",
+        "remote Actions run 32761608825 passed at eef64ef on Ubuntu job 97541503765 and Windows job 97541503927 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest 36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9",
+        "logical binding audit records bindingCoverage=1.0, bindingReconstructionStatus=pass, bindingMode=logical_source_vertex_centroid_map, boundRenderVertexCount=149, requiredRenderVertexCount=149 and maxReconstructionErrorMeters=0.0",
+        "two OS-temp BP46 logical-binding package builds are byte-identical with 89 files each, digest d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb and only self_collision_not_run formal warning",
+        "remote Actions run 32770764532 passed at 2057d4f on Ubuntu job 97570351707 and Windows job 97570351408 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb",
+        "remote Actions run 32772212216 passed at 9a86756 on Ubuntu job 97574933614 and Windows job 97574933467 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb",
+        "topology repair evidence records duplicateFaceCullRun=true, status=pass, inputTriangleCount=218, outputTriangleCount=210 and removedDuplicateFaceCount=8",
+        "seam span coverage records duplicateExecutedOperationCount=0 and missingRequiredOperationIds=[] after operation instance IDs are disambiguated",
+        "local duplicate-topology package smoke builds are byte-identical with 89 files each, digest c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78 and only self_collision_not_run formal warning",
+        "remote Actions run 32777652602 passed at c6fa323 on Ubuntu job 97592313066 and Windows job 97592313591 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78",
+        "remote docs-verification Actions run 32778840554 passed at a51eb91 on Ubuntu job 97596082459 and Windows job 97596082034 with 193 tests per OS, fresh schemas, identical 89-file package trees and digest c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78",
+        "earlier ordered seam correspondence audit recorded status=fail, distanceToleranceMeters=0.039266651, reusedBoundaryVertexCount=15, reusedBoundarySpanCount=2, multiSpanFanoutSeamIds=[seam.neck_band.attachment] and oversizedPreStitchCorrespondenceCount=21 before ordered seam partitioning",
+        "ordered seam correspondence failure reasons are boundary_spans_reused_across_seams, multi_span_seams_require_ordered_partition, pre_stitch_distance_exceeds_local_edge_tolerance and source_boundary_vertices_reused_without_span_partition",
+        "local ordered-correspondence full pytest exited 0 after 194 collected Forge tests",
+        "local ordered-correspondence package smoke builds are byte-identical with 89 files each, digest a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f and only self_collision_not_run formal warning",
+        "remote ordered-correspondence Actions run 32782411096 passed at f80cc32 on Ubuntu job 97607120382 and Windows job 97607120119 with 194 tests per OS, fresh schemas, identical 89-file package trees and digest a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f",
+        "ordered seam span partitioning records boundarySpanPartitions for sleeve caps and neck band with reusedBoundaryVertexCount=0, reusedBoundarySpanCount=0 and multiSpanFanoutSeamIds=[]",
+        "local ordered seam partition full pytest exited 0 after 194 Forge tests, ruff format --check . over 112 files, ruff check ., mypy src over 89 files and fresh schemas",
+        "local ordered seam partition package smoke builds are byte-identical with 89 files each, digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2 and only self_collision_not_run formal warning",
+        "remote ordered seam partition Actions run 32791907899 passed at 7eacf97 on Ubuntu job 97634961686 and Windows job 97634961466 with 194 tests per OS, fresh schemas, identical 89-file package trees and digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2",
+        "reference cloth solver v1.1 softens high-y/neck-band support stiffness to 0.03 and tightens neck-band seam target cap to 0.02 m without changing the ordered seam audit tolerance policy",
+        "ordered seam correspondence now passes with distanceToleranceMeters=0.032551892, oversizedPreStitchCorrespondenceCount=0, failureReasons=[] and preStitchDistanceDistributionMeters.max=0.030415545",
+        "local seam-settle full pytest exited 0, ruff format --check . over 112 files, ruff check ., mypy src over 89 files and fresh schemas",
+        "local seam-settle package smoke builds are byte-identical with 89 files each, 85 manifest-inventoried files, digest 31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8 and only self_collision_not_run formal warning",
+        "remote seam-settle Actions run 32798354036 passed at 49afef2 on Ubuntu job 97654190062 and Windows job 97654189886 with 194 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest 31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8 and only self_collision_not_run formal warning",
+        "historical source opening panel-edge provenance records panelEdgeProvenanceStatus=pass, sourceOpeningEdgeProvenance.status=pass, recordedOpeningCount=4 and no missing opening ids, boundary edges or logical vertices before the later semanticOpeningAssignmentStatus=pass proof",
+        "source opening edge records map opening.neck, opening.hem, opening.cuff.left and opening.cuff.right to logical vertex ids; first neck front edge maps logicalVertex.000039 through logicalVertex.000043",
+        "local opening-provenance full pytest exited 0 after 194 collected Forge tests, ruff format --check . over 112 files, ruff check ., mypy src over 89 files and fresh schemas",
+        "local opening-provenance package smoke builds are byte-identical with 89 physical files each, 85 manifest-inventoried files, digest 21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584 and only self_collision_not_run formal warning",
+        "remote opening-provenance Actions run 32802914666 passed at be9024d on Ubuntu job 97667221029 and Windows job 97667221117 with 194 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest 21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584 and only self_collision_not_run formal warning",
+        "commit 62443b6 implements closy.geometry_stitched_shell.conforming_tshirt_v3 for the deterministic T-shirt stitched analysis shell",
+        "meshStitchOrWeldProven=true and status=stitched_shell_proven while acceptedForCleanProposal=false and acceptedForCanonical=false",
+        "conforming shell metrics: vertexCount=81, triangleCount=120, logicalShellCount=1, boundaryLoopCount=4, simpleBoundaryCycleCount=4, nonManifoldEdgeCount=0, nonManifoldVertexCount=0 and boundaryBranchVertexCount=0",
+        "executedTopologyAuditCount=6 with tJunctionCheckStatus=pass, hiddenInternalComponentCheckStatus=pass, inconsistentWindingCheckStatus=pass, normalInversionCheckStatus=pass, selfIntersectionCheckStatus=pass and surfaceTopologyStatus=pass",
+        "surface topology audit records eulerCharacteristic=-2, genus=0, isolatedVertexCount=0, zeroLengthEdgeCount=0, smallTriangleCount=0 and vertexLinkStatus=pass",
+        "semanticOpeningAssignmentStatus=pass with four source-provenance-backed boundary loops for opening.neck, opening.hem, opening.cuff.left and opening.cuff.right, and no unexpected seam-owned or swapped opening boundary edges",
+        "current package digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5 with 89 physical files, 85 manifest-inventoried files and topologyHash 5e5904ad7be00434e8b366823dec4e559da3525feb9e57088f563b7cd713caab",
+        "clean acceptance gate single_shell_stitch_weld_proof now passes, but clean gate remains clean_acceptance_rejected_independent_visual_not_run with 10 passed checks, 2 warnings and 1 not-run check",
+        "clean proposal rejection reasons no longer include mesh_stitch_or_weld_not_proven; remaining blockers are visual_fidelity_review_not_accepted, source/provider comparison not-run, normal/tangent continuity warnings and provider_output_not_canonical_garment_truth",
+        "local BP46 conforming-shell truth-sync validation passed: ruff format --check . over 112 files, ruff check ., mypy src over 89 files, full pytest -q over 199 collected tests, fresh schemas, identical two-package diff with 89 files each, digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5, validate status passed with only self_collision_not_run"
       ],
       "id": "BP-46-STITCHED-SHELL-OUTPUT",
       "implementationPaths": [
@@ -169,11 +245,11 @@
         "closy-forge/src/closy_forge/validation/validator.py",
         "closy-forge/schemas/v1/geometry-stitched-shell.schema.json"
       ],
-      "limitations": "Partial checkpoint only: non-manifold edges, duplicate faces, duplicate operation IDs, missing semantic opening proof, incomplete binding coverage and not-run topology audits block BP-46 proof.",
-      "nextAction": "Use BP-47 inspection artifacts during BP-48 frame/tangent work while keeping clean/canonical acceptance rejected.",
+      "limitations": "Partial checkpoint only: BP-46 topology/opening proof now passes for the deterministic stitched analysis shell, including conforming topology, source-backed semantic opening loops, winding/normal/self-intersection, surface topology, logical source binding and material stitched-shell proof; clean/canonical acceptance remains false because production stitched-shell sim-to-render binding, crack/sliding proof, runtime performance evidence, source/provider visual-fidelity comparison, human review and continuity closeout remain incomplete.",
+      "nextAction": "After local and remote validation of this truth-sync, freeze PR #5 as the BP46 topology/opening review unit, then create the Phase 5 provider branch from the exact verified head; defer production stitched-shell binding, crack/sliding and C3 runtime evidence to the Phase 6 branch.",
       "sourceSection": "Execution checkpoints mapped to Phase 1, Phase 5, Phase 6 and Gate C3",
       "status": "partial",
-      "summary": "BP-46 material stitched-shell output exists, but topology/opening/binding proof remains rejected.",
+      "summary": "BP-46 material stitched-shell topology and provenance-backed semantic opening proof now pass, while clean/canonical and production binding gates remain rejected.",
       "tests": [
         "tests/unit/test_geometry_proposal.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -210,7 +286,7 @@
         "closy-forge/schemas/v1/inspection-artifact-report.schema.json"
       ],
       "limitations": "Partial BP47 checkpoint: artifacts are deterministic public-safe SVG inspection views, not decoded raster golden images, not source/provider appearance comparison, not human signed review, and not BP48 persisted normal/tangent frame evidence.",
-      "nextAction": "Proceed to BP-48 persisted normals, glTF tangents and dynamic pose-suite binding without promoting clean/canonical acceptance.",
+      "nextAction": "Keep BP47 topology/representation evidence separate; perform decoded source-raster visual-fidelity tier later on the D0-fidelity branch after Phase 5 and Phase 6 prerequisites.",
       "sourceSection": "Continuation prompt section 9 deterministic inspection renders and evidence tiers",
       "status": "partial",
       "summary": "Deterministic BP47 SVG inspection artifacts and separated evidence tiers exist for topology/representation review without promoting visual fidelity or clean acceptance.",
@@ -268,7 +344,9 @@
     },
     {
       "commitSha": [
-        "e23820eddaf6d6599a3b125ee1a083dc97ef4acd"
+        "e23820eddaf6d6599a3b125ee1a083dc97ef4acd",
+        "c6c94f7",
+        "bb49668"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -282,7 +360,7 @@
         "held-out rear view and deterministic perturbation evaluations pass; settled-render/drape comparison is truthfully not_run_dependency_pending",
         "local full pytest exited 0 after collecting 189 tests",
         "two OS-temp BP52 package builds are byte-identical with 85 files each, digest 1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790 and only self_collision_not_run formal warning",
-        "remote Actions run 32728354755 passed Ubuntu job 97434656635 and Windows job 97434656119 with 189 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 85-file package trees and only self_collision_not_run formal warning"
+        "final remote Actions run 32729539416 passed at bb496684 on Ubuntu job 97438405296 and Windows job 97438405597 with 189 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 85-file package trees, digest 1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790 and only self_collision_not_run formal warning"
       ],
       "id": "BP-52-IMAGE-CONDITIONED-FITTING",
       "implementationPaths": [
@@ -296,7 +374,7 @@
         "closy-forge/tests/corruption/test_corrupted_packages.py"
       ],
       "limitations": "D0 synthetic-raster fixture only; not trained, not private-user enabled, no differentiable renderer/depth/cloth fitting and no settled-render or drape comparison dependency yet.",
-      "nextAction": "BP-53 source texture/PBR recovery now consumes this fitted evidence on the stacked Phase-4 branch.",
+      "nextAction": "Strengthen the actual optimiser on the D0-fidelity branch after Phase 5 and Phase 6, keeping settled-render/drape comparison fail-closed until exercised.",
       "sourceSection": "Continuation prompt section 13",
       "status": "partial",
       "summary": "Deterministic D0 image-conditioned T-shirt fitting from BP51 fused multiview evidence.",
@@ -310,7 +388,8 @@
     },
     {
       "commitSha": [
-        "9fc004d429d9187bfd427586ca43af65e54ec2f5"
+        "9fc004d429d9187bfd427586ca43af65e54ec2f5",
+        "93f2e6587cc4f5f3237aba669870648a01118a09"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -325,7 +404,7 @@
         "report records sourceTextureAvailable=true, generatedAtlasAvailable=true, textureProjectionRun=true, 16 source projections, 16 visible projections, mean visible confidence 0.925, one source-backed PBR map and five truthful placeholder maps",
         "controlled inpainting interface rejects visible-evidence overwrite and only marks hidden/unseen regions as generated placeholders",
         "local full pytest exited 0 after 192 collected Forge tests; two OS-temp BP53 package builds are byte-identical with 89 files each, digest a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e and only self_collision_not_run formal warning",
-        "remote Actions run 32741055846 passed Ubuntu job 97475348702 and Windows job 97475348519 with 192 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e and only self_collision_not_run formal warning"
+        "remote Actions run 32742283522 passed Ubuntu job 97479333762 and Windows job 97479333560 with 192 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e and only self_collision_not_run formal warning"
       ],
       "id": "BP-53-SOURCE-TEXTURE-PBR-RECOVERY",
       "implementationPaths": [
@@ -340,7 +419,7 @@
         "closy-forge/schemas/v1/garment-manifest.schema.json"
       ],
       "limitations": "D0 project-authored synthetic-raster fixture only; no private-user source textures, no raw pixel package export, no learned texture completion, no true rendered source/provider visual-fidelity acceptance and hidden regions remain truthful placeholders.",
-      "nextAction": "Freeze the Phase-4 texture PR after remote green, then branch foundation-proof closeout for BP-46/BP-48 debt burn-down.",
+      "nextAction": "Phase-4 is frozen as a draft stack; continue foundation-proof closeout on codex/closy-forge-foundation-proof-closeout.",
       "sourceSection": "Continuation prompt section 14",
       "status": "partial",
       "summary": "Deterministic D0 source-view texture projection and mobile-safe PBR recovery from raster-backed fitting evidence.",
@@ -380,7 +459,7 @@
         "closy-forge/schemas/v1/render-frame-pose-suite.schema.json"
       ],
       "limitations": "Partial BP48 checkpoint: fallback GLB frames and a bounded four-pose suite are available for runtime preview, but stitched-shell binding, crack/sliding proof, performance/memory evidence, full cloth motion and clean/canonical acceptance remain incomplete.",
-      "nextAction": "Proceed to BP-49 local raster ingestion/privacy evidence while preserving deterministic synthetic fallback.",
+      "nextAction": "Defer production stitched-shell binding, crack/sliding and runtime profiling to the Phase 6 branch after the scoped Phase 5 provider slice.",
       "sourceSection": "Continuation prompt section 10 persisted render normals/tangents and pose-suite evidence",
       "status": "partial",
       "summary": "Persist fallback GLB normal/tangent frames and validate bounded pose-suite binding evidence without promoting clean/canonical acceptance.",
@@ -877,22 +956,38 @@
         "159c63d",
         "b23e009",
         "8174b220d5cf6e320b101137a4901bcd461cd644",
-        "81fb02cc15fcc7d7e392f23e1480f84e2702970e"
+        "81fb02cc15fcc7d7e392f23e1480f84e2702970e",
+        "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
+        "de35156de35831f467c7809fea727195a548ddce",
+        "eef64ef1ead7adbe7db4132043e388856ed9b513",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "01146285610dab4e110f6221e642b009bf9e90c4",
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369",
+        "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
+        "22176b42817d84bf2303a6b1ee54c8936a204c07",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
         "raw topology and clean gate reports",
         "geometry_stitched_shell report exists",
         "logical stitched analysis shell exists",
-        "conventional stitched GLB exists but is rejected for clean proof"
+        "conventional stitched GLB exists but is rejected for clean proof",
+        "BP46 closeout executes T-junction, winding, normal-inversion, self-intersection and hidden/internal component audits",
+        "BP46 semantic opening audit executes boundary-component assignment and now carries source opening panel-edge provenance while semantic loop proof still fails",
+        "BP46 logical source-vertex reconstruction audit passes with bindingCoverage=1.0 and maxReconstructionErrorMeters=0.0",
+        "BP46 duplicate-topology repair culls eight duplicate logical faces and removes duplicate seam operation IDs from readiness blockers",
+        "BP46 ordered seam span partitioning plus v1.1 settle closeout remove reused boundary ownership and oversized pre-stitch distance blockers",
+        "BP46 conforming stitched-shell audit now proves one logical shell with four simple boundary cycles, zero non-manifold edges/vertices, zero branch vertices, six passing topology audits and semanticOpeningAssignmentStatus=pass"
       ],
       "id": "BP-08-M-MESH-ANALYSIS",
       "implementationPaths": [
         "closy-forge/src/closy_forge/geometry/topology_diagnostics.py",
         "closy-forge/src/closy_forge/proposals"
       ],
-      "limitations": "Material stitched-shell artifacts now exist, but topology proof remains rejected due non-manifold edges, duplicate faces, missing semantic opening proof, incomplete binding coverage and not-run audits.",
-      "nextAction": "Implement deterministic inspection artifacts and independent topology/binding audits.",
+      "limitations": "Material stitched-shell topology/opening proof now passes for BP46, but production stitched-shell sim-to-render binding, crack/sliding proof, runtime performance evidence and clean/provider visual-fidelity acceptance remain incomplete.",
+      "nextAction": "Freeze the BP46 proof unit after remote validation, then continue provider-source fidelity and Phase 6 binding/crack evidence on the prescribed stacked branches.",
       "sourceSection": "Stages A-U",
       "status": "partial",
       "summary": "Stage M: Mesh Analysis.",
@@ -992,13 +1087,15 @@
     {
       "commitSha": [
         "30f7d08",
-        "3dd65b1"
+        "3dd65b1",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669"
       ],
       "dependencies": [],
       "executableEvidence": [
         "static binding reconstruction passes",
         "fallback GLB NORMAL and VEC4 TANGENT accessors persist",
-        "four-pose render frame suite passes with max binding error 1e-09 within tolerance 1e-6"
+        "four-pose render frame suite passes with max binding error 1e-09 within tolerance 1e-6",
+        "BP46 logical stitched analysis shell binding reconstruction passes with bindingCoverage=1.0 and maxReconstructionErrorMeters=0.0"
       ],
       "id": "BP-08-R-SIM-TO-RENDER-BINDING",
       "implementationPaths": [
@@ -1006,8 +1103,8 @@
         "closy-forge/src/closy_forge/geometry/frame_attributes.py",
         "closy-forge/src/closy_forge/rendering/frame_pose_suite.py"
       ],
-      "limitations": "Partial only: no stitched-shell binding, crack/sliding proof, runtime performance profile or dense production motion suite.",
-      "nextAction": "Add stitched-shell binding and richer motion/performance evidence before marking Stage R complete.",
+      "limitations": "Partial only: no production stitched-shell binding, crack/sliding proof, runtime performance profile or dense production motion suite.",
+      "nextAction": "Add production stitched-shell binding and richer motion/performance evidence before marking Stage R complete.",
       "sourceSection": "Stages A-U",
       "status": "partial",
       "summary": "Stage R: Sim To Render Binding.",
@@ -1076,7 +1173,15 @@
         "8174b220d5cf6e320b101137a4901bcd461cd644",
         "aac1c06",
         "e23820e",
-        "9fc004d429d9187bfd427586ca43af65e54ec2f5"
+        "9fc004d429d9187bfd427586ca43af65e54ec2f5",
+        "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
+        "de35156de35831f467c7809fea727195a548ddce",
+        "eef64ef1ead7adbe7db4132043e388856ed9b513",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "01146285610dab4e110f6221e642b009bf9e90c4",
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1084,7 +1189,16 @@
         "reports/inspection/manifest.json records 12 deterministic SVG artifacts",
         "evidence tiers separate topology/canonical representation from provider/source/human visual fidelity",
         "BP52 fitting report hash-links visual observations, multiview fusion, fused evidence, fit quality report and package summary metrics",
-        "BP53 texture identity and texture artifact reports hash-link source projections, generated atlas, PBR material maps and controlled inpainting guardrails"
+        "BP53 texture identity and texture artifact reports hash-link source projections, generated atlas, PBR material maps and controlled inpainting guardrails",
+        "BP46 stitched-shell report now records executed topology audits and blocking failure reasons instead of avoidable not_run statuses",
+        "BP46 stitched-shell report now records semantic opening assignment status, boundary components, panel-edge provenance status and missing expected openings",
+        "BP46 stitched-shell report now records logical binding reconstruction coverage and error metrics",
+        "BP46 stitched-shell report now records topologyRepairEvidence for duplicate logical-face culling and unique seam operation IDs",
+        "BP46 stitched-shell report now records ordered seam correspondence status, scale-derived tolerance, reused boundary spans and pre/post stitch distance distributions",
+        "BP46 stitched-shell report now records ordered seam span partitions and distinguishes partitioned ownership from remaining oversized pre-stitch distance blockers",
+        "remote ordered seam partition Actions run 32791907899 passed at 7eacf97 on Ubuntu job 97634961686 and Windows job 97634961466 with 194 tests per OS, fresh schemas, identical 89-file package trees and digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2",
+        "BP46 stitched-shell report now records conforming_tshirt_v3 topology proof with meshStitchOrWeldProven=true, semanticOpeningAssignmentStatus=pass, surfaceTopologyStatus=pass and clean-gate blocker separation",
+        "local BP46 truth-sync validation records full pytest over 199 tests, fresh schemas and identical 89-file package trees at digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5"
       ],
       "id": "BP-08-U-QUALITY-PROVENANCE",
       "implementationPaths": [
@@ -1098,7 +1212,7 @@
         "closy-forge/schemas/v1/texture-identity.schema.json"
       ],
       "limitations": "No runtime performance, independent provider/source visual proof, human signed review, accepted clean/canonical proposal, private-user fitting, private-user texture recovery or settled-render fit comparison yet.",
-      "nextAction": "Record BP53 remote evidence, then proceed to foundation proof closeout for BP-46/BP-48.",
+      "nextAction": "After PR #5 remote validation, preserve this proof in the review unit and continue the ordered Phase 5 provider slice before Phase 6 C3 binding/crack evidence.",
       "sourceSection": "Stages A-U",
       "status": "partial",
       "summary": "Stage U: Quality Provenance.",
@@ -1509,7 +1623,8 @@
         "07b801c",
         "ba4d358",
         "aac1c06",
-        "0e743bb"
+        "0e743bb",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1519,8 +1634,8 @@
       "implementationPaths": [
         "closy-forge"
       ],
-      "limitations": "Inspection artifacts and BP48 frame/pose evidence now exist, but Phase 1 remains partial until production cloth backend abstraction, self-collision, stitched-shell proof and richer motion evidence exist.",
-      "nextAction": "Proceed to BP-49 raster ingestion while preserving Phase 1 clean/canonical blockers.",
+      "limitations": "Phase 1 remains partial: BP46 stitched-shell topology/opening proof now passes, but production cloth backend abstraction, self-collision and richer motion evidence are still incomplete.",
+      "nextAction": "Continue self-collision and richer motion evidence on the later dependency-ready branch; do not reopen BP46 topology/opening blockers unless regression evidence appears.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
       "summary": "Blueprint phase 1.",
@@ -1554,7 +1669,7 @@
         "closy-forge"
       ],
       "limitations": "Phase 2 remains partial: no real-user Gate P1 authority, provider upload, learned segmentation, source-image package export or learned/geometric registration.",
-      "nextAction": "Phase-2 D0 evidence now feeds BP-52 fitting; continue BP-53 on the stacked Phase-4 texture branch after BP-52 remote green.",
+      "nextAction": "Phase-2 D0 evidence is already consumed by BP52/BP53; keep privacy/source limits explicit while later D0 fidelity work strengthens decoded source-render comparison.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
       "summary": "Blueprint phase 2.",
@@ -1578,7 +1693,7 @@
         "package digest 1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790 from local BP52 smoke build",
         "schema export/freshness, ruff, mypy, focused unit/integration/golden/corruption tests and full pytest after 189 collected tests passed locally",
         "deterministic package diff reported identical 85-file package trees",
-        "remote Actions run 32728354755 passed Ubuntu/Windows with 189 tests per OS, fresh schemas, identical 85-file package trees and only self_collision_not_run formal warning"
+        "final remote Actions run 32729539416 passed at bb496684 on Ubuntu/Windows with 189 tests per OS, fresh schemas, identical 85-file package trees, digest 1b9638ea05962b7611540ab03f46ddc99a5417871586ef5cf4388b2323657790 and only self_collision_not_run formal warning"
       ],
       "id": "BP-17-PHASE-03",
       "implementationPaths": [
@@ -1589,7 +1704,7 @@
         "closy-forge/schemas/v1/tshirt-fit-report.schema.json"
       ],
       "limitations": "Phase 3 remains partial: D0 synthetic fixture only; no private-user image fitting, learned predictor, differentiable renderer, settled-render/drape comparison, depth loss or production acceptance.",
-      "nextAction": "After BP52 remote green, branch Phase 4 and implement BP-53 source texture identity/PBR recovery.",
+      "nextAction": "BP53 already consumes the fitted evidence; strengthen the BP52 optimiser later on the D0-fidelity branch without promoting Phase 3 before settled-render/drape dependencies pass.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
       "summary": "Blueprint phase 3.",
@@ -1647,18 +1762,34 @@
         "f100fd5",
         "159c63d",
         "b23e009",
-        "8174b220d5cf6e320b101137a4901bcd461cd644"
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
+        "de35156de35831f467c7809fea727195a548ddce",
+        "eef64ef1ead7adbe7db4132043e388856ed9b513",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "01146285610dab4e110f6221e642b009bf9e90c4",
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "704a10e2f166ba340ba078324f0d5a1fcc6af369",
+        "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
+        "22176b42817d84bf2303a6b1ee54c8936a204c07",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
-        "ledger row evidence and package reports"
+        "ledger row evidence and package reports",
+        "BP46 topology-audit closeout replaces avoidable topology not_run statuses with deterministic executed pass/fail evidence",
+        "BP46 semantic-opening closeout records boundary-component assignment failure, source opening panel-edge provenance pass and missing expected semantic openings",
+        "BP46 logical-binding closeout records bindingCoverage=1.0, bindingReconstructionStatus=pass and maxReconstructionErrorMeters=0.0",
+        "BP46 duplicate-topology closeout removes duplicate faces and duplicate seam operation IDs as readiness blockers",
+        "BP46 ordered seam partition closeout records disjoint sleeve-cap and neck-band partitions while preserving clean/canonical false",
+        "BP46 conforming stitched-shell proof passes locally with meshStitchOrWeldProven=true, semanticOpeningAssignmentStatus=pass, surfaceTopologyStatus=pass and package digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5"
       ],
       "id": "BP-17-PHASE-05",
       "implementationPaths": [
         "closy-forge"
       ],
-      "limitations": "Provider/proposal path remains partial: BP-46 stitched output exists but clean topology proof and independent provider/source appearance evidence are absent.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "limitations": "Provider/proposal path remains partial: BP-46 material stitched-shell topology/opening proof now passes, but the actual Phase 5 provider contract slice, external/local model adapter execution, independent source/provider appearance evidence and accepted clean/canonical proposal are still absent.",
+      "nextAction": "After PR #5 is validated/frozen, create codex/closy-forge-phase-5-provider from the exact PR #5 head and implement the scoped provider contract/manual-fixture slice.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
       "summary": "Blueprint phase 5.",
@@ -1683,18 +1814,22 @@
         "f100fd5",
         "159c63d",
         "b23e009",
-        "8174b220d5cf6e320b101137a4901bcd461cd644"
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "8790567cc8b8a9d8db2214ec7133bbe1281f6dca",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
-        "ledger row evidence and package reports"
+        "ledger row evidence and package reports",
+        "BP46 seam-settle evidence reduces max seam pair distance to 0.030415545 while keeping stitched-shell binding/crack-sliding proof incomplete",
+        "BP46 conforming stitched-shell proof removes topology/opening blockers for later Phase 6 binding work, but does not itself execute production stitched-shell sim-to-render binding or crack/sliding tests"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
         "closy-forge"
       ],
-      "limitations": "Binding/rendering remains partial: BP48 adds persisted fallback tangents and a bounded pose suite, but BP-46 stitched shell has no complete regenerated binding, crack/sliding proof or runtime performance evidence.",
-      "nextAction": "Add stitched-shell binding, crack/sliding checks and performance evidence.",
+      "limitations": "Phase 6 remains partial: no production stitched-shell sim-to-render binding, performance/memory profile, semantic-boundary migration proof, crack/sliding suite or mobile runtime fallback negotiation.",
+      "nextAction": "Create the Phase 6 branch only after the Phase 5 provider branch; add production stitched-shell binding, crack/sliding checks and runtime performance/motion evidence there.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
       "summary": "Blueprint phase 6.",
@@ -1868,13 +2003,17 @@
     {
       "commitSha": [
         "30f7d08",
-        "3dd65b1"
+        "3dd65b1",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
         "static binding reconstruction",
         "fallback GLB VEC4 tangents persist",
-        "bounded four-pose suite validates binding reconstruction"
+        "bounded four-pose suite validates binding reconstruction",
+        "BP46 logical source-vertex reconstruction passes for stitched analysis shell",
+        "BP46 conforming topology/opening proof now passes as a prerequisite signal, but C3 production dynamic binding remains unproven"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -1882,8 +2021,8 @@
         "closy-forge/src/closy_forge/geometry/frame_attributes.py",
         "closy-forge/src/closy_forge/rendering/frame_pose_suite.py"
       ],
-      "limitations": "C3 remains partial: BP48 adds bounded fallback-frame evidence, but no stitched-shell binding, crack/sliding proof, runtime performance evidence or full production motion validation exists.",
-      "nextAction": "Do not mark gate passed without stitched-shell binding, crack/sliding checks and performance evidence.",
+      "limitations": "C3 remains partial: BP48 provides bounded fallback-frame preview evidence and BP46 now proves the material stitched-shell topology/opening artifact, but no production stitched-shell sim-to-render binding, crack/sliding proof, performance/memory profiling or production motion validation exists.",
+      "nextAction": "Do not mark C3 passed without production stitched-shell binding, crack/sliding checks and runtime performance metrics on the Phase 6 branch.",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "status": "partial",
       "summary": "BP-18-GATE-C3",
@@ -2377,19 +2516,35 @@
         "159c63d",
         "b23e009",
         "8174b220d5cf6e320b101137a4901bcd461cd644",
-        "9fc004d429d9187bfd427586ca43af65e54ec2f5"
+        "9fc004d429d9187bfd427586ca43af65e54ec2f5",
+        "d0801291ecdaeda4d04ab5897327abcbf9e95ad1",
+        "de35156de35831f467c7809fea727195a548ddce",
+        "eef64ef1ead7adbe7db4132043e388856ed9b513",
+        "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
+        "01146285610dab4e110f6221e642b009bf9e90c4",
+        "c6fa323506712305a4b5a73bbad118e8d9e1e626",
+        "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
+        "22176b42817d84bf2303a6b1ee54c8936a204c07",
+        "62443b685604bc4afe9a8fac9f926db78814d5a9"
       ],
       "dependencies": [],
       "executableEvidence": [
         "deterministic T-shirt package plus proposal rejection chain",
-        "BP53 adds D0 source-view texture projection/PBR recovery artifacts while preserving raw pixel privacy and clean proposal rejection"
+        "BP53 adds D0 source-view texture projection/PBR recovery artifacts while preserving raw pixel privacy and clean proposal rejection",
+        "BP46 topology-audit closeout improves rejection evidence while preserving clean/canonical false",
+        "BP46 semantic-opening closeout records fail-closed opening assignment evidence while preserving clean/canonical false",
+        "BP46 logical-binding closeout records source-vertex reconstruction coverage while preserving clean/canonical false",
+        "BP46 duplicate-topology closeout removes duplicate logical faces and duplicate seam operation IDs while preserving clean/canonical false",
+        "BP46 ordered seam correspondence closeout records reused/split-needed span blockers while preserving clean/canonical false",
+        "BP46 ordered seam partition closeout records disjoint sleeve-cap and neck-band partitions while preserving clean/canonical false",
+        "BP46 opening-provenance closeout records source opening panel-edge provenance while preserving clean/canonical false"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
         "closy-forge"
       ],
-      "limitations": "Private-user real images, learned texture generation, source/provider visual-fidelity acceptance, mesh stitch/weld proof and clean provider mesh remain absent.",
-      "nextAction": "Do not promote success level without full prerequisites; continue foundation-proof closeout after BP53 remote green.",
+      "limitations": "Private-user real images, learned texture generation, source/provider visual-fidelity acceptance, production runtime binding and clean provider mesh remain absent; BP-46 material stitched-shell proof now exists but does not promote research prototype status to alpha.",
+      "nextAction": "Do not promote success level without full prerequisites; after BP46 remote validation, continue the Phase 5 provider slice and later Phase 6 production binding proof.",
       "sourceSection": "Research/alpha/beta/production success levels",
       "status": "partial",
       "summary": "BP-20-RESEARCH-PROTOTYPE",
@@ -2529,5 +2684,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp53-source-texture-pbr-recovery-remote-v1"
+  "version": "bp46-conforming-stitched-shell-truth-sync-v1"
 }
