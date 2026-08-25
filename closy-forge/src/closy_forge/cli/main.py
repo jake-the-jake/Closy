@@ -6,6 +6,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from closy_forge.binding.benchmark import benchmark_binding_c3
 from closy_forge.capture import (
     RasterIngestError,
     build_synthetic_capture_record,
@@ -149,6 +150,19 @@ def _parser() -> argparse.ArgumentParser:
     diff.add_argument("right", type=Path)
     diff.add_argument("--json", action="store_true")
     diff.set_defaults(handler=_packages_diff)
+
+    benchmark = subparsers.add_parser("benchmark", help="Write non-canonical host evidence.")
+    benchmark_sub = benchmark.add_subparsers(dest="benchmark_command")
+    binding_benchmark = benchmark_sub.add_parser(
+        "binding-c3", help="Measure dense and independent fallback binding workloads."
+    )
+    binding_benchmark.add_argument("package", type=Path)
+    binding_benchmark.add_argument("--output", required=True, type=Path)
+    binding_benchmark.add_argument("--warmups", type=int, default=3)
+    binding_benchmark.add_argument("--repeats", type=int, default=20)
+    binding_benchmark.add_argument("--commit-sha", default=None)
+    binding_benchmark.add_argument("--json", action="store_true")
+    binding_benchmark.set_defaults(handler=_benchmark_binding_c3)
 
     ci = subparsers.add_parser("ci", help="CI-only diagnostics and guardrail helpers.")
     ci_sub = ci.add_subparsers(dest="ci_command")
@@ -308,6 +322,27 @@ def _packages_diff(args: argparse.Namespace) -> int:
     else:
         print(json.dumps(diff, indent=2, sort_keys=True))
     return EXIT_SUCCESS if diff["status"] == "identical" else EXIT_VALIDATION_FAILURE
+
+
+def _benchmark_binding_c3(args: argparse.Namespace) -> int:
+    report = benchmark_binding_c3(
+        args.package,
+        warmups=args.warmups,
+        repeats=args.repeats,
+        commit_sha=args.commit_sha,
+    )
+    write_canonical_json(args.output, report)
+    payload = {
+        "status": "measured",
+        "output": str(args.output),
+        "repeatCount": report["repeatCount"],
+        "measurements": report["measurements"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(f"Wrote {args.output}")
+    return EXIT_SUCCESS
 
 
 def _ci_diagnostics(args: argparse.Namespace) -> int:

@@ -6,8 +6,15 @@ from typing import Any
 
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross, scale, sub
 from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
+from closy_forge.simulation.self_collision import (
+    SelfCollisionSettings,
+    analyze_self_collision,
+    build_triangle_refs,
+    project_self_collisions,
+    seam_exclusion_pairs,
+)
 
-SOLVER_VERSION = "closy.reference_xpbd_cpu.v1.1"
+SOLVER_VERSION = "closy.reference_xpbd_cpu.v1.3_integrated_self_collision_d0"
 NECK_BAND_SEAM_TARGET_LENGTH_METERS = 0.02
 
 
@@ -23,6 +30,8 @@ class SettleSettings:
     seam_stiffness: float = 0.96
     bend_stiffness: float = 0.08
     support_stiffness: float = 0.03
+    self_collision_thickness_meters: float = 0.0016
+    self_collision_clearance_meters: float = 0.0008
 
 
 @dataclass(frozen=True)
@@ -57,6 +66,14 @@ class SettleResult:
     settings: SettleSettings
 
 
+@dataclass(frozen=True)
+class MotionStateResult:
+    state_id: str
+    mesh: MeshSet
+    diagnostics: dict[str, Any]
+    settings: SettleSettings
+
+
 def settle_reference_cloth(
     rest_mesh: MeshSet,
     seam_constraints: dict[str, Any],
@@ -83,11 +100,21 @@ def settle_reference_cloth(
     )
     supports = _build_support_constraints(rest_mesh, flat.mesh_offsets, active_settings)
     primitives = list(avatar_contract.get("collisionPrimitives", []))
+    self_collision_settings = SelfCollisionSettings(
+        thickness_meters=active_settings.self_collision_thickness_meters,
+        clearance_meters=active_settings.self_collision_clearance_meters,
+        max_iterations=1,
+    )
+    self_collision_triangles, _ = build_triangle_refs(rest_mesh)
+    fixed_support_indices = {support.index for support in supports}
+    self_collision_exclusions = seam_exclusion_pairs(seam_constraints, flat.mesh_offsets)
 
     energy_history: list[float] = []
     collision_events = 0
+    self_collision_corrections = 0
+    self_collision_convergence: list[dict[str, Any]] = []
     dt = active_settings.time_step_seconds
-    for _step in range(active_settings.step_count):
+    for step in range(active_settings.step_count):
         for index, velocity in enumerate(velocities):
             previous[index] = positions[index]
             velocities[index] = (
@@ -107,12 +134,35 @@ def settle_reference_cloth(
                 positions, primitives, active_settings.collision_clearance_m
             )
 
+        # Projection is part of deterministic solver substeps, not a report-only cleanup pass.
+        if (step + 1) % 10 == 0:
+            positions, convergence = project_self_collisions(
+                positions,
+                self_collision_triangles,
+                fixed_indices=fixed_support_indices,
+                settings=self_collision_settings,
+                excluded_vertex_pairs=self_collision_exclusions,
+            )
+            self_collision_corrections += int(convergence.get("totalCorrectionCount", 0))
+            self_collision_convergence.append({"substep": step + 1, **convergence})
+
         for index, position in enumerate(positions):
             velocities[index] = scale(sub(position, previous[index]), 1.0 / dt)
         energy_history.append(_energy_proxy(positions, velocities))
 
     collision_events += _project_collisions(
         positions, primitives, active_settings.collision_clearance_m
+    )
+    positions, self_collision_metrics = project_self_collisions(
+        positions,
+        self_collision_triangles,
+        fixed_indices=fixed_support_indices,
+        settings=self_collision_settings,
+        excluded_vertex_pairs=self_collision_exclusions,
+    )
+    self_collision_corrections += int(self_collision_metrics.get("totalCorrectionCount", 0))
+    self_collision_convergence.append(
+        {"substep": active_settings.step_count, "finalProjection": True, **self_collision_metrics}
     )
     settled_mesh = replace_mesh_positions(rest_mesh, positions, flat.mesh_offsets)
     diagnostics = _diagnostics(
@@ -124,8 +174,98 @@ def settle_reference_cloth(
         collision_events,
         energy_history,
         active_settings,
+        self_collision_settings,
+        self_collision_corrections,
+        self_collision_convergence,
     )
     return SettleResult(rest_mesh, settled_mesh, diagnostics, active_settings)
+
+
+def simulate_reference_motion_state(
+    settled_mesh: MeshSet,
+    seam_constraints: dict[str, Any],
+    avatar_contract: dict[str, Any],
+    material: dict[str, Any],
+    state_id: str,
+) -> MotionStateResult:
+    """Generate a bounded solver-produced state without touching a render mesh."""
+
+    settings = SettleSettings(
+        time_step_seconds=1.0 / 60.0,
+        step_count=6,
+        solver_iterations=5,
+        gravity_m_s2=-2.2,
+        damping_ratio=float(material.get("dampingRatio", 0.18)),
+        stretch_stiffness=float(material.get("stretchStiffness", 0.42)),
+        seam_stiffness=0.97,
+        bend_stiffness=float(material.get("bendStiffness", 0.08)),
+        support_stiffness=0.018,
+    )
+    flat = flatten_mesh(settled_mesh)
+    panel_ids = [mesh.panel_id for mesh in settled_mesh.meshes for _ in mesh.vertices]
+    positions = [
+        add(position, _motion_seed_offset(panel_ids[index], position, state_id))
+        for index, position in enumerate(flat.positions)
+    ]
+    previous = list(flat.positions)
+    constraints = _build_distance_constraints(
+        settled_mesh, seam_constraints, flat.mesh_offsets, settings
+    )
+    supports = _build_support_constraints(settled_mesh, flat.mesh_offsets, settings)
+    primitives = list(avatar_contract.get("collisionPrimitives", []))
+    triangles, _ = build_triangle_refs(settled_mesh)
+    exclusions = seam_exclusion_pairs(seam_constraints, flat.mesh_offsets)
+    fixed = {support.index for support in supports}
+    collision_settings = SelfCollisionSettings(
+        thickness_meters=settings.self_collision_thickness_meters,
+        clearance_meters=settings.self_collision_clearance_meters,
+        max_iterations=1,
+    )
+    convergence: list[dict[str, Any]] = []
+    energy_history: list[float] = []
+    dt = settings.time_step_seconds
+    for step in range(settings.step_count):
+        for index, position in enumerate(positions):
+            velocity = scale(sub(position, previous[index]), (1.0 - settings.damping_ratio) / dt)
+            previous[index] = position
+            force = _motion_step_acceleration(panel_ids[index], position, state_id, step)
+            acceleration = add((0.0, settings.gravity_m_s2, 0.0), force)
+            velocity = add(velocity, scale(acceleration, dt))
+            positions[index] = add(position, scale(velocity, dt))
+        for _iteration in range(settings.solver_iterations):
+            for constraint in constraints:
+                _solve_distance(positions, constraint)
+            for support in supports:
+                _solve_support(positions, support)
+            _project_collisions(positions, primitives, settings.collision_clearance_m)
+        if step + 1 == settings.step_count:
+            positions, collision = project_self_collisions(
+                positions,
+                triangles,
+                fixed_indices=fixed,
+                settings=collision_settings,
+                excluded_vertex_pairs=exclusions,
+            )
+            convergence.append({"substep": step + 1, **collision})
+        velocities = [
+            scale(sub(position, old), 1.0 / dt)
+            for position, old in zip(positions, previous, strict=True)
+        ]
+        energy_history.append(_energy_proxy(positions, velocities))
+
+    mesh = replace_mesh_positions(settled_mesh, positions, flat.mesh_offsets)
+    diagnostics = {
+        "solverVersion": SOLVER_VERSION,
+        "stateId": state_id,
+        "stateGenerator": "bounded_reference_cloth_impulse_solver",
+        "stepCount": settings.step_count,
+        "solverIterations": settings.solver_iterations,
+        "energyHistory": [_round(value) for value in energy_history],
+        "selfCollisionConvergence": convergence,
+        "finitePositions": all(isfinite(value) for point in positions for value in point),
+        "invertedOrDegenerateTriangleCount": _inverted_or_degenerate_triangle_count(mesh),
+    }
+    return MotionStateResult(state_id, mesh, diagnostics, settings)
 
 
 def flatten_mesh(meshset: MeshSet) -> FlattenedMesh:
@@ -345,6 +485,9 @@ def _diagnostics(
     collision_events: int,
     energy_history: list[float],
     settings: SettleSettings,
+    self_collision_settings: SelfCollisionSettings,
+    self_collision_corrections: int,
+    self_collision_convergence: list[dict[str, Any]],
 ) -> dict[str, Any]:
     flat_settled = flatten_mesh(settled_mesh)
     seam_residuals = [
@@ -388,6 +531,13 @@ def _diagnostics(
         and nonfinite == 0
         else "failed"
     )
+    self_collision_analysis = analyze_self_collision(
+        settled_mesh,
+        settings=self_collision_settings,
+        excluded_vertex_pairs=seam_exclusion_pairs(
+            seam_constraints, flatten_mesh(settled_mesh).mesh_offsets
+        ),
+    )
     return {
         "schemaVersion": 1,
         "solverVersion": SOLVER_VERSION,
@@ -404,7 +554,12 @@ def _diagnostics(
             "seamStiffness": settings.seam_stiffness,
             "bendStiffness": settings.bend_stiffness,
             "supportStiffness": settings.support_stiffness,
-            "constraintOrder": "mesh_stretch_then_bend_then_seams_then_support_then_collision",
+            "selfCollisionThicknessMeters": settings.self_collision_thickness_meters,
+            "selfCollisionClearanceMeters": settings.self_collision_clearance_meters,
+            "constraintOrder": (
+                "mesh_stretch_then_bend_then_seams_then_support_then_body_collision_then_"
+                "self_collision"
+            ),
         },
         "elapsedTimeSeconds": 0.0,
         "elapsedTimePolicy": "wall_clock_omitted_from_canonical_package_for_determinism",
@@ -422,8 +577,23 @@ def _diagnostics(
         "p95Strain": p95_strain,
         "energyHistory": energy_history,
         "selfCollision": {
-            "available": False,
-            "reason": "not_implemented_in_reference_cpu_solver_v1",
+            "available": True,
+            "profile": "d0_reference_vertex_triangle",
+            "reportRef": "reports/self_collision_report.json",
+            "broadPhaseRun": True,
+            "narrowPhaseRun": True,
+            "correctionRun": True,
+            "bruteForceOracleRun": True,
+            "candidatePairCount": len(self_collision_analysis.candidate_pairs),
+            "contactCount": len(self_collision_analysis.contacts),
+            "unresolvedContactCount": self_collision_analysis.unresolved_contact_count,
+            "maxPenetrationMeters": _round(self_collision_analysis.max_penetration_meters),
+            "totalCorrectionCount": self_collision_corrections,
+            "solverSubstepConvergence": self_collision_convergence,
+            "integratedIntoSolverSubsteps": True,
+            "highVelocityTunnelling": "unsupported_high_velocity_tunnelling",
+            "acceptedForD0ReferenceSolver": self_collision_analysis.unresolved_contact_count == 0,
+            "acceptedForProductionGpuSolver": False,
         },
         "restTopologyHash": topology_hash(rest_mesh),
         "settledTopologyHash": topology_hash(settled_mesh),
@@ -499,6 +669,53 @@ def _inverted_or_degenerate_triangle_count(meshset: MeshSet) -> int:
     return count
 
 
+def _motion_seed_offset(panel_id: str, point: Vec3, state_id: str) -> Vec3:
+    x, y, _z = point
+    left = panel_id == "panel.sleeve.left"
+    right = panel_id == "panel.sleeve.right"
+    torso = panel_id in {"panel.front", "panel.back", "panel.neck_band"}
+    if state_id == "neutral_settled":
+        return (0.0, 0.0, 0.0)
+    if state_id == "left_arm_raise" and left:
+        return (-0.018, 0.050, 0.004)
+    if state_id == "right_arm_raise" and right:
+        return (0.018, 0.050, -0.004)
+    if state_id == "forward_bend":
+        return (0.0, -0.008 * max(0.0, y - 1.0), 0.030 * max(0.0, y - 0.9))
+    if state_id == "side_bend":
+        return (0.025 * max(0.0, y - 0.9), 0.0, 0.0)
+    if state_id == "torso_twist" and torso:
+        return (0.012 * point[2], 0.0, -0.012 * x)
+    if state_id == "moderate_gust":
+        return (0.0, 0.0, 0.022 * max(0.0, 1.4 - y))
+    if state_id == "lightweight_material_extreme":
+        return (0.0, -0.014 * max(0.0, 1.35 - y), 0.008)
+    if state_id == "stiff_material_extreme":
+        return (0.004 * x, 0.004 * max(0.0, y - 1.0), 0.0)
+    if state_id == "opening_stress":
+        return ((-0.010 if x < 0.0 else 0.010), 0.006, 0.0)
+    if state_id == "seam_stress":
+        return ((-0.008 if left else 0.008 if right else 0.0), 0.0, 0.006)
+    return (0.0, 0.0, 0.0)
+
+
+def _motion_step_acceleration(panel_id: str, point: Vec3, state_id: str, step: int) -> Vec3:
+    decay = max(0.0, 1.0 - step / 10.0)
+    left = panel_id == "panel.sleeve.left"
+    right = panel_id == "panel.sleeve.right"
+    if state_id == "left_arm_raise" and left:
+        return (-1.1 * decay, 2.4 * decay, 0.0)
+    if state_id == "right_arm_raise" and right:
+        return (1.1 * decay, 2.4 * decay, 0.0)
+    if state_id == "moderate_gust":
+        return (0.0, 0.0, 1.8 * decay)
+    if state_id == "torso_twist":
+        return (0.9 * point[2] * decay, 0.0, -0.9 * point[0] * decay)
+    if state_id == "side_bend":
+        return (0.8 * max(0.0, point[1] - 0.9) * decay, 0.0, 0.0)
+    return (0.0, 0.0, 0.0)
+
+
 def _bend_pairs(triangles: list[Tri]) -> list[tuple[int, int]]:
     edge_to_opposites: dict[tuple[int, int], list[int]] = {}
     for tri in triangles:
@@ -559,6 +776,10 @@ def _distance(a: Vec3, b: Vec3) -> float:
 
 def _length(value: Vec3) -> float:
     return sqrt(sum(component * component for component in value))
+
+
+def _round(value: float) -> float:
+    return round(float(value), 9)
 
 
 def _vec3(value: Any) -> Vec3:

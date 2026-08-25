@@ -550,9 +550,9 @@ def test_geometry_stitched_shell_proves_conforming_topology_and_semantic_opening
     ordered_correspondence = report["topologyAudit"]["orderedSeamCorrespondenceAudit"]
     assert ordered_correspondence["sourceConstraintCount"] == len(constraints["constraints"])
     assert ordered_correspondence["executedOperationCount"] == len(constraints["constraints"])
-    assert ordered_correspondence["distanceToleranceMeters"] == 0.032551892
+    assert ordered_correspondence["distanceToleranceMeters"] == 0.032562831
     assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 63
-    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.030415545
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.03039986
     assert ordered_correspondence["postStitchResidualDistributionMeters"]["max"] == 0.0
     assert ordered_correspondence["unmatchedCorrespondenceCount"] == 0
     assert ordered_correspondence["duplicatedOperationIdCount"] == 0

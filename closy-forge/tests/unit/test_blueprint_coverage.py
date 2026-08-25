@@ -46,8 +46,13 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "phase5-provider-contract-bakeoff-local-v1"
-    assert payload["generatedBy"] == "Phase 5 provider contract bakeoff local evidence"
+    assert (
+        payload["version"] == "phase6-c3-evidence-integrity-repair-implementation-remote-green-v2"
+    )
+    assert (
+        payload["generatedBy"]
+        == "Phase 6 C3 evidence-integrity repair with 13604d1 implementation run evidence"
+    )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -226,9 +231,8 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "failed semantic opening" not in bp46["limitations"]
     assert "winding/normal/self-intersection audit failures" not in bp46["limitations"]
     assert "pre-stitch distance reduction" not in bp46["nextAction"]
-    assert "freeze PR #5" in bp46["nextAction"]
-    assert "Phase 5 provider branch" in bp46["nextAction"]
-    assert "Phase 6 branch" in bp46["nextAction"]
+    assert "reconciled Phase 6 authoritative source/render route" in bp46["nextAction"]
+    assert "BP52/BP53/BP47 fidelity closeout" in bp46["nextAction"]
 
 
 def test_phase5_provider_checkpoint_is_partial_and_evidenced() -> None:
@@ -262,8 +266,8 @@ def test_phase5_provider_checkpoint_is_partial_and_evidenced() -> None:
         for item in phase5["executableEvidence"]
     )
     assert "no authorised local/open-model execution" in phase5["limitations"]
-    assert "Push and remote-validate" in phase5["nextAction"]
-    assert "Phase 6 binding/crack branch" in phase5["nextAction"]
+    assert "PR #6 frozen as the green provider-contract parent" in phase5["nextAction"]
+    assert "future authorised work" in phase5["nextAction"]
 
     assert providers["status"] == "partial"
     assert "12322a1eb23e5f0cd8361ecc01be419bbc175364" in providers["commitSha"]
@@ -355,7 +359,7 @@ def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
     assert "render/fallback.glb contains VEC4 TANGENT accessors" in bp48["executableEvidence"]
     assert "poseSuiteBindingEvidenceAvailable=true" in bp48["executableEvidence"]
     assert "acceptedForCleanProposal=false" in bp48["executableEvidence"]
-    assert "Phase 6 branch" in bp48["nextAction"]
+    assert "repaired solver-state dense/fallback frame evidence" in bp48["nextAction"]
 
 
 def test_bp49_checkpoint_is_partial_and_evidenced() -> None:
@@ -499,38 +503,37 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
 
 
-def test_markdown_ledger_matches_phase5_provider_checkpoint_state() -> None:
+def test_markdown_ledger_matches_phase6_binding_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `12322a1`" in ledger
-    assert "Latest completed evidence-sync commit before this update: `756b021`" in ledger
-    assert (
-        "Current active increment: " "`PHASE-5-PROVIDER-CONTRACT-BAKEOFF-LOCAL-EVIDENCE`" in ledger
-    )
-    assert "Next dependency-ready increment: push `codex/closy-forge-phase-5-provider`" in ledger
-    assert "closy.geometry_provider_registry.phase5_contract_v2" in ledger
-    assert "closy.provider_contract.garment_avatar_only.v1" in ledger
+    assert "Branch: `codex/closy-forge-phase-6-binding`" in ledger
+    assert "Current active increment: `PHASE-6-C3-EVIDENCE-INTEGRITY-REPAIR`" in ledger
+    assert "branch `codex/closy-forge-d0-fidelity-closeout`" in ledger
+    assert "13604d169ecbc0fddf475cdf177e743790c836a2" in ledger
+    assert "PR #7 run `32912124815`" in ledger
+    assert "Ubuntu job `98008234902`" in ledger
+    assert "Windows job `98008235112`" in ledger
+    assert "PR #7 run `32865725191`" in ledger
+    assert "Ubuntu job `97860392258`" in ledger
+    assert "Windows job `97860392462`" in ledger
+    assert "binding/production_binding_contract.json" in ledger
+    assert "reports/production_binding_c3.json" in ledger
+    assert "reports/self_collision_report.json" in ledger
+    assert "partial_scoped_reference_profile" in ledger
+    assert "11 solver-produced states" in ledger
+    assert "crack residual max is `0.021539119 m`" in ledger
+    assert "fallback panel-centroid delta max is `0.098963781 m`" in ledger
+    assert "tangential sliding max is `0.184355169 m`" in ledger
+    assert "C3 remains partial" in ledger
+    assert "205` unresolved contacts" in ledger
+    assert "unsupported_high_velocity_tunnelling" in ledger
+    assert "self_collision_unresolved_contacts" in ledger
+    assert "131.688151/134.076597 ms" in ledger
+    assert "250.75065/258.5737 ms" in ledger
+    assert "performance not run" in ledger
     assert "reports/provider_bakeoff.json" in ledger
-    assert "closy.provider_bakeoff.phase5_contract_v1" in ledger
     assert "closy.manual_local_glb_import.v1" in ledger
-    assert "closy.local_open_model_geometry_adapter.v1" in ledger
-    assert "not_run_missing_runtime_or_weights" in ledger
-    assert "executedProviderCount=1" in ledger
-    assert "notRunProviderCount=2" in ledger
-    assert "canonicalAcceptedProviderCount=0" in ledger
-    assert "210 collected Forge tests" in ledger
-    assert "90-file package trees" in ledger
-    assert "113 files" in ledger
-    assert "90 files" in ledger
-    assert "32835151202" in ledger
-    assert "97762247917" in ledger
-    assert "97762247732" in ledger
-    assert "199 tests per OS" in ledger
-    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in ledger
-    assert "12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95" in ledger
     assert "No authorised AI/open-model provider execution" in ledger
-    assert "No authorised model weights/checkpoint" in ledger
-    assert "No authorised model weights, license/SBOM evidence" in ledger
     assert "| BP-08-I-GEOMETRY-PROVIDERS | partial |" in ledger
     assert "| BP-12-MODEL-STRATEGY | partial |" in ledger
     assert "| BP-14-EVALUATION | partial |" in ledger
@@ -544,6 +547,7 @@ def test_markdown_ledger_matches_phase5_provider_checkpoint_state() -> None:
     assert "| BP-51-MULTIVIEW-CAPTURE-FUSION | partial |" in ledger
     assert "| BP-52-IMAGE-CONDITIONED-FITTING | partial |" in ledger
     assert "| BP-53-SOURCE-TEXTURE-PBR-RECOVERY | partial |" in ledger
+    assert "| BP-18-GATE-C3 | partial |" in ledger
     assert "| REPO-HYGIENE-GITLINKS | complete |" in ledger
     assert "| REPO-HYGIENE-CI-DIAGNOSTICS | complete |" in ledger
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
@@ -551,47 +555,35 @@ def test_markdown_ledger_matches_phase5_provider_checkpoint_state() -> None:
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
 
 
-def test_active_resume_points_to_phase5_provider_publish_and_remote_validation() -> None:
+def test_active_resume_points_to_phase6_integrity_repair_and_remote_validation() -> None:
     resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
 
-    assert (
-        "Active blueprint checkpoint: "
-        "`PHASE-5-PROVIDER-CONTRACT-BAKEOFF-LOCAL-EVIDENCE`" in resume
-    )
-    assert (
-        "Latest Phase 5 implementation commit SHA: `12322a1eb23e5f0cd8361ecc01be419bbc175364`"
-        in resume
-    )
-    assert "Phase 5 branch point: `756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a`" in resume
-    assert "GitHub Actions run `32835151202` passed" in resume
-    assert "97762247917" in resume
-    assert "97762247732" in resume
-    assert "reports/provider_bakeoff.json" in resume
-    assert "closy.geometry_provider_registry.phase5_contract_v2" in resume
-    assert "closy.provider_contract.garment_avatar_only.v1" in resume
-    assert "closy.local_open_model_geometry_adapter.v1" in resume
-    assert "not_run_missing_runtime_or_weights" in resume
-    assert "providerCount=3" in resume
-    assert "executedProviderCount=1" in resume
-    assert "notRunProviderCount=2" in resume
-    assert "canonicalAcceptedProviderCount=0" in resume
-    assert "210 Forge tests" in resume
-    assert "90 physical files each" in resume
-    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in resume
-    assert "12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95" in resume
-    assert "opening-provenance remote-evidence truth-sync update" not in resume
-    assert "Commit and push this opening-provenance remote-evidence truth-sync" not in resume
-    assert (
-        "continue BP-46 conforming stitched-shell topology and semantic opening proof first"
-        not in resume
-    )
-    assert (
-        "Remote Ubuntu/Windows CI has not yet run for this BP46 conforming-shell truth-sync update"
-        not in resume
-    )
-    assert "Push `codex/closy-forge-phase-5-provider`" in resume
-    assert "create a draft PR targeting `codex/closy-forge-foundation-proof-closeout`" in resume
-    assert "create a remote evidence-sync commit if the implementation run is green" in resume
+    assert "Active checkpoint: `PHASE-6-C3-EVIDENCE-INTEGRITY-REPAIR`" in resume
+    assert "`codex/closy-forge-phase-6-binding`, PR #7" in resume
+    assert "`codex/closy-forge-phase-5-provider` at branch point" in resume
+    assert "`97bf23ccff13e806132b732534d131d80b146467`" in resume
+    assert "Verified prior head: `c2ff305012897f20799cbb3a7df0a822d211fa23`" in resume
+    assert "run `32865725191`" in resume
+    assert "97860392258" in resume
+    assert "97860392462" in resume
+    assert "binding/production_binding_contract.json" in resume
+    assert "reports/production_binding_c3.json" in resume
+    assert "reports/self_collision_report.json" in resume
+    assert "simulation/motion_states/" in resume
+    assert "render/simulation_fallback.glb" in resume
+    assert "callsDenseReconstruction=false" in resume
+    assert "partial_scoped_reference_profile" in resume
+    assert "0.021539119" in resume
+    assert "0.098963781" in resume
+    assert "0.184355169" in resume
+    assert "205` unresolved contacts" in resume
+    assert "unsupported_high_velocity_tunnelling" in resume
+    assert "e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711" in resume
+    assert "self_collision_unresolved_contacts" in resume
+    assert "canonical c3 reports truthfully record performance as not run" in resume.lower()
+    assert "3 warmups, 20 repeats" in resume
+    assert "Gate C3 and Phase 6 remain partial globally" in resume
+    assert "create `codex/closy-forge-d0-fidelity-closeout`" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:

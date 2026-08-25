@@ -17,6 +17,13 @@ from closy_forge.avatar.reference_avatar import (
 )
 from closy_forge.binding.binary_format import write_binding
 from closy_forge.binding.builder import build_binding
+from closy_forge.binding.c3_evidence import prepare_c3_evidence_assets
+from closy_forge.binding.production_binding import (
+    PRODUCTION_BINDING_C3_REPORT_VERSION,
+    PRODUCTION_BINDING_CONTRACT_VERSION,
+    build_production_binding_c3_report_from_package,
+    build_production_binding_contract,
+)
 from closy_forge.binding.reconstruct import (
     perturb_simulation_vertices,
     reconstruct_vertices,
@@ -115,6 +122,10 @@ from closy_forge.simulation.reference_cloth_solver import (
     SOLVER_VERSION,
     settle_reference_cloth,
     simulation_state_json,
+)
+from closy_forge.simulation.self_collision import (
+    SELF_COLLISION_REPORT_VERSION,
+    build_self_collision_report,
 )
 from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
@@ -291,6 +302,13 @@ def _write_package_contents(
     material_physics = _material_physics()
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
     simulation_mesh = settle.settled_mesh
+    self_collision_report = build_self_collision_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        rest_mesh=rest_mesh,
+        settled_mesh=simulation_mesh,
+        seam_constraints=constraints,
+    )
     geometry_binding_candidate = build_geometry_binding_candidate_report(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -522,6 +540,10 @@ def _write_package_contents(
     write_canonical_json(package_dir / "simulation" / "settle_diagnostics.json", settle.diagnostics)
     write_canonical_json(package_dir / "simulation" / "material_physics.json", material_physics)
     write_canonical_json(
+        package_dir / "reports" / "self_collision_report.json",
+        self_collision_report,
+    )
+    write_canonical_json(
         package_dir / "stitch" / "logical_stitched_analysis_shell.json",
         stitched_analysis_shell,
     )
@@ -544,6 +566,27 @@ def _write_package_contents(
     write_canonical_json(package_dir / "render" / "materials.json", render_materials)
     write_binding(package_dir / "binding" / "sim_to_render.bin", binding)
     write_canonical_json(package_dir / "binding" / "binding_manifest.json", binding_manifest)
+    production_binding_contract = build_production_binding_contract(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        simulation_mesh=simulation_mesh,
+        render_mesh=render_mesh,
+        binding=binding,
+        binding_manifest=binding_manifest,
+        render_binding_seeds=render_binding_seeds,
+        constraints=constraints,
+    )
+    write_canonical_json(
+        package_dir / "binding" / "production_binding_contract.json",
+        production_binding_contract,
+    )
+    prepare_c3_evidence_assets(
+        package_dir=package_dir,
+        settled_mesh=simulation_mesh,
+        constraints=constraints,
+        avatar_contract=avatar,
+        material=material_physics,
+    )
     render_frame_pose_suite = build_render_frame_pose_suite_report(
         garment_id="garment.demo_tshirt.reference_v1",
         garment_class="tshirt",
@@ -561,6 +604,27 @@ def _write_package_contents(
     write_canonical_json(
         package_dir / "reports" / "render_frame_pose_suite.json",
         render_frame_pose_suite,
+    )
+    write_canonical_json(
+        package_dir / "reports" / "geometry_binding_validation.json",
+        geometry_binding_validation,
+    )
+    write_canonical_json(
+        package_dir / "reports" / "geometry_runtime_binding_result.json",
+        geometry_runtime_binding_result,
+    )
+    write_canonical_json(
+        package_dir / "reports" / "geometry_stitched_shell.json",
+        geometry_stitched_shell,
+    )
+    production_binding_c3 = build_production_binding_c3_report_from_package(
+        package_dir=package_dir,
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+    )
+    write_canonical_json(
+        package_dir / "reports" / "production_binding_c3.json",
+        production_binding_c3,
     )
 
     quality_reports = _quality_reports(
@@ -596,6 +660,8 @@ def _write_package_contents(
         geometry_stitched_shell,
         geometry_visual_shell_review,
         render_frame_pose_suite,
+        production_binding_c3,
+        self_collision_report,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -655,6 +721,8 @@ def _write_package_contents(
         geometry_stitched_shell,
         geometry_visual_shell_review,
         render_frame_pose_suite,
+        production_binding_c3,
+        self_collision_report,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -700,6 +768,9 @@ def _write_package_contents(
         stitched_shell_mesh,
         geometry_visual_shell_review,
         render_frame_pose_suite,
+        production_binding_contract,
+        production_binding_c3,
+        self_collision_report,
         geometry_clean_acceptance_gate,
         clean_geometry_proposal,
         provider_registry,
@@ -741,6 +812,9 @@ def _write_package_contents(
         "stitchedShellMesh": stitched_shell_mesh,
         "geometryVisualShellReview": geometry_visual_shell_review,
         "renderFramePoseSuite": render_frame_pose_suite,
+        "productionBindingContract": production_binding_contract,
+        "productionBindingC3": production_binding_c3,
+        "selfCollisionReport": self_collision_report,
         "geometryCleanAcceptanceGate": geometry_clean_acceptance_gate,
         "cleanGeometryProposal": clean_geometry_proposal,
         "providerRegistry": provider_registry,
@@ -803,6 +877,8 @@ def _material_physics() -> dict[str, Any]:
         "frictionCoefficient": 0.42,
         "thicknessMeters": 0.0016,
         "clothSettleRun": True,
+        "selfCollisionRun": True,
+        "selfCollisionProfile": "d0_reference_vertex_triangle",
         "settleBackend": "deterministic_cpu_reference_xpbd",
         "settleSolverVersion": SOLVER_VERSION,
     }
@@ -872,6 +948,9 @@ def _manifest(
     stitched_shell_mesh: MeshSet,
     geometry_visual_shell_review: dict[str, Any],
     render_frame_pose_suite: dict[str, Any],
+    production_binding_contract: dict[str, Any],
+    production_binding_c3: dict[str, Any],
+    self_collision_report: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -930,6 +1009,9 @@ def _manifest(
             "stitchedRenderShell": "render/stitched_shell.glb",
             "geometryVisualShellReview": "reports/geometry_visual_shell_review.json",
             "renderFramePoseSuite": "reports/render_frame_pose_suite.json",
+            "productionBindingContract": "binding/production_binding_contract.json",
+            "productionBindingC3": "reports/production_binding_c3.json",
+            "selfCollisionReport": "reports/self_collision_report.json",
             "inspectionArtifactManifest": "reports/inspection/manifest.json",
             "inspectionArtifactReport": "reports/inspection/inspection_report.json",
             "geometryCleanAcceptanceGate": "reports/geometry_clean_acceptance_gate.json",
@@ -1123,6 +1205,24 @@ def _manifest(
             "renderFramePoseSuitePayloadHash": str(
                 render_frame_pose_suite["integrity"]["renderFramePoseSuiteHash"]
             ),
+            "productionBindingContractHash": _hash_from_inventory(
+                inventory, "binding/production_binding_contract.json"
+            ),
+            "productionBindingContractPayloadHash": str(
+                production_binding_contract["integrity"]["productionBindingContractHash"]
+            ),
+            "productionBindingC3Hash": _hash_from_inventory(
+                inventory, "reports/production_binding_c3.json"
+            ),
+            "productionBindingC3PayloadHash": str(
+                production_binding_c3["integrity"]["productionBindingC3ReportHash"]
+            ),
+            "selfCollisionReportHash": _hash_from_inventory(
+                inventory, "reports/self_collision_report.json"
+            ),
+            "selfCollisionReportPayloadHash": str(
+                self_collision_report["integrity"]["selfCollisionReportHash"]
+            ),
             "inspectionArtifactManifestHash": _hash_from_inventory(
                 inventory, "reports/inspection/manifest.json"
             ),
@@ -1199,6 +1299,9 @@ def _manifest(
             "geometryStitchedShell": GEOMETRY_STITCHED_SHELL_VERSION,
             "geometryVisualShellReview": GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
             "renderFramePoseSuite": FRAME_POSE_SUITE_VERSION,
+            "productionBindingContract": PRODUCTION_BINDING_CONTRACT_VERSION,
+            "productionBindingC3": PRODUCTION_BINDING_C3_REPORT_VERSION,
+            "selfCollision": SELF_COLLISION_REPORT_VERSION,
             "inspectionRenderer": INSPECTION_RENDERER_VERSION,
             "inspectionArtifactReport": INSPECTION_ARTIFACT_REPORT_VERSION,
             "geometryCleanAcceptanceGate": GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
@@ -1218,9 +1321,11 @@ def _manifest(
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
-        "capabilities": _capabilities(),
+        "capabilities": _capabilities(production_binding_c3),
         "warnings": [
-            "self_collision_not_run",
+            "self_collision_d0_reference_only",
+            "self_collision_unresolved_contacts_d0_reference",
+            "unsupported_high_velocity_tunnelling",
             "synthetic_capture_metadata_only",
             "d0_pixel_parser_synthetic_fixture_only",
             "d0_multiview_fusion_synthetic_fixture_only",
@@ -1245,6 +1350,13 @@ def _manifest(
             "geometry_visual_shell_review_clean_rejected",
             "inspection_artifacts_not_visual_fidelity_acceptance",
             "bp48_pose_suite_not_full_cloth_motion",
+            "production_binding_c3_d0_profile_only",
+            *(
+                ["production_binding_c3_partial_scoped_reference_profile"]
+                if not production_binding_c3["readiness"]["acceptedForD0RuntimeBindingProfile"]
+                else []
+            ),
+            "performance_wall_clock_omitted_from_canonical_digest",
             "source_provider_human_visual_fidelity_not_run",
             "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
@@ -1258,7 +1370,7 @@ def _manifest(
     }
 
 
-def _capabilities() -> dict[str, bool]:
+def _capabilities(production_binding_c3: dict[str, Any]) -> dict[str, bool]:
     return {
         "patternAvailable": True,
         "simulationReadyTopologyAvailable": True,
@@ -1267,7 +1379,8 @@ def _capabilities() -> dict[str, bool]:
         "simToRenderBindingAvailable": True,
         "bindingReconstructionValidated": True,
         "actualClothSettleAvailable": True,
-        "selfCollisionAvailable": False,
+        "selfCollisionAvailable": True,
+        "selfCollisionEvidenceAvailable": True,
         "sourceImageTextureAvailable": True,
         "sourceCaptureRecordAvailable": True,
         "captureQualityScored": True,
@@ -1325,6 +1438,11 @@ def _capabilities() -> dict[str, bool]:
         "geometryVisualShellReviewAvailable": True,
         "renderTangentsPersistedAvailable": True,
         "poseSuiteBindingEvidenceAvailable": True,
+        "productionBindingC3EvidenceAvailable": True,
+        "productionBindingC3ProfileAvailable": bool(
+            production_binding_c3["readiness"]["acceptedForD0RuntimeBindingProfile"]
+        ),
+        "productionBindingContractAvailable": True,
         "deterministicInspectionArtifactsAvailable": True,
         "visualEvidenceTiersSeparated": True,
         "geometryCleanAcceptanceGateAvailable": True,
@@ -1379,6 +1497,8 @@ def _quality_reports(
     geometry_stitched_shell: dict[str, Any],
     geometry_visual_shell_review: dict[str, Any],
     render_frame_pose_suite: dict[str, Any],
+    production_binding_c3: dict[str, Any],
+    self_collision_report: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -1523,6 +1643,8 @@ def _quality_reports(
         "geometry_stitched_shell.json": geometry_stitched_shell,
         "geometry_visual_shell_review.json": geometry_visual_shell_review,
         "render_frame_pose_suite.json": render_frame_pose_suite,
+        "production_binding_c3.json": production_binding_c3,
+        "self_collision_report.json": self_collision_report,
         "geometry_clean_acceptance_gate.json": geometry_clean_acceptance_gate,
         "clean_geometry_proposal_quality.json": clean_geometry_proposal_quality_report(
             clean_geometry_proposal
@@ -1566,6 +1688,10 @@ def _quality_reports(
             "maximumBodyPenetrationMeters": settle_diagnostics["maximumBodyPenetrationMeters"],
             "maximumStrain": settle_diagnostics["maximumStrain"],
             "selfCollision": settle_diagnostics["selfCollision"],
+            "selfCollisionReportStatus": self_collision_report["readiness"]["status"],
+            "selfCollisionUnresolvedContactCount": self_collision_report["metrics"][
+                "unresolvedContactCount"
+            ],
             "inspectionExportPath": "simulation/simulation_mesh.glb",
         },
         "render_quality.json": {
@@ -1583,6 +1709,12 @@ def _quality_reports(
             "maximumReconstructionError": binding_manifest["maximumReconstructionError"],
             "rmsReconstructionError": binding_manifest["rmsReconstructionError"],
             "perturbationFollowTest": "supported_by_reconstruction_api",
+            "productionBindingC3Status": production_binding_c3["readiness"]["status"],
+            "productionBindingC3Profile": production_binding_c3["profile"]["id"],
+            "motionStateCount": production_binding_c3["motionSuite"]["stateCount"],
+            "maxMotionReconstructionErrorMeters": production_binding_c3["aggregate"][
+                "maxReconstructionErrorMeters"
+            ],
         },
     }
 
@@ -1619,6 +1751,8 @@ def _provenance(
     geometry_stitched_shell: dict[str, Any],
     geometry_visual_shell_review: dict[str, Any],
     render_frame_pose_suite: dict[str, Any],
+    production_binding_c3: dict[str, Any],
+    self_collision_report: dict[str, Any],
     geometry_clean_acceptance_gate: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
@@ -2142,6 +2276,22 @@ def _provenance(
                 [str(inspection_report["integrity"]["inspectionReportHash"])],
             ),
             _stage(
+                "production_binding_c3_profile",
+                PRODUCTION_BINDING_C3_REPORT_VERSION,
+                {
+                    "profile": production_binding_c3["profile"]["id"],
+                    "gateC3Status": production_binding_c3["readiness"]["gateC3Status"],
+                    "motionStateCount": production_binding_c3["motionSuite"]["stateCount"],
+                    "persistedByteValidationRun": production_binding_c3["execution"][
+                        "persistedByteValidationRun"
+                    ],
+                    "denseBindingRun": production_binding_c3["execution"]["denseBindingRun"],
+                    "fallbackBindingRun": production_binding_c3["execution"]["fallbackBindingRun"],
+                    "acceptedForGlobalPhase6": False,
+                },
+                [str(production_binding_c3["integrity"]["productionBindingC3ReportHash"])],
+            ),
+            _stage(
                 "geometry_clean_acceptance_gate",
                 GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
                 {
@@ -2311,13 +2461,26 @@ def _provenance(
                 {
                     "clothSettleRun": True,
                     "convergenceState": str(settle_diagnostics["convergenceState"]),
-                    "selfCollisionAvailable": False,
+                    "selfCollisionAvailable": True,
                     "settings": settle_diagnostics["settings"],
                 },
                 [
                     str(settle_diagnostics["restContentHash"]),
                     str(settle_diagnostics["settledContentHash"]),
                 ],
+            ),
+            _stage(
+                "reference_self_collision",
+                SELF_COLLISION_REPORT_VERSION,
+                {
+                    "selfCollisionRun": self_collision_report["execution"]["selfCollisionRun"],
+                    "broadPhaseRun": self_collision_report["execution"]["broadPhaseRun"],
+                    "narrowPhaseRun": self_collision_report["execution"]["narrowPhaseRun"],
+                    "correctionRun": self_collision_report["execution"]["correctionRun"],
+                    "status": self_collision_report["readiness"]["status"],
+                    "acceptedForProductionGpuSolver": False,
+                },
+                [str(self_collision_report["integrity"]["selfCollisionReportHash"])],
             ),
             _stage(
                 "render_subdivision",
@@ -2337,8 +2500,10 @@ def _provenance(
             _stage("glb_package_writer", "closy.glb_writer.v1", {"format": "glb2"}, []),
         ],
         "warnings": [
-            "self_collision_not_run",
-            "source_texture_projection_not_run",
+            "self_collision_d0_reference_only",
+            "self_collision_unresolved_contacts_d0_reference",
+            "unsupported_high_velocity_tunnelling",
+            "performance_wall_clock_omitted_from_canonical_digest",
             "manual_raw_geometry_proposal_not_canonical",
             "geometry_binding_candidate_not_runtime_binding",
             "geometry_binding_validation_rejected_runtime_binding",
@@ -2406,6 +2571,8 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     stitched_shell_mesh = context["stitchedShellMesh"]
     geometry_visual_shell_review = context["geometryVisualShellReview"]
     render_frame_pose_suite = context["renderFramePoseSuite"]
+    production_binding_c3 = context["productionBindingC3"]
+    self_collision_report = context["selfCollisionReport"]
     inspection_manifest = context["inspectionManifest"]
     inspection_report = context["inspectionReport"]
     geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
@@ -2954,6 +3121,27 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "acceptedForCleanProposal"
             ],
         },
+        "productionBindingC3": {
+            "reportId": production_binding_c3["reportId"],
+            "status": production_binding_c3["readiness"]["status"],
+            "gateC3Status": production_binding_c3["readiness"]["gateC3Status"],
+            "profile": production_binding_c3["profile"]["id"],
+            "persistedValidationStatus": production_binding_c3["persistedValidation"]["status"],
+            "motionStateCount": production_binding_c3["motionSuite"]["stateCount"],
+            "maxReconstructionErrorMeters": production_binding_c3["aggregate"][
+                "maxReconstructionErrorMeters"
+            ],
+            "maxSeamCrackMeters": production_binding_c3["aggregate"]["maxSeamCrackMeters"],
+            "maxOpeningCircumferenceDriftMeters": production_binding_c3["aggregate"][
+                "maxOpeningCircumferenceDriftMeters"
+            ],
+            "maxDenseFallbackParityErrorMeters": production_binding_c3["aggregate"][
+                "maxDenseFallbackParityErrorMeters"
+            ],
+            "acceptedForGlobalPhase6": production_binding_c3["readiness"][
+                "acceptedForGlobalPhase6"
+            ],
+        },
         "geometryCleanAcceptanceGate": {
             "reportId": geometry_clean_acceptance_gate["reportId"],
             "sourceGeometryRuntimeBindingResultId": geometry_clean_acceptance_gate[
@@ -3120,6 +3308,24 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "maximumStrain": settle["maximumStrain"],
             "selfCollisionAvailable": settle["selfCollision"]["available"],
         },
+        "selfCollision": {
+            "reportId": self_collision_report["reportId"],
+            "status": self_collision_report["readiness"]["status"],
+            "candidatePairCount": self_collision_report["metrics"]["candidatePairCount"],
+            "contactCountBeforeCorrection": self_collision_report["metrics"][
+                "contactCountBeforeCorrection"
+            ],
+            "contactCountAfterCorrection": self_collision_report["metrics"][
+                "contactCountAfterCorrection"
+            ],
+            "unresolvedContactCount": self_collision_report["metrics"]["unresolvedContactCount"],
+            "highVelocityTunnelling": self_collision_report["adversarialFixtures"][
+                "highVelocityTunnelling"
+            ]["status"],
+            "acceptedForProductionGpuSolver": self_collision_report["readiness"][
+                "acceptedForProductionGpuSolver"
+            ],
+        },
         "validation": validation,
         "warnings": manifest["warnings"],
         "capabilities": manifest["capabilities"],
@@ -3231,6 +3437,11 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"pose pass={summary['renderFramePoseSuite']['poseSuitePass']}, "
         f"max pose binding error="
         f"{summary['renderFramePoseSuite']['maxPoseBindingErrorMeters']:.8f}\n"
+        f"- Production binding C3: status=`{summary['productionBindingC3']['status']}`, "
+        f"profile=`{summary['productionBindingC3']['profile']}`, "
+        f"motion states={summary['productionBindingC3']['motionStateCount']}, "
+        f"max error={summary['productionBindingC3']['maxReconstructionErrorMeters']:.8f}, "
+        f"global Phase 6={summary['productionBindingC3']['acceptedForGlobalPhase6']}\n"
         f"- Clean acceptance gate: status=`{summary['geometryCleanAcceptanceGate']['status']}`, "
         f"passed={summary['geometryCleanAcceptanceGate']['passedCheckCount']}/"
         f"{summary['geometryCleanAcceptanceGate']['checkCount']}, "
@@ -3260,9 +3471,13 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"`{summary['settle']['solverVersion']}`\n"
         f"- Seam RMS residual: {summary['settle']['rmsSeamResidualMeters']:.8f} m\n"
         f"- Max body penetration: {summary['settle']['maximumBodyPenetrationMeters']:.8f} m\n"
+        f"- Self-collision: status=`{summary['selfCollision']['status']}`, "
+        f"contacts after correction={summary['selfCollision']['contactCountAfterCorrection']}, "
+        f"high velocity=`{summary['selfCollision']['highVelocityTunnelling']}`\n"
         f"- Binding max error: {summary['binding']['maximumReconstructionError']:.8f}\n"
         f"- Validation: {validation['status']} {validation['counts']}\n"
-        "- Limitation: `self_collision_not_run` is expected for the first reference solver.\n"
+        "- Limitation: self-collision is D0 reference-only; high-velocity tunnelling is "
+        "explicitly unsupported.\n"
     )
 
 

@@ -20,7 +20,7 @@ jobs:
   forge:
     name: Forge ${{ matrix.os }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -62,6 +62,15 @@ jobs:
         run: |
           python -m closy_forge validate "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
           python -m closy_forge report "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
+      - name: Measure non-canonical binding workloads
+        run: |
+          python -m closy_forge benchmark binding-c3 \
+            "$RUNNER_TEMP/closy-forge/demo_a.closygarment" \
+            --output "$RUNNER_TEMP/closy-forge/binding-benchmark.json" \
+            --warmups 3 \
+            --repeats 20 \
+            --commit-sha "$GITHUB_SHA" \
+            --json
       - name: Prepare sanitized determinism diagnostics
         if: failure()
         run: |

@@ -19,7 +19,19 @@ The CLI exits with:
 
 Representative current codes:
 
-- `self_collision_not_run`: expected warning for the first deterministic CPU reference solver.
+- `self_collision_not_run`: legacy warning for packages that still claim the old reference solver without self-collision evidence.
+- `self_collision_unresolved_contacts`: warning when the D0 reference self-collision pass runs but retained contacts remain.
+- `self_collision_report_hash_mismatch`: self-collision report changed without updating its payload hash.
+- `self_collision_report_recompute_mismatch`: self-collision evidence no longer recomputes from persisted rest/settled states and constraints.
+- `self_collision_warning_contradiction`: package claims executed self-collision evidence while still carrying the legacy `self_collision_not_run` warning.
+- `production_binding_contract_hash_mismatch`: production binding contract changed without updating its payload hash.
+- `production_binding_contract_duplicate_render_vertex_id`: stable render vertex IDs in the production binding contract are not unique.
+- `production_binding_contract_missing_render_vertex_id`: production binding contract does not enumerate exactly the expected stable render vertex IDs.
+- `production_binding_contract_opening_crossing`: production binding crosses semantic openings in a way the D0 contract forbids.
+- `production_binding_authority_conflict`: package contract exposes a route that conflicts with the single authoritative source/render/binding route.
+- `production_binding_c3_source_hash_mismatch`: production binding C3 source artifact hashes are stale.
+- `production_binding_c3_recompute_mismatch`: C3 evidence no longer recomputes from persisted package, solver-state, binding and dense/fallback GLB bytes.
+- `production_binding_c3_readiness_invalid`: C3 report overclaims beyond the literal D0 fixed-avatar T-shirt evidence or contradicts its partial thresholds.
 - `cloth_settle_not_run`: warning for legacy/unfinished packages that do not run settle.
 - `cloth_settle_not_converged`: package claims settle availability but diagnostics did not converge.
 - `cloth_settle_body_penetration_too_high`: settled state penetrates the avatar beyond the reference threshold.

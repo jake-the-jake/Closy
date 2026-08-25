@@ -7,6 +7,11 @@ from typing import Any
 
 from closy_forge.appearance import hash_texture_identity_report
 from closy_forge.binding.binary_format import read_binding, write_binding
+from closy_forge.binding.production_binding import (
+    build_production_binding_c3_report_from_package,
+    hash_production_binding_c3_report,
+    hash_production_binding_contract,
+)
 from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction_error
 from closy_forge.capture.source_records import hash_capture_record
 from closy_forge.contracts.avatar import REQUIRED_BODY_REGIONS, REQUIRED_LANDMARKS
@@ -88,6 +93,10 @@ from closy_forge.rendering import (
     build_render_frame_pose_suite_report,
     hash_render_frame_pose_suite_report,
 )
+from closy_forge.simulation.self_collision import (
+    build_self_collision_report,
+    hash_self_collision_report,
+)
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
@@ -133,13 +142,28 @@ EXPECTED_FILES = [
     "simulation/settled_state.json",
     "simulation/settle_diagnostics.json",
     "simulation/material_physics.json",
+    "simulation/motion_states/index.json",
+    "simulation/motion_states/neutral_settled.json",
+    "simulation/motion_states/left_arm_raise.json",
+    "simulation/motion_states/right_arm_raise.json",
+    "simulation/motion_states/forward_bend.json",
+    "simulation/motion_states/side_bend.json",
+    "simulation/motion_states/torso_twist.json",
+    "simulation/motion_states/moderate_gust.json",
+    "simulation/motion_states/lightweight_material_extreme.json",
+    "simulation/motion_states/stiff_material_extreme.json",
+    "simulation/motion_states/opening_stress.json",
+    "simulation/motion_states/seam_stress.json",
     "stitch/logical_stitched_analysis_shell.json",
     "render/fallback.glb",
+    "render/simulation_fallback.glb",
+    "render/simulation_fallback_manifest.json",
     "render/stitched_shell.glb",
     "render/mesh_manifest.json",
     "render/materials.json",
     "binding/sim_to_render.bin",
     "binding/binding_manifest.json",
+    "binding/production_binding_contract.json",
     "binding/proposal_sim_to_render.bin",
     "binding/proposal_binding_manifest.json",
     "reports/avatar_quality.json",
@@ -163,6 +187,8 @@ EXPECTED_FILES = [
     "reports/geometry_stitched_shell.json",
     "reports/geometry_visual_shell_review.json",
     "reports/render_frame_pose_suite.json",
+    "reports/production_binding_c3.json",
+    "reports/self_collision_report.json",
     "reports/inspection/manifest.json",
     "reports/inspection/inspection_report.json",
     "reports/inspection/pattern_panels_labels.svg",
@@ -336,6 +362,8 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_geometry_stitched_shell(package_dir, manifest, issues)
     _validate_geometry_visual_shell_review(package_dir, manifest, issues)
     _validate_render_frame_pose_suite(package_dir, manifest, issues)
+    _validate_production_binding_contract(package_dir, manifest, issues)
+    _validate_production_binding_c3(package_dir, manifest, issues)
     _validate_inspection_artifacts(package_dir, manifest, issues)
     _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
@@ -344,6 +372,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
     _validate_settle_state(package_dir, manifest, issues)
+    _validate_self_collision_report(package_dir, manifest, issues)
     _validate_glbs(package_dir, issues)
     _validate_binding(package_dir, issues)
     _validate_capabilities(manifest, issues)
@@ -7439,6 +7468,365 @@ def _validate_render_frame_pose_suite(
         )
 
 
+def _validate_production_binding_contract(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    contract = _read_required_json(package_dir, "binding/production_binding_contract.json", issues)
+    sim_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    render_manifest = _read_required_json(package_dir, "render/mesh_manifest.json", issues)
+    binding_manifest = _read_required_json(package_dir, "binding/binding_manifest.json", issues)
+    if (
+        contract is None
+        or sim_manifest is None
+        or render_manifest is None
+        or binding_manifest is None
+    ):
+        return
+    if contract.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "production_binding_contract_garment_mismatch",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Production binding contract must reference the package garment ID.",
+            )
+        )
+    if contract.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "production_binding_contract_class_mismatch",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Production binding contract must reference the package garment class.",
+            )
+        )
+    if _nested_string(contract, ["integrity", "productionBindingContractHash"], "") != (
+        hash_production_binding_contract(contract)
+    ):
+        issues.append(
+            _issue(
+                "production_binding_contract_hash_mismatch",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Production binding contract hash must match its canonical payload.",
+            )
+        )
+    try:
+        binding = read_binding(package_dir / "binding" / "sim_to_render.bin")
+        sim_mesh = _meshset_from_manifest(sim_manifest)
+        render_mesh = _meshset_from_manifest(render_manifest)
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "production_binding_contract_decode_failed",
+                "fatal",
+                "binding/production_binding_contract.json",
+                str(exc),
+            )
+        )
+        return
+    source = contract.get("sourceSimulation", {})
+    destination = contract.get("destinationRender", {})
+    binary = contract.get("binaryBinding", {})
+    records = contract.get("records", [])
+    if not isinstance(records, list):
+        issues.append(
+            _issue(
+                "production_binding_contract_records_invalid",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Production binding records must be a list.",
+            )
+        )
+        records = []
+    if len(records) != render_mesh.vertex_count or len(records) != len(binding.records):
+        issues.append(
+            _issue(
+                "production_binding_contract_record_count_mismatch",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Production binding contract must enumerate every render vertex exactly once.",
+            )
+        )
+    stable_ids = [
+        str(record.get("renderVertexId")) for record in records if isinstance(record, dict)
+    ]
+    if len(stable_ids) != len(set(stable_ids)):
+        issues.append(
+            _issue(
+                "production_binding_contract_duplicate_render_vertex_id",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Stable render vertex IDs must be unique.",
+            )
+        )
+    if set(stable_ids) != {f"rv.{index:06d}" for index in range(render_mesh.vertex_count)}:
+        issues.append(
+            _issue(
+                "production_binding_contract_missing_render_vertex_id",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Stable render vertex IDs must cover the destination render mesh.",
+            )
+        )
+    if source.get("topologyHash") != topology_hash(sim_mesh):
+        issues.append(
+            _issue(
+                "production_binding_contract_source_topology_stale",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Source simulation topology hash is stale.",
+            )
+        )
+    if source.get("contentHash") != geometry_content_hash(sim_mesh):
+        issues.append(
+            _issue(
+                "production_binding_contract_source_content_stale",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Source simulation content hash is stale.",
+            )
+        )
+    if destination.get("topologyHash") != topology_hash(render_mesh):
+        issues.append(
+            _issue(
+                "production_binding_contract_render_topology_stale",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Destination render topology hash is stale.",
+            )
+        )
+    if destination.get("contentHash") != geometry_content_hash(render_mesh):
+        issues.append(
+            _issue(
+                "production_binding_contract_render_content_stale",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Destination render content hash is stale.",
+            )
+        )
+    if binary.get("simulationTopologyHash") != binding.simulation_topology_hash:
+        issues.append(
+            _issue(
+                "production_binding_contract_binary_sim_hash_mismatch",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Binary binding simulation topology hash mismatch.",
+            )
+        )
+    if binary.get("renderTopologyHash") != binding.render_topology_hash:
+        issues.append(
+            _issue(
+                "production_binding_contract_binary_render_hash_mismatch",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Binary binding render topology hash mismatch.",
+            )
+        )
+    authority = contract.get("authority", {})
+    if (
+        not isinstance(authority, dict)
+        or authority.get("routeId") != "settled_simulation_to_subdivided_render_v1"
+        or authority.get("status") != "authoritative"
+        or authority.get("sourcePath") != "simulation/mesh_manifest.json"
+        or authority.get("denseDestinationPath") != "render/mesh_manifest.json"
+        or authority.get("independentFallbackAssetPath") != "render/simulation_fallback.glb"
+    ):
+        issues.append(
+            _issue(
+                "production_binding_authority_conflict",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Exactly one settled-simulation to subdivided-render route must be authoritative.",
+            )
+        )
+    safeguards = contract.get("safeguards", {})
+    if (
+        not isinstance(safeguards, dict)
+        or int(safeguards.get("invalidOpeningCrossingCount", 1)) != 0
+    ):
+        issues.append(
+            _issue(
+                "production_binding_contract_opening_crossing",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Production binding must not cross semantic openings.",
+            )
+        )
+    if _contains_nonfinite(contract):
+        issues.append(
+            _issue(
+                "production_binding_contract_nonfinite_numeric_value",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Production binding contract must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_production_binding_c3(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    report = _read_required_json(package_dir, "reports/production_binding_c3.json", issues)
+    if report is None:
+        return
+    if report.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "production_binding_c3_garment_mismatch",
+                "fatal",
+                "reports/production_binding_c3.json",
+                "Production binding C3 report must reference the package garment ID.",
+            )
+        )
+    if report.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "production_binding_c3_class_mismatch",
+                "fatal",
+                "reports/production_binding_c3.json",
+                "Production binding C3 report must reference the package garment class.",
+            )
+        )
+    if _nested_string(report, ["integrity", "productionBindingC3ReportHash"], "") != (
+        hash_production_binding_c3_report(report)
+    ):
+        issues.append(
+            _issue(
+                "production_binding_c3_hash_mismatch",
+                "fatal",
+                "reports/production_binding_c3.json",
+                "Production binding C3 report hash must match its canonical payload.",
+            )
+        )
+    source_assets = report.get("sourceAssets", {})
+    if isinstance(source_assets, dict):
+        for asset in source_assets.values():
+            if not isinstance(asset, dict) or "path" not in asset or "sha256" not in asset:
+                continue
+            rel = str(asset["path"])
+            path = package_dir / rel
+            if not path.exists():
+                issues.append(
+                    _issue(
+                        "production_binding_c3_source_missing",
+                        "fatal",
+                        "reports/production_binding_c3.json",
+                        "A C3 source artifact is missing.",
+                        rel,
+                    )
+                )
+            elif asset["sha256"] != sha256_file(path):
+                issues.append(
+                    _issue(
+                        "production_binding_c3_source_hash_mismatch",
+                        "fatal",
+                        "reports/production_binding_c3.json",
+                        "A C3 source artifact hash is stale.",
+                        rel,
+                    )
+                )
+    try:
+        expected = build_production_binding_c3_report_from_package(
+            package_dir=package_dir,
+            garment_id=str(manifest["garmentId"]),
+            garment_class=str(manifest["garmentClass"]),
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "production_binding_c3_recompute_failed",
+                "fatal",
+                "reports/production_binding_c3.json",
+                str(exc),
+            )
+        )
+        return
+    for key in [
+        "sourceAssets",
+        "bindingTrackInventory",
+        "persistedValidation",
+        "thresholds",
+        "motionSuite",
+        "aggregate",
+        "performanceProfile",
+        "execution",
+        "capabilities",
+        "readiness",
+        "policy",
+        "limitations",
+    ]:
+        if report.get(key) != expected.get(key):
+            issues.append(
+                _issue(
+                    "production_binding_c3_recompute_mismatch",
+                    "fatal",
+                    "reports/production_binding_c3.json",
+                    "Production binding C3 report must recompute from package artifacts.",
+                    key,
+                )
+            )
+    readiness = report.get("readiness", {})
+    gate_status = readiness.get("gateC3Status") if isinstance(readiness, dict) else None
+    accepted_d0 = (
+        readiness.get("acceptedForD0RuntimeBindingProfile") if isinstance(readiness, dict) else None
+    )
+    if (
+        not isinstance(readiness, dict)
+        or gate_status not in {"complete_for_d0_fixed_avatar_tshirt_profile", "partial"}
+        or accepted_d0 is not (gate_status == "complete_for_d0_fixed_avatar_tshirt_profile")
+        or readiness.get("acceptedForGlobalPhase6") is not False
+        or readiness.get("acceptedForCleanProposal") is not False
+        or readiness.get("acceptedForCanonical") is not False
+    ):
+        issues.append(
+            _issue(
+                "production_binding_c3_readiness_invalid",
+                "fatal",
+                "reports/production_binding_c3.json",
+                "C3 may pass only for the D0 fixed-avatar T-shirt profile.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict):
+        if caps.get("productionBindingC3EvidenceAvailable") is not True:
+            issues.append(
+                _issue(
+                    "production_binding_c3_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare scoped production binding C3 evidence availability.",
+                )
+            )
+        if caps.get("productionBindingContractAvailable") is not True:
+            issues.append(
+                _issue(
+                    "production_binding_contract_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare the production binding contract.",
+                )
+            )
+        if caps.get("productionBindingC3ProfileAvailable") != bool(accepted_d0):
+            issues.append(
+                _issue(
+                    "production_binding_c3_capability_contradiction",
+                    "fatal",
+                    "manifest.json",
+                    "C3 profile capability must match literal D0 profile acceptance.",
+                )
+            )
+    if _contains_nonfinite(report):
+        issues.append(
+            _issue(
+                "production_binding_c3_nonfinite_numeric_value",
+                "fatal",
+                "reports/production_binding_c3.json",
+                "Production binding C3 report must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_geometry_clean_acceptance_gate(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -10299,6 +10687,181 @@ def _validate_settle_state(
         )
 
 
+def _validate_self_collision_report(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    report = _read_required_json(package_dir, "reports/self_collision_report.json", issues)
+    rest_state = _read_required_json(package_dir, "simulation/rest_state.json", issues)
+    settled_state = _read_required_json(package_dir, "simulation/settled_state.json", issues)
+    sim_manifest = _read_required_json(package_dir, "simulation/mesh_manifest.json", issues)
+    constraints = _read_required_json(package_dir, "simulation/constraints.json", issues)
+    diagnostics = _read_required_json(package_dir, "simulation/settle_diagnostics.json", issues)
+    if (
+        report is None
+        or rest_state is None
+        or settled_state is None
+        or sim_manifest is None
+        or constraints is None
+    ):
+        return
+    if report.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "self_collision_report_garment_mismatch",
+                "fatal",
+                "reports/self_collision_report.json",
+                "Self-collision report must reference the package garment ID.",
+            )
+        )
+    if report.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "self_collision_report_class_mismatch",
+                "fatal",
+                "reports/self_collision_report.json",
+                "Self-collision report must reference the package garment class.",
+            )
+        )
+    if _nested_string(report, ["integrity", "selfCollisionReportHash"], "") != (
+        hash_self_collision_report(report)
+    ):
+        issues.append(
+            _issue(
+                "self_collision_report_hash_mismatch",
+                "fatal",
+                "reports/self_collision_report.json",
+                "Self-collision report hash must match its canonical payload.",
+            )
+        )
+    try:
+        rest_mesh = _meshset_from_state_and_manifest(rest_state, sim_manifest)
+        settled_mesh = _meshset_from_state_and_manifest(settled_state, sim_manifest)
+        expected = build_self_collision_report(
+            garment_id=str(manifest["garmentId"]),
+            garment_class=str(manifest["garmentClass"]),
+            rest_mesh=rest_mesh,
+            settled_mesh=settled_mesh,
+            seam_constraints=constraints,
+        )
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "self_collision_report_recompute_failed",
+                "fatal",
+                "reports/self_collision_report.json",
+                str(exc),
+            )
+        )
+        return
+    for key in [
+        "sourceAssets",
+        "settings",
+        "execution",
+        "metrics",
+        "adversarialFixtures",
+        "timingProfile",
+        "readiness",
+        "policy",
+    ]:
+        if report.get(key) != expected.get(key):
+            issues.append(
+                _issue(
+                    "self_collision_report_recompute_mismatch",
+                    "fatal",
+                    "reports/self_collision_report.json",
+                    "Self-collision evidence must recompute from persisted simulation states.",
+                    key,
+                )
+            )
+    readiness = report.get("readiness", {})
+    metrics = report.get("metrics", {})
+    if (
+        not isinstance(readiness, dict)
+        or readiness.get("acceptedForProductionGpuSolver") is not False
+        or "unsupported_high_velocity_tunnelling" not in readiness.get("limitations", [])
+    ):
+        issues.append(
+            _issue(
+                "self_collision_readiness_invalid",
+                "fatal",
+                "reports/self_collision_report.json",
+                "Self-collision may claim only D0 reference availability in this increment.",
+            )
+        )
+    if not isinstance(metrics, dict):
+        issues.append(
+            _issue(
+                "self_collision_metrics_invalid",
+                "fatal",
+                "reports/self_collision_report.json",
+                "Self-collision report metrics must be an object.",
+            )
+        )
+    elif int(metrics.get("unresolvedContactCount", 1)) != 0:
+        issues.append(
+            _issue(
+                "self_collision_unresolved_contacts",
+                "warning",
+                "reports/self_collision_report.json",
+                "D0 reference self-collision ran but retained unresolved contacts.",
+            )
+        )
+    if diagnostics is not None:
+        self_collision = diagnostics.get("selfCollision", {})
+        if (
+            not isinstance(self_collision, dict)
+            or self_collision.get("available") is not True
+            or self_collision.get("reportRef") != "reports/self_collision_report.json"
+        ):
+            issues.append(
+                _issue(
+                    "self_collision_diagnostics_contradiction",
+                    "fatal",
+                    "simulation/settle_diagnostics.json",
+                    "Settle diagnostics must point to the executed self-collision report.",
+                )
+            )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict):
+        if caps.get("selfCollisionAvailable") is not True:
+            issues.append(
+                _issue(
+                    "self_collision_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare executed self-collision availability.",
+                )
+            )
+        if caps.get("selfCollisionEvidenceAvailable") is not True:
+            issues.append(
+                _issue(
+                    "self_collision_evidence_capability_missing",
+                    "fatal",
+                    "manifest.json",
+                    "Manifest must declare self-collision evidence availability.",
+                )
+            )
+    warnings = manifest.get("warnings", [])
+    if isinstance(warnings, list) and "self_collision_not_run" in warnings:
+        issues.append(
+            _issue(
+                "self_collision_warning_contradiction",
+                "fatal",
+                "manifest.json",
+                "Executed self-collision evidence contradicts self_collision_not_run.",
+            )
+        )
+    if _contains_nonfinite(report):
+        issues.append(
+            _issue(
+                "self_collision_report_nonfinite_numeric_value",
+                "fatal",
+                "reports/self_collision_report.json",
+                "Self-collision report must not contain NaN or Infinity.",
+            )
+        )
+
+
 def _validate_glbs(package_dir: Path, issues: list[ValidationIssue]) -> None:
     for rel in [
         "avatar/reference_avatar.glb",
@@ -10453,7 +11016,48 @@ def _validate_capabilities(manifest: dict[str, Any], issues: list[ValidationIssu
                 "self_collision_not_run",
                 "warning",
                 "manifest.json",
-                "Reference solver v1 does not implement self-collision.",
+                "Reference solver does not implement self-collision.",
+            )
+        )
+    if caps.get("selfCollisionAvailable") and "self_collision_not_run" in manifest.get(
+        "warnings", []
+    ):
+        issues.append(
+            _issue(
+                "capability_warning_contradiction",
+                "fatal",
+                "manifest.json",
+                "selfCollisionAvailable contradicts self_collision_not_run warning.",
+            )
+        )
+    if (
+        caps.get("selfCollisionAvailable")
+        and caps.get("selfCollisionEvidenceAvailable") is not True
+    ):
+        issues.append(
+            _issue(
+                "self_collision_evidence_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Self-collision availability requires an evidence report capability.",
+            )
+        )
+    if caps.get("productionBindingC3EvidenceAvailable") is not True:
+        issues.append(
+            _issue(
+                "production_binding_c3_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare scoped production binding C3 evidence.",
+            )
+        )
+    if caps.get("productionBindingContractAvailable") is not True:
+        issues.append(
+            _issue(
+                "production_binding_contract_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest must declare a production binding contract.",
             )
         )
     if caps.get("geometryMaterialUvTransferAvailable") is not True:

@@ -1,50 +1,101 @@
 # Active Blueprint Resume
 
-This file is a recoverable checkpoint for the continuous Closy master-blueprint work. It records current evidence without trying to cite future CI from the commit that contains this update.
+This is the recoverable checkpoint for continuous Closy master-blueprint execution. It records
+literal evidence only; green CI does not by itself promote a global blueprint gate.
 
 ## Current State
 
-- Active blueprint checkpoint: `PHASE-5-PROVIDER-CONTRACT-BAKEOFF-LOCAL-EVIDENCE`
-- Exact subtask: publish the scoped Phase 5 garment/avatar-only provider contract slice, then open a stacked draft PR targeting the verified BP46 PR #5 head.
-- Current branch: `codex/closy-forge-phase-5-provider`
-- Parent branch / PR target: `codex/closy-forge-foundation-proof-closeout`
-- Phase 5 branch point: `756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a`
-- Latest Phase 5 implementation commit SHA: `12322a1eb23e5f0cd8361ecc01be419bbc175364`
-- Latest Phase 5 implementation commit subject: `Add Phase 5 provider contract bakeoff`
-- Foundation proof draft PR #5: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
-- Verified PR #5 freeze evidence: GitHub Actions run `32835151202` passed at `756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a`; Ubuntu job `97762247917` and Windows job `97762247732` each ran 112 format-checked files, mypy over 89 source files, 199 tests, fresh schemas, byte-identical 89-file package trees, package digest `d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5`, and validation/report with only formal warning `self_collision_not_run`.
-- Phase 5 local package evidence after `12322a1`: two temp package builds `.tmp\phase5_provider_A.closygarment` and `.tmp\phase5_provider_B.closygarment` are byte-identical, 90 physical files each, digest `12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95`, validate status `passed`, and only formal warning `self_collision_not_run`.
-- Current provider registry evidence: `proposals/provider_registry.json` uses `stageVersion=closy.geometry_provider_registry.phase5_contract_v2`, `contractVersion=closy.provider_contract.garment_avatar_only.v1`, declares three providers, selects `closy.manual_local_glb_import.v1`, declares `closy.local_open_model_geometry_adapter.v1`, keeps local open-model execution false, denies network/socket/model-hub access, and preserves provider output as proposal-only non-canonical evidence.
-- Current provider bake-off evidence: `reports/provider_bakeoff.json` uses `stageVersion=closy.provider_bakeoff.phase5_contract_v1`, `status=completed_d0_contract_only_clean_rejected`, `providerCount=3`, `executedProviderCount=1`, `notRunProviderCount=2`, `canonicalAcceptedProviderCount=0`, best provider `closy.manual_local_glb_import.v1`, and local open-model status `not_run_missing_runtime_or_weights`.
-- Clean/canonical acceptance remains rejected. The provider slice adds contract, registry, manual fixture and bake-off evidence only; it does not execute an AI/open-model provider, accept external provider output, perform source/provider visual fidelity, run private-user processing, or promote any provider mesh to canonical truth.
-- Known unrelated local work outside this Forge slice remains unstaged and must be preserved: `metro.config.js`, app avatar files under `src/features/avatar-*`, and untracked `closy-forge/.tmp/`.
+- Active checkpoint: `PHASE-6-C3-EVIDENCE-INTEGRITY-REPAIR`.
+- Branch / draft PR: `codex/closy-forge-phase-6-binding`, PR #7, targeting
+  `codex/closy-forge-phase-5-provider` at branch point
+  `97bf23ccff13e806132b732534d131d80b146467`.
+- Verified prior head: `c2ff305012897f20799cbb3a7df0a822d211fa23`.
+- Verified prior-head CI: run `32865725191`; Ubuntu job `97860392258` and Windows job
+  `97860392462` passed 117-file formatting, Ruff, mypy over 92 source files, 217 tests,
+  fresh schemas, byte-identical 93-file packages and digest
+  `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711`.
+- Supabase Preview was correctly skipped because this stack changes no migrations.
+- Substantive integrity-repair commit: `13604d169ecbc0fddf475cdf177e743790c836a2`.
+- Implementation CI passed in run `32912124815`: Ubuntu job `98008234902` completed in
+  `8m37s`; Windows job `98008235112` completed in `11m12s`.
+- Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
+  be preserved. `closy-forge/.tmp/` contains untracked local evidence only.
 
-## Checks Completed At Current Local Checkpoint
+## Phase 6 Integrity Repair
 
-- `.\.venv\Scripts\ruff.exe format --check .` passed over 113 files.
-- `.\.venv\Scripts\ruff.exe check .` passed.
-- `.\.venv\Scripts\mypy.exe src` passed over 90 source files.
-- `.\.venv\Scripts\python.exe -m closy_forge schemas check --schema-dir schemas\v1 --json` returned `{"issues":[],"status":"fresh"}`.
-- Focused provider/golden/schema tests passed, including provider registry/bake-off unit coverage, provider contract lifecycle/limit safe-failure coverage, bake-off corruption coverage, CLI report JSON/text coverage, schema freshness and the golden demo summary.
-- Full `.\.venv\Scripts\python.exe -m pytest -q` exited 0; collect-only counted 210 Forge tests across 21 test files.
-- Deterministic package diff passed: `.tmp\phase5_provider_A.closygarment` and `.tmp\phase5_provider_B.closygarment` are identical with 90 files each and digest `12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95`.
-- Independent validate/report passed: validation counts `info=0`, `warning=1`, `error=0`, `fatal=0`; only issue code `self_collision_not_run`; CLI report includes `Provider bake-off: status=completed_d0_contract_only_clean_rejected, executed=1/3, best=closy.manual_local_glb_import.v1, canonical accepted=0`.
+- Motion evidence is now generated by `closy.reference_xpbd_cpu.v1.3_integrated_self_collision_d0`
+  and persisted under `simulation/motion_states/`. No render-mesh motion transform is used as an
+  expected motion oracle.
+- Dense output is reconstructed only from reopened state positions plus reopened
+  `binding/sim_to_render.bin` records.
+- The independent fallback is `render/simulation_fallback.glb`: a direct, lower-resolution
+  simulation topology. Its manifest records `callsDenseReconstruction=false`; comparison uses
+  shared panel landmarks and silhouette bounds instead of vertex identity.
+- `binding/production_binding_contract.json` declares
+  `settled_simulation_to_subdivided_render_v1` as the sole authoritative route. Legacy cleanup
+  binding and proposal preview binding remain explicitly deprecated/noncanonical evidence.
+- Crack residual is separation beyond intended seam ease; tangential sliding is a separate
+  reference-seam-frame metric; all four semantic openings are evaluated independently.
+- Normals and VEC4 tangents are recomputed and checked on dense and fallback deformations.
+- Canonical C3 reports truthfully record performance as not run with `repeatCount=0`.
+  `closy-forge benchmark binding-c3` writes separate non-canonical host measurements with OS,
+  architecture, CPU, Python, workload, 3 warmups, 20 repeats, median, p95 and peak Python memory.
+- Local host benchmark at the initial repair checkpoint measured dense full-suite median
+  `219.266850 ms`, p95 `246.774400 ms`, peak `1,952,312 bytes`; fallback full-suite median
+  `0.363750 ms`, p95 `0.402500 ms`, peak `21,024 bytes`. These are descriptive Windows CPU
+  figures, not mobile/GPU targets.
+- Commit-labelled local benchmark measured dense full-suite median/p95 `210.1829/236.3839 ms`
+  and fallback full-suite `0.8544/1.0358 ms`.
+- Implementation CI noncanonical benchmarks measured dense/fallback full-suite median/p95 as
+  `131.688151/134.076597 ms` and `0.518228/0.525543 ms` on Ubuntu, and
+  `250.75065/258.5737 ms` and `0.57115/0.6134 ms` on Windows. These hosted CPU figures are
+  descriptive only.
+- `reports/production_binding_c3.json` remains `partial_scoped_reference_profile`: persisted
+  validation passes, but independent
+  fallback panel-centroid agreement reaches `0.098963781 m` against a `0.03 m` threshold and
+  tangential sliding reaches `0.184355169 m` against a `0.045 m` threshold. The corrected crack
+  residual maximum is `0.021539119 m`; opening drift maximum is `0.003968363 m`.
+- `reports/self_collision_report.json` records self-collision during bounded solver substeps,
+  uses an independent exact-proximity
+  oracle, covers vertex-triangle and edge-edge contacts, and records per-iteration convergence.
+  It remains partial: the current broader detector finds `205` unresolved contacts and retains
+  `unsupported_high_velocity_tunnelling`; no zero-contact or production-GPU claim is made.
 
-## Current Truth And Limits
+## Current Local Validation
 
-- Phase 5 is advanced as a local D0 provider-contract slice, not completed as full model-provider execution.
-- Null/manual providers are exercised for deterministic CI and fail-closed operation; manual fixture import is project-authored non-model evidence.
-- The local open-model adapter is only a declared boundary until authorised runtime, weights, hardware, license/SBOM evidence and isolated execution exist.
-- External providers remain unconfigured and must not be called or uploaded to without explicit future authority.
-- Provider outputs remain non-canonical. Pattern/seam/simulation truth remains canonical, and clean acceptance still rejects clean/canonical promotion.
-- BP46 topology/opening proof remains frozen on PR #5; production stitched-shell sim-to-render binding, crack/sliding proof and C3 runtime evidence belong on the later Phase 6 branch.
+- A repaired package built successfully with 107 physical files, 103 manifest-inventoried files,
+  canonical digest `c8b84a64b4907629d49f5a1016520012b441beac2c7ec5ae3dd324c7fde387ed`
+  and validation counts `info=0`, `warning=1`, `error=0`, `fatal=0`.
+- The only formal validator warning remains `self_collision_unresolved_contacts`.
+- Ruff and mypy pass over 94 source files; 54 checked-in schemas are fresh.
+- Full `pytest` passes all 222 tests in `1243.08 s` locally.
+- Two independently built packages contain identical 107-file trees and 103 inventoried files,
+  with no changed/missing files and digest
+  `c8b84a64b4907629d49f5a1016520012b441beac2c7ec5ae3dd324c7fde387ed`.
+- Both packages validate with `info=0`, `warning=1`, `error=0`, `fatal=0`; report generation
+  succeeds.
+- Run `32912124815` repeated all 222 tests on both OSes (`462.97 s` Ubuntu, `595.60 s`
+  Windows), exported fresh schemas, rebuilt identical 107-file packages with the same digest,
+  validated/reported them and measured the noncanonical workloads. The single bounded evidence
+  sync and its final-head CI remain pending.
+
+## Truthful Limits
+
+- Gate C3 and Phase 6 remain partial globally.
+- No provider-generated production shell, private-user capture, authorised human visual review,
+  mobile/GPU performance, continuous collision detection or ZeroOne execution has run.
+- The legacy cleanup and proposal-preview routes remain for provenance but are not authorities.
+- Hosted CI covers Python 3.11 on Ubuntu and Windows only, with a 30-minute Forge job budget;
+  this is not evidence for macOS, GPU or mobile performance.
 
 ## Next Exact Command
 
 ```powershell
-git status --short --branch
+cd E:\apps\Closy\closy-forge
+git status --short
 ```
 
 ## Next Safe Action
 
-Push `codex/closy-forge-phase-5-provider`, create a draft PR targeting `codex/closy-forge-foundation-proof-closeout`, wait for Ubuntu/Windows Forge CI at commit `12322a1eb23e5f0cd8361ecc01be419bbc175364`, inspect both job logs, update the PR body with exact run/job evidence, and then create a remote evidence-sync commit if the implementation run is green.
+Commit and push this single evidence sync, inspect final-head CI without another evidence commit,
+then create `codex/closy-forge-d0-fidelity-closeout` from the exact green PR #7 head.
