@@ -71,6 +71,32 @@ def build_constraints(
         "schemaVersion": 1,
         "constraintModel": "seam_pairs_v1",
         "constraints": constraints,
+        "seams": [
+            {
+                "id": str(seam["id"]),
+                "spans": [
+                    {
+                        "panelId": str(span["panelId"]),
+                        "edgeId": str(span["edgeId"]),
+                        "orientation": str(span["orientation"]),
+                        **(
+                            {"sampleRange": list(span["sampleRange"])}
+                            if "sampleRange" in span
+                            else {}
+                        ),
+                        **(
+                            {"partitionId": str(span["partitionId"])}
+                            if "partitionId" in span
+                            else {}
+                        ),
+                    }
+                    for span in seam.get("spans", [])
+                ],
+            }
+            for seam in pattern["seams"]
+            if seam.get("simulationEnabled", True) is not False
+        ],
+        "openings": _opening_span_payloads(pattern, edge_maps, mesh_panel_index),
         "derivableFutureConstraints": ["stretch", "shear", "bending"],
     }
 
@@ -99,3 +125,49 @@ def _span_vertices(span: dict[str, Any], edge_maps: dict[str, dict[str, list[int
     if span["orientation"] == "reverse":
         ids.reverse()
     return ids
+
+
+def _opening_span_payloads(
+    pattern: dict[str, Any],
+    edge_maps: dict[str, dict[str, list[int]]],
+    mesh_panel_index: dict[str, int],
+) -> list[dict[str, Any]]:
+    edge_to_panel: dict[str, str] = {}
+    for panel in pattern["panels"]:
+        panel_id = str(panel["id"])
+        for edge in panel.get("boundary", []):
+            edge_to_panel[str(edge["id"])] = panel_id
+
+    payloads: list[dict[str, Any]] = []
+    for opening in pattern["openings"]:
+        boundary_edges: list[dict[str, Any]] = []
+        for edge_id in opening.get("boundaryEdges", []):
+            edge_key = str(edge_id)
+            opening_panel_id = edge_to_panel.get(edge_key)
+            if opening_panel_id is None:
+                boundary_edges.append(
+                    {
+                        "edgeId": edge_key,
+                        "status": "missing_panel_edge",
+                    }
+                )
+                continue
+            vertex_indices = [int(index) for index in edge_maps[opening_panel_id][edge_key]]
+            boundary_edges.append(
+                {
+                    "edgeId": edge_key,
+                    "panelId": opening_panel_id,
+                    "meshIndex": int(mesh_panel_index[opening_panel_id]),
+                    "vertexIndices": vertex_indices,
+                    "vertexCount": len(vertex_indices),
+                    "status": "resolved",
+                }
+            )
+        payloads.append(
+            {
+                "id": str(opening["id"]),
+                "status": str(opening.get("status", "unknown")),
+                "boundaryEdges": boundary_edges,
+            }
+        )
+    return payloads

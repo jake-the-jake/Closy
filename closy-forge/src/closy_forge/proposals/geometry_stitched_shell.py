@@ -219,7 +219,11 @@ def audit_stitched_shell(
     provenance_coverage = _provenance_coverage(source_vertex_map, mesh)
     binding_coverage = _binding_reconstruction_audit(mesh, source_vertex_map, tolerance)
     displacement_metrics = _source_displacement_metrics(source_vertex_map, meshset)
-    semantic_opening_audit = _semantic_opening_audit(boundary_components)
+    semantic_opening_audit = _semantic_opening_audit(
+        boundary_components,
+        constraints,
+        source_vertex_map,
+    )
     return {
         "auditVersion": "closy.stitched_shell_topology_audit.v1",
         "meshCount": len(meshset.meshes),
@@ -673,6 +677,8 @@ def _opening_proof(topology_audit: dict[str, Any]) -> dict[str, Any]:
         "missingExpectedOpeningIds": semantic_audit["missingExpectedOpeningIds"],
         "missingExpectedOpeningCount": semantic_audit["missingExpectedOpeningCount"],
         "candidateOpeningMappings": semantic_audit["candidateOpeningMappings"],
+        "panelEdgeProvenanceStatus": semantic_audit["panelEdgeProvenanceStatus"],
+        "sourceOpeningEdgeProvenance": semantic_audit["sourceOpeningEdgeProvenance"],
         "failureReasons": semantic_audit["failureReasons"],
         "unexpectedBoundaryLoopCount": topology_audit["unexpectedBoundaryLoopCount"],
         "status": semantic_audit["status"],
@@ -1178,10 +1184,15 @@ def _component_count(mesh: Mesh) -> int:
     return union.component_count()
 
 
-def _semantic_opening_audit(boundary_components: list[dict[str, Any]]) -> dict[str, Any]:
+def _semantic_opening_audit(
+    boundary_components: list[dict[str, Any]],
+    constraints: dict[str, Any],
+    source_vertex_map: list[dict[str, Any]],
+) -> dict[str, Any]:
     simple_components = [
         component for component in boundary_components if component["isSimpleCycle"] is True
     ]
+    source_provenance = _source_opening_edge_provenance(constraints, source_vertex_map)
     failure_reasons: list[str] = []
     if len(boundary_components) != len(_EXPECTED_OPENING_IDS):
         failure_reasons.append("boundary_component_count_mismatch")
@@ -1194,14 +1205,12 @@ def _semantic_opening_audit(boundary_components: list[dict[str, Any]]) -> dict[s
     if len(candidate_mappings) != len(_EXPECTED_OPENING_IDS):
         failure_reasons.append("semantic_assignment_incomplete")
 
-    # Panel/edge provenance is required before a geometric boundary component can
-    # become a proven semantic garment opening. The current stitched candidate
-    # does not yet carry ordered panel-edge provenance for each boundary cycle.
-    panel_edge_provenance_status = "fail"
-    failure_reasons.append("panel_edge_provenance_missing")
+    panel_edge_provenance_status = source_provenance["status"]
+    if panel_edge_provenance_status == "fail":
+        failure_reasons.append("panel_edge_provenance_missing")
 
     proven_opening_ids: list[str] = []
-    if not failure_reasons and panel_edge_provenance_status == "pass":
+    if not failure_reasons:
         proven_opening_ids = _EXPECTED_OPENING_IDS.copy()
     missing_ids = [
         opening_id for opening_id in _EXPECTED_OPENING_IDS if opening_id not in proven_opening_ids
@@ -1216,6 +1225,7 @@ def _semantic_opening_audit(boundary_components: list[dict[str, Any]]) -> dict[s
         "candidateOpeningMappings": candidate_mappings,
         "candidateMappingCount": len(candidate_mappings),
         "panelEdgeProvenanceStatus": panel_edge_provenance_status,
+        "sourceOpeningEdgeProvenance": source_provenance,
         "provenOpeningIds": proven_opening_ids,
         "provenOpeningCount": len(proven_opening_ids),
         "missingExpectedOpeningIds": missing_ids,
@@ -1253,6 +1263,94 @@ def _candidate_opening_mappings(boundary_components: list[dict[str, Any]]) -> li
         }
         for opening_id, component in candidates
     ]
+
+
+def _source_opening_edge_provenance(
+    constraints: dict[str, Any],
+    source_vertex_map: list[dict[str, Any]],
+) -> dict[str, Any]:
+    logical_by_source_vertex: dict[tuple[int, int], int] = {}
+    for mapping in source_vertex_map:
+        logical_index = int(mapping["logicalVertexIndex"])
+        for source in mapping.get("sourceVertices", []):
+            logical_by_source_vertex[(int(source["meshIndex"]), int(source["vertexIndex"]))] = (
+                logical_index
+            )
+
+    openings = [opening for opening in constraints.get("openings", []) if isinstance(opening, dict)]
+    opening_by_id = {str(opening.get("id", "")): opening for opening in openings}
+    records: list[dict[str, Any]] = []
+    missing_opening_ids: list[str] = []
+    missing_boundary_edges: list[dict[str, str]] = []
+    missing_logical_vertices: list[dict[str, str]] = []
+
+    for opening_id in _EXPECTED_OPENING_IDS:
+        opening = opening_by_id.get(opening_id)
+        if opening is None:
+            missing_opening_ids.append(opening_id)
+            continue
+        edge_records: list[dict[str, Any]] = []
+        for edge in opening.get("boundaryEdges", []):
+            if not isinstance(edge, dict):
+                continue
+            edge_id = str(edge.get("edgeId", "unknown"))
+            if edge.get("status") != "resolved":
+                missing_boundary_edges.append({"openingId": opening_id, "edgeId": edge_id})
+                edge_records.append(
+                    {
+                        "edgeId": edge_id,
+                        "status": str(edge.get("status", "unresolved")),
+                    }
+                )
+                continue
+            mesh_index = int(edge["meshIndex"])
+            vertex_indices = [int(index) for index in edge.get("vertexIndices", [])]
+            logical_vertex_indices = sorted(
+                {
+                    logical_by_source_vertex[(mesh_index, vertex_index)]
+                    for vertex_index in vertex_indices
+                    if (mesh_index, vertex_index) in logical_by_source_vertex
+                }
+            )
+            if not logical_vertex_indices:
+                missing_logical_vertices.append({"openingId": opening_id, "edgeId": edge_id})
+            edge_records.append(
+                {
+                    "edgeId": edge_id,
+                    "panelId": str(edge["panelId"]),
+                    "meshIndex": mesh_index,
+                    "sourceVertexCount": len(vertex_indices),
+                    "logicalVertexCount": len(logical_vertex_indices),
+                    "logicalVertexIds": [
+                        f"logicalVertex.{index:06d}" for index in logical_vertex_indices
+                    ],
+                    "status": "mapped" if logical_vertex_indices else "missing_logical_vertices",
+                }
+            )
+        records.append(
+            {
+                "openingId": opening_id,
+                "status": str(opening.get("status", "unknown")),
+                "boundaryEdges": edge_records,
+                "boundaryEdgeCount": len(edge_records),
+            }
+        )
+
+    status = (
+        "pass"
+        if not missing_opening_ids and not missing_boundary_edges and not missing_logical_vertices
+        else "fail"
+    )
+    return {
+        "auditVersion": "closy.stitched_shell_opening_panel_edge_provenance.v1",
+        "status": status,
+        "expectedOpeningIds": _EXPECTED_OPENING_IDS,
+        "recordedOpeningCount": len(records),
+        "records": records,
+        "missingOpeningIds": missing_opening_ids,
+        "missingBoundaryEdges": missing_boundary_edges,
+        "missingLogicalVertices": missing_logical_vertices,
+    }
 
 
 def _boundary_components(mesh: Mesh, boundary_edges: list[tuple[int, int]]) -> list[dict[str, Any]]:

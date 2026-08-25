@@ -497,11 +497,39 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["semanticOpeningAssignmentStatus"] == "fail"
     assert report["topologyAudit"]["semanticOpeningAudit"]["boundaryComponentCount"] == 2
     assert report["topologyAudit"]["semanticOpeningAudit"]["simpleBoundaryCycleCount"] == 0
-    assert report["topologyAudit"]["semanticOpeningAudit"]["panelEdgeProvenanceStatus"] == "fail"
+    assert report["topologyAudit"]["semanticOpeningAudit"]["panelEdgeProvenanceStatus"] == "pass"
+    source_opening_provenance = report["topologyAudit"]["semanticOpeningAudit"][
+        "sourceOpeningEdgeProvenance"
+    ]
+    assert source_opening_provenance["status"] == "pass"
+    assert source_opening_provenance["recordedOpeningCount"] == 4
+    assert source_opening_provenance["missingOpeningIds"] == []
+    assert source_opening_provenance["missingBoundaryEdges"] == []
+    assert source_opening_provenance["missingLogicalVertices"] == []
+    assert [record["openingId"] for record in source_opening_provenance["records"]] == [
+        "opening.neck",
+        "opening.hem",
+        "opening.cuff.left",
+        "opening.cuff.right",
+    ]
+    assert source_opening_provenance["records"][0]["boundaryEdges"][0] == {
+        "edgeId": "edge.neck.front",
+        "panelId": "panel.front",
+        "meshIndex": 0,
+        "sourceVertexCount": 5,
+        "logicalVertexCount": 5,
+        "logicalVertexIds": [
+            "logicalVertex.000039",
+            "logicalVertex.000040",
+            "logicalVertex.000041",
+            "logicalVertex.000042",
+            "logicalVertex.000043",
+        ],
+        "status": "mapped",
+    }
     assert report["topologyAudit"]["semanticOpeningAudit"]["failureReasons"] == [
         "boundary_branch_vertices_present",
         "boundary_component_count_mismatch",
-        "panel_edge_provenance_missing",
         "semantic_assignment_incomplete",
         "simple_boundary_cycle_count_mismatch",
     ]
@@ -529,7 +557,7 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert "ordered_seam_correspondence_failed" not in report["readiness"]["blockingReasons"]
     assert "self_intersections_detected" in report["readiness"]["blockingReasons"]
     assert "semantic_opening_assignment_failed" in report["readiness"]["blockingReasons"]
-    assert "opening_panel_edge_provenance_missing" in report["readiness"]["blockingReasons"]
+    assert "opening_panel_edge_provenance_missing" not in report["readiness"]["blockingReasons"]
     assert "stitched_shell_duplicate_faces" not in report["readiness"]["blockingReasons"]
     assert "stitched_shell_duplicate_operation_ids" not in report["readiness"]["blockingReasons"]
     assert "self_intersection_not_run" not in report["readiness"]["blockingReasons"]
@@ -545,6 +573,8 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert analysis["openingProof"]["semanticOpeningAssignmentRun"] is True
     assert analysis["openingProof"]["semanticOpeningAssignmentStatus"] == "fail"
     assert analysis["openingProof"]["candidateOpeningMappings"] == []
+    assert analysis["openingProof"]["panelEdgeProvenanceStatus"] == "pass"
+    assert analysis["openingProof"]["sourceOpeningEdgeProvenance"]["status"] == "pass"
     assert analysis["openingProof"]["missingExpectedOpeningIds"] == [
         "opening.neck",
         "opening.hem",

@@ -6376,12 +6376,29 @@ def _validate_geometry_stitched_shell(
             )
         )
     opening_proof = analysis.get("openingProof", {})
+    expected_opening_ids = (
+        opening_proof.get("expectedOpeningIds", []) if isinstance(opening_proof, dict) else []
+    )
+    source_opening_provenance = (
+        opening_proof.get("sourceOpeningEdgeProvenance", {})
+        if isinstance(opening_proof, dict)
+        else {}
+    )
+    source_opening_provenance_valid = (
+        isinstance(source_opening_provenance, dict)
+        and opening_proof.get("panelEdgeProvenanceStatus") == "pass"
+        and source_opening_provenance.get("status") == "pass"
+        and source_opening_provenance.get("recordedOpeningCount") == len(expected_opening_ids)
+        and source_opening_provenance.get("missingOpeningIds") == []
+        and source_opening_provenance.get("missingBoundaryEdges") == []
+        and source_opening_provenance.get("missingLogicalVertices") == []
+    )
     if (
         not isinstance(opening_proof, dict)
         or opening_proof.get("status") != "fail"
-        or opening_proof.get("missingExpectedOpeningCount")
-        != len(opening_proof.get("expectedOpeningIds", []))
+        or opening_proof.get("missingExpectedOpeningCount") != len(expected_opening_ids)
         or opening_proof.get("provenOpeningCount") != 0
+        or not source_opening_provenance_valid
     ):
         issues.append(
             _issue(
