@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-46 seam-settle local evidence",
+  "generatedBy": "BP-46 seam-settle remote evidence",
   "rows": [
     {
       "commitSha": [
@@ -175,7 +175,8 @@
         "c6fa323506712305a4b5a73bbad118e8d9e1e626",
         "704a10e2f166ba340ba078324f0d5a1fcc6af369",
         "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
-        "8790567cc8b8a9d8db2214ec7133bbe1281f6dca"
+        "8790567cc8b8a9d8db2214ec7133bbe1281f6dca",
+        "49afef27df5caa69265d21244e8b82b527371c54"
       ],
       "dependencies": [
         "BP-45-IMPLEMENTATION-23",
@@ -220,7 +221,8 @@
         "reference cloth solver v1.1 softens high-y/neck-band support stiffness to 0.03 and tightens neck-band seam target cap to 0.02 m without changing the ordered seam audit tolerance policy",
         "ordered seam correspondence now passes with distanceToleranceMeters=0.032551892, oversizedPreStitchCorrespondenceCount=0, failureReasons=[] and preStitchDistanceDistributionMeters.max=0.030415545",
         "local seam-settle full pytest exited 0, ruff format --check . over 112 files, ruff check ., mypy src over 89 files and fresh schemas",
-        "local seam-settle package smoke builds are byte-identical with 89 files each, 85 manifest-inventoried files, digest 31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8 and only self_collision_not_run formal warning"
+        "local seam-settle package smoke builds are byte-identical with 89 files each, 85 manifest-inventoried files, digest 31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8 and only self_collision_not_run formal warning",
+        "remote seam-settle Actions run 32798354036 passed at 49afef2 on Ubuntu job 97654190062 and Windows job 97654189886 with 194 tests per OS, 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest 31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8 and only self_collision_not_run formal warning"
       ],
       "id": "BP-46-STITCHED-SHELL-OUTPUT",
       "implementationPaths": [
@@ -2649,5 +2651,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp46-seam-settle-local-v1"
+  "version": "bp46-seam-settle-remote-v1"
 }

@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-seam-settle-local-v1"
-    assert payload["generatedBy"] == "BP-46 seam-settle local evidence"
+    assert payload["version"] == "bp46-seam-settle-remote-v1"
+    assert payload["generatedBy"] == "BP-46 seam-settle remote evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -181,6 +181,7 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "704a10e2f166ba340ba078324f0d5a1fcc6af369" in bp46["commitSha"]
     assert "e11eb8d82fc01c032a14cd4e502a2eb8a736087a" in bp46["commitSha"]
     assert "8790567cc8b8a9d8db2214ec7133bbe1281f6dca" in bp46["commitSha"]
+    assert "49afef27df5caa69265d21244e8b82b527371c54" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
     assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
     assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
@@ -245,6 +246,11 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     )
     assert any("89 files each" in item for item in bp46["executableEvidence"])
     assert any("85 manifest-inventoried files" in item for item in bp46["executableEvidence"])
+    assert any(
+        "remote seam-settle Actions run 32798354036" in item for item in bp46["executableEvidence"]
+    )
+    assert any("97654190062" in item for item in bp46["executableEvidence"])
+    assert any("97654189886" in item for item in bp46["executableEvidence"])
     assert any(
         "95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2" in item
         for item in bp46["executableEvidence"]
@@ -496,11 +502,10 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "oversizedPreStitchCorrespondenceCount=0" in ledger
     assert "preStitchDistanceDistributionMeters.max=0.030415545" in ledger
     assert "31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8" in ledger
-    assert "a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f" in ledger
-    assert "95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2" in ledger
-    assert "ordered seam partition Forge run `32791907899`" in ledger
-    assert "97634961686" in ledger
-    assert "97634961466" in ledger
+    assert "ordered seam partition run `32791907899`" in ledger
+    assert "seam-settle Forge run `32798354036`" in ledger
+    assert "97654190062" in ledger
+    assert "97654189886" in ledger
     assert "Remote run `32777652602`" in ledger
     assert "docs-verification run `32778840554`" in ledger
     assert (

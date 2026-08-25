@@ -11,8 +11,8 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
 - Latest implementation commit SHA: `8790567cc8b8a9d8db2214ec7133bbe1281f6dca`
 - Latest implementation commit subject: `Tighten BP46 seam settling evidence`
-- Latest evidence commit SHA before this update: `01b01552396180da5d3d1eedac8bfbfdcaa1605e`
-- Record based on SHA: `8790567cc8b8a9d8db2214ec7133bbe1281f6dca`; this resume file itself belongs to the follow-up foundation-proof seam-settle truth-sync commit.
+- Latest evidence commit SHA before this update: `49afef27df5caa69265d21244e8b82b527371c54`
+- Record based on SHA: `49afef27df5caa69265d21244e8b82b527371c54`; this resume file itself belongs to the follow-up foundation-proof seam-settle remote-evidence truth-sync commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
@@ -20,6 +20,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Last remote foundation-proof docs evidence: GitHub Actions run `32778840554` passed at commit `a51eb915c597c77257e1f77b26823d8bfd0a3d3b`; Ubuntu job `97596082459` passed in 7m51s and Windows job `97596082034` passed in 10m28s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof ordered-correspondence evidence: GitHub Actions run `32782411096` passed at commit `f80cc326aabd73278a809a1ee1f403d0dbc1f1a5`; Ubuntu job `97607120382` passed in 7m54s with 194 tests in 450.96s, and Windows job `97607120119` passed in 11m30s with 194 tests in 637.74s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof ordered-seam partition evidence: GitHub Actions run `32791907899` passed at commit `7eacf97a61c65329963ffd82a4c78adc1cbf8b3f`; Ubuntu job `97634961686` passed in 8m00s with 194 tests in 451.05s, and Windows job `97634961466` passed in 11m03s with 194 tests in 610.92s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and validation/report with only `self_collision_not_run`.
+- Last remote foundation-proof seam-settle evidence: GitHub Actions run `32798354036` passed at commit `49afef27df5caa69265d21244e8b82b527371c54`; Ubuntu job `97654190062` passed in 7m53s with 194 tests in 446.94s, and Windows job `97654189886` passed in 10m32s with 194 tests in 587.33s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`, and validation/report with only `self_collision_not_run`.
 - Current local BP46 seam-settle evidence after `8790567`: focused stitched-shell/corruption/reference/golden tests passed, bounded variant/report integration tests passed, full `pytest -q` exited 0, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, and schema freshness checks passed.
 - Current local package digest after seam-settle tightening: two OS-temp package builds were byte-identical with 89 files each, 85 manifest-inventoried files, and digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
@@ -107,7 +108,7 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for the seam-settle implementation/truth-sync update.
+- Remote CI has not yet run for this seam-settle remote-evidence truth-sync update.
 
 ## Next Exact Command
 
@@ -118,4 +119,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Commit and push this seam-settle truth-sync, update draft PR #5, then continue BP-46 semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
+Commit and push this seam-settle remote-evidence truth-sync, update draft PR #5, then continue BP-46 semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
