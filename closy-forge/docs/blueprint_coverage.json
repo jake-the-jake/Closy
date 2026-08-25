@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-46 ordered seam partition local evidence",
+  "generatedBy": "BP-46 ordered seam partition remote evidence",
   "rows": [
     {
       "commitSha": [
@@ -215,7 +215,8 @@
         "ordered seam span partitioning records boundarySpanPartitions for sleeve caps and neck band with reusedBoundaryVertexCount=0, reusedBoundarySpanCount=0 and multiSpanFanoutSeamIds=[]",
         "ordered seam correspondence now fails only for pre_stitch_distance_exceeds_local_edge_tolerance with distanceToleranceMeters=0.035577926, oversizedPreStitchCorrespondenceCount=16 and preStitchDistanceDistributionMeters.max=0.093647491",
         "local ordered seam partition full pytest exited 0 after 194 Forge tests, ruff format --check . over 112 files, ruff check ., mypy src over 89 files and fresh schemas",
-        "local ordered seam partition package smoke builds are byte-identical with 89 files each, digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2 and only self_collision_not_run formal warning"
+        "local ordered seam partition package smoke builds are byte-identical with 89 files each, digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2 and only self_collision_not_run formal warning",
+        "remote ordered seam partition Actions run 32791907899 passed at 7eacf97 on Ubuntu job 97634961686 and Windows job 97634961466 with 194 tests per OS, fresh schemas, identical 89-file package trees and digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2"
       ],
       "id": "BP-46-STITCHED-SHELL-OUTPUT",
       "implementationPaths": [
@@ -1168,7 +1169,8 @@
         "BP46 stitched-shell report now records logical binding reconstruction coverage and error metrics",
         "BP46 stitched-shell report now records topologyRepairEvidence for duplicate logical-face culling and unique seam operation IDs",
         "BP46 stitched-shell report now records ordered seam correspondence status, scale-derived tolerance, reused boundary spans and pre/post stitch distance distributions",
-        "BP46 stitched-shell report now records ordered seam span partitions and distinguishes partitioned ownership from remaining oversized pre-stitch distance blockers"
+        "BP46 stitched-shell report now records ordered seam span partitions and distinguishes partitioned ownership from remaining oversized pre-stitch distance blockers",
+        "remote ordered seam partition Actions run 32791907899 passed at 7eacf97 on Ubuntu job 97634961686 and Windows job 97634961466 with 194 tests per OS, fresh schemas, identical 89-file package trees and digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2"
       ],
       "id": "BP-08-U-QUALITY-PROVENANCE",
       "implementationPaths": [
@@ -2641,5 +2643,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp46-ordered-seam-partition-local-v1"
+  "version": "bp46-ordered-seam-partition-remote-v1"
 }

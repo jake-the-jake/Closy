@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-ordered-seam-partition-local-v1"
-    assert payload["generatedBy"] == "BP-46 ordered seam partition local evidence"
+    assert payload["version"] == "bp46-ordered-seam-partition-remote-v1"
+    assert payload["generatedBy"] == "BP-46 ordered seam partition remote evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -235,6 +235,12 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
         "95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2" in item
         for item in bp46["executableEvidence"]
     )
+    assert any(
+        "remote ordered seam partition Actions run 32791907899" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("97634961686" in item for item in bp46["executableEvidence"])
+    assert any("97634961466" in item for item in bp46["executableEvidence"])
     assert any("193 collected Forge tests" in item for item in bp46["executableEvidence"])
     assert any("194 collected Forge tests" in item for item in bp46["executableEvidence"])
     assert any("89 files each" in item for item in bp46["executableEvidence"])
@@ -475,6 +481,9 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "oversizedPreStitchCorrespondenceCount=16" in ledger
     assert "a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f" in ledger
     assert "95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2" in ledger
+    assert "ordered seam partition Forge run `32791907899`" in ledger
+    assert "97634961686" in ledger
+    assert "97634961466" in ledger
     assert "Remote run `32777652602`" in ledger
     assert "docs-verification run `32778840554`" in ledger
     assert (

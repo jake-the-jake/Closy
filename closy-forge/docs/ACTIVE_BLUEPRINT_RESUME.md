@@ -19,6 +19,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Last remote foundation-proof implementation evidence: GitHub Actions run `32777652602` passed at commit `c6fa323506712305a4b5a73bbad118e8d9e1e626`; Ubuntu job `97592313066` passed in 7m46s and Windows job `97592313591` passed in 9m20s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof docs evidence: GitHub Actions run `32778840554` passed at commit `a51eb915c597c77257e1f77b26823d8bfd0a3d3b`; Ubuntu job `97596082459` passed in 7m51s and Windows job `97596082034` passed in 10m28s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof ordered-correspondence evidence: GitHub Actions run `32782411096` passed at commit `f80cc326aabd73278a809a1ee1f403d0dbc1f1a5`; Ubuntu job `97607120382` passed in 7m54s with 194 tests in 450.96s, and Windows job `97607120119` passed in 11m30s with 194 tests in 637.74s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f`, and validation/report with only `self_collision_not_run`.
+- Last remote foundation-proof ordered-seam partition evidence: GitHub Actions run `32791907899` passed at commit `7eacf97a61c65329963ffd82a4c78adc1cbf8b3f`; Ubuntu job `97634961686` passed in 8m00s with 194 tests in 451.05s, and Windows job `97634961466` passed in 11m03s with 194 tests in 610.92s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and validation/report with only `self_collision_not_run`.
 - Current local BP46 ordered seam partition evidence after `e11eb8d`: focused failing integration tests passed, full `pytest -q` exited 0, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, and schema freshness checks passed.
 - Current local package digest after ordered seam partitioning: two OS-temp package builds were byte-identical with 89 files each and digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
@@ -96,10 +97,11 @@ Current blocking evidence:
 - Local schema freshness check after `e11eb8d` returned `{"issues":[],"status":"fresh"}`.
 - Local `$env:PYTHONPATH=(Get-Location).Path; .\.venv\Scripts\pytest.exe -q` passed after `e11eb8d`.
 - Local ordered-seam partition package smoke after `e11eb8d` built two OS-temp packages with 89 files each, `packages diff --json` status `identical`, `validate --json` status `passed`, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and only `self_collision_not_run`.
+- Remote ordered seam partition Forge run `32791907899` passed at `7eacf97` on Ubuntu job `97634961686` and Windows job `97634961466` with 194 tests per OS, fresh schemas, identical 89-file package trees, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and only `self_collision_not_run`.
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for implementation commit `e11eb8d` or this ordered-seam partition truth-sync update.
+- Remote CI has not yet run for this ordered-seam partition remote-evidence truth-sync update.
 
 ## Next Exact Command
 
