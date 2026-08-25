@@ -7,7 +7,8 @@ from typing import Any
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross, scale, sub
 from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
 
-SOLVER_VERSION = "closy.reference_xpbd_cpu.v1"
+SOLVER_VERSION = "closy.reference_xpbd_cpu.v1.1"
+NECK_BAND_SEAM_TARGET_LENGTH_METERS = 0.02
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,7 @@ class SettleSettings:
     stretch_stiffness: float = 0.42
     seam_stiffness: float = 0.96
     bend_stiffness: float = 0.08
-    support_stiffness: float = 0.10
+    support_stiffness: float = 0.03
 
 
 @dataclass(frozen=True)
@@ -234,7 +235,7 @@ def _build_distance_constraints(
                 mesh_a.vertices[int(span_a["vertexIndex"])],
                 mesh_b.vertices[int(span_b["vertexIndex"])],
             )
-            target_length = min(0.035, rest_distance * 0.70)
+            target_length = min(NECK_BAND_SEAM_TARGET_LENGTH_METERS, rest_distance * 0.50)
         constraints.append(
             DistanceConstraint(
                 a,

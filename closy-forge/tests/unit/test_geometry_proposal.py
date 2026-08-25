@@ -393,13 +393,13 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["seamSpanCoverage"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 0
     assert report["topologyAudit"]["seamSpanCoverage"]["missingRequiredOperationIds"] == []
-    assert report["topologyAudit"]["orderedSeamCorrespondenceStatus"] == "fail"
+    assert report["topologyAudit"]["orderedSeamCorrespondenceStatus"] == "pass"
     ordered_correspondence = report["topologyAudit"]["orderedSeamCorrespondenceAudit"]
     assert ordered_correspondence["sourceConstraintCount"] == len(constraints["constraints"])
     assert ordered_correspondence["executedOperationCount"] == len(constraints["constraints"])
-    assert ordered_correspondence["distanceToleranceMeters"] == 0.035577926
+    assert ordered_correspondence["distanceToleranceMeters"] == 0.032551892
     assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 63
-    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.093647491
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.030415545
     assert ordered_correspondence["postStitchResidualDistributionMeters"]["max"] == 0.0
     assert ordered_correspondence["unmatchedCorrespondenceCount"] == 0
     assert ordered_correspondence["duplicatedOperationIdCount"] == 0
@@ -408,10 +408,8 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert ordered_correspondence["reusedBoundarySpanCount"] == 0
     assert ordered_correspondence["reusedBoundarySpans"] == []
     assert ordered_correspondence["multiSpanFanoutSeamIds"] == []
-    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] == 16
-    assert ordered_correspondence["failureReasons"] == [
-        "pre_stitch_distance_exceeds_local_edge_tolerance",
-    ]
+    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] == 0
+    assert ordered_correspondence["failureReasons"] == []
     assert ordered_correspondence["boundarySpanPartitions"] == [
         {
             "meshIndex": 2,
@@ -515,9 +513,9 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["topologyAudit"]["inconsistentWindingCheckStatus"] == "fail"
     assert report["topologyAudit"]["inconsistentWindingAudit"]["inconsistentSharedEdgeCount"] == 36
     assert report["topologyAudit"]["normalInversionCheckStatus"] == "fail"
-    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 27
+    assert report["topologyAudit"]["normalInversionAudit"]["invertedAdjacentPairCount"] == 26
     assert report["topologyAudit"]["selfIntersectionCheckStatus"] == "fail"
-    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 320
+    assert report["topologyAudit"]["selfIntersectionAudit"]["selfIntersectionPairCount"] == 286
     assert report["topologyAudit"]["hiddenInternalComponentCheckStatus"] == "pass"
     assert (
         report["topologyAudit"]["hiddenInternalComponentAudit"]["internalClosedComponentCount"] == 0
@@ -528,7 +526,7 @@ def test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven
     assert report["readiness"]["meshStitchOrWeldProven"] is False
     assert report["readiness"]["acceptedForCleanProposal"] is False
     assert "mesh_stitch_or_weld_not_proven" in report["readiness"]["blockingReasons"]
-    assert "ordered_seam_correspondence_failed" in report["readiness"]["blockingReasons"]
+    assert "ordered_seam_correspondence_failed" not in report["readiness"]["blockingReasons"]
     assert "self_intersections_detected" in report["readiness"]["blockingReasons"]
     assert "semantic_opening_assignment_failed" in report["readiness"]["blockingReasons"]
     assert "opening_panel_edge_provenance_missing" in report["readiness"]["blockingReasons"]

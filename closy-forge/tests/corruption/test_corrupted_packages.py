@@ -823,6 +823,7 @@ def test_geometry_stitched_shell_ordered_correspondence_claim_is_rejected(
     audit["orderedSeamCorrespondenceAudit"]["reusedBoundaryVertexCount"] = 0
     audit["orderedSeamCorrespondenceAudit"]["reusedBoundarySpanCount"] = 0
     audit["orderedSeamCorrespondenceAudit"]["multiSpanFanoutSeamIds"] = []
+    audit["orderedSeamCorrespondenceAudit"]["oversizedPreStitchCorrespondenceCount"] = 1
     write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
     codes = issue_codes(validate_package(corrupt))
     assert "geometry_stitched_shell_hash_mismatch" in codes
