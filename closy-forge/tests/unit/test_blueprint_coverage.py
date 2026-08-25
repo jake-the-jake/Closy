@@ -46,8 +46,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-c3-phase5-progression-truth-sync-v1"
-    assert payload["generatedBy"] == "BP-46 C3 Phase 5 progression truth sync"
+    assert payload["version"] == "bp46-conforming-stitched-shell-truth-sync-v1"
+    assert payload["generatedBy"] == "BP-46 conforming stitched shell proof truth sync"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -170,156 +170,65 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     bp46 = rows_by_id["BP-46-STITCHED-SHELL-OUTPUT"]
 
     assert bp46["status"] == "partial"
-    assert "81fb02c" in bp46["commitSha"]
-    assert "d0801291ecdaeda4d04ab5897327abcbf9e95ad1" in bp46["commitSha"]
-    assert "de35156de35831f467c7809fea727195a548ddce" in bp46["commitSha"]
-    assert "eef64ef1ead7adbe7db4132043e388856ed9b513" in bp46["commitSha"]
-    assert "0ced19b3efdf69a7ba55cb330c66e8da44a68669" in bp46["commitSha"]
-    assert "2057d4ff6a1532476d6661c89274970c03fa68ff" in bp46["commitSha"]
-    assert "9a8675602de1c39169a058b1ec1992613182260d" in bp46["commitSha"]
-    assert "01146285610dab4e110f6221e642b009bf9e90c4" in bp46["commitSha"]
-    assert "c6fa323506712305a4b5a73bbad118e8d9e1e626" in bp46["commitSha"]
-    assert "704a10e2f166ba340ba078324f0d5a1fcc6af369" in bp46["commitSha"]
-    assert "e11eb8d82fc01c032a14cd4e502a2eb8a736087a" in bp46["commitSha"]
-    assert "8790567cc8b8a9d8db2214ec7133bbe1281f6dca" in bp46["commitSha"]
-    assert "49afef27df5caa69265d21244e8b82b527371c54" in bp46["commitSha"]
-    assert "22176b42817d84bf2303a6b1ee54c8936a204c07" in bp46["commitSha"]
-    assert "be9024dc4ce65bb862db6945ad29a891da442b46" in bp46["commitSha"]
+    assert "62443b685604bc4afe9a8fac9f926db78814d5a9" in bp46["commitSha"]
+    assert "997232e" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
-    assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
-    assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
+    assert not any(item == "meshStitchOrWeldProven=false" for item in bp46["executableEvidence"])
+    assert not any(item == "executedTopologyAuditCount=5" for item in bp46["executableEvidence"])
+    assert any("meshStitchOrWeldProven=true" in item for item in bp46["executableEvidence"])
+    assert any("status=stitched_shell_proven" in item for item in bp46["executableEvidence"])
+    assert any("vertexCount=81" in item for item in bp46["executableEvidence"])
+    assert any("triangleCount=120" in item for item in bp46["executableEvidence"])
+    assert any("boundaryLoopCount=4" in item for item in bp46["executableEvidence"])
+    assert any("simpleBoundaryCycleCount=4" in item for item in bp46["executableEvidence"])
+    assert any("nonManifoldEdgeCount=0" in item for item in bp46["executableEvidence"])
+    assert any("nonManifoldVertexCount=0" in item for item in bp46["executableEvidence"])
+    assert any("boundaryBranchVertexCount=0" in item for item in bp46["executableEvidence"])
+    assert any("executedTopologyAuditCount=6" in item for item in bp46["executableEvidence"])
+    assert any("surfaceTopologyStatus=pass" in item for item in bp46["executableEvidence"])
+    assert any("eulerCharacteristic=-2" in item for item in bp46["executableEvidence"])
+    assert any("genus=0" in item for item in bp46["executableEvidence"])
+    assert any("vertexLinkStatus=pass" in item for item in bp46["executableEvidence"])
     assert any(
-        "winding, normal-inversion and self-intersection" in item
-        for item in bp46["executableEvidence"]
+        "semanticOpeningAssignmentStatus=pass" in item for item in bp46["executableEvidence"]
     )
     assert any(
-        "semanticOpeningAssignmentStatus=fail" in item for item in bp46["executableEvidence"]
-    )
-    assert any(
-        "earlier panelEdgeProvenanceStatus=fail" in item for item in bp46["executableEvidence"]
-    )
-    assert any("panelEdgeProvenanceStatus=pass" in item for item in bp46["executableEvidence"])
-    assert any(
-        "sourceOpeningEdgeProvenance.status=pass" in item for item in bp46["executableEvidence"]
-    )
-    assert any("recordedOpeningCount=4" in item for item in bp46["executableEvidence"])
-    assert any(
-        "36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9" in item
+        "opening.neck" in item and "opening.hem" in item and "opening.cuff.left" in item
         for item in bp46["executableEvidence"]
     )
     assert any("bindingCoverage=1.0" in item for item in bp46["executableEvidence"])
     assert any("bindingReconstructionStatus=pass" in item for item in bp46["executableEvidence"])
     assert any(
-        "d808a67ed829388cae96cdf6bdd69b1587a3c59c1bd7a89fc9e3d5efc267ecbb" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any("duplicateFaceCullRun=true" in item for item in bp46["executableEvidence"])
-    assert any("removedDuplicateFaceCount=8" in item for item in bp46["executableEvidence"])
-    assert any("duplicateExecutedOperationCount=0" in item for item in bp46["executableEvidence"])
-    assert any(
-        "c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78" in item
+        "5e5904ad7be00434e8b366823dec4e559da3525feb9e57088f563b7cd713caab" in item
         for item in bp46["executableEvidence"]
     )
     assert any(
-        "a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f" in item
+        "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in item
         for item in bp46["executableEvidence"]
     )
-    assert any(
-        "earlier ordered seam correspondence audit recorded status=fail" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any("reusedBoundaryVertexCount=15" in item for item in bp46["executableEvidence"])
-    assert any("reusedBoundarySpanCount=2" in item for item in bp46["executableEvidence"])
-    assert any(
-        "oversizedPreStitchCorrespondenceCount=21" in item for item in bp46["executableEvidence"]
-    )
-    assert any("reusedBoundaryVertexCount=0" in item for item in bp46["executableEvidence"])
-    assert any("reusedBoundarySpanCount=0" in item for item in bp46["executableEvidence"])
-    assert any("multiSpanFanoutSeamIds=[]" in item for item in bp46["executableEvidence"])
-    assert any(
-        "pre_stitch_distance_exceeds_local_edge_tolerance" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any(
-        "ordered seam correspondence now passes" in item for item in bp46["executableEvidence"]
-    )
-    assert any(
-        "oversizedPreStitchCorrespondenceCount=0" in item for item in bp46["executableEvidence"]
-    )
-    assert any(
-        "preStitchDistanceDistributionMeters.max=0.030415545" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any(
-        "31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any("89 files each" in item for item in bp46["executableEvidence"])
+    assert any("89 physical files" in item for item in bp46["executableEvidence"])
     assert any("85 manifest-inventoried files" in item for item in bp46["executableEvidence"])
     assert any(
-        "remote seam-settle Actions run 32798354036" in item for item in bp46["executableEvidence"]
+        "single_shell_stitch_weld_proof now passes" in item for item in bp46["executableEvidence"]
     )
-    assert any("97654190062" in item for item in bp46["executableEvidence"])
-    assert any("97654189886" in item for item in bp46["executableEvidence"])
-    assert any(
-        "21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any("89 physical files each" in item for item in bp46["executableEvidence"])
+    assert any("mesh_stitch_or_weld_not_proven" in item for item in bp46["executableEvidence"])
     assert any(
         "remote opening-provenance Actions run 32802914666" in item
         for item in bp46["executableEvidence"]
     )
-    assert any("97667221029" in item for item in bp46["executableEvidence"])
-    assert any("97667221117" in item for item in bp46["executableEvidence"])
-    assert any(
-        "95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any(
-        "remote ordered seam partition Actions run 32791907899" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any("97634961686" in item for item in bp46["executableEvidence"])
-    assert any("97634961466" in item for item in bp46["executableEvidence"])
-    assert any("193 collected Forge tests" in item for item in bp46["executableEvidence"])
-    assert any("194 collected Forge tests" in item for item in bp46["executableEvidence"])
-    assert any("89 files each" in item for item in bp46["executableEvidence"])
-    assert any("remote Actions run 32761608825" in item for item in bp46["executableEvidence"])
-    assert any("97541503765" in item for item in bp46["executableEvidence"])
-    assert any("97541503927" in item for item in bp46["executableEvidence"])
-    assert any("remote Actions run 32770764532" in item for item in bp46["executableEvidence"])
-    assert any("97570351707" in item for item in bp46["executableEvidence"])
-    assert any("97570351408" in item for item in bp46["executableEvidence"])
-    assert any("remote Actions run 32772212216" in item for item in bp46["executableEvidence"])
-    assert any("97574933614" in item for item in bp46["executableEvidence"])
-    assert any("97574933467" in item for item in bp46["executableEvidence"])
     assert any("remote Actions run 32777652602" in item for item in bp46["executableEvidence"])
-    assert any("97592313066" in item for item in bp46["executableEvidence"])
-    assert any("97592313591" in item for item in bp46["executableEvidence"])
-    assert any(
-        "remote docs-verification Actions run 32778840554" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any("97596082459" in item for item in bp46["executableEvidence"])
-    assert any("97596082034" in item for item in bp46["executableEvidence"])
-    assert any(
-        "remote ordered-correspondence Actions run 32782411096" in item
-        for item in bp46["executableEvidence"]
-    )
-    assert any("97607120382" in item for item in bp46["executableEvidence"])
-    assert any("97607120119" in item for item in bp46["executableEvidence"])
-    assert "non-manifold edges" in bp46["limitations"]
-    assert "ordered seam correspondence now passes" in bp46["limitations"]
-    assert "source opening panel-edge provenance now passes" in bp46["limitations"]
+    assert "topology/opening proof now passes" in bp46["limitations"]
+    assert "clean/canonical acceptance remains false" in bp46["limitations"]
+    assert "production stitched-shell sim-to-render binding" in bp46["limitations"]
     assert "missing panel-edge provenance" not in bp46["limitations"]
     assert "pre-stitch distances still exceed" not in bp46["limitations"]
-    assert "duplicate faces" not in bp46["limitations"]
-    assert "duplicate operation IDs" not in bp46["limitations"]
-    assert "not-run topology audits" not in bp46["limitations"]
-    assert "incomplete binding coverage" not in bp46["limitations"]
+    assert "non-manifold edges" not in bp46["limitations"]
+    assert "failed semantic opening" not in bp46["limitations"]
+    assert "winding/normal/self-intersection audit failures" not in bp46["limitations"]
     assert "pre-stitch distance reduction" not in bp46["nextAction"]
-    assert "semantic opening proof" in bp46["nextAction"]
+    assert "freeze PR #5" in bp46["nextAction"]
+    assert "Phase 5 provider branch" in bp46["nextAction"]
+    assert "Phase 6 branch" in bp46["nextAction"]
 
 
 def test_repository_gitlink_hygiene_checkpoint_is_complete() -> None:
@@ -514,42 +423,34 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
 def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `22176b4`" in ledger
-    assert "Latest completed evidence-sync commit when last updated: `3844fdb`" in ledger
-    assert "executedTopologyAuditCount=5" in ledger
-    assert "semanticOpeningAssignmentStatus=fail" in ledger
-    assert "boundaryComponentCount=2" in ledger
+    assert "Latest completed implementation commit when last updated: `62443b6`" in ledger
+    assert "Latest completed evidence-sync commit before this update: `997232e`" in ledger
+    assert "executedTopologyAuditCount=6" in ledger
+    assert "semanticOpeningAssignmentStatus=pass" in ledger
+    assert "boundaryLoopCount=4" in ledger
+    assert "simpleBoundaryCycleCount=4" in ledger
+    assert "meshStitchOrWeldProven=true" in ledger
+    assert "surfaceTopologyStatus=pass" in ledger
+    assert "eulerCharacteristic=-2" in ledger
+    assert "genus=0" in ledger
     assert "bindingCoverage=1.0" in ledger
     assert "bindingReconstructionStatus=pass" in ledger
-    assert "duplicateFaceCount=0" in ledger
-    assert "duplicateExecutedOperationCount=0" in ledger
-    assert "removedDuplicateFaceCount=8" in ledger
-    assert "orderedSeamCorrespondenceStatus=pass" in ledger
-    assert "panelEdgeProvenanceStatus=pass" in ledger
-    assert "sourceOpeningEdgeProvenance.status=pass" in ledger
-    assert "reusedBoundaryVertexCount=0" in ledger
-    assert "reusedBoundarySpanCount=0" in ledger
-    assert "oversizedPreStitchCorrespondenceCount=0" in ledger
-    assert "preStitchDistanceDistributionMeters.max=0.030415545" in ledger
-    assert "31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8" in ledger
+    assert "boundRenderVertexCount=81" in ledger
+    assert "requiredRenderVertexCount=81" in ledger
+    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in ledger
+    assert "5e5904ad7be00434e8b366823dec4e559da3525feb9e57088f563b7cd713caab" in ledger
+    assert "single_shell_stitch_weld_proof" in ledger
+    assert "clean_acceptance_rejected_independent_visual_not_run" in ledger
     assert "21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584" in ledger
-    assert "ordered seam partition run `32791907899`" in ledger
-    assert "seam-settle Forge run `32798354036`" in ledger
-    assert "opening-provenance Forge run `32802914666`" in ledger
-    assert "remote truth-sync run `32803743497`" in ledger
-    assert "97654190062" in ledger
-    assert "97654189886" in ledger
-    assert "97667221029" in ledger
-    assert "97667221117" in ledger
-    assert "97669670218" in ledger
-    assert "97669669992" in ledger
-    assert "Remote run `32777652602`" in ledger
-    assert "docs-verification run `32778840554`" in ledger
+    assert "32825954590" in ledger
+    assert "97733884808" in ledger
+    assert "97733884930" in ledger
     assert (
         "Current active increment: "
-        "`FOUNDATION-PROOF-CLOSEOUT-BP46-CONFORMING-TOPOLOGY-AND-SEMANTIC-OPENINGS`" in ledger
+        "`FOUNDATION-PROOF-CLOSEOUT-BP46-REMOTE-EVIDENCE-AND-PR5-FREEZE`" in ledger
     )
-    assert "Next dependency-ready increment: continue `FOUNDATION-PROOF-CLOSEOUT`" in ledger
+    assert "Next dependency-ready increment: after local and remote validation" in ledger
+    assert "`codex/closy-forge-phase-5-provider`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
@@ -565,23 +466,36 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
 
 
-def test_active_resume_points_to_next_bp46_dependency_not_finished_truth_sync() -> None:
+def test_active_resume_points_to_bp46_remote_validation_and_phase5_branching() -> None:
     resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
 
     assert (
         "Active blueprint checkpoint: "
-        "`FOUNDATION-PROOF-CLOSEOUT-BP46-CONFORMING-TOPOLOGY-AND-SEMANTIC-OPENINGS`" in resume
+        "`FOUNDATION-PROOF-CLOSEOUT-BP46-REMOTE-EVIDENCE-AND-PR5-FREEZE`" in resume
     )
-    assert "Record based on SHA: `3844fdb7ff99ee63b2e80cc317cc493b1b365257`" in resume
-    assert "GitHub Actions run `32803743497` passed" in resume
-    assert "97669670218" in resume
-    assert "97669669992" in resume
+    assert "Record based on SHA: `62443b685604bc4afe9a8fac9f926db78814d5a9`" in resume
+    assert "GitHub Actions run `32825954590` passed" in resume
+    assert "97733884808" in resume
+    assert "97733884930" in resume
+    assert "meshStitchOrWeldProven=true" in resume
+    assert "semanticOpeningAssignmentStatus=pass" in resume
+    assert "surfaceTopologyStatus=pass" in resume
+    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in resume
     assert "opening-provenance remote-evidence truth-sync update" not in resume
     assert "Commit and push this opening-provenance remote-evidence truth-sync" not in resume
     assert (
-        "Local and remote checks have not yet run for this foundation C3/Phase-5 "
-        "progression truth-sync update" in resume
+        "continue BP-46 conforming stitched-shell topology and semantic opening proof first"
+        not in resume
     )
+    assert (
+        "Remote Ubuntu/Windows CI has not yet run for this BP46 conforming-shell truth-sync update"
+        in resume
+    )
+    assert (
+        "Local format/lint/mypy/full pytest/schema/package determinism has passed as recorded above"
+        in resume
+    )
+    assert "Create the Phase 5 provider branch only from that exact verified head" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:
