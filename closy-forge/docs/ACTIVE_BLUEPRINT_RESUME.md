@@ -4,15 +4,15 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 
 ## Current State
 
-- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-ORDERED-SEAM-SPAN-PARTITION`
-- Exact subtask: partition reused ordered seam spans for sleeve caps and neck-band attachment while keeping clean/canonical acceptance rejected.
+- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-SEAM-SETTLE-DISTANCE-REDUCTION`
+- Exact subtask: tighten deterministic settle support and neck-band seam target policy so ordered pre-stitch correspondence passes while keeping clean/canonical acceptance rejected.
 - Current branch: `codex/closy-forge-foundation-proof-closeout`
 - Parent branch: `codex/closy-forge-phase-4-texture`
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
-- Latest implementation commit SHA: `e11eb8d82fc01c032a14cd4e502a2eb8a736087a`
-- Latest implementation commit subject: `Partition ordered seam spans`
-- Latest evidence commit SHA before this update: `2aac95b7ae539028cbcacf14a4d2e89f54e3d422`
-- Record based on SHA: `e11eb8d82fc01c032a14cd4e502a2eb8a736087a`; this resume file itself belongs to the follow-up foundation-proof ordered seam partition truth-sync commit.
+- Latest implementation commit SHA: `8790567cc8b8a9d8db2214ec7133bbe1281f6dca`
+- Latest implementation commit subject: `Tighten BP46 seam settling evidence`
+- Latest evidence commit SHA before this update: `01b01552396180da5d3d1eedac8bfbfdcaa1605e`
+- Record based on SHA: `8790567cc8b8a9d8db2214ec7133bbe1281f6dca`; this resume file itself belongs to the follow-up foundation-proof seam-settle truth-sync commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
@@ -20,8 +20,8 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Last remote foundation-proof docs evidence: GitHub Actions run `32778840554` passed at commit `a51eb915c597c77257e1f77b26823d8bfd0a3d3b`; Ubuntu job `97596082459` passed in 7m51s and Windows job `97596082034` passed in 10m28s. Each OS ran 112 format-checked files, 89 mypy source files, 193 tests, fresh schemas, identical 89-file package trees, digest `c15aaa085171ed3a66043940261750a53f86f885a7420ed659b43f199adefd78`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof ordered-correspondence evidence: GitHub Actions run `32782411096` passed at commit `f80cc326aabd73278a809a1ee1f403d0dbc1f1a5`; Ubuntu job `97607120382` passed in 7m54s with 194 tests in 450.96s, and Windows job `97607120119` passed in 11m30s with 194 tests in 637.74s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `a808ae4db65b5fb5295128d12acb6ac2accfb0a50e5dfb59122dee6105d3b70f`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof ordered-seam partition evidence: GitHub Actions run `32791907899` passed at commit `7eacf97a61c65329963ffd82a4c78adc1cbf8b3f`; Ubuntu job `97634961686` passed in 8m00s with 194 tests in 451.05s, and Windows job `97634961466` passed in 11m03s with 194 tests in 610.92s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and validation/report with only `self_collision_not_run`.
-- Current local BP46 ordered seam partition evidence after `e11eb8d`: focused failing integration tests passed, full `pytest -q` exited 0, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, and schema freshness checks passed.
-- Current local package digest after ordered seam partitioning: two OS-temp package builds were byte-identical with 89 files each and digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`.
+- Current local BP46 seam-settle evidence after `8790567`: focused stitched-shell/corruption/reference/golden tests passed, bounded variant/report integration tests passed, full `pytest -q` exited 0, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, and schema freshness checks passed.
+- Current local package digest after seam-settle tightening: two OS-temp package builds were byte-identical with 89 files each, 85 manifest-inventoried files, and digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state remains rejected; clean/canonical acceptance remains false.
 - Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
@@ -35,9 +35,9 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - BP-46 now records deterministic logical source-vertex reconstruction coverage for the stitched analysis shell: `bindingCoverage=1.0`, `bindingReconstructionStatus=pass`, `bindingMode=logical_source_vertex_centroid_map`, `boundRenderVertexCount=160`, `requiredRenderVertexCount=160` and `maxReconstructionErrorMeters=0.0`.
 - BP-46 now records deterministic duplicate-topology repair evidence: `topologyRepairEvidence.duplicateFaceCullRun=true`, `status=pass`, `inputTriangleCount=218`, `outputTriangleCount=210`, `removedDuplicateFaceCount=8`, `duplicateFaceCount=0`, `duplicateExecutedOperationCount=0` and `missingRequiredOperationIds=[]`.
 - BP-46 now records deterministic ordered seam partition evidence: sleeve-cap and neck-band bottom spans have disjoint `boundarySpanPartitions`; `reusedBoundaryVertexCount=0`, `reusedBoundarySpanCount=0` and `multiSpanFanoutSeamIds=[]`.
-- BP-46 ordered seam correspondence still fails closed only on distance: `orderedSeamCorrespondenceStatus=fail`, `distanceToleranceMeters=0.035577926`, `oversizedPreStitchCorrespondenceCount=16`, `preStitchDistanceDistributionMeters.max=0.093647491` and failure reason `pre_stitch_distance_exceeds_local_edge_tolerance`.
+- BP-46 ordered seam correspondence now passes: `orderedSeamCorrespondenceStatus=pass`, `distanceToleranceMeters=0.032551892`, `oversizedPreStitchCorrespondenceCount=0`, `preStitchDistanceDistributionMeters.max=0.030415545` and `failureReasons=[]`.
 - Current BP-46 candidate results: `executedTopologyAuditCount=5`, `tJunctionCheckStatus=pass`, `hiddenInternalComponentCheckStatus=pass`, `inconsistentWindingCheckStatus=fail`, `normalInversionCheckStatus=fail` and `selfIntersectionCheckStatus=fail`.
-- Current BP-46 failing audit counts: 36 inconsistent shared edges, 27 inverted adjacent normal pairs and 320 self-intersection pairs.
+- Current BP-46 failing audit counts: 36 inconsistent shared edges, 26 inverted adjacent normal pairs and 286 self-intersection pairs.
 - Current semantic opening audit results: `semanticOpeningAssignmentStatus=fail`, `boundaryComponentCount=2`, `simpleBoundaryCycleCount=0`, `candidateOpeningMappings=[]`, `panelEdgeProvenanceStatus=fail`, `provenOpeningIds=[]` and all four expected openings are listed in `missingExpectedOpeningIds`.
 - BP-47 adds deterministic SVG inspection artifacts and separated evidence tiers, but does not provide decoded raster visual fidelity, source/provider appearance comparison or signed human review.
 - BP-48 adds persisted fallback GLB `NORMAL` and `VEC4` `TANGENT` accessors plus `reports/render_frame_pose_suite.json`.
@@ -49,10 +49,10 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 Current blocking evidence:
 
 - 4 non-manifold edges and 6 non-manifold vertices remain in the BP-46 stitched candidate.
-- Ordered seam span ownership is now partitioned for sleeve caps and neck-band attachment, but 16 pre-stitch correspondence distances still exceed the local edge-length-derived tolerance.
+- Ordered seam span ownership is now partitioned for sleeve caps and neck-band attachment, and current ordered pre-stitch correspondence distances are below the local edge-length-derived tolerance.
 - Two boundary components are detected rather than four proven semantic openings.
 - Boundary graph contains branch vertices.
-- Semantic opening assignment now executes but fails closed because the boundary graph has branch vertices, only one component, no simple cycles, no candidate opening mappings and missing panel-edge provenance.
+- Semantic opening assignment now executes but fails closed because the boundary graph has branch vertices, two boundary components, no simple cycles, no candidate opening mappings and missing panel-edge provenance.
 - Production stitched-shell binding, crack/sliding proof and dense runtime binding evidence remain incomplete; the current logical source-vertex reconstruction audit passes only for the stitched analysis shell.
 - Executed winding, normal-inversion and self-intersection audits fail.
 - Full cloth motion, crack/sliding proof, runtime performance/memory profiling and mobile fallback negotiation are not implemented.
@@ -64,6 +64,8 @@ Current blocking evidence:
 - `closy-forge/src/closy_forge/garments/tshirt/pattern_generator.py`
 - `closy-forge/src/closy_forge/garments/tshirt/assembly.py`
 - `closy-forge/src/closy_forge/geometry/triangulation.py`
+- `closy-forge/src/closy_forge/simulation/reference_cloth_solver.py`
+- `closy-forge/docs/cloth-settle-reference-v1.md`
 - `closy-forge/src/closy_forge/validation/validator.py`
 - `closy-forge/tests/unit/test_geometry_proposal.py`
 - `closy-forge/tests/integration/test_cli_and_package.py`
@@ -97,11 +99,15 @@ Current blocking evidence:
 - Local schema freshness check after `e11eb8d` returned `{"issues":[],"status":"fresh"}`.
 - Local `$env:PYTHONPATH=(Get-Location).Path; .\.venv\Scripts\pytest.exe -q` passed after `e11eb8d`.
 - Local ordered-seam partition package smoke after `e11eb8d` built two OS-temp packages with 89 files each, `packages diff --json` status `identical`, `validate --json` status `passed`, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and only `self_collision_not_run`.
+- Local seam-settle package smoke after `8790567` built two OS-temp packages with 89 files each, 85 manifest-inventoried files, `packages diff --json` status `identical`, `validate --json` status `passed`, digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`, ordered seam correspondence `pass` with max pre-stitch `0.030415545` under tolerance `0.032551892`, and only `self_collision_not_run`.
 - Remote ordered seam partition Forge run `32791907899` passed at `7eacf97` on Ubuntu job `97634961686` and Windows job `97634961466` with 194 tests per OS, fresh schemas, identical 89-file package trees, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and only `self_collision_not_run`.
+- Local `ruff format --check .`, `ruff check .`, `mypy src`, schema freshness and full `$env:PYTHONPATH=(Get-Location).Path; .\.venv\Scripts\pytest.exe -q` passed after `8790567`.
+- Local bounded variant/report integration tests after `8790567` passed: `tests\integration\test_determinism_and_variants.py::test_bounded_tshirt_variants_validate_and_keep_stable_semantics` and `tests\integration\test_cli_and_package.py::test_report_json_is_machine_readable`.
+- Local focused seam-settle regression tests after `8790567` passed: `tests\unit\test_geometry_proposal.py::test_geometry_stitched_shell_outputs_material_artifacts_but_rejects_unproven_topology`, `tests\corruption\test_corrupted_packages.py::test_geometry_stitched_shell_ordered_correspondence_claim_is_rejected`, `tests\unit\test_reference_cloth_solver.py`, and `tests\golden\test_golden_demo.py`.
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for this ordered-seam partition remote-evidence truth-sync update.
+- Remote CI has not yet run for the seam-settle implementation/truth-sync update.
 
 ## Next Exact Command
 
@@ -112,4 +118,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Commit and push this ordered seam partition truth-sync, update draft PR #5, then continue BP-46 pre-stitch distance reduction, semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
+Commit and push this seam-settle truth-sync, update draft PR #5, then continue BP-46 semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
