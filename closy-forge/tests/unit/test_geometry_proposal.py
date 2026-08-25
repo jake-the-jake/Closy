@@ -41,6 +41,7 @@ from closy_forge.proposals import (
     build_null_geometry_proposal,
     build_proposal_runtime_binding,
     build_proposal_runtime_render_mesh,
+    build_provider_bakeoff_report,
     build_raw_geometry_topology_report,
     build_stitched_shell_assets,
     clean_geometry_proposal_quality_report,
@@ -59,8 +60,11 @@ from closy_forge.proposals import (
     hash_geometry_semantic_transfer_report,
     hash_geometry_stitched_shell_report,
     hash_geometry_visual_shell_review,
+    hash_provider_bakeoff_report,
+    hash_provider_registry,
     hash_raw_geometry_topology_report,
     hash_stitched_analysis_shell,
+    provider_registry_quality_report,
     reproject_cleanup_preview_to_settled_simulation,
 )
 from closy_forge.proposals.geometry_stitched_shell import audit_stitched_shell
@@ -143,6 +147,155 @@ def test_manual_geometry_proposal_audits_glb_and_remains_non_canonical(tmp_path)
     assert proposal["geometryAudit"]["triangleEstimate"] == 1
     assert proposal["integrity"]["geometryProposalHash"] == hash_geometry_proposal(proposal)
     assert quality["status"] == "accepted_visual_reference"
+
+
+def test_provider_registry_and_bakeoff_record_phase5_boundaries(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    capture = build_synthetic_capture_record(seed=101)
+    visual = build_tshirt_visual_observations(capture)
+    fit = fit_tshirt_parameters_from_visual_observations(visual)
+    texture = build_texture_identity_report(
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        render_materials={"schemaVersion": 1, "materials": []},
+    )
+    asset = tmp_path / "manual_visual.glb"
+    write_glb(asset, _tiny_mesh(), "manual_visual_material", (0.8, 0.8, 0.9, 1.0))
+    proposal = build_manual_geometry_proposal(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        asset_path=asset,
+        package_asset_path="proposals/manual_visual.glb",
+    )
+    registry = build_geometry_provider_registry(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        geometry_proposal=proposal,
+        manual_asset_path=asset,
+        manual_asset_rights_reviewed=True,
+        manual_asset_rights_status="project_authored_fixture_no_third_party_asset",
+    )
+    topology = build_raw_geometry_topology_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        raw_geometry_proposal=proposal,
+        asset_path=asset,
+    )
+    bakeoff = build_provider_bakeoff_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        provider_registry=registry,
+        raw_geometry_proposal=proposal,
+        raw_topology_report=topology,
+    )
+    quality = provider_registry_quality_report(registry)
+
+    provider_ids = {provider["providerId"] for provider in registry["providers"]}
+    assert provider_ids == {
+        "closy.null_geometry_proposal_provider.v1",
+        "closy.manual_local_glb_import.v1",
+        "closy.local_open_model_geometry_adapter.v1",
+    }
+    assert registry["contractVersion"] == "closy.provider_contract.garment_avatar_only.v1"
+    assert registry["integrity"]["providerRegistryHash"] == hash_provider_registry(registry)
+    assert registry["d0Capabilities"]["providerContractValidationAvailable"] is True
+    assert registry["d0Capabilities"]["providerBakeoffReportAvailable"] is True
+    assert registry["d0Capabilities"]["localOpenModelAdapterDeclared"] is True
+    assert registry["d0Capabilities"]["localOpenModelExecutionAvailable"] is False
+    local_provider = next(
+        provider
+        for provider in registry["providers"]
+        if provider["providerId"] == "closy.local_open_model_geometry_adapter.v1"
+    )
+    assert local_provider["status"] == "not_run_missing_runtime_or_weights"
+    assert local_provider["networkPolicy"]["runtimeNetworkAccess"] is False
+    assert local_provider["runtimeRequirements"]["ordinaryCiMayDownloadWeights"] is False
+    assert quality["invocationRecordCount"] == 3
+    assert "not_run_missing_runtime_or_weights" in quality["invocationStatuses"]
+
+    assert bakeoff["integrity"]["providerBakeoffHash"] == hash_provider_bakeoff_report(bakeoff)
+    assert bakeoff["status"] == "completed_d0_contract_only_clean_rejected"
+    assert bakeoff["aggregate"]["providerCount"] == 3
+    assert bakeoff["aggregate"]["executedProviderCount"] == 1
+    assert bakeoff["aggregate"]["notRunProviderCount"] == 2
+    assert bakeoff["aggregate"]["canonicalAcceptedProviderCount"] == 0
+    assert bakeoff["aggregate"]["bestAvailableProviderId"] == "closy.manual_local_glb_import.v1"
+    assert any(
+        result["providerId"] == "closy.local_open_model_geometry_adapter.v1"
+        and result["executionStatus"] == "not_run_missing_runtime_or_weights"
+        and result["cleanupEffortStatus"] == "not_run_no_raw_geometry"
+        for result in bakeoff["providerResults"]
+    )
+    selected_result = next(result for result in bakeoff["providerResults"] if result["selected"])
+    assert (
+        selected_result["cleanupEffortStatus"] == "cleanup_required_before_clean_or_canonical_use"
+    )
+
+
+def test_provider_contracts_record_lifecycle_limits_and_safe_failures(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    capture = build_synthetic_capture_record(seed=101)
+    visual = build_tshirt_visual_observations(capture)
+    fit = fit_tshirt_parameters_from_visual_observations(visual)
+    texture = build_texture_identity_report(
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        render_materials={"schemaVersion": 1, "materials": []},
+    )
+    raw = build_null_geometry_proposal(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+    )
+    registry = build_geometry_provider_registry(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        capture_record=capture,
+        visual_observations=visual,
+        fit_report=fit,
+        texture_identity=texture,
+        geometry_proposal=raw,
+        manual_asset_path=tmp_path / "missing.glb",
+        manual_asset_rights_reviewed=False,
+    )
+
+    for provider in registry["providers"]:
+        assert provider["contractVersion"] == "closy.provider_contract.garment_avatar_only.v1"
+        assert provider["capabilityDeclaration"]["canonicalTruthAuthority"] is False
+        assert provider["capabilityDeclaration"]["supportedAssetClasses"] == ["garment"]
+        assert provider["networkPolicy"]["runtimeNetworkAccess"] is False
+        assert provider["networkPolicy"]["socketAccess"] == "denied"
+        assert provider["ioSchemas"]["failureSchema"] == "closy.provider_failure.safe_code.v1"
+        assert provider["limits"]["maxRequestBytes"] <= 1_000_000
+        assert provider["limits"]["maxSubprocessMemoryBytes"] <= 512_000_000
+        assert provider["limits"]["maxProcessCount"] == 1
+        assert "cancelled" in provider["lifecycle"]["states"]
+        assert provider["lifecycle"]["timeoutState"] == "failed_timeout_safe_code"
+        assert provider["lifecycle"]["malformedOutputState"] == (
+            "failed_malformed_output_safe_code"
+        )
+
+    local_provider = next(
+        provider
+        for provider in registry["providers"]
+        if provider["providerId"] == "closy.local_open_model_geometry_adapter.v1"
+    )
+    assert local_provider["isolation"]["required"] is True
+    assert local_provider["capabilities"]["supportsResume"] is True
+    assert local_provider["runtimeRequirements"]["ordinaryCiMayInstallExtras"] is False
+    assert local_provider["runtimeRequirements"]["ordinaryCiMayDownloadWeights"] is False
+    assert local_provider["runtimeRequirements"]["capabilityProbeSideEffectFree"] is True
 
 
 def test_clean_geometry_proposal_rejects_uncleaned_raw_visual_reference(

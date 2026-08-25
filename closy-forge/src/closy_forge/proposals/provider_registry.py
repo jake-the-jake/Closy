@@ -9,9 +9,11 @@ from closy_forge.geometry.glb_io import audit_glb
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 
-PROVIDER_REGISTRY_VERSION = "closy.geometry_provider_registry.v1"
+PROVIDER_REGISTRY_VERSION = "closy.geometry_provider_registry.phase5_contract_v2"
+PROVIDER_CONTRACT_VERSION = "closy.provider_contract.garment_avatar_only.v1"
 MANUAL_IMPORT_PROVIDER_ID = "closy.manual_local_glb_import.v1"
 NULL_GEOMETRY_PROVIDER_ID = "closy.null_geometry_proposal_provider.v1"
+LOCAL_OPEN_MODEL_PROVIDER_ID = "closy.local_open_model_geometry_adapter.v1"
 
 
 def build_geometry_provider_registry(
@@ -39,6 +41,7 @@ def build_geometry_provider_registry(
         "schemaVersion": 1,
         "registryId": "provider_registry.geometry_tshirt_reference_v1",
         "stageVersion": PROVIDER_REGISTRY_VERSION,
+        "contractVersion": PROVIDER_CONTRACT_VERSION,
         "garmentId": garment_id,
         "garmentClass": garment_class,
         "sourceRecordId": capture_record["recordId"],
@@ -71,7 +74,13 @@ def build_geometry_provider_registry(
                 manual_asset_rights_reviewed=manual_asset_rights_reviewed,
                 manual_asset_rights_status=manual_asset_rights_status,
             ),
+            _local_open_model_provider(),
         ],
+        "invocationRecords": _invocation_records(
+            selected_provider_id=selected_provider_id,
+            manual_candidate=manual_candidate,
+            geometry_proposal=geometry_proposal,
+        ),
         "futureProviderSlots": [
             {
                 "providerId": "meshy.image_to_3d.future",
@@ -97,6 +106,10 @@ def build_geometry_provider_registry(
             "nullProviderAvailable": True,
             "manualLocalImportAdapterDeclared": True,
             "manualLocalImportAssetAvailable": manual_asset_available,
+            "localOpenModelAdapterDeclared": True,
+            "localOpenModelExecutionAvailable": False,
+            "providerContractValidationAvailable": True,
+            "providerBakeoffReportAvailable": True,
             "externalProvidersConfigured": False,
             "cleanProposalProviderAvailable": False,
         },
@@ -107,6 +120,14 @@ def build_geometry_provider_registry(
             "containsPersonalBodyData": False,
             "approvedDomain": "avatar_and_garment_only",
             "providerDisclosureRequiredBeforeExternalUse": True,
+            "networkDefault": "deny_all",
+            "rawProviderOutputAuthority": "proposal_only_never_canonical",
+        },
+        "security": {
+            "archiveExpansionPolicy": "reject_path_traversal_and_bounded_byte_expansion",
+            "subprocessPolicy": "bounded_time_memory_and_process_count",
+            "socketPolicy": "deny_by_default_for_ci_and_d0",
+            "diagnosticPolicy": "safe_error_codes_no_paths_urls_pixels_tokens_or_secrets",
         },
         "integrity": {"providerRegistryHash": ""},
     }
@@ -189,20 +210,30 @@ def inspect_manual_import_candidate(asset_path: Path | None) -> dict[str, Any]:
 def provider_registry_quality_report(registry: dict[str, Any]) -> dict[str, Any]:
     capabilities = registry["d0Capabilities"]
     manual = registry["manualImportCandidate"]
+    invocation_statuses = [
+        str(record.get("status", "")) for record in registry.get("invocationRecords", [])
+    ]
     return {
         "schemaVersion": 1,
         "status": "pass",
         "registryId": registry["registryId"],
+        "contractVersion": registry["contractVersion"],
         "selectedProviderId": registry["selectedProviderId"],
         "selectionReason": registry["selectionReason"],
         "providerCount": len(registry["providers"]),
         "futureProviderSlotCount": len(registry["futureProviderSlots"]),
         "manualLocalImportAdapterDeclared": capabilities["manualLocalImportAdapterDeclared"],
         "manualLocalImportAssetAvailable": capabilities["manualLocalImportAssetAvailable"],
+        "localOpenModelAdapterDeclared": capabilities["localOpenModelAdapterDeclared"],
+        "localOpenModelExecutionAvailable": capabilities["localOpenModelExecutionAvailable"],
+        "providerContractValidationAvailable": capabilities["providerContractValidationAvailable"],
+        "providerBakeoffReportAvailable": capabilities["providerBakeoffReportAvailable"],
         "externalProvidersConfigured": capabilities["externalProvidersConfigured"],
         "cleanProposalProviderAvailable": capabilities["cleanProposalProviderAvailable"],
         "manualImportStatus": manual["status"],
         "manualImportFailureReason": manual["failureReason"],
+        "invocationRecordCount": len(invocation_statuses),
+        "invocationStatuses": invocation_statuses,
         "policy": registry["policy"],
     }
 
@@ -218,22 +249,36 @@ def hash_provider_registry(registry: dict[str, Any]) -> str:
 def _null_provider() -> dict[str, Any]:
     return {
         "providerId": NULL_GEOMETRY_PROVIDER_ID,
+        "providerVersion": "1.0.0",
+        "contractVersion": PROVIDER_CONTRACT_VERSION,
         "label": "Deterministic null geometry proposal provider",
         "providerKind": "deterministic_null_test_adapter",
         "status": "available",
-        "environmentProfile": "D0_CPU",
+        "executionClass": "local_in_process_contract_test",
+        "environmentProfile": "D0_CPU_NO_MODEL",
         "isolation": {
             "required": False,
             "reason": "no heavy dependencies, no external process and no model runtime",
         },
         "policy": _provider_policy(),
+        "networkPolicy": _network_policy(),
         "capabilities": {
             "producesRawProposalRecord": True,
             "producesRawMeshAsset": False,
             "producesCleanProposal": False,
             "automaticGeneration": False,
             "deterministicFixture": True,
+            "supportsCancellation": True,
+            "supportsResume": False,
+            "supportsTimeout": True,
         },
+        "capabilityDeclaration": _capability_declaration(
+            output_representations=["none"], deterministic_seed_control=True
+        ),
+        "ioSchemas": _io_schemas(),
+        "limits": _provider_limits(max_output_bytes=0, max_triangles=0),
+        "lifecycle": _lifecycle(cancel=True, resume=False),
+        "authority": _provider_authority(),
         "supportedPurposes": ["garment_visual_geometry_proposal"],
         "supportedGarmentClasses": ["tshirt"],
         "licence": {
@@ -251,6 +296,8 @@ def _manual_import_provider(
 ) -> dict[str, Any]:
     return {
         "providerId": MANUAL_IMPORT_PROVIDER_ID,
+        "providerVersion": "1.0.0",
+        "contractVersion": PROVIDER_CONTRACT_VERSION,
         "label": "Manual local GLB import provider",
         "providerKind": "manual_local_asset_import_adapter",
         "status": (
@@ -258,19 +305,32 @@ def _manual_import_provider(
             if manual_candidate["acceptedForRawProposal"]
             else "declared_unavailable_for_demo_package"
         ),
-        "environmentProfile": "D0_CPU",
+        "executionClass": "local_in_process_manual_asset_audit",
+        "environmentProfile": "D0_CPU_NO_MODEL",
         "isolation": {
             "required": False,
             "reason": "local file audit only; future heavy cleanup can run in a worker",
         },
         "policy": _provider_policy(),
+        "networkPolicy": _network_policy(),
         "capabilities": {
             "producesRawProposalRecord": True,
             "producesRawMeshAsset": True,
             "producesCleanProposal": False,
             "automaticGeneration": False,
             "deterministicFixture": False,
+            "supportsCancellation": True,
+            "supportsResume": False,
+            "supportsTimeout": True,
         },
+        "capabilityDeclaration": _capability_declaration(
+            output_representations=["glb2_triangle_mesh"],
+            deterministic_seed_control=False,
+        ),
+        "ioSchemas": _io_schemas(),
+        "limits": _provider_limits(max_output_bytes=12_000_000, max_triangles=75_000),
+        "lifecycle": _lifecycle(cancel=True, resume=False),
+        "authority": _provider_authority(),
         "supportedPurposes": ["garment_visual_geometry_proposal"],
         "supportedGarmentClasses": ["tshirt"],
         "licence": {
@@ -286,11 +346,73 @@ def _manual_import_provider(
     }
 
 
+def _local_open_model_provider() -> dict[str, Any]:
+    return {
+        "providerId": LOCAL_OPEN_MODEL_PROVIDER_ID,
+        "providerVersion": "0.1.0-boundary",
+        "contractVersion": PROVIDER_CONTRACT_VERSION,
+        "label": "Local open-model garment/avatar proposal adapter boundary",
+        "providerKind": "local_open_model_adapter_boundary",
+        "status": "not_run_missing_runtime_or_weights",
+        "executionClass": "optional_isolated_local_model_subprocess",
+        "environmentProfile": "D0_OPTIONAL_GPU_OR_MODEL_RUNTIME_NOT_IN_CI",
+        "isolation": {
+            "required": True,
+            "reason": (
+                "future model dependencies, weights and GPU probes must stay outside "
+                "ordinary Forge CI"
+            ),
+        },
+        "policy": _provider_policy(),
+        "networkPolicy": _network_policy(),
+        "capabilities": {
+            "producesRawProposalRecord": True,
+            "producesRawMeshAsset": True,
+            "producesCleanProposal": False,
+            "automaticGeneration": True,
+            "deterministicFixture": False,
+            "supportsCancellation": True,
+            "supportsResume": True,
+            "supportsTimeout": True,
+        },
+        "capabilityDeclaration": _capability_declaration(
+            output_representations=["glb2_triangle_mesh", "gltf2_triangle_mesh"],
+            deterministic_seed_control=True,
+        ),
+        "ioSchemas": _io_schemas(),
+        "limits": _provider_limits(max_output_bytes=50_000_000, max_triangles=120_000),
+        "lifecycle": _lifecycle(cancel=True, resume=True),
+        "authority": _provider_authority(),
+        "supportedPurposes": ["garment_visual_geometry_proposal"],
+        "supportedGarmentClasses": ["tshirt"],
+        "licence": {
+            "assetRightsStatus": "not_run_model_license_and_weights_unavailable",
+            "termsReviewed": False,
+            "commercialUseReviewed": False,
+        },
+        "runtimeRequirements": {
+            "weightsAvailable": False,
+            "weightsDigestKnown": False,
+            "gpuRequiredForExecution": "unknown_until_model_selected",
+            "ordinaryCiMayInstallExtras": False,
+            "ordinaryCiMayDownloadWeights": False,
+            "capabilityProbeSideEffectFree": True,
+        },
+        "notRunReason": "not_run_missing_runtime_or_weights",
+    }
+
+
 def _manual_import_contract() -> dict[str, Any]:
     return {
         "acceptedExtensions": [".glb"],
         "maxByteSize": 12_000_000,
         "maxTriangleEstimate": 75_000,
+        "maxMaterialCount": 64,
+        "maxTextureCount": 32,
+        "maxArchiveExpansionBytes": 60_000_000,
+        "maxSubprocessWallTimeSeconds": 30,
+        "maxSubprocessMemoryBytes": 512_000_000,
+        "maxSubprocessCount": 1,
         "coordinateConvention": COORDINATE_CONVENTION,
         "rawAssetPolicy": "visual_reference_only_never_canonical",
         "requiredAudit": [
@@ -350,3 +472,139 @@ def _provider_policy() -> dict[str, Any]:
         "approvedDomain": "avatar_and_garment_only",
         "allowsGenericObjects": False,
     }
+
+
+def _network_policy() -> dict[str, Any]:
+    return {
+        "runtimeNetworkAccess": False,
+        "socketAccess": "denied",
+        "modelHubAccess": "denied_in_ci",
+        "externalApiCalls": "denied_without_explicit_future_authority",
+    }
+
+
+def _capability_declaration(
+    *, output_representations: list[str], deterministic_seed_control: bool
+) -> dict[str, Any]:
+    return {
+        "supportedAssetClasses": ["garment"],
+        "supportedDomain": "avatar_garment_only",
+        "supportedGarmentClasses": ["tshirt"],
+        "supportedAvatarClasses": ["reference_avatar"],
+        "outputRepresentations": output_representations,
+        "deterministicSeedControl": deterministic_seed_control,
+        "cleanupBoundary": "raw_proposal_only_cleanup_is_separate",
+        "canonicalTruthAuthority": False,
+    }
+
+
+def _io_schemas() -> dict[str, str]:
+    return {
+        "requestSchema": "closy.provider_request.garment_visual_geometry.v1",
+        "rawOutputSchema": "closy.provider_output.raw_visual_geometry.v1",
+        "analysisSchema": "closy.provider_output.independent_analysis.v1",
+        "failureSchema": "closy.provider_failure.safe_code.v1",
+    }
+
+
+def _provider_limits(*, max_output_bytes: int, max_triangles: int) -> dict[str, Any]:
+    return {
+        "maxRequestBytes": 1_000_000,
+        "maxOutputBytes": max_output_bytes,
+        "maxArchiveExpansionBytes": max(max_output_bytes * 2, max_output_bytes),
+        "maxVertices": max_triangles * 2 if max_triangles else 0,
+        "maxTriangles": max_triangles,
+        "maxMaterials": 64 if max_triangles else 0,
+        "maxTextures": 32 if max_triangles else 0,
+        "maxTextureSizePx": 2048,
+        "maxWallTimeSeconds": 30,
+        "maxSubprocessMemoryBytes": 512_000_000,
+        "maxProcessCount": 1,
+    }
+
+
+def _lifecycle(*, cancel: bool, resume: bool) -> dict[str, Any]:
+    return {
+        "states": [
+            "declared",
+            "queued",
+            "running",
+            "completed",
+            "failed",
+            "cancelled",
+            "not_run",
+        ],
+        "supportsCancellation": cancel,
+        "supportsResume": resume,
+        "timeoutState": "failed_timeout_safe_code",
+        "malformedOutputState": "failed_malformed_output_safe_code",
+    }
+
+
+def _provider_authority() -> dict[str, Any]:
+    return {
+        "rawProposalOnly": True,
+        "canonicalTruthAuthority": False,
+        "mayOverwritePattern": False,
+        "mayOverwriteSimulationMesh": False,
+        "requiresIndependentAnalysisBeforeCleanup": True,
+        "requiresCleanAcceptanceGateBeforeCanonical": True,
+    }
+
+
+def _invocation_records(
+    *,
+    selected_provider_id: str,
+    manual_candidate: dict[str, Any],
+    geometry_proposal: dict[str, Any],
+) -> list[dict[str, Any]]:
+    manual_selected = selected_provider_id == MANUAL_IMPORT_PROVIDER_ID
+    return [
+        {
+            "invocationId": "provider_invocation.null_tshirt_contract_v1",
+            "providerId": NULL_GEOMETRY_PROVIDER_ID,
+            "status": (
+                "not_run_provider_not_selected"
+                if selected_provider_id != NULL_GEOMETRY_PROVIDER_ID
+                else "completed_rejected_no_geometry"
+            ),
+            "startedAt": FIXED_TIMESTAMP
+            if selected_provider_id == NULL_GEOMETRY_PROVIDER_ID
+            else None,
+            "completedAt": FIXED_TIMESTAMP
+            if selected_provider_id == NULL_GEOMETRY_PROVIDER_ID
+            else None,
+            "deterministicSeed": 101,
+            "networkAccessObserved": False,
+            "safeFailureCode": None,
+            "outputHash": None,
+        },
+        {
+            "invocationId": "provider_invocation.manual_tshirt_glb_import_v1",
+            "providerId": MANUAL_IMPORT_PROVIDER_ID,
+            "status": (
+                "completed_manual_fixture_import"
+                if manual_selected
+                else manual_candidate["failureReason"]
+            ),
+            "startedAt": FIXED_TIMESTAMP if manual_selected else None,
+            "completedAt": FIXED_TIMESTAMP if manual_selected else None,
+            "deterministicSeed": 101,
+            "networkAccessObserved": False,
+            "safeFailureCode": None if manual_selected else manual_candidate["failureReason"],
+            "outputHash": (
+                geometry_proposal["integrity"]["geometryProposalHash"] if manual_selected else None
+            ),
+        },
+        {
+            "invocationId": "provider_invocation.local_open_model_tshirt_boundary_v1",
+            "providerId": LOCAL_OPEN_MODEL_PROVIDER_ID,
+            "status": "not_run_missing_runtime_or_weights",
+            "startedAt": None,
+            "completedAt": None,
+            "deterministicSeed": 101,
+            "networkAccessObserved": False,
+            "safeFailureCode": "not_run_missing_runtime_or_weights",
+            "outputHash": None,
+        },
+    ]

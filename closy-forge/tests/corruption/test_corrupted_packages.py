@@ -448,6 +448,46 @@ def test_provider_registry_generic_domain_is_rejected(tmp_path) -> None:  # type
     assert "provider_registry_domain_invalid" in issue_codes(validate_package(corrupt))
 
 
+def test_provider_registry_duplicate_provider_id_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_registry_duplicate.closygarment")
+    registry = read_json(corrupt / "proposals" / "provider_registry.json")
+    registry["providers"].append(registry["providers"][0])
+    write_json(corrupt / "proposals" / "provider_registry.json", registry)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_registry_hash_mismatch" in codes
+    assert "provider_registry_duplicate_provider_id" in codes
+
+
+def test_provider_registry_network_access_claim_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_registry_network.closygarment")
+    registry = read_json(corrupt / "proposals" / "provider_registry.json")
+    registry["providers"][0]["networkPolicy"]["runtimeNetworkAccess"] = True
+    write_json(corrupt / "proposals" / "provider_registry.json", registry)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_registry_hash_mismatch" in codes
+    assert "provider_registry_provider_policy_violation" in codes
+
+
+def test_provider_registry_local_model_execution_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_registry_local_model_ready.closygarment"
+    )
+    registry = read_json(corrupt / "proposals" / "provider_registry.json")
+    local_provider = next(
+        provider
+        for provider in registry["providers"]
+        if provider["providerId"] == "closy.local_open_model_geometry_adapter.v1"
+    )
+    local_provider["status"] = "available"
+    local_provider["runtimeRequirements"]["weightsAvailable"] = True
+    write_json(corrupt / "proposals" / "provider_registry.json", registry)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_registry_hash_mismatch" in codes
+    assert "provider_registry_local_model_runtime_claim_invalid" in codes
+
+
 def test_provider_registry_manual_rights_violation_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(
         build_demo(tmp_path), tmp_path / "bad_registry_manual_rights.closygarment"
@@ -464,6 +504,77 @@ def test_geometry_proposal_asset_hash_mismatch_is_rejected(tmp_path) -> None:  #
     proposal["rawProposal"]["sourceAssetHash"] = "0" * 64
     write_json(corrupt / "proposals" / "raw_geometry_proposal.json", proposal)
     assert "geometry_proposal_asset_hash_mismatch" in issue_codes(validate_package(corrupt))
+
+
+def test_provider_bakeoff_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_provider_bakeoff_hash.closygarment"
+    )
+    bakeoff = read_json(corrupt / "reports" / "provider_bakeoff.json")
+    bakeoff["aggregate"]["providerCount"] = 99
+    write_json(corrupt / "reports" / "provider_bakeoff.json", bakeoff)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_bakeoff_hash_mismatch" in codes
+    assert "provider_bakeoff_aggregate_invalid" in codes
+
+
+def test_provider_bakeoff_status_overclaim_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_provider_bakeoff_status.closygarment"
+    )
+    bakeoff = read_json(corrupt / "reports" / "provider_bakeoff.json")
+    bakeoff["status"] = "pass"
+    write_json(corrupt / "reports" / "provider_bakeoff.json", bakeoff)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_bakeoff_hash_mismatch" in codes
+    assert "provider_bakeoff_status_invalid" in codes
+
+
+def test_provider_bakeoff_cleanup_effort_is_required(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_provider_bakeoff_cleanup_effort.closygarment"
+    )
+    bakeoff = read_json(corrupt / "reports" / "provider_bakeoff.json")
+    bakeoff["providerResults"][0]["cleanupEffortStatus"] = "unbounded_cleanup"
+    write_json(corrupt / "reports" / "provider_bakeoff.json", bakeoff)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_bakeoff_hash_mismatch" in codes
+    assert "provider_bakeoff_cleanup_effort_invalid" in codes
+
+
+def test_provider_bakeoff_canonical_acceptance_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_provider_bakeoff_canonical.closygarment"
+    )
+    bakeoff = read_json(corrupt / "reports" / "provider_bakeoff.json")
+    bakeoff["providerResults"][0]["acceptedForCanonical"] = True
+    bakeoff["aggregate"]["canonicalAcceptedProviderCount"] = 1
+    write_json(corrupt / "reports" / "provider_bakeoff.json", bakeoff)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_bakeoff_hash_mismatch" in codes
+    assert "provider_bakeoff_canonical_acceptance_invalid" in codes
+    assert "provider_bakeoff_aggregate_invalid" in codes
+
+
+def test_provider_bakeoff_local_model_execution_claim_is_rejected(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(
+        build_demo(tmp_path), tmp_path / "bad_provider_bakeoff_local_model.closygarment"
+    )
+    bakeoff = read_json(corrupt / "reports" / "provider_bakeoff.json")
+    local_result = next(
+        result
+        for result in bakeoff["providerResults"]
+        if result["providerId"] == "closy.local_open_model_geometry_adapter.v1"
+    )
+    local_result["executionStatus"] = "completed_model_generation"
+    write_json(corrupt / "reports" / "provider_bakeoff.json", bakeoff)
+    codes = issue_codes(validate_package(corrupt))
+    assert "provider_bakeoff_hash_mismatch" in codes
+    assert "provider_bakeoff_local_model_status_invalid" in codes
 
 
 def test_raw_geometry_topology_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]

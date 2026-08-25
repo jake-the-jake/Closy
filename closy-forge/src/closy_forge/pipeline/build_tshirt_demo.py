@@ -79,6 +79,7 @@ from closy_forge.proposals import (
     GEOMETRY_SEMANTIC_TRANSFER_VERSION,
     GEOMETRY_STITCHED_SHELL_VERSION,
     GEOMETRY_VISUAL_SHELL_REVIEW_VERSION,
+    PROVIDER_BAKEOFF_REPORT_VERSION,
     PROVIDER_REGISTRY_VERSION,
     RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
     build_clean_geometry_proposal_rejection,
@@ -97,6 +98,7 @@ from closy_forge.proposals import (
     build_manual_geometry_proposal,
     build_proposal_runtime_binding,
     build_proposal_runtime_render_mesh,
+    build_provider_bakeoff_report,
     build_raw_geometry_topology_report,
     build_stitched_shell_assets,
     clean_geometry_proposal_quality_report,
@@ -253,6 +255,13 @@ def _write_package_contents(
         garment_class="tshirt",
         raw_geometry_proposal=geometry_proposal,
         asset_path=manual_proposal_asset,
+    )
+    provider_bakeoff = build_provider_bakeoff_report(
+        garment_id="garment.demo_tshirt.reference_v1",
+        garment_class="tshirt",
+        provider_registry=provider_registry,
+        raw_geometry_proposal=geometry_proposal,
+        raw_topology_report=raw_geometry_topology,
     )
     geometry_cleanup_plan = build_geometry_cleanup_plan(
         garment_id="garment.demo_tshirt.reference_v1",
@@ -454,6 +463,7 @@ def _write_package_contents(
         package_dir / "proposals" / "clean_geometry_proposal.json", clean_geometry_proposal
     )
     write_canonical_json(package_dir / "proposals" / "provider_registry.json", provider_registry)
+    write_canonical_json(package_dir / "reports" / "provider_bakeoff.json", provider_bakeoff)
     write_canonical_json(package_dir / "avatar" / "avatar_contract.json", avatar)
     write_canonical_json(package_dir / "avatar" / "body_regions.json", regions)
     write_glb(
@@ -573,6 +583,7 @@ def _write_package_contents(
         texture_identity,
         geometry_proposal,
         raw_geometry_topology,
+        provider_bakeoff,
         geometry_cleanup_plan,
         geometry_cleanup_result,
         geometry_semantic_transfer,
@@ -631,6 +642,7 @@ def _write_package_contents(
         texture_identity,
         geometry_proposal,
         raw_geometry_topology,
+        provider_bakeoff,
         geometry_cleanup_plan,
         geometry_cleanup_result,
         geometry_semantic_transfer,
@@ -673,6 +685,7 @@ def _write_package_contents(
         texture_identity,
         geometry_proposal,
         raw_geometry_topology,
+        provider_bakeoff,
         geometry_cleanup_plan,
         geometry_cleanup_result,
         geometry_semantic_transfer,
@@ -713,6 +726,7 @@ def _write_package_contents(
         "textureIdentity": texture_identity,
         "geometryProposal": geometry_proposal,
         "rawGeometryTopology": raw_geometry_topology,
+        "providerBakeoff": provider_bakeoff,
         "geometryCleanupPlan": geometry_cleanup_plan,
         "geometryCleanupResult": geometry_cleanup_result,
         "geometrySemanticTransfer": geometry_semantic_transfer,
@@ -843,6 +857,7 @@ def _manifest(
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
     raw_geometry_topology: dict[str, Any],
+    provider_bakeoff: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
     geometry_cleanup_result: dict[str, Any],
     geometry_semantic_transfer: dict[str, Any],
@@ -895,6 +910,7 @@ def _manifest(
             "rawGeometryProposal": "proposals/raw_geometry_proposal.json",
             "rawGeometryProposalAsset": "proposals/manual_raw_visual_proposal.glb",
             "rawGeometryTopology": "reports/raw_geometry_topology.json",
+            "providerBakeoff": "reports/provider_bakeoff.json",
             "geometryCleanupPlan": "reports/geometry_cleanup_plan.json",
             "geometryCleanupPreviewAsset": "proposals/manual_cleanup_preview.glb",
             "geometryCleanupResult": "reports/geometry_cleanup_result.json",
@@ -1015,6 +1031,8 @@ def _manifest(
             "rawGeometryTopologyPayloadHash": str(
                 raw_geometry_topology["integrity"]["rawGeometryTopologyReportHash"]
             ),
+            "providerBakeoffHash": _hash_from_inventory(inventory, "reports/provider_bakeoff.json"),
+            "providerBakeoffPayloadHash": str(provider_bakeoff["integrity"]["providerBakeoffHash"]),
             "geometryCleanupPlanHash": _hash_from_inventory(
                 inventory, "reports/geometry_cleanup_plan.json"
             ),
@@ -1168,6 +1186,7 @@ def _manifest(
             "textureIdentity": TEXTURE_IDENTITY_VERSION,
             "geometryProposal": GEOMETRY_PROPOSAL_VERSION,
             "rawGeometryTopology": RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
+            "providerBakeoff": PROVIDER_BAKEOFF_REPORT_VERSION,
             "geometryCleanupPlan": GEOMETRY_CLEANUP_PLAN_VERSION,
             "geometryCleanupResult": GEOMETRY_CLEANUP_RESULT_VERSION,
             "geometrySemanticTransfer": GEOMETRY_SEMANTIC_TRANSFER_VERSION,
@@ -1229,6 +1248,8 @@ def _manifest(
             "source_provider_human_visual_fidelity_not_run",
             "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
+            "provider_bakeoff_d0_contract_only",
+            "local_open_model_adapter_not_run_missing_runtime_or_weights",
             "zeroone_unavailable_optional",
             "procedural_fixture_not_production_asset",
         ],
@@ -1309,8 +1330,12 @@ def _capabilities() -> dict[str, bool]:
         "geometryCleanAcceptanceGateAvailable": True,
         "providerProvenanceAvailable": True,
         "geometryProviderRegistryAvailable": True,
+        "providerContractValidationAvailable": True,
+        "providerBakeoffReportAvailable": True,
         "manualGeometryImportAdapterDeclared": True,
         "manualGeometryImportAssetAvailable": True,
+        "localOpenModelAdapterDeclared": True,
+        "localOpenModelExecutionAvailable": False,
         "externalGeometryProvidersConfigured": False,
         "cleanGeometryProposalAvailable": False,
         "personalizedAvatarAvailable": False,
@@ -1341,6 +1366,7 @@ def _quality_reports(
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
     raw_geometry_topology: dict[str, Any],
+    provider_bakeoff: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
     geometry_cleanup_result: dict[str, Any],
     geometry_semantic_transfer: dict[str, Any],
@@ -1580,6 +1606,7 @@ def _provenance(
     texture_identity: dict[str, Any],
     geometry_proposal: dict[str, Any],
     raw_geometry_topology: dict[str, Any],
+    provider_bakeoff: dict[str, Any],
     geometry_cleanup_plan: dict[str, Any],
     geometry_cleanup_result: dict[str, Any],
     geometry_semantic_transfer: dict[str, Any],
@@ -1722,16 +1749,39 @@ def _provenance(
                 PROVIDER_REGISTRY_VERSION,
                 {
                     "selectedProviderId": provider_registry["selectedProviderId"],
+                    "contractVersion": provider_registry["contractVersion"],
                     "manualLocalImportAdapterDeclared": provider_registry["d0Capabilities"][
                         "manualLocalImportAdapterDeclared"
                     ],
                     "manualLocalImportAssetAvailable": provider_registry["d0Capabilities"][
                         "manualLocalImportAssetAvailable"
                     ],
+                    "localOpenModelAdapterDeclared": provider_registry["d0Capabilities"][
+                        "localOpenModelAdapterDeclared"
+                    ],
+                    "localOpenModelExecutionAvailable": provider_registry["d0Capabilities"][
+                        "localOpenModelExecutionAvailable"
+                    ],
                     "externalProvidersConfigured": False,
                     "supportedDomain": provider_registry["scope"]["supportedDomain"],
                 },
                 [str(provider_registry["integrity"]["providerRegistryHash"])],
+            ),
+            _stage(
+                "provider_bakeoff_report",
+                PROVIDER_BAKEOFF_REPORT_VERSION,
+                {
+                    "providerCount": provider_bakeoff["aggregate"]["providerCount"],
+                    "executedProviderCount": provider_bakeoff["aggregate"]["executedProviderCount"],
+                    "notRunProviderCount": provider_bakeoff["aggregate"]["notRunProviderCount"],
+                    "canonicalAcceptedProviderCount": provider_bakeoff["aggregate"][
+                        "canonicalAcceptedProviderCount"
+                    ],
+                    "bestAvailableProviderId": provider_bakeoff["aggregate"][
+                        "bestAvailableProviderId"
+                    ],
+                },
+                [str(provider_bakeoff["integrity"]["providerBakeoffHash"])],
             ),
             _stage(
                 "manual_local_geometry_proposal_provider",
@@ -2361,9 +2411,11 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
+    provider_bakeoff = context["providerBakeoff"]
     return {
         "schemaVersion": 1,
         "garmentId": manifest["garmentId"],
+        "canonicalPackageDigest": manifest["canonicalPackageDigest"],
         "packageDigest": manifest["canonicalPackageDigest"],
         "counts": {
             "panels": len(pattern["panels"]),
@@ -3024,6 +3076,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "registryId": provider_registry["registryId"],
             "selectedProviderId": provider_registry["selectedProviderId"],
             "selectionReason": provider_registry["selectionReason"],
+            "contractVersion": provider_registry["contractVersion"],
             "providerCount": len(provider_registry["providers"]),
             "manualLocalImportAdapterDeclared": provider_registry["d0Capabilities"][
                 "manualLocalImportAdapterDeclared"
@@ -3031,12 +3084,30 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "manualLocalImportAssetAvailable": provider_registry["d0Capabilities"][
                 "manualLocalImportAssetAvailable"
             ],
+            "localOpenModelAdapterDeclared": provider_registry["d0Capabilities"][
+                "localOpenModelAdapterDeclared"
+            ],
+            "localOpenModelExecutionAvailable": provider_registry["d0Capabilities"][
+                "localOpenModelExecutionAvailable"
+            ],
             "externalProvidersConfigured": provider_registry["d0Capabilities"][
                 "externalProvidersConfigured"
             ],
             "cleanProposalProviderAvailable": provider_registry["d0Capabilities"][
                 "cleanProposalProviderAvailable"
             ],
+        },
+        "providerBakeoff": {
+            "reportId": provider_bakeoff["reportId"],
+            "status": provider_bakeoff["status"],
+            "providerCount": provider_bakeoff["aggregate"]["providerCount"],
+            "executedProviderCount": provider_bakeoff["aggregate"]["executedProviderCount"],
+            "notRunProviderCount": provider_bakeoff["aggregate"]["notRunProviderCount"],
+            "canonicalAcceptedProviderCount": provider_bakeoff["aggregate"][
+                "canonicalAcceptedProviderCount"
+            ],
+            "bestAvailableProviderId": provider_bakeoff["aggregate"]["bestAvailableProviderId"],
+            "bestAvailableStatus": provider_bakeoff["aggregate"]["bestAvailableStatus"],
         },
         "hashes": manifest["hashes"],
         "binding": context["bindingManifest"],
@@ -3171,7 +3242,14 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"available={summary['cleanGeometryProposal']['cleanProposalAvailable']}, "
         f"reason=`{summary['cleanGeometryProposal']['failureReason']}`\n"
         f"- Provider registry: selected `{summary['providerRegistry']['selectedProviderId']}`, "
-        f"manual asset available={summary['providerRegistry']['manualLocalImportAssetAvailable']}\n"
+        f"manual asset available={summary['providerRegistry']['manualLocalImportAssetAvailable']}, "
+        "local open model execution="
+        f"{summary['providerRegistry']['localOpenModelExecutionAvailable']}\n"
+        f"- Provider bake-off: best `{summary['providerBakeoff']['bestAvailableProviderId']}`, "
+        f"status=`{summary['providerBakeoff']['status']}`, "
+        f"executed={summary['providerBakeoff']['executedProviderCount']}/"
+        f"{summary['providerBakeoff']['providerCount']}, "
+        f"canonical accepted={summary['providerBakeoff']['canonicalAcceptedProviderCount']}\n"
         f"- Simulation mesh: {counts['simulationVertices']} vertices, "
         f"{counts['simulationTriangles']} triangles\n"
         f"- Render shell: {counts['renderVertices']} vertices, "

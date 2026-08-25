@@ -86,9 +86,17 @@ from closy_forge.proposals.geometry_visual_shell_review import (
     build_geometry_visual_shell_review_report,
     hash_geometry_visual_shell_review,
 )
+from closy_forge.proposals.provider_bakeoff import (
+    PROVIDER_BAKEOFF_REPORT_VERSION,
+    build_provider_bakeoff_report,
+    hash_provider_bakeoff_report,
+    provider_bakeoff_quality_report,
+)
 from closy_forge.proposals.provider_registry import (
+    LOCAL_OPEN_MODEL_PROVIDER_ID,
     MANUAL_IMPORT_PROVIDER_ID,
     NULL_GEOMETRY_PROVIDER_ID,
+    PROVIDER_CONTRACT_VERSION,
     PROVIDER_REGISTRY_VERSION,
     build_geometry_provider_registry,
     hash_provider_registry,
@@ -121,6 +129,9 @@ __all__ = [
     "GEOMETRY_STITCHED_SHELL_VERSION",
     "NULL_GEOMETRY_PROVIDER_ID",
     "NULL_GEOMETRY_PROPOSAL_VERSION",
+    "LOCAL_OPEN_MODEL_PROVIDER_ID",
+    "PROVIDER_BAKEOFF_REPORT_VERSION",
+    "PROVIDER_CONTRACT_VERSION",
     "PROPOSAL_RUNTIME_BINDING_ALGORITHM",
     "PROVIDER_REGISTRY_VERSION",
     "RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION",
@@ -136,6 +147,7 @@ __all__ = [
     "build_geometry_material_uv_transfer_report",
     "build_geometry_visual_shell_review_report",
     "build_geometry_provider_registry",
+    "build_provider_bakeoff_report",
     "build_geometry_binding_candidate_report",
     "build_geometry_binding_validation_report",
     "build_geometry_cleanup_plan",
@@ -168,10 +180,12 @@ __all__ = [
     "hash_geometry_stitched_shell_report",
     "hash_stitched_analysis_shell",
     "hash_geometry_proposal",
+    "hash_provider_bakeoff_report",
     "hash_provider_registry",
     "hash_raw_geometry_topology_report",
     "inspect_manual_import_candidate",
     "provider_registry_quality_report",
+    "provider_bakeoff_quality_report",
     "raw_geometry_topology_quality_report",
     "reproject_cleanup_preview_to_settled_simulation",
 ]

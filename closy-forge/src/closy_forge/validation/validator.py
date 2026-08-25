@@ -78,6 +78,7 @@ from closy_forge.proposals import (
     hash_geometry_semantic_transfer_report,
     hash_geometry_stitched_shell_report,
     hash_geometry_visual_shell_review,
+    hash_provider_bakeoff_report,
     hash_provider_registry,
     hash_raw_geometry_topology_report,
     hash_stitched_analysis_shell,
@@ -149,6 +150,7 @@ EXPECTED_FILES = [
     "reports/texture_quality.json",
     "reports/geometry_proposal_quality.json",
     "reports/raw_geometry_topology.json",
+    "reports/provider_bakeoff.json",
     "reports/geometry_cleanup_plan.json",
     "reports/geometry_cleanup_result.json",
     "reports/geometry_semantic_transfer.json",
@@ -321,6 +323,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_texture_identity(package_dir, manifest, issues)
     _validate_geometry_proposal(package_dir, manifest, issues)
     _validate_raw_geometry_topology(package_dir, manifest, issues)
+    _validate_provider_bakeoff(package_dir, manifest, issues)
     _validate_geometry_cleanup_plan(package_dir, manifest, issues)
     _validate_geometry_cleanup_result(package_dir, manifest, issues)
     _validate_geometry_semantic_transfer(package_dir, manifest, issues)
@@ -8000,9 +8003,19 @@ def _validate_provider_registry(
         providers = []
 
     selected_provider = str(registry.get("selectedProviderId", ""))
-    provider_ids = {
+    provider_id_list = [
         str(provider.get("providerId", "")) for provider in providers if isinstance(provider, dict)
-    }
+    ]
+    provider_ids = set(provider_id_list)
+    if len(provider_id_list) != len(provider_ids):
+        issues.append(
+            _issue(
+                "provider_registry_duplicate_provider_id",
+                "fatal",
+                "proposals/provider_registry.json",
+                "Provider registry provider IDs must be unique.",
+            )
+        )
     if selected_provider not in provider_ids:
         issues.append(
             _issue(
@@ -8070,7 +8083,46 @@ def _validate_provider_registry(
                 )
             )
             continue
+        provider_id = str(provider.get("providerId", ""))
+        if provider.get("contractVersion") != registry.get("contractVersion"):
+            issues.append(
+                _issue(
+                    "provider_registry_contract_version_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Provider contract versions must match the registry contract.",
+                    provider_id,
+                )
+            )
         provider_policy = provider.get("policy", {})
+        network_policy = provider.get("networkPolicy", {})
+        capabilities = provider.get("capabilities", {})
+        declaration = provider.get("capabilityDeclaration", {})
+        limits = provider.get("limits", {})
+        authority = provider.get("authority", {})
+        for block_name, block in [
+            ("networkPolicy", network_policy),
+            ("capabilities", capabilities),
+            ("capabilityDeclaration", declaration),
+            ("limits", limits),
+            ("authority", authority),
+        ]:
+            if not isinstance(block, dict):
+                issues.append(
+                    _issue(
+                        "provider_registry_provider_contract_block_invalid",
+                        "fatal",
+                        "proposals/provider_registry.json",
+                        f"Provider {block_name} must be an object.",
+                        provider_id,
+                    )
+                )
+                continue
+        network_policy = _mapping(network_policy)
+        capabilities = _mapping(capabilities)
+        declaration = _mapping(declaration)
+        limits = _mapping(limits)
+        authority = _mapping(authority)
         if not isinstance(provider_policy, dict):
             issues.append(
                 _issue(
@@ -8087,6 +8139,8 @@ def _validate_provider_registry(
             or provider_policy.get("allowTrainingUse") is not False
             or provider_policy.get("acceptsUserImagery") is not False
             or provider_policy.get("containsPersonalBodyData") is not False
+            or network_policy.get("runtimeNetworkAccess") is not False
+            or network_policy.get("socketAccess") != "denied"
         ):
             issues.append(
                 _issue(
@@ -8097,12 +8151,14 @@ def _validate_provider_registry(
                         "Provider entries cannot enable external APIs, training use "
                         "or user data in D0."
                     ),
-                    str(provider.get("providerId", "")),
+                    provider_id,
                 )
             )
         if (
             provider_policy.get("approvedDomain") != "avatar_and_garment_only"
             or provider_policy.get("allowsGenericObjects") is not False
+            or declaration.get("supportedDomain") != "avatar_garment_only"
+            or declaration.get("canonicalTruthAuthority") is not False
             or "garment_visual_geometry_proposal" not in provider.get("supportedPurposes", [])
             or manifest.get("garmentClass") not in provider.get("supportedGarmentClasses", [])
         ):
@@ -8112,9 +8168,65 @@ def _validate_provider_registry(
                     "fatal",
                     "proposals/provider_registry.json",
                     "Provider entries must be garment/avatar constrained.",
-                    str(provider.get("providerId", "")),
+                    provider_id,
                 )
             )
+        if (
+            authority.get("canonicalTruthAuthority") is not False
+            or authority.get("requiresCleanAcceptanceGateBeforeCanonical") is not True
+        ):
+            issues.append(
+                _issue(
+                    "provider_registry_provider_authority_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Provider outputs must remain non-canonical until independent gates pass.",
+                    provider_id,
+                )
+            )
+        if capabilities.get("producesCleanProposal") is not False:
+            issues.append(
+                _issue(
+                    "provider_registry_provider_clean_authority_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Phase 5 provider contracts may emit raw proposals but not clean assets.",
+                    provider_id,
+                )
+            )
+        if (
+            _int_or(limits.get("maxRequestBytes"), -1) < 0
+            or _int_or(limits.get("maxOutputBytes"), -1) < 0
+            or _int_or(limits.get("maxWallTimeSeconds"), -1) <= 0
+            or _int_or(limits.get("maxProcessCount"), -1) <= 0
+        ):
+            issues.append(
+                _issue(
+                    "provider_registry_provider_limits_invalid",
+                    "fatal",
+                    "proposals/provider_registry.json",
+                    "Provider contract limits must be finite and bounded.",
+                    provider_id,
+                )
+            )
+        if provider_id == "closy.local_open_model_geometry_adapter.v1":
+            runtime_requirements = provider.get("runtimeRequirements", {})
+            if (
+                not isinstance(runtime_requirements, dict)
+                or provider.get("status") != "not_run_missing_runtime_or_weights"
+                or runtime_requirements.get("weightsAvailable") is not False
+                or runtime_requirements.get("ordinaryCiMayDownloadWeights") is not False
+                or runtime_requirements.get("ordinaryCiMayInstallExtras") is not False
+            ):
+                issues.append(
+                    _issue(
+                        "provider_registry_local_model_runtime_claim_invalid",
+                        "fatal",
+                        "proposals/provider_registry.json",
+                        "Local open-model adapter must remain not-run without authorised runtime.",
+                        provider_id,
+                    )
+                )
 
     manual_asset_available = manual.get("acceptedForRawProposal") is True
     expected_d0 = [
@@ -8122,6 +8234,10 @@ def _validate_provider_registry(
         ("nullProviderAvailable", True),
         ("manualLocalImportAdapterDeclared", True),
         ("manualLocalImportAssetAvailable", manual_asset_available),
+        ("localOpenModelAdapterDeclared", True),
+        ("localOpenModelExecutionAvailable", False),
+        ("providerContractValidationAvailable", True),
+        ("providerBakeoffReportAvailable", True),
         ("externalProvidersConfigured", False),
         ("cleanProposalProviderAvailable", False),
     ]
@@ -8211,8 +8327,12 @@ def _validate_provider_registry(
     if isinstance(caps, dict):
         expected_manifest = [
             ("geometryProviderRegistryAvailable", True),
+            ("providerContractValidationAvailable", True),
+            ("providerBakeoffReportAvailable", True),
             ("manualGeometryImportAdapterDeclared", True),
             ("manualGeometryImportAssetAvailable", manual_asset_available),
+            ("localOpenModelAdapterDeclared", True),
+            ("localOpenModelExecutionAvailable", False),
             ("externalGeometryProvidersConfigured", False),
             ("cleanGeometryProposalAvailable", False),
         ]
@@ -8250,6 +8370,270 @@ def _validate_provider_registry(
                 "fatal",
                 "proposals/provider_registry.json",
                 "Provider registry must not contain NaN or Infinity.",
+            )
+        )
+
+
+def _validate_provider_bakeoff(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    registry = _read_required_json(package_dir, "proposals/provider_registry.json", issues)
+    proposal = _read_required_json(package_dir, "proposals/raw_geometry_proposal.json", issues)
+    topology = _read_required_json(package_dir, "reports/raw_geometry_topology.json", issues)
+    bakeoff = _read_required_json(package_dir, "reports/provider_bakeoff.json", issues)
+    if registry is None or proposal is None or topology is None or bakeoff is None:
+        return
+    if bakeoff.get("garmentId") != manifest.get("garmentId"):
+        issues.append(
+            _issue(
+                "provider_bakeoff_garment_mismatch",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off report must reference the package garment ID.",
+            )
+        )
+    if bakeoff.get("garmentClass") != manifest.get("garmentClass"):
+        issues.append(
+            _issue(
+                "provider_bakeoff_class_mismatch",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off report must reference the package garment class.",
+            )
+        )
+    if bakeoff.get("status") != "completed_d0_contract_only_clean_rejected":
+        issues.append(
+            _issue(
+                "provider_bakeoff_status_invalid",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off must remain a D0 contract-only clean-rejected report.",
+            )
+        )
+    expected_hashes = [
+        (
+            "sourceProviderRegistryHash",
+            _nested_string(registry, ["integrity", "providerRegistryHash"], ""),
+            "provider_bakeoff_registry_hash_mismatch",
+        ),
+        (
+            "sourceRawProposalHash",
+            _nested_string(proposal, ["integrity", "geometryProposalHash"], ""),
+            "provider_bakeoff_proposal_hash_mismatch",
+        ),
+        (
+            "sourceRawTopologyReportHash",
+            _nested_string(topology, ["integrity", "rawGeometryTopologyReportHash"], ""),
+            "provider_bakeoff_topology_hash_mismatch",
+        ),
+    ]
+    for field, expected_hash, code in expected_hashes:
+        if bakeoff.get(field) != expected_hash:
+            issues.append(
+                _issue(
+                    code,
+                    "fatal",
+                    "reports/provider_bakeoff.json",
+                    f"Provider bake-off {field} must match its source artifact.",
+                )
+            )
+    if _nested_string(bakeoff, ["integrity", "providerBakeoffHash"], "") != (
+        hash_provider_bakeoff_report(bakeoff)
+    ):
+        issues.append(
+            _issue(
+                "provider_bakeoff_hash_mismatch",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off hash must match its canonical payload.",
+            )
+        )
+    provider_results = bakeoff.get("providerResults", [])
+    if not isinstance(provider_results, list) or not provider_results:
+        issues.append(
+            _issue(
+                "provider_bakeoff_result_list_invalid",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off must include one result per registry provider.",
+            )
+        )
+        provider_results = []
+    result_ids = {
+        str(result.get("providerId", "")) for result in provider_results if isinstance(result, dict)
+    }
+    registry_ids = {
+        str(provider.get("providerId", ""))
+        for provider in registry.get("providers", [])
+        if isinstance(provider, dict)
+    }
+    if result_ids != registry_ids:
+        issues.append(
+            _issue(
+                "provider_bakeoff_provider_set_mismatch",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off results must match the provider registry provider IDs.",
+            )
+        )
+    selected_provider = str(registry.get("selectedProviderId", ""))
+    selected_results = [
+        result
+        for result in provider_results
+        if isinstance(result, dict) and result.get("providerId") == selected_provider
+    ]
+    if len(selected_results) != 1:
+        issues.append(
+            _issue(
+                "provider_bakeoff_selected_result_invalid",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off must include exactly one selected provider result.",
+            )
+        )
+    for result in provider_results:
+        if not isinstance(result, dict):
+            continue
+        provider_id = str(result.get("providerId", ""))
+        if result.get("networkAccessObserved") is not False:
+            issues.append(
+                _issue(
+                    "provider_bakeoff_network_policy_violation",
+                    "fatal",
+                    "reports/provider_bakeoff.json",
+                    "Provider bake-off cannot record network access in D0.",
+                    provider_id,
+                )
+            )
+        if result.get("acceptedForCanonical") is not False:
+            issues.append(
+                _issue(
+                    "provider_bakeoff_canonical_acceptance_invalid",
+                    "fatal",
+                    "reports/provider_bakeoff.json",
+                    "Provider bake-off cannot grant canonical acceptance.",
+                    provider_id,
+                )
+            )
+        cleanup_effort = result.get("cleanupEffortStatus")
+        expected_cleanup_efforts = {
+            "not_run_no_raw_geometry",
+            "cleanup_required_before_clean_or_canonical_use",
+            "not_selected_cleanup_not_assessed",
+            "no_cleanup_required_for_visual_reference",
+        }
+        if cleanup_effort not in expected_cleanup_efforts:
+            issues.append(
+                _issue(
+                    "provider_bakeoff_cleanup_effort_invalid",
+                    "fatal",
+                    "reports/provider_bakeoff.json",
+                    "Provider bake-off must record a bounded cleanup-effort status.",
+                    provider_id,
+                )
+            )
+        if (
+            provider_id == "closy.local_open_model_geometry_adapter.v1"
+            and result.get("executionStatus") != "not_run_missing_runtime_or_weights"
+        ):
+            issues.append(
+                _issue(
+                    "provider_bakeoff_local_model_status_invalid",
+                    "fatal",
+                    "reports/provider_bakeoff.json",
+                    "Local open-model provider must remain not-run without runtime/weights.",
+                    provider_id,
+                )
+            )
+        if provider_id == selected_provider and result.get("executionStatus") != (
+            "completed_manual_fixture_import"
+        ):
+            issues.append(
+                _issue(
+                    "provider_bakeoff_selected_execution_invalid",
+                    "fatal",
+                    "reports/provider_bakeoff.json",
+                    "Selected demo provider must match the completed manual fixture invocation.",
+                    provider_id,
+                )
+            )
+    aggregate = bakeoff.get("aggregate", {})
+    if not isinstance(aggregate, dict):
+        issues.append(
+            _issue(
+                "provider_bakeoff_aggregate_invalid",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off aggregate must be an object.",
+            )
+        )
+        aggregate = {}
+    expected_provider_count = len(provider_results)
+    executed_provider_count = sum(
+        1
+        for result in provider_results
+        if isinstance(result, dict)
+        and str(result.get("executionStatus", "")).startswith("completed")
+    )
+    not_run_provider_count = sum(
+        1
+        for result in provider_results
+        if isinstance(result, dict) and str(result.get("executionStatus", "")).startswith("not_run")
+    )
+    if (
+        _int_or(aggregate.get("providerCount"), -1) != expected_provider_count
+        or _int_or(aggregate.get("executedProviderCount"), -1) != executed_provider_count
+        or _int_or(aggregate.get("notRunProviderCount"), -1) != not_run_provider_count
+        or _int_or(aggregate.get("canonicalAcceptedProviderCount"), -1) != 0
+        or aggregate.get("bestAvailableProviderId") != selected_provider
+    ):
+        issues.append(
+            _issue(
+                "provider_bakeoff_aggregate_invalid",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off aggregate is stale or overclaims provider acceptance.",
+            )
+        )
+    policy = bakeoff.get("policy", {})
+    if not isinstance(policy, dict) or (
+        policy.get("allowExternalApis") is not False
+        or policy.get("allowTrainingUse") is not False
+        or policy.get("containsUserImagery") is not False
+        or policy.get("providerOutputMayBecomeCanonicalWithoutGate") is not False
+    ):
+        issues.append(
+            _issue(
+                "provider_bakeoff_policy_violation",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off must preserve D0 provider and canonicality boundaries.",
+            )
+        )
+    caps = manifest.get("capabilities", {})
+    if isinstance(caps, dict):
+        for key, expected in [
+            ("providerBakeoffReportAvailable", True),
+            ("localOpenModelExecutionAvailable", False),
+            ("externalGeometryProvidersConfigured", False),
+            ("cleanGeometryProposalAvailable", False),
+        ]:
+            if caps.get(key) is not expected:
+                issues.append(
+                    _issue(
+                        "provider_bakeoff_manifest_capability_invalid",
+                        "fatal",
+                        "manifest.json",
+                        f"Manifest capability {key} must be {expected!r}.",
+                    )
+                )
+    if _contains_nonfinite(bakeoff):
+        issues.append(
+            _issue(
+                "provider_bakeoff_nonfinite_numeric_value",
+                "fatal",
+                "reports/provider_bakeoff.json",
+                "Provider bake-off report must not contain NaN or Infinity.",
             )
         )
 
