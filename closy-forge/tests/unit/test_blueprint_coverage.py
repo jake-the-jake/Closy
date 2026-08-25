@@ -9,6 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 FORGE_ROOT = REPO_ROOT / "closy-forge"
 COVERAGE_PATH = FORGE_ROOT / "docs" / "blueprint_coverage.json"
 LEDGER_PATH = FORGE_ROOT / "docs" / "MASTER_BLUEPRINT_PROGRESS.md"
+ACTIVE_RESUME_PATH = FORGE_ROOT / "docs" / "ACTIVE_BLUEPRINT_RESUME.md"
 
 STATUS_VOCABULARY = {
     "not_started",
@@ -45,8 +46,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-opening-panel-edge-provenance-remote-v1"
-    assert payload["generatedBy"] == "BP-46 opening panel-edge provenance remote evidence"
+    assert payload["version"] == "bp46-c3-phase5-progression-truth-sync-v1"
+    assert payload["generatedBy"] == "BP-46 C3 Phase 5 progression truth sync"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -354,7 +355,7 @@ def test_bp47_checkpoint_is_partial_and_evidenced() -> None:
     assert (
         "provider/source/human visual fidelity tiers remain not_run" in bp47["executableEvidence"]
     )
-    assert "BP-48" in bp47["nextAction"]
+    assert "D0-fidelity branch" in bp47["nextAction"]
 
 
 def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
@@ -366,7 +367,7 @@ def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
     assert "render/fallback.glb contains VEC4 TANGENT accessors" in bp48["executableEvidence"]
     assert "poseSuiteBindingEvidenceAvailable=true" in bp48["executableEvidence"]
     assert "acceptedForCleanProposal=false" in bp48["executableEvidence"]
-    assert "BP-49" in bp48["nextAction"]
+    assert "Phase 6 branch" in bp48["nextAction"]
 
 
 def test_bp49_checkpoint_is_partial_and_evidenced() -> None:
@@ -418,7 +419,7 @@ def test_bp50_checkpoint_is_partial_and_evidenced() -> None:
     assert "77bea09" in phase2["commitSha"]
     assert any("BP51 D0 multiview pairing" in item for item in phase2["executableEvidence"])
     assert any("remote Actions run 32719446390" in item for item in phase2["executableEvidence"])
-    assert "BP-52" in phase2["nextAction"]
+    assert "already consumed by BP52/BP53" in phase2["nextAction"]
 
 
 def test_bp51_checkpoint_is_partial_and_evidenced() -> None:
@@ -464,9 +465,13 @@ def test_bp52_checkpoint_is_partial_and_evidenced() -> None:
     assert any("held-out rear view" in item for item in bp52["executableEvidence"])
     assert any("189 tests" in item for item in bp52["executableEvidence"])
     assert any("85 files each" in item for item in bp52["executableEvidence"])
-    assert any("remote Actions run 32728354755" in item for item in bp52["executableEvidence"])
+    assert any(
+        "final remote Actions run 32729539416" in item for item in bp52["executableEvidence"]
+    )
+    assert any("97438405296" in item for item in bp52["executableEvidence"])
+    assert any("97438405597" in item for item in bp52["executableEvidence"])
     assert "settled-render or drape comparison" in bp52["limitations"]
-    assert "BP-53" in bp52["nextAction"]
+    assert "D0-fidelity branch" in bp52["nextAction"]
 
     assert "e23820e" in phase3["commitSha"]
     assert any("BP52 image-conditioned D0 fitting" in item for item in phase3["executableEvidence"])
@@ -510,6 +515,7 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
     assert "Latest completed implementation commit when last updated: `22176b4`" in ledger
+    assert "Latest completed evidence-sync commit when last updated: `3844fdb`" in ledger
     assert "executedTopologyAuditCount=5" in ledger
     assert "semanticOpeningAssignmentStatus=fail" in ledger
     assert "boundaryComponentCount=2" in ledger
@@ -530,15 +536,18 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "ordered seam partition run `32791907899`" in ledger
     assert "seam-settle Forge run `32798354036`" in ledger
     assert "opening-provenance Forge run `32802914666`" in ledger
+    assert "remote truth-sync run `32803743497`" in ledger
     assert "97654190062" in ledger
     assert "97654189886" in ledger
     assert "97667221029" in ledger
     assert "97667221117" in ledger
+    assert "97669670218" in ledger
+    assert "97669669992" in ledger
     assert "Remote run `32777652602`" in ledger
     assert "docs-verification run `32778840554`" in ledger
     assert (
-        "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-OPENING-PANEL-EDGE-PROVENANCE`"
-        in ledger
+        "Current active increment: "
+        "`FOUNDATION-PROOF-CLOSEOUT-BP46-CONFORMING-TOPOLOGY-AND-SEMANTIC-OPENINGS`" in ledger
     )
     assert "Next dependency-ready increment: continue `FOUNDATION-PROOF-CLOSEOUT`" in ledger
     assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
@@ -554,6 +563,25 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "| BP-08-H-PATTERN-INFERENCE | partial |" in ledger
     assert "| BP-08-K-CLOTH-SIMULATION | partial |" in ledger
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
+
+
+def test_active_resume_points_to_next_bp46_dependency_not_finished_truth_sync() -> None:
+    resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
+
+    assert (
+        "Active blueprint checkpoint: "
+        "`FOUNDATION-PROOF-CLOSEOUT-BP46-CONFORMING-TOPOLOGY-AND-SEMANTIC-OPENINGS`" in resume
+    )
+    assert "Record based on SHA: `3844fdb7ff99ee63b2e80cc317cc493b1b365257`" in resume
+    assert "GitHub Actions run `32803743497` passed" in resume
+    assert "97669670218" in resume
+    assert "97669669992" in resume
+    assert "opening-provenance remote-evidence truth-sync update" not in resume
+    assert "Commit and push this opening-provenance remote-evidence truth-sync" not in resume
+    assert (
+        "Local and remote checks have not yet run for this foundation C3/Phase-5 "
+        "progression truth-sync update" in resume
+    )
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:

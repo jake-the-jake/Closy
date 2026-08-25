@@ -4,15 +4,15 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 
 ## Current State
 
-- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-OPENING-PANEL-EDGE-PROVENANCE`
-- Exact subtask: propagate source opening boundary-edge provenance into stitched-shell constraints/audits so panel-edge provenance passes while semantic opening topology remains fail-closed.
+- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-CONFORMING-TOPOLOGY-AND-SEMANTIC-OPENINGS`
+- Exact subtask: redesign the BP46 stitched T-shirt shell into a conforming topology with four provenance-backed semantic opening loops, while preserving fail-closed clean/canonical gates until literal topology, opening, winding, normal, self-intersection and production-binding evidence pass.
 - Current branch: `codex/closy-forge-foundation-proof-closeout`
 - Parent branch: `codex/closy-forge-phase-4-texture`
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
 - Latest implementation commit SHA: `22176b42817d84bf2303a6b1ee54c8936a204c07`
 - Latest implementation commit subject: `Prove BP46 opening panel edge provenance`
-- Latest evidence commit SHA before this update: `be9024dc4ce65bb862db6945ad29a891da442b46`
-- Record based on SHA: `be9024dc4ce65bb862db6945ad29a891da442b46`; this resume file itself belongs to the follow-up foundation-proof opening-provenance remote-evidence truth-sync commit.
+- Latest evidence commit SHA before this update: `3844fdb7ff99ee63b2e80cc317cc493b1b365257`
+- Record based on SHA: `3844fdb7ff99ee63b2e80cc317cc493b1b365257`; this resume file itself belongs to the follow-up foundation-proof C3/Phase-5 progression truth-sync commit and therefore does not cite its own future CI run.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
@@ -22,6 +22,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Last remote foundation-proof ordered-seam partition evidence: GitHub Actions run `32791907899` passed at commit `7eacf97a61c65329963ffd82a4c78adc1cbf8b3f`; Ubuntu job `97634961686` passed in 8m00s with 194 tests in 451.05s, and Windows job `97634961466` passed in 11m03s with 194 tests in 610.92s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof seam-settle evidence: GitHub Actions run `32798354036` passed at commit `49afef27df5caa69265d21244e8b82b527371c54`; Ubuntu job `97654190062` passed in 7m53s with 194 tests in 446.94s, and Windows job `97654189886` passed in 10m32s with 194 tests in 587.33s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`, and validation/report with only `self_collision_not_run`.
 - Last remote foundation-proof opening-provenance evidence: GitHub Actions run `32802914666` passed at commit `be9024dc4ce65bb862db6945ad29a891da442b46`; Ubuntu job `97667221029` passed in 5m48s with 194 tests in 320.76s, and Windows job `97667221117` passed in 10m11s with 194 tests in 566.42s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584`, and validation/report with only `self_collision_not_run`.
+- Last remote foundation-proof truth-sync evidence: GitHub Actions run `32803743497` passed at commit `3844fdb7ff99ee63b2e80cc317cc493b1b365257`; Ubuntu job `97669670218` passed in 7m59s with 194 tests in 454.62s, and Windows job `97669669992` passed in 10m40s with 194 tests in 592.16s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584`, and validation/report with only `self_collision_not_run`.
 - Current local BP46 seam-settle evidence after `8790567`: focused stitched-shell/corruption/reference/golden tests passed, bounded variant/report integration tests passed, full `pytest -q` exited 0, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, and schema freshness checks passed.
 - Current local package digest after seam-settle tightening: two OS-temp package builds were byte-identical with 89 files each, 85 manifest-inventoried files, and digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`.
 - Current local BP46 opening-provenance evidence after `22176b4`: focused stitched-shell/corruption/reference/golden tests passed, full `pytest -q` passed after 194 collected Forge tests, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, schema freshness checks passed, and two OS-temp package builds were byte-identical with 89 physical files, 85 manifest-inventoried files, digest `21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584`, `panelEdgeProvenanceStatus=pass`, `sourceOpeningEdgeProvenance.status=pass`, `semanticOpeningAssignmentStatus=fail`, and only `self_collision_not_run`.
@@ -110,7 +111,7 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for this opening-provenance remote-evidence truth-sync update.
+- Local and remote checks have not yet run for this foundation C3/Phase-5 progression truth-sync update. The committed record above is based on the preceding verified head/run (`3844fdb` / `32803743497`).
 
 ## Next Exact Command
 
@@ -121,4 +122,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Commit and push this opening-provenance remote-evidence truth-sync, update draft PR #5, then continue BP-46 semantic opening topology proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
+After this truth-sync is validated, committed and pushed, continue BP-46 conforming stitched-shell topology and semantic opening proof first. Do not create the Phase 5 provider branch until PR #5 either reaches literal BP46 topology/opening proof or records a genuine technical partial-contingency boundary.
