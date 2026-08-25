@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-opening-panel-edge-provenance-v1"
-    assert payload["generatedBy"] == "BP-46 opening panel-edge provenance evidence"
+    assert payload["version"] == "bp46-opening-panel-edge-provenance-remote-v1"
+    assert payload["generatedBy"] == "BP-46 opening panel-edge provenance remote evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -183,6 +183,7 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "8790567cc8b8a9d8db2214ec7133bbe1281f6dca" in bp46["commitSha"]
     assert "49afef27df5caa69265d21244e8b82b527371c54" in bp46["commitSha"]
     assert "22176b42817d84bf2303a6b1ee54c8936a204c07" in bp46["commitSha"]
+    assert "be9024dc4ce65bb862db6945ad29a891da442b46" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
     assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
     assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
@@ -264,6 +265,12 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
         for item in bp46["executableEvidence"]
     )
     assert any("89 physical files each" in item for item in bp46["executableEvidence"])
+    assert any(
+        "remote opening-provenance Actions run 32802914666" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("97667221029" in item for item in bp46["executableEvidence"])
+    assert any("97667221117" in item for item in bp46["executableEvidence"])
     assert any(
         "95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2" in item
         for item in bp46["executableEvidence"]
@@ -522,8 +529,11 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584" in ledger
     assert "ordered seam partition run `32791907899`" in ledger
     assert "seam-settle Forge run `32798354036`" in ledger
+    assert "opening-provenance Forge run `32802914666`" in ledger
     assert "97654190062" in ledger
     assert "97654189886" in ledger
+    assert "97667221029" in ledger
+    assert "97667221117" in ledger
     assert "Remote run `32777652602`" in ledger
     assert "docs-verification run `32778840554`" in ledger
     assert (
