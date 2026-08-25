@@ -1,83 +1,50 @@
 # Active Blueprint Resume
 
-This file is a recoverable checkpoint for the continuous Closy master-blueprint work. It records evidence ancestry and next actions without trying to cite its own future commit SHA.
+This file is a recoverable checkpoint for the continuous Closy master-blueprint work. It records current evidence without trying to cite future CI from the commit that contains this update.
 
 ## Current State
 
-- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-REMOTE-EVIDENCE-AND-PR5-FREEZE`
-- Exact subtask: validate and publish the BP46 conforming stitched-shell topology/opening proof, truth-sync PR #5, then freeze PR #5 as the BP46 review unit before creating the Phase 5 provider branch.
-- Current branch: `codex/closy-forge-foundation-proof-closeout`
-- Parent branch: `codex/closy-forge-phase-4-texture`
-- Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
-- Latest implementation commit SHA: `62443b685604bc4afe9a8fac9f926db78814d5a9`
-- Latest implementation commit subject: `Prove BP46 conforming stitched shell`
-- Latest evidence commit SHA before this update: `997232e1e731f5c6de18e438184e1caf724ae2ff`
-- Record based on SHA: `62443b685604bc4afe9a8fac9f926db78814d5a9`; this resume file itself belongs to the follow-up BP46 conforming-shell truth-sync commit and therefore does not cite its own future CI run.
-- Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
-- Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
-- Last remote foundation-proof truth-sync evidence before the conforming-shell implementation: GitHub Actions run `32825954590` passed at commit `997232e1e731f5c6de18e438184e1caf724ae2ff`; Ubuntu job `97733884808` passed in 7m05s and Windows job `97733884930` passed in 10m50s. Each OS ran 112 format-checked files, 89 mypy source files, 195 tests, fresh schemas, identical 89-file package trees, digest `21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584`, and validation/report with only `self_collision_not_run`.
-- Current local BP46 conforming-shell evidence after `62443b6`: focused stitched-shell/unit/corruption/golden tests passed, `tests/unit/test_geometry_proposal.py` passed with 20 tests, focused corruption plus golden tests passed with 6 tests, `tests/unit/test_blueprint_coverage.py` passed with 18 tests, full `pytest -q` exited 0 over 199 collected tests, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, schema freshness returned `{"issues":[],"status":"fresh"}`, and two temp package builds were byte-identical with 89 physical files each, 85 manifest-inventoried files, digest `d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5`, validate status passed and only `self_collision_not_run`.
-- Current BP46 stitched-shell report records `stageVersion=closy.geometry_stitched_shell.conforming_tshirt_v3`, `meshStitchOrWeldExecutionRun=true`, `meshStitchOrWeldProven=true`, `status=stitched_shell_proven`, `vertexCount=81`, `triangleCount=120`, `logicalShellCount=1`, `boundaryLoopCount=4`, `simpleBoundaryCycleCount=4`, `semanticOpeningAssignmentStatus=pass`, `executedTopologyAuditCount=6`, `surfaceTopologyStatus=pass`, `eulerCharacteristic=-2`, `genus=0`, zero non-manifold edges/vertices, zero branch vertices, zero duplicate/degenerate/small triangles, zero isolated/zero-length vertices/edges, and `topologyHash=5e5904ad7be00434e8b366823dec4e559da3525feb9e57088f563b7cd713caab`.
-- Clean acceptance remains rejected: clean gate has 13 checks with 10 pass, 2 warnings and 1 not-run check; `single_shell_stitch_weld_proof` now passes, but blockers remain `visual_fidelity_review_not_accepted`, `source_image_visual_comparison_not_run`, `provider_appearance_comparison_not_run`, `normal_continuity_warn`, `tangent_continuity_warn` and `provider_output_not_canonical_garment_truth`.
-- Formal package warning budget remains exactly one package validator warning, `self_collision_not_run`.
-- Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
-
-## Current BP-46/BP-47/BP-48/BP-49/BP-50/BP-51/BP-52/BP-53 Truth
-
-- BP-46 now has `meshStitchOrWeldExecutionRun=true` and `meshStitchOrWeldProven=true` backed by `stitch/logical_stitched_analysis_shell.json`, `render/stitched_shell.glb` and `reports/geometry_stitched_shell.json`.
-- BP-46 still has `acceptedForCleanProposal=false` and `acceptedForCanonical=false`; stitched-shell proof is not source/provider visual fidelity, human acceptance, production runtime binding or canonical promotion.
-- BP-46 now records six passing deterministic topology audits: T-junctions, inconsistent winding, normal inversions, triangle self-intersections, hidden/internal components and surface topology/vertex-link validation.
-- BP-46 semantic opening assignment now passes with four provenance-backed simple boundary loops for `opening.neck`, `opening.hem`, `opening.cuff.left` and `opening.cuff.right`; source opening edge provenance passes with no unexpected seam-owned or swapped opening boundary edges.
-- BP-46 logical source-vertex reconstruction coverage for the stitched analysis shell passes: `bindingCoverage=1.0`, `bindingReconstructionStatus=pass`, `bindingMode=logical_source_vertex_centroid_map`, `boundRenderVertexCount=81`, `requiredRenderVertexCount=81` and `maxReconstructionErrorMeters=0.0`.
-- BP-46 clean-gate stitch proof now passes, and the stale `mesh_stitch_or_weld_not_proven` blocker is gone from clean proposal rejection reasons.
-- BP-47 adds deterministic SVG inspection artifacts and separated evidence tiers, but does not provide decoded raster visual fidelity, source/provider appearance comparison or signed human review.
-- BP-48 adds persisted fallback GLB `NORMAL` and `VEC4` `TANGENT` accessors plus `reports/render_frame_pose_suite.json`.
-- BP-48 validates four deterministic pose snapshots within the `1e-6` binding tolerance; after deterministic quantization the observed max pose binding error is `1e-09`.
-- BP-48 records `renderTangentsPersistedAvailable=true`, `poseSuiteBindingEvidenceAvailable=true` and `acceptedForRuntimeFramePreview=true`.
-- BP-48 keeps `acceptedForCleanProposal=false` and does not complete Phase 6 or Gate C3.
-- BP-49 through BP-53 remain D0/project-authored synthetic-raster fixture evidence only. No private-user raster or texture processing, learned segmentation, provider upload, training use, source/provider/human visual-fidelity acceptance, clean geometry promotion or canonical acceptance is enabled.
-
-Current blocking evidence:
-
-- BP46 topology/opening blockers are closed for the deterministic material stitched-shell analysis artifact.
-- Production stitched-shell sim-to-render binding, crack/sliding proof and dense runtime binding evidence remain incomplete; the current logical source-vertex reconstruction audit passes only for the stitched analysis shell.
-- Clean/canonical acceptance remains blocked by absent source/provider visual-fidelity comparison, absent human review, continuity warnings and provider-output authority boundaries.
-- Full cloth motion, self-collision proof, runtime performance/memory profiling and mobile fallback negotiation are not implemented.
-
-## Files And Functions Involved
-
-- `closy-forge/src/closy_forge/proposals/geometry_stitched_shell.py`
-- `closy-forge/src/closy_forge/proposals/geometry_clean_acceptance_gate.py`
-- `closy-forge/src/closy_forge/garments/tshirt/pattern_generator.py`
-- `closy-forge/src/closy_forge/validation/validator.py`
-- `closy-forge/tests/unit/test_geometry_proposal.py`
-- `closy-forge/tests/corruption/test_corrupted_packages.py`
-- `closy-forge/tests/golden/expected_demo_summary.json`
-- `closy-forge/docs/MASTER_BLUEPRINT_PROGRESS.md`
-- `closy-forge/docs/blueprint_coverage.json`
-- `closy-forge/docs/ACTIVE_BLUEPRINT_RESUME.md`
-- `closy-forge/tests/unit/test_blueprint_coverage.py`
+- Active blueprint checkpoint: `PHASE-5-PROVIDER-CONTRACT-BAKEOFF-LOCAL-EVIDENCE`
+- Exact subtask: publish the scoped Phase 5 garment/avatar-only provider contract slice, then open a stacked draft PR targeting the verified BP46 PR #5 head.
+- Current branch: `codex/closy-forge-phase-5-provider`
+- Parent branch / PR target: `codex/closy-forge-foundation-proof-closeout`
+- Phase 5 branch point: `756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a`
+- Latest Phase 5 implementation commit SHA: `12322a1eb23e5f0cd8361ecc01be419bbc175364`
+- Latest Phase 5 implementation commit subject: `Add Phase 5 provider contract bakeoff`
+- Foundation proof draft PR #5: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
+- Verified PR #5 freeze evidence: GitHub Actions run `32835151202` passed at `756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a`; Ubuntu job `97762247917` and Windows job `97762247732` each ran 112 format-checked files, mypy over 89 source files, 199 tests, fresh schemas, byte-identical 89-file package trees, package digest `d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5`, and validation/report with only formal warning `self_collision_not_run`.
+- Phase 5 local package evidence after `12322a1`: two temp package builds `.tmp\phase5_provider_A.closygarment` and `.tmp\phase5_provider_B.closygarment` are byte-identical, 90 physical files each, digest `12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95`, validate status `passed`, and only formal warning `self_collision_not_run`.
+- Current provider registry evidence: `proposals/provider_registry.json` uses `stageVersion=closy.geometry_provider_registry.phase5_contract_v2`, `contractVersion=closy.provider_contract.garment_avatar_only.v1`, declares three providers, selects `closy.manual_local_glb_import.v1`, declares `closy.local_open_model_geometry_adapter.v1`, keeps local open-model execution false, denies network/socket/model-hub access, and preserves provider output as proposal-only non-canonical evidence.
+- Current provider bake-off evidence: `reports/provider_bakeoff.json` uses `stageVersion=closy.provider_bakeoff.phase5_contract_v1`, `status=completed_d0_contract_only_clean_rejected`, `providerCount=3`, `executedProviderCount=1`, `notRunProviderCount=2`, `canonicalAcceptedProviderCount=0`, best provider `closy.manual_local_glb_import.v1`, and local open-model status `not_run_missing_runtime_or_weights`.
+- Clean/canonical acceptance remains rejected. The provider slice adds contract, registry, manual fixture and bake-off evidence only; it does not execute an AI/open-model provider, accept external provider output, perform source/provider visual fidelity, run private-user processing, or promote any provider mesh to canonical truth.
+- Known unrelated local work outside this Forge slice remains unstaged and must be preserved: `metro.config.js`, app avatar files under `src/features/avatar-*`, and untracked `closy-forge/.tmp/`.
 
 ## Checks Completed At Current Local Checkpoint
 
-- Local `.venv\Scripts\ruff.exe format src\closy_forge\proposals\geometry_stitched_shell.py src\closy_forge\garments\tshirt\pattern_generator.py` ran after implementation; `geometry_stitched_shell.py` was reformatted and the T-shirt pattern generator was unchanged.
-- Local `.venv\Scripts\pytest.exe tests\unit\test_geometry_proposal.py::test_geometry_stitched_shell_proves_conforming_topology_and_semantic_openings -q` passed.
-- Local `.venv\Scripts\python.exe -m pytest tests\unit\test_geometry_proposal.py -q` passed with 20 tests.
-- Local `.venv\Scripts\python.exe -m pytest tests\corruption\test_corrupted_packages.py::test_geometry_stitched_shell_hash_mismatch_is_rejected tests\corruption\test_corrupted_packages.py::test_geometry_stitched_shell_impossible_proof_claim_is_rejected tests\corruption\test_corrupted_packages.py::test_geometry_stitched_shell_binding_coverage_claim_is_rejected tests\corruption\test_corrupted_packages.py::test_geometry_stitched_shell_ordered_correspondence_claim_is_rejected tests\corruption\test_corrupted_packages.py::test_stitched_analysis_opening_proof_claim_is_rejected tests\golden\test_golden_demo.py -q` passed with 6 tests.
-- Local combined focused BP46 suite passed: `tests\unit\test_geometry_proposal.py`, the five stitched-shell corruption tests, and `tests\golden\test_golden_demo.py`.
-- Local temp package build after `62443b6` produced digest `d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5`, 89 physical files, `meshStitchOrWeldProven=true`, `semanticOpeningAssignmentStatus=pass`, `surfaceTopologyStatus=pass`, clean gate rejected for non-BP46 blockers, and only `self_collision_not_run`.
+- `.\.venv\Scripts\ruff.exe format --check .` passed over 113 files.
+- `.\.venv\Scripts\ruff.exe check .` passed.
+- `.\.venv\Scripts\mypy.exe src` passed over 90 source files.
+- `.\.venv\Scripts\python.exe -m closy_forge schemas check --schema-dir schemas\v1 --json` returned `{"issues":[],"status":"fresh"}`.
+- Focused provider/golden/schema tests passed, including provider registry/bake-off unit coverage, provider contract lifecycle/limit safe-failure coverage, bake-off corruption coverage, CLI report JSON/text coverage, schema freshness and the golden demo summary.
+- Full `.\.venv\Scripts\python.exe -m pytest -q` exited 0; collect-only counted 210 Forge tests across 21 test files.
+- Deterministic package diff passed: `.tmp\phase5_provider_A.closygarment` and `.tmp\phase5_provider_B.closygarment` are identical with 90 files each and digest `12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95`.
+- Independent validate/report passed: validation counts `info=0`, `warning=1`, `error=0`, `fatal=0`; only issue code `self_collision_not_run`; CLI report includes `Provider bake-off: status=completed_d0_contract_only_clean_rejected, executed=1/3, best=closy.manual_local_glb_import.v1, canonical accepted=0`.
 
-## Current Checks Not Yet Run After This Resume Update
+## Current Truth And Limits
 
-- Remote Ubuntu/Windows CI has not yet run for this BP46 conforming-shell truth-sync update. Local format/lint/mypy/full pytest/schema/package determinism has passed as recorded above.
+- Phase 5 is advanced as a local D0 provider-contract slice, not completed as full model-provider execution.
+- Null/manual providers are exercised for deterministic CI and fail-closed operation; manual fixture import is project-authored non-model evidence.
+- The local open-model adapter is only a declared boundary until authorised runtime, weights, hardware, license/SBOM evidence and isolated execution exist.
+- External providers remain unconfigured and must not be called or uploaded to without explicit future authority.
+- Provider outputs remain non-canonical. Pattern/seam/simulation truth remains canonical, and clean acceptance still rejects clean/canonical promotion.
+- BP46 topology/opening proof remains frozen on PR #5; production stitched-shell sim-to-render binding, crack/sliding proof and C3 runtime evidence belong on the later Phase 6 branch.
 
 ## Next Exact Command
 
 ```powershell
-cd E:\apps\Closy\closy-forge
 git status --short --branch
 ```
 
 ## Next Safe Action
 
-Commit and push this truth-sync, wait for PR #5 Ubuntu/Windows Forge CI, update the PR body with exact evidence, and then freeze PR #5 as the BP46 topology/opening review unit if remote CI is green. Create the Phase 5 provider branch only from that exact verified head.
+Push `codex/closy-forge-phase-5-provider`, create a draft PR targeting `codex/closy-forge-foundation-proof-closeout`, wait for Ubuntu/Windows Forge CI at commit `12322a1eb23e5f0cd8361ecc01be419bbc175364`, inspect both job logs, update the PR body with exact run/job evidence, and then create a remote evidence-sync commit if the implementation run is green.
