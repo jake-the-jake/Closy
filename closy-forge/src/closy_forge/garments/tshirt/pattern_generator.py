@@ -111,7 +111,7 @@ def build_tshirt_pattern(params: TShirtParameters) -> dict[str, Any]:
     openings = [
         {
             "id": "opening.neck",
-            "boundaryEdges": ["edge.neck.front", "edge.neck.back"],
+            "boundaryEdges": ["edge.neck_band.long.top"],
             "status": "open",
         },
         {"id": "opening.cuff.left", "boundaryEdges": ["edge.cuff.left"], "status": "open"},

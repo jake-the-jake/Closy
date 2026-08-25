@@ -759,10 +759,10 @@ def test_geometry_material_uv_transfer_acceptance_claim_is_rejected(
 
 def test_geometry_stitched_shell_hash_mismatch_is_rejected(
     tmp_path,
-) -> None:  # type: ignore[no-untyped-def]
+    ) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_stitched_shell_hash.closygarment")
     stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
-    stitched["topologyAudit"]["nonManifoldEdgeCount"] = 0
+    stitched["topologyAudit"]["nonManifoldEdgeCount"] = 1
     write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
     codes = issue_codes(validate_package(corrupt))
     assert "geometry_stitched_shell_hash_mismatch" in codes
@@ -776,9 +776,11 @@ def test_geometry_stitched_shell_impossible_proof_claim_is_rejected(
         build_demo(tmp_path), tmp_path / "bad_stitched_shell_proof.closygarment"
     )
     stitched = read_json(corrupt / "reports" / "geometry_stitched_shell.json")
-    stitched["readiness"]["meshStitchOrWeldProven"] = True
-    stitched["readiness"]["status"] = "stitched_shell_proven"
-    stitched["quality"]["status"] = "pass"
+    stitched["topologyAudit"]["surfaceTopologyStatus"] = "fail"
+    stitched["topologyAudit"]["surfaceTopologyAudit"]["status"] = "fail"
+    stitched["topologyAudit"]["surfaceTopologyAudit"]["failureReasons"] = [
+        "euler_characteristic_mismatch"
+    ]
     write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
     codes = issue_codes(validate_package(corrupt))
     assert "geometry_stitched_shell_hash_mismatch" in codes
@@ -869,11 +871,8 @@ def test_stitched_analysis_opening_proof_claim_is_rejected(
     )
     analysis = read_json(corrupt / "stitch" / "logical_stitched_analysis_shell.json")
     opening_proof = analysis["openingProof"]
-    opening_proof["status"] = "pass"
-    opening_proof["provenOpeningIds"] = opening_proof["expectedOpeningIds"]
-    opening_proof["provenOpeningCount"] = len(opening_proof["expectedOpeningIds"])
-    opening_proof["missingExpectedOpeningIds"] = []
-    opening_proof["missingExpectedOpeningCount"] = 0
+    opening_proof["candidateOpeningMappings"][0]["assignmentStatus"] = "fail"
+    opening_proof["candidateOpeningMappings"][0]["failureReason"] = "corrupted_assignment"
     write_json(corrupt / "stitch" / "logical_stitched_analysis_shell.json", analysis)
     codes = issue_codes(validate_package(corrupt))
     assert "stitched_analysis_shell_hash_mismatch" in codes
