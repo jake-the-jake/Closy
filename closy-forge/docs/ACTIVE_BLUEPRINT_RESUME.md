@@ -1,49 +1,88 @@
 # Active Blueprint Resume
 
-This file is a recoverable checkpoint for the continuous Closy master-blueprint work. It records current evidence without citing future CI from the commit that contains this update.
+This is the recoverable checkpoint for continuous Closy master-blueprint execution. It records
+literal evidence only; green CI does not by itself promote a global blueprint gate.
 
 ## Current State
 
-- Active blueprint checkpoint: `PHASE-6-D0-BINDING-C3-SELF-COLLISION-EVIDENCE`
-- Exact subtask: implement the scoped D0 fixed-avatar T-shirt production binding contract, C3 evidence report and deterministic reference self-collision backend on the Phase 6 branch.
-- Current branch: `codex/closy-forge-phase-6-binding`
-- Parent branch / PR target: `codex/closy-forge-phase-5-provider`
-- Phase 6 branch point: `97bf23ccff13e806132b732534d131d80b146467`
-- Phase 6 implementation commit: `a8a053a68d8f455134e5a2bfed0fe340467a039a` on draft PR #7 (`codex/closy-forge-phase-6-binding` -> `codex/closy-forge-phase-5-provider`).
-- Verified Phase 5 provider PR evidence: PR #6 passed GitHub Actions run `32848455025`; Ubuntu job `97803514100` and Windows job `97803513678` ran 113 format-checked files, mypy over 90 source files, 210 tests, fresh schemas, byte-identical package trees and digest `12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95` with only `self_collision_not_run`.
-- Verified Phase 6 implementation PR evidence: PR #7 passed GitHub Actions run `32863864318` at `a8a053a68d8f455134e5a2bfed0fe340467a039a`; Ubuntu job `97854194246` and Windows job `97854193823` ran 117-file format checks, lint, mypy over 92 source files, 217 tests, fresh schemas, byte-identical 93-file package trees and digest `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711` with only `self_collision_unresolved_contacts`.
-- Current package evidence: two local builds `.tmp\phase6_binding_final_A_20260825.closygarment` and `.tmp\phase6_binding_final_B_20260825.closygarment` are byte-identical with 93 physical files each, 89 manifest-inventoried files, canonical digest `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711`, validation status `passed`, and only warning `self_collision_unresolved_contacts`.
-- Production binding contract evidence: `binding/production_binding_contract.json` records stable render vertex IDs, source/destination hashes, triangle/barycentric weights, logical-to-render split mappings and opening safeguards for the D0 T-shirt profile.
-- Production binding C3 evidence: `reports/production_binding_c3.json` uses `stageVersion=closy.production_binding_c3.d0_tshirt.v1`, `profile=d0_fixed_avatar_tshirt_dense_fallback`, `gateC3Status=complete_for_d0_fixed_avatar_tshirt_profile`, `motionStateCount=11`, persisted validation `pass`, max reconstruction error `0.004996001`, max seam crack `0.047774031`, dense/fallback parity error `0.0`, and explicitly keeps global Phase 6, clean proposal and canonical geometry false.
-- Self-collision evidence: `reports/self_collision_report.json` uses `stageVersion=closy.self_collision.reference_d0.vertex_triangle_v1`, runs broad phase, narrow phase, correction, brute-force oracle and adversarial fixture checks, records 3598 candidate pairs, 36 contacts after correction, 36 unresolved D0 reference contacts, and `unsupported_high_velocity_tunnelling`.
-- Current validator warning semantics: the old `self_collision_not_run` warning is removed from new packages; unresolved D0 reference contacts are reported as `self_collision_unresolved_contacts`.
-- Known unrelated local work outside this Forge slice remains unstaged and must be preserved: `metro.config.js`, app avatar files under `src/features/avatar-*`, and untracked `closy-forge/.tmp/`.
+- Active checkpoint: `PHASE-6-C3-EVIDENCE-INTEGRITY-REPAIR`.
+- Branch / draft PR: `codex/closy-forge-phase-6-binding`, PR #7, targeting
+  `codex/closy-forge-phase-5-provider` at branch point
+  `97bf23ccff13e806132b732534d131d80b146467`.
+- Verified prior head: `c2ff305012897f20799cbb3a7df0a822d211fa23`.
+- Verified prior-head CI: run `32865725191`; Ubuntu job `97860392258` and Windows job
+  `97860392462` passed 117-file formatting, Ruff, mypy over 92 source files, 217 tests,
+  fresh schemas, byte-identical 93-file packages and digest
+  `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711`.
+- Supabase Preview was correctly skipped because this stack changes no migrations.
+- Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
+  be preserved. `closy-forge/.tmp/` contains untracked local evidence only.
 
-## Checks Completed At Current Local Checkpoint
+## Phase 6 Integrity Repair
 
-- `.\.venv\Scripts\ruff.exe format --check .` passed over 117 files.
-- `.\.venv\Scripts\ruff.exe check .` passed.
-- `.\.venv\Scripts\mypy.exe src` passed over 92 source files.
-- `.\.venv\Scripts\python.exe -m closy_forge schemas check --schema-dir schemas\v1 --json` returned `{"issues":[],"status":"fresh"}`.
-- Focused C3/self-collision/golden/schema tests passed: 12 tests covering production binding contract/C3 evidence, C3 tampering, self-collision fixtures, self-collision report recomputation, reference solver diagnostics, golden summary and schema freshness.
-- Full `.\.venv\Scripts\python.exe -m pytest -q` exited 0; collect-only counted 217 Forge tests across 23 test files.
-- Deterministic package diff passed for `.tmp\phase6_binding_A_20260825.closygarment` and `.tmp\phase6_binding_B_20260825.closygarment`: status `identical`, 93 files on each side, digest `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711`.
-- Independent validate/report passed: validation counts `info=0`, `warning=1`, `error=0`, `fatal=0`; only issue code `self_collision_unresolved_contacts`; CLI report includes `Production binding C3: status=d0_c3_profile_pass_clean_rejected` and `Self-collision: status=d0_reference_self_collision_run_with_unresolved_contacts`.
+- Motion evidence is now generated by `closy.reference_xpbd_cpu.v1.3_integrated_self_collision_d0`
+  and persisted under `simulation/motion_states/`. No render-mesh motion transform is used as an
+  expected motion oracle.
+- Dense output is reconstructed only from reopened state positions plus reopened
+  `binding/sim_to_render.bin` records.
+- The independent fallback is `render/simulation_fallback.glb`: a direct, lower-resolution
+  simulation topology. Its manifest records `callsDenseReconstruction=false`; comparison uses
+  shared panel landmarks and silhouette bounds instead of vertex identity.
+- `binding/production_binding_contract.json` declares
+  `settled_simulation_to_subdivided_render_v1` as the sole authoritative route. Legacy cleanup
+  binding and proposal preview binding remain explicitly deprecated/noncanonical evidence.
+- Crack residual is separation beyond intended seam ease; tangential sliding is a separate
+  reference-seam-frame metric; all four semantic openings are evaluated independently.
+- Normals and VEC4 tangents are recomputed and checked on dense and fallback deformations.
+- Canonical C3 reports truthfully record performance as not run with `repeatCount=0`.
+  `closy-forge benchmark binding-c3` writes separate non-canonical host measurements with OS,
+  architecture, CPU, Python, workload, 3 warmups, 20 repeats, median, p95 and peak Python memory.
+- Local host benchmark at the initial repair checkpoint measured dense full-suite median
+  `219.266850 ms`, p95 `246.774400 ms`, peak `1,952,312 bytes`; fallback full-suite median
+  `0.363750 ms`, p95 `0.402500 ms`, peak `21,024 bytes`. These are descriptive Windows CPU
+  figures, not mobile/GPU targets.
+- `reports/production_binding_c3.json` remains `partial_scoped_reference_profile`: persisted
+  validation passes, but independent
+  fallback panel-centroid agreement reaches `0.098963781 m` against a `0.03 m` threshold and
+  tangential sliding reaches `0.184355169 m` against a `0.045 m` threshold. The corrected crack
+  residual maximum is `0.021539119 m`; opening drift maximum is `0.003968363 m`.
+- `reports/self_collision_report.json` records self-collision during bounded solver substeps,
+  uses an independent exact-proximity
+  oracle, covers vertex-triangle and edge-edge contacts, and records per-iteration convergence.
+  It remains partial: the current broader detector finds `205` unresolved contacts and retains
+  `unsupported_high_velocity_tunnelling`; no zero-contact or production-GPU claim is made.
 
-## Current Truth And Limits
+## Current Local Validation
 
-- Phase 6 has a scoped D0 C3 profile pass for the fixed-avatar T-shirt dense/fallback binding path.
-- This is not global Phase 6 completion, not clean/canonical geometry acceptance, and not production mobile GPU proof.
-- The production binding contract covers stable render vertex IDs, source/destination hashes, triangle/barycentric weights, logical-to-render split mapping and opening safeguards for the current D0 fixture.
-- The self-collision backend is deterministic D0 reference evidence only; it retains unresolved contacts and explicitly does not support high-velocity tunnelling.
-- Provider output remains proposal-only. No AI/open-model provider execution, external provider execution, source/provider visual-fidelity acceptance or canonical clean mesh promotion is included in this branch.
+- A repaired package built successfully with 107 physical files, 103 manifest-inventoried files,
+  canonical digest `c8b84a64b4907629d49f5a1016520012b441beac2c7ec5ae3dd324c7fde387ed`
+  and validation counts `info=0`, `warning=1`, `error=0`, `fatal=0`.
+- The only formal validator warning remains `self_collision_unresolved_contacts`.
+- Ruff and mypy pass over 94 source files; 54 checked-in schemas are fresh.
+- Full `pytest` passes all 222 tests in `1243.08 s` locally.
+- Two independently built packages contain identical 107-file trees and 103 inventoried files,
+  with no changed/missing files and digest
+  `c8b84a64b4907629d49f5a1016520012b441beac2c7ec5ae3dd324c7fde387ed`.
+- Both packages validate with `info=0`, `warning=1`, `error=0`, `fatal=0`; report generation
+  succeeds. The substantive commit, remote CI and bounded evidence sync remain pending.
+
+## Truthful Limits
+
+- Gate C3 and Phase 6 remain partial globally.
+- No provider-generated production shell, private-user capture, authorised human visual review,
+  mobile/GPU performance, continuous collision detection or ZeroOne execution has run.
+- The legacy cleanup and proposal-preview routes remain for provenance but are not authorities.
+- Hosted CI covers Python 3.11 on Ubuntu and Windows only, with a 30-minute Forge job budget;
+  this is not evidence for macOS, GPU or mobile performance.
 
 ## Next Exact Command
 
 ```powershell
-gh pr view 7 --json statusCheckRollup,headRefOid,mergeStateStatus,isDraft
+cd E:\apps\Closy\closy-forge
+git diff --check
 ```
 
 ## Next Safe Action
 
-Push this evidence-sync head if it is not already pushed, verify its Ubuntu/Windows Forge CI, update PR #7 and the final response with that evidence-sync run/job evidence, and then continue the next dependency-ready binding/crack/mobile-runtime slice without creating another self-referential evidence-only commit.
+Commit the substantive repair, push PR #7, inspect both OS logs, make at most one evidence-sync
+commit, then create `codex/closy-forge-d0-fidelity-closeout` from the exact green PR #7 head.

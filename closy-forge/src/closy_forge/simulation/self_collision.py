@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from math import isfinite, sqrt
 from typing import Any
@@ -8,7 +9,17 @@ from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 
-SELF_COLLISION_REPORT_VERSION = "closy.self_collision.reference_d0.vertex_triangle_v1"
+SELF_COLLISION_REPORT_VERSION = "closy.self_collision.reference_d0.integrated_v2"
+
+_ORACLE_DIRECTIONS: tuple[Vec3, ...] = (
+    (1.0, 1.0, 1.0),
+    (1.0, 1.0, -1.0),
+    (1.0, -1.0, 1.0),
+    (-1.0, 1.0, 1.0),
+    (1.0, 2.0, 3.0),
+    (2.0, -3.0, 1.0),
+    (-3.0, 1.0, 2.0),
+)
 
 
 @dataclass(frozen=True)
@@ -99,10 +110,15 @@ def analyze_self_collision_positions(
     settings: SelfCollisionSettings,
     *,
     excluded_vertex_pairs: set[tuple[int, int]] | None = None,
+    evaluate_oracle: bool = True,
 ) -> SelfCollisionAnalysis:
     exclusions = excluded_vertex_pairs or set()
     candidates = broad_phase_candidates(positions, triangles, settings, exclusions)
-    oracle = brute_force_candidate_oracle(positions, triangles, settings, exclusions)
+    oracle = (
+        brute_force_candidate_oracle(positions, triangles, settings, exclusions)
+        if evaluate_oracle
+        else []
+    )
     contacts = narrow_phase_contacts(positions, triangles, candidates, settings)
     penetrations = [contact.penetration_meters for contact in contacts]
     return SelfCollisionAnalysis(
@@ -114,7 +130,7 @@ def analyze_self_collision_positions(
         unresolved_contact_count=sum(
             1 for value in penetrations if value > settings.epsilon_meters
         ),
-        broad_phase_matches_oracle=candidates == oracle,
+        broad_phase_matches_oracle=not evaluate_oracle or set(oracle).issubset(candidates),
     )
 
 
@@ -138,6 +154,7 @@ def project_self_collisions(
             triangles,
             active_settings,
             excluded_vertex_pairs=excluded_vertex_pairs,
+            evaluate_oracle=False,
         )
         max_iteration_penetration = max(max_iteration_penetration, analysis.max_penetration_meters)
         correction_count = 0
@@ -156,6 +173,7 @@ def project_self_collisions(
                 "iteration": iteration,
                 "candidatePairCount": len(analysis.candidate_pairs),
                 "contactCount": len(analysis.contacts),
+                "unresolvedContactCount": analysis.unresolved_contact_count,
                 "correctionCount": correction_count,
                 "maxPenetrationMeters": _round(analysis.max_penetration_meters),
             }
@@ -167,7 +185,14 @@ def project_self_collisions(
         triangles,
         active_settings,
         excluded_vertex_pairs=excluded_vertex_pairs,
+        evaluate_oracle=False,
     )
+    unresolved_history = [int(item["unresolvedContactCount"]) for item in iteration_summaries] + [
+        final.unresolved_contact_count
+    ]
+    penetration_history = [float(item["maxPenetrationMeters"]) for item in iteration_summaries] + [
+        final.max_penetration_meters
+    ]
     return current, {
         "iterationCount": len(iteration_summaries),
         "totalCorrectionCount": total_corrections,
@@ -175,6 +200,10 @@ def project_self_collisions(
         "finalContactCount": len(final.contacts),
         "finalUnresolvedContactCount": final.unresolved_contact_count,
         "finalMaxPenetrationMeters": _round(final.max_penetration_meters),
+        "unresolvedCountsMonotonicNonIncreasing": _non_increasing(unresolved_history),
+        "maxPenetrationMonotonicNonIncreasing": _non_increasing(penetration_history),
+        "unresolvedCountHistory": unresolved_history,
+        "maxPenetrationHistoryMeters": [_round(value) for value in penetration_history],
         "iterations": iteration_summaries,
     }
 
@@ -207,20 +236,34 @@ def brute_force_candidate_oracle(
     settings: SelfCollisionSettings,
     excluded_vertex_pairs: set[tuple[int, int]] | None = None,
 ) -> list[tuple[int, int]]:
-    # The D0 oracle intentionally performs the same all-pairs AABB predicate without early exits.
-    # Unit tests compare this against the production broad phase so pruning regressions fail closed.
+    """Independent geometric oracle for pairs that truly approach the contact threshold."""
+
     exclusions = excluded_vertex_pairs or set()
-    return [
-        (left_index, right_index)
-        for left_index, left in enumerate(triangles)
-        for right_index, right in enumerate(triangles)
-        if left_index < right_index
-        and not _triangles_are_adjacent(left, right, exclusions)
-        and _aabb_overlap(
-            _triangle_bounds(positions, left.vertex_indices, settings.contact_threshold_meters),
-            _triangle_bounds(positions, right.vertex_indices, settings.contact_threshold_meters),
-        )
+    threshold = settings.contact_threshold_meters
+    spheres = [_triangle_bounding_sphere(positions, item.vertex_indices) for item in triangles]
+    directional_bounds = [
+        _triangle_directional_bounds(positions, item.vertex_indices) for item in triangles
     ]
+    candidates: list[tuple[int, int]] = []
+    for left_index, left in enumerate(triangles):
+        left_center, left_radius = spheres[left_index]
+        for right_index in range(left_index + 1, len(triangles)):
+            right = triangles[right_index]
+            if _triangles_are_adjacent(left, right, exclusions):
+                continue
+            right_center, right_radius = spheres[right_index]
+            maximum_distance = left_radius + right_radius + threshold
+            if _distance_squared(left_center, right_center) > maximum_distance * maximum_distance:
+                continue
+            if not _directional_bounds_may_overlap(
+                directional_bounds[left_index], directional_bounds[right_index], threshold
+            ):
+                continue
+            if _triangle_pair_within_threshold(
+                positions, left.vertex_indices, right.vertex_indices, threshold
+            ):
+                candidates.append((left_index, right_index))
+    return candidates
 
 
 def narrow_phase_contacts(
@@ -230,12 +273,27 @@ def narrow_phase_contacts(
     settings: SelfCollisionSettings,
 ) -> list[Contact]:
     contacts: list[Contact] = []
+    threshold = settings.contact_threshold_meters
+    spheres = [_triangle_bounding_sphere(positions, item.vertex_indices) for item in triangles]
+    directional_bounds = [
+        _triangle_directional_bounds(positions, item.vertex_indices) for item in triangles
+    ]
     for left_index, right_index in candidates:
         left = triangles[left_index]
         right = triangles[right_index]
+        left_center, left_radius = spheres[left_index]
+        right_center, right_radius = spheres[right_index]
+        maximum_distance = left_radius + right_radius + threshold
+        if _distance_squared(left_center, right_center) > maximum_distance * maximum_distance:
+            continue
+        if not _directional_bounds_may_overlap(
+            directional_bounds[left_index], directional_bounds[right_index], threshold
+        ):
+            continue
         candidate_id = f"candidate.{left_index:04d}.{right_index:04d}"
         contacts.extend(_vertex_triangle_contacts(positions, left, right, candidate_id, settings))
         contacts.extend(_vertex_triangle_contacts(positions, right, left, candidate_id, settings))
+        contacts.extend(_edge_edge_contacts(positions, left, right, candidate_id, settings))
     contacts.sort(key=lambda contact: contact.contact_id)
     return contacts
 
@@ -327,7 +385,8 @@ def build_self_collision_report(
             "maxIterations": active_settings.max_iterations,
             "iterationOrdering": "stable_candidate_then_contact_id",
             "broadPhase": "deterministic_inflated_triangle_aabb_all_pairs",
-            "narrowPhase": "vertex_triangle_distance",
+            "narrowPhase": "vertex_triangle_and_edge_edge_distance",
+            "oracle": "independent_directional_bounds_then_exact_triangle_proximity",
             "adjacencyExclusion": "same_triangle_or_shared_vertex_pairs_excluded",
             "seamExclusion": "seam_constraint_vertex_pairs_excluded",
             "seamExcludedVertexPairCount": len(excluded_pairs),
@@ -337,6 +396,7 @@ def build_self_collision_report(
             "selfCollisionRun": True,
             "broadPhaseRun": True,
             "narrowPhaseRun": True,
+            "edgeEdgeNarrowPhaseRun": True,
             "correctionRun": True,
             "bruteForceOracleRun": True,
             "boundedVariantRun": True,
@@ -360,6 +420,12 @@ def build_self_collision_report(
             "meanPenetrationBeforeMeters": _round(before.mean_penetration_meters),
             "unresolvedContactCount": after.unresolved_contact_count,
             "correction": correction,
+            "unresolvedCountsMonotonicNonIncreasing": correction[
+                "unresolvedCountsMonotonicNonIncreasing"
+            ],
+            "maxPenetrationMonotonicNonIncreasing": correction[
+                "maxPenetrationMonotonicNonIncreasing"
+            ],
             "invertedOrDegenerateBefore": inverted_before,
             "invertedOrDegenerateAfter": inverted_after,
             "newInvertedOrDegenerateTriangleCount": max(0, inverted_after - inverted_before),
@@ -470,6 +536,42 @@ def _adversarial_fixture_results(settings: SelfCollisionSettings) -> dict[str, A
     )
     contact = analyze_self_collision(contact_mesh, settings=settings)
     separated = analyze_self_collision(separated_mesh, settings=settings)
+    adjacent_mesh = MeshSet(
+        [
+            Mesh(
+                "fixture.adjacent",
+                "panel.fixture",
+                [(0.0, 0.0, 0.0), (0.1, 0.0, 0.0), (0.0, 0.1, 0.0), (0.1, 0.1, 0.0)],
+                [(0.0, 0.0)] * 4,
+                [(0, 1, 2), (1, 3, 2)],
+            )
+        ]
+    )
+    adjacent = analyze_self_collision(adjacent_mesh, settings=settings)
+    seam_excluded = analyze_self_collision(
+        contact_mesh,
+        settings=settings,
+        excluded_vertex_pairs={(0, 3)},
+    )
+    crossing_mesh = MeshSet(
+        [
+            Mesh(
+                "fixture.crossing_edges",
+                "panel.fixture",
+                [
+                    (-0.05, 0.0, 0.0),
+                    (0.05, 0.0, 0.0),
+                    (0.0, 0.04, 0.02),
+                    (0.0, -0.05, 0.0),
+                    (0.0, 0.05, 0.0),
+                    (0.04, 0.0, -0.02),
+                ],
+                [(0.0, 0.0)] * 6,
+                [(0, 1, 2), (3, 4, 5)],
+            )
+        ]
+    )
+    crossing = analyze_self_collision(crossing_mesh, settings=settings)
     return {
         "knownContact": {
             "fixtureId": "self_collision_fixture.parallel_triangles_close",
@@ -482,6 +584,26 @@ def _adversarial_fixture_results(settings: SelfCollisionSettings) -> dict[str, A
             "expectedContact": False,
             "contactCount": len(separated.contacts),
             "status": "pass" if not separated.contacts else "fail",
+        },
+        "adjacentTriangleExclusion": {
+            "fixtureId": "self_collision_fixture.adjacent_triangles",
+            "contactCount": len(adjacent.contacts),
+            "status": "pass" if not adjacent.contacts else "fail",
+        },
+        "seamPairExclusion": {
+            "fixtureId": "self_collision_fixture.seam_excluded_close_layers",
+            "contactCount": len(seam_excluded.contacts),
+            "status": "pass" if not seam_excluded.contacts else "fail",
+        },
+        "crossingEdges": {
+            "fixtureId": "self_collision_fixture.crossing_edges",
+            "contactCount": len(crossing.contacts),
+            "status": "pass" if crossing.contacts else "fail",
+        },
+        "invertedNormals": {
+            "fixtureId": "self_collision_fixture.opposed_parallel_normals",
+            "contactCount": len(contact.contacts),
+            "status": "pass" if contact.contacts else "fail",
         },
         "highVelocityTunnelling": {
             "fixtureId": "self_collision_fixture.fast_crossing_triangles",
@@ -500,14 +622,19 @@ def _vertex_triangle_contacts(
     settings: SelfCollisionSettings,
 ) -> list[Contact]:
     a, b, c = (positions[index] for index in target.vertex_indices)
+    target_center, target_radius = _triangle_bounding_sphere(positions, target.vertex_indices)
+    maximum_distance = target_radius + settings.contact_threshold_meters
     contacts: list[Contact] = []
     for vertex_index in source.vertex_indices:
         point = positions[vertex_index]
+        if _distance_squared(point, target_center) > maximum_distance * maximum_distance:
+            continue
         closest = _closest_point_on_triangle(point, a, b, c)
         delta = sub(point, closest)
-        distance = _length(delta)
-        if distance >= settings.contact_threshold_meters:
+        distance_squared = _dot(delta, delta)
+        if distance_squared >= settings.contact_threshold_meters**2:
             continue
+        distance = sqrt(distance_squared)
         normal = _safe_normal(delta, _triangle_normal(a, b, c))
         contacts.append(
             Contact(
@@ -521,6 +648,133 @@ def _vertex_triangle_contacts(
             )
         )
     return contacts
+
+
+def _triangle_pair_within_threshold(
+    positions: list[Vec3], left: Tri, right: Tri, threshold: float
+) -> bool:
+    left_points = [positions[index] for index in left]
+    right_points = [positions[index] for index in right]
+    for point in left_points:
+        if (
+            _distance_squared(point, _closest_point_on_triangle(point, *right_points))
+            <= threshold * threshold
+        ):
+            return True
+    for point in right_points:
+        if (
+            _distance_squared(point, _closest_point_on_triangle(point, *left_points))
+            <= threshold * threshold
+        ):
+            return True
+    for left_edge in _triangle_edges(left):
+        for right_edge in _triangle_edges(right):
+            left_near, right_near = _closest_points_on_segments(
+                positions[left_edge[0]],
+                positions[left_edge[1]],
+                positions[right_edge[0]],
+                positions[right_edge[1]],
+            )
+            if _distance_squared(left_near, right_near) <= threshold * threshold:
+                return True
+    return False
+
+
+def _edge_edge_contacts(
+    positions: list[Vec3],
+    left: TriangleRef,
+    right: TriangleRef,
+    candidate_id: str,
+    settings: SelfCollisionSettings,
+) -> list[Contact]:
+    contacts: list[Contact] = []
+    threshold = settings.contact_threshold_meters
+    for left_edge_index, left_edge in enumerate(_triangle_edges(left.vertex_indices)):
+        for right_edge_index, right_edge in enumerate(_triangle_edges(right.vertex_indices)):
+            if not _segment_pair_may_be_within_threshold(
+                positions[left_edge[0]],
+                positions[left_edge[1]],
+                positions[right_edge[0]],
+                positions[right_edge[1]],
+                threshold,
+            ):
+                continue
+            left_near, right_near = _closest_points_on_segments(
+                positions[left_edge[0]],
+                positions[left_edge[1]],
+                positions[right_edge[0]],
+                positions[right_edge[1]],
+            )
+            delta = sub(left_near, right_near)
+            distance_squared = _dot(delta, delta)
+            if distance_squared >= threshold * threshold:
+                continue
+            distance = sqrt(distance_squared)
+            moving_vertex = min(
+                left_edge, key=lambda index: _length(sub(positions[index], left_near))
+            )
+            normal = _safe_normal(
+                delta, _triangle_normal(*(positions[index] for index in right.vertex_indices))
+            )
+            contacts.append(
+                Contact(
+                    contact_id=(
+                        f"contact.edge.{candidate_id}.{left_edge_index}.{right_edge_index}."
+                        f"{moving_vertex}"
+                    ),
+                    candidate_id=candidate_id,
+                    vertex_index=moving_vertex,
+                    triangle_index=right.global_triangle_index,
+                    distance_meters=distance,
+                    penetration_meters=max(0.0, threshold - distance),
+                    normal=normal,
+                )
+            )
+    return contacts
+
+
+def _triangle_edges(triangle: Tri) -> tuple[tuple[int, int], tuple[int, int], tuple[int, int]]:
+    return (
+        (triangle[0], triangle[1]),
+        (triangle[1], triangle[2]),
+        (triangle[2], triangle[0]),
+    )
+
+
+def _closest_points_on_segments(a: Vec3, b: Vec3, c: Vec3, d: Vec3) -> tuple[Vec3, Vec3]:
+    # Ericson-style segment/segment closest points with deterministic clamping.
+    ab = sub(b, a)
+    cd = sub(d, c)
+    ac = sub(a, c)
+    aa = _dot(ab, ab)
+    ee = _dot(cd, cd)
+    ff = _dot(cd, ac)
+    if aa <= 1e-15 and ee <= 1e-15:
+        return a, c
+    if aa <= 1e-15:
+        s = 0.0
+        t = _clamp(ff / ee)
+    else:
+        cc = _dot(ab, ac)
+        if ee <= 1e-15:
+            t = 0.0
+            s = _clamp(-cc / aa)
+        else:
+            bb = _dot(ab, cd)
+            denominator = aa * ee - bb * bb
+            s = _clamp((bb * ff - cc * ee) / denominator) if abs(denominator) > 1e-15 else 0.0
+            t = (bb * s + ff) / ee
+            if t < 0.0:
+                t = 0.0
+                s = _clamp(-cc / aa)
+            elif t > 1.0:
+                t = 1.0
+                s = _clamp((bb - cc) / aa)
+    return add(a, scale(ab, s)), add(c, scale(cd, t))
+
+
+def _clamp(value: float) -> float:
+    return max(0.0, min(1.0, value))
 
 
 def seam_exclusion_pairs(
@@ -570,6 +824,60 @@ def _triangle_bounds(positions: list[Vec3], triangle: Tri, inflate: float) -> tu
         minimum,
         maximum,
     )
+
+
+def _triangle_bounding_sphere(positions: list[Vec3], triangle: Tri) -> tuple[Vec3, float]:
+    a, b, c = (positions[index] for index in triangle)
+    center = (
+        (a[0] + b[0] + c[0]) / 3.0,
+        (a[1] + b[1] + c[1]) / 3.0,
+        (a[2] + b[2] + c[2]) / 3.0,
+    )
+    radius = sqrt(max(_distance_squared(center, point) for point in (a, b, c)))
+    return center, radius
+
+
+def _triangle_directional_bounds(
+    positions: list[Vec3], triangle: Tri
+) -> tuple[tuple[float, float], ...]:
+    points = tuple(positions[index] for index in triangle)
+    return tuple(
+        (
+            min(_dot(point, direction) for point in points),
+            max(_dot(point, direction) for point in points),
+        )
+        for direction in _ORACLE_DIRECTIONS
+    )
+
+
+def _directional_bounds_may_overlap(
+    left: tuple[tuple[float, float], ...],
+    right: tuple[tuple[float, float], ...],
+    threshold: float,
+) -> bool:
+    for index, direction in enumerate(_ORACLE_DIRECTIONS):
+        margin = threshold * _length(direction)
+        left_min, left_max = left[index]
+        right_min, right_max = right[index]
+        if left_max + margin < right_min or right_max + margin < left_min:
+            return False
+    return True
+
+
+def _segment_pair_may_be_within_threshold(
+    a: Vec3, b: Vec3, c: Vec3, d: Vec3, threshold: float
+) -> bool:
+    left_center = scale(add(a, b), 0.5)
+    right_center = scale(add(c, d), 0.5)
+    maximum_distance = _length(sub(a, b)) * 0.5 + _length(sub(c, d)) * 0.5 + threshold
+    return _distance_squared(left_center, right_center) <= maximum_distance * maximum_distance
+
+
+def _distance_squared(a: Vec3, b: Vec3) -> float:
+    x = a[0] - b[0]
+    y = a[1] - b[1]
+    z = a[2] - b[2]
+    return x * x + y * y + z * z
 
 
 def _aabb_overlap(left: tuple[Vec3, Vec3], right: tuple[Vec3, Vec3]) -> bool:
@@ -664,12 +972,16 @@ def _contact_payload(contact: Contact) -> dict[str, Any]:
 
 
 def _dot(a: Vec3, b: Vec3) -> float:
-    return sum(a[index] * b[index] for index in range(3))
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
 
 def _length(value: Vec3) -> float:
-    return sqrt(sum(component * component for component in value))
+    return sqrt(value[0] * value[0] + value[1] * value[1] + value[2] * value[2])
 
 
 def _round(value: float) -> float:
     return round(float(value), 9)
+
+
+def _non_increasing(values: Sequence[float | int]) -> bool:
+    return all(right <= left + 1e-12 for left, right in zip(values, values[1:], strict=False))

@@ -25,7 +25,7 @@ def test_self_collision_broad_phase_matches_bruteforce_oracle() -> None:
     oracle = brute_force_candidate_oracle(positions, triangles, settings)
     analysis = analyze_self_collision(mesh, settings=settings)
 
-    assert broad_phase == oracle
+    assert set(oracle).issubset(broad_phase)
     assert analysis.broad_phase_matches_oracle is True
     assert analysis.contacts
     assert analysis.max_penetration_meters > 0.0
@@ -74,6 +74,9 @@ def test_self_collision_report_documents_fixtures_and_tunnelling_limit() -> None
     assert report["metrics"]["broadPhaseMatchesOracle"] is True
     assert report["adversarialFixtures"]["knownContact"]["status"] == "pass"
     assert report["adversarialFixtures"]["knownNonContact"]["status"] == "pass"
+    assert report["adversarialFixtures"]["adjacentTriangleExclusion"]["status"] == "pass"
+    assert report["adversarialFixtures"]["seamPairExclusion"]["status"] == "pass"
+    assert report["adversarialFixtures"]["crossingEdges"]["status"] == "pass"
     assert report["adversarialFixtures"]["highVelocityTunnelling"]["status"] == (
         "unsupported_high_velocity_tunnelling"
     )

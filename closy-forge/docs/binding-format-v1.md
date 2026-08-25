@@ -35,6 +35,7 @@ The third barycentric component is `1 - u - v`. Implementation 01 uses zero norm
 
 Phase 6 adds `binding/production_binding_contract.json` beside the binary file. This JSON contract is the stable, inspectable binding authority for the D0 fixed-avatar T-shirt profile. It records:
 
+- the authoritative `settled_simulation_to_subdivided_render_v1` route and deprecated predecessor tracks;
 - source simulation and destination render topology/content hashes;
 - stable render vertex IDs in `rv.%06d` form;
 - per-render-vertex triangle/barycentric weights;
@@ -42,4 +43,8 @@ Phase 6 adds `binding/production_binding_contract.json` beside the binary file. 
 - panel, part and opening ownership safeguards;
 - deterministic topology invalidation rules.
 
-`reports/production_binding_c3.json` reopens the persisted package files, binary binding and render GLB, validates GLB accessors and expanded geometry, then runs a bounded non-affine motion suite. Its current readiness is `complete_for_d0_fixed_avatar_tshirt_profile` only; it does not promote global Phase 6, clean geometry or canonical geometry.
+`simulation/motion_states/index.json` indexes eleven solver-produced states. Each state stores simulation positions and provenance; dense reconstruction is generated only by decoding `binding/sim_to_render.bin` after the package is reopened. `render/simulation_fallback.glb` is a genuinely separate direct simulation-mesh representation and does not invoke dense reconstruction. Shared panel centroids and silhouette bounds are compared because the two representations have different topology.
+
+`reports/production_binding_c3.json` reopens persisted package files, binding bytes, motion-state bytes and both GLBs before recomputing the evidence. It separately records seam crack residual beyond intended separation, seam-frame tangential sliding and all four semantic-opening drifts. Normals and VEC4 tangents are reconstructed and validated for dense and fallback output. The current readiness is truthfully `partial_scoped_reference_profile`: persisted validation passes, but fallback landmark agreement and tangential sliding exceed their provisional scale-derived thresholds. Global Phase 6, clean geometry and canonical geometry remain false.
+
+Host CPU timings are deliberately excluded from the canonical package. Use `closy-forge benchmark binding-c3 PACKAGE --output REPORT --warmups 3 --repeats 20 --commit-sha SHA` to produce a schema-validated, noncanonical report with dense and fallback measurements, host/runtime identity and `tracemalloc` peak memory.

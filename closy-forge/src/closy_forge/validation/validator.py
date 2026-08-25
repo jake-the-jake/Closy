@@ -142,8 +142,22 @@ EXPECTED_FILES = [
     "simulation/settled_state.json",
     "simulation/settle_diagnostics.json",
     "simulation/material_physics.json",
+    "simulation/motion_states/index.json",
+    "simulation/motion_states/neutral_settled.json",
+    "simulation/motion_states/left_arm_raise.json",
+    "simulation/motion_states/right_arm_raise.json",
+    "simulation/motion_states/forward_bend.json",
+    "simulation/motion_states/side_bend.json",
+    "simulation/motion_states/torso_twist.json",
+    "simulation/motion_states/moderate_gust.json",
+    "simulation/motion_states/lightweight_material_extreme.json",
+    "simulation/motion_states/stiff_material_extreme.json",
+    "simulation/motion_states/opening_stress.json",
+    "simulation/motion_states/seam_stress.json",
     "stitch/logical_stitched_analysis_shell.json",
     "render/fallback.glb",
+    "render/simulation_fallback.glb",
+    "render/simulation_fallback_manifest.json",
     "render/stitched_shell.glb",
     "render/mesh_manifest.json",
     "render/materials.json",
@@ -7609,6 +7623,23 @@ def _validate_production_binding_contract(
                 "Binary binding render topology hash mismatch.",
             )
         )
+    authority = contract.get("authority", {})
+    if (
+        not isinstance(authority, dict)
+        or authority.get("routeId") != "settled_simulation_to_subdivided_render_v1"
+        or authority.get("status") != "authoritative"
+        or authority.get("sourcePath") != "simulation/mesh_manifest.json"
+        or authority.get("denseDestinationPath") != "render/mesh_manifest.json"
+        or authority.get("independentFallbackAssetPath") != "render/simulation_fallback.glb"
+    ):
+        issues.append(
+            _issue(
+                "production_binding_authority_conflict",
+                "fatal",
+                "binding/production_binding_contract.json",
+                "Exactly one settled-simulation to subdivided-render route must be authoritative.",
+            )
+        )
     safeguards = contract.get("safeguards", {})
     if (
         not isinstance(safeguards, dict)
@@ -7736,10 +7767,14 @@ def _validate_production_binding_c3(
                 )
             )
     readiness = report.get("readiness", {})
+    gate_status = readiness.get("gateC3Status") if isinstance(readiness, dict) else None
+    accepted_d0 = (
+        readiness.get("acceptedForD0RuntimeBindingProfile") if isinstance(readiness, dict) else None
+    )
     if (
         not isinstance(readiness, dict)
-        or readiness.get("gateC3Status") != "complete_for_d0_fixed_avatar_tshirt_profile"
-        or readiness.get("acceptedForD0RuntimeBindingProfile") is not True
+        or gate_status not in {"complete_for_d0_fixed_avatar_tshirt_profile", "partial"}
+        or accepted_d0 is not (gate_status == "complete_for_d0_fixed_avatar_tshirt_profile")
         or readiness.get("acceptedForGlobalPhase6") is not False
         or readiness.get("acceptedForCleanProposal") is not False
         or readiness.get("acceptedForCanonical") is not False
@@ -7754,13 +7789,13 @@ def _validate_production_binding_c3(
         )
     caps = manifest.get("capabilities", {})
     if isinstance(caps, dict):
-        if caps.get("productionBindingC3ProfileAvailable") is not True:
+        if caps.get("productionBindingC3EvidenceAvailable") is not True:
             issues.append(
                 _issue(
                     "production_binding_c3_capability_missing",
                     "fatal",
                     "manifest.json",
-                    "Manifest must declare scoped production binding C3 evidence.",
+                    "Manifest must declare scoped production binding C3 evidence availability.",
                 )
             )
         if caps.get("productionBindingContractAvailable") is not True:
@@ -7770,6 +7805,15 @@ def _validate_production_binding_c3(
                     "fatal",
                     "manifest.json",
                     "Manifest must declare the production binding contract.",
+                )
+            )
+        if caps.get("productionBindingC3ProfileAvailable") != bool(accepted_d0):
+            issues.append(
+                _issue(
+                    "production_binding_c3_capability_contradiction",
+                    "fatal",
+                    "manifest.json",
+                    "C3 profile capability must match literal D0 profile acceptance.",
                 )
             )
     if _contains_nonfinite(report):
@@ -10998,13 +11042,13 @@ def _validate_capabilities(manifest: dict[str, Any], issues: list[ValidationIssu
                 "Self-collision availability requires an evidence report capability.",
             )
         )
-    if caps.get("productionBindingC3ProfileAvailable") is not True:
+    if caps.get("productionBindingC3EvidenceAvailable") is not True:
         issues.append(
             _issue(
                 "production_binding_c3_capability_missing",
                 "fatal",
                 "manifest.json",
-                "Manifest must declare scoped production binding C3 profile evidence.",
+                "Manifest must declare scoped production binding C3 evidence.",
             )
         )
     if caps.get("productionBindingContractAvailable") is not True:

@@ -17,6 +17,7 @@ from closy_forge.avatar.reference_avatar import (
 )
 from closy_forge.binding.binary_format import write_binding
 from closy_forge.binding.builder import build_binding
+from closy_forge.binding.c3_evidence import prepare_c3_evidence_assets
 from closy_forge.binding.production_binding import (
     PRODUCTION_BINDING_C3_REPORT_VERSION,
     PRODUCTION_BINDING_CONTRACT_VERSION,
@@ -578,6 +579,13 @@ def _write_package_contents(
     write_canonical_json(
         package_dir / "binding" / "production_binding_contract.json",
         production_binding_contract,
+    )
+    prepare_c3_evidence_assets(
+        package_dir=package_dir,
+        settled_mesh=simulation_mesh,
+        constraints=constraints,
+        avatar_contract=avatar,
+        material=material_physics,
     )
     render_frame_pose_suite = build_render_frame_pose_suite_report(
         garment_id="garment.demo_tshirt.reference_v1",
@@ -1313,7 +1321,7 @@ def _manifest(
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
-        "capabilities": _capabilities(),
+        "capabilities": _capabilities(production_binding_c3),
         "warnings": [
             "self_collision_d0_reference_only",
             "self_collision_unresolved_contacts_d0_reference",
@@ -1343,6 +1351,11 @@ def _manifest(
             "inspection_artifacts_not_visual_fidelity_acceptance",
             "bp48_pose_suite_not_full_cloth_motion",
             "production_binding_c3_d0_profile_only",
+            *(
+                ["production_binding_c3_partial_scoped_reference_profile"]
+                if not production_binding_c3["readiness"]["acceptedForD0RuntimeBindingProfile"]
+                else []
+            ),
             "performance_wall_clock_omitted_from_canonical_digest",
             "source_provider_human_visual_fidelity_not_run",
             "geometry_clean_acceptance_gate_rejected",
@@ -1357,7 +1370,7 @@ def _manifest(
     }
 
 
-def _capabilities() -> dict[str, bool]:
+def _capabilities(production_binding_c3: dict[str, Any]) -> dict[str, bool]:
     return {
         "patternAvailable": True,
         "simulationReadyTopologyAvailable": True,
@@ -1425,7 +1438,10 @@ def _capabilities() -> dict[str, bool]:
         "geometryVisualShellReviewAvailable": True,
         "renderTangentsPersistedAvailable": True,
         "poseSuiteBindingEvidenceAvailable": True,
-        "productionBindingC3ProfileAvailable": True,
+        "productionBindingC3EvidenceAvailable": True,
+        "productionBindingC3ProfileAvailable": bool(
+            production_binding_c3["readiness"]["acceptedForD0RuntimeBindingProfile"]
+        ),
         "productionBindingContractAvailable": True,
         "deterministicInspectionArtifactsAvailable": True,
         "visualEvidenceTiersSeparated": True,

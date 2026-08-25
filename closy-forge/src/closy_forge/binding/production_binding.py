@@ -5,7 +5,7 @@ from math import isfinite, sqrt
 from pathlib import Path
 from typing import Any
 
-from closy_forge.binding.binary_format import BindingFile, read_binding
+from closy_forge.binding.binary_format import BindingFile
 from closy_forge.binding.reconstruct import reconstruct_vertices
 from closy_forge.geometry.frame_attributes import meshset_frame_metrics
 from closy_forge.geometry.glb_io import audit_glb, read_glb_meshset
@@ -20,7 +20,7 @@ from closy_forge.package_io.hashing import (
 )
 
 PRODUCTION_BINDING_CONTRACT_VERSION = "closy.production_binding_contract.d0_tshirt.v1"
-PRODUCTION_BINDING_C3_REPORT_VERSION = "closy.production_binding_c3.d0_tshirt.v1"
+PRODUCTION_BINDING_C3_REPORT_VERSION = "closy.production_binding_c3.d0_tshirt.integrity_v2"
 
 _MOTION_STATE_IDS = [
     "neutral_settled",
@@ -160,9 +160,26 @@ def build_production_binding_contract(
             "simulationTopologyHash": binding.simulation_topology_hash,
             "renderTopologyHash": binding.render_topology_hash,
         },
+        "authority": {
+            "routeId": "settled_simulation_to_subdivided_render_v1",
+            "status": "authoritative",
+            "sourcePath": "simulation/mesh_manifest.json",
+            "denseDestinationPath": "render/mesh_manifest.json",
+            "denseAssetPath": "render/fallback.glb",
+            "independentFallbackAssetPath": "render/simulation_fallback.glb",
+            "bp46TopologyRelationship": (
+                "BP46 stitched-shell evidence is derived from the same settled panel topology, "
+                "seam constraints and semantic openings; it is topology evidence, not a parallel "
+                "runtime binding authority"
+            ),
+            "deprecatedTrackIds": [
+                "legacy_cleanup_to_simulation_binding_validation",
+                "proposal_runtime_preview_binding_records",
+            ],
+        },
         "capabilities": {
             "denseBarycentricBindingAvailable": True,
-            "fallbackPanelBatchBindingAvailable": True,
+            "independentSimulationMeshFallbackAvailable": True,
             "stableRenderVertexIdsAvailable": True,
             "logicalToRenderSplitMappingAvailable": True,
             "openingOwnershipSafeguardsAvailable": True,
@@ -203,24 +220,12 @@ def build_production_binding_c3_report_from_package(
     garment_id: str,
     garment_class: str,
 ) -> dict[str, Any]:
-    sim_manifest = read_json(package_dir / "simulation" / "mesh_manifest.json")
-    render_manifest = read_json(package_dir / "render" / "mesh_manifest.json")
-    constraints = read_json(package_dir / "simulation" / "constraints.json")
-    contract = read_json(package_dir / "binding" / "production_binding_contract.json")
-    binding_manifest = read_json(package_dir / "binding" / "binding_manifest.json")
-    binding = read_binding(package_dir / "binding" / "sim_to_render.bin")
-    simulation_mesh = _meshset_from_manifest(sim_manifest)
-    render_mesh = _meshset_from_manifest(render_manifest)
-    return build_production_binding_c3_report(
+    from closy_forge.binding.c3_evidence import build_c3_report_from_package
+
+    return build_c3_report_from_package(
+        package_dir=package_dir,
         garment_id=garment_id,
         garment_class=garment_class,
-        package_dir=package_dir,
-        simulation_mesh=simulation_mesh,
-        render_mesh=render_mesh,
-        binding=binding,
-        binding_manifest=binding_manifest,
-        contract=contract,
-        constraints=constraints,
     )
 
 

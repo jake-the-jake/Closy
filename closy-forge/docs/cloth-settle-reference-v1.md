@@ -1,10 +1,10 @@
-# Deterministic Reference Cloth Settle v1.2
+# Deterministic Reference Cloth Settle v1.3
 
 Forge includes a small CPU reference cloth backend for the canonical T-shirt fixture. It is not a production cloth simulator, but it exercises a real deterministic settle path before `actualClothSettleAvailable` is enabled.
 
 ## Backend
 
-- Solver ID: `closy.reference_xpbd_cpu.v1.2_self_collision_d0`
+- Solver ID: `closy.reference_xpbd_cpu.v1.3_integrated_self_collision_d0`
 - Backend: deterministic CPU reference XPBD-style projection
 - Fixed step count: `35`
 - Solver iterations per step: `6`
@@ -13,7 +13,7 @@ Forge includes a small CPU reference cloth backend for the canonical T-shirt fix
 - Collision clearance: `0.006 m`
 - Fixture support stiffness: `0.03`
 - Neck-band seam target cap: `0.02 m`
-- Constraint order: stretch, bend, seam, support, body collision, D0 self-collision
+- Constraint order: stretch, bend, seam, support, body collision, with bounded D0 self-collision projections at solver checkpoints
 
 The package stores:
 
@@ -22,14 +22,16 @@ The package stores:
 - `simulation/settle_diagnostics.json`: convergence, penetration, seam residual, strain and energy-proxy diagnostics
 - `simulation/simulation_mesh.glb`: settled simulation mesh inspection export
 - `reports/self_collision_report.json`: D0 reference self-collision evidence, adversarial fixtures and unresolved-contact metrics
+- `simulation/motion_states/index.json`: index and hashes for eleven bounded solver-produced deformation states
+- `simulation/motion_states/*.json`: persisted positions, settings, material parameters, convergence diagnostics and provenance for each state
 
 ## Current Limits
 
-Self-collision now runs as a deterministic D0 reference vertex/triangle pass. Packages set `selfCollisionAvailable: true` and `selfCollisionEvidenceAvailable: true`; validation rejects stale or contradictory reports. The current coarse fixed-avatar T-shirt fixture still retains unresolved reference contacts, so validation reports the warning `self_collision_unresolved_contacts` rather than the old `self_collision_not_run` placeholder.
+Self-collision now runs as a deterministic D0 vertex-triangle and edge-edge reference pass integrated at bounded solver checkpoints. Its broad-phase audit uses an independent exact-proximity subset oracle rather than the same AABB predicate. Packages set `selfCollisionAvailable: true` and `selfCollisionEvidenceAvailable: true`; validation rejects stale or contradictory reports. Per-iteration unresolved-contact and penetration histories are recorded, together with monotonicity and topology-safety flags. The current coarse fixed-avatar T-shirt fixture still retains unresolved reference contacts, so validation reports `self_collision_unresolved_contacts` rather than hiding the limitation.
 
 This is not a production GPU collision backend. High-velocity continuous collision/tunnelling is explicitly unsupported and recorded as `unsupported_high_velocity_tunnelling`.
 
-The solver is tuned for deterministic fixture validation, not final apparel realism. The v1.2 fixture policy softens high-y/neck-band support tethers, tightens the neck-band target length and runs a bounded reference self-collision projection so seam correspondence evidence reflects the ordered seam construction instead of artificial support drift. The coarse fan triangulation can still produce high maximum strain on skinny neck-band triangles, so convergence uses RMS seam residual, body penetration, finite/inversion checks and percentile/mean strain while still reporting the raw maximum strain.
+The solver is tuned for deterministic fixture validation, not final apparel realism. The v1.3 fixture policy softens high-y/neck-band support tethers, tightens the neck-band target length and performs bounded collision projection during the solve. The coarse fan triangulation can still produce high maximum strain on skinny neck-band triangles, so convergence uses RMS seam residual, body penetration, finite/inversion checks and percentile/mean strain while still reporting the raw maximum strain.
 
 ## Validation Thresholds
 

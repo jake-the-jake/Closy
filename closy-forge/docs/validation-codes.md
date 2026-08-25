@@ -28,9 +28,10 @@ Representative current codes:
 - `production_binding_contract_duplicate_render_vertex_id`: stable render vertex IDs in the production binding contract are not unique.
 - `production_binding_contract_missing_render_vertex_id`: production binding contract does not enumerate exactly the expected stable render vertex IDs.
 - `production_binding_contract_opening_crossing`: production binding crosses semantic openings in a way the D0 contract forbids.
+- `production_binding_authority_conflict`: package contract exposes a route that conflicts with the single authoritative source/render/binding route.
 - `production_binding_c3_source_hash_mismatch`: production binding C3 source artifact hashes are stale.
-- `production_binding_c3_recompute_mismatch`: C3 evidence no longer recomputes from persisted package, binding and GLB bytes.
-- `production_binding_c3_readiness_invalid`: C3 report overclaims beyond the D0 fixed-avatar T-shirt profile.
+- `production_binding_c3_recompute_mismatch`: C3 evidence no longer recomputes from persisted package, solver-state, binding and dense/fallback GLB bytes.
+- `production_binding_c3_readiness_invalid`: C3 report overclaims beyond the literal D0 fixed-avatar T-shirt evidence or contradicts its partial thresholds.
 - `cloth_settle_not_run`: warning for legacy/unfinished packages that do not run settle.
 - `cloth_settle_not_converged`: package claims settle availability but diagnostics did not converge.
 - `cloth_settle_body_penetration_too_high`: settled state penetrates the avatar beyond the reference threshold.
