@@ -45,8 +45,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-seam-settle-remote-v1"
-    assert payload["generatedBy"] == "BP-46 seam-settle remote evidence"
+    assert payload["version"] == "bp46-opening-panel-edge-provenance-v1"
+    assert payload["generatedBy"] == "BP-46 opening panel-edge provenance evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -182,6 +182,7 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "e11eb8d82fc01c032a14cd4e502a2eb8a736087a" in bp46["commitSha"]
     assert "8790567cc8b8a9d8db2214ec7133bbe1281f6dca" in bp46["commitSha"]
     assert "49afef27df5caa69265d21244e8b82b527371c54" in bp46["commitSha"]
+    assert "22176b42817d84bf2303a6b1ee54c8936a204c07" in bp46["commitSha"]
     assert "meshStitchOrWeldExecutionRun=true" in bp46["executableEvidence"]
     assert "meshStitchOrWeldProven=false" in bp46["executableEvidence"]
     assert "executedTopologyAuditCount=5" in bp46["executableEvidence"]
@@ -192,7 +193,14 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert any(
         "semanticOpeningAssignmentStatus=fail" in item for item in bp46["executableEvidence"]
     )
-    assert any("panelEdgeProvenanceStatus=fail" in item for item in bp46["executableEvidence"])
+    assert any(
+        "earlier panelEdgeProvenanceStatus=fail" in item for item in bp46["executableEvidence"]
+    )
+    assert any("panelEdgeProvenanceStatus=pass" in item for item in bp46["executableEvidence"])
+    assert any(
+        "sourceOpeningEdgeProvenance.status=pass" in item for item in bp46["executableEvidence"]
+    )
+    assert any("recordedOpeningCount=4" in item for item in bp46["executableEvidence"])
     assert any(
         "36d766f3b2d3099f54490b3adcc3f34cafb437356bdc1d622ac8bcd486f796c9" in item
         for item in bp46["executableEvidence"]
@@ -252,6 +260,11 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert any("97654190062" in item for item in bp46["executableEvidence"])
     assert any("97654189886" in item for item in bp46["executableEvidence"])
     assert any(
+        "21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584" in item
+        for item in bp46["executableEvidence"]
+    )
+    assert any("89 physical files each" in item for item in bp46["executableEvidence"])
+    assert any(
         "95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2" in item
         for item in bp46["executableEvidence"]
     )
@@ -290,6 +303,8 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert any("97607120119" in item for item in bp46["executableEvidence"])
     assert "non-manifold edges" in bp46["limitations"]
     assert "ordered seam correspondence now passes" in bp46["limitations"]
+    assert "source opening panel-edge provenance now passes" in bp46["limitations"]
+    assert "missing panel-edge provenance" not in bp46["limitations"]
     assert "pre-stitch distances still exceed" not in bp46["limitations"]
     assert "duplicate faces" not in bp46["limitations"]
     assert "duplicate operation IDs" not in bp46["limitations"]
@@ -487,7 +502,7 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
 def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `8790567`" in ledger
+    assert "Latest completed implementation commit when last updated: `22176b4`" in ledger
     assert "executedTopologyAuditCount=5" in ledger
     assert "semanticOpeningAssignmentStatus=fail" in ledger
     assert "boundaryComponentCount=2" in ledger
@@ -497,11 +512,14 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "duplicateExecutedOperationCount=0" in ledger
     assert "removedDuplicateFaceCount=8" in ledger
     assert "orderedSeamCorrespondenceStatus=pass" in ledger
+    assert "panelEdgeProvenanceStatus=pass" in ledger
+    assert "sourceOpeningEdgeProvenance.status=pass" in ledger
     assert "reusedBoundaryVertexCount=0" in ledger
     assert "reusedBoundarySpanCount=0" in ledger
     assert "oversizedPreStitchCorrespondenceCount=0" in ledger
     assert "preStitchDistanceDistributionMeters.max=0.030415545" in ledger
     assert "31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8" in ledger
+    assert "21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584" in ledger
     assert "ordered seam partition run `32791907899`" in ledger
     assert "seam-settle Forge run `32798354036`" in ledger
     assert "97654190062" in ledger
@@ -509,7 +527,7 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "Remote run `32777652602`" in ledger
     assert "docs-verification run `32778840554`" in ledger
     assert (
-        "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-SEAM-SETTLE-DISTANCE-REDUCTION`"
+        "Current active increment: `FOUNDATION-PROOF-CLOSEOUT-BP46-OPENING-PANEL-EDGE-PROVENANCE`"
         in ledger
     )
     assert "Next dependency-ready increment: continue `FOUNDATION-PROOF-CLOSEOUT`" in ledger

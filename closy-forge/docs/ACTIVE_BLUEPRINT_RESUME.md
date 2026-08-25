@@ -4,15 +4,15 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 
 ## Current State
 
-- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-SEAM-SETTLE-DISTANCE-REDUCTION`
-- Exact subtask: tighten deterministic settle support and neck-band seam target policy so ordered pre-stitch correspondence passes while keeping clean/canonical acceptance rejected.
+- Active blueprint checkpoint: `FOUNDATION-PROOF-CLOSEOUT-BP46-OPENING-PANEL-EDGE-PROVENANCE`
+- Exact subtask: propagate source opening boundary-edge provenance into stitched-shell constraints/audits so panel-edge provenance passes while semantic opening topology remains fail-closed.
 - Current branch: `codex/closy-forge-foundation-proof-closeout`
 - Parent branch: `codex/closy-forge-phase-4-texture`
 - Foundation closeout branch point: `93f2e6587cc4f5f3237aba669870648a01118a09`
-- Latest implementation commit SHA: `8790567cc8b8a9d8db2214ec7133bbe1281f6dca`
-- Latest implementation commit subject: `Tighten BP46 seam settling evidence`
-- Latest evidence commit SHA before this update: `49afef27df5caa69265d21244e8b82b527371c54`
-- Record based on SHA: `49afef27df5caa69265d21244e8b82b527371c54`; this resume file itself belongs to the follow-up foundation-proof seam-settle remote-evidence truth-sync commit.
+- Latest implementation commit SHA: `22176b42817d84bf2303a6b1ee54c8936a204c07`
+- Latest implementation commit subject: `Prove BP46 opening panel edge provenance`
+- Latest evidence commit SHA before this update: `9551d2707a8e88ac7fd0e804122169df10df8887`
+- Record based on SHA: `22176b42817d84bf2303a6b1ee54c8936a204c07`; this resume file itself belongs to the follow-up foundation-proof opening-provenance evidence truth-sync commit.
 - Foundation proof draft PR: `https://github.com/jake-the-jake/Closy/pull/5`, draft/open, stacked on `codex/closy-forge-phase-4-texture`.
 - Parent Phase-4 draft PR: `https://github.com/jake-the-jake/Closy/pull/4`, draft/open, stacked on `codex/closy-forge-phase-3-fitting`.
 - Last remote BP53 evidence: GitHub Actions run `32742283522` passed at commit `93f2e6587cc4f5f3237aba669870648a01118a09`; Ubuntu job `97479333762` passed in 5m15s and Windows job `97479333560` passed in 9m54s. Each OS ran 112 format-checked files, 89 mypy source files, 192 tests, fresh schemas, identical 89-file package trees, digest `a36fd735db6545216e700516ff8a76ad1b9689677d78ae8fb930995c5f0a168e`, and validation/report with only `self_collision_not_run`.
@@ -23,6 +23,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Last remote foundation-proof seam-settle evidence: GitHub Actions run `32798354036` passed at commit `49afef27df5caa69265d21244e8b82b527371c54`; Ubuntu job `97654190062` passed in 7m53s with 194 tests in 446.94s, and Windows job `97654189886` passed in 10m32s with 194 tests in 587.33s. Each OS ran 112 format-checked files, 89 mypy source files, fresh schemas, identical 89-file package trees, digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`, and validation/report with only `self_collision_not_run`.
 - Current local BP46 seam-settle evidence after `8790567`: focused stitched-shell/corruption/reference/golden tests passed, bounded variant/report integration tests passed, full `pytest -q` exited 0, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, and schema freshness checks passed.
 - Current local package digest after seam-settle tightening: two OS-temp package builds were byte-identical with 89 files each, 85 manifest-inventoried files, and digest `31687333869146f7b0bade6582777ca577e092b0f33250f3578abc898da30de8`.
+- Current local BP46 opening-provenance evidence after `22176b4`: focused stitched-shell/corruption/reference/golden tests passed, full `pytest -q` passed after 194 collected Forge tests, `ruff format --check .` passed over 112 files, `ruff check .` passed, `mypy src` passed over 89 source files, schema freshness checks passed, and two OS-temp package builds were byte-identical with 89 physical files, 85 manifest-inventoried files, digest `21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584`, `panelEdgeProvenanceStatus=pass`, `sourceOpeningEdgeProvenance.status=pass`, `semanticOpeningAssignmentStatus=fail`, and only `self_collision_not_run`.
 - Formal package warning budget: exactly one package validator warning, `self_collision_not_run`.
 - Clean acceptance report state remains rejected; clean/canonical acceptance remains false.
 - Known unrelated local work outside this Forge slice remains unstaged and must be preserved: app avatar files, `metro.config.js`, and untracked `closy-forge/.tmp/`.
@@ -39,7 +40,7 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - BP-46 ordered seam correspondence now passes: `orderedSeamCorrespondenceStatus=pass`, `distanceToleranceMeters=0.032551892`, `oversizedPreStitchCorrespondenceCount=0`, `preStitchDistanceDistributionMeters.max=0.030415545` and `failureReasons=[]`.
 - Current BP-46 candidate results: `executedTopologyAuditCount=5`, `tJunctionCheckStatus=pass`, `hiddenInternalComponentCheckStatus=pass`, `inconsistentWindingCheckStatus=fail`, `normalInversionCheckStatus=fail` and `selfIntersectionCheckStatus=fail`.
 - Current BP-46 failing audit counts: 36 inconsistent shared edges, 26 inverted adjacent normal pairs and 286 self-intersection pairs.
-- Current semantic opening audit results: `semanticOpeningAssignmentStatus=fail`, `boundaryComponentCount=2`, `simpleBoundaryCycleCount=0`, `candidateOpeningMappings=[]`, `panelEdgeProvenanceStatus=fail`, `provenOpeningIds=[]` and all four expected openings are listed in `missingExpectedOpeningIds`.
+- Current semantic opening audit results: `semanticOpeningAssignmentStatus=fail`, `boundaryComponentCount=2`, `simpleBoundaryCycleCount=0`, `candidateOpeningMappings=[]`, `panelEdgeProvenanceStatus=pass`, `sourceOpeningEdgeProvenance.status=pass`, `recordedOpeningCount=4`, no missing source opening ids/boundary edges/logical vertices, `provenOpeningIds=[]` and all four expected openings are listed in `missingExpectedOpeningIds`.
 - BP-47 adds deterministic SVG inspection artifacts and separated evidence tiers, but does not provide decoded raster visual fidelity, source/provider appearance comparison or signed human review.
 - BP-48 adds persisted fallback GLB `NORMAL` and `VEC4` `TANGENT` accessors plus `reports/render_frame_pose_suite.json`.
 - BP-48 validates four deterministic pose snapshots within the `1e-6` binding tolerance; after deterministic quantization the observed max pose binding error is `1e-09`.
@@ -53,7 +54,7 @@ Current blocking evidence:
 - Ordered seam span ownership is now partitioned for sleeve caps and neck-band attachment, and current ordered pre-stitch correspondence distances are below the local edge-length-derived tolerance.
 - Two boundary components are detected rather than four proven semantic openings.
 - Boundary graph contains branch vertices.
-- Semantic opening assignment now executes but fails closed because the boundary graph has branch vertices, two boundary components, no simple cycles, no candidate opening mappings and missing panel-edge provenance.
+- Semantic opening assignment now executes but fails closed because the boundary graph has branch vertices, two boundary components, no simple cycles and no candidate opening mappings; source opening panel-edge provenance now passes and is no longer the blocker.
 - Production stitched-shell binding, crack/sliding proof and dense runtime binding evidence remain incomplete; the current logical source-vertex reconstruction audit passes only for the stitched analysis shell.
 - Executed winding, normal-inversion and self-intersection audits fail.
 - Full cloth motion, crack/sliding proof, runtime performance/memory profiling and mobile fallback negotiation are not implemented.
@@ -108,7 +109,7 @@ Current blocking evidence:
 
 ## Current Checks Not Yet Run After This Resume Update
 
-- Remote CI has not yet run for this seam-settle remote-evidence truth-sync update.
+- Remote CI has not yet run for this opening-provenance evidence truth-sync update.
 
 ## Next Exact Command
 
@@ -119,4 +120,4 @@ cd E:\apps\Closy\closy-forge
 
 ## Next Safe Action
 
-Commit and push this seam-settle remote-evidence truth-sync, update draft PR #5, then continue BP-46 semantic opening proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
+Commit and push this opening-provenance evidence truth-sync, update draft PR #5, then continue BP-46 semantic opening topology proof, winding/normal/self-intersection repair, production stitched binding and crack/sliding proof without promoting clean/canonical acceptance until evidence passes.
