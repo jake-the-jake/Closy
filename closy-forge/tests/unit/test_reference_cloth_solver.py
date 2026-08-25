@@ -25,4 +25,8 @@ def test_reference_cloth_solver_settles_without_changing_topology() -> None:
     assert result.diagnostics["convergenceState"] == "converged"
     assert result.diagnostics["maximumBodyPenetrationMeters"] < 0.012
     assert result.diagnostics["rmsSeamResidualMeters"] < 0.035
-    assert result.diagnostics["selfCollision"]["available"] is False
+    assert result.diagnostics["selfCollision"]["available"] is True
+    assert result.diagnostics["selfCollision"]["reportRef"] == "reports/self_collision_report.json"
+    assert result.diagnostics["selfCollision"]["highVelocityTunnelling"] == (
+        "unsupported_high_velocity_tunnelling"
+    )

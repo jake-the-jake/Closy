@@ -38,6 +38,8 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
     provider_bakeoff = read_json(package_dir / "reports" / "provider_bakeoff.json")
+    production_binding_c3 = read_json(package_dir / "reports" / "production_binding_c3.json")
+    self_collision_report = read_json(package_dir / "reports" / "self_collision_report.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -546,6 +548,45 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "bestAvailableProviderId": provider_bakeoff["aggregate"]["bestAvailableProviderId"],
             "bestAvailableStatus": provider_bakeoff["aggregate"]["bestAvailableStatus"],
         },
+        "productionBindingC3": {
+            "reportId": production_binding_c3["reportId"],
+            "status": production_binding_c3["readiness"]["status"],
+            "gateC3Status": production_binding_c3["readiness"]["gateC3Status"],
+            "profile": production_binding_c3["profile"]["id"],
+            "motionStateCount": production_binding_c3["motionSuite"]["stateCount"],
+            "persistedValidationStatus": production_binding_c3["persistedValidation"]["status"],
+            "maxReconstructionErrorMeters": production_binding_c3["aggregate"][
+                "maxReconstructionErrorMeters"
+            ],
+            "maxSeamCrackMeters": production_binding_c3["aggregate"]["maxSeamCrackMeters"],
+            "maxDenseFallbackParityErrorMeters": production_binding_c3["aggregate"][
+                "maxDenseFallbackParityErrorMeters"
+            ],
+            "acceptedForGlobalPhase6": production_binding_c3["readiness"][
+                "acceptedForGlobalPhase6"
+            ],
+        },
+        "selfCollision": {
+            "reportId": self_collision_report["reportId"],
+            "status": self_collision_report["readiness"]["status"],
+            "candidatePairCount": self_collision_report["metrics"]["candidatePairCount"],
+            "contactCountBeforeCorrection": self_collision_report["metrics"][
+                "contactCountBeforeCorrection"
+            ],
+            "contactCountAfterCorrection": self_collision_report["metrics"][
+                "contactCountAfterCorrection"
+            ],
+            "unresolvedContactCount": self_collision_report["metrics"]["unresolvedContactCount"],
+            "highVelocityTunnelling": self_collision_report["adversarialFixtures"][
+                "highVelocityTunnelling"
+            ]["status"],
+            "acceptedForD0ReferenceSolver": self_collision_report["readiness"][
+                "acceptedForD0ReferenceSolver"
+            ],
+            "acceptedForProductionGpuSolver": self_collision_report["readiness"][
+                "acceptedForProductionGpuSolver"
+            ],
+        },
         "settle": {
             "solverVersion": settle["solverVersion"],
             "convergenceState": settle["convergenceState"],
@@ -595,6 +636,8 @@ def human_report(package_dir: Path) -> str:
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
     provider_bakeoff = summary["providerBakeoff"]
+    production_binding_c3 = summary["productionBindingC3"]
+    self_collision = summary["selfCollision"]
     settle = summary["settle"]
     lines.extend(
         [
@@ -737,14 +780,26 @@ def human_report(package_dir: Path) -> str:
                 f"max error {binding['maxError']:.8f}, RMS {binding['rmsError']:.8f}"
             ),
             (
+                f"Production binding C3: status={production_binding_c3['status']}, "
+                f"profile={production_binding_c3['profile']}, "
+                f"motion states={production_binding_c3['motionStateCount']}, "
+                f"max error={production_binding_c3['maxReconstructionErrorMeters']:.8f}, "
+                f"global Phase 6={production_binding_c3['acceptedForGlobalPhase6']}"
+            ),
+            (
                 f"Settle: {settle['convergenceState']} via {settle['solverVersion']}, "
                 f"seam RMS {settle['rmsSeamResidualMeters']:.8f} m, max penetration "
                 f"{settle['maximumBodyPenetrationMeters']:.8f} m"
             ),
+            (
+                f"Self-collision: status={self_collision['status']}, "
+                f"contacts after correction={self_collision['contactCountAfterCorrection']}, "
+                f"unresolved={self_collision['unresolvedContactCount']}, "
+                f"high velocity={self_collision['highVelocityTunnelling']}"
+            ),
             f"Validation: {summary['validation']}",
             "Warnings: " + ", ".join(summary["warnings"]),
             "ZeroOne: unavailable and optional",
-            "Self-collision: not implemented in the reference CPU solver v1",
         ]
     )
     return "\n".join(lines) + "\n"

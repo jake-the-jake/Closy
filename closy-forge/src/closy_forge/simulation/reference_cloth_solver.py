@@ -6,8 +6,15 @@ from typing import Any
 
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross, scale, sub
 from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
+from closy_forge.simulation.self_collision import (
+    SelfCollisionSettings,
+    analyze_self_collision,
+    build_triangle_refs,
+    project_self_collisions,
+    seam_exclusion_pairs,
+)
 
-SOLVER_VERSION = "closy.reference_xpbd_cpu.v1.1"
+SOLVER_VERSION = "closy.reference_xpbd_cpu.v1.2_self_collision_d0"
 NECK_BAND_SEAM_TARGET_LENGTH_METERS = 0.02
 
 
@@ -23,6 +30,8 @@ class SettleSettings:
     seam_stiffness: float = 0.96
     bend_stiffness: float = 0.08
     support_stiffness: float = 0.03
+    self_collision_thickness_meters: float = 0.0016
+    self_collision_clearance_meters: float = 0.0008
 
 
 @dataclass(frozen=True)
@@ -83,9 +92,18 @@ def settle_reference_cloth(
     )
     supports = _build_support_constraints(rest_mesh, flat.mesh_offsets, active_settings)
     primitives = list(avatar_contract.get("collisionPrimitives", []))
+    self_collision_settings = SelfCollisionSettings(
+        thickness_meters=active_settings.self_collision_thickness_meters,
+        clearance_meters=active_settings.self_collision_clearance_meters,
+        max_iterations=1,
+    )
+    self_collision_triangles, _ = build_triangle_refs(rest_mesh)
+    fixed_support_indices = {support.index for support in supports}
+    self_collision_exclusions = seam_exclusion_pairs(seam_constraints, flat.mesh_offsets)
 
     energy_history: list[float] = []
     collision_events = 0
+    self_collision_corrections = 0
     dt = active_settings.time_step_seconds
     for _step in range(active_settings.step_count):
         for index, velocity in enumerate(velocities):
@@ -114,6 +132,14 @@ def settle_reference_cloth(
     collision_events += _project_collisions(
         positions, primitives, active_settings.collision_clearance_m
     )
+    positions, self_collision_metrics = project_self_collisions(
+        positions,
+        self_collision_triangles,
+        fixed_indices=fixed_support_indices,
+        settings=self_collision_settings,
+        excluded_vertex_pairs=self_collision_exclusions,
+    )
+    self_collision_corrections += int(self_collision_metrics.get("totalCorrectionCount", 0))
     settled_mesh = replace_mesh_positions(rest_mesh, positions, flat.mesh_offsets)
     diagnostics = _diagnostics(
         rest_mesh,
@@ -124,6 +150,8 @@ def settle_reference_cloth(
         collision_events,
         energy_history,
         active_settings,
+        self_collision_settings,
+        self_collision_corrections,
     )
     return SettleResult(rest_mesh, settled_mesh, diagnostics, active_settings)
 
@@ -345,6 +373,8 @@ def _diagnostics(
     collision_events: int,
     energy_history: list[float],
     settings: SettleSettings,
+    self_collision_settings: SelfCollisionSettings,
+    self_collision_corrections: int,
 ) -> dict[str, Any]:
     flat_settled = flatten_mesh(settled_mesh)
     seam_residuals = [
@@ -388,6 +418,13 @@ def _diagnostics(
         and nonfinite == 0
         else "failed"
     )
+    self_collision_analysis = analyze_self_collision(
+        settled_mesh,
+        settings=self_collision_settings,
+        excluded_vertex_pairs=seam_exclusion_pairs(
+            seam_constraints, flatten_mesh(settled_mesh).mesh_offsets
+        ),
+    )
     return {
         "schemaVersion": 1,
         "solverVersion": SOLVER_VERSION,
@@ -404,7 +441,12 @@ def _diagnostics(
             "seamStiffness": settings.seam_stiffness,
             "bendStiffness": settings.bend_stiffness,
             "supportStiffness": settings.support_stiffness,
-            "constraintOrder": "mesh_stretch_then_bend_then_seams_then_support_then_collision",
+            "selfCollisionThicknessMeters": settings.self_collision_thickness_meters,
+            "selfCollisionClearanceMeters": settings.self_collision_clearance_meters,
+            "constraintOrder": (
+                "mesh_stretch_then_bend_then_seams_then_support_then_body_collision_then_"
+                "self_collision"
+            ),
         },
         "elapsedTimeSeconds": 0.0,
         "elapsedTimePolicy": "wall_clock_omitted_from_canonical_package_for_determinism",
@@ -422,8 +464,21 @@ def _diagnostics(
         "p95Strain": p95_strain,
         "energyHistory": energy_history,
         "selfCollision": {
-            "available": False,
-            "reason": "not_implemented_in_reference_cpu_solver_v1",
+            "available": True,
+            "profile": "d0_reference_vertex_triangle",
+            "reportRef": "reports/self_collision_report.json",
+            "broadPhaseRun": True,
+            "narrowPhaseRun": True,
+            "correctionRun": True,
+            "bruteForceOracleRun": True,
+            "candidatePairCount": len(self_collision_analysis.candidate_pairs),
+            "contactCount": len(self_collision_analysis.contacts),
+            "unresolvedContactCount": self_collision_analysis.unresolved_contact_count,
+            "maxPenetrationMeters": _round(self_collision_analysis.max_penetration_meters),
+            "totalCorrectionCount": self_collision_corrections,
+            "highVelocityTunnelling": "unsupported_high_velocity_tunnelling",
+            "acceptedForD0ReferenceSolver": self_collision_analysis.unresolved_contact_count == 0,
+            "acceptedForProductionGpuSolver": False,
         },
         "restTopologyHash": topology_hash(rest_mesh),
         "settledTopologyHash": topology_hash(settled_mesh),
@@ -559,6 +614,10 @@ def _distance(a: Vec3, b: Vec3) -> float:
 
 def _length(value: Vec3) -> float:
     return sqrt(sum(component * component for component in value))
+
+
+def _round(value: float) -> float:
+    return round(float(value), 9)
 
 
 def _vec3(value: Any) -> Vec3:

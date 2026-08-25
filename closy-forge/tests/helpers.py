@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import json
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Any
 
 from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 
+_DEMO_CACHE: Path | None = None
+
 
 def build_demo(tmp_path: Path, name: str = "demo_tshirt.closygarment") -> Path:
     output = tmp_path / name
-    build_demo_tshirt_package(output, force=True)
-    return output
+    return clone_package(_cached_demo_package(), output)
 
 
 def clone_package(package_dir: Path, target: Path) -> Path:
@@ -34,3 +36,13 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
 
 def issue_codes(report: dict[str, Any]) -> set[str]:
     return {str(issue["code"]) for issue in report["issues"]}
+
+
+def _cached_demo_package() -> Path:
+    global _DEMO_CACHE
+    if _DEMO_CACHE is None:
+        cache_root = Path(tempfile.mkdtemp(prefix="closy_forge_pytest_demo_"))
+        package = cache_root / "demo_tshirt.closygarment"
+        build_demo_tshirt_package(package, force=True)
+        _DEMO_CACHE = package
+    return _DEMO_CACHE
