@@ -15,6 +15,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   fresh schemas, byte-identical 93-file packages and digest
   `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711`.
 - Supabase Preview was correctly skipped because this stack changes no migrations.
+- Substantive integrity-repair commit: `13604d169ecbc0fddf475cdf177e743790c836a2`.
+- Implementation CI passed in run `32912124815`: Ubuntu job `98008234902` completed in
+  `8m37s`; Windows job `98008235112` completed in `11m12s`.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` contains untracked local evidence only.
 
@@ -41,6 +44,12 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   `219.266850 ms`, p95 `246.774400 ms`, peak `1,952,312 bytes`; fallback full-suite median
   `0.363750 ms`, p95 `0.402500 ms`, peak `21,024 bytes`. These are descriptive Windows CPU
   figures, not mobile/GPU targets.
+- Commit-labelled local benchmark measured dense full-suite median/p95 `210.1829/236.3839 ms`
+  and fallback full-suite `0.8544/1.0358 ms`.
+- Implementation CI noncanonical benchmarks measured dense/fallback full-suite median/p95 as
+  `131.688151/134.076597 ms` and `0.518228/0.525543 ms` on Ubuntu, and
+  `250.75065/258.5737 ms` and `0.57115/0.6134 ms` on Windows. These hosted CPU figures are
+  descriptive only.
 - `reports/production_binding_c3.json` remains `partial_scoped_reference_profile`: persisted
   validation passes, but independent
   fallback panel-centroid agreement reaches `0.098963781 m` against a `0.03 m` threshold and
@@ -64,7 +73,11 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   with no changed/missing files and digest
   `c8b84a64b4907629d49f5a1016520012b441beac2c7ec5ae3dd324c7fde387ed`.
 - Both packages validate with `info=0`, `warning=1`, `error=0`, `fatal=0`; report generation
-  succeeds. The substantive commit, remote CI and bounded evidence sync remain pending.
+  succeeds.
+- Run `32912124815` repeated all 222 tests on both OSes (`462.97 s` Ubuntu, `595.60 s`
+  Windows), exported fresh schemas, rebuilt identical 107-file packages with the same digest,
+  validated/reported them and measured the noncanonical workloads. The single bounded evidence
+  sync and its final-head CI remain pending.
 
 ## Truthful Limits
 
@@ -79,10 +92,10 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ```powershell
 cd E:\apps\Closy\closy-forge
-git diff --check
+git status --short
 ```
 
 ## Next Safe Action
 
-Commit the substantive repair, push PR #7, inspect both OS logs, make at most one evidence-sync
-commit, then create `codex/closy-forge-d0-fidelity-closeout` from the exact green PR #7 head.
+Commit and push this single evidence sync, inspect final-head CI without another evidence commit,
+then create `codex/closy-forge-d0-fidelity-closeout` from the exact green PR #7 head.

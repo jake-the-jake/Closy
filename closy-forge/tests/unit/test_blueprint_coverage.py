@@ -46,10 +46,12 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "phase6-c3-evidence-integrity-repair-pending-remote-v2"
+    assert (
+        payload["version"] == "phase6-c3-evidence-integrity-repair-implementation-remote-green-v2"
+    )
     assert (
         payload["generatedBy"]
-        == "Phase 6 C3 evidence-integrity repair with prior c2ff305 remote evidence"
+        == "Phase 6 C3 evidence-integrity repair with 13604d1 implementation run evidence"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -507,10 +509,10 @@ def test_markdown_ledger_matches_phase6_binding_checkpoint_state() -> None:
     assert "Branch: `codex/closy-forge-phase-6-binding`" in ledger
     assert "Current active increment: `PHASE-6-C3-EVIDENCE-INTEGRITY-REPAIR`" in ledger
     assert "branch `codex/closy-forge-d0-fidelity-closeout`" in ledger
-    assert "a8a053a68d8f455134e5a2bfed0fe340467a039a" in ledger
-    assert "PR #7 run `32863864318`" in ledger
-    assert "Ubuntu job `97854194246`" in ledger
-    assert "Windows job `97854193823`" in ledger
+    assert "13604d169ecbc0fddf475cdf177e743790c836a2" in ledger
+    assert "PR #7 run `32912124815`" in ledger
+    assert "Ubuntu job `98008234902`" in ledger
+    assert "Windows job `98008235112`" in ledger
     assert "PR #7 run `32865725191`" in ledger
     assert "Ubuntu job `97860392258`" in ledger
     assert "Windows job `97860392462`" in ledger
@@ -526,8 +528,8 @@ def test_markdown_ledger_matches_phase6_binding_checkpoint_state() -> None:
     assert "205` unresolved contacts" in ledger
     assert "unsupported_high_velocity_tunnelling" in ledger
     assert "self_collision_unresolved_contacts" in ledger
-    assert "3-warmup/20-repeat Windows host run" in ledger
-    assert "dense full-suite median `219.266850 ms`" in ledger
+    assert "131.688151/134.076597 ms" in ledger
+    assert "250.75065/258.5737 ms" in ledger
     assert "performance not run" in ledger
     assert "reports/provider_bakeoff.json" in ledger
     assert "closy.manual_local_glb_import.v1" in ledger

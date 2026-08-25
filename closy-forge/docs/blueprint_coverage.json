@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "Phase 6 C3 evidence-integrity repair with prior c2ff305 remote evidence",
+  "generatedBy": "Phase 6 C3 evidence-integrity repair with 13604d1 implementation run evidence",
   "rows": [
     {
       "commitSha": [
@@ -908,7 +908,8 @@
     {
       "commitSha": [
         "bf1ae29",
-        "a8a053a68d8f455134e5a2bfed0fe340467a039a"
+        "a8a053a68d8f455134e5a2bfed0fe340467a039a",
+        "13604d169ecbc0fddf475cdf177e743790c836a2"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -917,7 +918,8 @@
         "independent diagonal-bound exact-proximity oracle, vertex-triangle and edge-edge narrow phase execute",
         "adjacent, seam-excluded, parallel-layer, crossing-edge, inverted-normal and tunnelling fixtures are persisted",
         "validation warning is self_collision_unresolved_contacts, not self_collision_not_run",
-        "optimized local package records 226 contacts before correction and 205 unresolved contacts after correction without new inverted/degenerate triangles"
+        "optimized local package records 226 contacts before correction and 205 unresolved contacts after correction without new inverted/degenerate triangles",
+        "PR #7 run 32912124815 passed Ubuntu job 98008234902 and Windows job 98008235112 with 222 tests per OS"
       ],
       "id": "BP-08-K-CLOTH-SIMULATION",
       "implementationPaths": [
@@ -1113,7 +1115,8 @@
         "30f7d08",
         "3dd65b1",
         "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
-        "a8a053a68d8f455134e5a2bfed0fe340467a039a"
+        "a8a053a68d8f455134e5a2bfed0fe340467a039a",
+        "13604d169ecbc0fddf475cdf177e743790c836a2"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1121,7 +1124,8 @@
         "11 solver-produced simulation/motion_states records are reopened and dense output is reconstructed only from persisted binding bytes",
         "render/simulation_fallback.glb is a direct simulation-topology fallback whose implementation does not call dense reconstruction",
         "reports/production_binding_c3.json records partial_scoped_reference_profile with crack residual 0.021539119 m, opening drift 0.003968363 m, fallback landmark disagreement 0.098963781 m and tangential sliding 0.184355169 m",
-        "noncanonical Windows host benchmark executes 3 warmups and 20 repeats for decode, dense and fallback workloads; canonical report records performance not run"
+        "noncanonical Windows host benchmark executes 3 warmups and 20 repeats for decode, dense and fallback workloads; canonical report records performance not run",
+        "run 32912124815 measured dense/fallback full-suite median 131.688151/0.518228 ms Ubuntu and 250.75065/0.57115 ms Windows"
       ],
       "id": "BP-08-R-SIM-TO-RENDER-BINDING",
       "implementationPaths": [
@@ -1873,7 +1877,8 @@
         "b23e009",
         "8174b220d5cf6e320b101137a4901bcd461cd644",
         "8790567cc8b8a9d8db2214ec7133bbe1281f6dca",
-        "62443b685604bc4afe9a8fac9f926db78814d5a9"
+        "62443b685604bc4afe9a8fac9f926db78814d5a9",
+        "13604d169ecbc0fddf475cdf177e743790c836a2"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1883,7 +1888,8 @@
         "Phase 6 reopens 11 solver-produced states and validates dense binding plus an independent simulation-mesh fallback",
         "Phase 6 C3 remains partial_scoped_reference_profile because fallback landmark and tangential sliding thresholds fail",
         "D0 reference self-collision runs inside solver checkpoints with self_collision_unresolved_contacts",
-        "local 222-test suite and two identical 107-file packages pass with digest c8b84a64b4907629d49f5a1016520012b441beac2c7ec5ae3dd324c7fde387ed"
+        "local 222-test suite and two identical 107-file packages pass with digest c8b84a64b4907629d49f5a1016520012b441beac2c7ec5ae3dd324c7fde387ed",
+        "PR #7 implementation run 32912124815 passed Ubuntu job 98008234902 and Windows job 98008235112 with matching digest"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
@@ -2074,7 +2080,8 @@
         "3dd65b1",
         "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
         "62443b685604bc4afe9a8fac9f926db78814d5a9",
-        "a8a053a68d8f455134e5a2bfed0fe340467a039a"
+        "a8a053a68d8f455134e5a2bfed0fe340467a039a",
+        "13604d169ecbc0fddf475cdf177e743790c836a2"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -2083,7 +2090,8 @@
         "11 solver-produced states reconstruct deterministically; fallback topology and code path are independent",
         "seam crack residual, tangential sliding and all four semantic opening metrics are distinct and thresholded",
         "readiness keeps acceptedForGlobalPhase6=false, acceptedForCleanProposal=false and acceptedForCanonical=false",
-        "local package validation passes with only self_collision_unresolved_contacts"
+        "local package validation passes with only self_collision_unresolved_contacts",
+        "run 32912124815 passed the repaired gate evidence on Ubuntu job 98008234902 and Windows job 98008235112"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -2760,5 +2768,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "phase6-c3-evidence-integrity-repair-pending-remote-v2"
+  "version": "phase6-c3-evidence-integrity-repair-implementation-remote-green-v2"
 }
