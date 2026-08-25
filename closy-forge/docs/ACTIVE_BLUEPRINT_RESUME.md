@@ -9,8 +9,10 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 - Current branch: `codex/closy-forge-phase-6-binding`
 - Parent branch / PR target: `codex/closy-forge-phase-5-provider`
 - Phase 6 branch point: `97bf23ccff13e806132b732534d131d80b146467`
+- Phase 6 implementation commit: `a8a053a68d8f455134e5a2bfed0fe340467a039a` on draft PR #7 (`codex/closy-forge-phase-6-binding` -> `codex/closy-forge-phase-5-provider`).
 - Verified Phase 5 provider PR evidence: PR #6 passed GitHub Actions run `32848455025`; Ubuntu job `97803514100` and Windows job `97803513678` ran 113 format-checked files, mypy over 90 source files, 210 tests, fresh schemas, byte-identical package trees and digest `12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95` with only `self_collision_not_run`.
-- Current package evidence: two local builds `.tmp\phase6_binding_A_20260825.closygarment` and `.tmp\phase6_binding_B_20260825.closygarment` are byte-identical with 93 physical files each, 89 manifest-inventoried files, canonical digest `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711`, validation status `passed`, and only warning `self_collision_unresolved_contacts`.
+- Verified Phase 6 implementation PR evidence: PR #7 passed GitHub Actions run `32863864318` at `a8a053a68d8f455134e5a2bfed0fe340467a039a`; Ubuntu job `97854194246` and Windows job `97854193823` ran 117-file format checks, lint, mypy over 92 source files, 217 tests, fresh schemas, byte-identical 93-file package trees and digest `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711` with only `self_collision_unresolved_contacts`.
+- Current package evidence: two local builds `.tmp\phase6_binding_final_A_20260825.closygarment` and `.tmp\phase6_binding_final_B_20260825.closygarment` are byte-identical with 93 physical files each, 89 manifest-inventoried files, canonical digest `e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711`, validation status `passed`, and only warning `self_collision_unresolved_contacts`.
 - Production binding contract evidence: `binding/production_binding_contract.json` records stable render vertex IDs, source/destination hashes, triangle/barycentric weights, logical-to-render split mappings and opening safeguards for the D0 T-shirt profile.
 - Production binding C3 evidence: `reports/production_binding_c3.json` uses `stageVersion=closy.production_binding_c3.d0_tshirt.v1`, `profile=d0_fixed_avatar_tshirt_dense_fallback`, `gateC3Status=complete_for_d0_fixed_avatar_tshirt_profile`, `motionStateCount=11`, persisted validation `pass`, max reconstruction error `0.004996001`, max seam crack `0.047774031`, dense/fallback parity error `0.0`, and explicitly keeps global Phase 6, clean proposal and canonical geometry false.
 - Self-collision evidence: `reports/self_collision_report.json` uses `stageVersion=closy.self_collision.reference_d0.vertex_triangle_v1`, runs broad phase, narrow phase, correction, brute-force oracle and adversarial fixture checks, records 3598 candidate pairs, 36 contacts after correction, 36 unresolved D0 reference contacts, and `unsupported_high_velocity_tunnelling`.
@@ -39,9 +41,9 @@ This file is a recoverable checkpoint for the continuous Closy master-blueprint 
 ## Next Exact Command
 
 ```powershell
-git status --short --branch
+gh pr view 7 --json statusCheckRollup,headRefOid,mergeStateStatus,isDraft
 ```
 
 ## Next Safe Action
 
-Commit only the Forge Phase 6 files on `codex/closy-forge-phase-6-binding`, leaving unrelated avatar/metro work untouched. Push the branch, create a stacked draft PR targeting `codex/closy-forge-phase-5-provider`, wait for Ubuntu/Windows Forge CI, inspect both job logs, update the PR body with exact run/job evidence, and then create a remote evidence-sync commit if the implementation run is green.
+Push this evidence-sync head if it is not already pushed, verify its Ubuntu/Windows Forge CI, update PR #7 and the final response with that evidence-sync run/job evidence, and then continue the next dependency-ready binding/crack/mobile-runtime slice without creating another self-referential evidence-only commit.

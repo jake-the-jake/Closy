@@ -46,9 +46,10 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "phase6-d0-binding-c3-self-collision-local-v1"
+    assert payload["version"] == "phase6-d0-binding-c3-self-collision-pr7-implementation-v1"
     assert (
-        payload["generatedBy"] == "Phase 6 scoped D0 binding C3 and self-collision local evidence"
+        payload["generatedBy"]
+        == "Phase 6 scoped D0 binding C3 and self-collision PR #7 implementation evidence"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -506,7 +507,14 @@ def test_markdown_ledger_matches_phase6_binding_checkpoint_state() -> None:
 
     assert "Branch: `codex/closy-forge-phase-6-binding`" in ledger
     assert "Current active increment: " "`PHASE-6-D0-BINDING-C3-SELF-COLLISION-EVIDENCE`" in ledger
-    assert "Next dependency-ready increment: push `codex/closy-forge-phase-6-binding`" in ledger
+    assert (
+        "Next dependency-ready increment: push this evidence-sync head, verify its "
+        "Ubuntu/Windows CI if not already verified" in ledger
+    )
+    assert "a8a053a68d8f455134e5a2bfed0fe340467a039a" in ledger
+    assert "PR #7 run `32863864318`" in ledger
+    assert "Ubuntu job `97854194246`" in ledger
+    assert "Windows job `97854193823`" in ledger
     assert "binding/production_binding_contract.json" in ledger
     assert "reports/production_binding_c3.json" in ledger
     assert "reports/self_collision_report.json" in ledger
@@ -563,6 +571,10 @@ def test_active_resume_points_to_phase6_binding_publish_and_remote_validation() 
     assert "PR #6 passed GitHub Actions run `32848455025`" in resume
     assert "97803514100" in resume
     assert "97803513678" in resume
+    assert "Phase 6 implementation commit: `a8a053a68d8f455134e5a2bfed0fe340467a039a`" in resume
+    assert "PR #7 passed GitHub Actions run `32863864318`" in resume
+    assert "97854194246" in resume
+    assert "97854193823" in resume
     assert "binding/production_binding_contract.json" in resume
     assert "reports/production_binding_c3.json" in resume
     assert "reports/self_collision_report.json" in resume
@@ -591,9 +603,8 @@ def test_active_resume_points_to_phase6_binding_publish_and_remote_validation() 
         "Remote Ubuntu/Windows CI has not yet run for this BP46 conforming-shell truth-sync update"
         not in resume
     )
-    assert "Push the branch" in resume
-    assert "targeting `codex/closy-forge-phase-5-provider`" in resume
-    assert "create a remote evidence-sync commit if the implementation run is green" in resume
+    assert "Push this evidence-sync head" in resume
+    assert "without creating another self-referential evidence-only commit" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:
