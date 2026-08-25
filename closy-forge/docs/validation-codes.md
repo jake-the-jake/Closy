@@ -56,6 +56,17 @@ Representative current codes:
 - `geometry_proposal_canonical_acceptance_invalid`: rejected/null provider output claims canonical acceptance.
 - `geometry_proposal_availability_invalid`: null provider claims raw or clean geometry availability.
 - `clean_geometry_proposal_capability_invalid`: manifest claims clean geometry proposal availability in the null-provider fixture.
+- `provider_registry_duplicate_provider_id`: provider IDs in the registry are not unique.
+- `provider_registry_provider_contract_block_invalid`: a provider is missing required contract, policy, network, lifecycle, limit or authority metadata.
+- `provider_registry_provider_policy_violation`: a provider claims disallowed network, socket, model hub, external API, training, user-data or generic-object capability.
+- `provider_registry_local_model_runtime_claim_invalid`: the local open-model adapter claims execution, weights or ordinary-CI model setup without authorised runtime evidence.
+- `provider_bakeoff_hash_mismatch`: provider bake-off report changed without updating its payload hash.
+- `provider_bakeoff_status_invalid`: provider bake-off overclaims beyond the D0 contract-only clean-rejected state.
+- `provider_bakeoff_network_policy_violation`: bake-off result records provider network access in the D0 profile.
+- `provider_bakeoff_canonical_acceptance_invalid`: bake-off result grants canonical acceptance to provider output.
+- `provider_bakeoff_cleanup_effort_invalid`: bake-off result omits or overclaims bounded cleanup-effort status.
+- `provider_bakeoff_local_model_status_invalid`: local open-model result claims execution despite missing runtime/weights.
+- `provider_bakeoff_aggregate_invalid`: bake-off aggregate is stale or overclaims executed/canonical provider results.
 - `unsupported_schema_version`: unsupported `schemaVersion`.
 - `required_file_missing`: required package file absent.
 - `unsafe_package_path`: inventory path escapes the package contract.

@@ -37,6 +37,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     )
     clean_proposal = read_json(package_dir / "proposals" / "clean_geometry_proposal.json")
     provider_registry = read_json(package_dir / "proposals" / "provider_registry.json")
+    provider_bakeoff = read_json(package_dir / "reports" / "provider_bakeoff.json")
     settle = read_json(package_dir / "simulation" / "settle_diagnostics.json")
     validation = read_json(package_dir / "reports" / "package_validation.json")
     return {
@@ -512,6 +513,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "registryId": provider_registry["registryId"],
             "selectedProviderId": provider_registry["selectedProviderId"],
             "selectionReason": provider_registry["selectionReason"],
+            "contractVersion": provider_registry["contractVersion"],
             "providerCount": len(provider_registry["providers"]),
             "manualLocalImportAdapterDeclared": provider_registry["d0Capabilities"][
                 "manualLocalImportAdapterDeclared"
@@ -519,12 +521,30 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "manualLocalImportAssetAvailable": provider_registry["d0Capabilities"][
                 "manualLocalImportAssetAvailable"
             ],
+            "localOpenModelAdapterDeclared": provider_registry["d0Capabilities"][
+                "localOpenModelAdapterDeclared"
+            ],
+            "localOpenModelExecutionAvailable": provider_registry["d0Capabilities"][
+                "localOpenModelExecutionAvailable"
+            ],
             "externalProvidersConfigured": provider_registry["d0Capabilities"][
                 "externalProvidersConfigured"
             ],
             "cleanProposalProviderAvailable": provider_registry["d0Capabilities"][
                 "cleanProposalProviderAvailable"
             ],
+        },
+        "providerBakeoff": {
+            "reportId": provider_bakeoff["reportId"],
+            "status": provider_bakeoff["status"],
+            "providerCount": provider_bakeoff["aggregate"]["providerCount"],
+            "executedProviderCount": provider_bakeoff["aggregate"]["executedProviderCount"],
+            "notRunProviderCount": provider_bakeoff["aggregate"]["notRunProviderCount"],
+            "canonicalAcceptedProviderCount": provider_bakeoff["aggregate"][
+                "canonicalAcceptedProviderCount"
+            ],
+            "bestAvailableProviderId": provider_bakeoff["aggregate"]["bestAvailableProviderId"],
+            "bestAvailableStatus": provider_bakeoff["aggregate"]["bestAvailableStatus"],
         },
         "settle": {
             "solverVersion": settle["solverVersion"],
@@ -574,6 +594,7 @@ def human_report(package_dir: Path) -> str:
     clean_acceptance_gate = summary["geometryCleanAcceptanceGate"]
     clean_proposal = summary["cleanGeometryProposal"]
     provider_registry = summary["providerRegistry"]
+    provider_bakeoff = summary["providerBakeoff"]
     settle = summary["settle"]
     lines.extend(
         [
@@ -703,6 +724,13 @@ def human_report(package_dir: Path) -> str:
                 f"Provider registry: selected {provider_registry['selectedProviderId']}, "
                 "manual asset available="
                 f"{provider_registry['manualLocalImportAssetAvailable']}"
+            ),
+            (
+                f"Provider bake-off: status={provider_bakeoff['status']}, "
+                f"executed={provider_bakeoff['executedProviderCount']}/"
+                f"{provider_bakeoff['providerCount']}, best="
+                f"{provider_bakeoff['bestAvailableProviderId']}, canonical accepted="
+                f"{provider_bakeoff['canonicalAcceptedProviderCount']}"
             ),
             (
                 f"Binding: {binding['recordCount']} records, "

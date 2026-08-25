@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "BP-46 conforming stitched shell proof truth sync",
+  "generatedBy": "Phase 5 provider contract bakeoff local evidence",
   "rows": [
     {
       "commitSha": [
@@ -73,20 +73,23 @@
         "159c63d",
         "b23e009",
         "8174b220d5cf6e320b101137a4901bcd461cd644",
-        "0e743bb"
+        "0e743bb",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
         "raw proposal rejected for canonical use",
-        "clean proposal remains unavailable"
+        "clean proposal remains unavailable",
+        "provider bakeoff records canonicalAcceptedProviderCount=0",
+        "local open-model provider boundary records not_run_missing_runtime_or_weights"
       ],
       "id": "BP-05-03-PROVIDER-DERIVATIVE-ONLY",
       "implementationPaths": [
         "closy-forge/src/closy_forge/proposals",
         "closy-forge/src/closy_forge/validation/validator.py"
       ],
-      "limitations": "No accepted clean provider mesh exists.",
-      "nextAction": "Execute actual clean topology only behind gates.",
+      "limitations": "No accepted clean provider mesh exists; Phase 5 provider contract evidence does not grant canonical authority.",
+      "nextAction": "Keep provider outputs proposal-only until clean/provider acceptance gates have literal evidence.",
       "sourceSection": "Core principles",
       "status": "complete",
       "summary": "Provider output can only be proposal/derivative evidence, never canonical truth.",
@@ -850,23 +853,34 @@
         "f100fd5",
         "159c63d",
         "b23e009",
-        "8174b220d5cf6e320b101137a4901bcd461cd644"
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
-        "manual local GLB proposal chain, rejected clean/canonical"
+        "manual local GLB proposal chain, rejected clean/canonical",
+        "provider registry stageVersion=closy.geometry_provider_registry.phase5_contract_v2",
+        "provider contractVersion=closy.provider_contract.garment_avatar_only.v1",
+        "reports/provider_bakeoff.json status=completed_d0_contract_only_clean_rejected",
+        "providerCount=3, executedProviderCount=1, notRunProviderCount=2, canonicalAcceptedProviderCount=0",
+        "closy.local_open_model_geometry_adapter.v1 records not_run_missing_runtime_or_weights"
       ],
       "id": "BP-08-I-GEOMETRY-PROVIDERS",
       "implementationPaths": [
-        "closy-forge/src/closy_forge/proposals"
+        "closy-forge/src/closy_forge/proposals",
+        "closy-forge/schemas/v1/provider-registry.schema.json",
+        "closy-forge/schemas/v1/provider-bakeoff.schema.json"
       ],
-      "limitations": "No real external provider execution or accepted clean shell.",
-      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "limitations": "No authorised AI/open-model provider execution, external provider execution, source/provider visual-fidelity comparison, accepted clean shell or canonical provider mesh.",
+      "nextAction": "Push and remote-validate the Phase 5 provider branch, then truth-sync run/job evidence before Phase 6.",
       "sourceSection": "Stages A-U",
       "status": "partial",
       "summary": "Stage I: Geometry Providers.",
       "tests": [
-        "tests/unit/test_geometry_proposal.py"
+        "tests/unit/test_geometry_proposal.py",
+        "tests/corruption/test_corrupted_packages.py",
+        "tests/golden/test_golden_demo.py",
+        "tests/integration/test_cli_and_package.py"
       ]
     },
     {
@@ -1181,7 +1195,8 @@
         "01146285610dab4e110f6221e642b009bf9e90c4",
         "c6fa323506712305a4b5a73bbad118e8d9e1e626",
         "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
-        "62443b685604bc4afe9a8fac9f926db78814d5a9"
+        "62443b685604bc4afe9a8fac9f926db78814d5a9",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1198,7 +1213,9 @@
         "BP46 stitched-shell report now records ordered seam span partitions and distinguishes partitioned ownership from remaining oversized pre-stitch distance blockers",
         "remote ordered seam partition Actions run 32791907899 passed at 7eacf97 on Ubuntu job 97634961686 and Windows job 97634961466 with 194 tests per OS, fresh schemas, identical 89-file package trees and digest 95d3d6b964aa222ecc77821603590b3d186bed86b75f6b143d055b5fbe0a60a2",
         "BP46 stitched-shell report now records conforming_tshirt_v3 topology proof with meshStitchOrWeldProven=true, semanticOpeningAssignmentStatus=pass, surfaceTopologyStatus=pass and clean-gate blocker separation",
-        "local BP46 truth-sync validation records full pytest over 199 tests, fresh schemas and identical 89-file package trees at digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5"
+        "local BP46 truth-sync validation records full pytest over 199 tests, fresh schemas and identical 89-file package trees at digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5",
+        "Phase 5 provider bakeoff report records stageVersion=closy.provider_bakeoff.phase5_contract_v1 and clean D0 contract-only rejection",
+        "local Phase 5 validation records 210 collected Forge tests, fresh schemas and identical 90-file package trees at digest 12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95"
       ],
       "id": "BP-08-U-QUALITY-PROVENANCE",
       "implementationPaths": [
@@ -1209,10 +1226,12 @@
         "closy-forge/src/closy_forge/fitting/tshirt_fit.py",
         "closy-forge/schemas/v1/tshirt-fit-report.schema.json",
         "closy-forge/src/closy_forge/appearance/texture_identity.py",
-        "closy-forge/schemas/v1/texture-identity.schema.json"
+        "closy-forge/schemas/v1/texture-identity.schema.json",
+        "closy-forge/src/closy_forge/proposals/provider_bakeoff.py",
+        "closy-forge/schemas/v1/provider-bakeoff.schema.json"
       ],
-      "limitations": "No runtime performance, independent provider/source visual proof, human signed review, accepted clean/canonical proposal, private-user fitting, private-user texture recovery or settled-render fit comparison yet.",
-      "nextAction": "After PR #5 remote validation, preserve this proof in the review unit and continue the ordered Phase 5 provider slice before Phase 6 C3 binding/crack evidence.",
+      "limitations": "No runtime performance, independent provider/source visual proof, human signed review, authorised provider model execution, accepted clean/canonical proposal, private-user fitting, private-user texture recovery or settled-render fit comparison yet.",
+      "nextAction": "Remote-validate the Phase 5 provider report evidence, then continue Phase 6 C3 binding/crack evidence from the verified provider head.",
       "sourceSection": "Stages A-U",
       "status": "partial",
       "summary": "Stage U: Quality Provenance.",
@@ -1221,7 +1240,8 @@
         "tests/corruption/test_corrupted_packages.py",
         "tests/unit/test_inspection_artifacts.py",
         "tests/unit/test_tshirt_fit.py",
-        "tests/unit/test_texture_identity.py"
+        "tests/unit/test_texture_identity.py",
+        "tests/integration/test_cli_and_package.py"
       ]
     },
     {
@@ -1409,23 +1429,32 @@
     },
     {
       "commitSha": [
-        "e89b7c5"
+        "e89b7c5",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
-        "null/manual provider registry"
+        "null/manual provider registry",
+        "provider contractVersion=closy.provider_contract.garment_avatar_only.v1",
+        "local open-model adapter declared but execution unavailable",
+        "provider bakeoff report records no canonical authority"
       ],
       "id": "BP-12-MODEL-STRATEGY",
       "implementationPaths": [
-        "closy-forge/src/closy_forge/proposals/provider_registry.py"
+        "closy-forge/src/closy_forge/proposals/provider_registry.py",
+        "closy-forge/src/closy_forge/proposals/provider_bakeoff.py",
+        "closy-forge/schemas/v1/provider-registry.schema.json",
+        "closy-forge/schemas/v1/provider-bakeoff.schema.json"
       ],
-      "limitations": "No real model weights or licensed provider.",
-      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "limitations": "No authorised model weights/checkpoint, real model execution, commercial license proof, external provider execution, accepted clean output or canonical clean mesh.",
+      "nextAction": "Remote-validate the Phase 5 contract slice; only execute a model provider after authorised weights, runtime, SBOM/license and isolation evidence exist.",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "status": "partial",
       "summary": "Provider/model registry and baselines.",
       "tests": [
-        "tests/unit/test_provider_registry.py"
+        "tests/unit/test_geometry_proposal.py",
+        "tests/corruption/test_corrupted_packages.py",
+        "tests/integration/test_cli_and_package.py"
       ]
     },
     {
@@ -1458,26 +1487,31 @@
     },
     {
       "commitSha": [
-        "8174b220d5cf6e320b101137a4901bcd461cd644"
+        "8174b220d5cf6e320b101137a4901bcd461cd644",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
         "golden digest cb12a0...",
-        "corruption guards"
+        "corruption guards",
+        "provider bakeoff schema and golden summary coverage",
+        "local full pytest collected 210 Forge tests after Phase 5"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
         "closy-forge/tests/golden",
-        "closy-forge/tests/corruption"
+        "closy-forge/tests/corruption",
+        "closy-forge/tests/integration/test_cli_and_package.py"
       ],
-      "limitations": "No independent visual artifact suite.",
-      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "limitations": "No independent visual artifact suite, source/provider visual-fidelity comparison, authorised model-provider execution or successful clean proposal visual metrics.",
+      "nextAction": "Remote-validate the Phase 5 provider suite, then add visual-fidelity and production binding metrics in later branches.",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "status": "partial",
       "summary": "Stage metrics and regression evidence.",
       "tests": [
         "tests/golden/test_golden_demo.py",
-        "tests/corruption/test_corrupted_packages.py"
+        "tests/corruption/test_corrupted_packages.py",
+        "tests/integration/test_cli_and_package.py"
       ]
     },
     {
@@ -1514,19 +1548,24 @@
     {
       "commitSha": [
         "30f7d08",
-        "3dd65b1"
+        "3dd65b1",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
-        "no external models in D0"
+        "no external models in D0",
+        "local open-model adapter license/commercial status not reviewed",
+        "provider bakeoff records not_run_missing_runtime_or_weights instead of false pass"
       ],
       "id": "BP-15-LICENSING",
       "implementationPaths": [
         "closy-forge/THIRD_PARTY.md",
-        "closy-forge/docs/provider-registry-v1.md"
+        "closy-forge/docs/provider-registry-v1.md",
+        "closy-forge/src/closy_forge/proposals/provider_registry.py",
+        "closy-forge/src/closy_forge/proposals/provider_bakeoff.py"
       ],
-      "limitations": "No model/dataset license registry.",
-      "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
+      "limitations": "No authorised model weights, license/SBOM evidence, external provider terms, commercial-safety proof or real dataset/model registry.",
+      "nextAction": "Add license/SBOM and authorised weight provenance before any real local/open-model execution.",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "status": "partial",
       "summary": "Dependency and asset license discipline.",
@@ -1772,7 +1811,8 @@
         "704a10e2f166ba340ba078324f0d5a1fcc6af369",
         "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
         "22176b42817d84bf2303a6b1ee54c8936a204c07",
-        "62443b685604bc4afe9a8fac9f926db78814d5a9"
+        "62443b685604bc4afe9a8fac9f926db78814d5a9",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1782,19 +1822,31 @@
         "BP46 logical-binding closeout records bindingCoverage=1.0, bindingReconstructionStatus=pass and maxReconstructionErrorMeters=0.0",
         "BP46 duplicate-topology closeout removes duplicate faces and duplicate seam operation IDs as readiness blockers",
         "BP46 ordered seam partition closeout records disjoint sleeve-cap and neck-band partitions while preserving clean/canonical false",
-        "BP46 conforming stitched-shell proof passes locally with meshStitchOrWeldProven=true, semanticOpeningAssignmentStatus=pass, surfaceTopologyStatus=pass and package digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5"
+        "BP46 conforming stitched-shell proof passes locally with meshStitchOrWeldProven=true, semanticOpeningAssignmentStatus=pass, surfaceTopologyStatus=pass and package digest d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5",
+        "Phase 5 provider contract slice records closy.provider_contract.garment_avatar_only.v1 and registry stageVersion closy.geometry_provider_registry.phase5_contract_v2",
+        "reports/provider_bakeoff.json status=completed_d0_contract_only_clean_rejected with providerCount=3, executedProviderCount=1, notRunProviderCount=2, canonicalAcceptedProviderCount=0",
+        "local open-model provider closy.local_open_model_geometry_adapter.v1 records not_run_missing_runtime_or_weights",
+        "local Phase 5 validation passed with 210 collected Forge tests, fresh schemas and identical 90-file package trees at digest 12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95"
       ],
       "id": "BP-17-PHASE-05",
       "implementationPaths": [
-        "closy-forge"
+        "closy-forge",
+        "closy-forge/src/closy_forge/proposals/provider_registry.py",
+        "closy-forge/src/closy_forge/proposals/provider_bakeoff.py",
+        "closy-forge/schemas/v1/provider-registry.schema.json",
+        "closy-forge/schemas/v1/provider-bakeoff.schema.json"
       ],
-      "limitations": "Provider/proposal path remains partial: BP-46 material stitched-shell topology/opening proof now passes, but the actual Phase 5 provider contract slice, external/local model adapter execution, independent source/provider appearance evidence and accepted clean/canonical proposal are still absent.",
-      "nextAction": "After PR #5 is validated/frozen, create codex/closy-forge-phase-5-provider from the exact PR #5 head and implement the scoped provider contract/manual-fixture slice.",
+      "limitations": "Phase 5 remains partial: no authorised local/open-model execution, no external provider execution, no source/provider appearance comparison, no accepted clean/canonical proposal, no provider license/SBOM proof and no production runtime binding.",
+      "nextAction": "Push and remote-validate codex/closy-forge-phase-5-provider, truth-sync run/job evidence, then create the Phase 6 binding/crack branch from the verified Phase 5 head.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
       "summary": "Blueprint phase 5.",
       "tests": [
-        "Forge local tests"
+        "Forge local tests",
+        "tests/unit/test_geometry_proposal.py",
+        "tests/corruption/test_corrupted_packages.py",
+        "tests/golden/test_golden_demo.py",
+        "tests/integration/test_cli_and_package.py"
       ]
     },
     {
@@ -2525,7 +2577,8 @@
         "c6fa323506712305a4b5a73bbad118e8d9e1e626",
         "e11eb8d82fc01c032a14cd4e502a2eb8a736087a",
         "22176b42817d84bf2303a6b1ee54c8936a204c07",
-        "62443b685604bc4afe9a8fac9f926db78814d5a9"
+        "62443b685604bc4afe9a8fac9f926db78814d5a9",
+        "12322a1eb23e5f0cd8361ecc01be419bbc175364"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -2537,14 +2590,15 @@
         "BP46 duplicate-topology closeout removes duplicate logical faces and duplicate seam operation IDs while preserving clean/canonical false",
         "BP46 ordered seam correspondence closeout records reused/split-needed span blockers while preserving clean/canonical false",
         "BP46 ordered seam partition closeout records disjoint sleeve-cap and neck-band partitions while preserving clean/canonical false",
-        "BP46 opening-provenance closeout records source opening panel-edge provenance while preserving clean/canonical false"
+        "BP46 opening-provenance closeout records source opening panel-edge provenance while preserving clean/canonical false",
+        "Phase 5 provider bakeoff records a garment/avatar-only provider contract, selected manual fixture provider, local open-model boundary not_run_missing_runtime_or_weights and canonicalAcceptedProviderCount=0"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
         "closy-forge"
       ],
-      "limitations": "Private-user real images, learned texture generation, source/provider visual-fidelity acceptance, production runtime binding and clean provider mesh remain absent; BP-46 material stitched-shell proof now exists but does not promote research prototype status to alpha.",
-      "nextAction": "Do not promote success level without full prerequisites; after BP46 remote validation, continue the Phase 5 provider slice and later Phase 6 production binding proof.",
+      "limitations": "Private-user real images, learned texture generation, authorised model execution, source/provider visual-fidelity acceptance, production runtime binding and clean provider mesh remain absent; BP-46 material stitched-shell proof and Phase 5 provider contract evidence do not promote research prototype status to alpha.",
+      "nextAction": "Do not promote success level without full prerequisites; remote-validate Phase 5, then continue Phase 6 production binding proof and later D0 fidelity closeout.",
       "sourceSection": "Research/alpha/beta/production success levels",
       "status": "partial",
       "summary": "BP-20-RESEARCH-PROTOTYPE",
@@ -2684,5 +2738,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "bp46-conforming-stitched-shell-truth-sync-v1"
+  "version": "phase5-provider-contract-bakeoff-local-v1"
 }

@@ -15,6 +15,7 @@ def test_cli_build_validate_report_workflow(tmp_path, capsys) -> None:  # type: 
     assert main(["report", str(package)]) == EXIT_SUCCESS
     captured = capsys.readouterr()
     assert "Clean acceptance gate:" in captured.out
+    assert "Provider bake-off:" in captured.out
     assert "warnings=2" in captured.out
     report = validate_package(package)
     assert report["status"] == "passed"
@@ -220,4 +221,9 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["cleanGeometryProposal"]["runtimeBindingAccepted"] is True
     assert payload["providerRegistry"]["selectedProviderId"] == ("closy.manual_local_glb_import.v1")
     assert payload["providerRegistry"]["manualLocalImportAssetAvailable"] is True
+    assert payload["providerBakeoff"]["status"] == "completed_d0_contract_only_clean_rejected"
+    assert payload["providerBakeoff"]["providerCount"] == 3
+    assert payload["providerBakeoff"]["executedProviderCount"] == 1
+    assert payload["providerBakeoff"]["notRunProviderCount"] == 2
+    assert payload["providerBakeoff"]["canonicalAcceptedProviderCount"] == 0
     assert payload["binding"]["recordCount"] > 0

@@ -46,8 +46,8 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert payload["version"] == "bp46-conforming-stitched-shell-truth-sync-v1"
-    assert payload["generatedBy"] == "BP-46 conforming stitched shell proof truth sync"
+    assert payload["version"] == "phase5-provider-contract-bakeoff-local-v1"
+    assert payload["generatedBy"] == "Phase 5 provider contract bakeoff local evidence"
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
         "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D"
@@ -229,6 +229,85 @@ def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
     assert "freeze PR #5" in bp46["nextAction"]
     assert "Phase 5 provider branch" in bp46["nextAction"]
     assert "Phase 6 branch" in bp46["nextAction"]
+
+
+def test_phase5_provider_checkpoint_is_partial_and_evidenced() -> None:
+    rows_by_id = {row["id"]: row for row in _rows()}
+    phase5 = rows_by_id["BP-17-PHASE-05"]
+    providers = rows_by_id["BP-08-I-GEOMETRY-PROVIDERS"]
+    model_strategy = rows_by_id["BP-12-MODEL-STRATEGY"]
+    licensing = rows_by_id["BP-15-LICENSING"]
+    derivative_policy = rows_by_id["BP-05-03-PROVIDER-DERIVATIVE-ONLY"]
+
+    assert phase5["status"] == "partial"
+    assert "12322a1eb23e5f0cd8361ecc01be419bbc175364" in phase5["commitSha"]
+    assert any(
+        "closy.provider_contract.garment_avatar_only.v1" in item
+        for item in phase5["executableEvidence"]
+    )
+    assert any(
+        "reports/provider_bakeoff.json status=completed_d0_contract_only_clean_rejected" in item
+        for item in phase5["executableEvidence"]
+    )
+    assert any("providerCount=3" in item for item in phase5["executableEvidence"])
+    assert any("executedProviderCount=1" in item for item in phase5["executableEvidence"])
+    assert any("notRunProviderCount=2" in item for item in phase5["executableEvidence"])
+    assert any("canonicalAcceptedProviderCount=0" in item for item in phase5["executableEvidence"])
+    assert any(
+        "not_run_missing_runtime_or_weights" in item for item in phase5["executableEvidence"]
+    )
+    assert any("210 collected Forge tests" in item for item in phase5["executableEvidence"])
+    assert any(
+        "12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95" in item
+        for item in phase5["executableEvidence"]
+    )
+    assert "no authorised local/open-model execution" in phase5["limitations"]
+    assert "Push and remote-validate" in phase5["nextAction"]
+    assert "Phase 6 binding/crack branch" in phase5["nextAction"]
+
+    assert providers["status"] == "partial"
+    assert "12322a1eb23e5f0cd8361ecc01be419bbc175364" in providers["commitSha"]
+    assert any(
+        "closy.geometry_provider_registry.phase5_contract_v2" in item
+        for item in providers["executableEvidence"]
+    )
+    assert any(
+        "closy.provider_contract.garment_avatar_only.v1" in item
+        for item in providers["executableEvidence"]
+    )
+    assert any(
+        "completed_d0_contract_only_clean_rejected" in item
+        for item in providers["executableEvidence"]
+    )
+    assert any(
+        "closy.local_open_model_geometry_adapter.v1" in item
+        for item in providers["executableEvidence"]
+    )
+    assert "No authorised AI/open-model provider execution" in providers["limitations"]
+    assert any(
+        path.endswith("provider-bakeoff.schema.json") for path in providers["implementationPaths"]
+    )
+    assert "tests/integration/test_cli_and_package.py" in providers["tests"]
+
+    assert "12322a1eb23e5f0cd8361ecc01be419bbc175364" in model_strategy["commitSha"]
+    assert any(
+        "provider bakeoff report records no canonical authority" in item
+        for item in model_strategy["executableEvidence"]
+    )
+    assert "No authorised model weights/checkpoint" in model_strategy["limitations"]
+
+    assert "12322a1eb23e5f0cd8361ecc01be419bbc175364" in licensing["commitSha"]
+    assert any(
+        "license/commercial status not reviewed" in item for item in licensing["executableEvidence"]
+    )
+    assert "license/SBOM evidence" in licensing["limitations"]
+
+    assert "12322a1eb23e5f0cd8361ecc01be419bbc175364" in derivative_policy["commitSha"]
+    assert any(
+        "canonicalAcceptedProviderCount=0" in item
+        for item in derivative_policy["executableEvidence"]
+    )
+    assert "does not grant canonical authority" in derivative_policy["limitations"]
 
 
 def test_repository_gitlink_hygiene_checkpoint_is_complete() -> None:
@@ -420,38 +499,44 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
 
 
-def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
+def test_markdown_ledger_matches_phase5_provider_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Latest completed implementation commit when last updated: `62443b6`" in ledger
-    assert "Latest completed evidence-sync commit before this update: `997232e`" in ledger
-    assert "executedTopologyAuditCount=6" in ledger
-    assert "semanticOpeningAssignmentStatus=pass" in ledger
-    assert "boundaryLoopCount=4" in ledger
-    assert "simpleBoundaryCycleCount=4" in ledger
-    assert "meshStitchOrWeldProven=true" in ledger
-    assert "surfaceTopologyStatus=pass" in ledger
-    assert "eulerCharacteristic=-2" in ledger
-    assert "genus=0" in ledger
-    assert "bindingCoverage=1.0" in ledger
-    assert "bindingReconstructionStatus=pass" in ledger
-    assert "boundRenderVertexCount=81" in ledger
-    assert "requiredRenderVertexCount=81" in ledger
-    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in ledger
-    assert "5e5904ad7be00434e8b366823dec4e559da3525feb9e57088f563b7cd713caab" in ledger
-    assert "single_shell_stitch_weld_proof" in ledger
-    assert "clean_acceptance_rejected_independent_visual_not_run" in ledger
-    assert "21f3a5e5b419c2defcf238b393a1ab38bcf7a0291fb868105b56a8f4a9838584" in ledger
-    assert "32825954590" in ledger
-    assert "97733884808" in ledger
-    assert "97733884930" in ledger
+    assert "Latest completed implementation commit when last updated: `12322a1`" in ledger
+    assert "Latest completed evidence-sync commit before this update: `756b021`" in ledger
     assert (
-        "Current active increment: "
-        "`FOUNDATION-PROOF-CLOSEOUT-BP46-REMOTE-EVIDENCE-AND-PR5-FREEZE`" in ledger
+        "Current active increment: " "`PHASE-5-PROVIDER-CONTRACT-BAKEOFF-LOCAL-EVIDENCE`" in ledger
     )
-    assert "Next dependency-ready increment: after local and remote validation" in ledger
-    assert "`codex/closy-forge-phase-5-provider`" in ledger
-    assert "| BP-46-STITCHED-SHELL-OUTPUT | partial |" in ledger
+    assert "Next dependency-ready increment: push `codex/closy-forge-phase-5-provider`" in ledger
+    assert "closy.geometry_provider_registry.phase5_contract_v2" in ledger
+    assert "closy.provider_contract.garment_avatar_only.v1" in ledger
+    assert "reports/provider_bakeoff.json" in ledger
+    assert "closy.provider_bakeoff.phase5_contract_v1" in ledger
+    assert "closy.manual_local_glb_import.v1" in ledger
+    assert "closy.local_open_model_geometry_adapter.v1" in ledger
+    assert "not_run_missing_runtime_or_weights" in ledger
+    assert "executedProviderCount=1" in ledger
+    assert "notRunProviderCount=2" in ledger
+    assert "canonicalAcceptedProviderCount=0" in ledger
+    assert "210 collected Forge tests" in ledger
+    assert "90-file package trees" in ledger
+    assert "113 files" in ledger
+    assert "90 files" in ledger
+    assert "32835151202" in ledger
+    assert "97762247917" in ledger
+    assert "97762247732" in ledger
+    assert "199 tests per OS" in ledger
+    assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in ledger
+    assert "12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95" in ledger
+    assert "No authorised AI/open-model provider execution" in ledger
+    assert "No authorised model weights/checkpoint" in ledger
+    assert "No authorised model weights, license/SBOM evidence" in ledger
+    assert "| BP-08-I-GEOMETRY-PROVIDERS | partial |" in ledger
+    assert "| BP-12-MODEL-STRATEGY | partial |" in ledger
+    assert "| BP-14-EVALUATION | partial |" in ledger
+    assert "| BP-15-LICENSING | partial |" in ledger
+    assert "| BP-17-PHASE-05 | partial |" in ledger
+    assert "| BP-20-RESEARCH-PROTOTYPE | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
     assert "| BP-49-RASTER-INGESTION-PRIVACY | partial |" in ledger
@@ -466,21 +551,34 @@ def test_markdown_ledger_matches_foundation_proof_checkpoint_state() -> None:
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
 
 
-def test_active_resume_points_to_bp46_remote_validation_and_phase5_branching() -> None:
+def test_active_resume_points_to_phase5_provider_publish_and_remote_validation() -> None:
     resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
 
     assert (
         "Active blueprint checkpoint: "
-        "`FOUNDATION-PROOF-CLOSEOUT-BP46-REMOTE-EVIDENCE-AND-PR5-FREEZE`" in resume
+        "`PHASE-5-PROVIDER-CONTRACT-BAKEOFF-LOCAL-EVIDENCE`" in resume
     )
-    assert "Record based on SHA: `62443b685604bc4afe9a8fac9f926db78814d5a9`" in resume
-    assert "GitHub Actions run `32825954590` passed" in resume
-    assert "97733884808" in resume
-    assert "97733884930" in resume
-    assert "meshStitchOrWeldProven=true" in resume
-    assert "semanticOpeningAssignmentStatus=pass" in resume
-    assert "surfaceTopologyStatus=pass" in resume
+    assert (
+        "Latest Phase 5 implementation commit SHA: `12322a1eb23e5f0cd8361ecc01be419bbc175364`"
+        in resume
+    )
+    assert "Phase 5 branch point: `756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a`" in resume
+    assert "GitHub Actions run `32835151202` passed" in resume
+    assert "97762247917" in resume
+    assert "97762247732" in resume
+    assert "reports/provider_bakeoff.json" in resume
+    assert "closy.geometry_provider_registry.phase5_contract_v2" in resume
+    assert "closy.provider_contract.garment_avatar_only.v1" in resume
+    assert "closy.local_open_model_geometry_adapter.v1" in resume
+    assert "not_run_missing_runtime_or_weights" in resume
+    assert "providerCount=3" in resume
+    assert "executedProviderCount=1" in resume
+    assert "notRunProviderCount=2" in resume
+    assert "canonicalAcceptedProviderCount=0" in resume
+    assert "210 Forge tests" in resume
+    assert "90 physical files each" in resume
     assert "d22b3d4392ce599ceeff6714eec39bf3d6c543cbeb7ff1a6953a363672b80cb5" in resume
+    assert "12b3f768a1916c593574514bb5f5d25a9456415acfddb5e57aadb32381a9bc95" in resume
     assert "opening-provenance remote-evidence truth-sync update" not in resume
     assert "Commit and push this opening-provenance remote-evidence truth-sync" not in resume
     assert (
@@ -489,13 +587,11 @@ def test_active_resume_points_to_bp46_remote_validation_and_phase5_branching() -
     )
     assert (
         "Remote Ubuntu/Windows CI has not yet run for this BP46 conforming-shell truth-sync update"
-        in resume
+        not in resume
     )
-    assert (
-        "Local format/lint/mypy/full pytest/schema/package determinism has passed as recorded above"
-        in resume
-    )
-    assert "Create the Phase 5 provider branch only from that exact verified head" in resume
+    assert "Push `codex/closy-forge-phase-5-provider`" in resume
+    assert "create a draft PR targeting `codex/closy-forge-foundation-proof-closeout`" in resume
+    assert "create a remote evidence-sync commit if the implementation run is green" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:
