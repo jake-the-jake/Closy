@@ -6,18 +6,20 @@ from closy_forge.garments.assembly import build_panel_meshes, build_seam_constra
 from closy_forge.geometry.mesh_model import MeshSet
 
 TRANSFORMS = {
-    "panel.front": "front",
-    "panel.back": "back",
-    "panel.sleeve.left": "sleeve.left",
-    "panel.sleeve.right": "sleeve.right",
-    "panel.neck_band": "neck_band",
+    "panel.sleeveless_top.front": "front",
+    "panel.sleeveless_top.back": "back",
 }
+CANONICAL_GEOMETRY_DIGITS = 12
 
 
 def build_simulation_mesh(
     pattern: dict[str, Any],
 ) -> tuple[MeshSet, dict[str, dict[str, list[int]]]]:
-    return build_panel_meshes(pattern, TRANSFORMS)
+    return build_panel_meshes(
+        pattern,
+        TRANSFORMS,
+        canonical_digits=CANONICAL_GEOMETRY_DIGITS,
+    )
 
 
 def build_constraints(

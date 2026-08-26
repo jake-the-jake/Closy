@@ -5,90 +5,97 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-7-MATERIAL-PHYSICS-D0`.
-- Branch: `codex/closy-forge-phase-7-material-physics`, based on exact green D0 fidelity head
-  `91b9ececae3097a42cba45cad90fa81b1ef31d6a` from draft PR #8.
-- D0 predecessor final run `32936865331` passed Ubuntu job `98079634048` and Windows job
-  `98079633929` with 234 tests per OS, fresh schemas and deterministic package evidence.
-- Phase 7 substantive commit `0dbf362a444441d65b10e16d3b30f000294d2b04` is draft PR #9.
-- Substantive run `32947979333` passed Ubuntu job `98112789377` and Windows job `98112789618`;
-  both jobs passed format, lint, strict type check, 246 tests, 59 fresh schemas, two deterministic
-  package builds, package diff, validation/report and the non-canonical binding benchmark.
+- Active checkpoint: `PHASE-8-SLEEVELESS-TOP-D0`.
+- Branch: `codex/closy-forge-phase-8-sleeveless-top`, based on exact green Phase 7 head
+  `7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df` from draft PR #9.
+- Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
+  with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
+- Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
+- Substantive run `32980095316` passed Ubuntu job `98214343837` and Windows job `98214344137`;
+  both jobs passed format, lint, strict type check, 258 tests, 64 fresh schemas, deterministic
+  T-shirt and sleeveless package rebuilds, package diffs, validation/report and the non-canonical
+  binding benchmark.
+- Evidence-sync commit `bffe705785fee3d9d53c7c7cf6f4b5d29b17da45` passed the complete local
+  format, lint, strict type, schema, focused and 258-test gates; its final remote matrix is pending.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
-## Phase 7 Material Physics
+## Sleeveless Top Vertical Slice
 
-### Descriptor And Selection
+### Literal Family Representation
 
-- `closy.fabric_physics_descriptor.v1` records thickness, areal density, directional warp/weft
-  stretch, shear, bend, damping, friction, collision clearance, restitution, orientation,
-  bounded ranges, SI units, confidence and per-field evidence.
-- Validation rejects unknown versions, missing/wrong units, non-finite or impossible values,
-  contradictory ranges, invalid confidence and undisclosed appearance-only inference.
-- `closy.fabric_preset_registry.d0.v1` contains lightweight knit, cotton jersey, heavy jersey and
-  lightweight woven public-fixture presets.
-- `closy.material_preset_selection.d0.v1` deterministically scores documented cues, preserves all
-  alternatives, exposes low confidence, and records explicit overrides. It is not a learned
-  classifier or calibrated measurement.
+- `closy.garment_family_ontology.d0.v1` now includes `sleeveless_top` as a garment-specific top,
+  not a generic object or an empty-sleeve variant of the T-shirt.
+- The pattern has exactly two parametric panels, four seams and four semantic openings: neck,
+  hem, left armhole and right armhole. It contains no sleeve or cuff IDs.
+- The side/shoulder seam graph resolves with stable IDs and forward/reverse pairing. The assembled
+  simulation mesh contains 126 vertices and 124 triangles.
+- Pattern triangulation uses the shared family assembly module with an opt-in canonical coordinate
+  boundary. The established T-shirt caller remains byte-compatible.
 
-### Calibration And Motion
+### End-To-End Public Fixture
 
-- Six numerical fixtures independently integrate stretch, shear, bend, damped oscillator,
-  gravity sag and floor collision responses. Every persisted result records settings, units,
-  qualitative ordering, quantitative values, tolerance and a result hash.
-- The reference solver now supports panel-UV-classified warp, weft and shear constraints while
-  preserving the prior isotropic default for callers that do not opt into anisotropy.
-- Four actual fixed-avatar T-shirt settles run through the existing deterministic CPU solver.
-  Each state records convergence, displacement, energy decay, directional strain, seam residual,
-  opening stability, body/self collision, topology safety and non-finite counts.
-- Render vertices are reconstructed only through the authoritative persisted dense binding path.
-  All four bounded executions and reconstructions are finite with zero inverted/degenerate
-  triangles.
-- Motion-quality acceptance remains false: maximum opening drift ranges from `0.215649759` to
-  `0.793515209` metres and unresolved self-collision counts range from 150 to 323. These results
-  are evidence to improve, not thresholds to loosen.
+- A bounded 25-candidate fit executes and accepts objective `0.00182` against authored synthetic
+  observations.
+- Four Phase 7 material presets execute the actual fixed-avatar CPU solver, authoritative dense
+  binding and independent direct-simulation fallback. The dense shell has 744 vertices and 496
+  triangles with 744 binding records.
+- Underarm/opening stress executes. Both armholes remain non-collapsed; left/right perimeter drift
+  is `0.02196083` / `0.00601637` metres and maximum dense seam crack is `0.00182106` metres.
+- Two independent raster generators produce decoded source/render evidence. Minimum silhouette IoU
+  is `0.274173294`, maximum normalised boundary Chamfer is `0.060037264`, and foreground colour MAE
+  is `0.0` for the bounded authored fixture.
+- Four decoded mobile-safe PBR PNG maps are persisted with source/generated provenance. This is not
+  measured fabric capture or private-user appearance evidence.
+
+### Cross-Platform Determinism Repair
+
+- Initial runs `32960713589`, `32966595179`, `32975153944`, `32976930124` and `32978410880`
+  truthfully failed the Ubuntu hardcoded golden while Windows passed.
+- Diagnostic inventories isolated sub-ULP panel UV/centre coordinates and reference-avatar
+  normal/tangent generation as the only platform-sensitive canonical artifacts.
+- Canonical coordinates are now applied at the shared family assembly boundary and to the
+  sleeveless package's synthetic avatar copy before GLB frame generation. Solver positions and
+  non-physical energy-history diagnostics also have explicit canonical precision.
+- Python 3.11 and 3.13 local builds agree byte-for-byte, and the final Ubuntu/Windows run reports
+  the same digest `8b4809b5b6be0da3e7018ed6a5c85f29bb613cd1e2142de119132088ca8f0843`.
 
 ## Current Validation
 
-- Ruff passes for the Phase 7 implementation; strict mypy passes across 103 source files.
-- 59 schemas are freshly generated.
-- The focused descriptor, selector, override, calibration, motion, package corruption, schema and
-  coverage suites pass.
-- The complete Forge suite passes all 246 collected tests.
-- The current package has 137 physical files, 133 manifest-inventoried files and digest
+- Ruff format/lint pass; strict mypy passes across 115 source files.
+- 64 schemas are freshly generated.
+- Focused family, package, CLI, validator and corruption suites pass.
+- The complete Forge suite passes all 258 collected tests on both remote operating systems.
+- The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
+  inventoried bytes. Two builds have identical file trees and zero validator issues.
+- The existing T-shirt package remains byte-identical at 137 files with digest
   `79c5a65deb347bbed23f41c30a926ae00aead7b641fe714d75cb403be8ed07a8`.
-- Two independent package builds have identical 137-file trees, identical 133-file canonical
-  inventories, zero byte differences and the same canonical digest.
-- Validation counts are `info=0`, `warning=1`, `error=0`, `fatal=0`; the sole warning is
-  `self_collision_unresolved_contacts`.
-- The substantive local and Ubuntu/Windows gates are green. The evidence-sync head still requires
-  its final remote matrix before Phase 8 branches from it.
 
 ## Truthful Limits
 
-- Phase 7 and Stage Q are partial globally. Descriptor validity, deterministic fixture selection
-  and bounded numerical execution do not establish measured real-fabric calibration.
-- Learned material inference, private-user material estimation, production GPU cloth, continuous
-  collision, mobile/device performance, provider/private/human tiers and ZeroOne remain not run.
-- D0 motion quality is not accepted because opening stability and self-collision are outside the
-  documented bounds. The validator warning remains visible.
-- Gate C3 and Phases 3, 4 and 6 remain partial globally. The package remains a project-authored
-  public fixture, not a production garment or customer capture.
+- Phase 8 is partial globally. The sleeveless-top D0 vertical slice is complete for its bounded
+  public fixture, but long-sleeved tops are next; skirts, trousers, dresses, shirts, jackets and
+  layered/unusual garments are not started.
+- Phase 7 and Stage Q remain partial globally. Authored preset execution is not measured real-fabric
+  calibration, learned inference, private-user estimation or production GPU cloth.
+- The new family uses a fixed synthetic avatar and CPU reference solver. Mobile/device performance,
+  provider/private/human tiers, continuous collision and ZeroOne execution remain not run.
+- The source/render comparison is a deterministic authored D0 fixture, not production-calibrated
+  visual fidelity or clean/canonical garment acceptance.
 - Main is visibly unprotected. This is a repository-governance warning, not permission to push or
   merge to main.
 
 ## Next Exact Command
 
-After this evidence-sync head is remotely green:
+After the Phase 8 evidence-sync head is remotely green:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-8-sleeveless-top
+git switch -c codex/closy-forge-phase-8-long-sleeved-top
 ```
 
 ## Next Safe Action
 
-Push this single evidence-sync commit and confirm its final Ubuntu/Windows matrix, then implement the
-truthful sleeveless-top family through the shared pattern, material, settle, binding, fallback,
-fitting, texture and fidelity pipeline.
+Extract the family package/appearance/motion orchestration into typed shared garment-only contracts,
+prove the sleeveless golden remains unchanged, then implement literal long-sleeved torso/sleeve/cuff
+semantics and family-specific tests without cloning the existing vertical slice.

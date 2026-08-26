@@ -166,9 +166,12 @@ def _project(vertex: Vec3, label: str, width: int, height: int) -> tuple[float, 
 
 
 def _visible_panels(label: str) -> set[str]:
-    torso = "panel.back" if label == "back" else "panel.front"
+    back = label == "back"
+    torso = "panel.back" if back else "panel.front"
+    sleeveless_torso = "panel.sleeveless_top.back" if back else "panel.sleeveless_top.front"
     return {
         torso,
+        sleeveless_torso,
         "panel.sleeve.left",
         "panel.sleeve.right",
         "panel.neck_band",

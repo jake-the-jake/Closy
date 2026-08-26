@@ -38,7 +38,7 @@ def build_material_motion_suite(
         result = settle_reference_cloth(rest_mesh, constraints, avatar_contract, material)
         settled = result.settled_mesh
         reconstructed = reconstruct_vertices(settled, binding)
-        metrics = _motion_metrics(rest_mesh, settled, constraints, result.diagnostics)
+        metrics = measure_motion_metrics(rest_mesh, settled, constraints, result.diagnostics)
         state = simulation_state_json(
             state_id=f"material_settle.{preset_id}",
             meshset=settled,
@@ -165,7 +165,7 @@ def _quality_failures(metrics: dict[str, Any]) -> list[str]:
     return failures
 
 
-def _motion_metrics(
+def measure_motion_metrics(
     rest_mesh: MeshSet,
     settled_mesh: MeshSet,
     constraints: dict[str, Any],

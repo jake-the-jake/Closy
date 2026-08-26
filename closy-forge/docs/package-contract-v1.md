@@ -112,3 +112,26 @@ execution evidence is available; it does not mean material motion quality passed
 Capabilities are booleans, not quality scores. `settledRenderFitComparisonAvailable`, `decodedBitmapAtlasAvailable` and `sourceRenderFidelityAvailable` mean the bounded D0 package contains recomputable persisted-byte evidence. `acceptedForD0PublicFixture` does not imply private-image, provider, human, clean-geometry, canonical or production acceptance. `productionBindingC3EvidenceAvailable` means the package contains recomputable evidence; `productionBindingC3ProfileAvailable` remains false until every literal scoped threshold passes. External geometry providers, available clean geometry proposal, local open-model execution, personalised avatar, production GPU self-collision, global Phase 6 completion and ZeroOne states remain false. The rejected clean proposal, partial cleanup result, provider bake-off, D0 public fidelity report and partial C3 report are evidence that bounded gates were evaluated, not claims of canonical acceptance.
 
 Host-dependent performance measurements are never canonical package files. The benchmark schema is exported as `schemas/v1/production-binding-benchmark.schema.json`; reports belong in local or CI run evidence and must include commit, host/runtime identity, warmups, repeats, dense/fallback timings, peak-memory method and limitations.
+
+## Sleeveless-Top D0 Profile
+
+The Phase 8 sleeveless profile is a smaller 41-file public fixture with its own manifest schema.
+It contains exactly two torso panels, shoulder/side seams, and four semantic openings: neck, hem,
+left armhole and right armhole. It does not retain empty sleeve or cuff IDs. Its profile-specific
+files include:
+
+```text
+fitting/sleeveless_fit.json
+simulation/material_selection.json
+simulation/motion_states/{lightweight_knit,cotton_jersey,heavy_jersey,lightweight_woven,opening_stress}.json
+textures/sleeveless_pbr_report.json
+reports/sleeveless_quality.json
+```
+
+`render/fallback.glb` is reconstructed from the authoritative binary dense binding.
+`render/simulation_fallback.glb` is independently written from settled simulation topology and
+does not call dense reconstruction. Validation reopens all GLBs and binding bytes before
+recomputing this relationship. The source views are project-authored pattern-boundary rasters;
+the rendered views use an independent CPU triangle rasterizer. This is D0 public-fixture evidence,
+not learned fitting, private-user reconstruction, measured fabric calibration, production GPU
+cloth, or global Phase 8 completion.

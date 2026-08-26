@@ -84,6 +84,7 @@ def settle_reference_cloth(
     material: dict[str, Any],
     *,
     settings: SettleSettings | None = None,
+    canonical_position_digits: int | None = None,
 ) -> SettleResult:
     """Run a deterministic CPU reference settle pass for the fixed T-shirt fixture.
 
@@ -144,15 +145,18 @@ def settle_reference_cloth(
                 velocity[2],
             )
             positions[index] = add(positions[index], scale(velocities[index], dt))
+        positions = _canonicalize_positions(positions, canonical_position_digits)
 
         for _iteration in range(active_settings.solver_iterations):
             for constraint in constraints:
                 _solve_distance(positions, constraint)
             for support in supports:
                 _solve_support(positions, support)
+            positions = _canonicalize_positions(positions, canonical_position_digits)
             collision_events += _project_collisions(
                 positions, primitives, active_settings.collision_clearance_m
             )
+            positions = _canonicalize_positions(positions, canonical_position_digits)
 
         # Projection is part of deterministic solver substeps, not a report-only cleanup pass.
         if (step + 1) % 10 == 0:
@@ -165,6 +169,7 @@ def settle_reference_cloth(
             )
             self_collision_corrections += int(convergence.get("totalCorrectionCount", 0))
             self_collision_convergence.append({"substep": step + 1, **convergence})
+            positions = _canonicalize_positions(positions, canonical_position_digits)
 
         for index, position in enumerate(positions):
             velocities[index] = scale(sub(position, previous[index]), 1.0 / dt)
@@ -173,6 +178,7 @@ def settle_reference_cloth(
     collision_events += _project_collisions(
         positions, primitives, active_settings.collision_clearance_m
     )
+    positions = _canonicalize_positions(positions, canonical_position_digits)
     positions, self_collision_metrics = project_self_collisions(
         positions,
         self_collision_triangles,
@@ -180,6 +186,7 @@ def settle_reference_cloth(
         settings=self_collision_settings,
         excluded_vertex_pairs=self_collision_exclusions,
     )
+    positions = _canonicalize_positions(positions, canonical_position_digits)
     self_collision_corrections += int(self_collision_metrics.get("totalCorrectionCount", 0))
     self_collision_convergence.append(
         {"substep": active_settings.step_count, "finalProjection": True, **self_collision_metrics}
@@ -198,6 +205,8 @@ def settle_reference_cloth(
         self_collision_corrections,
         self_collision_convergence,
     )
+    if canonical_position_digits is not None:
+        diagnostics["canonicalPositionDigits"] = canonical_position_digits
     return SettleResult(rest_mesh, settled_mesh, diagnostics, active_settings)
 
 
@@ -207,6 +216,8 @@ def simulate_reference_motion_state(
     avatar_contract: dict[str, Any],
     material: dict[str, Any],
     state_id: str,
+    *,
+    canonical_position_digits: int | None = None,
 ) -> MotionStateResult:
     """Generate a bounded solver-produced state without touching a render mesh."""
 
@@ -232,6 +243,7 @@ def simulate_reference_motion_state(
         add(position, _motion_seed_offset(panel_ids[index], position, state_id))
         for index, position in enumerate(flat.positions)
     ]
+    positions = _canonicalize_positions(positions, canonical_position_digits)
     previous = list(flat.positions)
     constraints = _build_distance_constraints(
         settled_mesh, seam_constraints, flat.mesh_offsets, settings
@@ -257,12 +269,15 @@ def simulate_reference_motion_state(
             acceleration = add((0.0, settings.gravity_m_s2, 0.0), force)
             velocity = add(velocity, scale(acceleration, dt))
             positions[index] = add(position, scale(velocity, dt))
+        positions = _canonicalize_positions(positions, canonical_position_digits)
         for _iteration in range(settings.solver_iterations):
             for constraint in constraints:
                 _solve_distance(positions, constraint)
             for support in supports:
                 _solve_support(positions, support)
+            positions = _canonicalize_positions(positions, canonical_position_digits)
             _project_collisions(positions, primitives, settings.collision_clearance_m)
+            positions = _canonicalize_positions(positions, canonical_position_digits)
         if step + 1 == settings.step_count:
             positions, collision = project_self_collisions(
                 positions,
@@ -272,6 +287,7 @@ def simulate_reference_motion_state(
                 excluded_vertex_pairs=exclusions,
             )
             convergence.append({"substep": step + 1, **collision})
+            positions = _canonicalize_positions(positions, canonical_position_digits)
         velocities = [
             scale(sub(position, old), 1.0 / dt)
             for position, old in zip(positions, previous, strict=True)
@@ -290,7 +306,24 @@ def simulate_reference_motion_state(
         "finitePositions": all(isfinite(value) for point in positions for value in point),
         "invertedOrDegenerateTriangleCount": _inverted_or_degenerate_triangle_count(mesh),
     }
+    if canonical_position_digits is not None:
+        diagnostics["canonicalPositionDigits"] = canonical_position_digits
     return MotionStateResult(state_id, mesh, diagnostics, settings)
+
+
+def _canonicalize_positions(positions: list[Vec3], digits: int | None) -> list[Vec3]:
+    if digits is None:
+        return positions
+    if not 0 <= digits <= 12:
+        raise ValueError("canonical_position_digits must be between 0 and 12")
+    return [
+        (
+            round(float(position[0]), digits),
+            round(float(position[1]), digits),
+            round(float(position[2]), digits),
+        )
+        for position in positions
+    ]
 
 
 def flatten_mesh(meshset: MeshSet) -> FlattenedMesh:

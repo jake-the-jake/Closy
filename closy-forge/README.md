@@ -2,12 +2,16 @@
 
 Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
 
-The current deterministic fixture builds one authored T-shirt package with synthetic metadata-only capture records, analytic mask/landmark observations, an empty correction ledger, deterministic T-shirt parameter fitting, texture/PBR identity evidence, a rejected null visual-geometry proposal boundary, analytic rest state, CPU reference settle state, conventional GLBs, and sim-to-render binding:
+The current deterministic fixtures build an authored T-shirt and a literal sleeveless top. Both
+retain pattern, simulation, conventional GLB and authoritative binding evidence; the sleeveless
+slice also proves that the shared pipeline is not restricted to T-shirt sleeve semantics:
 
 ```bash
 python -m closy_forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment
 python -m closy_forge validate generated/garments/demo_tshirt.closygarment
 python -m closy_forge report generated/garments/demo_tshirt.closygarment
+python -m closy_forge demo build-sleeveless --output generated/garments/demo_sleeveless.closygarment
+python -m closy_forge validate generated/garments/demo_sleeveless.closygarment
 python -m closy_forge capture build-synthetic --output generated/capture/synthetic_tshirt --force
 ```
 
@@ -59,6 +63,8 @@ python -m closy_forge schemas check --schema-dir schemas/v1
 python -m closy_forge demo build-tshirt --output ../generated/garments/demo_tshirt.closygarment --force
 python -m closy_forge validate ../generated/garments/demo_tshirt.closygarment
 python -m closy_forge report ../generated/garments/demo_tshirt.closygarment
+python -m closy_forge demo build-sleeveless --output ../generated/garments/demo_sleeveless.closygarment --force
+python -m closy_forge validate ../generated/garments/demo_sleeveless.closygarment
 ```
 
 CLI exit codes:
@@ -85,6 +91,7 @@ See:
 - `docs/geometry-proposal-contract-v1.md` for the raw/clean visual-geometry proposal boundary.
 - `docs/cloth-settle-reference-v1.md` for the CPU reference settle backend.
 - `docs/material-physics-d0.md` for Phase 7 descriptors, selection, calibration and motion evidence.
+- `docs/sleeveless-top-d0.md` for the Phase 8 sleeveless family fixture and its evidence limits.
 - `docs/MASTER_BLUEPRINT_PROGRESS.md` for the evidence ledger across the master blueprint.
 - `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.
 - `../docs/closy-garment-package-v1.md` for the repository-level package overview.

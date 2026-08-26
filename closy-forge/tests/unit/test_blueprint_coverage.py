@@ -48,9 +48,9 @@ def test_blueprint_coverage_export_has_required_structure() -> None:
 
     assert payload["version"] == "d0-fidelity-closeout-local-validation-v1"
     assert (
-        payload["generatedBy"] == "Phase 7 material-physics evidence sync on "
-        "codex/closy-forge-phase-7-material-physics at "
-        "0dbf362a444441d65b10e16d3b30f000294d2b04"
+        payload["generatedBy"] == "Phase 8 sleeveless-top evidence sync on "
+        "codex/closy-forge-phase-8-sleeveless-top at "
+        "d49227b3e13ba269dfa33b65c7221a54838631d5"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -164,8 +164,8 @@ def test_phase_completion_is_not_overclaimed() -> None:
     for index in range(1, 7):
         assert rows_by_id[f"BP-17-PHASE-{index:02d}"]["status"] == "partial"
     assert rows_by_id["BP-17-PHASE-07"]["status"] == "partial"
-    for index in range(8, 10):
-        assert rows_by_id[f"BP-17-PHASE-{index:02d}"]["status"] == "not_started"
+    assert rows_by_id["BP-17-PHASE-08"]["status"] == "partial"
+    assert rows_by_id["BP-17-PHASE-09"]["status"] == "not_started"
     for index in (10, 11):
         assert rows_by_id[f"BP-17-PHASE-{index:02d}"]["status"] == "discovery_pending"
 
@@ -502,19 +502,37 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
 
 
-def test_markdown_ledger_matches_phase7_material_checkpoint_state() -> None:
+def test_phase8_sleeveless_checkpoint_is_partial_and_evidenced() -> None:
+    phase8 = {row["id"]: row for row in _rows()}["BP-17-PHASE-08"]
+
+    assert phase8["status"] == "partial"
+    assert "d49227b3e13ba269dfa33b65c7221a54838631d5" in phase8["commitSha"]
+    assert any("two panels" in item for item in phase8["executableEvidence"])
+    assert any("no sleeve or cuff" in item for item in phase8["executableEvidence"])
+    assert any("25-candidate bounded fit" in item for item in phase8["executableEvidence"])
+    assert any(
+        "both armholes remain non-collapsed" in item for item in phase8["executableEvidence"]
+    )
+    assert any("run 32980095316" in item for item in phase8["executableEvidence"])
+    assert any("digest 8b4809b5" in item for item in phase8["executableEvidence"])
+    assert "Long-sleeved tops" in phase8["limitations"]
+    assert "long-sleeved tops" in phase8["nextAction"]
+    assert "closy-forge/src/closy_forge/garments/sleeveless_top" in phase8["implementationPaths"]
+    assert "closy-forge/tests/corruption/test_sleeveless_corruption.py" in phase8["tests"]
+
+
+def test_markdown_ledger_matches_phase8_sleeveless_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Branch: `codex/closy-forge-phase-7-material-physics`" in ledger
-    assert "Current active increment: `PHASE-7-MATERIAL-PHYSICS-D0`" in ledger
-    assert "91b9ececae3097a42cba45cad90fa81b1ef31d6a" in ledger
-    assert "run `32936865331`" in ledger
-    assert "four bounded presets" in ledger
-    assert "six calibration fixtures" in ledger
-    assert "0.215649759" in ledger
-    assert "0.793515209" in ledger
-    assert "150 to 323 contacts" in ledger
-    assert "motion-quality acceptance remains false" in ledger
+    assert "Branch: `codex/closy-forge-phase-8-sleeveless-top`" in ledger
+    assert "Current active increment: `PHASE-8-SLEEVELESS-TOP-D0`" in ledger
+    assert "7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df" in ledger
+    assert "run `32949980632`" in ledger
+    assert "41 physical and 37 inventoried files" in ledger
+    assert "8b4809b5b6be0da3e7018ed6a5c85f29bb613cd1e2142de119132088ca8f0843" in ledger
+    assert "run `32980095316`" in ledger
+    assert "0.00182106" in ledger
+    assert "Phase 8 remains partial globally" in ledger
     assert "C3 remains partial" in ledger
     assert "self_collision_unresolved_contacts" in ledger
     assert "reports/provider_bakeoff.json" in ledger
@@ -525,6 +543,8 @@ def test_markdown_ledger_matches_phase7_material_checkpoint_state() -> None:
     assert "| BP-14-EVALUATION | partial |" in ledger
     assert "| BP-15-LICENSING | partial |" in ledger
     assert "| BP-17-PHASE-05 | partial |" in ledger
+    assert "| BP-17-PHASE-07 | partial |" in ledger
+    assert "| BP-17-PHASE-08 | partial |" in ledger
     assert "| BP-20-RESEARCH-PROTOTYPE | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
@@ -541,29 +561,24 @@ def test_markdown_ledger_matches_phase7_material_checkpoint_state() -> None:
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
 
 
-def test_active_resume_points_to_phase7_material_validation() -> None:
+def test_active_resume_points_to_phase8_sleeveless_validation() -> None:
     resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
 
-    assert "Active checkpoint: `PHASE-7-MATERIAL-PHYSICS-D0`" in resume
-    assert "`codex/closy-forge-phase-7-material-physics`" in resume
-    assert "`91b9ececae3097a42cba45cad90fa81b1ef31d6a`" in resume
-    assert "run `32936865331`" in resume
-    assert "lightweight knit" in resume
-    assert "cotton jersey" in resume
-    assert "heavy jersey" in resume
-    assert "lightweight woven" in resume
-    assert "Six numerical fixtures" in resume
-    assert "0.215649759" in resume
-    assert "0.793515209" in resume
-    assert "150 to 323" in resume
-    assert "Motion-quality acceptance remains false" in resume
-    assert "self_collision_unresolved_contacts" in resume
-    assert "Phase 7 and Stage Q are partial globally" in resume
-    assert "`0dbf362a444441d65b10e16d3b30f000294d2b04`" in resume
-    assert "run `32947979333`" in resume
-    assert "Ubuntu job `98112789377`" in resume
-    assert "Windows job `98112789618`" in resume
-    assert "codex/closy-forge-phase-8-sleeveless-top" in resume
+    assert "Active checkpoint: `PHASE-8-SLEEVELESS-TOP-D0`" in resume
+    assert "`codex/closy-forge-phase-8-sleeveless-top`" in resume
+    assert "`7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df`" in resume
+    assert "run `32949980632`" in resume
+    assert "`d49227b3e13ba269dfa33b65c7221a54838631d5`" in resume
+    assert "run `32980095316`" in resume
+    assert "Ubuntu job `98214343837`" in resume
+    assert "Windows job `98214344137`" in resume
+    assert "two parametric panels, four seams" in resume
+    assert "0.02196083" in resume
+    assert "0.00601637" in resume
+    assert "0.00182106" in resume
+    assert "8b4809b5b6be0da3e7018ed6a5c85f29bb613cd1e2142de119132088ca8f0843" in resume
+    assert "Phase 8 is partial globally" in resume
+    assert "codex/closy-forge-phase-8-long-sleeved-top" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:
