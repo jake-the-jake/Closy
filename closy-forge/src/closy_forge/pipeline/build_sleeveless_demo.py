@@ -9,10 +9,10 @@ from closy_forge.avatar.reference_avatar import (
     build_collision_mesh,
     build_reference_avatar_mesh,
 )
-from closy_forge.binding.binary_format import BindingFile, write_binding
+from closy_forge.binding.binary_format import BindingFile
 from closy_forge.binding.builder import build_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction_error
-from closy_forge.contracts.common import COORDINATE_CONVENTION, DEFAULT_SEED, FIXED_TIMESTAMP
+from closy_forge.contracts.common import COORDINATE_CONVENTION, DEFAULT_SEED
 from closy_forge.garments.assembly import canonicalize_meshset
 from closy_forge.garments.sleeveless_top.appearance import (
     SleevelessAppearanceBundle,
@@ -34,12 +34,33 @@ from closy_forge.garments.sleeveless_top.pattern_generator import (
 from closy_forge.garments.sleeveless_top.semantic_graph import (
     build_sleeveless_top_semantic_graph,
 )
-from closy_forge.geometry.glb_io import write_indexed_glb
+from closy_forge.garments.vertical_slice.package import (
+    ContractWriteSpec,
+    SummarySpec,
+    write_vertical_slice_contracts,
+)
+from closy_forge.garments.vertical_slice.package import (
+    material_selection_input as shared_material_selection_input,
+)
+from closy_forge.garments.vertical_slice.package import (
+    mesh_manifest as shared_mesh_manifest,
+)
+from closy_forge.garments.vertical_slice.package import (
+    pending_validation as shared_pending_validation,
+)
+from closy_forge.garments.vertical_slice.package import (
+    render_materials as shared_render_materials,
+)
+from closy_forge.garments.vertical_slice.package import (
+    summary as shared_summary,
+)
+from closy_forge.garments.vertical_slice.package import (
+    write_summary_files as shared_write_summary_files,
+)
 from closy_forge.geometry.mesh_model import MeshSet, mesh_bounds
 from closy_forge.geometry.subdivision import subdivide_for_render
 from closy_forge.package_io.canonical_json import (
     write_canonical_json,
-    write_canonical_text,
 )
 from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
 from closy_forge.package_io.writer import (
@@ -62,6 +83,18 @@ from closy_forge.simulation.reference_cloth_solver import (
 from closy_forge.validation.validator import validate_package
 
 PACKAGE_VERSION = "closy.sleeveless_top.package.d0.v1"
+CONTRACT_WRITE_SPEC = ContractWriteSpec(
+    package_version=PACKAGE_VERSION,
+    simulation_node_name="closy_sleeveless_simulation_v1",
+    dense_render_node_name="closy_sleeveless_dense_render_v1",
+    independent_fallback_node_name="closy_sleeveless_independent_simulation_fallback_v1",
+    fit_report_path="fitting/sleeveless_fit.json",
+    quality_report_path="reports/sleeveless_quality.json",
+)
+SUMMARY_SPEC = SummarySpec(
+    completion_key="sleevelessTopD0Complete",
+    completion_label="Sleeveless-top D0",
+)
 
 
 @dataclass(frozen=True)
@@ -232,89 +265,31 @@ def _write_contracts(
     quality: dict[str, Any],
     seed: int,
 ) -> None:
-    write_canonical_json(package_dir / "pattern/pattern.json", pattern)
-    write_canonical_json(package_dir / "semantic/garment_graph.json", semantic)
-    write_canonical_json(
-        package_dir / "simulation/rest_state.json",
-        _mesh_manifest(rest_mesh, "simulation_rest", edge_maps=edge_maps),
-    )
-    write_canonical_json(
-        package_dir / "simulation/settled_state.json",
-        motion_states["material.cotton_jersey_d0_v1"],
-    )
-    write_canonical_json(package_dir / "simulation/constraints.json", constraints)
-    write_canonical_json(package_dir / "simulation/material_presets.json", material_registry)
-    write_canonical_json(package_dir / "simulation/material_selection.json", material_selection)
-    write_canonical_json(package_dir / "simulation/material_physics.json", material_physics)
-    for state_id, state in sorted(motion_states.items()):
-        safe_name = state_id.replace("material.", "").replace("_d0_v1", "")
-        write_canonical_json(package_dir / f"simulation/motion_states/{safe_name}.json", state)
-    write_canonical_json(package_dir / "reports/material_motion_suite.json", motion_report)
-
-    write_indexed_glb(
-        package_dir / "simulation/simulation_mesh.glb",
-        simulation_mesh,
-        "closy_sleeveless_simulation_v1",
-        (0.18, 0.37, 0.69, 1.0),
-    )
-    write_indexed_glb(
-        package_dir / "render/fallback.glb",
-        render_mesh,
-        "closy_sleeveless_dense_render_v1",
-        (0.18, 0.37, 0.69, 1.0),
-    )
-    write_indexed_glb(
-        package_dir / "render/simulation_fallback.glb",
-        simulation_mesh,
-        "closy_sleeveless_independent_simulation_fallback_v1",
-        (0.18, 0.37, 0.69, 1.0),
-    )
-    write_canonical_json(package_dir / "render/materials.json", render_materials)
-    write_binding(package_dir / "binding/sim_to_render.bin", binding)
-    write_canonical_json(package_dir / "binding/binding_manifest.json", binding_manifest)
-
-    write_indexed_glb(
-        package_dir / "avatar/reference_avatar.glb",
-        avatar_mesh,
-        "closy_reference_avatar_v1",
-        (0.72, 0.68, 0.62, 1.0),
-    )
-    write_indexed_glb(
-        package_dir / "avatar/collision.glb",
-        collision_mesh,
-        "closy_reference_collision_v1",
-        (0.72, 0.2, 0.2, 0.34),
-    )
-    write_canonical_json(package_dir / "avatar/avatar_contract.json", avatar)
-    write_canonical_json(package_dir / "fitting/sleeveless_fit.json", fit_report)
-    for relpath, artifact in sorted(appearance.artifacts.items()):
-        path = package_dir / relpath
-        if isinstance(artifact, bytes):
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(artifact)
-        else:
-            write_canonical_json(path, artifact)
-    write_canonical_json(package_dir / "source/capture_record.json", appearance.capture_record)
-    write_canonical_json(
-        package_dir / "reports/fidelity/source_render_fidelity.json",
-        appearance.fidelity_report,
-    )
-    write_canonical_json(package_dir / "reports/sleeveless_quality.json", quality)
-    write_canonical_json(
-        package_dir / "provenance.json",
-        {
-            "schemaVersion": 1,
-            "createdAt": FIXED_TIMESTAMP,
-            "generator": PACKAGE_VERSION,
-            "seed": seed,
-            "sourceKind": "public_synthetic_fixture",
-            "containsUserImagery": False,
-            "containsPersonalBodyData": False,
-            "learnedModelRun": False,
-            "externalProviderRun": False,
-            "actualReferenceSolverRun": True,
-            "productionGpuRun": False,
-        },
+    write_vertical_slice_contracts(
+        spec=CONTRACT_WRITE_SPEC,
+        package_dir=package_dir,
+        pattern=pattern,
+        semantic=semantic,
+        rest_mesh=rest_mesh,
+        simulation_mesh=simulation_mesh,
+        render_mesh=render_mesh,
+        edge_maps=edge_maps,
+        constraints=constraints,
+        binding=binding,
+        binding_manifest=binding_manifest,
+        avatar_mesh=avatar_mesh,
+        collision_mesh=collision_mesh,
+        avatar=avatar,
+        material_registry=material_registry,
+        material_selection=material_selection,
+        material_physics=material_physics,
+        motion_report=motion_report,
+        motion_states=motion_states,
+        fit_report=fit_report,
+        appearance=appearance,
+        render_materials=render_materials,
+        quality=quality,
+        seed=seed,
     )
 
 
@@ -479,60 +454,11 @@ def _mesh_manifest(
     *,
     edge_maps: dict[str, dict[str, list[int]]] | None = None,
 ) -> dict[str, Any]:
-    return {
-        "schemaVersion": 1,
-        "meshRole": mesh_role,
-        "coordinateConvention": COORDINATE_CONVENTION,
-        "meshCount": len(meshset.meshes),
-        "vertexCount": meshset.vertex_count,
-        "triangleCount": meshset.triangle_count,
-        "bounds": mesh_bounds(meshset),
-        "topologyHash": topology_hash(meshset),
-        "contentHash": geometry_content_hash(meshset),
-        "panelTable": [
-            {
-                "panelId": mesh.panel_id,
-                "meshName": mesh.name,
-                "vertexCount": len(mesh.vertices),
-                "triangleCount": len(mesh.triangles),
-                "materialId": mesh.material_id,
-            }
-            for mesh in meshset.meshes
-        ],
-        "meshes": [
-            {
-                "name": mesh.name,
-                "panelId": mesh.panel_id,
-                "vertices": [list(vertex) for vertex in mesh.vertices],
-                "panelUvs": [list(uv) for uv in mesh.panel_uvs],
-                "triangles": [list(triangle) for triangle in mesh.triangles],
-                "materialId": mesh.material_id,
-            }
-            for mesh in meshset.meshes
-        ],
-        "edgeVertexMap": edge_maps or {},
-        "panelCoordinatesRetained": True,
-        "provenance": "public_procedural_fixture",
-    }
+    return shared_mesh_manifest(meshset, mesh_role, edge_maps=edge_maps)
 
 
 def _material_selection_input() -> dict[str, Any]:
-    return {
-        "schemaVersion": 1,
-        "selectionId": "material_selection.sleeveless_top_public_d0_v1",
-        "inputId": "material_input.sleeveless_top_public_d0_v1",
-        "observations": {
-            "massClass": "medium",
-            "stretchClass": "moderate",
-            "drapeClass": "soft",
-            "surfaceClass": "jersey_knit",
-        },
-        "provenance": {
-            "source": "project_authored_public_fixture_visual_cues",
-            "physicalMeasurement": False,
-            "learnedClassifierRun": False,
-        },
-    }
+    return shared_material_selection_input("sleeveless_top")
 
 
 def _has_exact_token(identifier: str, forbidden: set[str]) -> bool:
@@ -541,64 +467,18 @@ def _has_exact_token(identifier: str, forbidden: set[str]) -> bool:
 
 
 def _render_materials(appearance: SleevelessAppearanceBundle) -> dict[str, Any]:
-    return {
-        "schemaVersion": 1,
-        "materials": [appearance.texture_report["material"]],
-        "mobilePbr": {
-            "shaderClass": "metallic_roughness",
-            "transmission": False,
-            "subsurfaceScattering": False,
-        },
-    }
+    return shared_render_materials(appearance)
 
 
 def _pending_validation() -> dict[str, Any]:
-    return {
-        "schemaVersion": 1,
-        "status": "pending",
-        "counts": {"info": 0, "warning": 0, "error": 0, "fatal": 0},
-        "issues": [],
-    }
+    return shared_pending_validation()
 
 
 def _write_summary_files(
     package_dir: Path, context: dict[str, Any], validation: dict[str, Any]
 ) -> None:
-    write_canonical_json(package_dir / "reports/package_validation.json", validation)
-    summary = _summary(context, validation)
-    write_canonical_json(package_dir / "reports/summary.json", summary)
-    lines = [
-        f"# {summary['displayName']}",
-        "",
-        f"- Garment class: `{summary['garmentClass']}`",
-        f"- Package digest: `{summary['packageDigest']}`",
-        f"- Validation: `{summary['validation']['status']}`",
-        f"- Sleeveless-top D0: `{summary['readiness']['sleevelessTopD0Complete']}`",
-        f"- Phase 8 globally: `{summary['readiness']['phase8GlobalStatus']}`",
-        f"- Next family: `{summary['readiness']['nextGarmentFamily']}`",
-        "",
-        "This is a public deterministic CPU fixture, not private-user fitting, production cloth, "
-        "or learned garment inference.",
-    ]
-    write_canonical_text(package_dir / "reports/summary.md", "\n".join(lines))
+    shared_write_summary_files(package_dir, context, validation, SUMMARY_SPEC)
 
 
 def _summary(context: dict[str, Any], validation: dict[str, Any]) -> dict[str, Any]:
-    manifest = context["manifest"]
-    quality = context["quality"]
-    return {
-        "schemaVersion": 1,
-        "garmentId": manifest["garmentId"],
-        "displayName": manifest["displayName"],
-        "garmentClass": manifest["garmentClass"],
-        "packageDigest": manifest["packageDigest"],
-        "packageByteSize": manifest["packageByteSize"],
-        "counts": manifest["counts"],
-        "validation": validation,
-        "readiness": {
-            "sleevelessTopD0Complete": quality["readiness"]["sleevelessTopD0Complete"],
-            "phase8GlobalStatus": "partial",
-            "nextGarmentFamily": quality["readiness"]["nextGarmentFamily"],
-        },
-        "truthfulLimitations": manifest["warnings"],
-    }
+    return shared_summary(context, validation, SUMMARY_SPEC)
