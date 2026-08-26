@@ -51,6 +51,14 @@ GARMENT_FAMILIES: dict[str, dict[str, Any]] = {
         "forbiddenParts": ["torso", "sleeve", "skirt"],
         "forbiddenOpenings": ["neck", "armhole_left", "armhole_right", "hem"],
     },
+    "simple_dress": {
+        "id": "family.one_piece.simple_dress",
+        "category": "one_piece",
+        "requiredParts": ["front_bodice", "back_bodice", "front_skirt", "back_skirt"],
+        "requiredOpenings": ["neck", "armhole_left", "armhole_right", "hem"],
+        "forbiddenParts": ["sleeve", "trouser_leg"],
+        "forbiddenOpenings": ["cuff", "waist"],
+    },
 }
 
 

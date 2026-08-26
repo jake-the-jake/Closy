@@ -73,6 +73,21 @@ Representative current codes:
 - `simple_trousers_inventory_hash_mismatch`: an inventoried trousers artifact hash/size differs.
 - `simple_trousers_package_digest_mismatch`: canonical trousers digest does not match inventory.
 
+- `simple_dress_family_mismatch`: manifest identity is not the canonical simple-dress fixture.
+- `simple_dress_manifest_contract_invalid`: package kind or schema version is unsupported.
+- `simple_dress_contract_unreadable`: a required dress contract cannot be decoded.
+- `simple_dress_semantic_ids_invalid`: bodice/skirt, sewn-waist or opening IDs are not literal.
+- `simple_dress_opening_loop_invalid`: neck, hem or either armhole does not resolve.
+- `simple_dress_constraint_pairing_invalid`: a shoulder, side or waist join is absent.
+- `simple_dress_fit_integrity_invalid`: bounded fit evidence or its hash is invalid.
+- `simple_dress_motion_suite_invalid`: four-preset or two-armhole stress evidence is invalid.
+- `simple_dress_binding_validation_failed`: persisted dense/fallback geometry is invalid.
+- `simple_dress_appearance_validation_failed`: decoded source/render or PBR evidence is invalid.
+- `simple_dress_quality_claim_invalid`: family readiness or Phase 8 status is overclaimed.
+- `simple_dress_inventory_file_set_mismatch`: inventory paths differ from persisted files.
+- `simple_dress_inventory_hash_mismatch`: an inventoried dress artifact hash/size differs.
+- `simple_dress_package_digest_mismatch`: canonical dress digest does not match inventory.
+
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
 - `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.

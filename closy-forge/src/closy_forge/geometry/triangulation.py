@@ -76,6 +76,14 @@ def _map_point(point: Vec2, transform: str) -> Vec3:
         return (x, 0.06 + y, 0.115)
     if transform == "lower.back":
         return (-x, 0.06 + y, -0.115)
+    if transform == "dress.skirt.front":
+        return (x, 0.40 + y, 0.115)
+    if transform == "dress.skirt.back":
+        return (-x, 0.40 + y, -0.115)
+    if transform == "dress.bodice.front":
+        return (x, 1.02 + y, 0.115)
+    if transform == "dress.bodice.back":
+        return (-x, 1.02 + y, -0.115)
     if transform == "sleeve.left":
         return (-0.36 - y, 1.34 - 0.10 * y, x * 0.75)
     if transform == "sleeve.right":
