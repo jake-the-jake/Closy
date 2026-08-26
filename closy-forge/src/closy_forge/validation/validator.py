@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from closy_forge.appearance import hash_texture_identity_report
+from closy_forge.appearance.bitmap_atlas import (
+    BITMAP_PATHS,
+    audit_bitmap_atlas_bundle,
+)
 from closy_forge.binding.binary_format import read_binding, write_binding
 from closy_forge.binding.production_binding import (
     build_production_binding_c3_report_from_package,
@@ -35,6 +39,7 @@ from closy_forge.geometry.triangulation import validate_panel_boundary
 from closy_forge.inspection import (
     hash_inspection_artifact_manifest,
     hash_inspection_artifact_report,
+    validate_persisted_source_render_fidelity,
 )
 from closy_forge.inspection.deterministic_renderer import required_artifact_specs
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json
@@ -114,12 +119,25 @@ EXPECTED_FILES = [
     "source/visual_observations.json",
     "source/correction_record.json",
     "source/multiview_fusion.json",
+    "source/public_fixture/front.png",
+    "source/public_fixture/back.png",
+    "source/public_fixture/left_three_quarter.png",
+    "source/public_fixture/right_three_quarter.png",
     "fitting/tshirt_fit.json",
     "textures/texture_identity.json",
     "textures/source_projection.json",
     "textures/generated_atlas.json",
     "textures/pbr_material_maps.json",
     "textures/conventional_fallback_materials.json",
+    "textures/bitmap_pbr_report.json",
+    "textures/atlas/base_color.png",
+    "textures/atlas/normal.png",
+    "textures/atlas/roughness.png",
+    "textures/atlas/occlusion.png",
+    "textures/atlas/view_confidence.png",
+    "textures/atlas/generated_region_mask.png",
+    "textures/atlas/source_contribution.png",
+    "textures/atlas/logo_region_mask.png",
     "proposals/raw_geometry_proposal.json",
     "proposals/manual_raw_visual_proposal.glb",
     "proposals/manual_cleanup_preview.glb",
@@ -191,6 +209,15 @@ EXPECTED_FILES = [
     "reports/self_collision_report.json",
     "reports/inspection/manifest.json",
     "reports/inspection/inspection_report.json",
+    "reports/fidelity/source_render_fidelity.json",
+    "reports/fidelity/rendered_front.png",
+    "reports/fidelity/rendered_back.png",
+    "reports/fidelity/rendered_left_three_quarter.png",
+    "reports/fidelity/rendered_right_three_quarter.png",
+    "reports/fidelity/rendered_contribution_front.png",
+    "reports/fidelity/rendered_contribution_back.png",
+    "reports/fidelity/rendered_contribution_left_three_quarter.png",
+    "reports/fidelity/rendered_contribution_right_three_quarter.png",
     "reports/inspection/pattern_panels_labels.svg",
     "reports/inspection/rest_simulation_mesh_front.svg",
     "reports/inspection/rest_simulation_mesh_side_depth.svg",
@@ -364,6 +391,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_render_frame_pose_suite(package_dir, manifest, issues)
     _validate_production_binding_contract(package_dir, manifest, issues)
     _validate_production_binding_c3(package_dir, manifest, issues)
+    _validate_source_render_fidelity(package_dir, issues)
     _validate_inspection_artifacts(package_dir, manifest, issues)
     _validate_geometry_clean_acceptance_gate(package_dir, manifest, issues)
     _validate_provider_registry(package_dir, manifest, issues)
@@ -1023,7 +1051,8 @@ def _validate_fitting(
     visual = _read_required_json(package_dir, "source/visual_observations.json", issues)
     fusion = _read_required_json(package_dir, "source/multiview_fusion.json", issues)
     fit_report = _read_required_json(package_dir, "fitting/tshirt_fit.json", issues)
-    if visual is None or fusion is None or fit_report is None:
+    settled_state = _read_required_json(package_dir, "simulation/settled_state.json", issues)
+    if visual is None or fusion is None or fit_report is None or settled_state is None:
         return
     declared_visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
     declared_fusion_hash = _nested_string(
@@ -1099,13 +1128,15 @@ def _validate_fitting(
                 "Fit report hash must match its canonical payload.",
             )
         )
-    if fit_report.get("status") != "pass" or fit_report.get("accepted") is not True:
+    if fit_report.get("status") not in {"pass", "fail"} or not isinstance(
+        fit_report.get("accepted"), bool
+    ):
         issues.append(
             _issue(
-                "tshirt_fit_not_accepted",
+                "tshirt_fit_acceptance_state_invalid",
                 "fatal",
                 "fitting/tshirt_fit.json",
-                "T-shirt fit report must pass and be accepted for this fixture.",
+                "T-shirt fit report must record an explicit pass/fail acceptance state.",
             )
         )
     fitted_parameters = fit_report.get("fittedParameters", {})
@@ -1134,6 +1165,17 @@ def _validate_fitting(
             )
     losses = fit_report.get("losses", {})
     thresholds = fit_report.get("thresholds", {})
+    fit_accepted = fit_report.get("accepted") is True
+    expected_fit_status = "pass" if fit_accepted else "fail"
+    if fit_report.get("status") != expected_fit_status:
+        issues.append(
+            _issue(
+                "tshirt_fit_status_acceptance_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "Fit status must match its explicit public-fixture acceptance state.",
+            )
+        )
     if not isinstance(losses, dict) or not isinstance(thresholds, dict):
         issues.append(
             _issue(
@@ -1144,7 +1186,25 @@ def _validate_fitting(
             )
         )
     else:
-        if _float_or(losses.get("landmarkRmsNormalised"), 1.0) > _float_or(
+        fit_maximum_threshold_pairs = [
+            ("landmarkRmsNormalised", "maximumLandmarkRmsNormalised"),
+            ("maskWidthErrorMeters", "maximumMaskWidthErrorMeters"),
+            ("maximumParameterDeltaMeters", "maximumParameterDeltaMeters"),
+            ("boundaryErrorNormalised", "maximumBoundaryErrorNormalised"),
+            ("landmarkErrorNormalised", "maximumLandmarkErrorNormalised"),
+            ("openingAlignmentErrorNormalised", "maximumOpeningAlignmentErrorNormalised"),
+            ("cameraBodyAlignmentErrorNormalised", "maximumCameraBodyAlignmentErrorNormalised"),
+            ("seamLengthEasePenalty", "maximumSeamLengthEasePenalty"),
+            ("parameterErrorMeters", "maximumParameterErrorMeters"),
+            ("confidenceWeightedLoss", "maximumConfidenceWeightedLoss"),
+        ]
+        fit_thresholds_pass = all(
+            _float_or(losses.get(loss_key), 1.0) <= _float_or(thresholds.get(threshold_key), 0.0)
+            for loss_key, threshold_key in fit_maximum_threshold_pairs
+        ) and _float_or(losses.get("multiviewSilhouetteMeanIoU"), 0.0) >= _float_or(
+            thresholds.get("minimumMultiviewSilhouetteMeanIoU"), 1.0
+        )
+        if fit_accepted and _float_or(losses.get("landmarkRmsNormalised"), 1.0) > _float_or(
             thresholds.get("maximumLandmarkRmsNormalised"), 0.0
         ):
             issues.append(
@@ -1155,7 +1215,7 @@ def _validate_fitting(
                     "Landmark RMS exceeds fit threshold.",
                 )
             )
-        if _float_or(losses.get("maskWidthErrorMeters"), 1.0) > _float_or(
+        if fit_accepted and _float_or(losses.get("maskWidthErrorMeters"), 1.0) > _float_or(
             thresholds.get("maximumMaskWidthErrorMeters"), 0.0
         ):
             issues.append(
@@ -1166,7 +1226,7 @@ def _validate_fitting(
                     "Mask width error exceeds fit threshold.",
                 )
             )
-        if _float_or(losses.get("maximumParameterDeltaMeters"), 1.0) > _float_or(
+        if fit_accepted and _float_or(losses.get("maximumParameterDeltaMeters"), 1.0) > _float_or(
             thresholds.get("maximumParameterDeltaMeters"), 0.0
         ):
             issues.append(
@@ -1177,7 +1237,7 @@ def _validate_fitting(
                     "Parameter delta exceeds fit threshold.",
                 )
             )
-        if _float_or(losses.get("multiviewSilhouetteMeanIoU"), 0.0) < _float_or(
+        if fit_accepted and _float_or(losses.get("multiviewSilhouetteMeanIoU"), 0.0) < _float_or(
             thresholds.get("minimumMultiviewSilhouetteMeanIoU"), 1.0
         ):
             issues.append(
@@ -1232,8 +1292,28 @@ def _validate_fitting(
                 "Confidence-weighted fit loss exceeds fit threshold.",
             ),
         ]:
-            if _float_or(losses.get(loss_key), 1.0) > _float_or(thresholds.get(threshold_key), 0.0):
+            if fit_accepted and _float_or(losses.get(loss_key), 1.0) > _float_or(
+                thresholds.get(threshold_key), 0.0
+            ):
                 issues.append(_issue(code, "fatal", "fitting/tshirt_fit.json", message))
+        if not fit_accepted and fit_thresholds_pass:
+            issues.append(
+                _issue(
+                    "tshirt_fit_acceptance_underclaimed",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    "A fit that passes every persisted threshold cannot claim rejection.",
+                )
+            )
+        elif not fit_accepted:
+            issues.append(
+                _issue(
+                    "tshirt_fit_not_accepted_for_public_fixture",
+                    "warning",
+                    "fitting/tshirt_fit.json",
+                    "Bounded fit executed but did not meet the public-fixture fit thresholds.",
+                )
+            )
     evidence_separation = fit_report.get("evidenceSeparation", {})
     if (
         not isinstance(evidence_separation, dict)
@@ -1278,13 +1358,18 @@ def _validate_fitting(
             )
         )
     convergence = fit_report.get("convergence", {})
-    if not isinstance(convergence, dict) or convergence.get("status") != "converged_d0_synthetic":
+    if (
+        not isinstance(convergence, dict)
+        or convergence.get("status") != "converged_d0_public_fixture"
+        or _float_or(convergence.get("absoluteImprovement"), 0.0) <= 0.0
+        or convergence.get("noOpCandidateAccepted") is not False
+    ):
         issues.append(
             _issue(
                 "tshirt_fit_not_converged",
                 "fatal",
                 "fitting/tshirt_fit.json",
-                "BP52 fit convergence diagnostics must report D0 convergence.",
+                "BP52 fit must improve from a non-no-op baseline and report D0 convergence.",
             )
         )
     alternatives = fit_report.get("alternatives", [])
@@ -1318,13 +1403,46 @@ def _validate_fitting(
             )
         )
     settled = fit_report.get("settledRenderComparison", {})
-    if not isinstance(settled, dict) or "status" not in settled:
+    if (
+        not isinstance(settled, dict)
+        or settled.get("status") != "pass"
+        or settled.get("fullSolverRun") is not True
+        or settled.get("renderedCandidateEvaluated") is not True
+    ):
         issues.append(
             _issue(
                 "tshirt_fit_settled_render_comparison_status_missing",
                 "fatal",
                 "fitting/tshirt_fit.json",
-                "BP52 fit must report settled-render/drape comparison status truthfully.",
+                "BP52 fit must pass an actual full-solver settled-render winner verification.",
+            )
+        )
+    elif settled.get("settledContentHash") != settled_state.get("meshContentHash"):
+        issues.append(
+            _issue(
+                "tshirt_fit_settled_winner_hash_mismatch",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 full-solver winner must match the persisted settled package mesh.",
+            )
+        )
+    controls = fit_report.get("corruptionControls", [])
+    if (
+        not isinstance(controls, list)
+        or len(controls) < 2
+        or any(
+            not isinstance(control, dict)
+            or control.get("status") != "pass_rejected"
+            or control.get("accepted") is not True
+            for control in controls
+        )
+    ):
+        issues.append(
+            _issue(
+                "tshirt_fit_corruption_controls_failed",
+                "fatal",
+                "fitting/tshirt_fit.json",
+                "BP52 mask and camera corruption controls must fail closed.",
             )
         )
     caps = manifest.get("capabilities", {})
@@ -1359,6 +1477,10 @@ def _validate_fitting(
             "heldOutPerturbationFitEvaluationAvailable",
             "held_out_perturbation_fit_capability_missing",
         ),
+        (
+            "settledRenderFitComparisonAvailable",
+            "settled_render_fit_comparison_capability_missing",
+        ),
     ]:
         if caps.get(key) is not True:
             issues.append(
@@ -1390,6 +1512,7 @@ def _validate_texture_identity(
     render_materials = _read_required_json(package_dir, "render/materials.json", issues)
     texture = _read_required_json(package_dir, "textures/texture_identity.json", issues)
     texture_quality = _read_required_json(package_dir, "reports/texture_quality.json", issues)
+    bitmap_pbr_report = _read_required_json(package_dir, BITMAP_PATHS["pbrReport"], issues)
     if (
         capture_record is None
         or visual is None
@@ -1397,8 +1520,35 @@ def _validate_texture_identity(
         or fit_report is None
         or render_materials is None
         or texture is None
+        or bitmap_pbr_report is None
     ):
         return
+    bitmap_artifacts: dict[str, bytes | dict[str, Any]] = {
+        BITMAP_PATHS["pbrReport"]: bitmap_pbr_report
+    }
+    for path in [
+        *[value for key, value in BITMAP_PATHS.items() if key != "pbrReport"],
+        *[
+            "source/public_fixture/front.png",
+            "source/public_fixture/back.png",
+            "source/public_fixture/left_three_quarter.png",
+            "source/public_fixture/right_three_quarter.png",
+        ],
+    ]:
+        artifact_path = package_dir / path
+        if artifact_path.is_file():
+            bitmap_artifacts[path] = artifact_path.read_bytes()
+    try:
+        audit_bitmap_atlas_bundle(bitmap_artifacts, bitmap_pbr_report, visual)
+    except ValueError as exc:
+        issues.append(
+            _issue(
+                "texture_bitmap_audit_failed",
+                "fatal",
+                BITMAP_PATHS["pbrReport"],
+                f"BP53 decoded bitmap/PBR assets failed independent pixel validation: {exc}.",
+            )
+        )
     declared_capture_hash = _nested_string(capture_record, ["immutability", "sourceRecordHash"], "")
     declared_visual_hash = _nested_string(visual, ["integrity", "visualRecordHash"], "")
     declared_fusion_hash = _nested_string(fusion, ["integrity", "multiviewFusionRecordHash"], "")
@@ -1645,6 +1795,7 @@ def _validate_texture_identity(
         ("sourceTextureProjectionAvailable", "source_texture_projection_capability_missing"),
         ("pbrMaterialMapExportAvailable", "pbr_map_export_capability_missing"),
         ("logoPrintPreservationMaskAvailable", "logo_print_mask_capability_missing"),
+        ("decodedBitmapAtlasAvailable", "decoded_bitmap_atlas_capability_missing"),
         (
             "controlledTextureInpaintingInterfaceAvailable",
             "controlled_inpainting_capability_missing",
@@ -6953,6 +7104,47 @@ def _validate_geometry_visual_shell_review(
         )
 
 
+def _validate_source_render_fidelity(package_dir: Path, issues: list[ValidationIssue]) -> None:
+    report = _read_required_json(
+        package_dir, "reports/fidelity/source_render_fidelity.json", issues
+    )
+    if report is None:
+        return
+    try:
+        validate_persisted_source_render_fidelity(package_dir, report)
+    except (OSError, ValueError) as exc:
+        issues.append(
+            _issue(
+                "source_render_fidelity_validation_failed",
+                "fatal",
+                "reports/fidelity/source_render_fidelity.json",
+                f"BP47 decoded source-render fidelity validation failed: {exc}.",
+            )
+        )
+    manifest = _read_required_json(package_dir, "manifest.json", issues)
+    if manifest is None:
+        return
+    capabilities = manifest.get("capabilities", {})
+    expected_accepted = (
+        report.get("acceptanceTiers", {})
+        .get("acceptedForD0PublicFixture", {})
+        .get("accepted", False)
+    )
+    if (
+        not isinstance(capabilities, dict)
+        or capabilities.get("sourceRenderFidelityAvailable") is not True
+        or capabilities.get("acceptedForD0PublicFixture") is not expected_accepted
+    ):
+        issues.append(
+            _issue(
+                "source_render_fidelity_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest source-fidelity availability and D0 acceptance must match the report.",
+            )
+        )
+
+
 def _validate_inspection_artifacts(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -7078,8 +7270,6 @@ def _validate_inspection_artifacts(
 
     for tier in [
         "independent_provider_geometry_appearance_comparison",
-        "source_image_silhouette_comparison",
-        "source_image_appearance_texture_logo_comparison",
         "human_visual_review",
     ]:
         for source in [tier_status_by_name, report_tier_status_by_name]:
@@ -7090,7 +7280,26 @@ def _validate_inspection_artifacts(
                         "inspection_evidence_tier_overclaimed",
                         "fatal",
                         "reports/inspection/inspection_report.json",
-                        "Source/provider/human evidence tiers must remain not_run.",
+                        "Provider and human evidence tiers must remain not_run.",
+                        tier,
+                    )
+                )
+
+    for tier in [
+        "source_image_silhouette_comparison",
+        "source_image_appearance_texture_logo_comparison",
+    ]:
+        for source in [tier_status_by_name, report_tier_status_by_name]:
+            tier_doc = source.get(tier, {})
+            if tier_doc.get("status") != "run_d0_public_fixture" or tier_doc.get(
+                "accepted"
+            ) is not (manifest.get("capabilities", {}).get("acceptedForD0PublicFixture") is True):
+                issues.append(
+                    _issue(
+                        "inspection_d0_source_tier_missing_or_failed",
+                        "fatal",
+                        "reports/inspection/inspection_report.json",
+                        "Decoded source tiers must run and match the package D0 acceptance state.",
                         tier,
                     )
                 )
@@ -7101,9 +7310,11 @@ def _validate_inspection_artifacts(
         or readiness.get("topologyRepresentationInspectionRun") is not True
         or readiness.get("canonicalSimulationToRenderSilhouetteRun") is not True
         or readiness.get("providerGeometryAppearanceComparisonRun") is not False
-        or readiness.get("sourceImageSilhouetteComparisonRun") is not False
-        or readiness.get("sourceImageAppearanceComparisonRun") is not False
+        or readiness.get("sourceImageSilhouetteComparisonRun") is not True
+        or readiness.get("sourceImageAppearanceComparisonRun") is not True
         or readiness.get("humanVisualReviewRun") is not False
+        or readiness.get("acceptedForD0PublicFixture")
+        is not (manifest.get("capabilities", {}).get("acceptedForD0PublicFixture") is True)
         or readiness.get("acceptedForVisualFidelity") is not False
         or readiness.get("acceptedForCleanProposal") is not False
     ):

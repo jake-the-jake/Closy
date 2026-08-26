@@ -8,6 +8,7 @@ from typing import Any, Literal
 
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import sha256_bytes
+from closy_forge.raster import decode_png_rgba, encode_png_rgba
 
 RASTER_PIXEL_PARSER_VERSION = "closy.visual_understanding.d0_pixel_parser.v1"
 RASTER_PIXEL_FIXTURE_VERSION = "closy.d0_tshirt_raster_fixture_pixels.v1"
@@ -17,6 +18,7 @@ TORSO_RGBA = (42, 96, 210, 255)
 LEFT_SLEEVE_RGBA = (60, 124, 232, 255)
 RIGHT_SLEEVE_RGBA = (64, 130, 238, 255)
 OCCLUSION_RGBA = (92, 76, 96, 255)
+LOGO_RGBA = (244, 184, 44, 255)
 BACKGROUND_RGBA = (246, 244, 239, 255)
 
 SemanticClass = Literal[
@@ -65,12 +67,14 @@ def build_project_authored_tshirt_pixel_views(
         if not isinstance(capture_view, Mapping):
             continue
         label = str(capture_view.get("label", "front"))
-        rgba = render_project_authored_tshirt_rgba(
+        authored_rgba = render_project_authored_tshirt_rgba(
             width,
             height,
             label=label,
             perturbation=perturbation,
         )
+        decoded = decode_png_rgba(encode_png_rgba(width, height, authored_rgba))
+        rgba = decoded.rgba
         normalized_hash = _pixel_hash(width, height, rgba)
         views.append(
             RasterFixtureView(
@@ -124,6 +128,13 @@ def render_project_authored_tshirt_rgba(
         paint(lambda x, y: _inside_poly(x, y, _right_sleeve_polygon(lean)), RIGHT_SLEEVE_RGBA)
 
     paint(lambda x, y: _ellipse(x, y, 0.50 + lean, 0.205, 0.062, 0.038), BACKGROUND_RGBA)
+
+    if label == "front":
+        logo_dx = 0.03 if perturbation == "shifted_logo" else 0.0
+        paint(
+            lambda x, y: 0.445 + logo_dx <= x <= 0.515 + logo_dx and 0.5375 <= y <= 0.6025,
+            LOGO_RGBA,
+        )
 
     if perturbation == "occluded_torso" or label in {"left_three_quarter", "right_three_quarter"}:
         paint(lambda x, y: 0.57 + lean <= x <= 0.635 + lean and 0.48 <= y <= 0.59, OCCLUSION_RGBA)
@@ -596,7 +607,7 @@ def _class_masks(pixel_view: RasterFixtureView) -> dict[SemanticClass, set[int]]
 def _classify(rgba: tuple[int, ...]) -> SemanticClass:
     if len(rgba) != 4 or rgba[3] < 12:
         return "background"
-    if rgba == TORSO_RGBA:
+    if rgba in {TORSO_RGBA, LOGO_RGBA}:
         return "target_torso"
     if rgba == LEFT_SLEEVE_RGBA:
         return "target_sleeve_left"

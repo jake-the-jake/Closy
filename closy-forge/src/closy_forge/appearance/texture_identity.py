@@ -4,6 +4,10 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
+from closy_forge.appearance.bitmap_atlas import (
+    BITMAP_PATHS,
+    build_d0_bitmap_atlas,
+)
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import sha256_bytes
 
@@ -44,7 +48,7 @@ _SEMANTIC_TARGET_PANELS = {
 @dataclass(frozen=True)
 class TextureIdentityBundle:
     report: dict[str, Any]
-    artifacts: dict[str, dict[str, Any]]
+    artifacts: dict[str, bytes | dict[str, Any]]
 
 
 def build_texture_identity_bundle(
@@ -58,11 +62,12 @@ def build_texture_identity_bundle(
     """Build the BP53 D0 source texture evidence bundle.
 
     This is a privacy-safe source-projection pass over project-authored raster
-    evidence. It records decoded-pixel color summaries, projection coordinates
-    and placeholder PBR maps without exporting raw source pixels or inventing
-    hidden logos, texture maps or unseen garment detail.
+    evidence. It persists decoded public-fixture pixels, projection coordinates,
+    bitmap PBR baselines and legacy JSON summaries without inventing hidden
+    logos, texture maps or unseen garment detail.
     """
 
+    bitmap_bundle = build_d0_bitmap_atlas(capture_record, visual_observations)
     source_views = _source_views(visual_observations)
     material_regions = [
         _material_region(material, index, source_views)
@@ -85,19 +90,23 @@ def build_texture_identity_bundle(
     atlas_artifact = _generated_atlas_artifact(material_regions, projections, generated_regions)
     pbr_maps_artifact = _pbr_material_maps_artifact(material_regions, projections)
     fallback_materials_artifact = _fallback_materials_artifact(material_regions)
-    artifacts = {
+    artifacts: dict[str, bytes | dict[str, Any]] = {
         TEXTURE_ARTIFACT_PATHS["sourceProjection"]: projection_artifact,
         TEXTURE_ARTIFACT_PATHS["generatedAtlas"]: atlas_artifact,
         TEXTURE_ARTIFACT_PATHS["pbrMaterialMaps"]: pbr_maps_artifact,
         TEXTURE_ARTIFACT_PATHS["conventionalFallbackMaterials"]: fallback_materials_artifact,
+        **bitmap_bundle.artifacts,
     }
     for payload in artifacts.values():
-        _finalize_artifact_hash(payload)
+        if isinstance(payload, dict) and payload is not bitmap_bundle.report:
+            _finalize_artifact_hash(payload)
     artifact_refs = {
         _artifact_key_from_path(path): {
             "path": path,
-            "sha256": _hash_payload(payload),
-            "mediaType": "application/json",
+            "sha256": _hash_payload(payload)
+            if isinstance(payload, dict)
+            else sha256_bytes(payload),
+            "mediaType": "application/json" if isinstance(payload, dict) else "image/png",
             "canonical": True,
         }
         for path, payload in artifacts.items()
@@ -137,7 +146,7 @@ def build_texture_identity_bundle(
             "projectionCoordinateSpace": "normalised_source_image_uv_to_panel_atlas_uv_v1",
             "seamBlending": "front_rear_confidence_weighted_d0_v1",
             "occludedRegionPolicy": "mark_unseen_regions_and_use_material_prior_only",
-            "normalMapPolicy": "placeholder_flat_normal_until_scan_or_photometric_evidence",
+            "normalMapPolicy": "deterministic_derived_d0_normal_not_photometric_evidence",
             "sourceEvidencePreserved": True,
         },
         "sourceViewProjection": {
@@ -170,6 +179,25 @@ def build_texture_identity_bundle(
             "baseColorSource": "source_projection_summary_where_visible",
             "placeholderMapCount": pbr_maps_artifact["aggregate"]["placeholderMapCount"],
             "sourceBackedMapCount": pbr_maps_artifact["aggregate"]["sourceBackedMapCount"],
+            "legacyJsonSummaryOnly": True,
+            "decodedBitmapMapsAvailable": True,
+        },
+        "decodedBitmapAtlas": {
+            "reportPath": BITMAP_PATHS["pbrReport"],
+            "reportHash": bitmap_bundle.report["integrity"]["bitmapPbrReportHash"],
+            "baseColorPath": BITMAP_PATHS["baseColor"],
+            "normalPath": BITMAP_PATHS["normal"],
+            "roughnessPath": BITMAP_PATHS["roughness"],
+            "occlusionPath": BITMAP_PATHS["occlusion"],
+            "viewConfidencePath": BITMAP_PATHS["viewConfidence"],
+            "generatedRegionMaskPath": BITMAP_PATHS["generatedRegionMask"],
+            "sourceContributionPath": BITMAP_PATHS["sourceContribution"],
+            "logoRegionMaskPath": BITMAP_PATHS["logoRegionMask"],
+            "decodedRasterAssetsPersisted": True,
+            "sourceObservedFraction": bitmap_bundle.report["coverage"]["sourceObservedFraction"],
+            "generatedControlledFillFraction": bitmap_bundle.report["coverage"][
+                "generatedControlledFillFraction"
+            ],
         },
         "sourceReprojectionMetrics": _source_reprojection_metrics(
             visual_observations, fit_report, projections
@@ -191,6 +219,7 @@ def build_texture_identity_bundle(
             "containsUserImagery": False,
             "containsPersonalBodyData": False,
             "rawPixelsExported": False,
+            "publicSyntheticFixturePixelsPackaged": True,
             "sourcePathsExported": False,
             "externalApis": False,
             "trainingUse": False,
@@ -198,8 +227,8 @@ def build_texture_identity_bundle(
         },
         "warnings": [
             "d0_source_texture_recovery_synthetic_fixture_only",
-            "raw_source_pixels_not_packaged",
-            "pbr_maps_placeholder_where_source_evidence_absent",
+            "public_synthetic_fixture_pixels_packaged_private_user_pixels_not_packaged",
+            "derived_normal_is_d0_baseline_not_photometric_reconstruction",
             "hidden_regions_not_hallucinated",
             "private_user_raster_processing_not_enabled",
         ],

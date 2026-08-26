@@ -20,9 +20,10 @@ def test_demo_package_contains_deterministic_inspection_artifacts(tmp_path) -> N
     assert report["readiness"]["topologyRepresentationInspectionRun"] is True
     assert report["readiness"]["canonicalSimulationToRenderSilhouetteRun"] is True
     assert report["readiness"]["providerGeometryAppearanceComparisonRun"] is False
-    assert report["readiness"]["sourceImageSilhouetteComparisonRun"] is False
-    assert report["readiness"]["sourceImageAppearanceComparisonRun"] is False
+    assert report["readiness"]["sourceImageSilhouetteComparisonRun"] is True
+    assert report["readiness"]["sourceImageAppearanceComparisonRun"] is True
     assert report["readiness"]["humanVisualReviewRun"] is False
+    assert report["readiness"]["acceptedForD0PublicFixture"] is True
     assert report["readiness"]["acceptedForVisualFidelity"] is False
     assert report["readiness"]["acceptedForCleanProposal"] is False
     assert (
