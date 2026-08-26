@@ -25,7 +25,7 @@ def test_sleeveless_package_is_complete_conventional_and_valid(tmp_path) -> None
         "counts": {"info": 0, "warning": 0, "error": 0, "fatal": 0},
         "issues": [],
     }
-    assert manifest["packageDigest"] == GOLDEN_DIGEST
+    assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["garmentClass"] == "sleeveless_top"
     assert len(manifest["inventory"]) == 37
     assert quality["readiness"]["sleevelessTopD0Complete"] is True
@@ -66,7 +66,8 @@ def test_sleeveless_repeated_builds_are_byte_identical(tmp_path) -> None:
         if path.is_file()
     }
     assert first_hashes == second_hashes
-    assert read_json(first / "manifest.json")["packageDigest"] == GOLDEN_DIGEST
+    manifest = read_json(first / "manifest.json")
+    assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
 
 
 def test_sleeveless_cli_build_validate_report_and_diff(tmp_path, capsys) -> None:
@@ -81,3 +82,20 @@ def test_sleeveless_cli_build_validate_report_and_diff(tmp_path, capsys) -> None
     payload = json.loads(outputs[-1])
     assert payload["garmentClass"] == "sleeveless_top"
     assert payload["readiness"]["sleevelessTopD0Complete"] is True
+
+
+def _golden_diagnostics(manifest: dict) -> str:
+    return json.dumps(
+        {
+            "actualDigest": manifest["packageDigest"],
+            "inventory": {
+                entry["path"]: {
+                    "sha256": entry["sha256"],
+                    "byteSize": entry["byteSize"],
+                    "canonical": entry["canonical"],
+                }
+                for entry in manifest["inventory"]
+            },
+        },
+        sort_keys=True,
+    )
