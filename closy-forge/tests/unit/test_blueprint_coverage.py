@@ -48,8 +48,9 @@ def test_blueprint_coverage_export_has_required_structure() -> None:
 
     assert payload["version"] == "d0-fidelity-closeout-local-validation-v1"
     assert (
-        payload["generatedBy"] == "Phase 7 material-physics implementation on "
-        "codex/closy-forge-phase-7-material-physics; remote evidence pending substantive commit"
+        payload["generatedBy"] == "Phase 7 material-physics evidence sync on "
+        "codex/closy-forge-phase-7-material-physics at "
+        "0dbf362a444441d65b10e16d3b30f000294d2b04"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -558,6 +559,10 @@ def test_active_resume_points_to_phase7_material_validation() -> None:
     assert "Motion-quality acceptance remains false" in resume
     assert "self_collision_unresolved_contacts" in resume
     assert "Phase 7 and Stage Q are partial globally" in resume
+    assert "`0dbf362a444441d65b10e16d3b30f000294d2b04`" in resume
+    assert "run `32947979333`" in resume
+    assert "Ubuntu job `98112789377`" in resume
+    assert "Windows job `98112789618`" in resume
     assert "codex/closy-forge-phase-8-sleeveless-top" in resume
 
 

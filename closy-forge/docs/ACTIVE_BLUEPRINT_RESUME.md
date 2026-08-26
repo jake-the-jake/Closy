@@ -10,7 +10,10 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   `91b9ececae3097a42cba45cad90fa81b1ef31d6a` from draft PR #8.
 - D0 predecessor final run `32936865331` passed Ubuntu job `98079634048` and Windows job
   `98079633929` with 234 tests per OS, fresh schemas and deterministic package evidence.
-- Phase 7 substantive commit and remote run are pending; the complete local branch gate is green.
+- Phase 7 substantive commit `0dbf362a444441d65b10e16d3b30f000294d2b04` is draft PR #9.
+- Substantive run `32947979333` passed Ubuntu job `98112789377` and Windows job `98112789618`;
+  both jobs passed format, lint, strict type check, 246 tests, 59 fresh schemas, two deterministic
+  package builds, package diff, validation/report and the non-canonical binding benchmark.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -46,7 +49,7 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   `0.793515209` metres and unresolved self-collision counts range from 150 to 323. These results
   are evidence to improve, not thresholds to loosen.
 
-## Current Local Validation
+## Current Validation
 
 - Ruff passes for the Phase 7 implementation; strict mypy passes across 103 source files.
 - 59 schemas are freshly generated.
@@ -59,7 +62,8 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   inventories, zero byte differences and the same canonical digest.
 - Validation counts are `info=0`, `warning=1`, `error=0`, `fatal=0`; the sole warning is
   `self_collision_unresolved_contacts`.
-- The remote Ubuntu/Windows matrix remains to be run before the branch is called green.
+- The substantive local and Ubuntu/Windows gates are green. The evidence-sync head still requires
+  its final remote matrix before Phase 8 branches from it.
 
 ## Truthful Limits
 
@@ -76,7 +80,7 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After the Phase 7 implementation and evidence-sync heads are remotely green:
+After this evidence-sync head is remotely green:
 
 ```powershell
 cd E:\apps\Closy
@@ -85,6 +89,6 @@ git switch -c codex/closy-forge-phase-8-sleeveless-top
 
 ## Next Safe Action
 
-Create the Phase 7 substantive commit and stacked draft PR, finish the remote Phase 7 gate targeting
-`codex/closy-forge-d0-fidelity-closeout`, then implement the truthful sleeveless-top family through
-the shared pattern, material, settle, binding, fallback, fitting, texture and fidelity pipeline.
+Push this single evidence-sync commit and confirm its final Ubuntu/Windows matrix, then implement the
+truthful sleeveless-top family through the shared pattern, material, settle, binding, fallback,
+fitting, texture and fidelity pipeline.
