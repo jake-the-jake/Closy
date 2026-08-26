@@ -6,7 +6,7 @@ from typing import Any
 
 from closy_forge.binding.binary_format import BindingFile
 from closy_forge.binding.reconstruct import reconstruct_vertices
-from closy_forge.geometry.mesh_model import MeshSet, Vec3
+from closy_forge.geometry.mesh_model import Mesh, MeshSet, Vec3
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes
 from closy_forge.simulation.material_motion_suite import measure_motion_metrics
@@ -41,17 +41,17 @@ def build_sleeveless_motion_suite(
         preset_id = str(descriptor["presetId"])
         material = solver_material_payload(descriptor)
         result = settle_reference_cloth(rest_mesh, constraints, avatar_contract, material)
-        metrics = measure_motion_metrics(
-            rest_mesh, result.settled_mesh, constraints, result.diagnostics
-        )
+        settled_mesh = _quantize_mesh(result.settled_mesh)
+        diagnostics = _quantize_numbers(result.diagnostics)
+        metrics = measure_motion_metrics(rest_mesh, settled_mesh, constraints, diagnostics)
         armholes = _armhole_metrics(metrics)
-        reconstructed = reconstruct_vertices(result.settled_mesh, binding)
-        dense = _dense_seam_metrics(result.settled_mesh, binding, constraints)
+        reconstructed = reconstruct_vertices(settled_mesh, binding)
+        dense = _dense_seam_metrics(settled_mesh, binding, constraints)
         state = simulation_state_json(
             state_id=f"sleeveless_material_settle.{preset_id}",
-            meshset=result.settled_mesh,
+            meshset=settled_mesh,
             source_mesh=rest_mesh,
-            diagnostics=result.diagnostics,
+            diagnostics=diagnostics,
         )
         state["materialPresetId"] = preset_id
         state["diagnosticsRef"] = (
@@ -63,7 +63,7 @@ def build_sleeveless_motion_suite(
                 "presetId": preset_id,
                 "solverVersion": SOLVER_VERSION,
                 "actualSolverRun": True,
-                "diagnostics": result.diagnostics,
+                "diagnostics": diagnostics,
                 "metrics": metrics,
                 "armholeMetrics": armholes,
                 "denseBinding": dense,
@@ -71,11 +71,11 @@ def build_sleeveless_motion_suite(
                 "reconstructionFinite": all(
                     isfinite(component) for vertex in reconstructed for component in vertex
                 ),
-                "simulationContentHash": geometry_content_hash(result.settled_mesh),
+                "simulationContentHash": geometry_content_hash(settled_mesh),
             }
         )
         if preset_id == "material.cotton_jersey_d0_v1":
-            selected_settled = result.settled_mesh
+            selected_settled = settled_mesh
             selected_material = material
     if selected_settled is None or selected_material is None:
         raise ValueError("cotton jersey preset missing from sleeveless motion suite")
@@ -87,19 +87,21 @@ def build_sleeveless_motion_suite(
         selected_material,
         "opening_stress",
     )
+    stress_mesh = _quantize_mesh(stress.mesh)
+    stress_diagnostics = _quantize_numbers(stress.diagnostics)
     stress_metrics = measure_motion_metrics(
         selected_settled,
-        stress.mesh,
+        stress_mesh,
         constraints,
-        stress.diagnostics,
+        stress_diagnostics,
     )
     stress_armholes = _armhole_metrics(stress_metrics)
-    stress_dense = _dense_seam_metrics(stress.mesh, binding, constraints)
+    stress_dense = _dense_seam_metrics(stress_mesh, binding, constraints)
     states["opening_stress"] = simulation_state_json(
         state_id="sleeveless.opening_stress",
-        meshset=stress.mesh,
+        meshset=stress_mesh,
         source_mesh=selected_settled,
-        diagnostics=stress.diagnostics,
+        diagnostics=stress_diagnostics,
     )
     states["opening_stress"]["diagnosticsRef"] = (
         "reports/material_motion_suite.json#/underarmStress/diagnostics"
@@ -114,7 +116,7 @@ def build_sleeveless_motion_suite(
         "underarmStress": {
             "stateId": stress.state_id,
             "actualSolverRun": True,
-            "diagnostics": stress.diagnostics,
+            "diagnostics": stress_diagnostics,
             "metrics": stress_metrics,
             "armholeMetrics": stress_armholes,
             "denseBinding": stress_dense,
@@ -153,6 +155,8 @@ def build_sleeveless_motion_suite(
         },
         "integrity": {"suiteHash": ""},
     }
+    report = _quantize_numbers(report)
+    states = {state_id: _quantize_numbers(state) for state_id, state in states.items()}
     report["integrity"]["suiteHash"] = hash_sleeveless_motion_report(report)
     return report, states, selected_settled
 
@@ -237,3 +241,36 @@ def _rms(values: list[float]) -> float:
 
 def _round(value: float) -> float:
     return round(float(value), 9)
+
+
+def _quantize_mesh(meshset: MeshSet) -> MeshSet:
+    return MeshSet(
+        [
+            Mesh(
+                name=mesh.name,
+                panel_id=mesh.panel_id,
+                vertices=[
+                    (
+                        round(float(vertex[0]), 8),
+                        round(float(vertex[1]), 8),
+                        round(float(vertex[2]), 8),
+                    )
+                    for vertex in mesh.vertices
+                ],
+                panel_uvs=mesh.panel_uvs,
+                triangles=mesh.triangles,
+                material_id=mesh.material_id,
+            )
+            for mesh in meshset.meshes
+        ]
+    )
+
+
+def _quantize_numbers(value: Any) -> Any:
+    if isinstance(value, float):
+        return round(value, 8)
+    if isinstance(value, dict):
+        return {key: _quantize_numbers(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_quantize_numbers(item) for item in value]
+    return value
