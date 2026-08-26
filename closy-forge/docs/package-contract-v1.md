@@ -153,3 +153,20 @@ The fixture executes four authored material presets, a cuff stress state, author
 binding and an independent simulation-topology fallback. It is deterministic public CPU evidence,
 not private-user fit, measured fabric calibration, production GPU cloth or global Phase 8
 completion.
+
+## Simple-Skirt D0 Profile
+
+The Phase 8 simple-skirt profile is a literal bottom garment in the shared 41-file contract. Its
+front/back flared panels are joined by left/right side seams; waist and hem are the only semantic
+openings. Family-specific artifacts are:
+
+```text
+fitting/simple_skirt_fit.json
+textures/simple_skirt_pbr_report.json
+reports/simple_skirt_quality.json
+```
+
+The fixture executes bounded waist/hip/length/flare fitting, four authored material presets, a
+waist-opening stress state, authoritative dense binding, independent simulation-topology fallback,
+decoded PBR and source/render fidelity. It is public synthetic CPU evidence, not private-user fit,
+measured fabric calibration, production GPU cloth or global Phase 8 completion.

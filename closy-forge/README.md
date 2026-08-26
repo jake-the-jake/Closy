@@ -15,6 +15,8 @@ python -m closy_forge demo build-sleeveless --output generated/garments/demo_sle
 python -m closy_forge validate generated/garments/demo_sleeveless.closygarment
 python -m closy_forge demo build-long-sleeved --output generated/garments/demo_long_sleeved.closygarment
 python -m closy_forge validate generated/garments/demo_long_sleeved.closygarment
+python -m closy_forge demo build-simple-skirt --output generated/garments/demo_simple_skirt.closygarment
+python -m closy_forge validate generated/garments/demo_simple_skirt.closygarment
 python -m closy_forge capture build-synthetic --output generated/capture/synthetic_tshirt --force
 ```
 
@@ -70,6 +72,8 @@ python -m closy_forge demo build-sleeveless --output ../generated/garments/demo_
 python -m closy_forge validate ../generated/garments/demo_sleeveless.closygarment
 python -m closy_forge demo build-long-sleeved --output ../generated/garments/demo_long_sleeved.closygarment --force
 python -m closy_forge validate ../generated/garments/demo_long_sleeved.closygarment
+python -m closy_forge demo build-simple-skirt --output ../generated/garments/demo_simple_skirt.closygarment --force
+python -m closy_forge validate ../generated/garments/demo_simple_skirt.closygarment
 ```
 
 CLI exit codes:
