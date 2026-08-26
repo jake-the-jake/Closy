@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-8-SIMPLE-DRESS-D0`.
-- Branch: `codex/closy-forge-phase-8-simple-dress`, based on simple-trousers evidence head
-  `9d3d8cf3af23d0d2c922743fdb85af1a5f9669da` from draft PR #13.
+- Active checkpoint: `PHASE-8-BUTTON-SHIRT-D0`.
+- Branch: `codex/closy-forge-phase-8-shirt-openings`, based on simple-dress evidence head
+  `bc16e6e72a462d43c46aa31147909990a50e41b0` from draft PR #14.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -38,6 +38,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - PR #14 run `33014572452` passed Ubuntu job `98329331210` and Windows job `98329331018`, including
   307 tests per OS, schema freshness, all six family rebuild/diff/validation paths and the binding
   benchmark.
+- Button-shirt implementation `943f0b5d06198c5a97c11cd1121e6244899569ea` is draft PR #15.
+  Local Ruff, strict mypy across 170 sources, 89 fresh schemas and the 18-test focused family/
+  package/corruption gate pass. Cross-OS CI evidence is pending and must be recorded literally.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -145,10 +148,27 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   inventoried bytes at digest
   `e8b1a3c00d9276c9d95ee2525bf3e24c88a84ee4ab03a5f5472e73175663b00a`.
 
+### Button Shirt
+
+- The literal top-family pattern has split left/right fronts, one back and two sleeves. Ten physical
+  shoulder/side/armhole/underarm seams leave neck, hem, front placket and both cuffs open.
+- Six ordered closure stations pair buttons on the right placket with buttonholes on the left.
+  Closure records are semantic and openable but deliberately do not become solver constraints.
+- A bounded 25-candidate fit accepts objective `0.00156`. Four material presets execute and the
+  authored cues select `material.lightweight_woven_d0_v1` for the settled package state.
+- Both cuffs remain non-collapsed under opening stress; left/right drift is `0.00002032` /
+  `0.00007738` metres and maximum dense seam crack is `0.00247185` metres. Stress convergence is
+  false and is not promoted.
+- The authoritative dense path has 1,506 binding records; the independent fallback retains 256
+  simulation vertices. Decoded source/render comparison records minimum IoU `0.302626779`, maximum
+  normalised boundary Chamfer `0.054750816`, and colour MAE `0.0`.
+- Repeated local builds produce matching 41-file trees with 37 inventory entries, 495,639 bytes and
+  digest `4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91`.
+
 ## Current Validation
 
-- Ruff format/lint pass; strict mypy passes across 160 source files.
-- 84 schemas are freshly generated.
+- Ruff format/lint pass; strict mypy passes across 170 source files.
+- 89 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
 - The complete local Forge suite passes all 307 collected tests. PR #14 run `33014572452` confirms
   the same six-family matrix on Ubuntu and Windows.
@@ -164,11 +184,13 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   bytes and zero validator issues on both local Python runtimes.
 - The simple-dress package has 41 physical files, 37 inventory entries, 412,888 inventoried bytes
   and zero validator issues on both local Python runtimes.
+- The button-shirt package has 41 physical files, 37 inventory entries, 495,639 inventoried bytes
+  and zero validator issues in repeated local builds. Remote cross-runtime confirmation is pending.
 
 ## Truthful Limits
 
-- Phase 8 is partial globally. Sleeveless, long-sleeved, simple-skirt, simple-trousers and
-  simple-dress D0 slices are complete for bounded public fixtures; shirts, jackets and
+- Phase 8 is partial globally. Sleeveless, long-sleeved, simple-skirt, simple-trousers,
+  simple-dress and button-shirt D0 slices are complete for bounded public fixtures; jackets and
   layered/unusual garments are not started.
 - Phase 7 and Stage Q remain partial globally. Authored preset execution is not measured real-fabric
   calibration, learned inference, private-user estimation or production GPU cloth.
@@ -181,15 +203,15 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After committing and pushing this green PR #14 evidence checkpoint:
+After PR #15 cross-OS evidence is green and truth-synced:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-8-shirt-openings
+git switch -c codex/closy-forge-phase-8-jacket-outerwear
 ```
 
 ## Next Safe Action
 
-Implement one literal shirt-with-openings/buttons family through the shared contracts, including
-front plackets, closure semantics and button/buttonhole pairing. Preserve all five Phase 8 family
-goldens exactly and keep jackets/layering separate.
+Implement one literal jacket/outerwear family through the shared contracts, including separate
+front opening/facing semantics, outer-layer collision order and bounded outerwear material evidence.
+Preserve all six Phase 8 family goldens and keep multi-garment layering separate.

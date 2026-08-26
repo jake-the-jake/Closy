@@ -207,3 +207,23 @@ The authoritative dense shell is reconstructed only through `binding/sim_to_rend
 simulation fallback remains topologically independent. Completion is limited to the deterministic
 public CPU fixture and does not imply private-user fitting, real-fabric calibration, production GPU
 cloth or global Phase 8 acceptance.
+
+## Button-Shirt D0 Profile
+
+The Phase 8 button-shirt profile uses five literal panels: split left/right fronts, one back and two
+long sleeves. Ten sewn shoulder/side/armhole/underarm seams intentionally exclude the front placket.
+Neck, hem, placket and both cuffs remain semantic openings. Six ordered button/buttonhole records
+pair opposite placket edges but are explicitly not simulated fastening constraints. Family-specific
+artifacts are:
+
+```text
+fitting/button_shirt_fit.json
+textures/button_shirt_pbr_report.json
+reports/button_shirt_quality.json
+```
+
+The public fixture selects the authored lightweight-woven preset from disclosed categorical cues.
+Its authoritative dense shell is reconstructed only through `binding/sim_to_render.bin`; the direct
+simulation fallback remains topologically independent. This is deterministic public CPU evidence,
+not button mechanics, private-user fitting, measured fabric, production GPU cloth or global Phase 8
+acceptance.

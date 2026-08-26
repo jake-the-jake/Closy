@@ -88,6 +88,23 @@ Representative current codes:
 - `simple_dress_inventory_hash_mismatch`: an inventoried dress artifact hash/size differs.
 - `simple_dress_package_digest_mismatch`: canonical dress digest does not match inventory.
 
+- `button_shirt_family_mismatch`: manifest identity is not the canonical button-shirt fixture.
+- `button_shirt_manifest_contract_invalid`: package kind or schema version is unsupported.
+- `button_shirt_contract_unreadable`: a required button-shirt contract cannot be decoded.
+- `button_shirt_semantic_ids_invalid`: split-front, sleeve, opening, seam or closure IDs are not literal.
+- `button_shirt_opening_loop_invalid`: neck, hem, front placket or either cuff does not resolve.
+- `button_shirt_constraint_pairing_invalid`: a shoulder, side, armhole or underarm pairing is absent.
+- `button_shirt_closure_pairing_invalid`: ordered button/buttonhole stations or placket references are invalid.
+- `button_shirt_fit_integrity_invalid`: bounded fit evidence or its hash is invalid.
+- `button_shirt_motion_suite_invalid`: four-preset or two-cuff stress evidence is invalid.
+- `button_shirt_material_selection_invalid`: the public fixture does not select intact woven evidence.
+- `button_shirt_binding_validation_failed`: persisted dense/fallback geometry is invalid.
+- `button_shirt_appearance_validation_failed`: decoded source/render or PBR evidence is invalid.
+- `button_shirt_quality_claim_invalid`: family readiness or Phase 8 status is overclaimed.
+- `button_shirt_inventory_file_set_mismatch`: inventory paths differ from persisted files.
+- `button_shirt_inventory_hash_mismatch`: an inventoried shirt artifact hash/size differs.
+- `button_shirt_package_digest_mismatch`: canonical shirt digest does not match inventory.
+
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
 - `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.
