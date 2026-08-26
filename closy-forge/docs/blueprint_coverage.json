@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "Locally green D0 fidelity closeout for BP52, BP53 and BP47 from exact green Phase 6 head a8d6500; implementation SHA and remote run pending",
+  "generatedBy": "D0 fidelity closeout for BP52, BP53 and BP47 from exact green Phase 6 head a8d6500; implementation SHA and remote run pending",
   "rows": [
     {
       "commitSha": [
@@ -2779,5 +2779,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "d0-fidelity-closeout-local-green-v1"
+  "version": "d0-fidelity-closeout-local-validation-v1"
 }
