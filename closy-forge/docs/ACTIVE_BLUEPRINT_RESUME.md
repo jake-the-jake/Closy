@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-8-SIMPLE-TROUSERS-D0`.
-- Branch: `codex/closy-forge-phase-8-simple-trousers`, based on simple-skirt evidence head
-  `ef2823c5f5838e640b76e338d58f2976706e5c4b` from draft PR #12.
+- Active checkpoint: `PHASE-8-SIMPLE-DRESS-D0`.
+- Branch: `codex/closy-forge-phase-8-simple-dress`, based on simple-trousers evidence head
+  `9d3d8cf3af23d0d2c922743fdb85af1a5f9669da` from draft PR #13.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -32,6 +32,11 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   The complete local gate passes 295 tests, 150 typed source files and 79 fresh schemas.
 - PR #13 run `33007320698` passed Ubuntu job `98304336270` and Windows job `98304336105`, including
   295 tests per OS, schema freshness, all five family rebuild/diff/validation paths and the binding
+  benchmark.
+- Simple-dress implementation `61c27c4eacfff92dee8d468119277a38e7759fc7` is draft PR #14.
+  The complete local gate passes 307 tests, 160 typed source files and 84 fresh schemas.
+- PR #14 run `33014572452` passed Ubuntu job `98329331210` and Windows job `98329331018`, including
+  307 tests per OS, schema freshness, all six family rebuild/diff/validation paths and the binding
   benchmark.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
@@ -122,13 +127,31 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   inventoried bytes at digest
   `4c023d82785791335d966fe81e64928fdbe646e47c7d60786c8666eed4e9a886`.
 
+### Simple Dress
+
+- The literal one-piece pattern has separate front/back bodices and skirts, eight shoulder/side/
+  waist seams, and semantic neck/hem/left-armhole/right-armhole openings. The waist is sewn rather
+  than falsely represented as an opening.
+- A bounded 25-candidate fit accepts objective `0.0012`. Four material presets and armhole stress
+  execute through the CPU solver, 1,134-record authoritative dense binding and independent
+  193-vertex direct-simulation fallback.
+- Both armholes remain non-collapsed; left/right drift is `0.00544586` / `0.00110252` metres and
+  maximum dense seam crack is `0.00736142` metres. Stress-solver convergence remains false and is
+  not promoted.
+- Composite bodice/skirt source fixtures and independent raster output record minimum decoded
+  silhouette IoU `0.50009176`, maximum normalised boundary Chamfer `0.029052881`, and colour MAE
+  `0.0`.
+- Python 3.11 and 3.13 produce byte-identical 41-file trees with 37 inventory entries and 412,888
+  inventoried bytes at digest
+  `e8b1a3c00d9276c9d95ee2525bf3e24c88a84ee4ab03a5f5472e73175663b00a`.
+
 ## Current Validation
 
-- Ruff format/lint pass; strict mypy passes across 150 source files.
-- 79 schemas are freshly generated.
+- Ruff format/lint pass; strict mypy passes across 160 source files.
+- 84 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
-- The complete local Forge suite passes all 295 collected tests. PR #13 run `33007320698` confirms
-  the same simple-trousers matrix on Ubuntu and Windows.
+- The complete local Forge suite passes all 307 collected tests. PR #14 run `33014572452` confirms
+  the same six-family matrix on Ubuntu and Windows.
 - The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
   inventoried bytes. Two builds have identical file trees and zero validator issues.
 - The existing T-shirt package remains byte-identical at 137 files with digest
@@ -139,12 +162,14 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   and zero validator issues on both local Python runtimes.
 - The simple-trousers package has 41 physical files, 37 inventory entries, 410,405 inventoried
   bytes and zero validator issues on both local Python runtimes.
+- The simple-dress package has 41 physical files, 37 inventory entries, 412,888 inventoried bytes
+  and zero validator issues on both local Python runtimes.
 
 ## Truthful Limits
 
-- Phase 8 is partial globally. Sleeveless, long-sleeved, simple-skirt and simple-trousers D0 slices
-  are complete for bounded public fixtures; dresses, shirts, jackets and layered/unusual garments
-  are not started.
+- Phase 8 is partial globally. Sleeveless, long-sleeved, simple-skirt, simple-trousers and
+  simple-dress D0 slices are complete for bounded public fixtures; shirts, jackets and
+  layered/unusual garments are not started.
 - Phase 7 and Stage Q remain partial globally. Authored preset execution is not measured real-fabric
   calibration, learned inference, private-user estimation or production GPU cloth.
 - The new family uses a fixed synthetic avatar and CPU reference solver. Mobile/device performance,
@@ -156,15 +181,15 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After committing and pushing this green PR #13 evidence checkpoint:
+After committing and pushing this green PR #14 evidence checkpoint:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-8-simple-dress
+git switch -c codex/closy-forge-phase-8-shirt-openings
 ```
 
 ## Next Safe Action
 
-Implement a literal simple-dress family through the shared contracts, with bodice/skirt panels,
-neck/armhole/hem openings, waist joins, bounded fit, material motion, dense binding, independent
-fallback, decoded fidelity and corruption controls. Preserve all four family goldens exactly.
+Implement one literal shirt-with-openings/buttons family through the shared contracts, including
+front plackets, closure semantics and button/buttonhole pairing. Preserve all five Phase 8 family
+goldens exactly and keep jackets/layering separate.
