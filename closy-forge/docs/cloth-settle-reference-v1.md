@@ -9,11 +9,11 @@ Forge includes a small CPU reference cloth backend for the canonical T-shirt fix
 - Fixed step count: `35`
 - Solver iterations per step: `6`
 - Gravity: `-9.81 m/s^2`
-- Damping ratio: from `material.cotton_jersey_reference_v1`
+- Damping and bounded warp/weft/shear/bend coefficients: selected Phase 7 descriptor
 - Collision clearance: `0.006 m`
 - Fixture support stiffness: `0.03`
 - Neck-band seam target cap: `0.02 m`
-- Constraint order: stretch, bend, seam, support, body collision, with bounded D0 self-collision projections at solver checkpoints
+- Constraint order: panel-UV-classified warp/weft/shear stretch, bend, seam, support, body collision, then bounded D0 self-collision projections
 
 The package stores:
 
@@ -24,6 +24,10 @@ The package stores:
 - `reports/self_collision_report.json`: D0 reference self-collision evidence, adversarial fixtures and unresolved-contact metrics
 - `simulation/motion_states/index.json`: index and hashes for eleven bounded solver-produced deformation states
 - `simulation/motion_states/*.json`: persisted positions, settings, material parameters, convergence diagnostics and provenance for each state
+- `simulation/material_presets.json`: four authored descriptors with SI fields, ranges and provenance
+- `simulation/material_motion_states/*.json`: actual settle output for each Phase 7 preset
+- `reports/material_calibration.json`: six isolated numerical parameter-response fixtures
+- `reports/material_motion_suite.json`: cross-preset motion and dense-binding evidence
 
 ## Current Limits
 

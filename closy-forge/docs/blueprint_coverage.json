@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "D0 implementation 242c5c7, final green head 86c6585; run 32935270185 passed Ubuntu and Windows",
+  "generatedBy": "Phase 7 material-physics implementation on codex/closy-forge-phase-7-material-physics; remote evidence pending substantive commit",
   "rows": [
     {
       "commitSha": [
@@ -1107,22 +1107,34 @@
     },
     {
       "commitSha": [
-        "bf1ae29"
+        "bf1ae29",
+        "91b9ececae3097a42cba45cad90fa81b1ef31d6a"
       ],
       "dependencies": [],
       "executableEvidence": [
-        "single cotton jersey preset consumed by solver"
+        "four versioned public D0 fabric descriptors with SI units, ranges, per-field confidence and provenance",
+        "deterministic cue selector records all four scores, alternatives, confidence and explicit override provenance",
+        "six independent numerical calibration fixtures verify stretch, shear, bend, damping, gravity sag and collision ordering",
+        "four actual CPU T-shirt solver runs persist displacement, damping proxy, directional strain, seam, opening, body/self-collision, topology and binding reconstruction evidence",
+        "bounded execution succeeds and dense reconstruction is finite, while D0 motion-quality acceptance truthfully remains false due opening drift and unresolved self-collision",
+        "local full pytest passes all 246 collected Forge tests with Ruff, strict mypy across 103 source files and 59 fresh schemas",
+        "two independent local package trees are byte-identical with 137 physical files, 133 canonical inventory entries and digest 79c5a65deb347bbed23f41c30a926ae00aead7b641fe714d75cb403be8ed07a8"
       ],
       "id": "BP-08-Q-MATERIAL-INFERENCE",
       "implementationPaths": [
-        "closy-forge/src/closy_forge/simulation/reference_cloth_solver.py"
+        "closy-forge/src/closy_forge/simulation/material_physics.py",
+        "closy-forge/src/closy_forge/simulation/material_calibration.py",
+        "closy-forge/src/closy_forge/simulation/material_motion_suite.py",
+        "closy-forge/src/closy_forge/simulation/reference_cloth_solver.py",
+        "closy-forge/src/closy_forge/validation/validator.py"
       ],
-      "limitations": "No preset library/calibration.",
-      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "limitations": "Authored public-fixture presets are not calibrated measurements of real fabric. Motion is deterministic CPU reference only; opening drift and unresolved self-collision fail D0 motion-quality acceptance. No learned inference, private-user estimation or production GPU run.",
+      "nextAction": "Remote-validate the Phase 7 branch, then apply the shared material contract to the sleeveless-top vertical slice without promoting real-fabric or production-motion acceptance.",
       "sourceSection": "Stages A-U",
       "status": "partial",
-      "summary": "Stage Q: Material Inference.",
+      "summary": "Stage Q now has a transparent authored-preset selector, bounded calibration fixtures and actual fixed-avatar T-shirt response evidence; calibrated real-fabric and learned inference remain absent.",
       "tests": [
+        "tests/unit/test_material_physics.py",
         "tests/unit/test_reference_cloth_solver.py"
       ]
     },
@@ -1938,17 +1950,37 @@
       ]
     },
     {
-      "commitSha": null,
+      "commitSha": [
+        "91b9ececae3097a42cba45cad90fa81b1ef31d6a"
+      ],
       "dependencies": [],
-      "executableEvidence": null,
+      "executableEvidence": [
+        "fabric descriptor and four-preset registry validate fail closed",
+        "six deterministic parameter-response fixtures execute and pass qualitative ordering",
+        "four fixed-avatar T-shirt material states execute the CPU solver and authoritative dense binding",
+        "real-fabric, learned, private-user and production GPU tiers are explicitly not run",
+        "local full pytest passes all 246 collected Forge tests and 59 schemas are fresh",
+        "two independent 137-file packages are byte-identical with 133 canonical inventory entries and digest 79c5a65deb347bbed23f41c30a926ae00aead7b641fe714d75cb403be8ed07a8"
+      ],
       "id": "BP-17-PHASE-07",
-      "implementationPaths": null,
-      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/simulation/material_physics.py",
+        "closy-forge/src/closy_forge/simulation/material_calibration.py",
+        "closy-forge/src/closy_forge/simulation/material_motion_suite.py",
+        "closy-forge/schemas/v1/material-preset-registry.schema.json",
+        "closy-forge/schemas/v1/material-selection.schema.json",
+        "closy-forge/schemas/v1/material-calibration.schema.json",
+        "closy-forge/schemas/v1/material-motion-suite.schema.json"
+      ],
+      "limitations": "Phase 7 is partial: D0 descriptor, selector, fixtures and CPU execution exist, but real-fabric calibration, learned inference, private-user estimation, production GPU motion and accepted collision/opening quality do not.",
+      "nextAction": "Complete bounded remote evidence, then begin Phase 8 with a truthful sleeveless-top family and reuse this material contract.",
       "sourceSection": "Phases 0-14",
-      "status": "not_started",
-      "summary": "Blueprint phase 7.",
-      "tests": null
+      "status": "partial",
+      "summary": "Blueprint phase 7 has an executed public-fixture material-physics D0 slice while production and measured tiers remain incomplete.",
+      "tests": [
+        "tests/unit/test_material_physics.py",
+        "tests/unit/test_schema_freshness.py"
+      ]
     },
     {
       "commitSha": null,
