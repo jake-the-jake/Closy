@@ -48,9 +48,9 @@ def test_blueprint_coverage_export_has_required_structure() -> None:
 
     assert payload["version"] == "d0-fidelity-closeout-local-validation-v1"
     assert (
-        payload["generatedBy"] == "Phase 8 long-sleeved-top evidence sync on "
-        "codex/closy-forge-phase-8-long-sleeved-top at "
-        "e4841b57eba67df6235af065170265d10ced5d1e"
+        payload["generatedBy"] == "Phase 8 simple-skirt evidence sync on "
+        "codex/closy-forge-phase-8-simple-skirt at "
+        "80adff0e35375701dc43553dc8b810f924cfface"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -502,7 +502,7 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
 
 
-def test_phase8_long_sleeved_checkpoint_is_partial_and_evidenced() -> None:
+def test_phase8_simple_skirt_checkpoint_is_partial_and_evidenced() -> None:
     phase8 = {row["id"]: row for row in _rows()}["BP-17-PHASE-08"]
 
     assert phase8["status"] == "partial"
@@ -523,27 +523,37 @@ def test_phase8_long_sleeved_checkpoint_is_partial_and_evidenced() -> None:
     assert any("Windows job 98252505317" in item for item in phase8["executableEvidence"])
     assert any("run 32992270800" in item for item in phase8["executableEvidence"])
     assert any("digest 35155eb1581219532" in item for item in phase8["executableEvidence"])
-    assert "Skirts, trousers" in phase8["limitations"]
-    assert "simple-skirt" in phase8["nextAction"]
+    assert "80adff0e35375701dc43553dc8b810f924cfface" in phase8["commitSha"]
+    assert any("front/back panels" in item for item in phase8["executableEvidence"])
+    assert any("waist non-collapsed" in item for item in phase8["executableEvidence"])
+    assert any("run 32998002569 passes 283 tests" in item for item in phase8["executableEvidence"])
+    assert any("Ubuntu job 98272173605" in item for item in phase8["executableEvidence"])
+    assert any("Windows job 98272174094" in item for item in phase8["executableEvidence"])
+    assert any("digest c5989b4b0d164aeb" in item for item in phase8["executableEvidence"])
+    assert "Trousers, dresses" in phase8["limitations"]
+    assert "simple-trousers" in phase8["nextAction"]
     assert "closy-forge/src/closy_forge/garments/sleeveless_top" in phase8["implementationPaths"]
     assert "closy-forge/src/closy_forge/garments/long_sleeved_top" in phase8["implementationPaths"]
+    assert "closy-forge/src/closy_forge/garments/simple_skirt" in phase8["implementationPaths"]
     assert "closy-forge/tests/corruption/test_sleeveless_corruption.py" in phase8["tests"]
     assert "closy-forge/tests/corruption/test_long_sleeved_corruption.py" in phase8["tests"]
+    assert "closy-forge/tests/corruption/test_simple_skirt_corruption.py" in phase8["tests"]
 
 
-def test_markdown_ledger_matches_phase8_long_sleeved_checkpoint_state() -> None:
+def test_markdown_ledger_matches_phase8_simple_skirt_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Branch: `codex/closy-forge-phase-8-long-sleeved-top`" in ledger
-    assert "Current active increment: `PHASE-8-LONG-SLEEVED-TOP-D0`" in ledger
-    assert "fe884fdedf3c0cc6a8db9b210cd83f4d631362a3" in ledger
-    assert "441,415 inventoried bytes" in ledger
+    assert "Branch: `codex/closy-forge-phase-8-simple-skirt`" in ledger
+    assert "Current active increment: `PHASE-8-SIMPLE-SKIRT-D0`" in ledger
+    assert "5fed0c1" in ledger
+    assert "287,245 inventoried bytes" in ledger
     assert "8b4809b5b6be0da3e7018ed6a5c85f29bb613cd1e2142de119132088ca8f0843" in ledger
     assert "35155eb1581219532b6784033358b97f7a6d743db70193f58a48662045674baf" in ledger
-    assert "run `32992270800`" in ledger
-    assert "0.0048587" in ledger
-    assert "270 tests" in ledger
-    assert "69 fresh schemas" in ledger
+    assert "run `32998002569`" in ledger
+    assert "0.00409052" in ledger
+    assert "283 tests" in ledger
+    assert "74 fresh schemas" in ledger
+    assert "c5989b4b0d164aebd866fe98eaa9fed85477d73f23d55eead05e04a14a7ae2df" in ledger
     assert "Phase 8 remains partial globally" in ledger
     assert "C3 remains partial" in ledger
     assert "self_collision_unresolved_contacts" in ledger
@@ -573,12 +583,12 @@ def test_markdown_ledger_matches_phase8_long_sleeved_checkpoint_state() -> None:
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
 
 
-def test_active_resume_points_to_phase8_long_sleeved_validation() -> None:
+def test_active_resume_points_to_phase8_simple_skirt_validation() -> None:
     resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
 
-    assert "Active checkpoint: `PHASE-8-LONG-SLEEVED-TOP-D0`" in resume
-    assert "`codex/closy-forge-phase-8-long-sleeved-top`" in resume
-    assert "`fe884fdedf3c0cc6a8db9b210cd83f4d631362a3`" in resume
+    assert "Active checkpoint: `PHASE-8-SIMPLE-SKIRT-D0`" in resume
+    assert "`codex/closy-forge-phase-8-simple-skirt`" in resume
+    assert "`5fed0c1`" in resume
     assert "run `32949980632`" in resume
     assert "`d49227b3e13ba269dfa33b65c7221a54838631d5`" in resume
     assert "run `32980095316`" in resume
@@ -597,8 +607,15 @@ def test_active_resume_points_to_phase8_long_sleeved_validation() -> None:
     assert "35155eb1581219532b6784033358b97f7a6d743db70193f58a48662045674baf" in resume
     assert "0.0048587" in resume
     assert "270 collected tests" in resume
+    assert "`80adff0e35375701dc43553dc8b810f924cfface`" in resume
+    assert "run `32998002569`" in resume
+    assert "Ubuntu job `98272173605`" in resume
+    assert "Windows job `98272174094`" in resume
+    assert "c5989b4b0d164aebd866fe98eaa9fed85477d73f23d55eead05e04a14a7ae2df" in resume
+    assert "0.00409052" in resume
+    assert "283 collected tests" in resume
     assert "Phase 8 is partial globally" in resume
-    assert "codex/closy-forge-phase-8-simple-skirt" in resume
+    assert "codex/closy-forge-phase-8-simple-trousers" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:
