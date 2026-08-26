@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "D0 fidelity closeout for BP52, BP53 and BP47 from exact green Phase 6 head a8d6500; implementation SHA and remote run pending",
+  "generatedBy": "D0 implementation 242c5c7, final green head 86c6585; run 32935270185 passed Ubuntu and Windows",
   "rows": [
     {
       "commitSha": [
@@ -262,7 +262,8 @@
     },
     {
       "commitSha": [
-        "aac1c06"
+        "aac1c06",
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
       ],
       "dependencies": [
         "BP-46-STITCHED-SHELL-OUTPUT",
@@ -275,7 +276,8 @@
         "front logo/source-region comparison is mandatory and passes; front/rear appearance delta is 0.011240653",
         "nine persisted-byte corruption controls are detected, including changed render pixels, seam detachment and source/logo corruption",
         "acceptedForD0PublicFixture=true while provider geometry, private capture and human review tiers remain not_run",
-        "canonical clean acceptance remains false; package digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa"
+        "canonical clean acceptance remains false; package digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa",
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
       ],
       "id": "BP-47-INSPECTION-ARTIFACTS",
       "implementationPaths": [
@@ -349,7 +351,8 @@
       "commitSha": [
         "e23820eddaf6d6599a3b125ee1a083dc97ef4acd",
         "c6c94f7",
-        "bb49668"
+        "bb49668",
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -363,7 +366,8 @@
         "final losses report silhouette IoU 0.983152, boundary error 0.001386632, landmark RMS 0.003468, opening alignment 0.002106 and confidence-weighted loss 0.009143346",
         "winner is rebuilt, settled with the full solver closy.reference_xpbd_cpu.v1.3_integrated_self_collision_d0 and independently CPU-raster compared; settledRenderFitComparisonAvailable=true",
         "bounded uncertainty alternatives and camera/mask/landmark corruption controls are persisted and fail closed",
-        "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning"
+        "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning",
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
       ],
       "id": "BP-52-IMAGE-CONDITIONED-FITTING",
       "implementationPaths": [
@@ -392,7 +396,8 @@
     {
       "commitSha": [
         "9fc004d429d9187bfd427586ca43af65e54ec2f5",
-        "93f2e6587cc4f5f3237aba669870648a01118a09"
+        "93f2e6587cc4f5f3237aba669870648a01118a09",
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -407,7 +412,8 @@
         "front/rear source mapping, colour normalization and seam blending execute with zero reported seam discontinuity",
         "432 logo-region atlas pixels preserve the authored source mark; visible source pixels cannot be overwritten by controlled fill",
         "decoded-byte validation rejects swapped source, wrong profile, shifted logo, seam discontinuity, corrupt bytes, bad dimensions, forged confidence and provenance mismatch",
-        "legacy JSON texture summaries remain labelled as summaries; actual decoded bitmap evidence is available in the 125-file canonical package"
+        "legacy JSON texture summaries remain labelled as summaries; actual decoded bitmap evidence is available in the 125-file canonical package",
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
       ],
       "id": "BP-53-SOURCE-TEXTURE-PBR-RECOVERY",
       "implementationPaths": [
@@ -941,14 +947,16 @@
     {
       "commitSha": [
         "310833b",
-        "e23820e"
+        "e23820e",
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
       ],
       "dependencies": [],
       "executableEvidence": [
         "bounded coordinate descent evaluates 33 candidates over eight fit parameters and records 17 history entries",
         "objective improves from 0.092928787 to 0.009143346 with eight accepted moves",
         "confidence-weighted decoded silhouette, boundary, landmark, opening, camera/body and seam/ease losses are persisted",
-        "winner is rebuilt, run through the full XPBD solver and independently raster-compared; uncertainty alternatives and corruption controls fail closed"
+        "winner is rebuilt, run through the full XPBD solver and independently raster-compared; uncertainty alternatives and corruption controls fail closed",
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
       ],
       "id": "BP-08-L-FIT-REFINEMENT",
       "implementationPaths": [
@@ -1071,14 +1079,16 @@
     {
       "commitSha": [
         "a1fbd85",
-        "9fc004d429d9187bfd427586ca43af65e54ec2f5"
+        "9fc004d429d9187bfd427586ca43af65e54ec2f5",
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
       ],
       "dependencies": [],
       "executableEvidence": [
         "four decoded public fixture PNGs and eight actual atlas PNG maps are packaged and hash-inventoried",
         "base color, derived normal, roughness, occlusion, view confidence, generated-region, source-contribution and logo-region maps validate from persisted bytes",
         "source-observed fraction is 0.659362793, controlled generated fill is 0.340637207 and seam discontinuity is zero",
-        "visible logo/source evidence is protected by decoded-byte corruption controls"
+        "visible logo/source evidence is protected by decoded-byte corruption controls",
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
       ],
       "id": "BP-08-P-TEXTURE-PBR",
       "implementationPaths": [
@@ -1739,14 +1749,16 @@
       "commitSha": [
         "07b801c",
         "ba4d358",
-        "e23820e"
+        "e23820e",
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
       ],
       "dependencies": [],
       "executableEvidence": [
         "BP52 bounded fitting consumes decoded BP51 evidence and evaluates 33 candidates over eight parameters",
         "objective improves from 0.092928787 to 0.009143346 with settled full-solver and independent-render verification",
         "uncertainty alternatives plus camera, mask and landmark corruption controls are persisted and fail closed",
-        "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning"
+        "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning",
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
       ],
       "id": "BP-17-PHASE-03",
       "implementationPaths": [
@@ -1774,14 +1786,16 @@
       "commitSha": [
         "07b801c",
         "ba4d358",
-        "9fc004d429d9187bfd427586ca43af65e54ec2f5"
+        "9fc004d429d9187bfd427586ca43af65e54ec2f5",
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
       ],
       "dependencies": [],
       "executableEvidence": [
         "BP53 packages four decoded public fixture source PNGs and eight actual bitmap PBR/provenance maps",
         "bitmap audit records source-observed fraction 0.659362793, controlled generated fill 0.340637207, zero seam discontinuity and 432 protected logo pixels",
         "BP47 independently compares four decoded source views against settled CPU renders and passes the bounded public-fixture D0 tier",
-        "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning"
+        "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning",
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
       ],
       "id": "BP-17-PHASE-04",
       "implementationPaths": [

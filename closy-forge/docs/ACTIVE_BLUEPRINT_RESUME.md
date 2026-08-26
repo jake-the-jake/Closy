@@ -8,6 +8,10 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - Active checkpoint: `D0-FIDELITY-CLOSEOUT-BP52-BP53-BP47`.
 - Branch: `codex/closy-forge-d0-fidelity-closeout`, stacked on the exact green Phase 6 head
   `a8d6500639e1aa662ef95c10754c618f12f42e10` from PR #7.
+- D0 implementation commit: `242c5c79e4bcfaffa6028e621990a7a68ce156a4`; final green head:
+  `86c65858b9a281d5d10e517066dd12c784d09d50` on draft PR #8.
+- Final-head CI run `32935270185` passed Ubuntu job `98075193691` and Windows job
+  `98075193550`.
 - Frozen Phase 6 final-head CI: run `32913193640`; Ubuntu and Windows passed. PR #7 remains
   draft and targets `codex/closy-forge-phase-5-provider`.
 - The active branch implements BP52 bounded fit refinement, BP53 decoded bitmap/PBR evidence
@@ -91,12 +95,12 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ```powershell
 cd E:\apps\Closy
-git add -u -- closy-forge
+git switch -c codex/closy-forge-phase-7-material-physics
 ```
 
 ## Next Safe Action
 
-Commit only `closy-forge` changes, push this branch, open a draft PR targeting
-`codex/closy-forge-phase-6-binding`, wait for Ubuntu/Windows CI and apply at most one bounded
-evidence-sync commit. Then branch `codex/closy-forge-phase-7-material-physics` from the exact
-green D0 head and continue without stopping.
+After this single evidence-sync commit is remotely green, branch `codex/closy-forge-phase-7-material-physics`
+from the exact green D0 head. Implement the
+bounded fabric descriptor, transparent preset selection, calibration fixtures and dynamic
+material-response suite without stopping at the D0 checkpoint.

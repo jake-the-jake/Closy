@@ -49,8 +49,8 @@ def test_blueprint_coverage_export_has_required_structure() -> None:
     assert payload["version"] == "d0-fidelity-closeout-local-validation-v1"
     assert (
         payload["generatedBy"]
-        == "D0 fidelity closeout for BP52, BP53 and BP47 from exact green Phase 6 head "
-        "a8d6500; implementation SHA and remote run pending"
+        == "D0 implementation 242c5c7, final green head 86c6585; run 32935270185 passed "
+        "Ubuntu and Windows"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
