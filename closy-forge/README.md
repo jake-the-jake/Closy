@@ -3,7 +3,7 @@
 Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
 
 The current deterministic fixtures build an authored T-shirt plus literal sleeveless-top,
-long-sleeved-top, simple-skirt and simple-trousers families. All retain pattern, simulation,
+long-sleeved-top, simple-skirt, simple-trousers and simple-dress families. All retain pattern, simulation,
 conventional GLB and authoritative binding evidence; the Phase 8 slices prove the shared pipeline
 is not restricted to T-shirt semantics:
 
@@ -19,6 +19,8 @@ python -m closy_forge demo build-simple-skirt --output generated/garments/demo_s
 python -m closy_forge validate generated/garments/demo_simple_skirt.closygarment
 python -m closy_forge demo build-simple-trousers --output generated/garments/demo_simple_trousers.closygarment
 python -m closy_forge validate generated/garments/demo_simple_trousers.closygarment
+python -m closy_forge demo build-simple-dress --output generated/garments/demo_simple_dress.closygarment
+python -m closy_forge validate generated/garments/demo_simple_dress.closygarment
 python -m closy_forge capture build-synthetic --output generated/capture/synthetic_tshirt --force
 ```
 
@@ -78,6 +80,8 @@ python -m closy_forge demo build-simple-skirt --output ../generated/garments/dem
 python -m closy_forge validate ../generated/garments/demo_simple_skirt.closygarment
 python -m closy_forge demo build-simple-trousers --output ../generated/garments/demo_simple_trousers.closygarment --force
 python -m closy_forge validate ../generated/garments/demo_simple_trousers.closygarment
+python -m closy_forge demo build-simple-dress --output ../generated/garments/demo_simple_dress.closygarment --force
+python -m closy_forge validate ../generated/garments/demo_simple_dress.closygarment
 ```
 
 CLI exit codes:
@@ -108,6 +112,7 @@ See:
 - `docs/long-sleeved-top-d0.md` for the Phase 8 long-sleeved family fixture and cuff evidence.
 - `docs/simple-skirt-d0.md` for the Phase 8 skirt family fixture and waist evidence.
 - `docs/simple-trousers-d0.md` for the Phase 8 trousers family fixture and cuff evidence.
+- `docs/simple-dress-d0.md` for the Phase 8 one-piece dress fixture and armhole evidence.
 - `docs/MASTER_BLUEPRINT_PROGRESS.md` for the evidence ledger across the master blueprint.
 - `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.
 - `../docs/closy-garment-package-v1.md` for the repository-level package overview.

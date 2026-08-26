@@ -179,6 +179,8 @@ def _visible_panels(label: str) -> set[str]:
         simple_skirt,
         f"panel.simple_trousers.{trouser_face}.left",
         f"panel.simple_trousers.{trouser_face}.right",
+        f"panel.simple_dress.{trouser_face}.bodice",
+        f"panel.simple_dress.{trouser_face}.skirt",
         "panel.sleeve.left",
         "panel.sleeve.right",
         "panel.long_sleeved_top.sleeve.left",

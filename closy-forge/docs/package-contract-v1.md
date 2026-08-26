@@ -189,3 +189,21 @@ two-cuff opening stress state, 1,092-record authoritative dense binding, indepen
 simulation-topology fallback, decoded PBR and composite two-panel source/render fidelity. It is
 public synthetic CPU evidence, not private-user fit, measured fabric calibration, production GPU
 cloth or global Phase 8 completion.
+
+## Simple-Dress D0 Profile
+
+The Phase 8 simple-dress profile is a literal four-panel one-piece garment in the shared 41-file
+contract. Separate front/back bodices join separate front/back skirts at sewn waist seams; shoulder
+and side seams leave one neck, one hem and two armhole openings. The waist is deliberately not an
+opening. Its family-specific artifacts are:
+
+```text
+fitting/simple_dress_fit.json
+textures/simple_dress_pbr_report.json
+reports/simple_dress_quality.json
+```
+
+The authoritative dense shell is reconstructed only through `binding/sim_to_render.bin`; the direct
+simulation fallback remains topologically independent. Completion is limited to the deterministic
+public CPU fixture and does not imply private-user fitting, real-fabric calibration, production GPU
+cloth or global Phase 8 acceptance.

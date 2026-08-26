@@ -14,6 +14,7 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
         "long_sleeved_top",
         "simple_skirt",
         "simple_trousers",
+        "simple_dress",
     }:
         return summary
     binding = read_json(package_dir / "binding" / "binding_manifest.json")
@@ -652,6 +653,7 @@ def human_report(package_dir: Path) -> str:
         "long_sleeved_top",
         "simple_skirt",
         "simple_trousers",
+        "simple_dress",
     }:
         validation = summary["validation"]
         readiness = summary["readiness"]
@@ -660,6 +662,7 @@ def human_report(package_dir: Path) -> str:
             "long_sleeved_top": ("longSleevedTopD0Complete", "Long-sleeved-top D0"),
             "simple_skirt": ("simpleSkirtD0Complete", "Simple-skirt D0"),
             "simple_trousers": ("simpleTrousersD0Complete", "Simple-trousers D0"),
+            "simple_dress": ("simpleDressD0Complete", "Simple-dress D0"),
         }
         completion_key, completion_label = completion[summary["garmentClass"]]
         return "\n".join(

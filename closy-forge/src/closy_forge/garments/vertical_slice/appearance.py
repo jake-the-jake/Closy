@@ -30,6 +30,7 @@ class AppearanceSpec:
     fidelity_report_id: str
     fidelity_acceptance_key: str
     fabric_rgba: tuple[int, int, int, int] = TORSO_RGBA
+    panel_y_offsets: tuple[tuple[str, float], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -55,7 +56,11 @@ def build_appearance_bundle(
         source = (
             source_fixture(panels[0], spec.fabric_rgba)
             if isinstance(panel_ref, str)
-            else source_fixture_panels(panels, spec.fabric_rgba)
+            else source_fixture_panels(
+                panels,
+                spec.fabric_rgba,
+                panel_y_offsets=dict(spec.panel_y_offsets),
+            )
         )
         source_bytes = encode_png_rgba(source.width, source.height, source.rgba)
         source_path = f"source/public_fixture/{label}.png"
@@ -192,18 +197,23 @@ def source_fixture(panel: dict[str, Any], fabric_rgba: tuple[int, int, int, int]
 
 
 def source_fixture_panels(
-    panels: list[dict[str, Any]], fabric_rgba: tuple[int, int, int, int]
+    panels: list[dict[str, Any]],
+    fabric_rgba: tuple[int, int, int, int],
+    *,
+    panel_y_offsets: dict[str, float] | None = None,
 ) -> DecodedPng:
     """Build one authored source view from multiple non-overlapping pattern panels."""
 
     projected_polygons = []
+    y_offsets = panel_y_offsets or {}
     for panel in panels:
         points, _edge_map = panel_boundary_samples(panel)
+        panel_y = y_offsets.get(str(panel["id"]), 0.06)
         projected_polygons.append(
             [
                 (
                     (0.5 + x * 0.46) * WIDTH,
-                    (0.78 - ((0.06 + y) - 1.04) * 1.21) * HEIGHT,
+                    (0.78 - ((panel_y + y) - 1.04) * 1.21) * HEIGHT,
                 )
                 for x, y in points
             ]
