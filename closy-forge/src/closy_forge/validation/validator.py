@@ -278,6 +278,14 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     except Exception as exc:
         issues.append(_issue("manifest_unreadable", "fatal", "manifest.json", str(exc)))
         return _report(issues)
+    if manifest.get("garmentClass") == "sleeveless_top" or str(
+        manifest.get("packageVersion", "")
+    ).startswith("closy.sleeveless_top."):
+        from closy_forge.validation.sleeveless_validator import (
+            validate_sleeveless_package,
+        )
+
+        return validate_sleeveless_package(package_dir, manifest=manifest)
     _validate_required_files(package_dir, issues)
     if manifest.get("schemaVersion") != 1:
         issues.append(

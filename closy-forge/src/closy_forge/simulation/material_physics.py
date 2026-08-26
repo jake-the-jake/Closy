@@ -349,7 +349,7 @@ def select_material_preset(
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "selectionVersion": MATERIAL_SELECTION_VERSION,
-        "selectionId": "material_selection.tshirt_public_d0_v1",
+        "selectionId": str(inputs.get("selectionId", "material_selection.tshirt_public_d0_v1")),
         "input": deepcopy(inputs),
         "sourceRegistryHash": registry["integrity"]["registryHash"],
         "scores": scores,

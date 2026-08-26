@@ -19,6 +19,19 @@ The CLI exits with:
 
 Representative current codes:
 
+- `sleeveless_family_mismatch`: a sleeveless package has the wrong canonical family or garment ID.
+- `sleeveless_semantic_ids_invalid`: panel, seam or opening IDs do not exactly match the family ontology.
+- `sleeveless_false_sleeve_semantics`: a sleeve/cuff token was retained in the sleeveless graph.
+- `sleeveless_opening_loop_invalid`: neck, hem or armhole boundaries are missing or unresolved.
+- `sleeveless_seam_orientation_invalid`: side/shoulder spans are not forward/reverse paired.
+- `sleeveless_fit_integrity_invalid`: the bounded 25-candidate fit or its hash is invalid.
+- `sleeveless_motion_suite_invalid`: four-preset or underarm/armhole solver evidence is incomplete.
+- `sleeveless_binding_validation_failed`: persisted GLB/binary binding reconstruction or the independent fallback is invalid.
+- `sleeveless_appearance_validation_failed`: decoded source/render or PBR image evidence is blank or rejected.
+- `sleeveless_quality_claim_invalid`: family/global readiness claims contradict persisted evidence.
+- `sleeveless_inventory_hash_mismatch`: canonical sleeveless bytes differ from manifest inventory.
+- `sleeveless_package_digest_mismatch`: the recomputed sleeveless package digest differs.
+
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
 - `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.

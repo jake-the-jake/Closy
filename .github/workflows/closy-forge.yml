@@ -62,6 +62,15 @@ jobs:
         run: |
           python -m closy_forge validate "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
           python -m closy_forge report "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
+      - name: Build sleeveless-top deterministic fixture twice
+        run: |
+          python -m closy_forge demo build-sleeveless --output "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment" --force
+          python -m closy_forge demo build-sleeveless --output "$RUNNER_TEMP/closy-forge/sleeveless_b.closygarment" --force
+      - name: Compare, validate and report sleeveless-top fixture
+        run: |
+          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment" "$RUNNER_TEMP/closy-forge/sleeveless_b.closygarment" --json
+          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment"
+          python -m closy_forge report "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment"
       - name: Measure non-canonical binding workloads
         run: |
           python -m closy_forge benchmark binding-c3 \

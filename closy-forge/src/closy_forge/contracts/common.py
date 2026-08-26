@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 CoordinateConventionId = Literal["closy-rh-yup-plus-z-v1"]
-GarmentClass = Literal["tshirt"]
+GarmentClass = Literal["tshirt", "sleeveless_top"]
 
 COORDINATE_CONVENTION: dict[str, object] = {
     "id": "closy-rh-yup-plus-z-v1",

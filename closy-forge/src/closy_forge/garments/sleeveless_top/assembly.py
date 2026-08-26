@@ -6,11 +6,8 @@ from closy_forge.garments.assembly import build_panel_meshes, build_seam_constra
 from closy_forge.geometry.mesh_model import MeshSet
 
 TRANSFORMS = {
-    "panel.front": "front",
-    "panel.back": "back",
-    "panel.sleeve.left": "sleeve.left",
-    "panel.sleeve.right": "sleeve.right",
-    "panel.neck_band": "neck_band",
+    "panel.sleeveless_top.front": "front",
+    "panel.sleeveless_top.back": "back",
 }
 
 
