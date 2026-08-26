@@ -135,3 +135,21 @@ recomputing this relationship. The source views are project-authored pattern-bou
 the rendered views use an independent CPU triangle rasterizer. This is D0 public-fixture evidence,
 not learned fitting, private-user reconstruction, measured fabric calibration, production GPU
 cloth, or global Phase 8 completion.
+
+## Long-Sleeved-Top D0 Profile
+
+The Phase 8 long-sleeved profile uses the same shared 41-file contract shape while retaining
+literal family semantics. Its four panels are front/back torso and left/right long sleeves. Ten
+seams persist shoulder, side, split armhole and underarm attachments; its open boundaries are neck,
+hem and two cuffs. Family-specific artifacts are:
+
+```text
+fitting/long_sleeved_fit.json
+textures/long_sleeved_pbr_report.json
+reports/long_sleeved_quality.json
+```
+
+The fixture executes four authored material presets, a cuff stress state, authoritative dense
+binding and an independent simulation-topology fallback. It is deterministic public CPU evidence,
+not private-user fit, measured fabric calibration, production GPU cloth or global Phase 8
+completion.

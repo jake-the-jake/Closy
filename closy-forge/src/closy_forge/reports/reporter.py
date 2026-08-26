@@ -9,7 +9,7 @@ from closy_forge.package_io.canonical_json import read_json
 def summarize_package(package_dir: Path) -> dict[str, Any]:
     manifest = read_json(package_dir / "manifest.json")
     summary = cast(dict[str, Any], read_json(package_dir / "reports" / "summary.json"))
-    if manifest.get("garmentClass") == "sleeveless_top":
+    if manifest.get("garmentClass") in {"sleeveless_top", "long_sleeved_top"}:
         return summary
     binding = read_json(package_dir / "binding" / "binding_manifest.json")
     capture = read_json(package_dir / "source" / "capture_quality.json")
@@ -642,9 +642,19 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
 
 def human_report(package_dir: Path) -> str:
     summary = summarize_package(package_dir)
-    if summary.get("garmentClass") == "sleeveless_top":
+    if summary.get("garmentClass") in {"sleeveless_top", "long_sleeved_top"}:
         validation = summary["validation"]
         readiness = summary["readiness"]
+        completion_key = (
+            "sleevelessTopD0Complete"
+            if summary["garmentClass"] == "sleeveless_top"
+            else "longSleevedTopD0Complete"
+        )
+        completion_label = (
+            "Sleeveless-top D0"
+            if summary["garmentClass"] == "sleeveless_top"
+            else "Long-sleeved-top D0"
+        )
         return "\n".join(
             [
                 f"Closy garment package: {summary['garmentId']}",
@@ -652,7 +662,7 @@ def human_report(package_dir: Path) -> str:
                 f"Package digest: {summary['packageDigest']}",
                 f"Inventoried bytes: {summary['packageByteSize']}",
                 f"Validation: {validation['status']} {validation['counts']}",
-                f"Sleeveless-top D0 complete: {readiness['sleevelessTopD0Complete']}",
+                f"{completion_label} complete: {readiness[completion_key]}",
                 f"Phase 8 globally: {readiness['phase8GlobalStatus']}",
                 f"Next family: {readiness['nextGarmentFamily']}",
                 "Limitations: public synthetic CPU fixture; no private-user, learned, GPU, or "
