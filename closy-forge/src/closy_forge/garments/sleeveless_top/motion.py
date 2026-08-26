@@ -18,6 +18,8 @@ from closy_forge.simulation.reference_cloth_solver import (
     simulation_state_json,
 )
 
+CANONICAL_POSITION_DIGITS = 6
+
 SLEEVELESS_MOTION_VERSION = "closy.sleeveless_top.motion_suite.d0.v1"
 ARMHOLE_IDS = {
     "opening.sleeveless_top.armhole.left",
@@ -40,7 +42,13 @@ def build_sleeveless_motion_suite(
     for preset_index, descriptor in enumerate(preset_registry["presets"]):
         preset_id = str(descriptor["presetId"])
         material = solver_material_payload(descriptor)
-        result = settle_reference_cloth(rest_mesh, constraints, avatar_contract, material)
+        result = settle_reference_cloth(
+            rest_mesh,
+            constraints,
+            avatar_contract,
+            material,
+            canonical_position_digits=CANONICAL_POSITION_DIGITS,
+        )
         settled_mesh = _quantize_mesh(result.settled_mesh)
         diagnostics = _quantize_numbers(result.diagnostics)
         metrics = measure_motion_metrics(rest_mesh, settled_mesh, constraints, diagnostics)
@@ -86,6 +94,7 @@ def build_sleeveless_motion_suite(
         avatar_contract,
         selected_material,
         "opening_stress",
+        canonical_position_digits=CANONICAL_POSITION_DIGITS,
     )
     stress_mesh = _quantize_mesh(stress.mesh)
     stress_diagnostics = _quantize_numbers(stress.diagnostics)

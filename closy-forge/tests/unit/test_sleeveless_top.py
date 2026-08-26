@@ -15,6 +15,7 @@ from closy_forge.garments.sleeveless_top.fitting import (
     hash_sleeveless_fit_report,
 )
 from closy_forge.garments.sleeveless_top.motion import (
+    CANONICAL_POSITION_DIGITS,
     build_sleeveless_motion_suite,
     hash_sleeveless_motion_report,
 )
@@ -129,6 +130,14 @@ def test_sleeveless_motion_executes_material_extremes_and_underarm_stress() -> N
     assert report["underarmStress"]["armholeMetrics"]["collapsedArmholeCount"] == 0
     assert report["underarmStress"]["denseBinding"]["maximumSeamCrackMeters"] <= 0.06
     assert all(
+        record["diagnostics"]["canonicalPositionDigits"] == CANONICAL_POSITION_DIGITS
+        for record in report["presetRecords"]
+    )
+    assert (
+        report["underarmStress"]["diagnostics"]["canonicalPositionDigits"]
+        == CANONICAL_POSITION_DIGITS
+    )
+    assert all(
         record["denseBinding"]["seamConstraintCount"] == len(constraints["constraints"])
         for record in report["presetRecords"]
     )
@@ -140,3 +149,9 @@ def test_sleeveless_motion_executes_material_extremes_and_underarm_stress() -> N
         "opening_stress",
     }
     assert selected.vertex_count == rest.vertex_count
+    assert all(
+        component == round(component, CANONICAL_POSITION_DIGITS)
+        for mesh in selected.meshes
+        for vertex in mesh.vertices
+        for component in vertex
+    )
