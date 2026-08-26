@@ -21,7 +21,7 @@ class AppearanceSpec:
     appearance_version: str
     garment_class: str
     family_token: str
-    panel_views: tuple[tuple[str, str], ...]
+    panel_views: tuple[tuple[str, str | tuple[str, ...]], ...]
     capture_record_version: str
     capture_record_id: str
     texture_identity_id: str
@@ -46,9 +46,17 @@ def build_appearance_bundle(
     artifacts: dict[str, bytes | dict[str, Any]] = {}
     source_views: list[dict[str, Any]] = []
     fidelity_views: list[dict[str, Any]] = []
-    for label, panel_id in spec.panel_views:
-        panel = next(panel for panel in pattern["panels"] if panel["id"] == panel_id)
-        source = source_fixture(panel, spec.fabric_rgba)
+    for label, panel_ref in spec.panel_views:
+        panel_ids = (panel_ref,) if isinstance(panel_ref, str) else panel_ref
+        panels = [
+            next(panel for panel in pattern["panels"] if panel["id"] == panel_id)
+            for panel_id in panel_ids
+        ]
+        source = (
+            source_fixture(panels[0], spec.fabric_rgba)
+            if isinstance(panel_ref, str)
+            else source_fixture_panels(panels, spec.fabric_rgba)
+        )
         source_bytes = encode_png_rgba(source.width, source.height, source.rgba)
         source_path = f"source/public_fixture/{label}.png"
         artifacts[source_path] = source_bytes
@@ -180,6 +188,49 @@ def source_fixture(panel: dict[str, Any], fabric_rgba: tuple[int, int, int, int]
             for x in range(max(0, int(left)), min(WIDTH, int(right + 1))):
                 offset = (y * WIDTH + x) * 4
                 rgba[offset : offset + 4] = bytes(fabric_rgba)
+    return DecodedPng(WIDTH, HEIGHT, bytes(rgba))
+
+
+def source_fixture_panels(
+    panels: list[dict[str, Any]], fabric_rgba: tuple[int, int, int, int]
+) -> DecodedPng:
+    """Build one authored source view from multiple non-overlapping pattern panels."""
+
+    projected_polygons = []
+    for panel in panels:
+        points, _edge_map = panel_boundary_samples(panel)
+        projected_polygons.append(
+            [
+                (
+                    (0.5 + x * 0.46) * WIDTH,
+                    (0.78 - ((0.06 + y) - 1.04) * 1.21) * HEIGHT,
+                )
+                for x, y in points
+            ]
+        )
+    all_points = [point for polygon in projected_polygons for point in polygon]
+    center_x = (min(point[0] for point in all_points) + max(point[0] for point in all_points)) / 2
+    center_y = (min(point[1] for point in all_points) + max(point[1] for point in all_points)) / 2
+    offset_x = WIDTH * 0.5 - center_x
+    offset_y = HEIGHT * 0.5 - center_y
+    polygons = [
+        [(x + offset_x, y + offset_y) for x, y in polygon] for polygon in projected_polygons
+    ]
+    rgba = bytearray((246, 244, 239, 0) * (WIDTH * HEIGHT))
+    for polygon in polygons:
+        for y in range(HEIGHT):
+            scan_y = y + 0.5
+            intersections: list[float] = []
+            for first, second in zip(polygon, polygon[1:] + polygon[:1], strict=True):
+                if (first[1] > scan_y) == (second[1] > scan_y):
+                    continue
+                ratio = (scan_y - first[1]) / (second[1] - first[1])
+                intersections.append(first[0] + ratio * (second[0] - first[0]))
+            intersections.sort()
+            for left, right in zip(intersections[::2], intersections[1::2], strict=False):
+                for x in range(max(0, int(left)), min(WIDTH, int(right + 1))):
+                    offset = (y * WIDTH + x) * 4
+                    rgba[offset : offset + 4] = bytes(fabric_rgba)
     return DecodedPng(WIDTH, HEIGHT, bytes(rgba))
 
 

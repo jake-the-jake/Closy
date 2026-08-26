@@ -170,3 +170,22 @@ The fixture executes bounded waist/hip/length/flare fitting, four authored mater
 waist-opening stress state, authoritative dense binding, independent simulation-topology fallback,
 decoded PBR and source/render fidelity. It is public synthetic CPU evidence, not private-user fit,
 measured fabric calibration, production GPU cloth or global Phase 8 completion.
+
+## Simple-Trousers D0 Profile
+
+The Phase 8 simple-trousers profile is a literal four-panel bottom garment in the shared 41-file
+contract. Front-left, front-right, back-left and back-right leg panels are joined by two outseams,
+two inseams and front/back rise seams. The four waist edges form one semantic waist opening; each
+front/back cuff pair forms a separate left or right leg opening. Family-specific artifacts are:
+
+```text
+fitting/simple_trousers_fit.json
+textures/simple_trousers_pbr_report.json
+reports/simple_trousers_quality.json
+```
+
+The fixture executes bounded waist/hip/outseam/cuff fitting, four authored material presets, a
+two-cuff opening stress state, 1,092-record authoritative dense binding, independent
+simulation-topology fallback, decoded PBR and composite two-panel source/render fidelity. It is
+public synthetic CPU evidence, not private-user fit, measured fabric calibration, production GPU
+cloth or global Phase 8 completion.

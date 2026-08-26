@@ -18,12 +18,14 @@ from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.long_sleeved_top.parameters import LongSleevedTopParameters
 from closy_forge.garments.simple_skirt.parameters import SimpleSkirtParameters
+from closy_forge.garments.simple_trousers.parameters import SimpleTrousersParameters
 from closy_forge.garments.sleeveless_top.parameters import SleevelessTopParameters
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
 from closy_forge.package_io.determinism import compare_package_trees
 from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt_package
+from closy_forge.pipeline.build_simple_trousers_demo import build_demo_simple_trousers_package
 from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_package
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
@@ -172,6 +174,33 @@ def _parser() -> argparse.ArgumentParser:
     )
     simple_skirt.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     simple_skirt.set_defaults(handler=_build_simple_skirt)
+
+    simple_trousers = demo_sub.add_parser(
+        "build-simple-trousers", help="Build the canonical simple-trousers D0 package."
+    )
+    simple_trousers.add_argument(
+        "--output", required=True, type=Path, help="Output .closygarment directory."
+    )
+    simple_trousers.add_argument(
+        "--force", action="store_true", help="Replace exactly the requested target package."
+    )
+    simple_trousers.add_argument(
+        "--seed", type=int, default=101, help="Deterministic fixture seed recorded in provenance."
+    )
+    simple_trousers.add_argument(
+        "--outseam-length", type=float, default=None, help="Override outseam length in metres."
+    )
+    simple_trousers.add_argument(
+        "--half-waist-width",
+        type=float,
+        default=None,
+        help="Override half waist width in metres.",
+    )
+    simple_trousers.add_argument(
+        "--cuff-width", type=float, default=None, help="Override each leg cuff width in metres."
+    )
+    simple_trousers.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    simple_trousers.set_defaults(handler=_build_simple_trousers)
 
     capture = subparsers.add_parser("capture", help="Build deterministic capture fixtures.")
     capture_sub = capture.add_subparsers(dest="capture_command")
@@ -329,6 +358,27 @@ def _build_long_sleeved(args: argparse.Namespace) -> int:
 def _build_simple_skirt(args: argparse.Namespace) -> int:
     params = _simple_skirt_params_from_args(args)
     result = build_demo_simple_skirt_package(
+        args.output, params=params, seed=args.seed, force=args.force
+    )
+    payload = {
+        "status": "built",
+        "package": str(result.package_dir),
+        "garmentId": result.manifest["garmentId"],
+        "canonicalPackageDigest": result.manifest["packageDigest"],
+        "validation": result.validation["counts"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(f"Built {result.package_dir}")
+        print(f"Digest: {payload['canonicalPackageDigest']}")
+        print(f"Validation: {payload['validation']}")
+    return EXIT_SUCCESS
+
+
+def _build_simple_trousers(args: argparse.Namespace) -> int:
+    params = _simple_trousers_params_from_args(args)
+    result = build_demo_simple_trousers_package(
         args.output, params=params, seed=args.seed, force=args.force
     )
     payload = {
@@ -556,3 +606,15 @@ def _simple_skirt_params_from_args(args: argparse.Namespace) -> SimpleSkirtParam
     if args.flare is not None:
         values["flare_meters"] = args.flare
     return SimpleSkirtParameters(**values)
+
+
+def _simple_trousers_params_from_args(args: argparse.Namespace) -> SimpleTrousersParameters:
+    defaults = SimpleTrousersParameters()
+    values = defaults.to_json()
+    if args.outseam_length is not None:
+        values["outseam_length_meters"] = args.outseam_length
+    if args.half_waist_width is not None:
+        values["half_waist_width_meters"] = args.half_waist_width
+    if args.cuff_width is not None:
+        values["leg_cuff_width_meters"] = args.cuff_width
+    return SimpleTrousersParameters(**values)

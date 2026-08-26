@@ -38,6 +38,19 @@ GARMENT_FAMILIES: dict[str, dict[str, Any]] = {
         "forbiddenParts": ["torso", "sleeve", "trouser_leg"],
         "forbiddenOpenings": ["neck", "armhole_left", "armhole_right", "cuff"],
     },
+    "simple_trousers": {
+        "id": "family.bottom.simple_trousers",
+        "category": "bottom",
+        "requiredParts": [
+            "front_left_leg",
+            "front_right_leg",
+            "back_left_leg",
+            "back_right_leg",
+        ],
+        "requiredOpenings": ["waist", "left_cuff", "right_cuff"],
+        "forbiddenParts": ["torso", "sleeve", "skirt"],
+        "forbiddenOpenings": ["neck", "armhole_left", "armhole_right", "hem"],
+    },
 }
 
 
