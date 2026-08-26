@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from closy_forge.package_io.canonical_json import write_canonical_json
+from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt_package
 from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_simple_dress_demo import build_demo_simple_dress_package
 from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt_package
@@ -20,6 +21,7 @@ _LONG_SLEEVED_CACHE: Path | None = None
 _SIMPLE_SKIRT_CACHE: Path | None = None
 _SIMPLE_TROUSERS_CACHE: Path | None = None
 _SIMPLE_DRESS_CACHE: Path | None = None
+_BUTTON_SHIRT_CACHE: Path | None = None
 
 
 def build_demo(tmp_path: Path, name: str = "demo_tshirt.closygarment") -> Path:
@@ -50,6 +52,11 @@ def build_simple_trousers(tmp_path: Path, name: str = "demo_simple_trousers.clos
 def build_simple_dress(tmp_path: Path, name: str = "demo_simple_dress.closygarment") -> Path:
     output = tmp_path / name
     return clone_package(_cached_simple_dress_package(), output)
+
+
+def build_button_shirt(tmp_path: Path, name: str = "demo_button_shirt.closygarment") -> Path:
+    output = tmp_path / name
+    return clone_package(_cached_button_shirt_package(), output)
 
 
 def clone_package(package_dir: Path, target: Path) -> Path:
@@ -131,3 +138,13 @@ def _cached_simple_dress_package() -> Path:
         build_demo_simple_dress_package(package, force=True)
         _SIMPLE_DRESS_CACHE = package
     return _SIMPLE_DRESS_CACHE
+
+
+def _cached_button_shirt_package() -> Path:
+    global _BUTTON_SHIRT_CACHE
+    if _BUTTON_SHIRT_CACHE is None:
+        cache_root = Path(tempfile.mkdtemp(prefix="closy_forge_pytest_button_shirt_"))
+        package = cache_root / "demo_button_shirt.closygarment"
+        build_demo_button_shirt_package(package, force=True)
+        _BUTTON_SHIRT_CACHE = package
+    return _BUTTON_SHIRT_CACHE

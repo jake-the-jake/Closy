@@ -59,6 +59,20 @@ GARMENT_FAMILIES: dict[str, dict[str, Any]] = {
         "forbiddenParts": ["sleeve", "trouser_leg"],
         "forbiddenOpenings": ["cuff", "waist"],
     },
+    "button_shirt": {
+        "id": "family.top.button_shirt",
+        "category": "top",
+        "requiredParts": [
+            "front_left_torso",
+            "front_right_torso",
+            "back_torso",
+            "left_long_sleeve",
+            "right_long_sleeve",
+        ],
+        "requiredOpenings": ["neck", "hem", "front_placket", "left_cuff", "right_cuff"],
+        "requiredClosures": ["button_buttonhole"],
+        "forbiddenOpenings": ["armhole_left", "armhole_right"],
+    },
 }
 
 

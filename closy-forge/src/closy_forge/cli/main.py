@@ -16,6 +16,7 @@ from closy_forge.capture import (
 )
 from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
+from closy_forge.garments.button_shirt.parameters import ButtonShirtParameters
 from closy_forge.garments.long_sleeved_top.parameters import LongSleevedTopParameters
 from closy_forge.garments.simple_dress.parameters import SimpleDressParameters
 from closy_forge.garments.simple_skirt.parameters import SimpleSkirtParameters
@@ -24,6 +25,7 @@ from closy_forge.garments.sleeveless_top.parameters import SleevelessTopParamete
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
 from closy_forge.package_io.determinism import compare_package_trees
+from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt_package
 from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_simple_dress_demo import build_demo_simple_dress_package
 from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt_package
@@ -231,6 +233,36 @@ def _parser() -> argparse.ArgumentParser:
     simple_dress.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     simple_dress.set_defaults(handler=_build_simple_dress)
 
+    button_shirt = demo_sub.add_parser(
+        "build-button-shirt", help="Build the canonical button-shirt D0 package."
+    )
+    button_shirt.add_argument(
+        "--output", required=True, type=Path, help="Output .closygarment directory."
+    )
+    button_shirt.add_argument(
+        "--force", action="store_true", help="Replace exactly the requested target package."
+    )
+    button_shirt.add_argument(
+        "--seed", type=int, default=101, help="Deterministic fixture seed recorded in provenance."
+    )
+    button_shirt.add_argument(
+        "--body-length", type=float, default=None, help="Override body length in metres."
+    )
+    button_shirt.add_argument(
+        "--half-chest-width",
+        type=float,
+        default=None,
+        help="Override half chest panel width in metres.",
+    )
+    button_shirt.add_argument(
+        "--sleeve-length", type=float, default=None, help="Override sleeve length in metres."
+    )
+    button_shirt.add_argument(
+        "--button-count", type=int, default=None, help="Override bounded button count."
+    )
+    button_shirt.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    button_shirt.set_defaults(handler=_build_button_shirt)
+
     capture = subparsers.add_parser("capture", help="Build deterministic capture fixtures.")
     capture_sub = capture.add_subparsers(dest="capture_command")
     capture_demo = capture_sub.add_parser(
@@ -429,6 +461,27 @@ def _build_simple_trousers(args: argparse.Namespace) -> int:
 def _build_simple_dress(args: argparse.Namespace) -> int:
     params = _simple_dress_params_from_args(args)
     result = build_demo_simple_dress_package(
+        args.output, params=params, seed=args.seed, force=args.force
+    )
+    payload = {
+        "status": "built",
+        "package": str(result.package_dir),
+        "garmentId": result.manifest["garmentId"],
+        "canonicalPackageDigest": result.manifest["packageDigest"],
+        "validation": result.validation["counts"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(f"Built {result.package_dir}")
+        print(f"Digest: {payload['canonicalPackageDigest']}")
+        print(f"Validation: {payload['validation']}")
+    return EXIT_SUCCESS
+
+
+def _build_button_shirt(args: argparse.Namespace) -> int:
+    params = _button_shirt_params_from_args(args)
+    result = build_demo_button_shirt_package(
         args.output, params=params, seed=args.seed, force=args.force
     )
     payload = {
@@ -680,3 +733,21 @@ def _simple_dress_params_from_args(args: argparse.Namespace) -> SimpleDressParam
     if args.half_waist_width is not None:
         values["half_waist_width_meters"] = args.half_waist_width
     return SimpleDressParameters(**values)
+
+
+def _button_shirt_params_from_args(args: argparse.Namespace) -> ButtonShirtParameters:
+    defaults = ButtonShirtParameters()
+    return ButtonShirtParameters(
+        body_length_meters=(
+            defaults.body_length_meters if args.body_length is None else args.body_length
+        ),
+        half_chest_width_meters=(
+            defaults.half_chest_width_meters
+            if args.half_chest_width is None
+            else args.half_chest_width
+        ),
+        sleeve_length_meters=(
+            defaults.sleeve_length_meters if args.sleeve_length is None else args.sleeve_length
+        ),
+        button_count=defaults.button_count if args.button_count is None else args.button_count,
+    )

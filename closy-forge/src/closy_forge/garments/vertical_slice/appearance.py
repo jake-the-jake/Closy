@@ -31,6 +31,7 @@ class AppearanceSpec:
     fidelity_acceptance_key: str
     fabric_rgba: tuple[int, int, int, int] = TORSO_RGBA
     panel_y_offsets: tuple[tuple[str, float], ...] = ()
+    material_id: str = "material.cotton_jersey_reference_v1"
 
 
 @dataclass(frozen=True)
@@ -279,7 +280,7 @@ def texture_artifacts(
         "sourceViews": source_views,
         "maps": maps,
         "material": {
-            "materialId": "material.cotton_jersey_reference_v1",
+            "materialId": spec.material_id,
             "baseColorMap": paths["base_color"],
             "normalMap": paths["normal"],
             "roughnessMap": paths["roughness"],

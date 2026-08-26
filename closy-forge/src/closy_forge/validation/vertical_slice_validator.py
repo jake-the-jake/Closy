@@ -55,6 +55,7 @@ def validate_material_selection(
     issues: list[ValidationIssue],
     *,
     family_code: str,
+    expected_preset_id: str = "material.cotton_jersey_d0_v1",
 ) -> None:
     descriptors = presets.get("presets", [])
     try:
@@ -76,14 +77,14 @@ def validate_material_selection(
         != hash_blank_integrity(presets, "registryHash")
         or selection.get("integrity", {}).get("selectionHash")
         != hash_blank_integrity(selection, "selectionHash")
-        or selection.get("selection", {}).get("selectedPresetId") != "material.cotton_jersey_d0_v1"
+        or selection.get("selection", {}).get("selectedPresetId") != expected_preset_id
     ):
         issues.append(
             issue(
                 f"{family_code}_material_selection_invalid",
                 "fatal",
                 "simulation/material_selection.json",
-                "Preset registry/selection must be intact and select cotton jersey from cues.",
+                "Preset registry/selection must be intact and select the expected authored preset.",
                 family_code,
             )
         )
