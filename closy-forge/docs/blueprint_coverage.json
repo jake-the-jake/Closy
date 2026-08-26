@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "Phase 8 simple-dress evidence sync on codex/closy-forge-phase-8-simple-dress at 61c27c4eacfff92dee8d468119277a38e7759fc7",
+  "generatedBy": "Phase 8 button-shirt evidence sync on codex/closy-forge-phase-8-shirt-openings at 943f0b5d06198c5a97c11cd1121e6244899569ea",
   "rows": [
     {
       "commitSha": [
@@ -2038,7 +2038,8 @@
         "literal button-shirt pattern contains split left/right fronts, back and two sleeves, ten sewn seams, five neck/hem/placket/cuff openings and six ordered button/buttonhole pairs that do not become solver constraints",
         "25-candidate button-shirt bounded fit accepts objective 0.00156; authored cues select lightweight woven and all four material presets execute with both cuffs non-collapsed, cuff drifts 0.00002032 and 0.00007738 metres and max dense seam crack 0.00247185 metres",
         "button-shirt authoritative 1506-record dense binding and independent 256-vertex direct-simulation fallback record minimum silhouette IoU 0.302626779, maximum normalised boundary Chamfer 0.054750816 and foreground colour MAE 0.0",
-        "repeated local button-shirt builds produce byte-identical 41-file trees with 37 inventory entries at digest 4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91; cross-OS PR #15 evidence is pending"
+        "repeated local button-shirt builds produce byte-identical 41-file trees with 37 inventory entries at digest 4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91",
+        "PR #15 run 33020344545 passes 322 tests, 89 fresh schemas, strict mypy across 170 source files, all seven family rebuild/diff/validation paths and the binding benchmark on Ubuntu job 98348931958 and Windows job 98348932103"
       ],
       "id": "BP-17-PHASE-08",
       "implementationPaths": [

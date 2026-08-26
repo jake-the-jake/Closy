@@ -39,8 +39,12 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   307 tests per OS, schema freshness, all six family rebuild/diff/validation paths and the binding
   benchmark.
 - Button-shirt implementation `943f0b5d06198c5a97c11cd1121e6244899569ea` is draft PR #15.
-  Local Ruff, strict mypy across 170 sources, 89 fresh schemas and the 18-test focused family/
-  package/corruption gate pass. Cross-OS CI evidence is pending and must be recorded literally.
+  Local Ruff, strict mypy across 170 sources, 89 fresh schemas, the 18-test focused family/
+  package/corruption gate and all 322 collected tests pass.
+- PR #15 run `33020344545` passed Ubuntu job `98348931958` and Windows job `98348932103`,
+  including 322 tests per OS, schema freshness, all seven family rebuild/diff/validation paths and
+  the binding benchmark. Both jobs rebuilt the button-shirt package at digest
+  `4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91`.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -170,8 +174,8 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - Ruff format/lint pass; strict mypy passes across 170 source files.
 - 89 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
-- The complete local Forge suite passes all 307 collected tests. PR #14 run `33014572452` confirms
-  the same six-family matrix on Ubuntu and Windows.
+- The complete local Forge suite passes all 322 collected tests in `2622.47s`. PR #15 run
+  `33020344545` confirms the same seven-family matrix on Ubuntu and Windows Python 3.11.
 - The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
   inventoried bytes. Two builds have identical file trees and zero validator issues.
 - The existing T-shirt package remains byte-identical at 137 files with digest
@@ -185,7 +189,7 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - The simple-dress package has 41 physical files, 37 inventory entries, 412,888 inventoried bytes
   and zero validator issues on both local Python runtimes.
 - The button-shirt package has 41 physical files, 37 inventory entries, 495,639 inventoried bytes
-  and zero validator issues in repeated local builds. Remote cross-runtime confirmation is pending.
+  and zero validator issues in repeated local and cross-OS builds.
 
 ## Truthful Limits
 

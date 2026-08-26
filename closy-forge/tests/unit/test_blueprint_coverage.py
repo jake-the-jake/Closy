@@ -48,9 +48,9 @@ def test_blueprint_coverage_export_has_required_structure() -> None:
 
     assert payload["version"] == "d0-fidelity-closeout-local-validation-v1"
     assert (
-        payload["generatedBy"] == "Phase 8 simple-dress evidence sync on "
-        "codex/closy-forge-phase-8-simple-dress at "
-        "61c27c4eacfff92dee8d468119277a38e7759fc7"
+        payload["generatedBy"] == "Phase 8 button-shirt evidence sync on "
+        "codex/closy-forge-phase-8-shirt-openings at "
+        "943f0b5d06198c5a97c11cd1121e6244899569ea"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -549,6 +549,9 @@ def test_phase8_button_shirt_checkpoint_is_partial_and_evidenced() -> None:
     assert any("six ordered button/buttonhole" in item for item in phase8["executableEvidence"])
     assert any("objective 0.00156" in item for item in phase8["executableEvidence"])
     assert any("digest 4805c708f9058b1c" in item for item in phase8["executableEvidence"])
+    assert any("run 33020344545 passes 322 tests" in item for item in phase8["executableEvidence"])
+    assert any("Ubuntu job 98348931958" in item for item in phase8["executableEvidence"])
+    assert any("Windows job 98348932103" in item for item in phase8["executableEvidence"])
     assert "Button fastening mechanics, jackets" in phase8["limitations"]
     assert "jacket/outerwear" in phase8["nextAction"]
     assert "closy-forge/src/closy_forge/garments/sleeveless_top" in phase8["implementationPaths"]
@@ -580,6 +583,9 @@ def test_markdown_ledger_matches_phase8_button_shirt_checkpoint_state() -> None:
     assert "4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91" in ledger
     assert "six button/buttonhole" in ledger
     assert "89 fresh schemas" in ledger
+    assert "run `33020344545`" in ledger
+    assert "Ubuntu job `98348931958`" in ledger
+    assert "Windows job `98348932103`" in ledger
     assert "Phase 8 remains partial globally" in ledger
     assert "C3 remains partial" in ledger
     assert "self_collision_unresolved_contacts" in ledger
@@ -653,12 +659,16 @@ def test_active_resume_points_to_phase8_button_shirt_validation() -> None:
     assert "Windows job `98329331018`" in resume
     assert "e8b1a3c00d9276c9d95ee2525bf3e24c88a84ee4ab03a5f5472e73175663b00a" in resume
     assert "0.00736142" in resume
-    assert "307 collected tests" in resume
+    assert "307 tests per OS" in resume
     assert "`943f0b5d06198c5a97c11cd1121e6244899569ea`" in resume
     assert "495,639 bytes" in resume
     assert "4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91" in resume
     assert "0.00247185" in resume
     assert "89 fresh schemas" in resume
+    assert "run `33020344545`" in resume
+    assert "Ubuntu job `98348931958`" in resume
+    assert "Windows job `98348932103`" in resume
+    assert "322 collected tests" in resume
     assert "Phase 8 is partial globally" in resume
     assert "codex/closy-forge-phase-8-jacket-outerwear" in resume
 
