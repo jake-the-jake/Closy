@@ -2992,6 +2992,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_simple_skirt_schemas(),
         **_simple_trousers_schemas(),
         **_simple_dress_schemas(),
+        **_button_shirt_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
             {
@@ -3412,6 +3413,38 @@ def _simple_dress_schemas() -> dict[str, dict[str, Any]]:
         str(replace_tokens(name)): replace_tokens(schema)
         for name, schema in _simple_skirt_schemas().items()
     }
+
+
+def _button_shirt_schemas() -> dict[str, dict[str, Any]]:
+    def replace_tokens(value: Any) -> Any:
+        if isinstance(value, str):
+            return (
+                value.replace("long-sleeved-top", "button-shirt")
+                .replace("long-sleeved", "button-shirt")
+                .replace("Long sleeved top", "Button shirt")
+                .replace("long sleeved top", "button shirt")
+                .replace("long_sleeved_top", "button_shirt")
+                .replace("longSleevedTop", "buttonShirt")
+            )
+        if isinstance(value, dict):
+            return {str(replace_tokens(key)): replace_tokens(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [replace_tokens(item) for item in value]
+        return value
+
+    schemas = {
+        str(replace_tokens(name)): replace_tokens(schema)
+        for name, schema in _long_sleeved_schemas().items()
+    }
+    pattern = schemas["button-shirt-pattern.schema.json"]
+    pattern["properties"]["panels"] = {"type": "array", "minItems": 5, "maxItems": 5}
+    pattern["properties"]["openings"] = {"type": "array", "minItems": 5, "maxItems": 5}
+    pattern["properties"]["closures"] = {"type": "array", "minItems": 6, "maxItems": 6}
+    pattern["required"].insert(pattern["required"].index("provenance"), "closures")
+    quality = schemas["button-shirt-quality.schema.json"]
+    quality["properties"]["material"] = {"type": "object"}
+    quality["required"].insert(quality["required"].index("appearance"), "material")
+    return schemas
 
 
 def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:

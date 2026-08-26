@@ -22,6 +22,7 @@ class ContractWriteSpec:
     fit_report_path: str
     quality_report_path: str
     normalize_signed_zero: bool = False
+    selected_material_preset_id: str = "material.cotton_jersey_d0_v1"
 
 
 @dataclass(frozen=True)
@@ -65,7 +66,7 @@ def write_vertical_slice_contracts(
     )
     write_canonical_json(
         package_dir / "simulation/settled_state.json",
-        motion_states["material.cotton_jersey_d0_v1"],
+        motion_states[spec.selected_material_preset_id],
     )
     write_canonical_json(package_dir / "simulation/constraints.json", constraints)
     write_canonical_json(package_dir / "simulation/material_presets.json", material_registry)
@@ -189,12 +190,15 @@ def mesh_manifest(
     }
 
 
-def material_selection_input(family_token: str) -> dict[str, Any]:
+def material_selection_input(
+    family_token: str, *, observations: dict[str, str] | None = None
+) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
         "selectionId": f"material_selection.{family_token}_public_d0_v1",
         "inputId": f"material_input.{family_token}_public_d0_v1",
-        "observations": {
+        "observations": observations
+        or {
             "massClass": "medium",
             "stretchClass": "moderate",
             "drapeClass": "soft",

@@ -40,6 +40,7 @@ class MotionSuiteSpec:
     readiness_openings_key: str
     missing_preset_message: str
     normalize_signed_zero: bool = False
+    selected_preset_id: str = "material.cotton_jersey_d0_v1"
 
 
 def build_material_motion_suite(
@@ -101,7 +102,7 @@ def build_material_motion_suite(
                 "simulationContentHash": geometry_content_hash(settled_mesh),
             }
         )
-        if preset_id == "material.cotton_jersey_d0_v1":
+        if preset_id == spec.selected_preset_id:
             selected_settled = settled_mesh
             selected_material = material
     if selected_settled is None or selected_material is None:
