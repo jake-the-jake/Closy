@@ -19,6 +19,7 @@ MEDIA_TYPES = {
     ".json": "application/json",
     ".glb": "model/gltf-binary",
     ".svg": "image/svg+xml",
+    ".png": "image/png",
     ".bin": "application/octet-stream",
     ".md": "text/markdown",
 }

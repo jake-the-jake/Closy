@@ -46,12 +46,11 @@ def _rows() -> list[dict]:
 def test_blueprint_coverage_export_has_required_structure() -> None:
     payload = _coverage()
 
-    assert (
-        payload["version"] == "phase6-c3-evidence-integrity-repair-implementation-remote-green-v2"
-    )
+    assert payload["version"] == "d0-fidelity-closeout-local-validation-v1"
     assert (
         payload["generatedBy"]
-        == "Phase 6 C3 evidence-integrity repair with 13604d1 implementation run evidence"
+        == "D0 implementation 242c5c7, final green head 86c6585; run 32935270185 passed "
+        "Ubuntu and Windows"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -342,12 +341,14 @@ def test_bp47_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp47["status"] == "partial"
     assert "aac1c06" in bp47["commitSha"]
-    assert "12 deterministic SVG inspection artifacts" in bp47["executableEvidence"]
-    assert "acceptedForVisualFidelity=false" in bp47["executableEvidence"]
+    assert any("four required views pass" in item for item in bp47["executableEvidence"])
+    assert any("mean silhouette IoU 0.347457878" in item for item in bp47["executableEvidence"])
+    assert any("acceptedForD0PublicFixture=true" in item for item in bp47["executableEvidence"])
+    assert "private/provider/human tiers fail-closed" in bp47["nextAction"]
     assert (
-        "provider/source/human visual fidelity tiers remain not_run" in bp47["executableEvidence"]
+        "closy-forge/src/closy_forge/inspection/source_render_fidelity.py"
+        in bp47["implementationPaths"]
     )
-    assert "D0-fidelity branch" in bp47["nextAction"]
 
 
 def test_bp48_checkpoint_is_partial_and_evidenced() -> None:
@@ -452,28 +453,22 @@ def test_bp52_checkpoint_is_partial_and_evidenced() -> None:
 
     assert bp52["status"] == "partial"
     assert "e23820eddaf6d6599a3b125ee1a083dc97ef4acd" in bp52["commitSha"]
-    assert any("hash-links visual observations" in item for item in bp52["executableEvidence"])
-    assert any("multiview silhouette IoU 0.939980" in item for item in bp52["executableEvidence"])
-    assert any("held-out rear view" in item for item in bp52["executableEvidence"])
-    assert any("189 tests" in item for item in bp52["executableEvidence"])
-    assert any("85 files each" in item for item in bp52["executableEvidence"])
+    assert any("33 candidates" in item for item in bp52["executableEvidence"])
+    assert any("0.092928787 to 0.009143346" in item for item in bp52["executableEvidence"])
+    assert any("full solver" in item for item in bp52["executableEvidence"])
     assert any(
-        "final remote Actions run 32729539416" in item for item in bp52["executableEvidence"]
+        "settledRenderFitComparisonAvailable=true" in item for item in bp52["executableEvidence"]
     )
-    assert any("97438405296" in item for item in bp52["executableEvidence"])
-    assert any("97438405597" in item for item in bp52["executableEvidence"])
-    assert "settled-render or drape comparison" in bp52["limitations"]
-    assert "D0-fidelity branch" in bp52["nextAction"]
+    assert "not a learned predictor" in bp52["limitations"]
+    assert "Phase 7" in bp52["nextAction"]
 
     assert "e23820e" in phase3["commitSha"]
-    assert any("BP52 image-conditioned D0 fitting" in item for item in phase3["executableEvidence"])
+    assert any("33 candidates" in item for item in phase3["executableEvidence"])
     assert "tests/unit/test_tshirt_fit.py" in phase3["tests"]
     assert "e23820e" in inference["commitSha"]
     assert any("priors separated" in item for item in inference["executableEvidence"])
     assert "e23820e" in refinement["commitSha"]
-    assert any(
-        "iterative D0 optimisation trace" in item for item in refinement["executableEvidence"]
-    )
+    assert any("bounded coordinate descent" in item for item in refinement["executableEvidence"])
 
 
 def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
@@ -486,51 +481,43 @@ def test_bp53_checkpoint_is_partial_and_evidenced() -> None:
     assert bp53["status"] == "partial"
     assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in bp53["commitSha"]
     assert "93f2e6587cc4f5f3237aba669870648a01118a09" in bp53["commitSha"]
-    assert any("sourceTextureAvailable=true" in item for item in bp53["executableEvidence"])
-    assert any("16 source projections" in item for item in bp53["executableEvidence"])
-    assert any("89 files each" in item for item in bp53["executableEvidence"])
-    assert any("remote Actions run 32742283522" in item for item in bp53["executableEvidence"])
-    assert "private-user source textures" in bp53["limitations"]
-    assert "foundation-proof closeout" in bp53["nextAction"]
+    assert any("eight actual bitmap atlas maps" in item for item in bp53["executableEvidence"])
+    assert any(
+        "source-observed fraction 0.659362793" in item for item in bp53["executableEvidence"]
+    )
+    assert any("432 logo-region atlas pixels" in item for item in bp53["executableEvidence"])
+    assert any("decoded-byte validation rejects" in item for item in bp53["executableEvidence"])
+    assert "not private-user imagery" in bp53["limitations"]
+    assert "Phase 7" in bp53["nextAction"]
 
     assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in phase4["commitSha"]
-    assert any("BP53 D0 source texture identity" in item for item in phase4["executableEvidence"])
-    assert "tests/unit/test_texture_identity.py" in phase4["tests"]
+    assert any(
+        "four decoded public fixture source PNGs" in item for item in phase4["executableEvidence"]
+    )
     assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in texture["commitSha"]
-    assert any("textureProjectionRun=true" in item for item in texture["executableEvidence"])
-    assert "hidden regions remain placeholders" in texture["limitations"]
+    assert any("eight actual atlas PNG maps" in item for item in texture["executableEvidence"])
+    assert "controlled generated fill" in texture["limitations"]
     assert "9fc004d429d9187bfd427586ca43af65e54ec2f5" in risk["commitSha"]
     assert any("cannot overwrite visible evidence" in item for item in risk["executableEvidence"])
 
 
-def test_markdown_ledger_matches_phase6_binding_checkpoint_state() -> None:
+def test_markdown_ledger_matches_d0_fidelity_checkpoint_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Branch: `codex/closy-forge-phase-6-binding`" in ledger
-    assert "Current active increment: `PHASE-6-C3-EVIDENCE-INTEGRITY-REPAIR`" in ledger
-    assert "branch `codex/closy-forge-d0-fidelity-closeout`" in ledger
-    assert "13604d169ecbc0fddf475cdf177e743790c836a2" in ledger
-    assert "PR #7 run `32912124815`" in ledger
-    assert "Ubuntu job `98008234902`" in ledger
-    assert "Windows job `98008235112`" in ledger
-    assert "PR #7 run `32865725191`" in ledger
-    assert "Ubuntu job `97860392258`" in ledger
-    assert "Windows job `97860392462`" in ledger
-    assert "binding/production_binding_contract.json" in ledger
-    assert "reports/production_binding_c3.json" in ledger
-    assert "reports/self_collision_report.json" in ledger
-    assert "partial_scoped_reference_profile" in ledger
-    assert "11 solver-produced states" in ledger
-    assert "crack residual max is `0.021539119 m`" in ledger
-    assert "fallback panel-centroid delta max is `0.098963781 m`" in ledger
-    assert "tangential sliding max is `0.184355169 m`" in ledger
+    assert "Branch: `codex/closy-forge-d0-fidelity-closeout`" in ledger
+    assert "Current active increment: `D0-FIDELITY-CLOSEOUT-BP52-BP53-BP47`" in ledger
+    assert "a8d6500639e1aa662ef95c10754c618f12f42e10" in ledger
+    assert "run `32913193640`" in ledger
+    assert "33 candidates" in ledger
+    assert "0.092928787" in ledger
+    assert "0.009143346" in ledger
+    assert "0.659362793" in ledger
+    assert "0.340637207" in ledger
+    assert "0.347457878" in ledger
+    assert "0.051886302" in ledger
+    assert "0.024247878" in ledger
     assert "C3 remains partial" in ledger
-    assert "205` unresolved contacts" in ledger
-    assert "unsupported_high_velocity_tunnelling" in ledger
     assert "self_collision_unresolved_contacts" in ledger
-    assert "131.688151/134.076597 ms" in ledger
-    assert "250.75065/258.5737 ms" in ledger
-    assert "performance not run" in ledger
     assert "reports/provider_bakeoff.json" in ledger
     assert "closy.manual_local_glb_import.v1" in ledger
     assert "No authorised AI/open-model provider execution" in ledger
@@ -555,35 +542,25 @@ def test_markdown_ledger_matches_phase6_binding_checkpoint_state() -> None:
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
 
 
-def test_active_resume_points_to_phase6_integrity_repair_and_remote_validation() -> None:
+def test_active_resume_points_to_d0_fidelity_validation() -> None:
     resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
 
-    assert "Active checkpoint: `PHASE-6-C3-EVIDENCE-INTEGRITY-REPAIR`" in resume
-    assert "`codex/closy-forge-phase-6-binding`, PR #7" in resume
-    assert "`codex/closy-forge-phase-5-provider` at branch point" in resume
-    assert "`97bf23ccff13e806132b732534d131d80b146467`" in resume
-    assert "Verified prior head: `c2ff305012897f20799cbb3a7df0a822d211fa23`" in resume
-    assert "run `32865725191`" in resume
-    assert "97860392258" in resume
-    assert "97860392462" in resume
-    assert "binding/production_binding_contract.json" in resume
-    assert "reports/production_binding_c3.json" in resume
-    assert "reports/self_collision_report.json" in resume
-    assert "simulation/motion_states/" in resume
-    assert "render/simulation_fallback.glb" in resume
-    assert "callsDenseReconstruction=false" in resume
-    assert "partial_scoped_reference_profile" in resume
-    assert "0.021539119" in resume
-    assert "0.098963781" in resume
-    assert "0.184355169" in resume
-    assert "205` unresolved contacts" in resume
-    assert "unsupported_high_velocity_tunnelling" in resume
-    assert "e02b5b19450d72f5e74a30d117cbcd7ab45de1451823b22bfa834f3a548a0711" in resume
+    assert "Active checkpoint: `D0-FIDELITY-CLOSEOUT-BP52-BP53-BP47`" in resume
+    assert "`codex/closy-forge-d0-fidelity-closeout`" in resume
+    assert "`a8d6500639e1aa662ef95c10754c618f12f42e10`" in resume
+    assert "run `32913193640`" in resume
+    assert "33 candidates" in resume
+    assert "0.092928787" in resume
+    assert "0.009143346" in resume
+    assert "0.659362793" in resume
+    assert "0.340637207" in resume
+    assert "0.347457878" in resume
+    assert "0.051886302" in resume
+    assert "0.024247878" in resume
+    assert "acceptedForD0PublicFixture=true" in resume
     assert "self_collision_unresolved_contacts" in resume
-    assert "canonical c3 reports truthfully record performance as not run" in resume.lower()
-    assert "3 warmups, 20 repeats" in resume
-    assert "Gate C3 and Phase 6 remain partial globally" in resume
-    assert "create `codex/closy-forge-d0-fidelity-closeout`" in resume
+    assert "Gate C3 and Phases 3, 4 and 6 remain partial globally" in resume
+    assert "branch `codex/closy-forge-phase-7-material-physics`" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:

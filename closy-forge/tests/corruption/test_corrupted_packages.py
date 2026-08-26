@@ -323,7 +323,7 @@ def test_tshirt_fit_rejection_is_rejected(tmp_path) -> None:  # type: ignore[no-
     fit["status"] = "fail"
     fit["accepted"] = False
     write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
-    assert "tshirt_fit_not_accepted" in issue_codes(validate_package(corrupt))
+    assert "tshirt_fit_acceptance_underclaimed" in issue_codes(validate_package(corrupt))
 
 
 def test_tshirt_fit_loss_threshold_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]

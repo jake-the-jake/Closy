@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from copy import deepcopy
 from typing import Any
 
@@ -47,6 +48,16 @@ def build_tshirt_visual_observations(capture_record: dict[str, Any]) -> dict[str
     record["stageVersion"] = TSHIRT_VISUAL_OBSERVATION_VERSION
     record["aggregate"]["requiredLandmarks"] = list(REQUIRED_TSHIRT_VISUAL_LANDMARKS)
     record["provider"]["algorithmVersion"] = RASTER_PIXEL_PARSER_VERSION
+    cameras = {
+        str(view.get("viewId", "")): deepcopy(view.get("camera", {}))
+        for view in capture_record.get("views", [])
+        if isinstance(view, Mapping)
+    }
+    for view in record["views"]:
+        view["camera"] = {
+            **cameras.get(str(view.get("viewId", "")), {}),
+            "source": "synthetic_capture_record_camera_metadata",
+        }
     record["integrity"]["visualRecordHash"] = hash_visual_observations(record)
     return record
 

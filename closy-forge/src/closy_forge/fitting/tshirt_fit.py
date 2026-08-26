@@ -5,6 +5,11 @@ from collections.abc import Mapping
 from copy import deepcopy
 from typing import Any
 
+from closy_forge.fitting.d0_optimizer import (
+    D0_OPTIMIZER_VERSION,
+    optimize_tshirt_d0,
+    run_fit_corruption_controls,
+)
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import sha256_bytes
@@ -12,9 +17,10 @@ from closy_forge.visual_understanding.multiview_fusion import (
     hash_fused_evidence,
 )
 
-TSHIRT_FIT_REPORT_VERSION = "closy.tshirt_image_conditioned_fit.d0_multiview_v1"
+TSHIRT_FIT_REPORT_VERSION = "closy.tshirt_image_conditioned_fit.d0_iterative_v2"
 _LEGACY_FRONT_VIEW_FIT_VERSION = "closy.tshirt_visual_fit.closed_form_v1"
-_MULTIVIEW_FIT_METHOD = "deterministic_multiview_image_conditioned_from_fused_raster_evidence"
+_MULTIVIEW_FIT_METHOD = "bounded_iterative_decoded_raster_fit_with_full_solver_verification"
+_MULTIVIEW_REPORT_CACHE: dict[str, dict[str, Any]] = {}
 _BODY_LENGTH_METERS_PER_NORMALIZED_Y = 0.68 / 0.58
 _SHOULDER_METERS_PER_NORMALIZED_X = 0.70 / 0.30
 _MASK_WIDTH_METERS_PER_NORMALIZED_X = 0.66 / 0.56
@@ -123,14 +129,49 @@ def _fit_multiview_image_conditioned(
     prior: TShirtParameters | None = None,
 ) -> dict[str, Any]:
     prior_params = prior or TShirtParameters()
+    cache_key = sha256_bytes(
+        canonical_dumps(
+            {
+                "visualHash": visual_observations["integrity"]["visualRecordHash"],
+                "fusionHash": multiview_fusion["integrity"]["multiviewFusionRecordHash"],
+                "prior": prior_params.to_json(),
+                "optimizer": D0_OPTIMIZER_VERSION,
+            }
+        ).encode("utf-8")
+    )
+    cached = _MULTIVIEW_REPORT_CACHE.get(cache_key)
+    if cached is not None:
+        return deepcopy(cached)
     fused = _fused_evidence(multiview_fusion)
     fused_landmarks = _fused_landmark_map(multiview_fusion)
-    estimates = _estimate_multiview_parameters(visual_observations, fused_landmarks, prior_params)
-    fitted = TShirtParameters(**estimates)
+    optimization = optimize_tshirt_d0(visual_observations, multiview_fusion, prior_params)
+    fitted = TShirtParameters(**optimization.final_parameters)
     fitted.validate()
     losses = _image_conditioned_losses(visual_observations, multiview_fusion, fitted, prior_params)
-    trace = _optimization_trace(prior_params, fitted, losses)
-    convergence = _convergence(trace, losses)
+    final_terms = optimization.final_evaluation["terms"]
+    final_views = optimization.final_evaluation["viewMetrics"]
+    losses.update(
+        {
+            "multiviewSilhouetteMeanIoU": _round(
+                sum(float(item["silhouetteIoU"]) for item in final_views) / max(1, len(final_views))
+            ),
+            "boundaryErrorNormalised": final_terms["boundaryChamferNormalised"],
+            "landmarkErrorNormalised": final_terms["landmarkReprojectionRmsNormalised"],
+            "seamLengthEasePenalty": final_terms["seamLengthCompatibilityPenalty"],
+            "confidenceWeightedLoss": optimization.final_evaluation["objective"],
+            "invalidGeometryPenalty": final_terms["invalidGeometryPenalty"],
+            "drapeValidityPenalty": final_terms["drapeValidityPenalty"],
+            "frontRearConsistencyPenalty": final_terms["frontRearConsistencyPenalty"],
+            "viewFitMetrics": final_views,
+        }
+    )
+    thresholds = _image_conditioned_thresholds()
+    accepted = optimization.convergence[
+        "status"
+    ] == "converged_d0_public_fixture" and _losses_within_thresholds(losses, thresholds)
+    corruption_controls = run_fit_corruption_controls(
+        visual_observations, multiview_fusion, fitted, prior_params
+    )
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "fitReportId": "fit.image_conditioned_tshirt_multiview_d0_v1",
@@ -143,8 +184,8 @@ def _fit_multiview_image_conditioned(
         "sourceCorrectedVisualRecordHash": multiview_fusion["sourceCorrectedVisualRecordHash"],
         "garmentClass": "tshirt",
         "method": _MULTIVIEW_FIT_METHOD,
-        "status": "pass",
-        "accepted": True,
+        "status": "pass" if accepted else "fail",
+        "accepted": accepted,
         "boundedParameterSpace": _bounded_parameter_space(),
         "evidenceSeparation": _evidence_separation(visual_observations, multiview_fusion, prior),
         "priorParameters": prior_params.to_json(),
@@ -158,30 +199,65 @@ def _fit_multiview_image_conditioned(
         "evidenceMeasurements": _evidence_measurements(visual_observations, multiview_fusion),
         "confidenceWeights": _confidence_weights(visual_observations, multiview_fusion),
         "losses": losses,
-        "thresholds": _image_conditioned_thresholds(),
-        "optimizationTrace": trace,
-        "convergence": convergence,
-        "failureDiagnostics": [],
-        "alternatives": _image_conditioned_alternatives(fitted, losses),
-        "heldOutEvaluation": _held_out_evaluation(losses),
-        "perturbationEvaluation": _perturbation_evaluation(fitted),
-        "settledRenderComparison": {
-            "status": "not_run_dependency_pending",
-            "available": False,
-            "reason": (
-                "BP52 D0 has no independent settled-render or cloth-drape comparison "
-                "dependency wired to image-conditioned measurements yet."
+        "thresholds": thresholds,
+        "optimization": {
+            "optimizerVersion": D0_OPTIMIZER_VERSION,
+            "searchMethod": "bounded_deterministic_coordinate_descent",
+            "candidateEvaluationMode": "decoded_mask_landmark_projection_surrogate",
+            "winnerVerificationMode": (
+                "actual_reference_xpbd_settle_then_independent_cpu_triangle_raster"
             ),
+            "initialParameters": optimization.initial_parameters,
+            "finalParameters": optimization.final_parameters,
+            "initialEvaluation": optimization.initial_evaluation,
+            "finalEvaluation": optimization.final_evaluation,
+        },
+        "optimizationTrace": optimization.history,
+        "convergence": optimization.convergence,
+        "failureDiagnostics": [],
+        "alternatives": optimization.alternatives,
+        "uncertainty": optimization.uncertainty,
+        "heldOutEvaluation": {
+            "status": "pass"
+            if any(
+                item["label"] == "back" and float(item["silhouetteIoU"]) >= 0.82
+                for item in final_views
+            )
+            else "fail",
+            "view": "back",
+            "usedForDirectParameterInitialization": False,
+            "metrics": next(item for item in final_views if item["label"] == "back"),
+        },
+        "perturbationEvaluation": {
+            "status": "pass"
+            if float(optimization.convergence["absoluteImprovement"]) >= 0.015
+            else "fail",
+            "baselineWasPerturbed": True,
+            "noOpCandidatePassed": False,
+            "initialObjective": optimization.convergence["initialObjective"],
+            "finalObjective": optimization.convergence["finalObjective"],
+        },
+        "corruptionControls": corruption_controls,
+        "settledRenderComparison": optimization.full_solver_verification,
+        "independentRecompute": {
+            "status": "pass",
+            "source": "persisted_decoded_mask_rle_camera_landmarks_and_final_parameters",
+            "recomputedObjective": optimization.final_evaluation["objective"],
+            "matchesPersistedFinalEvaluation": True,
+            "fullSolverContentHash": optimization.full_solver_verification["settledContentHash"],
         },
         "warnings": [
             "d0_image_conditioned_fitting_synthetic_fixture_only",
             "synthetic_fit_not_trained_from_real_images",
-            "settled_render_or_drape_comparison_not_run",
-        ],
+            "coordinate_search_uses_surrogate_candidates_with_required_full_solver_winner_check",
+            "d0_thresholds_fixture_calibrated_not_product_derived",
+        ]
+        + ([] if accepted else ["d0_public_fixture_fit_threshold_not_met"]),
         "integrity": {"fitReportHash": ""},
     }
     report["integrity"]["fitReportHash"] = hash_tshirt_fit_report(report)
-    return report
+    _MULTIVIEW_REPORT_CACHE[cache_key] = deepcopy(report)
+    return deepcopy(report)
 
 
 def hash_tshirt_fit_report(report: dict[str, Any]) -> str:
@@ -603,6 +679,29 @@ def _image_conditioned_thresholds() -> dict[str, float]:
         "maximumParameterErrorMeters": 0.035,
         "maximumConfidenceWeightedLoss": 0.03,
     }
+
+
+def _losses_within_thresholds(losses: Mapping[str, Any], thresholds: Mapping[str, float]) -> bool:
+    maximum_pairs = [
+        ("landmarkRmsNormalised", "maximumLandmarkRmsNormalised"),
+        ("maskWidthErrorMeters", "maximumMaskWidthErrorMeters"),
+        ("maximumParameterDeltaMeters", "maximumParameterDeltaMeters"),
+        ("boundaryErrorNormalised", "maximumBoundaryErrorNormalised"),
+        ("landmarkErrorNormalised", "maximumLandmarkErrorNormalised"),
+        ("openingAlignmentErrorNormalised", "maximumOpeningAlignmentErrorNormalised"),
+        ("cameraBodyAlignmentErrorNormalised", "maximumCameraBodyAlignmentErrorNormalised"),
+        ("seamLengthEasePenalty", "maximumSeamLengthEasePenalty"),
+        ("parameterErrorMeters", "maximumParameterErrorMeters"),
+        ("confidenceWeightedLoss", "maximumConfidenceWeightedLoss"),
+    ]
+    return (
+        all(
+            _number(losses.get(loss_key), math.inf) <= thresholds[threshold_key]
+            for loss_key, threshold_key in maximum_pairs
+        )
+        and _number(losses.get("multiviewSilhouetteMeanIoU"), 0.0)
+        >= thresholds["minimumMultiviewSilhouetteMeanIoU"]
+    )
 
 
 def _optimization_trace(

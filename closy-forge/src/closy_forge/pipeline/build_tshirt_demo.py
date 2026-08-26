@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from closy_forge.appearance import (
+    BITMAP_ATLAS_VERSION,
     TEXTURE_IDENTITY_VERSION,
     build_texture_identity_bundle,
 )
@@ -50,7 +51,9 @@ from closy_forge.geometry.subdivision import subdivide_for_render
 from closy_forge.inspection import (
     INSPECTION_ARTIFACT_REPORT_VERSION,
     INSPECTION_RENDERER_VERSION,
+    SOURCE_RENDER_FIDELITY_VERSION,
     write_inspection_artifacts,
+    write_source_render_fidelity_artifacts,
 )
 from closy_forge.package_io.canonical_json import (
     canonical_dumps,
@@ -178,7 +181,11 @@ def build_demo_tshirt_package(
         final_validation = validate_package(staging)
         if final_validation["status"] != "passed":
             write_canonical_json(staging / "reports" / "package_validation.json", final_validation)
-            raise RuntimeError("package validation failed before publish")
+            issue_details = ";".join(
+                f"{issue.get('code', 'unknown')}={issue.get('message', '')}"
+                for issue in final_validation["issues"]
+            )
+            raise RuntimeError(f"package validation failed before publish: {issue_details}")
         write_canonical_json(staging / "reports" / "package_validation.json", final_validation)
         write_canonical_json(
             staging / "reports" / "summary.json",
@@ -200,10 +207,6 @@ def _write_package_contents(
 ) -> dict[str, Any]:
     avatar_mesh = build_reference_avatar_mesh()
     collision_mesh = build_collision_mesh()
-    pattern = build_tshirt_pattern(params)
-    semantic = build_semantic_graph(pattern)
-    rest_mesh, edge_maps = build_simulation_mesh(pattern)
-    constraints = build_constraints(pattern, edge_maps)
     avatar = avatar_contract(avatar_mesh, collision_mesh)
     regions = body_regions()
     capture_record = build_synthetic_capture_record(
@@ -223,6 +226,12 @@ def _write_package_contents(
         multiview_fusion=multiview_fusion,
         prior=params,
     )
+    params = TShirtParameters(**fit_report["fittedParameters"])
+    params.validate()
+    pattern = build_tshirt_pattern(params)
+    semantic = build_semantic_graph(pattern)
+    rest_mesh, edge_maps = build_simulation_mesh(pattern)
+    constraints = build_constraints(pattern, edge_maps)
     render_materials = _render_materials()
     texture_bundle = build_texture_identity_bundle(
         capture_record=capture_record,
@@ -473,7 +482,12 @@ def _write_package_contents(
     write_canonical_json(package_dir / "fitting" / "tshirt_fit.json", fit_report)
     write_canonical_json(package_dir / "textures" / "texture_identity.json", texture_identity)
     for texture_path, texture_payload in texture_bundle.artifacts.items():
-        write_canonical_json(package_dir / texture_path, texture_payload)
+        destination = package_dir / texture_path
+        if isinstance(texture_payload, bytes):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(texture_payload)
+        else:
+            write_canonical_json(destination, texture_payload)
     write_canonical_json(
         package_dir / "proposals" / "raw_geometry_proposal.json", geometry_proposal
     )
@@ -669,6 +683,11 @@ def _write_package_contents(
     for name, report in quality_reports.items():
         write_canonical_json(package_dir / "reports" / name, report)
 
+    source_render_fidelity = write_source_render_fidelity_artifacts(
+        package_dir,
+        visual_observations=visual_observations,
+        settled_mesh=simulation_mesh,
+    )
     inspection_manifest, inspection_report = write_inspection_artifacts(
         package_dir,
         garment_id="garment.demo_tshirt.reference_v1",
@@ -687,6 +706,7 @@ def _write_package_contents(
         geometry_stitched_shell=geometry_stitched_shell,
         geometry_visual_shell_review=geometry_visual_shell_review,
         clean_geometry_proposal=clean_geometry_proposal,
+        source_render_fidelity=source_render_fidelity,
     )
 
     provenance = _provenance(
@@ -727,6 +747,7 @@ def _write_package_contents(
         clean_geometry_proposal,
         provider_registry,
         inspection_report,
+        source_render_fidelity,
     )
     write_canonical_json(package_dir / "provenance.json", provenance)
 
@@ -776,6 +797,7 @@ def _write_package_contents(
         provider_registry,
         inspection_manifest,
         inspection_report,
+        source_render_fidelity,
     )
     write_canonical_json(package_dir / "manifest.json", manifest)
     return {
@@ -820,6 +842,7 @@ def _write_package_contents(
         "providerRegistry": provider_registry,
         "inspectionManifest": inspection_manifest,
         "inspectionReport": inspection_report,
+        "sourceRenderFidelity": source_render_fidelity,
         "inventory": inventory,
     }
 
@@ -956,6 +979,7 @@ def _manifest(
     provider_registry: dict[str, Any],
     inspection_manifest: dict[str, Any],
     inspection_report: dict[str, Any],
+    source_render_fidelity: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -1014,6 +1038,8 @@ def _manifest(
             "selfCollisionReport": "reports/self_collision_report.json",
             "inspectionArtifactManifest": "reports/inspection/manifest.json",
             "inspectionArtifactReport": "reports/inspection/inspection_report.json",
+            "sourceRenderFidelity": "reports/fidelity/source_render_fidelity.json",
+            "decodedBitmapPbrReport": "textures/bitmap_pbr_report.json",
             "geometryCleanAcceptanceGate": "reports/geometry_clean_acceptance_gate.json",
             "cleanGeometryProposal": "proposals/clean_geometry_proposal.json",
             "geometryProviderRegistry": "proposals/provider_registry.json",
@@ -1235,6 +1261,18 @@ def _manifest(
             "inspectionArtifactReportPayloadHash": str(
                 inspection_report["integrity"]["inspectionReportHash"]
             ),
+            "sourceRenderFidelityHash": _hash_from_inventory(
+                inventory, "reports/fidelity/source_render_fidelity.json"
+            ),
+            "sourceRenderFidelityPayloadHash": str(
+                source_render_fidelity["integrity"]["sourceRenderFidelityHash"]
+            ),
+            "decodedBitmapPbrReportHash": _hash_from_inventory(
+                inventory, "textures/bitmap_pbr_report.json"
+            ),
+            "decodedBitmapPbrReportPayloadHash": str(
+                texture_identity["decodedBitmapAtlas"]["reportHash"]
+            ),
             "geometryCleanAcceptanceGateHash": _hash_from_inventory(
                 inventory, "reports/geometry_clean_acceptance_gate.json"
             ),
@@ -1284,6 +1322,7 @@ def _manifest(
             "multiviewFusion": MULTIVIEW_FUSION_VERSION,
             "tshirtFit": TSHIRT_FIT_REPORT_VERSION,
             "textureIdentity": TEXTURE_IDENTITY_VERSION,
+            "decodedBitmapAtlas": BITMAP_ATLAS_VERSION,
             "geometryProposal": GEOMETRY_PROPOSAL_VERSION,
             "rawGeometryTopology": RAW_GEOMETRY_TOPOLOGY_REPORT_VERSION,
             "providerBakeoff": PROVIDER_BAKEOFF_REPORT_VERSION,
@@ -1304,6 +1343,7 @@ def _manifest(
             "selfCollision": SELF_COLLISION_REPORT_VERSION,
             "inspectionRenderer": INSPECTION_RENDERER_VERSION,
             "inspectionArtifactReport": INSPECTION_ARTIFACT_REPORT_VERSION,
+            "sourceRenderFidelity": SOURCE_RENDER_FIDELITY_VERSION,
             "geometryCleanAcceptanceGate": GEOMETRY_CLEAN_ACCEPTANCE_GATE_VERSION,
             "cleanGeometryProposal": CLEAN_GEOMETRY_PROPOSAL_VERSION,
             "geometryProviderRegistry": PROVIDER_REGISTRY_VERSION,
@@ -1317,11 +1357,11 @@ def _manifest(
         },
         "seed": seed,
         "buildProfile": {
-            "name": "bp53_source_texture_pbr_recovery_d0_fixture",
+            "name": "d0_fidelity_closeout_public_fixture",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
-        "capabilities": _capabilities(production_binding_c3),
+        "capabilities": _capabilities(production_binding_c3, source_render_fidelity),
         "warnings": [
             "self_collision_d0_reference_only",
             "self_collision_unresolved_contacts_d0_reference",
@@ -1333,10 +1373,10 @@ def _manifest(
             "local_algorithmic_parser_not_trained_model",
             "private_user_raster_processing_not_enabled",
             "synthetic_fit_not_trained_from_real_images",
-            "settled_render_or_drape_comparison_not_run",
+            "settled_render_fit_comparison_d0_public_fixture_only",
             "d0_source_texture_recovery_synthetic_fixture_only",
-            "raw_source_pixels_not_packaged",
-            "pbr_maps_placeholder_where_source_evidence_absent",
+            "public_synthetic_source_pixels_packaged_private_pixels_not_allowed",
+            "decoded_pbr_maps_d0_derived_not_real_fabric_calibration",
             "hidden_texture_regions_not_hallucinated",
             "manual_raw_geometry_proposal_not_canonical",
             "partial_geometry_cleanup_not_clean_proposal",
@@ -1357,7 +1397,7 @@ def _manifest(
                 else []
             ),
             "performance_wall_clock_omitted_from_canonical_digest",
-            "source_provider_human_visual_fidelity_not_run",
+            "private_provider_human_visual_fidelity_tiers_not_run",
             "geometry_clean_acceptance_gate_rejected",
             "clean_geometry_proposal_not_available",
             "provider_bakeoff_d0_contract_only",
@@ -1366,11 +1406,13 @@ def _manifest(
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "bp53-source-texture-pbr-recovery"},
+        "extensions": {"closyImplementation": "d0-fidelity-closeout-bp52-bp53-bp47"},
     }
 
 
-def _capabilities(production_binding_c3: dict[str, Any]) -> dict[str, bool]:
+def _capabilities(
+    production_binding_c3: dict[str, Any], source_render_fidelity: dict[str, Any]
+) -> dict[str, bool]:
     return {
         "patternAvailable": True,
         "simulationReadyTopologyAvailable": True,
@@ -1413,7 +1455,12 @@ def _capabilities(production_binding_c3: dict[str, Any]) -> dict[str, bool]:
         "fittingOptimizationTraceAvailable": True,
         "fitAlternativesAvailable": True,
         "heldOutPerturbationFitEvaluationAvailable": True,
-        "settledRenderFitComparisonAvailable": False,
+        "settledRenderFitComparisonAvailable": True,
+        "decodedBitmapAtlasAvailable": True,
+        "sourceRenderFidelityAvailable": True,
+        "acceptedForD0PublicFixture": bool(
+            source_render_fidelity["acceptanceTiers"]["acceptedForD0PublicFixture"]["accepted"]
+        ),
         "textureIdentityEvidenceAvailable": True,
         "pbrMaterialObservationAvailable": True,
         "sourceTextureProjectionAvailable": True,
@@ -1626,7 +1673,9 @@ def _quality_reports(
                 "meanVisibleConfidence"
             ],
             "pbrSourceBackedMapCount": texture_identity["pbrMaterialMaps"]["sourceBackedMapCount"],
-            "pbrPlaceholderMapCount": texture_identity["pbrMaterialMaps"]["placeholderMapCount"],
+            "legacyJsonPbrPlaceholderMapCount": texture_identity["pbrMaterialMaps"][
+                "placeholderMapCount"
+            ],
             "warnings": texture_identity["warnings"],
         },
         "geometry_proposal_quality.json": geometry_proposal_quality_report(geometry_proposal),
@@ -1757,6 +1806,7 @@ def _provenance(
     clean_geometry_proposal: dict[str, Any],
     provider_registry: dict[str, Any],
     inspection_report: dict[str, Any],
+    source_render_fidelity: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
@@ -1850,10 +1900,14 @@ def _provenance(
                     "multiviewSilhouetteMeanIoU": fit_report["losses"].get(
                         "multiviewSilhouetteMeanIoU"
                     ),
-                    "optimizationIterations": fit_report.get("convergence", {}).get(
-                        "iterationCount",
-                        0,
-                    ),
+                    "optimizationHistoryCount": fit_report["convergence"]["persistedHistoryCount"],
+                    "candidateEvaluationCount": fit_report["convergence"][
+                        "candidateEvaluationCount"
+                    ],
+                    "acceptedMoveCount": fit_report["convergence"]["acceptedMoveCount"],
+                    "settledRenderComparisonStatus": fit_report["settledRenderComparison"][
+                        "status"
+                    ],
                 },
                 [
                     str(fit_report["integrity"]["fitReportHash"]),
@@ -1874,9 +1928,32 @@ def _provenance(
                     "sourceBackedPbrMapCount": texture_identity["pbrMaterialMaps"][
                         "sourceBackedMapCount"
                     ],
-                    "rawPixelsExported": False,
+                    "decodedPublicSourcePixelsExported": True,
+                    "decodedRasterAssetsPersisted": texture_identity["decodedBitmapAtlas"][
+                        "decodedRasterAssetsPersisted"
+                    ],
+                    "sourceObservedFraction": texture_identity["decodedBitmapAtlas"][
+                        "sourceObservedFraction"
+                    ],
                 },
                 [str(texture_identity["integrity"]["textureIdentityHash"])],
+            ),
+            _stage(
+                "decoded_source_render_fidelity",
+                SOURCE_RENDER_FIDELITY_VERSION,
+                {
+                    "status": source_render_fidelity["status"],
+                    "viewCount": source_render_fidelity["aggregate"]["viewCount"],
+                    "meanSilhouetteIoU": source_render_fidelity["aggregate"]["meanSilhouetteIoU"],
+                    "meanForegroundLinearSrgbMae": source_render_fidelity["aggregate"][
+                        "meanForegroundLinearSrgbMae"
+                    ],
+                    "acceptedForD0PublicFixture": source_render_fidelity["acceptanceTiers"][
+                        "acceptedForD0PublicFixture"
+                    ]["accepted"],
+                    "acceptedForCanonicalProduction": False,
+                },
+                [str(source_render_fidelity["integrity"]["sourceRenderFidelityHash"])],
             ),
             _stage(
                 "geometry_provider_registry",
@@ -2269,6 +2346,15 @@ def _provenance(
                     "providerGeometryAppearanceComparisonRun": inspection_report["readiness"][
                         "providerGeometryAppearanceComparisonRun"
                     ],
+                    "sourceImageSilhouetteComparisonRun": inspection_report["readiness"][
+                        "sourceImageSilhouetteComparisonRun"
+                    ],
+                    "sourceImageAppearanceComparisonRun": inspection_report["readiness"][
+                        "sourceImageAppearanceComparisonRun"
+                    ],
+                    "acceptedForD0PublicFixture": inspection_report["readiness"][
+                        "acceptedForD0PublicFixture"
+                    ],
                     "humanVisualReviewRun": inspection_report["readiness"]["humanVisualReviewRun"],
                     "acceptedForVisualFidelity": False,
                     "acceptedForCleanProposal": False,
@@ -2575,6 +2661,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     self_collision_report = context["selfCollisionReport"]
     inspection_manifest = context["inspectionManifest"]
     inspection_report = context["inspectionReport"]
+    source_render_fidelity = context["sourceRenderFidelity"]
     geometry_clean_acceptance_gate = context["geometryCleanAcceptanceGate"]
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
@@ -2685,10 +2772,12 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "openingAlignmentErrorNormalised"
             ),
             "confidenceWeightedLoss": fit_report["losses"].get("confidenceWeightedLoss"),
-            "optimizationIterations": fit_report.get("convergence", {}).get(
-                "iterationCount",
-                0,
-            ),
+            "optimizationHistoryCount": fit_report["convergence"]["persistedHistoryCount"],
+            "candidateEvaluationCount": fit_report["convergence"]["candidateEvaluationCount"],
+            "acceptedMoveCount": fit_report["convergence"]["acceptedMoveCount"],
+            "initialObjective": fit_report["convergence"]["initialObjective"],
+            "finalObjective": fit_report["convergence"]["finalObjective"],
+            "settledRenderComparisonStatus": fit_report["settledRenderComparison"]["status"],
             "heldOutStatus": fit_report.get("heldOutEvaluation", {}).get("status"),
             "perturbationStatus": fit_report.get("perturbationEvaluation", {}).get("status"),
             "fittedParameters": fit_report["fittedParameters"],
@@ -2710,6 +2799,36 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             ],
             "pbrSourceBackedMapCount": texture_identity["pbrMaterialMaps"]["sourceBackedMapCount"],
             "pbrPlaceholderMapCount": texture_identity["pbrMaterialMaps"]["placeholderMapCount"],
+            "decodedRasterAssetsPersisted": texture_identity["decodedBitmapAtlas"][
+                "decodedRasterAssetsPersisted"
+            ],
+            "decodedBitmapPbrReportPath": texture_identity["decodedBitmapAtlas"]["reportPath"],
+            "sourceObservedFraction": texture_identity["decodedBitmapAtlas"][
+                "sourceObservedFraction"
+            ],
+            "generatedControlledFillFraction": texture_identity["decodedBitmapAtlas"][
+                "generatedControlledFillFraction"
+            ],
+        },
+        "sourceRenderFidelity": {
+            "reportId": source_render_fidelity["reportId"],
+            "status": source_render_fidelity["status"],
+            "viewCount": source_render_fidelity["aggregate"]["viewCount"],
+            "meanSilhouetteIoU": source_render_fidelity["aggregate"]["meanSilhouetteIoU"],
+            "maximumBoundaryChamferNormalised": source_render_fidelity["aggregate"][
+                "maximumBoundaryChamferNormalised"
+            ],
+            "meanForegroundLinearSrgbMae": source_render_fidelity["aggregate"][
+                "meanForegroundLinearSrgbMae"
+            ],
+            "allViewsNonBlank": source_render_fidelity["aggregate"]["allViewsNonBlank"],
+            "acceptedForD0PublicFixture": source_render_fidelity["acceptanceTiers"][
+                "acceptedForD0PublicFixture"
+            ]["accepted"],
+            "acceptedForPrivateUserCapture": False,
+            "acceptedForProviderGeneratedShell": False,
+            "acceptedForHumanVisualReview": False,
+            "acceptedForCanonicalProduction": False,
         },
         "geometryProposal": {
             "proposalId": geometry_proposal["proposalId"],
@@ -3092,6 +3211,9 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
                 "sourceImageAppearanceComparisonRun"
             ],
             "humanVisualReviewRun": inspection_report["readiness"]["humanVisualReviewRun"],
+            "acceptedForD0PublicFixture": inspection_report["readiness"][
+                "acceptedForD0PublicFixture"
+            ],
             "acceptedForVisualFidelity": inspection_report["readiness"][
                 "acceptedForVisualFidelity"
             ],
@@ -3360,16 +3482,28 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"`{summary['fitting']['fitterVersion']}`, landmark RMS "
         f"{summary['fitting']['landmarkRmsNormalised']:.6f}, "
         f"multiview IoU={summary['fitting']['multiviewSilhouetteMeanIoU']:.6f}, "
-        f"optimisation iterations={summary['fitting']['optimizationIterations']}\n"
+        f"optimisation history={summary['fitting']['optimizationHistoryCount']}, "
+        f"candidate evaluations={summary['fitting']['candidateEvaluationCount']}, "
+        f"objective={summary['fitting']['initialObjective']:.6f}->"
+        f"{summary['fitting']['finalObjective']:.6f}, "
+        f"settled render={summary['fitting']['settledRenderComparisonStatus']}\n"
         f"- Texture identity: {summary['texture']['status']}, "
         f"{summary['texture']['materialRegionCount']} PBR material observations, "
         f"source textures available={summary['texture']['sourceTextureAvailable']}, "
         f"visible projections={summary['texture']['visibleProjectionCount']}/"
         f"{summary['texture']['sourceProjectionCount']}, "
         f"mean confidence={summary['texture']['meanVisibleConfidence']:.6f}, "
-        f"PBR maps source-backed/placeholders="
-        f"{summary['texture']['pbrSourceBackedMapCount']}/"
-        f"{summary['texture']['pbrPlaceholderMapCount']}\n"
+        f"decoded bitmaps={summary['texture']['decodedRasterAssetsPersisted']}, "
+        f"source/generated coverage={summary['texture']['sourceObservedFraction']:.6f}/"
+        f"{summary['texture']['generatedControlledFillFraction']:.6f}\n"
+        f"- Source/render fidelity: `{summary['sourceRenderFidelity']['status']}`, "
+        f"views={summary['sourceRenderFidelity']['viewCount']}, "
+        f"mean IoU={summary['sourceRenderFidelity']['meanSilhouetteIoU']:.6f}, "
+        f"mean linear-sRGB MAE="
+        f"{summary['sourceRenderFidelity']['meanForegroundLinearSrgbMae']:.6f}, "
+        f"D0 public accepted="
+        f"{summary['sourceRenderFidelity']['acceptedForD0PublicFixture']}, "
+        "canonical accepted=False\n"
         f"- Geometry proposal: {summary['geometryProposal']['qualityStatus']} via "
         f"`{summary['geometryProposal']['providerId']}`, "
         f"raw available={summary['geometryProposal']['rawProposalAvailable']}\n"

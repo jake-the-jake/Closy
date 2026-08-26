@@ -16,6 +16,10 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
     multiview = read_json(package_dir / "source" / "multiview_fusion.json")
     fitting = read_json(package_dir / "fitting" / "tshirt_fit.json")
     texture = read_json(package_dir / "textures" / "texture_identity.json")
+    bitmap_pbr = read_json(package_dir / "textures" / "bitmap_pbr_report.json")
+    source_render_fidelity = read_json(
+        package_dir / "reports" / "fidelity" / "source_render_fidelity.json"
+    )
     proposal = read_json(package_dir / "proposals" / "raw_geometry_proposal.json")
     raw_topology = read_json(package_dir / "reports" / "raw_geometry_topology.json")
     cleanup_plan = read_json(package_dir / "reports" / "geometry_cleanup_plan.json")
@@ -128,7 +132,12 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
                 "openingAlignmentErrorNormalised"
             ),
             "confidenceWeightedLoss": fitting["losses"].get("confidenceWeightedLoss"),
-            "optimizationIterations": fitting.get("convergence", {}).get("iterationCount", 0),
+            "initialObjective": fitting["convergence"]["initialObjective"],
+            "finalObjective": fitting["convergence"]["finalObjective"],
+            "candidateEvaluationCount": fitting["convergence"]["candidateEvaluationCount"],
+            "optimizationHistoryCount": fitting["convergence"]["persistedHistoryCount"],
+            "acceptedMoveCount": fitting["convergence"]["acceptedMoveCount"],
+            "settledRenderComparisonStatus": fitting["settledRenderComparison"]["status"],
             "heldOutStatus": fitting.get("heldOutEvaluation", {}).get("status"),
             "perturbationStatus": fitting.get("perturbationEvaluation", {}).get("status"),
         },
@@ -145,6 +154,34 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
             "meanVisibleConfidence": texture["visibleRegionConfidence"]["meanVisibleConfidence"],
             "pbrSourceBackedMapCount": texture["pbrMaterialMaps"]["sourceBackedMapCount"],
             "pbrPlaceholderMapCount": texture["pbrMaterialMaps"]["placeholderMapCount"],
+            "decodedRasterAssetsPersisted": texture["decodedBitmapAtlas"][
+                "decodedRasterAssetsPersisted"
+            ],
+            "sourceObservedFraction": bitmap_pbr["coverage"]["sourceObservedFraction"],
+            "generatedControlledFillFraction": bitmap_pbr["coverage"][
+                "generatedControlledFillFraction"
+            ],
+            "bitmapMapCount": len(bitmap_pbr["maps"]),
+            "logoAtlasPixelCount": bitmap_pbr["logoPreservation"]["atlasPixelCount"],
+        },
+        "sourceRenderFidelity": {
+            "reportId": source_render_fidelity["reportId"],
+            "status": source_render_fidelity["status"],
+            "viewCount": len(source_render_fidelity["viewComparisons"]),
+            "allViewsNonBlank": source_render_fidelity["aggregate"]["allViewsNonBlank"],
+            "meanSilhouetteIoU": source_render_fidelity["aggregate"]["meanSilhouetteIoU"],
+            "maximumBoundaryChamferNormalised": source_render_fidelity["aggregate"][
+                "maximumBoundaryChamferNormalised"
+            ],
+            "meanForegroundLinearSrgbMae": source_render_fidelity["aggregate"][
+                "meanForegroundLinearSrgbMae"
+            ],
+            "acceptedForD0PublicFixture": source_render_fidelity["acceptanceTiers"][
+                "acceptedForD0PublicFixture"
+            ]["accepted"],
+            "acceptedForCanonicalProduction": source_render_fidelity["acceptanceTiers"][
+                "acceptedForCanonicalProduction"
+            ]["accepted"],
         },
         "geometryProposal": {
             "proposalId": proposal["proposalId"],
@@ -620,6 +657,7 @@ def human_report(package_dir: Path) -> str:
     multiview = summary["multiviewFusion"]
     fitting = summary["fitting"]
     texture = summary["texture"]
+    source_fidelity = summary["sourceRenderFidelity"]
     proposal = summary["geometryProposal"]
     raw_topology = summary["rawGeometryTopology"]
     cleanup_plan = summary["geometryCleanupPlan"]
@@ -664,7 +702,9 @@ def human_report(package_dir: Path) -> str:
                 f"Fitting: {fitting['status']} via {fitting['fitterVersion']}, "
                 f"landmark RMS {fitting['landmarkRmsNormalised']:.6f}, "
                 f"multiview IoU={fitting['multiviewSilhouetteMeanIoU']:.6f}, "
-                f"optimisation iterations={fitting['optimizationIterations']}"
+                f"candidates={fitting['candidateEvaluationCount']}, "
+                f"accepted moves={fitting['acceptedMoveCount']}, "
+                f"settled comparison={fitting['settledRenderComparisonStatus']}"
             ),
             (
                 f"Texture identity: {texture['status']}, "
@@ -674,7 +714,16 @@ def human_report(package_dir: Path) -> str:
                 f"{texture['sourceProjectionCount']}, "
                 f"mean confidence={texture['meanVisibleConfidence']:.6f}, "
                 f"PBR maps source-backed/placeholders="
-                f"{texture['pbrSourceBackedMapCount']}/{texture['pbrPlaceholderMapCount']}"
+                f"{texture['pbrSourceBackedMapCount']}/{texture['pbrPlaceholderMapCount']}, "
+                f"decoded maps={texture['bitmapMapCount']}, "
+                f"source fraction={texture['sourceObservedFraction']:.6f}"
+            ),
+            (
+                f"Source/render fidelity: {source_fidelity['status']}, "
+                f"views={source_fidelity['viewCount']}, "
+                f"mean IoU={source_fidelity['meanSilhouetteIoU']:.6f}, "
+                f"D0 accepted={source_fidelity['acceptedForD0PublicFixture']}, "
+                f"canonical accepted={source_fidelity['acceptedForCanonicalProduction']}"
             ),
             (
                 f"Geometry proposal: {proposal['qualityStatus']} via "

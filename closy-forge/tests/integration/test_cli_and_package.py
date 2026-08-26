@@ -107,11 +107,14 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["multiviewFusion"]["expensiveDownstreamAllowed"] is True
     assert payload["fitting"]["status"] == "pass"
     assert payload["fitting"]["method"] == (
-        "deterministic_multiview_image_conditioned_from_fused_raster_evidence"
+        "bounded_iterative_decoded_raster_fit_with_full_solver_verification"
     )
-    assert payload["fitting"]["multiviewSilhouetteMeanIoU"] >= 0.93
-    assert payload["fitting"]["confidenceWeightedLoss"] <= 0.03
-    assert payload["fitting"]["optimizationIterations"] == 4
+    assert payload["fitting"]["multiviewSilhouetteMeanIoU"] >= 0.98
+    assert payload["fitting"]["confidenceWeightedLoss"] <= 0.01
+    assert payload["fitting"]["candidateEvaluationCount"] == 33
+    assert payload["fitting"]["optimizationHistoryCount"] == 17
+    assert payload["fitting"]["acceptedMoveCount"] == 8
+    assert payload["fitting"]["settledRenderComparisonStatus"] == "pass"
     assert payload["fitting"]["heldOutStatus"] == "pass"
     assert payload["fitting"]["perturbationStatus"] == "pass"
     assert payload["texture"]["sourceTextureAvailable"] is True
@@ -119,6 +122,13 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["texture"]["visibleProjectionCount"] > 0
     assert payload["texture"]["pbrSourceBackedMapCount"] >= 1
     assert payload["texture"]["materialRegionCount"] == 2
+    assert payload["texture"]["decodedRasterAssetsPersisted"] is True
+    assert payload["texture"]["sourceObservedFraction"] == 0.659362793
+    assert payload["texture"]["generatedControlledFillFraction"] == 0.340637207
+    assert payload["sourceRenderFidelity"]["status"] == "pass_d0_public_fixture"
+    assert payload["sourceRenderFidelity"]["allViewsNonBlank"] is True
+    assert payload["sourceRenderFidelity"]["acceptedForD0PublicFixture"] is True
+    assert payload["sourceRenderFidelity"]["acceptedForCanonicalProduction"] is False
     assert payload["geometryProposal"]["qualityStatus"] == "accepted_visual_reference"
     assert payload["geometryProposal"]["acceptedForCanonical"] is False
     assert payload["geometryProposal"]["rawProposalAvailable"] is True

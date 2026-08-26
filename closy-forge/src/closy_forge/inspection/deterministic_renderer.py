@@ -159,6 +159,7 @@ def write_inspection_artifacts(
     geometry_stitched_shell: dict[str, Any],
     geometry_visual_shell_review: dict[str, Any],
     clean_geometry_proposal: dict[str, Any],
+    source_render_fidelity: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Write deterministic BP47 review artifacts into a Forge package.
 
@@ -307,7 +308,13 @@ def write_inspection_artifacts(
         ),
     ]
 
-    evidence_tiers = _evidence_tiers(geometry_visual_shell_review)
+    evidence_tiers = _evidence_tiers(geometry_visual_shell_review, source_render_fidelity)
+    d0_public_accepted = bool(
+        source_render_fidelity
+        and source_render_fidelity.get("acceptanceTiers", {})
+        .get("acceptedForD0PublicFixture", {})
+        .get("accepted", False)
+    )
     manifest: dict[str, Any] = {
         "schemaVersion": 1,
         "manifestId": "inspection_manifest.demo_tshirt_bp47_v1",
@@ -382,9 +389,10 @@ def write_inspection_artifacts(
             "topologyRepresentationInspectionRun": True,
             "canonicalSimulationToRenderSilhouetteRun": True,
             "providerGeometryAppearanceComparisonRun": False,
-            "sourceImageSilhouetteComparisonRun": False,
-            "sourceImageAppearanceComparisonRun": False,
+            "sourceImageSilhouetteComparisonRun": source_render_fidelity is not None,
+            "sourceImageAppearanceComparisonRun": source_render_fidelity is not None,
             "humanVisualReviewRun": False,
+            "acceptedForD0PublicFixture": d0_public_accepted,
             "acceptedForVisualFidelity": False,
             "acceptedForCleanProposal": False,
         },
@@ -895,7 +903,16 @@ def _mesh_semantic_ids(meshset: MeshSet) -> list[str]:
     return sorted({mesh.panel_id for mesh in meshset.meshes})
 
 
-def _evidence_tiers(geometry_visual_shell_review: dict[str, Any]) -> list[dict[str, Any]]:
+def _evidence_tiers(
+    geometry_visual_shell_review: dict[str, Any],
+    source_render_fidelity: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    d0_public_accepted = bool(
+        source_render_fidelity
+        and source_render_fidelity.get("acceptanceTiers", {})
+        .get("acceptedForD0PublicFixture", {})
+        .get("accepted", False)
+    )
     return [
         {
             "tier": "topology_representation_inspection",
@@ -934,17 +951,23 @@ def _evidence_tiers(geometry_visual_shell_review: dict[str, Any]) -> list[dict[s
         },
         {
             "tier": "source_image_silhouette_comparison",
-            "status": "not_run",
-            "accepted": False,
-            "artifactIds": [],
-            "limitations": ["no source raster image evidence exists before BP49/BP50"],
+            "status": "run_d0_public_fixture" if source_render_fidelity else "not_run",
+            "accepted": d0_public_accepted,
+            "artifactIds": ["reports/fidelity/source_render_fidelity.json"]
+            if source_render_fidelity
+            else [],
+            "limitations": ["public synthetic D0 fixture only; not private-user evidence"],
         },
         {
             "tier": "source_image_appearance_texture_logo_comparison",
-            "status": "not_run",
-            "accepted": False,
-            "artifactIds": [],
-            "limitations": ["no source texture projection or logo evidence exists"],
+            "status": "run_d0_public_fixture" if source_render_fidelity else "not_run",
+            "accepted": d0_public_accepted,
+            "artifactIds": ["reports/fidelity/source_render_fidelity.json"]
+            if source_render_fidelity
+            else [],
+            "limitations": [
+                "fixture-calibrated decoded comparison; provider and human tiers remain not run"
+            ],
         },
         {
             "tier": "human_visual_review",

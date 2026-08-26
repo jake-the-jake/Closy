@@ -32,6 +32,8 @@ def test_repeated_builds_are_byte_identical(tmp_path) -> None:  # type: ignore[n
 def test_bounded_tshirt_variants_validate_and_keep_stable_semantics(tmp_path) -> None:  # type: ignore[no-untyped-def]
     seam_sets = []
     body_lengths = []
+    source_acceptance = {}
+    fit_acceptance = {}
     for name, params in PARAMETER_VARIANTS.items():
         package = tmp_path / f"{name}.closygarment"
         build_demo_tshirt_package(package, params=params)
@@ -39,5 +41,11 @@ def test_bounded_tshirt_variants_validate_and_keep_stable_semantics(tmp_path) ->
         pattern = read_json(package / "pattern" / "pattern.json")
         seam_sets.append(tuple(seam["id"] for seam in pattern["seams"]))
         body_lengths.append(pattern["parameters"]["garment_body_length"])
+        manifest = read_json(package / "manifest.json")
+        fit = read_json(package / "fitting" / "tshirt_fit.json")
+        source_acceptance[name] = manifest["capabilities"]["acceptedForD0PublicFixture"]
+        fit_acceptance[name] = fit["accepted"]
     assert len(set(seam_sets)) == 1
     assert len(set(body_lengths)) == len(PARAMETER_VARIANTS)
+    assert source_acceptance == {"boxy": False, "default": True, "long_slim": True}
+    assert fit_acceptance == {"boxy": False, "default": True, "long_slim": True}
