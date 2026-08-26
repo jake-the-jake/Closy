@@ -170,10 +170,12 @@ def _visible_panels(label: str) -> set[str]:
     torso = "panel.back" if back else "panel.front"
     sleeveless_torso = "panel.sleeveless_top.back" if back else "panel.sleeveless_top.front"
     long_sleeved_torso = "panel.long_sleeved_top.back" if back else "panel.long_sleeved_top.front"
+    simple_skirt = "panel.simple_skirt.back" if back else "panel.simple_skirt.front"
     return {
         torso,
         sleeveless_torso,
         long_sleeved_torso,
+        simple_skirt,
         "panel.sleeve.left",
         "panel.sleeve.right",
         "panel.long_sleeved_top.sleeve.left",

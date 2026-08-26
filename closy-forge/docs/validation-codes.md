@@ -43,6 +43,21 @@ Representative current codes:
 - `long_sleeved_inventory_hash_mismatch`: canonical long-sleeved bytes differ from inventory.
 - `long_sleeved_package_digest_mismatch`: the recomputed long-sleeved package digest differs.
 
+- `simple_skirt_family_mismatch`: manifest identity is not the canonical simple-skirt fixture.
+- `simple_skirt_manifest_contract_invalid`: package kind or schema version is unsupported.
+- `simple_skirt_contract_unreadable`: a required skirt contract cannot be decoded.
+- `simple_skirt_semantic_ids_invalid`: panels, side seams or waist/hem IDs are not literal.
+- `simple_skirt_opening_loop_invalid`: waist or hem does not resolve across both panels.
+- `simple_skirt_constraint_pairing_invalid`: one or both side seams are missing.
+- `simple_skirt_fit_integrity_invalid`: bounded fit evidence or its hash is invalid.
+- `simple_skirt_motion_suite_invalid`: four-preset or waist-stress evidence is invalid.
+- `simple_skirt_binding_validation_failed`: persisted dense/fallback geometry is invalid.
+- `simple_skirt_appearance_validation_failed`: decoded source/render or PBR evidence is invalid.
+- `simple_skirt_quality_claim_invalid`: family readiness or Phase 8 global status is overclaimed.
+- `simple_skirt_inventory_file_set_mismatch`: inventory paths differ from persisted files.
+- `simple_skirt_inventory_hash_mismatch`: an inventoried skirt artifact hash/size differs.
+- `simple_skirt_package_digest_mismatch`: canonical skirt digest does not match inventory.
+
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
 - `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.

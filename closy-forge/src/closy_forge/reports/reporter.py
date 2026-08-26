@@ -9,7 +9,11 @@ from closy_forge.package_io.canonical_json import read_json
 def summarize_package(package_dir: Path) -> dict[str, Any]:
     manifest = read_json(package_dir / "manifest.json")
     summary = cast(dict[str, Any], read_json(package_dir / "reports" / "summary.json"))
-    if manifest.get("garmentClass") in {"sleeveless_top", "long_sleeved_top"}:
+    if manifest.get("garmentClass") in {
+        "sleeveless_top",
+        "long_sleeved_top",
+        "simple_skirt",
+    }:
         return summary
     binding = read_json(package_dir / "binding" / "binding_manifest.json")
     capture = read_json(package_dir / "source" / "capture_quality.json")
@@ -642,19 +646,19 @@ def summarize_package(package_dir: Path) -> dict[str, Any]:
 
 def human_report(package_dir: Path) -> str:
     summary = summarize_package(package_dir)
-    if summary.get("garmentClass") in {"sleeveless_top", "long_sleeved_top"}:
+    if summary.get("garmentClass") in {
+        "sleeveless_top",
+        "long_sleeved_top",
+        "simple_skirt",
+    }:
         validation = summary["validation"]
         readiness = summary["readiness"]
-        completion_key = (
-            "sleevelessTopD0Complete"
-            if summary["garmentClass"] == "sleeveless_top"
-            else "longSleevedTopD0Complete"
-        )
-        completion_label = (
-            "Sleeveless-top D0"
-            if summary["garmentClass"] == "sleeveless_top"
-            else "Long-sleeved-top D0"
-        )
+        completion = {
+            "sleeveless_top": ("sleevelessTopD0Complete", "Sleeveless-top D0"),
+            "long_sleeved_top": ("longSleevedTopD0Complete", "Long-sleeved-top D0"),
+            "simple_skirt": ("simpleSkirtD0Complete", "Simple-skirt D0"),
+        }
+        completion_key, completion_label = completion[summary["garmentClass"]]
         return "\n".join(
             [
                 f"Closy garment package: {summary['garmentId']}",
