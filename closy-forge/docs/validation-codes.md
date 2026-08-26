@@ -58,6 +58,21 @@ Representative current codes:
 - `simple_skirt_inventory_hash_mismatch`: an inventoried skirt artifact hash/size differs.
 - `simple_skirt_package_digest_mismatch`: canonical skirt digest does not match inventory.
 
+- `simple_trousers_family_mismatch`: manifest identity is not the canonical trousers fixture.
+- `simple_trousers_manifest_contract_invalid`: package kind or schema version is unsupported.
+- `simple_trousers_contract_unreadable`: a required trousers contract cannot be decoded.
+- `simple_trousers_semantic_ids_invalid`: leg panels, seams or waist/cuff IDs are not literal.
+- `simple_trousers_opening_loop_invalid`: waist or either cuff does not resolve across its panels.
+- `simple_trousers_constraint_pairing_invalid`: a rise, inseam or outseam pairing is absent.
+- `simple_trousers_fit_integrity_invalid`: bounded fit evidence or its hash is invalid.
+- `simple_trousers_motion_suite_invalid`: four-preset or two-cuff stress evidence is invalid.
+- `simple_trousers_binding_validation_failed`: persisted dense/fallback geometry is invalid.
+- `simple_trousers_appearance_validation_failed`: decoded source/render or PBR evidence is invalid.
+- `simple_trousers_quality_claim_invalid`: family readiness or Phase 8 status is overclaimed.
+- `simple_trousers_inventory_file_set_mismatch`: inventory paths differ from persisted files.
+- `simple_trousers_inventory_hash_mismatch`: an inventoried trousers artifact hash/size differs.
+- `simple_trousers_package_digest_mismatch`: canonical trousers digest does not match inventory.
+
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
 - `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.

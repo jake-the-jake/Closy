@@ -2990,6 +2990,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         ),
         **_long_sleeved_schemas(),
         **_simple_skirt_schemas(),
+        **_simple_trousers_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
             {
@@ -3365,6 +3366,28 @@ def _simple_skirt_schemas(
                 "warnings",
             ],
         ),
+    }
+
+
+def _simple_trousers_schemas() -> dict[str, dict[str, Any]]:
+    def replace_tokens(value: Any) -> Any:
+        if isinstance(value, str):
+            return (
+                value.replace("simple-skirt", "simple-trousers")
+                .replace("Simple skirt", "Simple trousers")
+                .replace("simple skirt", "simple trousers")
+                .replace("simple_skirt", "simple_trousers")
+                .replace("simpleSkirt", "simpleTrousers")
+            )
+        if isinstance(value, dict):
+            return {str(replace_tokens(key)): replace_tokens(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [replace_tokens(item) for item in value]
+        return value
+
+    return {
+        str(replace_tokens(name)): replace_tokens(schema)
+        for name, schema in _simple_skirt_schemas().items()
     }
 
 

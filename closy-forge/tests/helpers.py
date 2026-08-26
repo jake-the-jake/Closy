@@ -9,6 +9,7 @@ from typing import Any
 from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt_package
+from closy_forge.pipeline.build_simple_trousers_demo import build_demo_simple_trousers_package
 from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_package
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 
@@ -16,6 +17,7 @@ _DEMO_CACHE: Path | None = None
 _SLEEVELESS_CACHE: Path | None = None
 _LONG_SLEEVED_CACHE: Path | None = None
 _SIMPLE_SKIRT_CACHE: Path | None = None
+_SIMPLE_TROUSERS_CACHE: Path | None = None
 
 
 def build_demo(tmp_path: Path, name: str = "demo_tshirt.closygarment") -> Path:
@@ -36,6 +38,11 @@ def build_long_sleeved(tmp_path: Path, name: str = "demo_long_sleeved.closygarme
 def build_simple_skirt(tmp_path: Path, name: str = "demo_simple_skirt.closygarment") -> Path:
     output = tmp_path / name
     return clone_package(_cached_simple_skirt_package(), output)
+
+
+def build_simple_trousers(tmp_path: Path, name: str = "demo_simple_trousers.closygarment") -> Path:
+    output = tmp_path / name
+    return clone_package(_cached_simple_trousers_package(), output)
 
 
 def clone_package(package_dir: Path, target: Path) -> Path:
@@ -97,3 +104,13 @@ def _cached_simple_skirt_package() -> Path:
         build_demo_simple_skirt_package(package, force=True)
         _SIMPLE_SKIRT_CACHE = package
     return _SIMPLE_SKIRT_CACHE
+
+
+def _cached_simple_trousers_package() -> Path:
+    global _SIMPLE_TROUSERS_CACHE
+    if _SIMPLE_TROUSERS_CACHE is None:
+        cache_root = Path(tempfile.mkdtemp(prefix="closy_forge_pytest_simple_trousers_"))
+        package = cache_root / "demo_simple_trousers.closygarment"
+        build_demo_simple_trousers_package(package, force=True)
+        _SIMPLE_TROUSERS_CACHE = package
+    return _SIMPLE_TROUSERS_CACHE
