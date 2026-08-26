@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from math import isfinite, sqrt
-from typing import Any
+from typing import Any, cast
 
 from closy_forge.binding.binary_format import BindingFile
 from closy_forge.binding.reconstruct import reconstruct_vertices
@@ -50,7 +50,7 @@ def build_sleeveless_motion_suite(
             canonical_position_digits=CANONICAL_POSITION_DIGITS,
         )
         settled_mesh = _quantize_mesh(result.settled_mesh)
-        diagnostics = _quantize_numbers(result.diagnostics)
+        diagnostics = _canonicalize_diagnostics(result.diagnostics)
         metrics = measure_motion_metrics(rest_mesh, settled_mesh, constraints, diagnostics)
         armholes = _armhole_metrics(metrics)
         reconstructed = reconstruct_vertices(settled_mesh, binding)
@@ -97,7 +97,7 @@ def build_sleeveless_motion_suite(
         canonical_position_digits=CANONICAL_POSITION_DIGITS,
     )
     stress_mesh = _quantize_mesh(stress.mesh)
-    stress_diagnostics = _quantize_numbers(stress.diagnostics)
+    stress_diagnostics = _canonicalize_diagnostics(stress.diagnostics)
     stress_metrics = measure_motion_metrics(
         selected_settled,
         stress_mesh,
@@ -266,7 +266,13 @@ def _quantize_mesh(meshset: MeshSet) -> MeshSet:
                     )
                     for vertex in mesh.vertices
                 ],
-                panel_uvs=mesh.panel_uvs,
+                panel_uvs=[
+                    (
+                        round(float(uv[0]), CANONICAL_POSITION_DIGITS),
+                        round(float(uv[1]), CANONICAL_POSITION_DIGITS),
+                    )
+                    for uv in mesh.panel_uvs
+                ],
                 triangles=mesh.triangles,
                 material_id=mesh.material_id,
             )
@@ -283,3 +289,11 @@ def _quantize_numbers(value: Any) -> Any:
     if isinstance(value, list):
         return [_quantize_numbers(item) for item in value]
     return value
+
+
+def _canonicalize_diagnostics(diagnostics: dict[str, Any]) -> dict[str, Any]:
+    canonical = cast(dict[str, Any], _quantize_numbers(diagnostics))
+    energy_history = canonical.get("energyHistory")
+    if isinstance(energy_history, list):
+        canonical["energyHistory"] = [round(float(value), 6) for value in energy_history]
+    return canonical

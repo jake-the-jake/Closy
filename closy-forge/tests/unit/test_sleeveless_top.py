@@ -7,6 +7,7 @@ from closy_forge.avatar.reference_avatar import (
 )
 from closy_forge.binding.builder import build_binding
 from closy_forge.garments.sleeveless_top.assembly import (
+    CANONICAL_GEOMETRY_DIGITS,
     build_constraints,
     build_simulation_mesh,
 )
@@ -91,6 +92,19 @@ def test_sleeveless_seams_pair_front_to_back_with_reverse_orientation() -> None:
     assert mesh.triangle_count == 124
 
 
+def test_sleeveless_mesh_coordinates_are_canonical() -> None:
+    pattern = build_sleeveless_top_pattern(SleevelessTopParameters())
+    meshset, _edge_maps = build_simulation_mesh(pattern)
+
+    for mesh in meshset.meshes:
+        for vertex in mesh.vertices:
+            assert all(
+                component == round(component, CANONICAL_GEOMETRY_DIGITS) for component in vertex
+            )
+        for uv in mesh.panel_uvs:
+            assert all(component == round(component, CANONICAL_GEOMETRY_DIGITS) for component in uv)
+
+
 def test_sleeveless_bounded_fit_evaluates_real_candidates() -> None:
     fitted, report = fit_sleeveless_top(SleevelessTopParameters())
 
@@ -132,6 +146,11 @@ def test_sleeveless_motion_executes_material_extremes_and_underarm_stress() -> N
     assert all(
         record["diagnostics"]["canonicalPositionDigits"] == CANONICAL_POSITION_DIGITS
         for record in report["presetRecords"]
+    )
+    assert all(
+        value == round(value, 6)
+        for record in report["presetRecords"]
+        for value in record["diagnostics"]["energyHistory"]
     )
     assert (
         report["underarmStress"]["diagnostics"]["canonicalPositionDigits"]

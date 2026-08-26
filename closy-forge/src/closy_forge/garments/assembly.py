@@ -3,12 +3,15 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from closy_forge.geometry.mesh_model import MeshSet
+from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.geometry.triangulation import triangulate_panel
 
 
 def build_panel_meshes(
-    pattern: dict[str, Any], transforms: Mapping[str, str]
+    pattern: dict[str, Any],
+    transforms: Mapping[str, str],
+    *,
+    canonical_digits: int | None = None,
 ) -> tuple[MeshSet, dict[str, dict[str, list[int]]]]:
     """Triangulate a garment family without introducing generic-object semantics."""
 
@@ -20,9 +23,34 @@ def build_panel_meshes(
         if transform is None:
             raise ValueError(f"missing panel transform: {panel_id}")
         mesh, edges = triangulate_panel(panel, transform)
+        mesh = _canonicalize_mesh(mesh, canonical_digits)
         edge_maps[panel_id] = edges
         meshes.append(mesh)
     return MeshSet(meshes), edge_maps
+
+
+def _canonicalize_mesh(mesh: Mesh, digits: int | None) -> Mesh:
+    if digits is None:
+        return mesh
+    if not 0 <= digits <= 15:
+        raise ValueError("canonical_digits must be between 0 and 15")
+    return Mesh(
+        name=mesh.name,
+        panel_id=mesh.panel_id,
+        vertices=[
+            (
+                round(float(vertex[0]), digits),
+                round(float(vertex[1]), digits),
+                round(float(vertex[2]), digits),
+            )
+            for vertex in mesh.vertices
+        ],
+        panel_uvs=[
+            (round(float(uv[0]), digits), round(float(uv[1]), digits)) for uv in mesh.panel_uvs
+        ],
+        triangles=mesh.triangles,
+        material_id=mesh.material_id,
+    )
 
 
 def build_seam_constraints(

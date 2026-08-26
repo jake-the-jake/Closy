@@ -9,12 +9,17 @@ TRANSFORMS = {
     "panel.sleeveless_top.front": "front",
     "panel.sleeveless_top.back": "back",
 }
+CANONICAL_GEOMETRY_DIGITS = 12
 
 
 def build_simulation_mesh(
     pattern: dict[str, Any],
 ) -> tuple[MeshSet, dict[str, dict[str, list[int]]]]:
-    return build_panel_meshes(pattern, TRANSFORMS)
+    return build_panel_meshes(
+        pattern,
+        TRANSFORMS,
+        canonical_digits=CANONICAL_GEOMETRY_DIGITS,
+    )
 
 
 def build_constraints(
