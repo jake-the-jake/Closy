@@ -15,6 +15,8 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   both jobs passed format, lint, strict type check, 258 tests, 64 fresh schemas, deterministic
   T-shirt and sleeveless package rebuilds, package diffs, validation/report and the non-canonical
   binding benchmark.
+- Evidence-sync commit `bffe705785fee3d9d53c7c7cf6f4b5d29b17da45` passed the complete local
+  format, lint, strict type, schema, focused and 258-test gates; its final remote matrix is pending.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
