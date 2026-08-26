@@ -84,6 +84,7 @@ See:
 - `docs/texture-identity-v1.md` for synthetic texture identity and mobile-safe PBR evidence.
 - `docs/geometry-proposal-contract-v1.md` for the raw/clean visual-geometry proposal boundary.
 - `docs/cloth-settle-reference-v1.md` for the CPU reference settle backend.
+- `docs/material-physics-d0.md` for Phase 7 descriptors, selection, calibration and motion evidence.
 - `docs/MASTER_BLUEPRINT_PROGRESS.md` for the evidence ledger across the master blueprint.
 - `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.
 - `../docs/closy-garment-package-v1.md` for the repository-level package overview.

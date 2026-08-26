@@ -27,6 +27,9 @@ class SettleSettings:
     damping_ratio: float = 0.18
     collision_clearance_m: float = 0.006
     stretch_stiffness: float = 0.42
+    warp_stretch_stiffness: float = 0.42
+    weft_stretch_stiffness: float = 0.42
+    shear_stiffness: float = 0.42
     seam_stiffness: float = 0.96
     bend_stiffness: float = 0.08
     support_stiffness: float = 0.03
@@ -90,6 +93,23 @@ def settle_reference_cloth(
 
     active_settings = settings or SettleSettings(
         damping_ratio=float(material.get("dampingRatio", SettleSettings.damping_ratio)),
+        collision_clearance_m=float(
+            material.get("collisionClearanceMeters", SettleSettings.collision_clearance_m)
+        ),
+        stretch_stiffness=float(material.get("stretchStiffness", SettleSettings.stretch_stiffness)),
+        warp_stretch_stiffness=float(
+            material.get("warpStretchStiffness", SettleSettings.warp_stretch_stiffness)
+        ),
+        weft_stretch_stiffness=float(
+            material.get("weftStretchStiffness", SettleSettings.weft_stretch_stiffness)
+        ),
+        shear_stiffness=float(material.get("shearStiffness", SettleSettings.shear_stiffness)),
+        bend_stiffness=float(material.get("bendStiffness", SettleSettings.bend_stiffness)),
+        self_collision_thickness_meters=float(
+            material.get(
+                "selfCollisionThicknessMeters", SettleSettings.self_collision_thickness_meters
+            )
+        ),
     )
     flat = flatten_mesh(rest_mesh)
     positions = list(flat.positions)
@@ -197,9 +217,14 @@ def simulate_reference_motion_state(
         gravity_m_s2=-2.2,
         damping_ratio=float(material.get("dampingRatio", 0.18)),
         stretch_stiffness=float(material.get("stretchStiffness", 0.42)),
+        warp_stretch_stiffness=float(material.get("warpStretchStiffness", 0.42)),
+        weft_stretch_stiffness=float(material.get("weftStretchStiffness", 0.34)),
+        shear_stiffness=float(material.get("shearStiffness", 0.28)),
         seam_stiffness=0.97,
         bend_stiffness=float(material.get("bendStiffness", 0.08)),
         support_stiffness=0.018,
+        collision_clearance_m=float(material.get("collisionClearanceMeters", 0.006)),
+        self_collision_thickness_meters=float(material.get("selfCollisionThicknessMeters", 0.0016)),
     )
     flat = flatten_mesh(settled_mesh)
     panel_ids = [mesh.panel_id for mesh in settled_mesh.meshes for _ in mesh.vertices]
@@ -338,13 +363,14 @@ def _build_distance_constraints(
                 seen_edges.add(edge)
                 a = offsets[mesh_index] + local_a
                 b = offsets[mesh_index] + local_b
+                kind, stiffness = _edge_material_constraint(mesh, local_a, local_b, settings)
                 constraints.append(
                     DistanceConstraint(
                         a,
                         b,
                         _distance(mesh.vertices[local_a], mesh.vertices[local_b]),
-                        settings.stretch_stiffness,
-                        "stretch",
+                        stiffness,
+                        kind,
                         f"{mesh.panel_id}:{local_a}-{local_b}",
                     )
                 )
@@ -387,6 +413,25 @@ def _build_distance_constraints(
             )
         )
     return constraints
+
+
+def _edge_material_constraint(
+    mesh: Mesh, local_a: int, local_b: int, settings: SettleSettings
+) -> tuple[str, float]:
+    """Classify a panel edge in pattern UV space for anisotropic D0 constraints."""
+
+    uv_a = mesh.panel_uvs[local_a]
+    uv_b = mesh.panel_uvs[local_b]
+    delta_u = abs(uv_b[0] - uv_a[0])
+    delta_v = abs(uv_b[1] - uv_a[1])
+    largest = max(delta_u, delta_v)
+    if largest <= 1e-12:
+        return "stretch", settings.stretch_stiffness
+    if min(delta_u, delta_v) / largest >= 0.22:
+        return "shear", settings.shear_stiffness
+    if delta_v > delta_u:
+        return "warp_stretch", settings.warp_stretch_stiffness
+    return "weft_stretch", settings.weft_stretch_stiffness
 
 
 def _build_support_constraints(
@@ -501,7 +546,7 @@ def _diagnostics(
             - 1.0
         )
         for c in constraints
-        if c.kind == "stretch" and c.rest_length > 1e-8
+        if c.kind in {"stretch", "warp_stretch", "weft_stretch", "shear"} and c.rest_length > 1e-8
     ]
     penetrations = [
         _penetration_depth(vertex, primitives, settings.collision_clearance_m)
@@ -551,6 +596,9 @@ def _diagnostics(
             "dampingRatio": settings.damping_ratio,
             "collisionClearanceMeters": settings.collision_clearance_m,
             "stretchStiffness": settings.stretch_stiffness,
+            "warpStretchStiffness": settings.warp_stretch_stiffness,
+            "weftStretchStiffness": settings.weft_stretch_stiffness,
+            "shearStiffness": settings.shear_stiffness,
             "seamStiffness": settings.seam_stiffness,
             "bendStiffness": settings.bend_stiffness,
             "supportStiffness": settings.support_stiffness,

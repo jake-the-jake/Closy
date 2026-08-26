@@ -19,6 +19,13 @@ The CLI exits with:
 
 Representative current codes:
 
+- `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
+- `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
+- `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.
+- `material_calibration_invalid`: sensitivity fixtures, ordering, evidence tier or hashes are invalid.
+- `material_motion_suite_invalid`: CPU solver or authoritative dense-binding evidence is contradictory.
+- `material_physics_capability_missing`: manifest omits an executed Phase 7 D0 capability.
+- `material_physics_evidence_tier_contradiction`: manifest overclaims measured, learned, private-user or GPU evidence.
 - `self_collision_not_run`: legacy warning for packages that still claim the old reference solver without self-collision evidence.
 - `self_collision_unresolved_contacts`: warning when the D0 reference self-collision pass runs but retained contacts remain.
 - `self_collision_report_hash_mismatch`: self-collision report changed without updating its payload hash.

@@ -98,6 +98,14 @@ from closy_forge.rendering import (
     build_render_frame_pose_suite_report,
     hash_render_frame_pose_suite_report,
 )
+from closy_forge.simulation.material_calibration import CALIBRATION_VERSION
+from closy_forge.simulation.material_motion_suite import MATERIAL_MOTION_SUITE_VERSION
+from closy_forge.simulation.material_physics import (
+    MATERIAL_SELECTION_VERSION,
+    PRESET_REGISTRY_VERSION,
+    FabricDescriptorError,
+    validate_fabric_descriptor,
+)
 from closy_forge.simulation.self_collision import (
     build_self_collision_report,
     hash_self_collision_report,
@@ -160,6 +168,11 @@ EXPECTED_FILES = [
     "simulation/settled_state.json",
     "simulation/settle_diagnostics.json",
     "simulation/material_physics.json",
+    "simulation/material_presets.json",
+    "simulation/material_motion_states/lightweight_knit.json",
+    "simulation/material_motion_states/cotton_jersey.json",
+    "simulation/material_motion_states/heavy_jersey.json",
+    "simulation/material_motion_states/lightweight_woven.json",
     "simulation/motion_states/index.json",
     "simulation/motion_states/neutral_settled.json",
     "simulation/motion_states/left_arm_raise.json",
@@ -238,6 +251,9 @@ EXPECTED_FILES = [
     "reports/simulation_quality.json",
     "reports/render_quality.json",
     "reports/binding_quality.json",
+    "reports/material_selection.json",
+    "reports/material_calibration.json",
+    "reports/material_motion_suite.json",
     "reports/package_validation.json",
     "reports/summary.json",
     "reports/summary.md",
@@ -400,6 +416,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_pattern(package_dir, issues)
     _validate_meshes_and_constraints(package_dir, issues)
     _validate_settle_state(package_dir, manifest, issues)
+    _validate_material_physics(package_dir, manifest, issues)
     _validate_self_collision_report(package_dir, manifest, issues)
     _validate_glbs(package_dir, issues)
     _validate_binding(package_dir, issues)
@@ -10898,6 +10915,203 @@ def _validate_settle_state(
         )
 
 
+def _validate_material_physics(
+    package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    registry = _read_required_json(package_dir, "simulation/material_presets.json", issues)
+    selection = _read_required_json(package_dir, "reports/material_selection.json", issues)
+    calibration = _read_required_json(package_dir, "reports/material_calibration.json", issues)
+    motion = _read_required_json(package_dir, "reports/material_motion_suite.json", issues)
+    if registry is None or selection is None or calibration is None or motion is None:
+        return
+
+    presets = registry.get("presets", [])
+    if (
+        registry.get("registryVersion") != PRESET_REGISTRY_VERSION
+        or not isinstance(presets, list)
+        or len(presets) != 4
+    ):
+        issues.append(
+            _issue(
+                "material_preset_registry_invalid",
+                "fatal",
+                "simulation/material_presets.json",
+                "Phase 7 requires the versioned four-preset public D0 registry.",
+            )
+        )
+        return
+    for descriptor in presets:
+        try:
+            if not isinstance(descriptor, dict):
+                raise FabricDescriptorError("descriptor_not_object")
+            validate_fabric_descriptor(descriptor)
+        except FabricDescriptorError as exc:
+            issues.append(
+                _issue(
+                    "fabric_descriptor_invalid",
+                    "fatal",
+                    "simulation/material_presets.json",
+                    f"Fabric descriptor rejected: {exc.code}.",
+                )
+            )
+
+    preset_ids = {str(preset.get("presetId", "")) for preset in presets if isinstance(preset, dict)}
+    selected_id = str(selection.get("selection", {}).get("selectedPresetId", ""))
+    if (
+        selection.get("selectionVersion") != MATERIAL_SELECTION_VERSION
+        or selected_id not in preset_ids
+        or selection.get("selection", {}).get("learnedClassifierRun") is not False
+        or selection.get("selection", {}).get("calibratedPhysicalMeasurement") is not False
+    ):
+        issues.append(
+            _issue(
+                "material_selection_invalid",
+                "fatal",
+                "reports/material_selection.json",
+                "Material selection must name a registry preset and disclose its D0 evidence tier.",
+            )
+        )
+
+    fixtures = calibration.get("fixtures", [])
+    expected_fixtures = {
+        "calibration.stretch_patch_v1",
+        "calibration.shear_patch_v1",
+        "calibration.bend_cantilever_v1",
+        "calibration.damped_oscillator_v1",
+        "calibration.gravity_sag_chain_v1",
+        "calibration.floor_collision_v1",
+    }
+    fixture_ids = {
+        str(fixture.get("fixtureId", "")) for fixture in fixtures if isinstance(fixture, dict)
+    }
+    calibration_valid = (
+        calibration.get("calibrationVersion") == CALIBRATION_VERSION
+        and fixture_ids == expected_fixtures
+        and all(
+            isinstance(fixture, dict)
+            and fixture.get("orderingObserved") is True
+            and fixture.get("withinTolerance") is True
+            and fixture.get("resultHash") == _hash_with_blank_field(fixture, "resultHash")
+            for fixture in fixtures
+        )
+        and calibration.get("readiness", {}).get("acceptedAsMeasuredRealFabric") is False
+    )
+    if not calibration_valid:
+        issues.append(
+            _issue(
+                "material_calibration_invalid",
+                "fatal",
+                "reports/material_calibration.json",
+                "Calibration fixtures, ordering, evidence tier, or result hashes are invalid.",
+            )
+        )
+
+    records = motion.get("presets", [])
+    state_names = {
+        "material.lightweight_knit_d0_v1": "lightweight_knit",
+        "material.cotton_jersey_d0_v1": "cotton_jersey",
+        "material.heavy_jersey_d0_v1": "heavy_jersey",
+        "material.lightweight_woven_d0_v1": "lightweight_woven",
+    }
+    motion_valid = (
+        motion.get("suiteVersion") == MATERIAL_MOTION_SUITE_VERSION
+        and isinstance(records, list)
+        and len(records) == 4
+        and {str(record.get("presetId", "")) for record in records} == preset_ids
+    )
+    for record in records if isinstance(records, list) else []:
+        if not isinstance(record, dict):
+            motion_valid = False
+            continue
+        metrics = record.get("metrics", {})
+        binding = record.get("binding", {})
+        execution = record.get("execution", {})
+        if (
+            execution.get("actualSolverRun") is not True
+            or binding.get("authoritativeDenseBindingRun") is not True
+            or int(binding.get("reconstructedVertexCount", 0)) <= 0
+            or int(metrics.get("nonFinitePositionCount", 1)) != 0
+            or int(metrics.get("invertedOrDegenerateTriangleCount", 1)) != 0
+            or _contains_nonfinite(record)
+        ):
+            motion_valid = False
+        preset_id = str(record.get("presetId", ""))
+        state_name = state_names.get(preset_id, "")
+        state = _read_required_json(
+            package_dir,
+            f"simulation/material_motion_states/{state_name}.json",
+            issues,
+        )
+        if (
+            state is None
+            or state.get("materialPresetId") != preset_id
+            or state.get("bindingReconstructionHash") != binding.get("reconstructionHash")
+        ):
+            motion_valid = False
+    expected_quality_acceptance = all(
+        isinstance(record, dict)
+        and record.get("execution", {}).get("acceptedForD0MotionQuality") is True
+        for record in records
+    )
+    if (
+        motion.get("readiness", {}).get("executedForD0FixedAvatarTshirt") is not True
+        or motion.get("readiness", {}).get("acceptedForD0FixedAvatarTshirt")
+        is not expected_quality_acceptance
+    ):
+        motion_valid = False
+    if (
+        not motion_valid
+        or motion.get("readiness", {}).get("acceptedForProductionGpuMotion") is not False
+    ):
+        issues.append(
+            _issue(
+                "material_motion_suite_invalid",
+                "fatal",
+                "reports/material_motion_suite.json",
+                "Material motion must contain four finite CPU solver and dense-binding records.",
+            )
+        )
+
+    capabilities = manifest.get("capabilities", {})
+    required_capabilities = (
+        "fabricPhysicsDescriptorAvailable",
+        "materialPresetRegistryAvailable",
+        "materialPresetSelectionAvailable",
+        "materialCalibrationFixturesAvailable",
+        "materialMotionSuiteAvailable",
+        "materialDenseBindingReconstructionAvailable",
+        "acceptedForD0MaterialPhysics",
+    )
+    if not isinstance(capabilities, dict) or any(
+        capabilities.get(key) is not True for key in required_capabilities
+    ):
+        issues.append(
+            _issue(
+                "material_physics_capability_missing",
+                "fatal",
+                "manifest.json",
+                "Manifest is missing an executed Phase 7 material-physics capability.",
+            )
+        )
+    unavailable_capabilities = (
+        "realFabricCalibrationAvailable",
+        "learnedMaterialInferenceAvailable",
+        "privateUserMaterialEstimationAvailable",
+        "productionGpuMaterialMotionAvailable",
+    )
+    if isinstance(capabilities, dict) and any(
+        capabilities.get(key) is not False for key in unavailable_capabilities
+    ):
+        issues.append(
+            _issue(
+                "material_physics_evidence_tier_contradiction",
+                "fatal",
+                "manifest.json",
+                "Unavailable real-fabric, learned, private-user, and GPU tiers must remain false.",
+            )
+        )
+
+
 def _validate_self_collision_report(
     package_dir: Path, manifest: dict[str, Any], issues: list[ValidationIssue]
 ) -> None:
@@ -11680,6 +11894,12 @@ def _contains_nonfinite(value: Any) -> bool:
     if isinstance(value, list):
         return any(_contains_nonfinite(v) for v in value)
     return False
+
+
+def _hash_with_blank_field(value: dict[str, Any], field: str) -> str:
+    payload = dict(value)
+    payload[field] = ""
+    return sha256_bytes(canonical_dumps(payload).encode("utf-8"))
 
 
 def _issue(

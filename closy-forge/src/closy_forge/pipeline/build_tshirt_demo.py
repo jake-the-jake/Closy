@@ -121,6 +121,22 @@ from closy_forge.rendering import (
     FRAME_POSE_SUITE_VERSION,
     build_render_frame_pose_suite_report,
 )
+from closy_forge.simulation.material_calibration import (
+    CALIBRATION_VERSION,
+    run_material_calibration,
+)
+from closy_forge.simulation.material_motion_suite import (
+    MATERIAL_MOTION_SUITE_VERSION,
+    build_material_motion_suite,
+)
+from closy_forge.simulation.material_physics import (
+    FABRIC_DESCRIPTOR_VERSION,
+    MATERIAL_SELECTION_VERSION,
+    PRESET_REGISTRY_VERSION,
+    build_material_preset_registry,
+    select_material_preset,
+    solver_material_payload,
+)
 from closy_forge.simulation.reference_cloth_solver import (
     SOLVER_VERSION,
     settle_reference_cloth,
@@ -308,7 +324,10 @@ def _write_package_contents(
         cleanup_result_report=geometry_cleanup_result,
         cleanup_asset_path=cleanup_preview_asset,
     )
-    material_physics = _material_physics()
+    material_registry = build_material_preset_registry()
+    material_selection = select_material_preset(_material_selection_input(), material_registry)
+    material_physics = solver_material_payload(material_selection["selectedDescriptor"])
+    material_calibration = run_material_calibration(material_selection["selectedDescriptor"])
     settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
     simulation_mesh = settle.settled_mesh
     self_collision_report = build_self_collision_report(
@@ -473,6 +492,13 @@ def _write_package_contents(
     )
     render_mesh, render_binding_seeds = subdivide_for_render(simulation_mesh)
     binding, binding_manifest = build_binding(simulation_mesh, render_mesh, render_binding_seeds)
+    material_motion_suite, material_motion_states = build_material_motion_suite(
+        rest_mesh=rest_mesh,
+        constraints=constraints,
+        avatar_contract=avatar,
+        preset_registry=material_registry,
+        binding=binding,
+    )
 
     write_canonical_json(package_dir / "source" / "capture_record.json", capture_record)
     write_canonical_json(package_dir / "source" / "capture_quality.json", capture_quality)
@@ -553,6 +579,20 @@ def _write_package_contents(
     )
     write_canonical_json(package_dir / "simulation" / "settle_diagnostics.json", settle.diagnostics)
     write_canonical_json(package_dir / "simulation" / "material_physics.json", material_physics)
+    write_canonical_json(package_dir / "simulation" / "material_presets.json", material_registry)
+    write_canonical_json(package_dir / "reports" / "material_selection.json", material_selection)
+    write_canonical_json(
+        package_dir / "reports" / "material_calibration.json", material_calibration
+    )
+    write_canonical_json(
+        package_dir / "reports" / "material_motion_suite.json", material_motion_suite
+    )
+    for preset_id, state in material_motion_states.items():
+        state_name = preset_id.removeprefix("material.").removesuffix("_d0_v1")
+        write_canonical_json(
+            package_dir / "simulation" / "material_motion_states" / f"{state_name}.json",
+            state,
+        )
     write_canonical_json(
         package_dir / "reports" / "self_collision_report.json",
         self_collision_report,
@@ -810,6 +850,10 @@ def _write_package_contents(
         "constraints": constraints,
         "bindingManifest": binding_manifest,
         "settleDiagnostics": settle.diagnostics,
+        "materialRegistry": material_registry,
+        "materialSelection": material_selection,
+        "materialCalibration": material_calibration,
+        "materialMotionSuite": material_motion_suite,
         "captureRecord": capture_record,
         "captureQuality": capture_quality,
         "visualObservations": visual_observations,
@@ -887,24 +931,30 @@ def _mesh_manifest(
     }
 
 
-def _material_physics() -> dict[str, Any]:
+def _material_selection_input() -> dict[str, Any]:
     return {
         "schemaVersion": 1,
-        "presetId": "material.cotton_jersey_reference_v1",
-        "status": "authored_fixture_not_measured",
-        "units": "SI",
-        "surfaceDensityKgM2": 0.16,
-        "stretchStiffnessNPerM": 550.0,
-        "bendStiffnessNm": 0.0018,
-        "dampingRatio": 0.18,
-        "frictionCoefficient": 0.42,
-        "thicknessMeters": 0.0016,
-        "clothSettleRun": True,
-        "selfCollisionRun": True,
-        "selfCollisionProfile": "d0_reference_vertex_triangle",
-        "settleBackend": "deterministic_cpu_reference_xpbd",
-        "settleSolverVersion": SOLVER_VERSION,
+        "inputId": "material_selection.public_tshirt_d0_v1",
+        "observations": {
+            "massClass": "medium",
+            "stretchClass": "moderate",
+            "drapeClass": "soft",
+            "surfaceClass": "jersey_knit",
+        },
+        "provenance": {
+            "source": "project_authored_public_fixture_visual_cues",
+            "physicalMeasurement": False,
+            "learnedClassifierRun": False,
+        },
     }
+
+
+def _material_physics() -> dict[str, Any]:
+    """Compatibility adapter for tests and callers that request the selected D0 material."""
+
+    registry = build_material_preset_registry()
+    selection = select_material_preset(_material_selection_input(), registry)
+    return solver_material_payload(selection["selectedDescriptor"])
 
 
 def _render_materials() -> dict[str, Any]:
@@ -1051,6 +1101,11 @@ def _manifest(
             "simulationSettledState": "simulation/settled_state.json",
             "simulationSettleDiagnostics": "simulation/settle_diagnostics.json",
             "materialPhysics": "simulation/material_physics.json",
+            "materialPresetRegistry": "simulation/material_presets.json",
+            "materialSelection": "reports/material_selection.json",
+            "materialCalibration": "reports/material_calibration.json",
+            "materialMotionSuite": "reports/material_motion_suite.json",
+            "materialMotionStates": "simulation/material_motion_states",
             "renderFallback": "render/fallback.glb",
             "renderMeshManifest": "render/mesh_manifest.json",
             "renderMaterials": "render/materials.json",
@@ -1304,6 +1359,18 @@ def _manifest(
             "renderTopologyHash": topology_hash(render_mesh),
             "renderContentHash": geometry_content_hash(render_mesh),
             "settledStateContentHash": str(settle_diagnostics["settledContentHash"]),
+            "materialPresetRegistryHash": _hash_from_inventory(
+                inventory, "simulation/material_presets.json"
+            ),
+            "materialSelectionHash": _hash_from_inventory(
+                inventory, "reports/material_selection.json"
+            ),
+            "materialCalibrationHash": _hash_from_inventory(
+                inventory, "reports/material_calibration.json"
+            ),
+            "materialMotionSuiteHash": _hash_from_inventory(
+                inventory, "reports/material_motion_suite.json"
+            ),
         },
         "inventory": inventory,
         "canonicalDigestDefinition": {
@@ -1351,13 +1418,18 @@ def _manifest(
             "curveSampler": "closy.curve_sampler.v1",
             "panelTriangulator": "closy.fan_triangulator.v1",
             "clothSettle": SOLVER_VERSION,
+            "fabricPhysicsDescriptor": FABRIC_DESCRIPTOR_VERSION,
+            "materialPresetRegistry": PRESET_REGISTRY_VERSION,
+            "materialPresetSelection": MATERIAL_SELECTION_VERSION,
+            "materialCalibration": CALIBRATION_VERSION,
+            "materialMotionSuite": MATERIAL_MOTION_SUITE_VERSION,
             "renderSubdivision": "closy.render_subdivision.v1",
             "binding": str(binding_manifest["algorithm"]),
             "glbWriter": "closy.glb_writer.v2.persistent_tangent_vec4",
         },
         "seed": seed,
         "buildProfile": {
-            "name": "d0_fidelity_closeout_public_fixture",
+            "name": "phase7_material_physics_public_fixture",
             "timestamp": FIXED_TIMESTAMP,
             "parameters": params.to_json(),
         },
@@ -1377,6 +1449,10 @@ def _manifest(
             "d0_source_texture_recovery_synthetic_fixture_only",
             "public_synthetic_source_pixels_packaged_private_pixels_not_allowed",
             "decoded_pbr_maps_d0_derived_not_real_fabric_calibration",
+            "material_presets_authored_not_measured_real_fabric",
+            "material_motion_cpu_reference_not_production_gpu",
+            "learned_material_inference_not_run",
+            "private_user_material_estimation_not_run",
             "hidden_texture_regions_not_hallucinated",
             "manual_raw_geometry_proposal_not_canonical",
             "partial_geometry_cleanup_not_clean_proposal",
@@ -1406,7 +1482,7 @@ def _manifest(
             "procedural_fixture_not_production_asset",
         ],
         "zeroOne": {"staticAvailable": False, "dynamicAvailable": False, "required": False},
-        "extensions": {"closyImplementation": "d0-fidelity-closeout-bp52-bp53-bp47"},
+        "extensions": {"closyImplementation": "phase7-material-physics-d0-public-tshirt"},
     }
 
 
@@ -1417,6 +1493,17 @@ def _capabilities(
         "patternAvailable": True,
         "simulationReadyTopologyAvailable": True,
         "authoredMaterialPresetAvailable": True,
+        "fabricPhysicsDescriptorAvailable": True,
+        "materialPresetRegistryAvailable": True,
+        "materialPresetSelectionAvailable": True,
+        "materialCalibrationFixturesAvailable": True,
+        "materialMotionSuiteAvailable": True,
+        "materialDenseBindingReconstructionAvailable": True,
+        "acceptedForD0MaterialPhysics": True,
+        "realFabricCalibrationAvailable": False,
+        "learnedMaterialInferenceAvailable": False,
+        "privateUserMaterialEstimationAvailable": False,
+        "productionGpuMaterialMotionAvailable": False,
         "conventionalGlbAvailable": True,
         "simToRenderBindingAvailable": True,
         "bindingReconstructionValidated": True,
@@ -2666,6 +2753,10 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     clean_geometry_proposal = context["cleanGeometryProposal"]
     provider_registry = context["providerRegistry"]
     provider_bakeoff = context["providerBakeoff"]
+    material_registry = context["materialRegistry"]
+    material_selection = context["materialSelection"]
+    material_calibration = context["materialCalibration"]
+    material_motion_suite = context["materialMotionSuite"]
     return {
         "schemaVersion": 1,
         "garmentId": manifest["garmentId"],
@@ -3421,6 +3512,25 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
         },
         "hashes": manifest["hashes"],
         "binding": context["bindingManifest"],
+        "materialPhysics": {
+            "registryVersion": material_registry["registryVersion"],
+            "presetCount": len(material_registry["presets"]),
+            "selectedPresetId": material_selection["selection"]["selectedPresetId"],
+            "selectionConfidence": material_selection["selection"]["confidenceState"],
+            "calibrationFixtureCount": len(material_calibration["fixtures"]),
+            "calibrationAcceptedForD0Fixtures": material_calibration["readiness"][
+                "acceptedForD0CalibrationFixtures"
+            ],
+            "motionPresetCount": len(material_motion_suite["presets"]),
+            "motionExecutedForD0Tshirt": material_motion_suite["readiness"][
+                "executedForD0FixedAvatarTshirt"
+            ],
+            "motionQualityAccepted": material_motion_suite["readiness"][
+                "acceptedForD0FixedAvatarTshirt"
+            ],
+            "realFabricCalibrationRun": False,
+            "productionGpuMotionRun": False,
+        },
         "settle": {
             "solverVersion": settle["solverVersion"],
             "convergenceState": settle["convergenceState"],
@@ -3487,6 +3597,12 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"objective={summary['fitting']['initialObjective']:.6f}->"
         f"{summary['fitting']['finalObjective']:.6f}, "
         f"settled render={summary['fitting']['settledRenderComparisonStatus']}\n"
+        f"- Material physics: {summary['materialPhysics']['presetCount']} presets, "
+        f"selected=`{summary['materialPhysics']['selectedPresetId']}`, "
+        f"calibration fixtures={summary['materialPhysics']['calibrationFixtureCount']}, "
+        f"CPU motion executed={summary['materialPhysics']['motionExecutedForD0Tshirt']}, "
+        f"motion quality accepted={summary['materialPhysics']['motionQualityAccepted']}, "
+        "real-fabric/GPU runs=False/False\n"
         f"- Texture identity: {summary['texture']['status']}, "
         f"{summary['texture']['materialRegionCount']} PBR material observations, "
         f"source textures available={summary['texture']['sourceTextureAvailable']}, "
