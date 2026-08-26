@@ -6,6 +6,7 @@ from closy_forge.avatar.reference_avatar import (
     build_reference_avatar_mesh,
 )
 from closy_forge.binding.builder import build_binding
+from closy_forge.garments.assembly import canonicalize_meshset
 from closy_forge.garments.sleeveless_top.assembly import (
     CANONICAL_GEOMETRY_DIGITS,
     build_constraints,
@@ -103,6 +104,14 @@ def test_sleeveless_mesh_coordinates_are_canonical() -> None:
             )
         for uv in mesh.panel_uvs:
             assert all(component == round(component, CANONICAL_GEOMETRY_DIGITS) for component in uv)
+
+    avatar = canonicalize_meshset(build_reference_avatar_mesh(), CANONICAL_GEOMETRY_DIGITS)
+    assert all(
+        component == round(component, CANONICAL_GEOMETRY_DIGITS)
+        for mesh in avatar.meshes
+        for vertex in mesh.vertices
+        for component in vertex
+    )
 
 
 def test_sleeveless_bounded_fit_evaluates_real_candidates() -> None:

@@ -23,13 +23,17 @@ def build_panel_meshes(
         if transform is None:
             raise ValueError(f"missing panel transform: {panel_id}")
         mesh, edges = triangulate_panel(panel, transform)
-        mesh = _canonicalize_mesh(mesh, canonical_digits)
+        mesh = canonicalize_mesh(mesh, canonical_digits)
         edge_maps[panel_id] = edges
         meshes.append(mesh)
     return MeshSet(meshes), edge_maps
 
 
-def _canonicalize_mesh(mesh: Mesh, digits: int | None) -> Mesh:
+def canonicalize_meshset(meshset: MeshSet, digits: int | None) -> MeshSet:
+    return MeshSet([canonicalize_mesh(mesh, digits) for mesh in meshset.meshes])
+
+
+def canonicalize_mesh(mesh: Mesh, digits: int | None) -> Mesh:
     if digits is None:
         return mesh
     if not 0 <= digits <= 15:

@@ -13,11 +13,13 @@ from closy_forge.binding.binary_format import BindingFile, write_binding
 from closy_forge.binding.builder import build_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction_error
 from closy_forge.contracts.common import COORDINATE_CONVENTION, DEFAULT_SEED, FIXED_TIMESTAMP
+from closy_forge.garments.assembly import canonicalize_meshset
 from closy_forge.garments.sleeveless_top.appearance import (
     SleevelessAppearanceBundle,
     build_sleeveless_appearance_bundle,
 )
 from closy_forge.garments.sleeveless_top.assembly import (
+    CANONICAL_GEOMETRY_DIGITS,
     build_constraints,
     build_simulation_mesh,
 )
@@ -108,8 +110,8 @@ def _write_package_contents(
     rest_mesh, edge_maps = build_simulation_mesh(pattern)
     constraints = build_constraints(pattern, edge_maps)
 
-    avatar_mesh = build_reference_avatar_mesh()
-    collision_mesh = build_collision_mesh()
+    avatar_mesh = canonicalize_meshset(build_reference_avatar_mesh(), CANONICAL_GEOMETRY_DIGITS)
+    collision_mesh = canonicalize_meshset(build_collision_mesh(), CANONICAL_GEOMETRY_DIGITS)
     avatar = avatar_contract(avatar_mesh, collision_mesh)
 
     render_template, binding_seeds = subdivide_for_render(rest_mesh)
