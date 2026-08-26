@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-8-SIMPLE-SKIRT-D0`.
-- Branch: `codex/closy-forge-phase-8-simple-skirt`, based on long-sleeved evidence head
-  `5fed0c1` from draft PR #11.
+- Active checkpoint: `PHASE-8-SIMPLE-TROUSERS-D0`.
+- Branch: `codex/closy-forge-phase-8-simple-trousers`, based on simple-skirt evidence head
+  `ef2823c5f5838e640b76e338d58f2976706e5c4b` from draft PR #12.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -26,7 +26,12 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - Simple-skirt implementation `80adff0e35375701dc43553dc8b810f924cfface` is draft PR #12.
   The complete local gate passes 283 tests, 140 typed source files and 74 fresh schemas.
 - PR #12 run `32998002569` passed Ubuntu job `98272173605` and Windows job `98272174094`, including
-  283 tests per OS, schema freshness, all four family rebuild/diff/validation paths and the binding
+  283 collected tests per OS, schema freshness, all four family rebuild/diff/validation paths and the binding
+  benchmark.
+- Simple-trousers implementation `40fee8ed7106ba7435d40e488c67370d32cab6ee` is draft PR #13.
+  The complete local gate passes 295 tests, 150 typed source files and 79 fresh schemas.
+- PR #13 run `33007320698` passed Ubuntu job `98304336270` and Windows job `98304336105`, including
+  295 tests per OS, schema freshness, all five family rebuild/diff/validation paths and the binding
   benchmark.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
@@ -101,13 +106,29 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   inventoried bytes at digest
   `c5989b4b0d164aebd866fe98eaa9fed85477d73f23d55eead05e04a14a7ae2df`.
 
+### Simple Trousers
+
+- The literal bottom-family pattern has four front/back half-leg panels, paired outseams and
+  inseams, front/back rise seams, one waist opening and separate left/right cuff openings.
+- A bounded 25-candidate fit accepts objective `0.00138`. Four material presets and two-cuff stress
+  execute through the CPU solver, 1,092-record authoritative dense binding and independent
+  186-vertex direct-simulation fallback.
+- Both cuffs remain non-collapsed; left/right drift is `0.0014164` / `0.00258537` metres and maximum
+  dense seam crack is `0.00708721` metres. Stress-solver convergence remains false and is not
+  promoted.
+- Composite-panel source fixtures and independent raster output record minimum decoded silhouette
+  IoU `0.26662234`, maximum normalised boundary Chamfer `0.048480955`, and colour MAE `0.0`.
+- Python 3.11 and 3.13 produce byte-identical 41-file trees with 37 inventory entries and 410,405
+  inventoried bytes at digest
+  `4c023d82785791335d966fe81e64928fdbe646e47c7d60786c8666eed4e9a886`.
+
 ## Current Validation
 
-- Ruff format/lint pass; strict mypy passes across 140 source files.
-- 74 schemas are freshly generated.
+- Ruff format/lint pass; strict mypy passes across 150 source files.
+- 79 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
-- The complete local Forge suite passes all 283 collected tests. PR #12 run `32998002569` confirms
-  the same simple-skirt matrix on Ubuntu and Windows.
+- The complete local Forge suite passes all 295 collected tests. PR #13 run `33007320698` confirms
+  the same simple-trousers matrix on Ubuntu and Windows.
 - The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
   inventoried bytes. Two builds have identical file trees and zero validator issues.
 - The existing T-shirt package remains byte-identical at 137 files with digest
@@ -116,12 +137,14 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   and zero validator issues on both local Python runtimes.
 - The simple-skirt package has 41 physical files, 37 inventory entries, 287,245 inventoried bytes
   and zero validator issues on both local Python runtimes.
+- The simple-trousers package has 41 physical files, 37 inventory entries, 410,405 inventoried
+  bytes and zero validator issues on both local Python runtimes.
 
 ## Truthful Limits
 
-- Phase 8 is partial globally. Sleeveless, long-sleeved and simple-skirt D0 slices are complete for
-  bounded public fixtures; trousers, dresses, shirts, jackets and layered/unusual garments are not
-  started.
+- Phase 8 is partial globally. Sleeveless, long-sleeved, simple-skirt and simple-trousers D0 slices
+  are complete for bounded public fixtures; dresses, shirts, jackets and layered/unusual garments
+  are not started.
 - Phase 7 and Stage Q remain partial globally. Authored preset execution is not measured real-fabric
   calibration, learned inference, private-user estimation or production GPU cloth.
 - The new family uses a fixed synthetic avatar and CPU reference solver. Mobile/device performance,
@@ -133,15 +156,15 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After committing and pushing this green PR #12 evidence checkpoint:
+After committing and pushing this green PR #13 evidence checkpoint:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-8-simple-trousers
+git switch -c codex/closy-forge-phase-8-simple-dress
 ```
 
 ## Next Safe Action
 
-Implement a literal simple-trousers family through the shared contracts, with waist/cuff openings,
-rise/inseam/outseam semantics, bounded fit, material motion, dense binding, independent fallback,
-decoded fidelity and corruption controls. Preserve all three family goldens exactly.
+Implement a literal simple-dress family through the shared contracts, with bodice/skirt panels,
+neck/armhole/hem openings, waist joins, bounded fit, material motion, dense binding, independent
+fallback, decoded fidelity and corruption controls. Preserve all four family goldens exactly.
