@@ -18,6 +18,18 @@ GARMENT_FAMILIES: dict[str, dict[str, Any]] = {
         "forbiddenParts": ["left_sleeve", "right_sleeve"],
         "forbiddenOpenings": ["left_cuff", "right_cuff"],
     },
+    "long_sleeved_top": {
+        "id": "family.top.long_sleeved",
+        "category": "top",
+        "requiredParts": [
+            "front_torso",
+            "back_torso",
+            "left_long_sleeve",
+            "right_long_sleeve",
+        ],
+        "requiredOpenings": ["neck", "hem", "left_cuff", "right_cuff"],
+        "forbiddenOpenings": ["armhole_left", "armhole_right"],
+    },
 }
 
 

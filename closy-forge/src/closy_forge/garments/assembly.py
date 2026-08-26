@@ -29,11 +29,20 @@ def build_panel_meshes(
     return MeshSet(meshes), edge_maps
 
 
-def canonicalize_meshset(meshset: MeshSet, digits: int | None) -> MeshSet:
-    return MeshSet([canonicalize_mesh(mesh, digits) for mesh in meshset.meshes])
+def canonicalize_meshset(
+    meshset: MeshSet, digits: int | None, *, normalize_signed_zero: bool = False
+) -> MeshSet:
+    return MeshSet(
+        [
+            canonicalize_mesh(mesh, digits, normalize_signed_zero=normalize_signed_zero)
+            for mesh in meshset.meshes
+        ]
+    )
 
 
-def canonicalize_mesh(mesh: Mesh, digits: int | None) -> Mesh:
+def canonicalize_mesh(
+    mesh: Mesh, digits: int | None, *, normalize_signed_zero: bool = False
+) -> Mesh:
     if digits is None:
         return mesh
     if not 0 <= digits <= 15:
@@ -43,18 +52,27 @@ def canonicalize_mesh(mesh: Mesh, digits: int | None) -> Mesh:
         panel_id=mesh.panel_id,
         vertices=[
             (
-                round(float(vertex[0]), digits),
-                round(float(vertex[1]), digits),
-                round(float(vertex[2]), digits),
+                _canonical_number(vertex[0], digits, normalize_signed_zero),
+                _canonical_number(vertex[1], digits, normalize_signed_zero),
+                _canonical_number(vertex[2], digits, normalize_signed_zero),
             )
             for vertex in mesh.vertices
         ],
         panel_uvs=[
-            (round(float(uv[0]), digits), round(float(uv[1]), digits)) for uv in mesh.panel_uvs
+            (
+                _canonical_number(uv[0], digits, normalize_signed_zero),
+                _canonical_number(uv[1], digits, normalize_signed_zero),
+            )
+            for uv in mesh.panel_uvs
         ],
         triangles=mesh.triangles,
         material_id=mesh.material_id,
     )
+
+
+def _canonical_number(value: float, digits: int, normalize_signed_zero: bool) -> float:
+    canonical = round(float(value), digits)
+    return 0.0 if normalize_signed_zero and canonical == 0.0 else canonical
 
 
 def build_seam_constraints(

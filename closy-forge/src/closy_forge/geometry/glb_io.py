@@ -14,8 +14,19 @@ def _pad4(data: bytes, pad: bytes) -> bytes:
     return data + pad * ((4 - len(data) % 4) % 4)
 
 
-def _write_floats(values: Sequence[Sequence[float]]) -> bytes:
-    return b"".join(struct.pack("<" + "f" * len(value), *value) for value in values)
+def _write_floats(
+    values: Sequence[Sequence[float]], *, normalize_signed_zero: bool = False
+) -> bytes:
+    return b"".join(
+        struct.pack(
+            "<" + "f" * len(value),
+            *(
+                0.0 if normalize_signed_zero and component == 0.0 else component
+                for component in value
+            ),
+        )
+        for value in values
+    )
 
 
 def _write_indices(values: list[tuple[int, int, int]]) -> bytes:
@@ -155,7 +166,12 @@ def write_glb(
 
 
 def write_indexed_glb(
-    path: Path, meshset: MeshSet, material_name: str, color: tuple[float, float, float, float]
+    path: Path,
+    meshset: MeshSet,
+    material_name: str,
+    color: tuple[float, float, float, float],
+    *,
+    normalize_signed_zero: bool = False,
 ) -> None:
     """Write an indexed GLB without expanding vertices per triangle.
 
@@ -191,10 +207,18 @@ def write_indexed_glb(
         normals = vertex_normals(mesh)
         tangents = vertex_tangents(mesh, normals)
 
-        pos_view = append_blob(_write_floats(mesh.vertices), 34962)
-        norm_view = append_blob(_write_floats(normals), 34962)
-        tangent_view = append_blob(_write_floats(tangents), 34962)
-        uv_view = append_blob(_write_floats(uvs), 34962)
+        pos_view = append_blob(
+            _write_floats(mesh.vertices, normalize_signed_zero=normalize_signed_zero), 34962
+        )
+        norm_view = append_blob(
+            _write_floats(normals, normalize_signed_zero=normalize_signed_zero), 34962
+        )
+        tangent_view = append_blob(
+            _write_floats(tangents, normalize_signed_zero=normalize_signed_zero), 34962
+        )
+        uv_view = append_blob(
+            _write_floats(uvs, normalize_signed_zero=normalize_signed_zero), 34962
+        )
         idx_view = append_blob(_write_indices(mesh.triangles), 34963)
         mins = [min(v[i] for v in mesh.vertices) for i in range(3)]
         maxs = [max(v[i] for v in mesh.vertices) for i in range(3)]

@@ -16,10 +16,12 @@ from closy_forge.capture import (
 )
 from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
+from closy_forge.garments.long_sleeved_top.parameters import LongSleevedTopParameters
 from closy_forge.garments.sleeveless_top.parameters import SleevelessTopParameters
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
 from closy_forge.package_io.determinism import compare_package_trees
+from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_package
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
@@ -111,6 +113,36 @@ def _parser() -> argparse.ArgumentParser:
     )
     sleeveless.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     sleeveless.set_defaults(handler=_build_sleeveless)
+
+    long_sleeved = demo_sub.add_parser(
+        "build-long-sleeved", help="Build the canonical long-sleeved-top D0 package."
+    )
+    long_sleeved.add_argument(
+        "--output", required=True, type=Path, help="Output .closygarment directory."
+    )
+    long_sleeved.add_argument(
+        "--force", action="store_true", help="Replace exactly the requested target package."
+    )
+    long_sleeved.add_argument(
+        "--seed", type=int, default=101, help="Deterministic fixture seed recorded in provenance."
+    )
+    long_sleeved.add_argument(
+        "--body-length", type=float, default=None, help="Override body length in metres."
+    )
+    long_sleeved.add_argument(
+        "--half-chest-width",
+        type=float,
+        default=None,
+        help="Override half chest panel width in metres.",
+    )
+    long_sleeved.add_argument(
+        "--sleeve-length", type=float, default=None, help="Override sleeve length in metres."
+    )
+    long_sleeved.add_argument(
+        "--cuff-width", type=float, default=None, help="Override cuff width in metres."
+    )
+    long_sleeved.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    long_sleeved.set_defaults(handler=_build_long_sleeved)
 
     capture = subparsers.add_parser("capture", help="Build deterministic capture fixtures.")
     capture_sub = capture.add_subparsers(dest="capture_command")
@@ -226,6 +258,27 @@ def _build_tshirt(args: argparse.Namespace) -> int:
 def _build_sleeveless(args: argparse.Namespace) -> int:
     params = _sleeveless_params_from_args(args)
     result = build_demo_sleeveless_package(
+        args.output, params=params, seed=args.seed, force=args.force
+    )
+    payload = {
+        "status": "built",
+        "package": str(result.package_dir),
+        "garmentId": result.manifest["garmentId"],
+        "canonicalPackageDigest": result.manifest["packageDigest"],
+        "validation": result.validation["counts"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(f"Built {result.package_dir}")
+        print(f"Digest: {payload['canonicalPackageDigest']}")
+        print(f"Validation: {payload['validation']}")
+    return EXIT_SUCCESS
+
+
+def _build_long_sleeved(args: argparse.Namespace) -> int:
+    params = _long_sleeved_params_from_args(args)
+    result = build_demo_long_sleeved_package(
         args.output, params=params, seed=args.seed, force=args.force
     )
     payload = {
@@ -427,3 +480,17 @@ def _sleeveless_params_from_args(args: argparse.Namespace) -> SleevelessTopParam
     if args.half_chest_width is not None:
         values["half_chest_width_meters"] = args.half_chest_width
     return SleevelessTopParameters(**values)
+
+
+def _long_sleeved_params_from_args(args: argparse.Namespace) -> LongSleevedTopParameters:
+    defaults = LongSleevedTopParameters()
+    values = defaults.to_json()
+    if args.body_length is not None:
+        values["body_length_meters"] = args.body_length
+    if args.half_chest_width is not None:
+        values["half_chest_width_meters"] = args.half_chest_width
+    if args.sleeve_length is not None:
+        values["sleeve_length_meters"] = args.sleeve_length
+    if args.cuff_width is not None:
+        values["cuff_width_meters"] = args.cuff_width
+    return LongSleevedTopParameters(**values)

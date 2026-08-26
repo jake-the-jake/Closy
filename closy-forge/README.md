@@ -2,9 +2,10 @@
 
 Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
 
-The current deterministic fixtures build an authored T-shirt and a literal sleeveless top. Both
-retain pattern, simulation, conventional GLB and authoritative binding evidence; the sleeveless
-slice also proves that the shared pipeline is not restricted to T-shirt sleeve semantics:
+The current deterministic fixtures build an authored T-shirt, a literal sleeveless top and a
+literal long-sleeved top. All retain pattern, simulation, conventional GLB and authoritative
+binding evidence; both Phase 8 slices prove the shared pipeline is not restricted to T-shirt
+semantics:
 
 ```bash
 python -m closy_forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment
@@ -12,6 +13,8 @@ python -m closy_forge validate generated/garments/demo_tshirt.closygarment
 python -m closy_forge report generated/garments/demo_tshirt.closygarment
 python -m closy_forge demo build-sleeveless --output generated/garments/demo_sleeveless.closygarment
 python -m closy_forge validate generated/garments/demo_sleeveless.closygarment
+python -m closy_forge demo build-long-sleeved --output generated/garments/demo_long_sleeved.closygarment
+python -m closy_forge validate generated/garments/demo_long_sleeved.closygarment
 python -m closy_forge capture build-synthetic --output generated/capture/synthetic_tshirt --force
 ```
 
@@ -65,6 +68,8 @@ python -m closy_forge validate ../generated/garments/demo_tshirt.closygarment
 python -m closy_forge report ../generated/garments/demo_tshirt.closygarment
 python -m closy_forge demo build-sleeveless --output ../generated/garments/demo_sleeveless.closygarment --force
 python -m closy_forge validate ../generated/garments/demo_sleeveless.closygarment
+python -m closy_forge demo build-long-sleeved --output ../generated/garments/demo_long_sleeved.closygarment --force
+python -m closy_forge validate ../generated/garments/demo_long_sleeved.closygarment
 ```
 
 CLI exit codes:
@@ -92,6 +97,7 @@ See:
 - `docs/cloth-settle-reference-v1.md` for the CPU reference settle backend.
 - `docs/material-physics-d0.md` for Phase 7 descriptors, selection, calibration and motion evidence.
 - `docs/sleeveless-top-d0.md` for the Phase 8 sleeveless family fixture and its evidence limits.
+- `docs/long-sleeved-top-d0.md` for the Phase 8 long-sleeved family fixture and cuff evidence.
 - `docs/MASTER_BLUEPRINT_PROGRESS.md` for the evidence ledger across the master blueprint.
 - `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.
 - `../docs/closy-garment-package-v1.md` for the repository-level package overview.

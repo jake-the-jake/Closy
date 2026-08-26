@@ -31,6 +31,17 @@ Representative current codes:
 - `sleeveless_quality_claim_invalid`: family/global readiness claims contradict persisted evidence.
 - `sleeveless_inventory_hash_mismatch`: canonical sleeveless bytes differ from manifest inventory.
 - `sleeveless_package_digest_mismatch`: the recomputed sleeveless package digest differs.
+- `long_sleeved_family_mismatch`: a long-sleeved package has the wrong canonical family or garment ID.
+- `long_sleeved_semantic_ids_invalid`: torso, sleeve, seam or cuff IDs do not match the family ontology.
+- `long_sleeved_opening_loop_invalid`: neck, hem or cuff boundaries are missing or unresolved.
+- `long_sleeved_constraint_pairing_invalid`: a torso, armhole or underarm seam is absent.
+- `long_sleeved_fit_integrity_invalid`: the bounded 25-candidate fit or its hash is invalid.
+- `long_sleeved_motion_suite_invalid`: four-preset or cuff-stress solver evidence is incomplete.
+- `long_sleeved_binding_validation_failed`: GLB/binding reconstruction or independent fallback is invalid.
+- `long_sleeved_appearance_validation_failed`: decoded source/render or PBR evidence is blank or rejected.
+- `long_sleeved_quality_claim_invalid`: family/global readiness contradicts persisted evidence.
+- `long_sleeved_inventory_hash_mismatch`: canonical long-sleeved bytes differ from inventory.
+- `long_sleeved_package_digest_mismatch`: the recomputed long-sleeved package digest differs.
 
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.

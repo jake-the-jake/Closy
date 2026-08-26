@@ -39,6 +39,7 @@ class MotionSuiteSpec:
     readiness_execution_key: str
     readiness_openings_key: str
     missing_preset_message: str
+    normalize_signed_zero: bool = False
 
 
 def build_material_motion_suite(
@@ -65,7 +66,9 @@ def build_material_motion_suite(
             material,
             canonical_position_digits=CANONICAL_POSITION_DIGITS,
         )
-        settled_mesh = quantize_mesh(result.settled_mesh)
+        settled_mesh = quantize_mesh(
+            result.settled_mesh, normalize_signed_zero=spec.normalize_signed_zero
+        )
         diagnostics = canonicalize_diagnostics(result.diagnostics)
         metrics = measure_motion_metrics(rest_mesh, settled_mesh, constraints, diagnostics)
         openings = tracked_opening_metrics(metrics, spec)
@@ -112,7 +115,7 @@ def build_material_motion_suite(
         "opening_stress",
         canonical_position_digits=CANONICAL_POSITION_DIGITS,
     )
-    stress_mesh = quantize_mesh(stress.mesh)
+    stress_mesh = quantize_mesh(stress.mesh, normalize_signed_zero=spec.normalize_signed_zero)
     stress_diagnostics = canonicalize_diagnostics(stress.diagnostics)
     stress_metrics = measure_motion_metrics(
         selected_settled,
@@ -271,7 +274,7 @@ def round_metric(value: float) -> float:
     return round(float(value), 9)
 
 
-def quantize_mesh(meshset: MeshSet) -> MeshSet:
+def quantize_mesh(meshset: MeshSet, *, normalize_signed_zero: bool = False) -> MeshSet:
     return MeshSet(
         [
             Mesh(
@@ -279,16 +282,16 @@ def quantize_mesh(meshset: MeshSet) -> MeshSet:
                 panel_id=mesh.panel_id,
                 vertices=[
                     (
-                        round(float(vertex[0]), 8),
-                        round(float(vertex[1]), 8),
-                        round(float(vertex[2]), 8),
+                        canonical_number(vertex[0], 8, normalize_signed_zero),
+                        canonical_number(vertex[1], 8, normalize_signed_zero),
+                        canonical_number(vertex[2], 8, normalize_signed_zero),
                     )
                     for vertex in mesh.vertices
                 ],
                 panel_uvs=[
                     (
-                        round(float(uv[0]), CANONICAL_POSITION_DIGITS),
-                        round(float(uv[1]), CANONICAL_POSITION_DIGITS),
+                        canonical_number(uv[0], CANONICAL_POSITION_DIGITS, normalize_signed_zero),
+                        canonical_number(uv[1], CANONICAL_POSITION_DIGITS, normalize_signed_zero),
                     )
                     for uv in mesh.panel_uvs
                 ],
@@ -298,6 +301,11 @@ def quantize_mesh(meshset: MeshSet) -> MeshSet:
             for mesh in meshset.meshes
         ]
     )
+
+
+def canonical_number(value: float, digits: int, normalize_signed_zero: bool) -> float:
+    canonical = round(float(value), digits)
+    return 0.0 if normalize_signed_zero and canonical == 0.0 else canonical
 
 
 def quantize_numbers(value: Any) -> Any:

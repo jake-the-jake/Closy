@@ -21,6 +21,7 @@ class ContractWriteSpec:
     independent_fallback_node_name: str
     fit_report_path: str
     quality_report_path: str
+    normalize_signed_zero: bool = False
 
 
 @dataclass(frozen=True)
@@ -80,18 +81,21 @@ def write_vertical_slice_contracts(
         simulation_mesh,
         spec.simulation_node_name,
         (0.18, 0.37, 0.69, 1.0),
+        normalize_signed_zero=spec.normalize_signed_zero,
     )
     write_indexed_glb(
         package_dir / "render/fallback.glb",
         render_mesh,
         spec.dense_render_node_name,
         (0.18, 0.37, 0.69, 1.0),
+        normalize_signed_zero=spec.normalize_signed_zero,
     )
     write_indexed_glb(
         package_dir / "render/simulation_fallback.glb",
         simulation_mesh,
         spec.independent_fallback_node_name,
         (0.18, 0.37, 0.69, 1.0),
+        normalize_signed_zero=spec.normalize_signed_zero,
     )
     write_canonical_json(package_dir / "render/materials.json", render_materials)
     write_binding(package_dir / "binding/sim_to_render.bin", binding)
