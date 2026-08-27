@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-8-BUTTON-SHIRT-D0`.
-- Branch: `codex/closy-forge-phase-8-shirt-openings`, based on simple-dress evidence head
-  `bc16e6e72a462d43c46aa31147909990a50e41b0` from draft PR #14.
+- Active checkpoint: `PHASE-8-JACKET-OUTERWEAR-D0`.
+- Branch: `codex/closy-forge-phase-8-jacket-outerwear`, based on button-shirt evidence head
+  `f55b2a50080b28c55c28ce7c18474920b19cf3f3` from draft PR #15.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -45,6 +45,13 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   including 322 tests per OS, schema freshness, all seven family rebuild/diff/validation paths and
   the binding benchmark. Both jobs rebuilt the button-shirt package at digest
   `4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91`.
+- Jacket/outerwear implementation `d79e1b8c725242e65389081a6b0b8c078fd41f9f` is draft PR #16.
+  Local Ruff, strict mypy across 180 sources, 94 fresh schemas, the 15-test focused family/
+  package/corruption gate and all 337 collected tests pass.
+- PR #16 run `33029602357` passed Ubuntu job `98378800026` and Windows job `98378800076`.
+  Each job passed 337 tests, rebuilt all predecessor families, and produced identical 41-file
+  jacket trees at digest
+  `2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a`.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -169,13 +176,31 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - Repeated local builds produce matching 41-file trees with 37 inventory entries, 495,639 bytes and
   digest `4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91`.
 
+### Jacket/Outerwear
+
+- The literal outerwear pattern has split left/right fronts, one back, two long sleeves and
+  separate left/right internal facings. Twelve physical seams include two facing attachments.
+- Facing outer edges attach to the front panels while facing inner edges form the open-front
+  boundary. Torso/sleeves and internal facings carry explicit outer-shell collision order.
+- A bounded 25-candidate fit accepts objective `0.00156`. Four material presets execute and the
+  authored fixture selects `material.heavy_jersey_d0_v1`.
+- Both cuffs remain non-collapsed under opening stress; left/right drift is `0.00004389` /
+  `0.0011949` metres and maximum dense seam crack is `0.00788269` metres. Stress convergence is
+  false and is not promoted.
+- The authoritative dense path has 1,944 binding records; the independent fallback retains 331
+  simulation vertices. Decoded source/render comparison records minimum IoU `0.453862146`, maximum
+  normalised boundary Chamfer `0.032568771`, and colour MAE `0.0`.
+- Repeated local, Ubuntu and Windows builds produce matching 41-file trees with 37 inventory
+  entries, 583,414 bytes and digest
+  `2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a`.
+
 ## Current Validation
 
-- Ruff format/lint pass; strict mypy passes across 170 source files.
-- 89 schemas are freshly generated.
+- Ruff format/lint pass; strict mypy passes across 180 source files.
+- 94 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
-- The complete local Forge suite passes all 322 collected tests in `2622.47s`. PR #15 run
-  `33020344545` confirms the same seven-family matrix on Ubuntu and Windows Python 3.11.
+- The complete local Forge suite passes all 337 collected tests in `3082.10s`. PR #16 run
+  `33029602357` confirms the same eight-family matrix on Ubuntu and Windows Python 3.11.
 - The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
   inventoried bytes. Two builds have identical file trees and zero validator issues.
 - The existing T-shirt package remains byte-identical at 137 files with digest
@@ -190,12 +215,14 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   and zero validator issues on both local Python runtimes.
 - The button-shirt package has 41 physical files, 37 inventory entries, 495,639 inventoried bytes
   and zero validator issues in repeated local and cross-OS builds.
+- The jacket package has 41 physical files, 37 inventory entries, 583,414 inventoried bytes and
+  zero validator issues in repeated local and cross-OS builds.
 
 ## Truthful Limits
 
 - Phase 8 is partial globally. Sleeveless, long-sleeved, simple-skirt, simple-trousers,
-  simple-dress and button-shirt D0 slices are complete for bounded public fixtures; jackets and
-  layered/unusual garments are not started.
+  simple-dress, button-shirt and jacket/outerwear D0 slices are complete for bounded public
+  fixtures; layered/unusual garments are not started.
 - Phase 7 and Stage Q remain partial globally. Authored preset execution is not measured real-fabric
   calibration, learned inference, private-user estimation or production GPU cloth.
 - The new family uses a fixed synthetic avatar and CPU reference solver. Mobile/device performance,
@@ -207,15 +234,16 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After PR #15 cross-OS evidence is green and truth-synced:
+After PR #16 cross-OS evidence is green and truth-synced:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-8-jacket-outerwear
+git switch -c codex/closy-forge-phase-8-layered-unusual
 ```
 
 ## Next Safe Action
 
-Implement one literal jacket/outerwear family through the shared contracts, including separate
-front opening/facing semantics, outer-layer collision order and bounded outerwear material evidence.
-Preserve all six Phase 8 family goldens and keep multi-garment layering separate.
+Implement one literal layered/unusual garment fixture through the shared contracts with explicit
+inner/outer layer identity, deterministic collision order and bounded inter-layer motion evidence.
+Preserve all seven completed Phase 8 family goldens and keep Phase 8 globally partial unless that
+final family scope is fully literal.
