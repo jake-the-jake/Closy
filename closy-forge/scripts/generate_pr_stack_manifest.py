@@ -99,13 +99,36 @@ def _pr(number: int, repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _open_forge_pr_numbers(repo_root: Path) -> list[int]:
+    raw = _run(
+        "gh",
+        "pr",
+        "list",
+        "--repo",
+        REPOSITORY,
+        "--state",
+        "open",
+        "--limit",
+        "100",
+        "--json",
+        "number,headRefName",
+        cwd=repo_root,
+    )
+    rows = json.loads(raw)
+    return sorted(
+        int(row["number"])
+        for row in rows
+        if str(row.get("headRefName", "")).startswith("codex/closy-forge-")
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Capture the read-only Closy draft PR stack.")
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     root = args.repo_root.resolve()
-    pull_requests = [_pr(number, root) for number in range(1, 20)]
+    pull_requests = [_pr(number, root) for number in _open_forge_pr_numbers(root)]
     payload = {
         "capturePolicy": "read_only_github_and_local_git_snapshot",
         "repository": REPOSITORY,
