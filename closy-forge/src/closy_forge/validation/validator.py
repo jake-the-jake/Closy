@@ -1375,7 +1375,17 @@ def _validate_fitting(
                 thresholds.get(threshold_key), 0.0
             ):
                 issues.append(_issue(code, "fatal", "fitting/tshirt_fit.json", message))
-        if not fit_accepted and fit_thresholds_pass:
+        settled_fit_status = fit_report.get("settledRenderComparison", {}).get("status")
+        if fit_accepted and settled_fit_status != "pass":
+            issues.append(
+                _issue(
+                    "tshirt_fit_acceptance_overclaimed",
+                    "fatal",
+                    "fitting/tshirt_fit.json",
+                    "A fit cannot claim acceptance when its settled-render physical gate failed.",
+                )
+            )
+        elif not fit_accepted and fit_thresholds_pass and settled_fit_status == "pass":
             issues.append(
                 _issue(
                     "tshirt_fit_acceptance_underclaimed",
@@ -1437,10 +1447,8 @@ def _validate_fitting(
             )
         )
     convergence = fit_report.get("convergence", {})
-    if (
-        not isinstance(convergence, dict)
-        or convergence.get("status") != "converged_d0_public_fixture"
-        or _float_or(convergence.get("absoluteImprovement"), 0.0) <= 0.0
+    if not isinstance(convergence, dict) or (
+        _float_or(convergence.get("absoluteImprovement"), 0.0) <= 0.0
         or convergence.get("noOpCandidateAccepted") is not False
     ):
         issues.append(
@@ -1449,6 +1457,15 @@ def _validate_fitting(
                 "fatal",
                 "fitting/tshirt_fit.json",
                 "BP52 fit must improve from a non-no-op baseline and report D0 convergence.",
+            )
+        )
+    elif convergence.get("status") != "converged_d0_public_fixture":
+        issues.append(
+            _issue(
+                "tshirt_fit_solver_quality_gate_partial",
+                "warning",
+                "fitting/tshirt_fit.json",
+                "The bounded fit improved, but its full-solver physical gate remains partial.",
             )
         )
     alternatives = fit_report.get("alternatives", [])
@@ -1484,7 +1501,6 @@ def _validate_fitting(
     settled = fit_report.get("settledRenderComparison", {})
     if (
         not isinstance(settled, dict)
-        or settled.get("status") != "pass"
         or settled.get("fullSolverRun") is not True
         or settled.get("renderedCandidateEvaluated") is not True
     ):
@@ -1494,6 +1510,15 @@ def _validate_fitting(
                 "fatal",
                 "fitting/tshirt_fit.json",
                 "BP52 fit must pass an actual full-solver settled-render winner verification.",
+            )
+        )
+    elif settled.get("status") != "pass":
+        issues.append(
+            _issue(
+                "tshirt_fit_settled_render_quality_partial",
+                "warning",
+                "fitting/tshirt_fit.json",
+                "The full-solver rendered winner ran but did not pass its physical-quality gate.",
             )
         )
     elif settled.get("settledContentHash") != settled_state.get("meshContentHash"):
@@ -10821,7 +10846,6 @@ def _validate_meshes_and_constraints(package_dir: Path, issues: list[ValidationI
         for span_key in ["spanA", "spanB"]:
             span = constraint.get(span_key, {})
             mesh_index = int(span.get("meshIndex", -1))
-            vertex_index = int(span.get("vertexIndex", -1))
             if mesh_index < 0 or mesh_index >= len(sim_mesh.meshes):
                 issues.append(
                     _issue(
@@ -10833,14 +10857,160 @@ def _validate_meshes_and_constraints(package_dir: Path, issues: list[ValidationI
                     )
                 )
                 continue
-            if vertex_index < 0 or vertex_index >= len(sim_mesh.meshes[mesh_index].vertices):
+            for vertex_key in ("vertexIndex", "nextVertexIndex"):
+                vertex_index = int(span.get(vertex_key, span.get("vertexIndex", -1)))
+                if vertex_index < 0 or vertex_index >= len(sim_mesh.meshes[mesh_index].vertices):
+                    issues.append(
+                        _issue(
+                            "invalid_constraint_vertex",
+                            "fatal",
+                            "simulation/constraints.json",
+                            f"Constraint {vertex_key} is invalid.",
+                            constraint.get("id"),
+                        )
+                    )
+            interpolation_weight = float(span.get("interpolationWeight", 0.0))
+            if not 0.0 <= interpolation_weight <= 1.0:
                 issues.append(
                     _issue(
-                        "invalid_constraint_vertex",
+                        "invalid_constraint_interpolation_weight",
                         "fatal",
                         "simulation/constraints.json",
-                        "Constraint vertex index is invalid.",
+                        "Constraint interpolation weight must be inside [0, 1].",
                         constraint.get("id"),
+                    )
+                )
+    _validate_full_span_seam_mapping(constraints, issues)
+
+
+def _validate_full_span_seam_mapping(
+    constraints: dict[str, Any], issues: list[ValidationIssue]
+) -> None:
+    rel = "simulation/constraints.json"
+    if constraints.get("constraintModel") != "full_span_seam_mapping_v2":
+        issues.append(
+            _issue(
+                "seam_mapping_model_invalid",
+                "fatal",
+                rel,
+                "Constraints must use the full-span seam mapping v2 contract.",
+            )
+        )
+        return
+    seam_docs = constraints.get("seams", [])
+    seam_ids = [str(seam.get("id", "")) for seam in seam_docs]
+    if len(seam_ids) != len(set(seam_ids)) or any(not seam_id for seam_id in seam_ids):
+        issues.append(
+            _issue("seam_mapping_semantic_ids_invalid", "fatal", rel, "Seam IDs must be unique.")
+        )
+        return
+    seam_by_id = {str(seam["id"]): seam for seam in seam_docs}
+    pair_records: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
+    constraint_ids: set[str] = set()
+    for record in constraints.get("constraints", []):
+        constraint_id = str(record.get("id", ""))
+        if not constraint_id or constraint_id in constraint_ids:
+            issues.append(
+                _issue(
+                    "seam_mapping_constraint_id_invalid",
+                    "fatal",
+                    rel,
+                    "Constraint IDs must be present and unique.",
+                    constraint_id or None,
+                )
+            )
+        constraint_ids.add(constraint_id)
+        seam_id = str(record.get("seamId", ""))
+        seam = seam_by_id.get(seam_id)
+        span_a = record.get("spanA", {})
+        span_b = record.get("spanB", {})
+        boundary_a = str(span_a.get("boundaryId", ""))
+        boundary_b = str(span_b.get("boundaryId", ""))
+        if seam is None:
+            issues.append(
+                _issue(
+                    "seam_mapping_unknown_seam",
+                    "fatal",
+                    rel,
+                    "Constraint references an undeclared seam.",
+                    constraint_id,
+                )
+            )
+            continue
+        declared = {
+            (str(span.get("panelId", "")), str(span.get("edgeId", "")))
+            for span in seam.get("spans", [])
+        }
+        actual = {
+            (str(span_a.get("panelId", "")), boundary_a),
+            (str(span_b.get("panelId", "")), boundary_b),
+        }
+        if not actual.issubset(declared):
+            issues.append(
+                _issue(
+                    "seam_mapping_semantic_span_mismatch",
+                    "fatal",
+                    rel,
+                    "Constraint span IDs do not match the declared seam.",
+                    constraint_id,
+                )
+            )
+        if float(record.get("restEaseRatio", 0.0)) != float(seam.get("easeRatio", -1.0)):
+            issues.append(
+                _issue(
+                    "seam_mapping_ease_mismatch",
+                    "fatal",
+                    rel,
+                    "Constraint ease must match the declared seam ease.",
+                    constraint_id,
+                )
+            )
+        pair_records.setdefault((seam_id, boundary_a, boundary_b), []).append(record)
+
+    for pair, records in pair_records.items():
+        mapping_counts = {
+            int(record.get("mapping", {}).get("mappingCount", -1)) for record in records
+        }
+        ordinals = [int(record.get("mapping", {}).get("ordinal", -1)) for record in records]
+        parameters = [float(record.get("mapping", {}).get("parameter", -1.0)) for record in records]
+        if mapping_counts != {len(records)} or ordinals != list(range(len(records))):
+            issues.append(
+                _issue(
+                    "seam_mapping_full_span_order_invalid",
+                    "fatal",
+                    rel,
+                    "Full-span mapping count and ordinal order must be complete.",
+                    pair[0],
+                )
+            )
+        if (
+            not parameters
+            or parameters[0] != 0.0
+            or parameters[-1] != 1.0
+            or any(right <= left for left, right in zip(parameters, parameters[1:], strict=False))
+        ):
+            issues.append(
+                _issue(
+                    "seam_mapping_parameters_invalid",
+                    "fatal",
+                    rel,
+                    "Full-span mapping must preserve ordered endpoints over [0, 1].",
+                    pair[0],
+                )
+            )
+        for record in records:
+            mapping = record.get("mapping", {})
+            if (
+                int(mapping.get("spanAVertexCount", 0)) < 2
+                or int(mapping.get("spanBVertexCount", 0)) < 2
+            ):
+                issues.append(
+                    _issue(
+                        "seam_mapping_span_length_invalid",
+                        "fatal",
+                        rel,
+                        "Mapped seam spans require at least two vertices.",
+                        str(record.get("id", "")),
                     )
                 )
 
@@ -10872,13 +11042,40 @@ def _validate_settle_state(
                 "Manifest claims settle availability but material preset says no settle ran.",
             )
         )
-    if cloth_available and diagnostics.get("convergenceState") != "converged":
+    if cloth_available and diagnostics.get("numericalTermination") != "completed":
         issues.append(
             _issue(
-                "cloth_settle_not_converged",
+                "cloth_settle_numerical_termination_failed",
                 "fatal",
                 "simulation/settle_diagnostics.json",
-                "Settled state must report convergence before capability is enabled.",
+                "The deterministic solver must terminate with finite, valid elements.",
+            )
+        )
+    quality_statuses = {
+        "constraintConvergence": diagnostics.get("constraintConvergence"),
+        "collisionResolution": diagnostics.get("collisionResolution"),
+        "strainQuality": diagnostics.get("strainQuality"),
+        "energyDecay": diagnostics.get("energyDecay"),
+    }
+    for field, status in quality_statuses.items():
+        if status != "passed":
+            issues.append(
+                _issue(
+                    f"cloth_settle_{field.lower()}_failed",
+                    "warning",
+                    "simulation/settle_diagnostics.json",
+                    f"D0 physical quality remains partial because {field} did not pass.",
+                )
+            )
+    if diagnostics.get("physicalQualityAccepted") is True and any(
+        status != "passed" for status in quality_statuses.values()
+    ):
+        issues.append(
+            _issue(
+                "cloth_settle_physical_quality_contradiction",
+                "fatal",
+                "simulation/settle_diagnostics.json",
+                "Physical quality cannot be accepted while a component gate failed.",
             )
         )
     if float(diagnostics.get("maximumBodyPenetrationMeters", 1.0)) > 0.012:

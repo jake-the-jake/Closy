@@ -40,9 +40,9 @@ def test_simple_trousers_pattern_has_literal_leg_rise_and_opening_semantics() ->
     assert semantic["family"]["garmentClass"] == "simple_trousers"
     assert semantic["family"]["category"] == "bottom"
     assert semantic["family"]["requiredOpenings"] == ["waist", "left_cuff", "right_cuff"]
-    assert mesh.vertex_count == 186
-    assert mesh.triangle_count == 182
-    assert len(constraints["constraints"]) == 75
+    assert mesh.vertex_count == 182
+    assert mesh.triangle_count == 174
+    assert len(constraints["constraints"]) == 83
     assert all(
         edge["status"] == "resolved"
         for opening in constraints["openings"]

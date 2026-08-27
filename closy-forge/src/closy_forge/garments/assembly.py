@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from typing import Any
 
 from closy_forge.geometry.mesh_model import Mesh, MeshSet
-from closy_forge.geometry.triangulation import triangulate_panel
+from closy_forge.geometry.triangulation import panel_boundary_samples, triangulate_panel
 
 
 def build_panel_meshes(
@@ -80,6 +81,9 @@ def build_seam_constraints(
 ) -> dict[str, Any]:
     constraints = []
     mesh_panel_index = {panel["id"]: i for i, panel in enumerate(pattern["panels"])}
+    panel_points = {
+        str(panel["id"]): panel_boundary_samples(panel)[0] for panel in pattern["panels"]
+    }
     for seam in pattern["seams"]:
         if seam.get("simulationEnabled", True) is False:
             continue
@@ -87,28 +91,70 @@ def build_seam_constraints(
         if len(spans) < 2:
             continue
         base = _span_vertices(spans[0], edge_maps)
-        for other_span in spans[1:]:
+        for pair_index, other_span in enumerate(spans[1:], start=1):
             other = _span_vertices(other_span, edge_maps)
-            count = min(len(base), len(other))
+            if len(base) < 2 or len(other) < 2:
+                raise ValueError(f"invalid seam span: {seam['id']}")
+            other, correspondence_direction = _orient_span_for_correspondence(
+                base,
+                other,
+                panel_points[str(spans[0]["panelId"])],
+                panel_points[str(other_span["panelId"])],
+            )
+            base_parameters = _normalised_arc_parameters(
+                [panel_points[str(spans[0]["panelId"])][index] for index in base]
+            )
+            other_parameters = _normalised_arc_parameters(
+                [panel_points[str(other_span["panelId"])][index] for index in other]
+            )
+            count = max(len(base), len(other))
             for ordinal in range(count):
+                parameter = ordinal / (count - 1)
+                base_index, base_next_index, base_weight = _parameterised_span_sample(
+                    base_parameters, parameter
+                )
+                other_index, other_next_index, other_weight = _parameterised_span_sample(
+                    other_parameters, parameter
+                )
                 constraints.append(
                     {
-                        "id": f"constraint.{seam['id']}.{ordinal:03d}",
+                        "id": (
+                            f"constraint.{seam['id']}.{ordinal:03d}"
+                            if pair_index == 1
+                            else f"constraint.{seam['id']}.pair{pair_index:03d}.{ordinal:03d}"
+                        ),
                         "schemaVersion": 1,
                         "seamId": seam["id"],
                         "spanA": _constraint_span_payload(
-                            spans[0], base[ordinal], mesh_panel_index[spans[0]["panelId"]]
+                            spans[0],
+                            base[base_index],
+                            mesh_panel_index[spans[0]["panelId"]],
+                            next_vertex_index=base[base_next_index],
+                            interpolation_weight=base_weight,
                         ),
                         "spanB": _constraint_span_payload(
                             other_span,
-                            other[ordinal],
+                            other[other_index],
                             mesh_panel_index[other_span["panelId"]],
+                            next_vertex_index=other[other_next_index],
+                            interpolation_weight=other_weight,
                         ),
                         "orientation": [
                             spans[0]["orientation"],
                             other_span["orientation"],
                         ],
                         "restEaseRatio": seam["easeRatio"],
+                        "easeDistribution": "normalised_arc_length_uniform_v1",
+                        "mapping": {
+                            "mappingCount": count,
+                            "ordinal": ordinal,
+                            "parameter": parameter,
+                            "spanAParameter": parameter,
+                            "spanAVertexCount": len(base),
+                            "spanBParameter": parameter,
+                            "spanBVertexCount": len(other),
+                            "spanBCorrespondenceDirection": correspondence_direction,
+                        },
                         "stitchType": seam["stitchType"],
                         "enabled": True,
                         "provenance": "procedural_fixture",
@@ -117,11 +163,13 @@ def build_seam_constraints(
                 )
     return {
         "schemaVersion": 1,
-        "constraintModel": "seam_pairs_v1",
+        "constraintModel": "full_span_seam_mapping_v2",
         "constraints": constraints,
         "seams": [
             {
                 "id": str(seam["id"]),
+                "easeRatio": float(seam["easeRatio"]),
+                "mappingVersion": "closy.full_span_seam_mapping.v2",
                 "spans": [
                     {
                         "panelId": str(span["panelId"]),
@@ -149,13 +197,49 @@ def build_seam_constraints(
     }
 
 
+def _normalised_arc_parameters(points: list[tuple[float, float]]) -> list[float]:
+    if len(points) < 2:
+        raise ValueError("seam_span_requires_two_vertices")
+    cumulative = [0.0]
+    for left, right in zip(points, points[1:], strict=False):
+        cumulative.append(cumulative[-1] + math.dist(left, right))
+    if cumulative[-1] <= 1e-12:
+        raise ValueError("seam_span_zero_arc_length")
+    return [distance / cumulative[-1] for distance in cumulative]
+
+
+def _parameterised_span_sample(parameters: list[float], parameter: float) -> tuple[int, int, float]:
+    if parameter <= 0.0:
+        return 0, 0, 0.0
+    if parameter >= 1.0:
+        final = len(parameters) - 1
+        return final, final, 0.0
+    for right in range(1, len(parameters)):
+        if parameters[right] >= parameter:
+            if abs(parameters[right] - parameter) <= 1e-12:
+                return right, right, 0.0
+            left = right - 1
+            extent = parameters[right] - parameters[left]
+            if extent <= 1e-12:
+                raise ValueError("seam_span_parameter_interval_zero")
+            return left, right, (parameter - parameters[left]) / extent
+    raise ValueError("seam_span_parameter_out_of_range")
+
+
 def _constraint_span_payload(
-    span: dict[str, Any], vertex_index: int, mesh_index: int
+    span: dict[str, Any],
+    vertex_index: int,
+    mesh_index: int,
+    *,
+    next_vertex_index: int,
+    interpolation_weight: float,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "panelId": span["panelId"],
         "boundaryId": span["edgeId"],
         "vertexIndex": vertex_index,
+        "nextVertexIndex": next_vertex_index,
+        "interpolationWeight": interpolation_weight,
         "meshIndex": mesh_index,
     }
     if "sampleRange" in span:
@@ -170,9 +254,24 @@ def _span_vertices(span: dict[str, Any], edge_maps: dict[str, dict[str, list[int
     if "sampleRange" in span:
         start, end = span["sampleRange"]
         ids = ids[int(start) : int(end)]
-    if span["orientation"] == "reverse":
-        ids.reverse()
     return ids
+
+
+def _orient_span_for_correspondence(
+    base: list[int],
+    other: list[int],
+    base_points: list[tuple[float, float]],
+    other_points: list[tuple[float, float]],
+) -> tuple[list[int], str]:
+    direct = math.dist(base_points[base[0]], other_points[other[0]]) + math.dist(
+        base_points[base[-1]], other_points[other[-1]]
+    )
+    reverse = math.dist(base_points[base[0]], other_points[other[-1]]) + math.dist(
+        base_points[base[-1]], other_points[other[0]]
+    )
+    if reverse + 1e-12 < direct:
+        return list(reversed(other)), "reversed_by_endpoint_correspondence"
+    return other, "forward_by_endpoint_correspondence"
 
 
 def _opening_span_payloads(

@@ -197,6 +197,7 @@ def material_selection_input(
         "schemaVersion": 1,
         "selectionId": f"material_selection.{family_token}_public_d0_v1",
         "inputId": f"material_input.{family_token}_public_d0_v1",
+        "garmentFamily": family_token,
         "observations": observations
         or {
             "massClass": "medium",

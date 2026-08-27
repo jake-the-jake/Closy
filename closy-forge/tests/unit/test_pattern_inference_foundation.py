@@ -21,6 +21,9 @@ def test_foundation_is_deterministic_disjoint_and_explicitly_not_learned() -> No
     assert {len(first["split"][name]) for name in ("train", "validation", "test")} == {8}
     assert first["benchmark"]["top1Correct"] == 24
     assert first["benchmark"]["top1Accuracy"] == 1.0
+    assert first["split"]["identityLeakage"] is True
+    assert first["correction"]["humanCorrectionRecord"] is False
+    assert first["correction"]["simulatedCorrectionFixture"] is True
     assert first["evidenceTier"]["trainedModelRun"] is False
     assert first["evidenceTier"]["learnedAccuracyClaimed"] is False
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import isfinite, sqrt
+from math import cos, isfinite, radians, sin, sqrt
 from typing import Any
 
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross, scale, sub
@@ -14,8 +14,12 @@ from closy_forge.simulation.self_collision import (
     seam_exclusion_pairs,
 )
 
-SOLVER_VERSION = "closy.reference_xpbd_cpu.v1.3_integrated_self_collision_d0"
+SOLVER_VERSION = "closy.reference_xpbd_cpu.v2.0_material_coupled_d0"
 NECK_BAND_SEAM_TARGET_LENGTH_METERS = 0.02
+MAX_SEAM_CRACK_METERS = 0.008
+MAX_BODY_PENETRATION_METERS = 0.0005
+MAX_P95_STRAIN = 0.35
+MAX_STRAIN = 1.0
 
 
 @dataclass(frozen=True)
@@ -35,16 +39,29 @@ class SettleSettings:
     support_stiffness: float = 0.03
     self_collision_thickness_meters: float = 0.0016
     self_collision_clearance_meters: float = 0.0008
+    surface_density_kg_m2: float = 0.16
+    warp_stiffness_n_m: float = 550.0
+    weft_stiffness_n_m: float = 420.0
+    shear_stiffness_n_m: float = 120.0
+    bend_stiffness_nm: float = 0.0018
+    friction_coefficient: float = 0.42
+    restitution_coefficient: float = 0.02
+    warp_orientation_degrees: float = 0.0
 
 
-@dataclass(frozen=True)
+@dataclass
 class DistanceConstraint:
     a: int
     b: int
     rest_length: float
-    stiffness: float
+    compliance: float
     kind: str
     entity_id: str
+    lagrange_multiplier: float = 0.0
+    a_next: int | None = None
+    b_next: int | None = None
+    a_weight: float = 0.0
+    b_weight: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -94,8 +111,12 @@ def settle_reference_cloth(
 
     active_settings = settings or SettleSettings(
         damping_ratio=float(material.get("dampingRatio", SettleSettings.damping_ratio)),
-        collision_clearance_m=float(
-            material.get("collisionClearanceMeters", SettleSettings.collision_clearance_m)
+        collision_clearance_m=max(
+            float(material.get("collisionClearanceMeters", SettleSettings.collision_clearance_m)),
+            0.5
+            * float(
+                material.get("thicknessMeters", SettleSettings.self_collision_thickness_meters)
+            ),
         ),
         stretch_stiffness=float(material.get("stretchStiffness", SettleSettings.stretch_stiffness)),
         warp_stretch_stiffness=float(
@@ -111,6 +132,28 @@ def settle_reference_cloth(
                 "selfCollisionThicknessMeters", SettleSettings.self_collision_thickness_meters
             )
         ),
+        surface_density_kg_m2=float(
+            material.get("surfaceDensityKgM2", SettleSettings.surface_density_kg_m2)
+        ),
+        warp_stiffness_n_m=float(
+            material.get("stretchStiffnessNPerM", SettleSettings.warp_stiffness_n_m)
+        ),
+        weft_stiffness_n_m=float(
+            material.get("weftStretchStiffnessNPerM", SettleSettings.weft_stiffness_n_m)
+        ),
+        shear_stiffness_n_m=float(
+            material.get("shearStiffnessNPerM", SettleSettings.shear_stiffness_n_m)
+        ),
+        bend_stiffness_nm=float(material.get("bendStiffnessNm", SettleSettings.bend_stiffness_nm)),
+        friction_coefficient=float(
+            material.get("frictionCoefficient", SettleSettings.friction_coefficient)
+        ),
+        restitution_coefficient=float(
+            material.get("restitutionCoefficient", SettleSettings.restitution_coefficient)
+        ),
+        warp_orientation_degrees=float(
+            material.get("warpOrientationDegrees", SettleSettings.warp_orientation_degrees)
+        ),
     )
     flat = flatten_mesh(rest_mesh)
     positions = list(flat.positions)
@@ -119,6 +162,9 @@ def settle_reference_cloth(
     constraints = _build_distance_constraints(
         rest_mesh, seam_constraints, flat.mesh_offsets, active_settings
     )
+    structural_constraints = [constraint for constraint in constraints if constraint.kind != "seam"]
+    stitch_constraints = [constraint for constraint in constraints if constraint.kind == "seam"]
+    inverse_masses = _particle_inverse_masses(rest_mesh, active_settings.surface_density_kg_m2)
     supports = _build_support_constraints(rest_mesh, flat.mesh_offsets, active_settings)
     primitives = list(avatar_contract.get("collisionPrimitives", []))
     self_collision_settings = SelfCollisionSettings(
@@ -136,6 +182,8 @@ def settle_reference_cloth(
     self_collision_convergence: list[dict[str, Any]] = []
     dt = active_settings.time_step_seconds
     for step in range(active_settings.step_count):
+        for constraint in constraints:
+            constraint.lagrange_multiplier = 0.0
         for index, velocity in enumerate(velocities):
             previous[index] = positions[index]
             velocities[index] = (
@@ -148,14 +196,32 @@ def settle_reference_cloth(
         positions = _canonicalize_positions(positions, canonical_position_digits)
 
         for _iteration in range(active_settings.solver_iterations):
-            for constraint in constraints:
-                _solve_distance(positions, constraint)
+            for constraint in structural_constraints:
+                _solve_distance(
+                    positions,
+                    inverse_masses,
+                    constraint,
+                    active_settings.time_step_seconds,
+                )
             for support in supports:
                 _solve_support(positions, support)
             positions = _canonicalize_positions(positions, canonical_position_digits)
             collision_events += _project_collisions(
-                positions, primitives, active_settings.collision_clearance_m
+                positions,
+                previous,
+                primitives,
+                active_settings.collision_clearance_m,
+                active_settings.friction_coefficient,
+                active_settings.restitution_coefficient,
+                dt,
             )
+            for constraint in stitch_constraints:
+                _solve_distance(
+                    positions,
+                    inverse_masses,
+                    constraint,
+                    active_settings.time_step_seconds,
+                )
             positions = _canonicalize_positions(positions, canonical_position_digits)
 
         # Projection is part of deterministic solver substeps, not a report-only cleanup pass.
@@ -176,7 +242,13 @@ def settle_reference_cloth(
         energy_history.append(_energy_proxy(positions, velocities))
 
     collision_events += _project_collisions(
-        positions, primitives, active_settings.collision_clearance_m
+        positions,
+        previous,
+        primitives,
+        active_settings.collision_clearance_m,
+        active_settings.friction_coefficient,
+        active_settings.restitution_coefficient,
+        dt,
     )
     positions = _canonicalize_positions(positions, canonical_position_digits)
     positions, self_collision_metrics = project_self_collisions(
@@ -185,6 +257,32 @@ def settle_reference_cloth(
         fixed_indices=fixed_support_indices,
         settings=self_collision_settings,
         excluded_vertex_pairs=self_collision_exclusions,
+    )
+    positions = _canonicalize_positions(positions, canonical_position_digits)
+    for _ in range(active_settings.solver_iterations * 2):
+        for constraint in structural_constraints:
+            _solve_distance(positions, inverse_masses, constraint, dt)
+        for support in supports:
+            _solve_support(positions, support)
+        _project_collisions(
+            positions,
+            previous,
+            primitives,
+            active_settings.collision_clearance_m,
+            active_settings.friction_coefficient,
+            active_settings.restitution_coefficient,
+            dt,
+        )
+        for constraint in stitch_constraints:
+            _solve_distance(positions, inverse_masses, constraint, dt)
+    collision_events += _project_collisions(
+        positions,
+        previous,
+        primitives,
+        active_settings.collision_clearance_m,
+        active_settings.friction_coefficient,
+        active_settings.restitution_coefficient,
+        dt,
     )
     positions = _canonicalize_positions(positions, canonical_position_digits)
     self_collision_corrections += int(self_collision_metrics.get("totalCorrectionCount", 0))
@@ -248,6 +346,9 @@ def simulate_reference_motion_state(
     constraints = _build_distance_constraints(
         settled_mesh, seam_constraints, flat.mesh_offsets, settings
     )
+    structural_constraints = [constraint for constraint in constraints if constraint.kind != "seam"]
+    stitch_constraints = [constraint for constraint in constraints if constraint.kind == "seam"]
+    inverse_masses = _particle_inverse_masses(settled_mesh, settings.surface_density_kg_m2)
     supports = _build_support_constraints(settled_mesh, flat.mesh_offsets, settings)
     primitives = list(avatar_contract.get("collisionPrimitives", []))
     triangles, _ = build_triangle_refs(settled_mesh)
@@ -262,6 +363,8 @@ def simulate_reference_motion_state(
     energy_history: list[float] = []
     dt = settings.time_step_seconds
     for step in range(settings.step_count):
+        for constraint in constraints:
+            constraint.lagrange_multiplier = 0.0
         for index, position in enumerate(positions):
             velocity = scale(sub(position, previous[index]), (1.0 - settings.damping_ratio) / dt)
             previous[index] = position
@@ -271,12 +374,22 @@ def simulate_reference_motion_state(
             positions[index] = add(position, scale(velocity, dt))
         positions = _canonicalize_positions(positions, canonical_position_digits)
         for _iteration in range(settings.solver_iterations):
-            for constraint in constraints:
-                _solve_distance(positions, constraint)
+            for constraint in structural_constraints:
+                _solve_distance(positions, inverse_masses, constraint, dt)
             for support in supports:
                 _solve_support(positions, support)
             positions = _canonicalize_positions(positions, canonical_position_digits)
-            _project_collisions(positions, primitives, settings.collision_clearance_m)
+            _project_collisions(
+                positions,
+                previous,
+                primitives,
+                settings.collision_clearance_m,
+                settings.friction_coefficient,
+                settings.restitution_coefficient,
+                dt,
+            )
+            for constraint in stitch_constraints:
+                _solve_distance(positions, inverse_masses, constraint, dt)
             positions = _canonicalize_positions(positions, canonical_position_digits)
         if step + 1 == settings.step_count:
             positions, collision = project_self_collisions(
@@ -333,6 +446,23 @@ def flatten_mesh(meshset: MeshSet) -> FlattenedMesh:
         offsets.append(len(positions))
         positions.extend(mesh.vertices)
     return FlattenedMesh(positions, offsets)
+
+
+def _particle_inverse_masses(meshset: MeshSet, surface_density_kg_m2: float) -> list[float]:
+    if not isfinite(surface_density_kg_m2) or surface_density_kg_m2 <= 0.0:
+        raise ValueError("surface_density_must_be_positive")
+    inverse_masses: list[float] = []
+    for mesh in meshset.meshes:
+        masses = [0.0 for _ in mesh.vertices]
+        for triangle in mesh.triangles:
+            area = _triangle_area2(mesh.vertices, triangle) * 0.5
+            contribution = surface_density_kg_m2 * area / 3.0
+            for vertex_index in triangle:
+                masses[vertex_index] += contribution
+        mean_mass = sum(masses) / max(1, len(masses))
+        minimum_mass = max(surface_density_kg_m2 * 1e-10, mean_mass * 0.1)
+        inverse_masses.extend(1.0 / max(minimum_mass, mass) for mass in masses)
+    return inverse_masses
 
 
 def replace_mesh_positions(meshset: MeshSet, positions: list[Vec3], offsets: list[int]) -> MeshSet:
@@ -396,13 +526,13 @@ def _build_distance_constraints(
                 seen_edges.add(edge)
                 a = offsets[mesh_index] + local_a
                 b = offsets[mesh_index] + local_b
-                kind, stiffness = _edge_material_constraint(mesh, local_a, local_b, settings)
+                kind, compliance = _edge_material_constraint(mesh, local_a, local_b, settings)
                 constraints.append(
                     DistanceConstraint(
                         a,
                         b,
                         _distance(mesh.vertices[local_a], mesh.vertices[local_b]),
-                        stiffness,
+                        compliance,
                         kind,
                         f"{mesh.panel_id}:{local_a}-{local_b}",
                     )
@@ -413,7 +543,11 @@ def _build_distance_constraints(
                     offsets[mesh_index] + a,
                     offsets[mesh_index] + b,
                     _distance(mesh.vertices[a], mesh.vertices[b]),
-                    settings.bend_stiffness,
+                    1.0
+                    / max(
+                        1e-9,
+                        settings.bend_stiffness_nm * max(0.05, settings.bend_stiffness),
+                    ),
                     "bend",
                     f"{mesh.panel_id}:{a}-{b}",
                 )
@@ -424,25 +558,44 @@ def _build_distance_constraints(
         span_b = seam_doc["spanB"]
         a = offsets[int(span_a["meshIndex"])] + int(span_a["vertexIndex"])
         b = offsets[int(span_b["meshIndex"])] + int(span_b["vertexIndex"])
+        a_next = offsets[int(span_a["meshIndex"])] + int(
+            span_a.get("nextVertexIndex", span_a["vertexIndex"])
+        )
+        b_next = offsets[int(span_b["meshIndex"])] + int(
+            span_b.get("nextVertexIndex", span_b["vertexIndex"])
+        )
+        a_weight = float(span_a.get("interpolationWeight", 0.0))
+        b_weight = float(span_b.get("interpolationWeight", 0.0))
         panel_a = str(span_a["panelId"])
         panel_b = str(span_b["panelId"])
         target_length = 0.0
         if "panel.neck_band" in {panel_a, panel_b}:
             mesh_a = meshset.meshes[int(span_a["meshIndex"])]
             mesh_b = meshset.meshes[int(span_b["meshIndex"])]
-            rest_distance = _distance(
+            point_a = _weighted_point(
                 mesh_a.vertices[int(span_a["vertexIndex"])],
-                mesh_b.vertices[int(span_b["vertexIndex"])],
+                mesh_a.vertices[int(span_a.get("nextVertexIndex", span_a["vertexIndex"]))],
+                a_weight,
             )
+            point_b = _weighted_point(
+                mesh_b.vertices[int(span_b["vertexIndex"])],
+                mesh_b.vertices[int(span_b.get("nextVertexIndex", span_b["vertexIndex"]))],
+                b_weight,
+            )
+            rest_distance = _distance(point_a, point_b)
             target_length = min(NECK_BAND_SEAM_TARGET_LENGTH_METERS, rest_distance * 0.50)
         constraints.append(
             DistanceConstraint(
                 a,
                 b,
                 target_length,
-                settings.seam_stiffness,
+                max(0.0, 1.0 - settings.seam_stiffness) * 1e-6,
                 "seam",
                 str(seam_doc["seamId"]),
+                a_next=a_next,
+                b_next=b_next,
+                a_weight=a_weight,
+                b_weight=b_weight,
             )
         )
     return constraints
@@ -459,12 +612,21 @@ def _edge_material_constraint(
     delta_v = abs(uv_b[1] - uv_a[1])
     largest = max(delta_u, delta_v)
     if largest <= 1e-12:
-        return "stretch", settings.stretch_stiffness
-    if min(delta_u, delta_v) / largest >= 0.22:
-        return "shear", settings.shear_stiffness
-    if delta_v > delta_u:
-        return "warp_stretch", settings.warp_stretch_stiffness
-    return "weft_stretch", settings.weft_stretch_stiffness
+        effective = settings.warp_stiffness_n_m * max(0.05, settings.stretch_stiffness)
+        return "stretch", 1.0 / max(1e-9, effective)
+    theta = radians(settings.warp_orientation_degrees)
+    warp_u, warp_v = -sin(theta), cos(theta)
+    edge_length = sqrt(delta_u * delta_u + delta_v * delta_v)
+    warp_alignment = abs((delta_u * warp_u + delta_v * warp_v) / edge_length)
+    weft_alignment = sqrt(max(0.0, 1.0 - warp_alignment * warp_alignment))
+    if min(warp_alignment, weft_alignment) >= 0.22:
+        effective = settings.shear_stiffness_n_m * max(0.05, settings.shear_stiffness)
+        return "shear", 1.0 / max(1e-9, effective)
+    if warp_alignment > weft_alignment:
+        effective = settings.warp_stiffness_n_m * max(0.05, settings.warp_stretch_stiffness)
+        return "warp_stretch", 1.0 / max(1e-9, effective)
+    effective = settings.weft_stiffness_n_m * max(0.05, settings.weft_stretch_stiffness)
+    return "weft_stretch", 1.0 / max(1e-9, effective)
 
 
 def _build_support_constraints(
@@ -472,8 +634,22 @@ def _build_support_constraints(
 ) -> list[SupportConstraint]:
     supports: list[SupportConstraint] = []
     for mesh_index, mesh in enumerate(meshset.meshes):
+        panel_top = max(vertex[1] for vertex in mesh.vertices)
+        lower_body_panel = any(
+            token in mesh.panel_id
+            for token in (
+                "simple_skirt",
+                "simple_trousers",
+                "dress.skirt",
+                "layered_asymmetric",
+            )
+        )
         for vertex_index, vertex in enumerate(mesh.vertices):
-            if mesh.panel_id == "panel.neck_band" or vertex[1] >= 1.345:
+            if (
+                mesh.panel_id == "panel.neck_band"
+                or vertex[1] >= 1.345
+                or (lower_body_panel and vertex[1] >= panel_top - 0.025)
+            ):
                 supports.append(
                     SupportConstraint(
                         offsets[mesh_index] + vertex_index,
@@ -485,17 +661,51 @@ def _build_support_constraints(
     return supports
 
 
-def _solve_distance(positions: list[Vec3], constraint: DistanceConstraint) -> None:
-    a = positions[constraint.a]
-    b = positions[constraint.b]
+def _solve_distance(
+    positions: list[Vec3],
+    inverse_masses: list[float],
+    constraint: DistanceConstraint,
+    time_step_seconds: float,
+) -> None:
+    a_next = constraint.a if constraint.a_next is None else constraint.a_next
+    b_next = constraint.b if constraint.b_next is None else constraint.b_next
+    a = _weighted_point(positions[constraint.a], positions[a_next], constraint.a_weight)
+    b = _weighted_point(positions[constraint.b], positions[b_next], constraint.b_weight)
     delta = sub(b, a)
     length = _length(delta)
     if length <= 1e-10:
         return
-    correction = (length - constraint.rest_length) * constraint.stiffness * 0.5
     direction = scale(delta, 1.0 / length)
-    positions[constraint.a] = add(a, scale(direction, correction))
-    positions[constraint.b] = add(b, scale(direction, -correction))
+    a_coefficients = (
+        (constraint.a, 1.0 - constraint.a_weight),
+        (a_next, constraint.a_weight),
+    )
+    b_coefficients = (
+        (constraint.b, 1.0 - constraint.b_weight),
+        (b_next, constraint.b_weight),
+    )
+    weighted_inverse_mass = sum(
+        inverse_masses[index] * coefficient * coefficient
+        for index, coefficient in (*a_coefficients, *b_coefficients)
+    )
+    alpha = constraint.compliance / (time_step_seconds * time_step_seconds)
+    denominator = weighted_inverse_mass + alpha
+    if denominator <= 1e-12:
+        return
+    delta_lambda = (
+        -(length - constraint.rest_length) - alpha * constraint.lagrange_multiplier
+    ) / denominator
+    constraint.lagrange_multiplier += delta_lambda
+    for index, coefficient in a_coefficients:
+        positions[index] = add(
+            positions[index],
+            scale(direction, -inverse_masses[index] * coefficient * delta_lambda),
+        )
+    for index, coefficient in b_coefficients:
+        positions[index] = add(
+            positions[index],
+            scale(direction, inverse_masses[index] * coefficient * delta_lambda),
+        )
 
 
 def _solve_support(positions: list[Vec3], support: SupportConstraint) -> None:
@@ -504,7 +714,13 @@ def _solve_support(positions: list[Vec3], support: SupportConstraint) -> None:
 
 
 def _project_collisions(
-    positions: list[Vec3], primitives: list[dict[str, Any]], clearance: float
+    positions: list[Vec3],
+    previous: list[Vec3],
+    primitives: list[dict[str, Any]],
+    clearance: float,
+    friction: float,
+    restitution: float,
+    time_step_seconds: float,
 ) -> int:
     events = 0
     for index, position in enumerate(positions):
@@ -512,6 +728,18 @@ def _project_collisions(
         for primitive in primitives:
             candidate, penetrated = _project_primitive(projected, primitive, clearance)
             if penetrated:
+                normal_delta = sub(candidate, projected)
+                normal_length = _length(normal_delta)
+                if normal_length > 1e-12:
+                    normal = scale(normal_delta, 1.0 / normal_length)
+                    velocity = scale(sub(projected, previous[index]), 1.0 / time_step_seconds)
+                    normal_speed = _dot(velocity, normal)
+                    normal_velocity = scale(normal, normal_speed)
+                    tangent_velocity = sub(velocity, normal_velocity)
+                    response = scale(tangent_velocity, max(0.0, 1.0 - friction))
+                    if normal_speed < 0.0:
+                        response = add(response, scale(normal, -normal_speed * restitution))
+                    previous[index] = sub(candidate, scale(response, time_step_seconds))
                 projected = candidate
                 events += 1
         positions[index] = projected
@@ -569,15 +797,12 @@ def _diagnostics(
 ) -> dict[str, Any]:
     flat_settled = flatten_mesh(settled_mesh)
     seam_residuals = [
-        abs(_distance(flat_settled.positions[c.a], flat_settled.positions[c.b]) - c.rest_length)
+        abs(_distance_constraint_length(flat_settled.positions, c) - c.rest_length)
         for c in constraints
         if c.kind == "seam"
     ]
     strains = [
-        abs(
-            _distance(flat_settled.positions[c.a], flat_settled.positions[c.b]) / c.rest_length
-            - 1.0
-        )
+        abs(_distance_constraint_length(flat_settled.positions, c) / c.rest_length - 1.0)
         for c in constraints
         if c.kind in {"stretch", "warp_stretch", "weft_stretch", "shear"} and c.rest_length > 1e-8
     ]
@@ -598,17 +823,6 @@ def _diagnostics(
     max_strain = max(strains, default=0.0)
     p95_strain = _percentile(strains, 0.95)
     mean_strain = sum(strains) / max(1, len(strains))
-    convergence = (
-        "converged"
-        if max_seam <= 0.12
-        and rms_seam <= 0.035
-        and max_penetration <= 0.012
-        and p95_strain <= 2.0
-        and mean_strain <= 2.0
-        and inverted == 0
-        and nonfinite == 0
-        else "failed"
-    )
     self_collision_analysis = analyze_self_collision(
         settled_mesh,
         settings=self_collision_settings,
@@ -616,11 +830,51 @@ def _diagnostics(
             seam_constraints, flatten_mesh(settled_mesh).mesh_offsets
         ),
     )
+    numerical_termination = "completed" if nonfinite == 0 and inverted == 0 else "failed"
+    constraint_convergence = (
+        "passed"
+        if max_seam <= MAX_SEAM_CRACK_METERS and rms_seam <= MAX_SEAM_CRACK_METERS * 0.5
+        else "failed"
+    )
+    collision_resolution = (
+        "passed"
+        if max_penetration <= MAX_BODY_PENETRATION_METERS
+        and self_collision_analysis.unresolved_contact_count == 0
+        else "failed"
+    )
+    strain_quality = (
+        "passed" if max_strain <= MAX_STRAIN and p95_strain <= MAX_P95_STRAIN else "failed"
+    )
+    energy_growth_ratio = (
+        energy_history[-1] / energy_history[0]
+        if energy_history and energy_history[0] > 1e-12
+        else 0.0
+    )
+    energy_decay = "passed" if energy_growth_ratio <= 1.25 else "failed"
+    physical_quality_accepted = (
+        all(
+            status == "passed"
+            for status in (
+                constraint_convergence,
+                collision_resolution,
+                strain_quality,
+                energy_decay,
+            )
+        )
+        and numerical_termination == "completed"
+    )
+    convergence = "converged" if physical_quality_accepted else "failed"
     return {
         "schemaVersion": 1,
         "solverVersion": SOLVER_VERSION,
         "backend": "deterministic_cpu_reference_xpbd",
         "convergenceState": convergence,
+        "numericalTermination": numerical_termination,
+        "constraintConvergence": constraint_convergence,
+        "collisionResolution": collision_resolution,
+        "strainQuality": strain_quality,
+        "energyDecay": energy_decay,
+        "physicalQualityAccepted": physical_quality_accepted,
         "settings": {
             "timeStepSeconds": settings.time_step_seconds,
             "stepCount": settings.step_count,
@@ -637,6 +891,16 @@ def _diagnostics(
             "supportStiffness": settings.support_stiffness,
             "selfCollisionThicknessMeters": settings.self_collision_thickness_meters,
             "selfCollisionClearanceMeters": settings.self_collision_clearance_meters,
+            "surfaceDensityKgM2": settings.surface_density_kg_m2,
+            "warpStiffnessNPerM": settings.warp_stiffness_n_m,
+            "weftStiffnessNPerM": settings.weft_stiffness_n_m,
+            "shearStiffnessNPerM": settings.shear_stiffness_n_m,
+            "bendStiffnessNm": settings.bend_stiffness_nm,
+            "frictionCoefficient": settings.friction_coefficient,
+            "restitutionCoefficient": settings.restitution_coefficient,
+            "warpOrientationDegrees": settings.warp_orientation_degrees,
+            "constraintProjection": "xpbd_compliance_with_per_substep_lagrange_accumulation",
+            "particleMassPolicy": "triangle_area_times_areal_density_lumped_one_third",
             "constraintOrder": (
                 "mesh_stretch_then_bend_then_seams_then_support_then_body_collision_then_"
                 "self_collision"
@@ -656,6 +920,7 @@ def _diagnostics(
         "maximumStrain": max_strain,
         "meanStrain": mean_strain,
         "p95Strain": p95_strain,
+        "energyGrowthRatio": _round(energy_growth_ratio),
         "energyHistory": energy_history,
         "selfCollision": {
             "available": True,
@@ -673,7 +938,7 @@ def _diagnostics(
             "solverSubstepConvergence": self_collision_convergence,
             "integratedIntoSolverSubsteps": True,
             "highVelocityTunnelling": "unsupported_high_velocity_tunnelling",
-            "acceptedForD0ReferenceSolver": self_collision_analysis.unresolved_contact_count == 0,
+            "acceptedForD0ReferenceSolver": collision_resolution == "passed",
             "acceptedForProductionGpuSolver": False,
         },
         "restTopologyHash": topology_hash(rest_mesh),
@@ -692,9 +957,12 @@ def _seam_residuals(
     for seam_doc in seam_constraints.get("constraints", []):
         span_a = seam_doc["spanA"]
         span_b = seam_doc["spanB"]
-        a = offsets[int(span_a["meshIndex"])] + int(span_a["vertexIndex"])
-        b = offsets[int(span_b["meshIndex"])] + int(span_b["vertexIndex"])
-        residuals.append(_distance(positions[a], positions[b]))
+        residuals.append(
+            _distance(
+                _span_position_from_flat(positions, offsets, span_a),
+                _span_position_from_flat(positions, offsets, span_b),
+            )
+        )
     return residuals
 
 
@@ -703,7 +971,7 @@ def _seam_warnings(
 ) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for seam_doc, residual in zip(seam_constraints.get("constraints", []), residuals, strict=False):
-        if residual > 0.12:
+        if residual > MAX_SEAM_CRACK_METERS:
             out.append(
                 {
                     "seamId": seam_doc["seamId"],
@@ -855,8 +1123,36 @@ def _distance(a: Vec3, b: Vec3) -> float:
     return _length(sub(a, b))
 
 
+def _weighted_point(left: Vec3, right: Vec3, weight: float) -> Vec3:
+    return add(scale(left, 1.0 - weight), scale(right, weight))
+
+
+def _distance_constraint_length(positions: list[Vec3], constraint: DistanceConstraint) -> float:
+    a_next = constraint.a if constraint.a_next is None else constraint.a_next
+    b_next = constraint.b if constraint.b_next is None else constraint.b_next
+    return _distance(
+        _weighted_point(positions[constraint.a], positions[a_next], constraint.a_weight),
+        _weighted_point(positions[constraint.b], positions[b_next], constraint.b_weight),
+    )
+
+
+def _span_position_from_flat(
+    positions: list[Vec3], offsets: list[int], span: dict[str, Any]
+) -> Vec3:
+    offset = offsets[int(span["meshIndex"])]
+    current = offset + int(span["vertexIndex"])
+    following = offset + int(span.get("nextVertexIndex", span["vertexIndex"]))
+    return _weighted_point(
+        positions[current], positions[following], float(span.get("interpolationWeight", 0.0))
+    )
+
+
 def _length(value: Vec3) -> float:
     return sqrt(sum(component * component for component in value))
+
+
+def _dot(left: Vec3, right: Vec3) -> float:
+    return sum(a * b for a, b in zip(left, right, strict=True))
 
 
 def _round(value: float) -> float:

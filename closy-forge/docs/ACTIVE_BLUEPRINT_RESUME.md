@@ -1,286 +1,78 @@
 # Active Blueprint Resume
 
-This is the recoverable checkpoint for continuous Closy master-blueprint execution. It records
-literal evidence only; green CI does not by itself promote a global blueprint gate.
+This checkpoint is subordinate to the machine-readable authorities
+`current_blueprint_status.json`, `blueprint_coverage.json`, and `pr_stack_manifest.json`.
+Green CI proves only the checks that ran; it does not promote a global blueprint phase.
 
-## Current State
+## Verified Base
 
-- Active checkpoint: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0`.
-- Branch: `codex/closy-forge-phases-10-14-runnable-foundations`, based on Phase 9 evidence head
-  `10a21e8` from draft PR #18.
-- Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
-  with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
-- Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
-- Substantive run `32980095316` passed Ubuntu job `98214343837` and Windows job `98214344137`;
-  both jobs passed format, lint, strict type check, 258 tests, 64 fresh schemas, deterministic
-  T-shirt and sleeveless package rebuilds, package diffs, validation/report and the non-canonical
-  binding benchmark.
-- Evidence-sync commit `bffe705785fee3d9d53c7c7cf6f4b5d29b17da45` passed the complete local
-  format, lint, strict type, schema, focused and 258-test gates. GitHub did not dispatch an Actions
-  suite for either evidence-only synchronization despite matching `closy-forge/**` paths.
-- Long-sleeved shared extraction `3741fe3` and substantive implementation `e4841b5` are draft PR
-  #11. The complete local gate passes 270 tests, 130 typed source files and 69 fresh schemas.
-- PR #11 run `32992270800` passed Ubuntu job `98252504831` and Windows job `98252505317`, including
-  270 collected tests per OS, schema freshness, both family rebuild/diff/validation paths and the binding
-  benchmark.
-- Simple-skirt implementation `80adff0e35375701dc43553dc8b810f924cfface` is draft PR #12.
-  The complete local gate passes 283 tests, 140 typed source files and 74 fresh schemas.
-- PR #12 run `32998002569` passed Ubuntu job `98272173605` and Windows job `98272174094`, including
-  283 collected tests per OS, schema freshness, all four family rebuild/diff/validation paths and the binding
-  benchmark.
-- Simple-trousers implementation `40fee8ed7106ba7435d40e488c67370d32cab6ee` is draft PR #13.
-  The complete local gate passes 295 tests, 150 typed source files and 79 fresh schemas.
-- PR #13 run `33007320698` passed Ubuntu job `98304336270` and Windows job `98304336105`, including
-  295 tests per OS, schema freshness, all five family rebuild/diff/validation paths and the binding
-  benchmark.
-- Simple-dress implementation `61c27c4eacfff92dee8d468119277a38e7759fc7` is draft PR #14.
-  The complete local gate passes 307 tests, 160 typed source files and 84 fresh schemas.
-- PR #14 run `33014572452` passed Ubuntu job `98329331210` and Windows job `98329331018`, including
-  307 tests per OS, schema freshness, all six family rebuild/diff/validation paths and the binding
-  benchmark.
-- Button-shirt implementation `943f0b5d06198c5a97c11cd1121e6244899569ea` is draft PR #15.
-  Local Ruff, strict mypy across 170 sources, 89 fresh schemas, the 18-test focused family/
-  package/corruption gate and all 322 collected tests pass.
-- PR #15 run `33020344545` passed Ubuntu job `98348931958` and Windows job `98348932103`,
-  including 322 tests per OS, schema freshness, all seven family rebuild/diff/validation paths and
-  the binding benchmark. Both jobs rebuilt the button-shirt package at digest
-  `4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91`.
-- Jacket/outerwear implementation `d79e1b8c725242e65389081a6b0b8c078fd41f9f` is draft PR #16.
-  Local Ruff, strict mypy across 180 sources, 94 fresh schemas, the 15-test focused family/
-  package/corruption gate and all 337 collected tests pass.
-- PR #16 run `33029602357` passed Ubuntu job `98378800026` and Windows job `98378800076`.
-  Each job passed 337 tests, rebuilt all predecessor families, and produced identical 41-file
-  jacket trees at digest
-  `2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a`.
-- Jacket evidence head `b01a9c13e31ced489adb3330d28dff74b903b256` passed final run
-  `33031422497` on Windows job `98384584086` and Ubuntu job `98384584245`.
-- The layered/asymmetric implementation builds and validates locally at digest
-  `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`.
-  Two 41-file package trees are byte-identical; focused unit, integration, CLI and corruption
-  checks pass and 99 schemas are fresh. Initial run `33037073231` passed Ubuntu but Windows hit
-  the former 30-minute job timeout after tests and schemas passed. Commit `f76d0eb` raises the
-  cumulative matrix limit to 60 minutes; its final run belongs in PR #17 rather than a recursive
-  evidence commit.
-- Phase 9 adds eight garment-only grammar productions, 24 synthetic samples, disjoint 8/8/8
-  splits, a project-authored correction record and a deterministic retrieval benchmark. The
-  baseline selects 24/24 authored targets, which is fixture correctness rather than learned
-  accuracy. Seven focused foundation/schema tests pass and 105 schemas are fresh.
-- Phase 9 implementation commit: `b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b`.
-- Phases 10-14 implementation `30ea629639cb34894511d49b1b965fc344adb4c3` adds five
-  separately versioned contracts and six schemas. Actual ZeroOne, GPU/device, private-user and
-  training tiers remain explicitly false; focused foundation/schema tests pass with 111 schemas.
-- Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
-  be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
+- Repository: `jake-the-jake/Closy`.
+- Integrity branch: `codex/closy-forge-evidence-topology-physics-integrity`.
+- Direct parent: draft PR #19, `codex/closy-forge-phases-10-14-runnable-foundations`.
+- Parent/base SHA: `e83e1e897c9539d246926f8148c5a9ac347982d1`.
+- `main`: `859d4ee9a8a3386e95ec8c29043aa9ecc246769a`.
+- Parent is 152 commits ahead and 0 behind `main`; its own layer is six commits and fifteen
+  changed files.
+- PR #19 exact-head Forge run `33040669088` passed Ubuntu job `98413292239` and Windows job
+  `98413292114`, each on Python 3.11. Supabase Preview was skipped and is not a Forge failure.
+- PRs #1-#19 are a direct linear draft stack. Every direct-parent merge base matches and every
+  layer is zero commits behind. PR #10 is the one documented exact-head Forge exception.
 
-## Phase 8 Family Verticals
+## Canonical Status
 
-### Sleeveless Top
+- Requirement rows before this integrity layer: 20 complete, 57 partial, 8 not started,
+  16 discovery pending, 101 total.
+- Phase 0 is complete. Phases 1-14 are partial.
+- C1 and C2 have scoped passing evidence. C3, Z1, Z2, and P1 remain partial.
+- Research prototype is partial. Alpha, Beta, and Production are not started.
+- The eight Phase 8 bundles are deterministic D0 fixture artifact bundles and family vertical
+  slices. They are not globally complete garment families.
+- Phase 10-14 artifacts at PR #19 are versioned contract-fixture foundations and runnable
+  report/schema fixtures. They are not actual ZeroOne execution, actual deformation compute,
+  production compression, physical-device proof, private-user fitting, or completed training.
 
-- `closy.garment_family_ontology.d0.v1` now includes `sleeveless_top` as a garment-specific top,
-  not a generic object or an empty-sleeve variant of the T-shirt.
-- The pattern has exactly two parametric panels, four seams and four semantic openings: neck,
-  hem, left armhole and right armhole. It contains no sleeve or cuff IDs.
-- The side/shoulder seam graph resolves with stable IDs and forward/reverse pairing. The assembled
-  simulation mesh contains 126 vertices and 124 triangles.
-- Pattern triangulation uses the shared family assembly module with an opt-in canonical coordinate
-  boundary. The established T-shirt caller remains byte-compatible.
+## Reproduced Integrity Defects
 
-### End-To-End Public Fixture
+- The pre-fix centroid fan emits outside-polygon triangles in all trousers panels: front left 3,
+  front right 3, back left 5, and back right 5.
+- Seam construction truncates unequal sampled spans to the shorter span.
+- The solver identifies itself as XPBD but performs stiffness-weighted PBD projection without
+  accumulated multipliers or compliance.
+- The current T-shirt package reports 226 self-collision contacts at settle analysis and the
+  authoritative correction report retains 205 unresolved contacts with maximum penetration
+  `0.002390163 m`.
+- The same settle reports generic `converged` despite maximum strain `6.58349836`.
+- Phase 9 has 24 samples whose template identities cross every split; category, panel count, and
+  opening count leak the target, and a generated correction fixture is mislabeled as human.
 
-- A bounded 25-candidate fit executes and accepts objective `0.00182` against authored synthetic
-  observations.
-- Four Phase 7 material presets execute the actual fixed-avatar CPU solver, authoritative dense
-  binding and independent direct-simulation fallback. The dense shell has 744 vertices and 496
-  triangles with 744 binding records.
-- Underarm/opening stress executes. Both armholes remain non-collapsed; left/right perimeter drift
-  is `0.02196083` / `0.00601637` metres and maximum dense seam crack is `0.00182106` metres.
-- Two independent raster generators produce decoded source/render evidence. Minimum silhouette IoU
-  is `0.274173294`, maximum normalised boundary Chamfer is `0.060037264`, and foreground colour MAE
-  is `0.0` for the bounded authored fixture.
-- Four decoded mobile-safe PBR PNG maps are persisted with source/generated provenance. This is not
-  measured fabric capture or private-user appearance evidence.
+## Active Implementation Sequence
 
-### Cross-Platform Determinism Repair
+1. Reconcile stack/status truth and replace brittle evidence-string tests with cross-document
+   invariants.
+2. Add marked, contained, atomic output replacement and bounded JPEG pixel decode.
+3. Shard CI while preserving all eight deterministic D0 fixture family builds on Ubuntu and
+   Windows, plus Python 3.12 determinism evidence.
+4. Replace centroid fans with deterministic concave-safe triangulation and full-span seam maps.
+5. Implement actual XPBD coupling, material applicability, lower-body/layer contacts, independent
+   rerender fidelity, and honest physical acceptance.
+6. Close only the exact scoped C3 CPU profile, train an identity-disjoint synthetic D0 model, and
+   integrate the pinned real ZeroOne static processor on child branches.
 
-- Initial runs `32960713589`, `32966595179`, `32975153944`, `32976930124` and `32978410880`
-  truthfully failed the Ubuntu hardcoded golden while Windows passed.
-- Diagnostic inventories isolated sub-ULP panel UV/centre coordinates and reference-avatar
-  normal/tangent generation as the only platform-sensitive canonical artifacts.
-- Canonical coordinates are now applied at the shared family assembly boundary and to the
-  sleeveless package's synthetic avatar copy before GLB frame generation. Solver positions and
-  non-physical energy-history diagnostics also have explicit canonical precision.
-- Python 3.11 and 3.13 local builds agree byte-for-byte, and the final Ubuntu/Windows run reports
-  the same digest `8b4809b5b6be0da3e7018ed6a5c85f29bb613cd1e2142de119132088ca8f0843`.
+## Preserved Local State
 
-### Long-Sleeved Top
+The original Closy checkout remains untouched with unrelated edits in `metro.config.js`,
+`src/features/avatar-export/components/avatar-preview-dev-screen.tsx`,
+`src/features/avatar-viewport/avatar-viewport-live.tsx`,
+`src/features/avatar-viewport/live-viewport-debug-types.ts`,
+`src/features/avatar-viewport/three.ts`, and untracked `closy-forge/.tmp/`.
 
-- Shared typed appearance, material-motion, package-writing and validation contracts replace
-  family pipeline cloning while preserving the exact sleeveless digest.
-- The literal pattern has front/back torso plus left/right long-sleeve panels, ten shoulder/side/
-  armhole/underarm seams and four neck/hem/cuff openings. Armholes are attachments, not openings.
-- A bounded 25-candidate fit accepts objective `0.00187`. Four material presets and cuff stress run
-  through the CPU solver, 1,248-record dense binding and independent simulation fallback.
-- Both cuffs remain non-collapsed; left/right drift is `0.00004436` / `0.0001024` metres and maximum
-  dense seam crack is `0.0048587` metres.
-- Minimum decoded silhouette IoU is `0.349652973`, maximum normalised boundary Chamfer is
-  `0.039093424`, and foreground colour MAE is `0.0`.
-- Python 3.11 and 3.13 produce byte-identical 41-file trees at digest
-  `35155eb1581219532b6784033358b97f7a6d743db70193f58a48662045674baf`.
+## Recovery
 
-### Simple Skirt
-
-- The literal bottom-family pattern has front/back panels, left/right side seams and semantic
-  waist/hem openings. It contains no top, sleeve, armhole or cuff semantics.
-- A bounded 25-candidate fit accepts objective `0.00122`. Four material presets and waist stress
-  execute through the CPU solver, 624-record authoritative dense binding and independent
-  106-vertex direct-simulation fallback.
-- The waist remains non-collapsed with drift `0.00834621` metres and maximum dense seam crack
-  `0.00409052` metres. Stress-solver convergence remains false and is not promoted.
-- Minimum decoded silhouette IoU is `0.208469055`, maximum normalised boundary Chamfer is
-  `0.064662624`, and foreground colour MAE is `0.0`.
-- Python 3.11 and 3.13 produce byte-identical 41-file trees with 37 inventory entries and 287,245
-  inventoried bytes at digest
-  `c5989b4b0d164aebd866fe98eaa9fed85477d73f23d55eead05e04a14a7ae2df`.
-
-### Simple Trousers
-
-- The literal bottom-family pattern has four front/back half-leg panels, paired outseams and
-  inseams, front/back rise seams, one waist opening and separate left/right cuff openings.
-- A bounded 25-candidate fit accepts objective `0.00138`. Four material presets and two-cuff stress
-  execute through the CPU solver, 1,092-record authoritative dense binding and independent
-  186-vertex direct-simulation fallback.
-- Both cuffs remain non-collapsed; left/right drift is `0.0014164` / `0.00258537` metres and maximum
-  dense seam crack is `0.00708721` metres. Stress-solver convergence remains false and is not
-  promoted.
-- Composite-panel source fixtures and independent raster output record minimum decoded silhouette
-  IoU `0.26662234`, maximum normalised boundary Chamfer `0.048480955`, and colour MAE `0.0`.
-- Python 3.11 and 3.13 produce byte-identical 41-file trees with 37 inventory entries and 410,405
-  inventoried bytes at digest
-  `4c023d82785791335d966fe81e64928fdbe646e47c7d60786c8666eed4e9a886`.
-
-### Simple Dress
-
-- The literal one-piece pattern has separate front/back bodices and skirts, eight shoulder/side/
-  waist seams, and semantic neck/hem/left-armhole/right-armhole openings. The waist is sewn rather
-  than falsely represented as an opening.
-- A bounded 25-candidate fit accepts objective `0.0012`. Four material presets and armhole stress
-  execute through the CPU solver, 1,134-record authoritative dense binding and independent
-  193-vertex direct-simulation fallback.
-- Both armholes remain non-collapsed; left/right drift is `0.00544586` / `0.00110252` metres and
-  maximum dense seam crack is `0.00736142` metres. Stress-solver convergence remains false and is
-  not promoted.
-- Composite bodice/skirt source fixtures and independent raster output record minimum decoded
-  silhouette IoU `0.50009176`, maximum normalised boundary Chamfer `0.029052881`, and colour MAE
-  `0.0`.
-- Python 3.11 and 3.13 produce byte-identical 41-file trees with 37 inventory entries and 412,888
-  inventoried bytes at digest
-  `e8b1a3c00d9276c9d95ee2525bf3e24c88a84ee4ab03a5f5472e73175663b00a`.
-
-### Button Shirt
-
-- The literal top-family pattern has split left/right fronts, one back and two sleeves. Ten physical
-  shoulder/side/armhole/underarm seams leave neck, hem, front placket and both cuffs open.
-- Six ordered closure stations pair buttons on the right placket with buttonholes on the left.
-  Closure records are semantic and openable but deliberately do not become solver constraints.
-- A bounded 25-candidate fit accepts objective `0.00156`. Four material presets execute and the
-  authored cues select `material.lightweight_woven_d0_v1` for the settled package state.
-- Both cuffs remain non-collapsed under opening stress; left/right drift is `0.00002032` /
-  `0.00007738` metres and maximum dense seam crack is `0.00247185` metres. Stress convergence is
-  false and is not promoted.
-- The authoritative dense path has 1,506 binding records; the independent fallback retains 256
-  simulation vertices. Decoded source/render comparison records minimum IoU `0.302626779`, maximum
-  normalised boundary Chamfer `0.054750816`, and colour MAE `0.0`.
-- Repeated local builds produce matching 41-file trees with 37 inventory entries, 495,639 bytes and
-  digest `4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91`.
-
-### Jacket/Outerwear
-
-- The literal outerwear pattern has split left/right fronts, one back, two long sleeves and
-  separate left/right internal facings. Twelve physical seams include two facing attachments.
-- Facing outer edges attach to the front panels while facing inner edges form the open-front
-  boundary. Torso/sleeves and internal facings carry explicit outer-shell collision order.
-- A bounded 25-candidate fit accepts objective `0.00156`. Four material presets execute and the
-  authored fixture selects `material.heavy_jersey_d0_v1`.
-- Both cuffs remain non-collapsed under opening stress; left/right drift is `0.00004389` /
-  `0.0011949` metres and maximum dense seam crack is `0.00788269` metres. Stress convergence is
-  false and is not promoted.
-- The authoritative dense path has 1,944 binding records; the independent fallback retains 331
-  simulation vertices. Decoded source/render comparison records minimum IoU `0.453862146`, maximum
-  normalised boundary Chamfer `0.032568771`, and colour MAE `0.0`.
-- Repeated local, Ubuntu and Windows builds produce matching 41-file trees with 37 inventory
-  entries, 583,414 bytes and digest
-  `2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a`.
-
-### Layered Asymmetric
-
-- Four non-empty panels form inner and outer front/back layers; each layer owns shoulder/side
-  seams plus neck/hem/left-armhole/right-armhole openings.
-- The inner cotton-jersey component has collision order `10`; the outer lightweight-woven
-  component has collision order `20`. Inter-layer collision is explicit, declared clearance is
-  `0.014 m`, and measured front rest clearance is `0.020 m`.
-- Outer front/back hems preserve a literal `0.090 m` asymmetric drop.
-- Bounded fit accepts objective `0.00182`; four material presets and a four-armhole stress state
-  execute. No armhole collapses and maximum dense seam crack is `0.0079439 m`.
-- The simulation mesh has 258 vertices / 254 triangles. The dense shell has 1,524 vertices /
-  1,016 triangles and 1,524 binding records; the independent fallback keeps 258 vertices.
-- Decoded source/render evidence records minimum IoU `0.394545455`, maximum normalised boundary
-  Chamfer `0.058526042`, and foreground colour MAE `0.0`.
-- Repeated local builds produce matching 41-file trees with 37 inventory entries, 478,681 bytes
-  and digest `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`.
-
-## Current Validation
-
-- Layered-focused unit, package, CLI, validator and corruption checks pass.
-- 99 schemas are freshly generated.
-- Focused family, package, CLI, validator and corruption suites pass.
-- The complete local Forge suite passes all 352 collected tests in `3183.11s`. PR #16 run
-  `33029602357` confirms its predecessor eight-family matrix on Ubuntu and Windows Python 3.11;
-  PR #17 carries final layered/asymmetric cross-platform evidence.
-- The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
-  inventoried bytes. Two builds have identical file trees and zero validator issues.
-- The existing T-shirt package remains byte-identical at 137 files with digest
-  `79c5a65deb347bbed23f41c30a926ae00aead7b641fe714d75cb403be8ed07a8`.
-- The long-sleeved package has 41 physical files, 37 inventory entries, 441,415 inventoried bytes
-  and zero validator issues on both local Python runtimes.
-- The simple-skirt package has 41 physical files, 37 inventory entries, 287,245 inventoried bytes
-  and zero validator issues on both local Python runtimes.
-- The simple-trousers package has 41 physical files, 37 inventory entries, 410,405 inventoried
-  bytes and zero validator issues on both local Python runtimes.
-- The simple-dress package has 41 physical files, 37 inventory entries, 412,888 inventoried bytes
-  and zero validator issues on both local Python runtimes.
-- The button-shirt package has 41 physical files, 37 inventory entries, 495,639 inventoried bytes
-  and zero validator issues in repeated local and cross-OS builds.
-- The jacket package has 41 physical files, 37 inventory entries, 583,414 inventoried bytes and
-  zero validator issues in repeated local and cross-OS builds.
-- The layered/asymmetric package has 41 physical files, 37 inventory entries, 478,681 inventoried
-  bytes and zero validator issues in repeated local builds.
-
-## Truthful Limits
-
-- The listed Phase 8 D0 family ladder is literal, including layered/asymmetric. Phase 8 remains
-  partial globally because button mechanics, private-user fit, production GPU/multilayer cloth,
-  continuous collision and product-calibrated visual acceptance remain absent.
-- Phase 7 and Stage Q remain partial globally. Authored preset execution is not measured real-fabric
-  calibration, learned inference, private-user estimation or production GPU cloth.
-- The new family uses a fixed synthetic avatar and CPU reference solver. Mobile/device performance,
-  provider/private/human tiers, continuous collision and ZeroOne execution remain not run.
-- The source/render comparison is a deterministic authored D0 fixture, not production-calibrated
-  visual fidelity or clean/canonical garment acceptance.
-- Main is visibly unprotected. This is a repository-governance warning, not permission to push or
-  merge to main.
-
-## Next Exact Command
-
-No further independent implementation item in this prompt is known to be runnable without an
-authorised ZeroOne runtime, physical mobile hardware, private/licensed avatar data, or training
-data/compute. After remote evidence is green, the exact external continuation begins with:
+Continue from the task-owned worktree:
 
 ```powershell
-cd E:\apps\Closy\closy-forge
-.\.venv\Scripts\python.exe -m closy_forge schemas check --schema-dir schemas/v1
+cd E:\apps\Closy-integrity\closy-forge
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_blueprint_coverage.py
 ```
 
-## Next Safe Action
-
-Acquire and inspect an authorised versioned ZeroOne executable contract, then run the Phase 10
-handoff against it without replacing the known-good fallback until output validation passes.
+Do not merge, retarget, force-push, or write to `main`.

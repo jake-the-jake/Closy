@@ -7,6 +7,10 @@ from typing import Any
 from closy_forge.geometry.mesh_model import MeshSet, finite_mesh, mesh_bounds
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
+from closy_forge.simulation.seam_mapping import (
+    span_dominant_global_index,
+    span_position,
+)
 
 GEOMETRY_VISUAL_SHELL_REVIEW_VERSION = (
     "closy.geometry_visual_shell_review."
@@ -487,11 +491,11 @@ def _stitch_graph_shell_counts(
             span_b = constraint.get("spanB")
             if not isinstance(span_a, dict) or not isinstance(span_b, dict):
                 continue
-            a_key = (int(span_a["meshIndex"]), int(span_a["vertexIndex"]))
-            b_key = (int(span_b["meshIndex"]), int(span_b["vertexIndex"]))
-            distance = _distance3(_vertex_at(meshset, a_key), _vertex_at(meshset, b_key))
+            a_global = span_dominant_global_index(span_a, offsets)
+            b_global = span_dominant_global_index(span_b, offsets)
+            distance = _distance3(span_position(meshset, span_a), span_position(meshset, span_b))
             if distance <= _STITCH_DISTANCE_THRESHOLD_METERS:
-                union.union(offsets[a_key[0]] + a_key[1], offsets[b_key[0]] + b_key[1])
+                union.union(a_global, b_global)
                 accepted_distances.append(distance)
             else:
                 rejected_distances.append(distance)
@@ -659,11 +663,6 @@ class _UnionFind:
 
     def component_count(self) -> int:
         return len({self.find(index) for index in range(len(self._parents))})
-
-
-def _vertex_at(meshset: MeshSet, key: tuple[int, int]) -> tuple[float, float, float]:
-    mesh_index, vertex_index = key
-    return meshset.meshes[mesh_index].vertices[vertex_index]
 
 
 def _distance3(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:

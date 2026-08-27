@@ -16,6 +16,7 @@ from closy_forge.simulation.reference_cloth_solver import (
     settle_reference_cloth,
     simulation_state_json,
 )
+from closy_forge.simulation.seam_mapping import span_position_flat
 
 MATERIAL_MOTION_SUITE_VERSION = "closy.material_motion_suite.d0.v1"
 
@@ -256,9 +257,12 @@ def _seam_residuals(meshset: MeshSet, constraints: dict[str, Any]) -> list[float
     for constraint in constraints.get("constraints", []):
         span_a = constraint["spanA"]
         span_b = constraint["spanB"]
-        a = offsets[int(span_a["meshIndex"])] + int(span_a["vertexIndex"])
-        b = offsets[int(span_b["meshIndex"])] + int(span_b["vertexIndex"])
-        residuals.append(_distance(positions[a], positions[b]))
+        residuals.append(
+            _distance(
+                span_position_flat(positions, offsets, span_a),
+                span_position_flat(positions, offsets, span_b),
+            )
+        )
     return residuals
 
 

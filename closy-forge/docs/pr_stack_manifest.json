@@ -1,0 +1,670 @@
+{
+  "capturePolicy": "read_only_github_and_local_git_snapshot",
+  "pullRequests": [
+    {
+      "baseBranch": "main",
+      "baseSha": "859d4ee9a8a3386e95ec8c29043aa9ecc246769a",
+      "branch": "codex/closy-forge-phase-0",
+      "changedFileCount": 181,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "32abaf64308c2a5da748b8e3c9c177568512b772",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97267909708",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97267909966",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32669470115"
+      },
+      "layerAhead": 63,
+      "layerBehind": 0,
+      "layerCommitCount": 63,
+      "mergeability": "MERGEABLE",
+      "number": 1,
+      "repository": "jake-the-jake/Closy",
+      "title": "Closy Forge garment-foundry foundations and validated proposal pipeline",
+      "url": "https://github.com/jake-the-jake/Closy/pull/1"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-0",
+      "baseSha": "32abaf64308c2a5da748b8e3c9c177568512b772",
+      "branch": "codex/closy-forge-phase-2-capture",
+      "changedFileCount": 38,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "f6051f9b8ae79e47d47fe1dee7c2cf8da2f1521e",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97407535366",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97407535566",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32719446390"
+      },
+      "layerAhead": 13,
+      "layerBehind": 0,
+      "layerCommitCount": 13,
+      "mergeability": "MERGEABLE",
+      "number": 2,
+      "repository": "jake-the-jake/Closy",
+      "title": "BP49-BP51 Phase-2 capture and multiview fusion",
+      "url": "https://github.com/jake-the-jake/Closy/pull/2"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-2-capture",
+      "baseSha": "f6051f9b8ae79e47d47fe1dee7c2cf8da2f1521e",
+      "branch": "codex/closy-forge-phase-3-fitting",
+      "changedFileCount": 15,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "bb496684f4ba9c41fdfe5c69bc272679aaecafac",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97438405296",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97438405597",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32729539416"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeability": "MERGEABLE",
+      "number": 3,
+      "repository": "jake-the-jake/Closy",
+      "title": "BP52 Phase-3 image-conditioned fitting",
+      "url": "https://github.com/jake-the-jake/Closy/pull/3"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-3-fitting",
+      "baseSha": "bb496684f4ba9c41fdfe5c69bc272679aaecafac",
+      "branch": "codex/closy-forge-phase-4-texture",
+      "changedFileCount": 18,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "93f2e6587cc4f5f3237aba669870648a01118a09",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97479333762",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97479333560",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32742283522"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeability": "MERGEABLE",
+      "number": 4,
+      "repository": "jake-the-jake/Closy",
+      "title": "BP53 Phase-4 source texture PBR recovery",
+      "url": "https://github.com/jake-the-jake/Closy/pull/4"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-4-texture",
+      "baseSha": "93f2e6587cc4f5f3237aba669870648a01118a09",
+      "branch": "codex/closy-forge-foundation-proof-closeout",
+      "changedFileCount": 17,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97762247917",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97762247732",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32835151202"
+      },
+      "layerAhead": 26,
+      "layerBehind": 0,
+      "layerCommitCount": 26,
+      "mergeability": "MERGEABLE",
+      "number": 5,
+      "repository": "jake-the-jake/Closy",
+      "title": "BP46 foundation topology audit closeout",
+      "url": "https://github.com/jake-the-jake/Closy/pull/5"
+    },
+    {
+      "baseBranch": "codex/closy-forge-foundation-proof-closeout",
+      "baseSha": "756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a",
+      "branch": "codex/closy-forge-phase-5-provider",
+      "changedFileCount": 22,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "97bf23ccff13e806132b732534d131d80b146467",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97803514100",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97803513678",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32848455025"
+      },
+      "layerAhead": 2,
+      "layerBehind": 0,
+      "layerCommitCount": 2,
+      "mergeability": "MERGEABLE",
+      "number": 6,
+      "repository": "jake-the-jake/Closy",
+      "title": "Phase 5 provider contract bake-off",
+      "url": "https://github.com/jake-the-jake/Closy/pull/6"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-5-provider",
+      "baseSha": "97bf23ccff13e806132b732534d131d80b146467",
+      "branch": "codex/closy-forge-phase-6-binding",
+      "changedFileCount": 33,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "a8d6500639e1aa662ef95c10754c618f12f42e10",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98011304345",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98011304509",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32913193640"
+      },
+      "layerAhead": 4,
+      "layerBehind": 0,
+      "layerCommitCount": 4,
+      "mergeability": "MERGEABLE",
+      "number": 7,
+      "repository": "jake-the-jake/Closy",
+      "title": "Add scoped Phase 6 binding C3 evidence",
+      "url": "https://github.com/jake-the-jake/Closy/pull/7"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-6-binding",
+      "baseSha": "a8d6500639e1aa662ef95c10754c618f12f42e10",
+      "branch": "codex/closy-forge-d0-fidelity-closeout",
+      "changedFileCount": 35,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "91b9ececae3097a42cba45cad90fa81b1ef31d6a",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98079634048",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98079633929",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32936865331"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeability": "MERGEABLE",
+      "number": 8,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge: close D0 fitting, bitmap and source-render fidelity",
+      "url": "https://github.com/jake-the-jake/Closy/pull/8"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-fidelity-closeout",
+      "baseSha": "91b9ececae3097a42cba45cad90fa81b1ef31d6a",
+      "branch": "codex/closy-forge-phase-7-material-physics",
+      "changedFileCount": 24,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98118989676",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98118989530",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32949980632"
+      },
+      "layerAhead": 2,
+      "layerBehind": 0,
+      "layerCommitCount": 2,
+      "mergeability": "MERGEABLE",
+      "number": 9,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 7: material physics D0 slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/9"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-7-material-physics",
+      "baseSha": "7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df",
+      "branch": "codex/closy-forge-phase-8-sleeveless-top",
+      "changedFileCount": 40,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "fe884fdedf3c0cc6a8db9b210cd83f4d631362a3",
+      "knownException": {
+        "code": "missing_exact_head_forge_run",
+        "descendantEvidenceIsExactHead": false,
+        "descendantPr": 11,
+        "headSha": "fe884fdedf3c0cc6a8db9b210cd83f4d631362a3",
+        "predecessorRunId": "32980095316",
+        "predecessorSha": "d49227b3e13ba269dfa33b65c7221a54838631d5"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 8,
+      "layerBehind": 0,
+      "layerCommitCount": 8,
+      "mergeability": "MERGEABLE",
+      "number": 10,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: add sleeveless-top vertical slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/10"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-sleeveless-top",
+      "baseSha": "fe884fdedf3c0cc6a8db9b210cd83f4d631362a3",
+      "branch": "codex/closy-forge-phase-8-long-sleeved-top",
+      "changedFileCount": 44,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "5fed0c17d9abc1e72c36df65f60143bd44490d1b",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98262689213",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98262689507",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32995270988"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeability": "MERGEABLE",
+      "number": 11,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: add long-sleeved-top vertical slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/11"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-long-sleeved-top",
+      "baseSha": "5fed0c17d9abc1e72c36df65f60143bd44490d1b",
+      "branch": "codex/closy-forge-phase-8-simple-skirt",
+      "changedFileCount": 34,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "ef2823c5f5838e640b76e338d58f2976706e5c4b",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98285605379",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98285605597",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33001894508"
+      },
+      "layerAhead": 2,
+      "layerBehind": 0,
+      "layerCommitCount": 2,
+      "mergeability": "MERGEABLE",
+      "number": 12,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: add simple-skirt vertical slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/12"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-simple-skirt",
+      "baseSha": "ef2823c5f5838e640b76e338d58f2976706e5c4b",
+      "branch": "codex/closy-forge-phase-8-simple-trousers",
+      "changedFileCount": 36,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "9d3d8cf3af23d0d2c922743fdb85af1a5f9669da",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98312632115",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98312631776",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33009745594"
+      },
+      "layerAhead": 2,
+      "layerBehind": 0,
+      "layerCommitCount": 2,
+      "mergeability": "MERGEABLE",
+      "number": 13,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: add simple-trousers vertical slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/13"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-simple-trousers",
+      "baseSha": "9d3d8cf3af23d0d2c922743fdb85af1a5f9669da",
+      "branch": "codex/closy-forge-phase-8-simple-dress",
+      "changedFileCount": 36,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "bc16e6e72a462d43c46aa31147909990a50e41b0",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98336131207",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98336130965",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33016544200"
+      },
+      "layerAhead": 2,
+      "layerBehind": 0,
+      "layerCommitCount": 2,
+      "mergeability": "MERGEABLE",
+      "number": 14,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: simple-dress vertical slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/14"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-simple-dress",
+      "baseSha": "bc16e6e72a462d43c46aa31147909990a50e41b0",
+      "branch": "codex/closy-forge-phase-8-shirt-openings",
+      "changedFileCount": 38,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "f55b2a50080b28c55c28ce7c18474920b19cf3f3",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98358336907",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98358336680",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33023202931"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeability": "MERGEABLE",
+      "number": 15,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: literal button-shirt D0 slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/15"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-shirt-openings",
+      "baseSha": "f55b2a50080b28c55c28ce7c18474920b19cf3f3",
+      "branch": "codex/closy-forge-phase-8-jacket-outerwear",
+      "changedFileCount": 35,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "b01a9c13e31ced489adb3330d28dff74b903b256",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98384584245",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98384584086",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33031422497"
+      },
+      "layerAhead": 2,
+      "layerBehind": 0,
+      "layerCommitCount": 2,
+      "mergeability": "MERGEABLE",
+      "number": 16,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: jacket/outerwear D0 vertical slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/16"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-jacket-outerwear",
+      "baseSha": "b01a9c13e31ced489adb3330d28dff74b903b256",
+      "branch": "codex/closy-forge-phase-8-layered-unusual",
+      "changedFileCount": 34,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "f76d0eb40854813e1242acb67ff7651971a61288",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407750569",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407750772",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33038891483"
+      },
+      "layerAhead": 2,
+      "layerBehind": 0,
+      "layerCommitCount": 2,
+      "mergeability": "MERGEABLE",
+      "number": 17,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 8: layered asymmetric vertical slice",
+      "url": "https://github.com/jake-the-jake/Closy/pull/17"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-8-layered-unusual",
+      "baseSha": "f76d0eb40854813e1242acb67ff7651971a61288",
+      "branch": "codex/closy-forge-phase-9-structured-pattern-foundation",
+      "changedFileCount": 15,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "eb1e64a8ea294f0099e0021e65191b50d69aaa75",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407819540",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407819337",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33038914219"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeability": "MERGEABLE",
+      "number": 18,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 9: structured pattern foundation",
+      "url": "https://github.com/jake-the-jake/Closy/pull/18"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-9-structured-pattern-foundation",
+      "baseSha": "eb1e64a8ea294f0099e0021e65191b50d69aaa75",
+      "branch": "codex/closy-forge-phases-10-14-runnable-foundations",
+      "changedFileCount": 15,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "e83e1e897c9539d246926f8148c5a9ac347982d1",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98413292239",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98413292114",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33040669088"
+      },
+      "layerAhead": 6,
+      "layerBehind": 0,
+      "layerCommitCount": 6,
+      "mergeability": "MERGEABLE",
+      "number": 19,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phases 10-14: runnable foundations",
+      "url": "https://github.com/jake-the-jake/Closy/pull/19"
+    }
+  ],
+  "repository": "jake-the-jake/Closy",
+  "schemaVersion": 1,
+  "sequentialMergeOrder": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "sequentialMergeRehearsal": {
+    "mode": "read_only_direct_parent_merge_base_verification",
+    "passed": true
+  }
+}

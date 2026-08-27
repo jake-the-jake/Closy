@@ -7,6 +7,8 @@ from typing import Any
 from closy_forge.binding.binary_format import read_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices, reconstruction_error
 from closy_forge.geometry.glb_io import audit_glb, read_glb_meshset
+from closy_forge.inspection.cpu_raster import rasterize_settled_garment
+from closy_forge.inspection.source_render_fidelity import compare_decoded_source_and_render
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file, topology_hash
 from closy_forge.package_io.writer import (
@@ -14,7 +16,7 @@ from closy_forge.package_io.writer import (
     canonical_package_digest,
     collect_inventory,
 )
-from closy_forge.raster import decode_png_rgba
+from closy_forge.raster import DecodedPng, decode_png_rgba
 from closy_forge.simulation.material_physics import (
     FabricDescriptorError,
     validate_fabric_descriptor,
@@ -152,34 +154,77 @@ def validate_appearance(
     acceptance_key: str,
     family_code: str,
 ) -> None:
-    paths = [
-        "source/public_fixture/front.png",
-        "source/public_fixture/back.png",
-        "reports/fidelity/rendered_front.png",
-        "reports/fidelity/rendered_back.png",
+    atlas_paths = [
         "textures/atlas/base_color.png",
         "textures/atlas/normal.png",
         "textures/atlas/roughness.png",
         "textures/atlas/occlusion.png",
     ]
     try:
-        decoded = [decode_png_rgba((package_dir / path).read_bytes()) for path in paths]
-        if any(item.width <= 0 or item.height <= 0 or not any(item.rgba[3::4]) for item in decoded):
+        decoded_atlases = [
+            decode_png_rgba((package_dir / path).read_bytes()) for path in atlas_paths
+        ]
+        if any(
+            item.width <= 0 or item.height <= 0 or not any(item.rgba[3::4])
+            for item in decoded_atlases
+        ):
             raise ValueError("blank_or_invalid_decoded_png")
+        simulation = read_glb_meshset(package_dir / "simulation/simulation_mesh.glb")
+        views = fidelity.get("viewComparisons", [])
+        if not isinstance(views, list) or len(views) < 2:
+            raise ValueError("decoded_appearance_view_set_invalid")
+        accepted_records = []
+        for view in views:
+            if not isinstance(view, dict):
+                raise ValueError("decoded_appearance_view_invalid")
+            source_path = str(view.get("sourcePath", ""))
+            render_path = str(view.get("renderPath", ""))
+            source = decode_png_rgba((package_dir / source_path).read_bytes())
+            persisted = decode_png_rgba((package_dir / render_path).read_bytes())
+            if sha256_file(package_dir / source_path) != view.get("sourceSha256"):
+                raise ValueError("decoded_appearance_source_hash_mismatch")
+            if sha256_file(package_dir / render_path) != view.get("renderSha256"):
+                raise ValueError("decoded_appearance_render_hash_mismatch")
+            label = str(view.get("label", "front"))
+            rerendered = rasterize_settled_garment(
+                simulation,
+                label=label,
+                width=source.width,
+                height=source.height,
+                camera=view.get("camera", {}),
+                texture_sampler=_atlas_sampler(decoded_atlases[0]),
+            )
+            if rerendered.rgba != persisted.rgba:
+                raise ValueError("decoded_appearance_independent_rerender_mismatch")
+            metrics = compare_decoded_source_and_render(source, persisted)
+            if canonical_dumps(metrics) != canonical_dumps(view.get("metrics", {})):
+                raise ValueError("decoded_appearance_metrics_recompute_mismatch")
+            accepted = (
+                int(metrics["sourceForegroundPixels"]) > 0
+                and int(metrics["renderForegroundPixels"]) > 0
+                and float(metrics["silhouetteIoU"]) >= 0.20
+            )
+            if view.get("accepted") is not accepted:
+                raise ValueError("decoded_appearance_acceptance_mismatch")
+            accepted_records.append(accepted)
+        expected_acceptance = all(accepted_records)
         if (
             fidelity.get("decodedPixelComparisonRun") is not True
-            or fidelity.get(acceptance_key) is not True
-            or len(fidelity.get("viewComparisons", [])) != 2
-            or not all(
-                view.get("accepted") is True
-                and int(view.get("metrics", {}).get("sourceForegroundPixels", 0)) > 0
-                and int(view.get("metrics", {}).get("renderForegroundPixels", 0)) > 0
-                for view in fidelity.get("viewComparisons", [])
-            )
+            or fidelity.get(acceptance_key) is not expected_acceptance
             or texture.get("decodedPbrMapsPersisted") is not True
             or len(texture.get("maps", [])) != 4
         ):
             raise ValueError("decoded_appearance_evidence_not_accepted")
+        if not expected_acceptance:
+            issues.append(
+                issue(
+                    f"{family_code}_fidelity_partial",
+                    "warning",
+                    "reports/fidelity/source_render_fidelity.json",
+                    "Independent source/render comparison ran but remained below its D0 threshold.",
+                    family_code,
+                )
+            )
     except Exception as exc:
         issues.append(
             issue(
@@ -190,6 +235,16 @@ def validate_appearance(
                 family_code,
             )
         )
+
+
+def _atlas_sampler(atlas: DecodedPng) -> Any:
+    def sample(_panel_id: str, uv: tuple[float, float]) -> tuple[int, int, int, int]:
+        x = min(atlas.width - 1, max(0, int(max(0.0, min(1.0, uv[0])) * atlas.width)))
+        y = min(atlas.height - 1, max(0, int(max(0.0, min(1.0, uv[1])) * atlas.height)))
+        offset = (y * atlas.width + x) * 4
+        return tuple(atlas.rgba[offset : offset + 4])  # type: ignore[return-value]
+
+    return sample
 
 
 def validate_inventory(

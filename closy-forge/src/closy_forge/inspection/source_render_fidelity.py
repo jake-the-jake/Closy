@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from closy_forge.appearance.bitmap_atlas import BITMAP_PATHS
+from closy_forge.geometry.glb_io import read_glb_meshset
 from closy_forge.geometry.mesh_model import MeshSet
 from closy_forge.inspection.cpu_raster import rasterize_settled_garment
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
@@ -19,7 +20,7 @@ from closy_forge.visual_understanding.raster_parser import (
     TORSO_RGBA,
 )
 
-SOURCE_RENDER_FIDELITY_VERSION = "closy.source_render_fidelity.decoded_cpu_raster.d0_v1"
+SOURCE_RENDER_FIDELITY_VERSION = "closy.source_render_fidelity.independent_rerender.d0_v2"
 
 _THRESHOLDS = {
     "minimumSilhouetteIoU": 0.30,
@@ -41,6 +42,8 @@ def write_source_render_fidelity_artifacts(
     visual_observations: Mapping[str, Any],
     settled_mesh: MeshSet,
 ) -> dict[str, Any]:
+    canonical_mesh_path = package_dir / "simulation" / "simulation_mesh.glb"
+    canonical_mesh = read_glb_meshset(canonical_mesh_path)
     atlas = decode_png_rgba((package_dir / BITMAP_PATHS["baseColor"]).read_bytes())
     contribution = decode_png_rgba((package_dir / BITMAP_PATHS["sourceContribution"]).read_bytes())
     view_records: list[dict[str, Any]] = []
@@ -49,7 +52,7 @@ def write_source_render_fidelity_artifacts(
         source_path = f"source/public_fixture/{_safe_label(label)}.png"
         source = decode_png_rgba((package_dir / source_path).read_bytes())
         rendered = rasterize_settled_garment(
-            settled_mesh,
+            canonical_mesh,
             label=label,
             width=source.width,
             height=source.height,
@@ -57,7 +60,7 @@ def write_source_render_fidelity_artifacts(
             texture_sampler=_atlas_sampler(atlas, label),
         )
         rendered_contribution = rasterize_settled_garment(
-            settled_mesh,
+            canonical_mesh,
             label=label,
             width=source.width,
             height=source.height,
@@ -122,10 +125,15 @@ def write_source_render_fidelity_artifacts(
         },
         "sourceSettledMesh": {
             "path": "simulation/simulation_mesh.glb",
-            "contentHash": geometry_content_hash(settled_mesh),
+            "contentHash": geometry_content_hash(canonical_mesh),
+            "buildMemoryContentHash": geometry_content_hash(settled_mesh),
             "fittedParametersPath": "fitting/tshirt_fit.json",
             "baseColorAtlasPath": BITMAP_PATHS["baseColor"],
+            "baseColorAtlasSha256": sha256_file(package_dir / BITMAP_PATHS["baseColor"]),
             "sourceContributionPath": BITMAP_PATHS["sourceContribution"],
+            "sourceContributionSha256": sha256_file(
+                package_dir / BITMAP_PATHS["sourceContribution"]
+            ),
         },
         "viewComparisons": view_records,
         "aggregate": aggregate,
@@ -202,6 +210,24 @@ def validate_persisted_source_render_fidelity(
         "sourceRenderFidelityHash"
     ):
         raise ValueError("source_render_fidelity_hash_mismatch")
+    source_mesh = _mapping(report.get("sourceSettledMesh"))
+    mesh_path = str(source_mesh.get("path", ""))
+    atlas_path = str(source_mesh.get("baseColorAtlasPath", ""))
+    atlas_contribution_path = str(source_mesh.get("sourceContributionPath", ""))
+    if not mesh_path or not atlas_path or not atlas_contribution_path:
+        raise ValueError("source_render_rerender_inputs_missing")
+    settled_mesh = read_glb_meshset(package_dir / mesh_path)
+    if geometry_content_hash(settled_mesh) != source_mesh.get("contentHash"):
+        raise ValueError("source_render_mesh_content_mismatch")
+    if sha256_file(package_dir / atlas_path) != source_mesh.get("baseColorAtlasSha256"):
+        raise ValueError("source_render_atlas_hash_mismatch")
+    if sha256_file(package_dir / atlas_contribution_path) != source_mesh.get(
+        "sourceContributionSha256"
+    ):
+        raise ValueError("source_render_contribution_atlas_hash_mismatch")
+    atlas = decode_png_rgba((package_dir / atlas_path).read_bytes())
+    atlas_contribution = decode_png_rgba((package_dir / atlas_contribution_path).read_bytes())
+
     recomputed_records = []
     threshold_results: list[bool] = []
     for record in report.get("viewComparisons", []):
@@ -219,6 +245,34 @@ def validate_persisted_source_render_fidelity(
         source = decode_png_rgba((package_dir / source_path).read_bytes())
         rendered = decode_png_rgba((package_dir / render_path).read_bytes())
         contribution = decode_png_rgba((package_dir / contribution_path).read_bytes())
+        label = str(record.get("label", "front"))
+        camera = _mapping(record.get("camera"))
+        rerendered = rasterize_settled_garment(
+            settled_mesh,
+            label=label,
+            width=source.width,
+            height=source.height,
+            camera=camera,
+            texture_sampler=_atlas_sampler(atlas, label),
+        )
+        rerendered_contribution = rasterize_settled_garment(
+            settled_mesh,
+            label=label,
+            width=source.width,
+            height=source.height,
+            camera=camera,
+            texture_sampler=_atlas_sampler(atlas_contribution, label),
+        )
+        if rerendered.rgba != rendered.rgba:
+            raise ValueError("source_render_independent_rerender_mismatch")
+        if rerendered_contribution.rgba != contribution.rgba:
+            raise ValueError("source_render_independent_contribution_rerender_mismatch")
+        if canonical_dumps(rerendered.camera) != canonical_dumps(camera):
+            raise ValueError("source_render_camera_recompute_mismatch")
+        if rerendered.rendered_triangle_count != record.get("renderedTriangleCount"):
+            raise ValueError("source_render_triangle_count_mismatch")
+        if len(rerendered.foreground) != record.get("renderedForegroundPixels"):
+            raise ValueError("source_render_foreground_count_mismatch")
         metrics = compare_decoded_source_and_render(source, rendered, contribution=contribution)
         if canonical_dumps(metrics) != canonical_dumps(record.get("metrics", {})):
             raise ValueError("source_render_metrics_recompute_mismatch")

@@ -17,12 +17,12 @@ from closy_forge.package_io.writer import (
     canonical_package_digest,
     collect_inventory,
 )
-from closy_forge.raster import decode_png_rgba
 from closy_forge.simulation.material_physics import (
     FabricDescriptorError,
     validate_fabric_descriptor,
 )
 from closy_forge.validation.issues import Severity, ValidationIssue
+from closy_forge.validation.vertical_slice_validator import validate_appearance
 
 EXPECTED_FILES = {
     "manifest.json",
@@ -228,7 +228,9 @@ def _validate_pattern_semantics(
         or layering.get("layerCount") != 2
         or layering.get("orderedLayerIds")
         != ["layer.layered_asymmetric.inner", "layer.layered_asymmetric.outer"]
-        or layering.get("interLayerCollisionEnabled") is not True
+        or layering.get("interLayerCollisionEnabled") is not False
+        or layering.get("interLayerCollisionStatus")
+        != "declared_order_not_yet_consumed_by_reference_solver"
         or float(layering.get("minimumClearanceMeters", 0.0)) < 0.008
         or set(component_by_id) != COMPONENT_IDS
         or component_by_id.get("component.layered_asymmetric.base_layer", {}).get("collisionOrder")
@@ -479,43 +481,14 @@ def _validate_appearance(
     texture: dict[str, Any],
     issues: list[ValidationIssue],
 ) -> None:
-    paths = [
-        "source/public_fixture/front.png",
-        "source/public_fixture/back.png",
-        "reports/fidelity/rendered_front.png",
-        "reports/fidelity/rendered_back.png",
-        "textures/atlas/base_color.png",
-        "textures/atlas/normal.png",
-        "textures/atlas/roughness.png",
-        "textures/atlas/occlusion.png",
-    ]
-    try:
-        decoded = [decode_png_rgba((package_dir / path).read_bytes()) for path in paths]
-        if any(item.width <= 0 or item.height <= 0 or not any(item.rgba[3::4]) for item in decoded):
-            raise ValueError("blank_or_invalid_decoded_png")
-        if (
-            fidelity.get("decodedPixelComparisonRun") is not True
-            or fidelity.get("acceptedForD0LayeredAsymmetricFixture") is not True
-            or len(fidelity.get("viewComparisons", [])) != 2
-            or not all(
-                view.get("accepted") is True
-                and int(view.get("metrics", {}).get("sourceForegroundPixels", 0)) > 0
-                and int(view.get("metrics", {}).get("renderForegroundPixels", 0)) > 0
-                for view in fidelity.get("viewComparisons", [])
-            )
-            or texture.get("decodedPbrMapsPersisted") is not True
-            or len(texture.get("maps", [])) != 4
-        ):
-            raise ValueError("decoded_appearance_evidence_not_accepted")
-    except Exception as exc:
-        issues.append(
-            _issue(
-                "layered_asymmetric_appearance_validation_failed",
-                "fatal",
-                "reports/fidelity/source_render_fidelity.json",
-                str(exc),
-            )
-        )
+    validate_appearance(
+        package_dir,
+        fidelity,
+        texture,
+        issues,
+        acceptance_key="acceptedForD0LayeredAsymmetricFixture",
+        family_code="layered_asymmetric",
+    )
 
 
 def _validate_quality(
@@ -527,10 +500,11 @@ def _validate_quality(
     readiness = quality.get("readiness", {})
     layering = quality.get("layering", {})
     if (
-        readiness.get("layeredAsymmetricD0Complete") is not True
-        or readiness.get("phase8FamilyLadderComplete") is not True
+        readiness.get("layeredAsymmetricD0Complete") is not False
+        or readiness.get("phase8FamilyLadderComplete") is not False
+        or readiness.get("phase8FamilyLadderSource") != "validated_family_index_not_yet_generated"
         or readiness.get("phase8GloballyComplete") is not False
-        or readiness.get("nextBlueprintPhase") != "phase9_editor_export_regression"
+        or readiness.get("nextBlueprintPhase") != "phase8_integrity_closeout"
         or quality.get("topology", {}).get("hasSleeveOrCuffSemantics") is not False
         or quality.get("topology", {}).get("panelCount") != 4
         or quality.get("topology", {}).get("seamCount") != 8
@@ -538,13 +512,14 @@ def _validate_quality(
         or layering.get("layerCount") != 2
         or layering.get("innerPanelCount") != 2
         or layering.get("outerPanelCount") != 2
-        or layering.get("interLayerCollisionEnabled") is not True
+        or layering.get("interLayerCollisionEnabled") is not False
+        or layering.get("interLayerCollisionStatus") != "not_executed_reference_solver"
         or layering.get("orderedCollisionLayers") != [10, 20]
         or float(layering.get("restFrontClearanceMeters", 0.0))
         < float(pattern.get("parameters", {}).get("layer_clearance_meters", 1.0))
         or layering.get("outerAsymmetricHemDropMeters")
         != pattern.get("parameters", {}).get("outer_asymmetry_drop_meters")
-        or semantic.get("layering", {}).get("interLayerCollisionEnabled") is not True
+        or semantic.get("layering", {}).get("interLayerCollisionEnabled") is not False
     ):
         issues.append(
             _issue(

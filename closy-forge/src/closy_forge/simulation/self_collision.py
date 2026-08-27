@@ -785,11 +785,21 @@ def seam_exclusion_pairs(
         span_a = constraint.get("spanA", {})
         span_b = constraint.get("spanB", {})
         try:
-            a = mesh_offsets[int(span_a["meshIndex"])] + int(span_a["vertexIndex"])
-            b = mesh_offsets[int(span_b["meshIndex"])] + int(span_b["vertexIndex"])
+            offset_a = mesh_offsets[int(span_a["meshIndex"])]
+            offset_b = mesh_offsets[int(span_b["meshIndex"])]
+            vertices_a = {
+                offset_a + int(span_a["vertexIndex"]),
+                offset_a + int(span_a.get("nextVertexIndex", span_a["vertexIndex"])),
+            }
+            vertices_b = {
+                offset_b + int(span_b["vertexIndex"]),
+                offset_b + int(span_b.get("nextVertexIndex", span_b["vertexIndex"])),
+            }
         except (KeyError, IndexError, TypeError, ValueError):
             continue
-        pairs.add((min(a, b), max(a, b)))
+        for a in vertices_a:
+            for b in vertices_b:
+                pairs.add((min(a, b), max(a, b)))
     return pairs
 
 

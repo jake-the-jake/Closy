@@ -8,6 +8,12 @@ from typing import Any
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, cross, finite_mesh, mesh_bounds, sub
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
+from closy_forge.simulation.seam_mapping import (
+    span_dominant_global_index,
+    span_dominant_local_index,
+    span_local_influences,
+    span_position,
+)
 
 GEOMETRY_STITCHED_SHELL_VERSION = "closy.geometry_stitched_shell.conforming_tshirt_v3"
 
@@ -340,11 +346,10 @@ def _build_union_stitched_mesh(
         span_b = constraint.get("spanB")
         if not isinstance(span_a, dict) or not isinstance(span_b, dict):
             continue
-        a_global = offsets[int(span_a["meshIndex"])] + int(span_a["vertexIndex"])
-        b_global = offsets[int(span_b["meshIndex"])] + int(span_b["vertexIndex"])
+        a_global = span_dominant_global_index(span_a, offsets)
+        b_global = span_dominant_global_index(span_b, offsets)
         distance = _distance3(
-            source_mesh.meshes[int(span_a["meshIndex"])].vertices[int(span_a["vertexIndex"])],
-            source_mesh.meshes[int(span_b["meshIndex"])].vertices[int(span_b["vertexIndex"])],
+            span_position(source_mesh, span_a), span_position(source_mesh, span_b)
         )
         if distance <= _PRE_STITCH_REPAIR_THRESHOLD_METERS:
             union.union(a_global, b_global)
@@ -710,12 +715,12 @@ def _conforming_stitch_operations(
             continue
         mesh_index_a = int(span_a["meshIndex"])
         mesh_index_b = int(span_b["meshIndex"])
-        vertex_index_a = int(span_a["vertexIndex"])
-        vertex_index_b = int(span_b["vertexIndex"])
+        vertex_index_a = span_dominant_local_index(span_a)
+        vertex_index_b = span_dominant_local_index(span_b)
         a_global = offsets[mesh_index_a] + vertex_index_a
         b_global = offsets[mesh_index_b] + vertex_index_b
-        source_position_a = source_mesh.meshes[mesh_index_a].vertices[vertex_index_a]
-        source_position_b = source_mesh.meshes[mesh_index_b].vertices[vertex_index_b]
+        source_position_a = span_position(source_mesh, span_a)
+        source_position_b = span_position(source_mesh, span_b)
         distance = _distance3(source_position_a, source_position_b)
         status = (
             "executed"
@@ -1186,8 +1191,8 @@ def _ordered_seam_correspondence_audit(
                 continue
             mesh_index = int(span.get("meshIndex", -1))
             boundary_id = str(span.get("boundaryId", "unknown"))
-            vertex_index = int(span.get("vertexIndex", -1))
-            source_vertex_uses[(mesh_index, boundary_id, vertex_index)] += 1
+            for vertex_index, _weight in span_local_influences(span):
+                source_vertex_uses[(mesh_index, boundary_id, vertex_index)] += 1
             seam_span_partitions.setdefault((mesh_index, boundary_id), set()).add(
                 (
                     seam_id,
@@ -1252,7 +1257,10 @@ def _ordered_seam_correspondence_audit(
         failure_reasons.append("required_correspondence_rejected")
     if seam_coverage.get("duplicateExecutedOperationCount", 0) > 0:
         failure_reasons.append("duplicate_operation_ids")
-    if duplicate_source_uses:
+    weighted_support_reuse_expected = constraints.get("constraintModel") == (
+        "full_span_seam_mapping_v2"
+    )
+    if duplicate_source_uses and not weighted_support_reuse_expected:
         failure_reasons.append("source_boundary_vertices_reused_without_span_partition")
     if reused_boundary_spans:
         failure_reasons.append("boundary_spans_reused_across_seams")
@@ -1281,6 +1289,7 @@ def _ordered_seam_correspondence_audit(
         "reusedBoundaryVertexCount": len(duplicate_source_uses),
         "reusedBoundaryVertexUses": duplicate_source_uses[:32],
         "reusedBoundaryVertexSampleLimit": 32,
+        "weightedSupportReuseExpected": weighted_support_reuse_expected,
         "reusedBoundarySpanCount": len(reused_boundary_spans),
         "reusedBoundarySpans": reused_boundary_spans[:32],
         "boundarySpanPartitions": boundary_span_partitions[:32],

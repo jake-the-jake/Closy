@@ -8,6 +8,7 @@ from closy_forge.garments.vertical_slice.appearance import (
     build_appearance_bundle,
 )
 from closy_forge.geometry.mesh_model import MeshSet
+from closy_forge.inspection.independent_targets import IndependentTargetEvidence
 from closy_forge.visual_understanding.raster_parser import TORSO_RGBA
 
 LAYERED_ASYMMETRIC_APPEARANCE_VERSION = "closy.layered_asymmetric.decoded_pbr.d0.v1"
@@ -23,6 +24,8 @@ APPEARANCE_SPEC = AppearanceSpec(
     panel_views=(
         ("front", "panel.layered_asymmetric.outer.front"),
         ("back", "panel.layered_asymmetric.outer.back"),
+        ("left_three_quarter", "panel.layered_asymmetric.outer.front"),
+        ("right_three_quarter", "panel.layered_asymmetric.outer.front"),
     ),
     capture_record_version="closy.layered_asymmetric.capture_fixture.d0.v1",
     capture_record_id="capture.synthetic_layered_asymmetric_reference_v1",
@@ -36,11 +39,16 @@ APPEARANCE_SPEC = AppearanceSpec(
 
 
 def build_layered_asymmetric_appearance_bundle(
-    *, pattern: dict[str, Any], settled_mesh: MeshSet, seed: int
+    *,
+    pattern: dict[str, Any],
+    settled_mesh: MeshSet,
+    seed: int,
+    independent_target: IndependentTargetEvidence | None = None,
 ) -> LayeredAsymmetricAppearanceBundle:
     return build_appearance_bundle(
         spec=APPEARANCE_SPEC,
         pattern=pattern,
         settled_mesh=settled_mesh,
         seed=seed,
+        independent_target=independent_target,
     )

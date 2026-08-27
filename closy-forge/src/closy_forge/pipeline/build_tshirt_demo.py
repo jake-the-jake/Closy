@@ -935,6 +935,7 @@ def _material_selection_input() -> dict[str, Any]:
     return {
         "schemaVersion": 1,
         "inputId": "material_selection.public_tshirt_d0_v1",
+        "garmentFamily": "tshirt",
         "observations": {
             "massClass": "medium",
             "stretchClass": "moderate",

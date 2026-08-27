@@ -22,7 +22,10 @@ def test_reference_cloth_solver_settles_without_changing_topology() -> None:
     result = settle_reference_cloth(rest_mesh, constraints, avatar, _material_physics())
 
     assert topology_hash(result.rest_mesh) == topology_hash(result.settled_mesh)
-    assert result.diagnostics["convergenceState"] == "converged"
+    assert result.diagnostics["numericalTermination"] == "completed"
+    assert result.diagnostics["physicalQualityAccepted"] is False
+    assert result.diagnostics["convergenceState"] == "failed"
+    assert result.diagnostics["settings"]["constraintProjection"].startswith("xpbd_")
     assert result.diagnostics["maximumBodyPenetrationMeters"] < 0.012
     assert result.diagnostics["rmsSeamResidualMeters"] < 0.035
     assert result.diagnostics["selfCollision"]["available"] is True

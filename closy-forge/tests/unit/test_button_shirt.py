@@ -44,9 +44,9 @@ def test_button_shirt_has_literal_split_front_openings_and_closure_pairs() -> No
     assert [closure["stationIndex"] for closure in pattern["closures"]] == list(range(6))
     assert len({closure["distanceFromHemMeters"] for closure in pattern["closures"]}) == 6
     assert semantic["family"]["requiredClosures"] == ["button_buttonhole"]
-    assert mesh.vertex_count == 256
-    assert mesh.triangle_count == 251
-    assert len(constraints["constraints"]) == 81
+    assert mesh.vertex_count == 251
+    assert mesh.triangle_count == 241
+    assert len(constraints["constraints"]) == 94
     assert len(constraints["closures"]) == 6
     assert all(
         edge["status"] == "resolved"

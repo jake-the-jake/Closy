@@ -221,9 +221,9 @@ def test_false_capability_is_rejected(tmp_path) -> None:  # type: ignore[no-unty
 def test_non_converged_cloth_settle_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_settle.closygarment")
     diagnostics = read_json(corrupt / "simulation" / "settle_diagnostics.json")
-    diagnostics["convergenceState"] = "failed"
+    diagnostics["numericalTermination"] = "failed"
     write_json(corrupt / "simulation" / "settle_diagnostics.json", diagnostics)
-    assert "cloth_settle_not_converged" in issue_codes(validate_package(corrupt))
+    assert "cloth_settle_numerical_termination_failed" in issue_codes(validate_package(corrupt))
 
 
 def test_settled_state_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -317,18 +317,20 @@ def test_tshirt_fit_hash_mismatch_is_rejected(tmp_path) -> None:  # type: ignore
     assert "tshirt_fit_hash_mismatch" in issue_codes(validate_package(corrupt))
 
 
-def test_tshirt_fit_rejection_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_tshirt_fit_false_acceptance_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_fit_status.closygarment")
     fit = read_json(corrupt / "fitting" / "tshirt_fit.json")
-    fit["status"] = "fail"
-    fit["accepted"] = False
+    fit["status"] = "pass"
+    fit["accepted"] = True
     write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
-    assert "tshirt_fit_acceptance_underclaimed" in issue_codes(validate_package(corrupt))
+    assert "tshirt_fit_acceptance_overclaimed" in issue_codes(validate_package(corrupt))
 
 
 def test_tshirt_fit_loss_threshold_is_rejected(tmp_path) -> None:  # type: ignore[no-untyped-def]
     corrupt = clone_package(build_demo(tmp_path), tmp_path / "bad_fit_loss.closygarment")
     fit = read_json(corrupt / "fitting" / "tshirt_fit.json")
+    fit["status"] = "pass"
+    fit["accepted"] = True
     fit["losses"]["landmarkRmsNormalised"] = 0.5
     write_json(corrupt / "fitting" / "tshirt_fit.json", fit)
     assert "tshirt_fit_landmark_loss_too_high" in issue_codes(validate_package(corrupt))
@@ -892,6 +894,7 @@ def test_geometry_stitched_shell_impossible_proof_claim_is_rejected(
     stitched["topologyAudit"]["surfaceTopologyAudit"]["failureReasons"] = [
         "euler_characteristic_mismatch"
     ]
+    stitched["readiness"]["meshStitchOrWeldProven"] = True
     write_json(corrupt / "reports" / "geometry_stitched_shell.json", stitched)
     codes = issue_codes(validate_package(corrupt))
     assert "geometry_stitched_shell_hash_mismatch" in codes

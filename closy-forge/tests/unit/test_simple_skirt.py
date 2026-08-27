@@ -34,9 +34,9 @@ def test_simple_skirt_pattern_has_literal_waist_hem_and_side_seams() -> None:
     assert semantic["family"]["garmentClass"] == "simple_skirt"
     assert semantic["family"]["category"] == "bottom"
     assert semantic["family"]["requiredOpenings"] == ["waist", "hem"]
-    assert mesh.vertex_count == 106
-    assert mesh.triangle_count == 104
-    assert len(constraints["constraints"]) == 25
+    assert mesh.vertex_count == 104
+    assert mesh.triangle_count == 100
+    assert len(constraints["constraints"]) == 28
     assert all(
         edge["status"] == "resolved"
         for opening in constraints["openings"]

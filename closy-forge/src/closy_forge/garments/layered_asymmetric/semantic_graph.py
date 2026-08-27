@@ -28,7 +28,8 @@ def build_layered_asymmetric_semantic_graph(pattern: dict[str, Any]) -> dict[str
                 "layer.layered_asymmetric.inner",
                 "layer.layered_asymmetric.outer",
             ],
-            "interLayerCollisionEnabled": True,
+            "interLayerCollisionEnabled": False,
+            "interLayerCollisionStatus": "declared_order_not_yet_consumed_by_reference_solver",
             "minimumClearanceMeters": params.layer_clearance_meters,
         },
         "components": [

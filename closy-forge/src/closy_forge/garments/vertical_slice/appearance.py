@@ -6,6 +6,7 @@ from typing import Any
 from closy_forge.geometry.mesh_model import MeshSet
 from closy_forge.geometry.triangulation import panel_boundary_samples
 from closy_forge.inspection.cpu_raster import rasterize_settled_garment
+from closy_forge.inspection.independent_targets import IndependentTargetEvidence
 from closy_forge.inspection.source_render_fidelity import compare_decoded_source_and_render
 from closy_forge.package_io.hashing import sha256_bytes
 from closy_forge.raster import DecodedPng, decode_png_rgba, encode_png_rgba
@@ -43,7 +44,12 @@ class AppearanceBundle:
 
 
 def build_appearance_bundle(
-    *, spec: AppearanceSpec, pattern: dict[str, Any], settled_mesh: MeshSet, seed: int
+    *,
+    spec: AppearanceSpec,
+    pattern: dict[str, Any],
+    settled_mesh: MeshSet,
+    seed: int,
+    independent_target: IndependentTargetEvidence | None = None,
 ) -> AppearanceBundle:
     artifacts: dict[str, bytes | dict[str, Any]] = {}
     source_views: list[dict[str, Any]] = []
@@ -54,15 +60,20 @@ def build_appearance_bundle(
             next(panel for panel in pattern["panels"] if panel["id"] == panel_id)
             for panel_id in panel_ids
         ]
-        source = (
-            source_fixture(panels[0], spec.fabric_rgba)
-            if isinstance(panel_ref, str)
-            else source_fixture_panels(
-                panels,
-                spec.fabric_rgba,
-                panel_y_offsets=dict(spec.panel_y_offsets),
+        if independent_target is not None:
+            if independent_target.family != spec.garment_class:
+                raise ValueError("independent_target_family_mismatch")
+            source = independent_target.views[label]
+        else:
+            source = (
+                source_fixture(panels[0], spec.fabric_rgba)
+                if isinstance(panel_ref, str)
+                else source_fixture_panels(
+                    panels,
+                    spec.fabric_rgba,
+                    panel_y_offsets=dict(spec.panel_y_offsets),
+                )
             )
-        )
         source_bytes = encode_png_rgba(source.width, source.height, source.rgba)
         source_path = f"source/public_fixture/{label}.png"
         artifacts[source_path] = source_bytes
@@ -86,7 +97,8 @@ def build_appearance_bundle(
                 "sourceSha256": sha256_bytes(source_bytes),
                 "decodedPixelHash": pixel_hash(source),
                 "camera": rendered.camera,
-                "garmentPixelsDerivedFromPatternBoundary": True,
+                "garmentPixelsDerivedFromPatternBoundary": independent_target is None,
+                "candidatePatternUsedForSourceRaster": independent_target is None,
             }
         )
         fidelity_views.append(
@@ -97,6 +109,7 @@ def build_appearance_bundle(
                 "renderPath": render_path,
                 "sourceSha256": sha256_bytes(source_bytes),
                 "renderSha256": sha256_bytes(render_bytes),
+                "camera": rendered.camera,
                 "renderedTriangleCount": rendered.rendered_triangle_count,
                 "renderedForegroundPixels": len(rendered.foreground),
                 "metrics": metrics,
@@ -116,7 +129,11 @@ def build_appearance_bundle(
         "garmentId": pattern["garmentId"],
         "garmentClass": spec.garment_class,
         "seed": seed,
-        "sourceKind": "public_synthetic_pattern_boundary_raster",
+        "sourceKind": (
+            "project_authored_hidden_target_raster"
+            if independent_target is not None
+            else "public_synthetic_pattern_boundary_raster"
+        ),
         "views": source_views,
         "privacy": {
             "containsUserImagery": False,
@@ -125,9 +142,18 @@ def build_appearance_bundle(
             "allowTrainingUse": False,
         },
         "sourceFixtureGenerator": {
-            "id": "closy.pattern_boundary_scanline_rgba8.v1",
+            "id": (
+                independent_target.generator_id
+                if independent_target is not None
+                else "closy.pattern_boundary_scanline_rgba8.v1"
+            ),
             "renderTriangleRasterizerReused": False,
             "fidelityMetricImplementationReused": False,
+            "candidatePatternGeneratorReused": independent_target is None,
+            "hiddenProgramParametersExported": False,
+            "hiddenProgramHash": (
+                independent_target.program_hash if independent_target is not None else None
+            ),
         },
     }
     aggregate = {
@@ -154,7 +180,12 @@ def build_appearance_bundle(
         "garmentId": pattern["garmentId"],
         "garmentClass": spec.garment_class,
         "status": "pass_d0_public_fixture" if accepted else "partial_d0_public_fixture",
-        "sourceGenerator": "independent_pattern_boundary_scanline",
+        "sourceGenerator": (
+            independent_target.generator_id
+            if independent_target is not None
+            else "independent_pattern_boundary_scanline"
+        ),
+        "sourceIndependentFromCandidatePattern": independent_target is not None,
         "renderGenerator": "independent_cpu_triangle_raster",
         "decodedPixelComparisonRun": True,
         "viewComparisons": fidelity_views,

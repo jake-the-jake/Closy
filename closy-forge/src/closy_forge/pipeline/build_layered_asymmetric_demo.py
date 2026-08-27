@@ -59,6 +59,7 @@ from closy_forge.garments.vertical_slice.package import (
 )
 from closy_forge.geometry.mesh_model import MeshSet, mesh_bounds
 from closy_forge.geometry.subdivision import subdivide_for_render
+from closy_forge.inspection.independent_targets import build_layered_asymmetric_target
 from closy_forge.package_io.canonical_json import (
     write_canonical_json,
 )
@@ -139,7 +140,14 @@ def build_demo_layered_asymmetric_package(
 def _write_package_contents(
     package_dir: Path, prior: LayeredAsymmetricParameters, seed: int
 ) -> dict[str, Any]:
-    fitted, fit_report = fit_layered_asymmetric(prior)
+    independent_target = build_layered_asymmetric_target(seed)
+    measurements = independent_target.capture_measurements
+    fitted, fit_report = fit_layered_asymmetric(
+        prior,
+        observed_half_width_meters=measurements["halfWidthMeters"],
+        observed_body_length_meters=measurements["bodyLengthMeters"],
+        observed_armhole_depth_meters=measurements["armholeDepthMeters"],
+    )
     pattern = build_layered_asymmetric_pattern(fitted)
     semantic = build_layered_asymmetric_semantic_graph(pattern)
     rest_mesh, edge_maps = build_simulation_mesh(pattern)
@@ -177,7 +185,10 @@ def _write_package_contents(
     )
 
     appearance = build_layered_asymmetric_appearance_bundle(
-        pattern=pattern, settled_mesh=simulation_mesh, seed=seed
+        pattern=pattern,
+        settled_mesh=simulation_mesh,
+        seed=seed,
+        independent_target=independent_target,
     )
     render_materials = _render_materials(appearance)
     quality = _quality_report(
@@ -404,7 +415,8 @@ def _quality_report(
             "layerCount": pattern["layerCount"],
             "innerPanelCount": sum(".inner." in str(panel["id"]) for panel in pattern["panels"]),
             "outerPanelCount": sum(".outer." in str(panel["id"]) for panel in pattern["panels"]),
-            "interLayerCollisionEnabled": True,
+            "interLayerCollisionEnabled": False,
+            "interLayerCollisionStatus": "not_executed_reference_solver",
             "minimumDeclaredClearanceMeters": pattern["parameters"]["layer_clearance_meters"],
             "restFrontClearanceMeters": _front_layer_clearance(rest_mesh),
             "outerAsymmetricHemDropMeters": pattern["parameters"]["outer_asymmetry_drop_meters"],
@@ -456,12 +468,15 @@ def _quality_report(
                     motion_report["underarmStress"]["accepted"],
                     motion_report["readiness"]["armholesNonCollapsed"],
                     appearance.fidelity_report["acceptedForD0LayeredAsymmetricFixture"],
+                    # Inter-layer contact is not executed by this solver profile.
+                    False,
                 ]
             ),
-            "phase8FamilyLadderComplete": True,
+            "phase8FamilyLadderComplete": False,
+            "phase8FamilyLadderSource": "validated_family_index_not_yet_generated",
             "phase8GloballyComplete": False,
-            "nextGarmentFamily": "none_phase8_family_ladder_complete",
-            "nextBlueprintPhase": "phase9_editor_export_regression",
+            "nextGarmentFamily": "layered_inter_layer_collision_closeout",
+            "nextBlueprintPhase": "phase8_integrity_closeout",
             "productionPrivateUserAcceptance": False,
         },
     }

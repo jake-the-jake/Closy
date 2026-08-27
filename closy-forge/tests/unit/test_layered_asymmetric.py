@@ -62,7 +62,8 @@ def test_layered_asymmetric_pattern_has_two_literal_layers_and_asymmetric_hem() 
             "layer.layered_asymmetric.inner",
             "layer.layered_asymmetric.outer",
         ],
-        "interLayerCollisionEnabled": True,
+        "interLayerCollisionEnabled": False,
+        "interLayerCollisionStatus": "declared_order_not_yet_consumed_by_reference_solver",
         "minimumClearanceMeters": params.layer_clearance_meters,
     }
     assert [component["collisionOrder"] for component in semantic["components"]] == [10, 20]

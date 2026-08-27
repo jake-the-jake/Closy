@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_simple_dress_demo import build_demo_simple_dress
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_simple_dress, read_json
 
-GOLDEN_DIGEST = "e8b1a3c00d9276c9d95ee2525bf3e24c88a84ee4ab03a5f5472e73175663b00a"
+GOLDEN_DIGEST = "2dbd97fe819a334c287deff0bb699bc895804789df43dd219f5cc52b2cb71496"
 
 
 def test_simple_dress_package_is_complete_conventional_and_valid(tmp_path) -> None:
@@ -28,11 +28,11 @@ def test_simple_dress_package_is_complete_conventional_and_valid(tmp_path) -> No
     assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["counts"] == {
         "panelCount": 4,
-        "simulationVertexCount": 193,
-        "simulationTriangleCount": 189,
-        "renderVertexCount": 1134,
-        "renderTriangleCount": 756,
-        "bindingRecordCount": 1134,
+        "simulationVertexCount": 189,
+        "simulationTriangleCount": 181,
+        "renderVertexCount": 1086,
+        "renderTriangleCount": 724,
+        "bindingRecordCount": 1086,
     }
     assert quality["readiness"]["simpleDressD0Complete"] is True
     assert quality["readiness"]["phase8GloballyComplete"] is False
@@ -41,7 +41,7 @@ def test_simple_dress_package_is_complete_conventional_and_valid(tmp_path) -> No
     assert motion["armholeStress"]["armholeMetrics"]["armholeOpeningCount"] == 2
     assert motion["armholeStress"]["metrics"]["converged"] is False
     assert fidelity["acceptedForD0SimpleDressFixture"] is True
-    assert fidelity["aggregate"]["minimumSilhouetteIoU"] == 0.50009176
+    assert fidelity["aggregate"]["minimumSilhouetteIoU"] == 0.938558559
     for relpath in [
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",

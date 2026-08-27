@@ -7,6 +7,7 @@ from pathlib import Path
 from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.cli.main import EXIT_SUCCESS, main
 from closy_forge.package_io.canonical_json import write_canonical_json
+from closy_forge.package_io.managed_output import MARKER_NAME
 
 
 def test_sanitized_ci_diagnostics_writes_allowlisted_summaries(tmp_path: Path) -> None:
@@ -78,11 +79,12 @@ def test_sanitized_ci_diagnostics_writes_allowlisted_summaries(tmp_path: Path) -
     summary = export_sanitized_ci_diagnostics(
         source,
         output,
-        label=r"C:\Users\Alice\runner",
+        allowed_output_root=tmp_path,
     )
 
     assert summary["outputPolicy"]["copiesSourceBytes"] is False
     assert sorted(path.name for path in output.iterdir()) == [
+        MARKER_NAME,
         "package_inventory.json",
         "rejections.json",
         "summary.json",
@@ -109,7 +111,13 @@ def test_sanitized_ci_diagnostics_writes_allowlisted_summaries(tmp_path: Path) -
 
     inventory = json.loads((output / "package_inventory.json").read_text(encoding="utf-8"))
     assert inventory["packages"][0]["inventoryCount"] == 1
-    assert inventory["packages"][0]["inventory"][0]["path"] == "render/stitched_shell.glb"
+    assert inventory["packages"][0]["canonicalEntryCount"] == 0
+    assert inventory["packages"][0]["roleCounts"] == {"render-preview": 1}
+    assert inventory["packages"][0]["hashesIncluded"] is False
+    assert inventory["packages"][0]["pathsIncluded"] is False
+    assert "a" * 64 not in combined_output
+    assert "b" * 64 not in combined_output
+    assert "demo_a.closygarment" not in combined_output
 
 
 def test_ci_diagnostics_cli_uses_safe_output_directory(tmp_path: Path) -> None:
@@ -125,13 +133,14 @@ def test_ci_diagnostics_cli_uses_safe_output_directory(tmp_path: Path) -> None:
             str(source),
             "--output",
             str(output),
-            "--label",
-            "unit-test",
+            "--output-root",
+            str(tmp_path),
         ]
     )
 
     assert exit_code == EXIT_SUCCESS
     assert sorted(path.name for path in output.iterdir()) == [
+        MARKER_NAME,
         "package_inventory.json",
         "rejections.json",
         "summary.json",
