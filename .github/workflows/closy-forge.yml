@@ -20,7 +20,8 @@ jobs:
   forge:
     name: Forge ${{ matrix.os }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    # Windows crosses 30 minutes once the cumulative family matrix rebuilds every fixture.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
