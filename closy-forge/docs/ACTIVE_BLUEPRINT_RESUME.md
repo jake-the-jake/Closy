@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-9-STRUCTURED-PATTERN-FOUNDATION-D0`.
-- Branch: `codex/closy-forge-phase-9-structured-pattern-foundation`, based on Phase 8 layered
-  implementation head `a26d14b` from draft PR #17.
+- Active checkpoint: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0`.
+- Branch: `codex/closy-forge-phases-10-14-runnable-foundations`, based on Phase 9 evidence head
+  `10a21e8` from draft PR #18.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -57,12 +57,18 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - The layered/asymmetric implementation builds and validates locally at digest
   `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`.
   Two 41-file package trees are byte-identical; focused unit, integration, CLI and corruption
-  checks pass and 99 schemas are fresh. Remote evidence is pending the implementation push.
+  checks pass and 99 schemas are fresh. Initial run `33037073231` passed Ubuntu but Windows hit
+  the former 30-minute job timeout after tests and schemas passed. Commit `f76d0eb` raises the
+  cumulative matrix limit to 60 minutes; its final run belongs in PR #17 rather than a recursive
+  evidence commit.
 - Phase 9 adds eight garment-only grammar productions, 24 synthetic samples, disjoint 8/8/8
   splits, a project-authored correction record and a deterministic retrieval benchmark. The
   baseline selects 24/24 authored targets, which is fixture correctness rather than learned
   accuracy. Seven focused foundation/schema tests pass and 105 schemas are fresh.
 - Phase 9 implementation commit: `b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b`.
+- Phases 10-14 implementation `30ea629639cb34894511d49b1b965fc344adb4c3` adds five
+  separately versioned contracts and six schemas. Actual ZeroOne, GPU/device, private-user and
+  training tiers remain explicitly false; focused foundation/schema tests pass with 111 schemas.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -227,8 +233,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - Layered-focused unit, package, CLI, validator and corruption checks pass.
 - 99 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
-- The complete local Forge suite passes all 337 collected tests in `3082.10s`. PR #16 run
-  `33029602357` confirms the same eight-family matrix on Ubuntu and Windows Python 3.11.
+- The complete local Forge suite passes all 352 collected tests in `3183.11s`. PR #16 run
+  `33029602357` confirms its predecessor eight-family matrix on Ubuntu and Windows Python 3.11;
+  PR #17 carries final layered/asymmetric cross-platform evidence.
 - The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
   inventoried bytes. Two builds have identical file trees and zero validator issues.
 - The existing T-shirt package remains byte-identical at 137 files with digest
@@ -264,15 +271,16 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After the Phase 9 foundation is committed and cross-OS evidence is green:
+No further independent implementation item in this prompt is known to be runnable without an
+authorised ZeroOne runtime, physical mobile hardware, private/licensed avatar data, or training
+data/compute. After remote evidence is green, the exact external continuation begins with:
 
 ```powershell
-cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-10-zeroone-static-contract
+cd E:\apps\Closy\closy-forge
+.\.venv\Scripts\python.exe -m closy_forge schemas check --schema-dir schemas/v1
 ```
 
 ## Next Safe Action
 
-Implement the Phase 10 headless import/process/export contract, version negotiation, fallback
-preservation and deterministic fake/reference executable. Keep actual ZeroOne execution explicitly
-not run because no authorised ZeroOne repository or binary is present.
+Acquire and inspect an authorised versioned ZeroOne executable contract, then run the Phase 10
+handoff against it without replacing the known-good fallback until output validation passes.
