@@ -4,6 +4,7 @@ from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.simulation.self_collision import (
     SelfCollisionSettings,
     analyze_self_collision,
+    analyze_swept_self_collision,
     broad_phase_candidates,
     brute_force_candidate_oracle,
     build_self_collision_report,
@@ -77,10 +78,35 @@ def test_self_collision_report_documents_fixtures_and_tunnelling_limit() -> None
     assert report["adversarialFixtures"]["adjacentTriangleExclusion"]["status"] == "pass"
     assert report["adversarialFixtures"]["seamPairExclusion"]["status"] == "pass"
     assert report["adversarialFixtures"]["crossingEdges"]["status"] == "pass"
-    assert report["adversarialFixtures"]["highVelocityTunnelling"]["status"] == (
-        "unsupported_high_velocity_tunnelling"
-    )
+    assert report["adversarialFixtures"]["highVelocityTunnelling"]["status"] == "pass"
+    assert report["adversarialFixtures"]["thinLayerSweep"]["status"] == "pass"
+    assert report["adversarialFixtures"]["openingBoundarySweep"]["status"] == "pass"
+    assert report["adversarialFixtures"]["boundedUnsupportedMotion"]["status"] == "pass"
+    assert report["execution"]["continuousCollisionDetectionRun"] is True
     assert report["readiness"]["acceptedForProductionGpuSolver"] is False
+
+
+def test_swept_collision_detects_crossing_and_fails_closed_when_bound_is_exceeded() -> None:
+    mesh = _close_parallel_triangle_mesh(0.02)
+    triangles, _ = build_triangle_refs(mesh)
+    previous = [*mesh.meshes[0].vertices[:3], *_moving_triangle(-0.03)]
+    current = [*mesh.meshes[0].vertices[:3], *_moving_triangle(0.03)]
+    settings = SelfCollisionSettings()
+
+    detected = analyze_swept_self_collision(previous, current, triangles, settings)
+    rejected = analyze_swept_self_collision(
+        [*mesh.meshes[0].vertices[:3], *_moving_triangle(-1.0)],
+        [*mesh.meshes[0].vertices[:3], *_moving_triangle(1.0)],
+        triangles,
+        settings,
+        maximum_substeps=8,
+    )
+
+    assert detected.supported is True
+    assert detected.first_contact_fraction is not None
+    assert detected.contact_count > 0
+    assert rejected.supported is False
+    assert rejected.status == "unsupported_motion_exceeds_bounded_substeps"
 
 
 def test_package_self_collision_evidence_is_recomputed_and_not_silent(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -135,3 +161,7 @@ def _close_parallel_triangle_mesh(distance: float) -> MeshSet:
             )
         ]
     )
+
+
+def _moving_triangle(z: float) -> list[tuple[float, float, float]]:
+    return [(-0.04, 0.005, z), (0.04, 0.005, z), (0.0, 0.045, z)]

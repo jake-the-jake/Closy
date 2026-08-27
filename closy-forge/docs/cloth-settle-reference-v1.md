@@ -33,7 +33,12 @@ The package stores:
 
 Self-collision now runs as a deterministic D0 vertex-triangle and edge-edge reference pass integrated at bounded solver checkpoints. Its broad-phase audit uses an independent exact-proximity subset oracle rather than the same AABB predicate. Packages set `selfCollisionAvailable: true` and `selfCollisionEvidenceAvailable: true`; validation rejects stale or contradictory reports. Per-iteration unresolved-contact and penetration histories are recorded, together with monotonicity and topology-safety flags. The current coarse fixed-avatar T-shirt fixture still retains unresolved reference contacts, so validation reports `self_collision_unresolved_contacts` rather than hiding the limitation.
 
-This is not a production GPU collision backend. High-velocity continuous collision/tunnelling is explicitly unsupported and recorded as `unsupported_high_velocity_tunnelling`.
+This is not a production GPU collision backend. A bounded deterministic swept-collision fixture
+suite covers high-velocity crossing, thin-layer approach, opening-boundary crossing, and
+fail-closed motion beyond the configured substep bound. That fixture suite is not integrated into
+the reference motion solver's response loop. Packages therefore record
+`bounded_ccd_not_integrated_into_reference_motion_solver`; the solver diagnostics retain
+`unsupported_high_velocity_tunnelling` to describe that narrower integration limitation.
 
 The solver is tuned for deterministic fixture validation, not final apparel realism. The v1.3 fixture policy softens high-y/neck-band support tethers, tightens the neck-band target length and performs bounded collision projection during the solve. The coarse fan triangulation can still produce high maximum strain on skinny neck-band triangles, so convergence uses RMS seam residual, body penetration, finite/inversion checks and percentile/mean strain while still reporting the raw maximum strain.
 

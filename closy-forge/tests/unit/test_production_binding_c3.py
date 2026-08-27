@@ -49,7 +49,12 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
     assert c3_report["execution"]["solverProducedMotionSuiteRun"] is True
     assert c3_report["execution"]["performanceWorkloadProfileRun"] is False
     assert c3_report["performanceProfile"]["repeatCount"] == 0
-    assert c3_report["aggregate"]["maxDenseFallbackPanelCentroidDeltaMeters"] > 0.0
+    assert c3_report["aggregate"]["maxDenseFallbackPanelCentroidDeltaMeters"] <= 1e-8
+    assert c3_report["aggregate"]["maxDenseFallbackSampledSurfaceDistanceMeters"] <= 1e-6
+    assert c3_report["aggregate"]["stitchedShellStatePassCount"] == 0
+    assert c3_report["execution"]["independentSurfaceAgreementRun"] is True
+    assert c3_report["execution"]["stitchedShellDeformationRun"] is True
+    assert c3_report["motionSuite"]["states"][0]["seamCrack"]["sharedClothMotionSubtracted"] is True
     assert (
         c3_report["motionSuite"]["states"][1]["motionTargetComparison"][
             "renderMotionTransformUsedAsOracle"
@@ -93,6 +98,9 @@ def test_binding_benchmark_measures_dense_and_independent_fallback(tmp_path) -> 
     assert report["repeatCount"] == 3
     assert report["measurements"]["denseFullSuite"]["medianMilliseconds"] > 0.0
     assert report["measurements"]["fallbackFullSuite"]["medianMilliseconds"] > 0.0
+    assert report["measurements"]["solverOneState"]["medianMilliseconds"] > 0.0
+    assert report["measurements"]["c3Validator"]["repeatCount"] == 3
+    assert report["measurements"]["c3Validator"]["medianMilliseconds"] > 0.0
     assert "not_mobile_device_performance" in report["limitations"]
 
 

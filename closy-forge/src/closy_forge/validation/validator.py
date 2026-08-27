@@ -8064,6 +8064,7 @@ def _validate_production_binding_c3(
         "thresholds",
         "motionSuite",
         "aggregate",
+        "collisionGate",
         "performanceProfile",
         "execution",
         "capabilities",
@@ -11459,17 +11460,33 @@ def _validate_self_collision_report(
             )
     readiness = report.get("readiness", {})
     metrics = report.get("metrics", {})
+    execution = report.get("execution", {})
+    fixtures = report.get("adversarialFixtures", {})
     if (
         not isinstance(readiness, dict)
         or readiness.get("acceptedForProductionGpuSolver") is not False
-        or "unsupported_high_velocity_tunnelling" not in readiness.get("limitations", [])
+        or not isinstance(execution, dict)
+        or execution.get("continuousCollisionDetectionRun") is not True
+        or not isinstance(fixtures, dict)
+        or any(
+            not isinstance(fixtures.get(key), dict) or fixtures[key].get("status") != "pass"
+            for key in (
+                "highVelocityTunnelling",
+                "thinLayerSweep",
+                "openingBoundarySweep",
+                "boundedUnsupportedMotion",
+            )
+        )
     ):
         issues.append(
             _issue(
                 "self_collision_readiness_invalid",
                 "fatal",
                 "reports/self_collision_report.json",
-                "Self-collision may claim only D0 reference availability in this increment.",
+                (
+                    "Self-collision must pass bounded CCD fixtures without claiming "
+                    "production GPU proof."
+                ),
             )
         )
     if not isinstance(metrics, dict):
@@ -11488,6 +11505,21 @@ def _validate_self_collision_report(
                 "warning",
                 "reports/self_collision_report.json",
                 "D0 reference self-collision ran but retained unresolved contacts.",
+            )
+        )
+    if (
+        isinstance(readiness, dict)
+        and readiness.get("acceptedForD0ReferenceSolver") is True
+        and isinstance(metrics, dict)
+        and int(metrics.get("unresolvedContactCount", 1)) != 0
+        and metrics.get("residualDepthWithinBudget") is not True
+    ):
+        issues.append(
+            _issue(
+                "self_collision_d0_acceptance_invalid",
+                "fatal",
+                "reports/self_collision_report.json",
+                "D0 acceptance requires zero unresolved contacts or the declared depth budget.",
             )
         )
     if diagnostics is not None:
