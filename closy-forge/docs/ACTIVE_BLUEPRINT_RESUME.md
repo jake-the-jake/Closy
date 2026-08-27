@@ -57,7 +57,10 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - The layered/asymmetric implementation builds and validates locally at digest
   `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`.
   Two 41-file package trees are byte-identical; focused unit, integration, CLI and corruption
-  checks pass and 99 schemas are fresh. Remote evidence is pending the implementation push.
+  checks pass and 99 schemas are fresh. Initial run `33037073231` passed Ubuntu but Windows hit
+  the former 30-minute job timeout after tests and schemas passed. Commit `f76d0eb` raises the
+  cumulative matrix limit to 60 minutes; its final run belongs in PR #17 rather than a recursive
+  evidence commit.
 - Phase 9 adds eight garment-only grammar productions, 24 synthetic samples, disjoint 8/8/8
   splits, a project-authored correction record and a deterministic retrieval benchmark. The
   baseline selects 24/24 authored targets, which is fixture correctness rather than learned
@@ -230,8 +233,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 - Layered-focused unit, package, CLI, validator and corruption checks pass.
 - 99 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
-- The complete local Forge suite passes all 337 collected tests in `3082.10s`. PR #16 run
-  `33029602357` confirms the same eight-family matrix on Ubuntu and Windows Python 3.11.
+- The complete local Forge suite passes all 352 collected tests in `3183.11s`. PR #16 run
+  `33029602357` confirms its predecessor eight-family matrix on Ubuntu and Windows Python 3.11;
+  PR #17 carries final layered/asymmetric cross-platform evidence.
 - The sleeveless package has 41 physical files, 37 manifest-inventoried files and 315,015
   inventoried bytes. Two builds have identical file trees and zero validator issues.
 - The existing T-shirt package remains byte-identical at 137 files with digest

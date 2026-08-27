@@ -738,6 +738,11 @@ def test_active_resume_points_to_future_foundations_validation() -> None:
     assert "Ubuntu job `98378800026`" in resume
     assert "Windows job `98378800076`" in resume
     assert "337 collected tests" in resume
+    assert "run `33037073231`" in resume
+    assert "former 30-minute job timeout" in resume
+    assert "`f76d0eb`" in resume
+    assert "all 352 collected tests in `3183.11s`" in resume
+    assert "Remote evidence is pending the implementation push" not in resume
     assert "Phase 8 remains" in resume
     assert "24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417" in resume
     assert "0.0079439" in resume
