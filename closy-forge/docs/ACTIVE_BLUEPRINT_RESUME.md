@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-9-STRUCTURED-PATTERN-FOUNDATION-D0`.
-- Branch: `codex/closy-forge-phase-9-structured-pattern-foundation`, based on Phase 8 layered
-  implementation head `a26d14b` from draft PR #17.
+- Active checkpoint: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0`.
+- Branch: `codex/closy-forge-phases-10-14-runnable-foundations`, based on Phase 9 evidence head
+  `10a21e8` from draft PR #18.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -63,6 +63,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   baseline selects 24/24 authored targets, which is fixture correctness rather than learned
   accuracy. Seven focused foundation/schema tests pass and 105 schemas are fresh.
 - Phase 9 implementation commit: `b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b`.
+- Phases 10-14 implementation `30ea629639cb34894511d49b1b965fc344adb4c3` adds five
+  separately versioned contracts and six schemas. Actual ZeroOne, GPU/device, private-user and
+  training tiers remain explicitly false; focused foundation/schema tests pass with 111 schemas.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -264,15 +267,16 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After the Phase 9 foundation is committed and cross-OS evidence is green:
+No further independent implementation item in this prompt is known to be runnable without an
+authorised ZeroOne runtime, physical mobile hardware, private/licensed avatar data, or training
+data/compute. After remote evidence is green, the exact external continuation begins with:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-10-zeroone-static-contract
+python -m closy_forge schemas check --schema-dir schemas/v1
 ```
 
 ## Next Safe Action
 
-Implement the Phase 10 headless import/process/export contract, version negotiation, fallback
-preservation and deterministic fake/reference executable. Keep actual ZeroOne execution explicitly
-not run because no authorised ZeroOne repository or binary is present.
+Acquire and inspect an authorised versioned ZeroOne executable contract, then run the Phase 10
+handoff against it without replacing the known-good fallback until output validation passes.

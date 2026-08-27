@@ -48,9 +48,9 @@ def test_blueprint_coverage_export_has_required_structure() -> None:
 
     assert payload["version"] == "d0-fidelity-closeout-local-validation-v1"
     assert payload["generatedBy"] == (
-        "Phase 9 structured-pattern foundation on "
-        "codex/closy-forge-phase-9-structured-pattern-foundation at "
-        "b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b"
+        "Phase 10-14 runnable foundations on "
+        "codex/closy-forge-phases-10-14-runnable-foundations at "
+        "30ea629639cb34894511d49b1b965fc344adb4c3"
     )
     assert set(payload["statusVocabulary"]) == STATUS_VOCABULARY
     assert payload["blueprintSha256"] == (
@@ -166,8 +166,8 @@ def test_phase_completion_is_not_overclaimed() -> None:
     assert rows_by_id["BP-17-PHASE-07"]["status"] == "partial"
     assert rows_by_id["BP-17-PHASE-08"]["status"] == "partial"
     assert rows_by_id["BP-17-PHASE-09"]["status"] == "partial"
-    for index in (10, 11):
-        assert rows_by_id[f"BP-17-PHASE-{index:02d}"]["status"] == "discovery_pending"
+    for index in range(10, 15):
+        assert rows_by_id[f"BP-17-PHASE-{index:02d}"]["status"] == "partial"
 
 
 def test_bp46_checkpoint_is_partial_and_evidenced() -> None:
@@ -613,11 +613,25 @@ def test_phase9_foundation_is_partial_and_does_not_claim_training() -> None:
     )
 
 
-def test_markdown_ledger_matches_phase9_foundation_state() -> None:
+def test_phases10_to14_foundations_are_partial_and_truthful() -> None:
+    rows = {row["id"]: row for row in _rows()}
+
+    for index in range(10, 15):
+        row = rows[f"BP-17-PHASE-{index:02d}"]
+        assert row["status"] == "partial"
+        assert "30ea629639cb34894511d49b1b965fc344adb4c3" in row["commitSha"]
+        assert row["implementationPaths"]
+        assert row["executableEvidence"]
+        assert row["tests"] == ["closy-forge/tests/unit/test_future_foundations.py"]
+    assert "no actual ZeroOne" in rows["BP-17-PHASE-10"]["limitations"]
+    assert "no training" in rows["BP-17-PHASE-14"]["limitations"]
+
+
+def test_markdown_ledger_matches_future_foundations_state() -> None:
     ledger = LEDGER_PATH.read_text(encoding="utf-8")
 
-    assert "Branch: `codex/closy-forge-phase-9-structured-pattern-foundation`" in ledger
-    assert "Current active increment: `PHASE-9-STRUCTURED-PATTERN-FOUNDATION-D0`" in ledger
+    assert "Branch: `codex/closy-forge-phases-10-14-runnable-foundations`" in ledger
+    assert "Current active increment: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0`" in ledger
     assert "b01a9c13e31ced489adb3330d28dff74b903b256" in ledger
     assert "478,681 inventoried bytes" in ledger
     assert "24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417" in ledger
@@ -636,6 +650,8 @@ def test_markdown_ledger_matches_phase9_foundation_state() -> None:
     assert "| BP-17-PHASE-07 | partial |" in ledger
     assert "| BP-17-PHASE-08 | partial |" in ledger
     assert "| BP-17-PHASE-09 | partial |" in ledger
+    for index in range(10, 15):
+        assert f"| BP-17-PHASE-{index:02d} | partial |" in ledger
     assert "| BP-20-RESEARCH-PROTOTYPE | partial |" in ledger
     assert "| BP-47-INSPECTION-ARTIFACTS | partial |" in ledger
     assert "| BP-48-PERSISTED-FRAMES-TANGENTS | partial |" in ledger
@@ -652,12 +668,12 @@ def test_markdown_ledger_matches_phase9_foundation_state() -> None:
     assert "| BP-08-R-SIM-TO-RENDER-BINDING | partial |" in ledger
 
 
-def test_active_resume_points_to_phase9_foundation_validation() -> None:
+def test_active_resume_points_to_future_foundations_validation() -> None:
     resume = ACTIVE_RESUME_PATH.read_text(encoding="utf-8")
 
-    assert "Active checkpoint: `PHASE-9-STRUCTURED-PATTERN-FOUNDATION-D0`" in resume
-    assert "`codex/closy-forge-phase-9-structured-pattern-foundation`" in resume
-    assert "`a26d14b`" in resume
+    assert "Active checkpoint: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0`" in resume
+    assert "`codex/closy-forge-phases-10-14-runnable-foundations`" in resume
+    assert "`10a21e8`" in resume
     assert "run `32949980632`" in resume
     assert "`d49227b3e13ba269dfa33b65c7221a54838631d5`" in resume
     assert "run `32980095316`" in resume
@@ -719,7 +735,8 @@ def test_active_resume_points_to_phase9_foundation_validation() -> None:
     assert "24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417" in resume
     assert "0.0079439" in resume
     assert "105 schemas" in resume
-    assert "codex/closy-forge-phase-10-zeroone-static-contract" in resume
+    assert "111 schemas" in resume
+    assert "Acquire and inspect an authorised versioned ZeroOne executable" in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:

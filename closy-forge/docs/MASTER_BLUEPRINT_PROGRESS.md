@@ -4,13 +4,13 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 
 ## Dashboard
 
-- Branch: `codex/closy-forge-phase-9-structured-pattern-foundation`
+- Branch: `codex/closy-forge-phases-10-14-runnable-foundations`
 - Master blueprint source: [`Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`](./Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md), byte-faithful copy of the user-supplied document, SHA-256 `AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D`
 - Exact stacked base: Phase 8 jacket/outerwear evidence head `b01a9c13e31ced489adb3330d28dff74b903b256`; final evidence-head run `33031422497` passed Windows job `98384584086` and Ubuntu job `98384584245`.
 - Latest verified predecessor state: jacket/outerwear implementation `d79e1b8`, evidence sync `b01a9c1`, draft PR #16.
-- Current active increment: `PHASE-9-STRUCTURED-PATTERN-FOUNDATION-D0` implements the non-learned grammar, deterministic retrieval, synthetic split, correction and benchmark contracts.
+- Current active increment: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0` implements offline/reference contracts while external runtime, device, private-data and training tiers remain not run.
 - Completed phases: `BP-17-PHASE-00`
-- Partially complete phases: `BP-17-PHASE-01`, `BP-17-PHASE-02`, `BP-17-PHASE-03`, `BP-17-PHASE-04`, `BP-17-PHASE-05`, `BP-17-PHASE-06`, `BP-17-PHASE-07`, `BP-17-PHASE-08`, `BP-17-PHASE-09`
+- Partially complete phases: `BP-17-PHASE-01` through `BP-17-PHASE-14`
 - Passed gates: `BP-18-GATE-C1`, `BP-18-GATE-C2`; C3 remains partial while repaired independent fallback and tangential-sliding thresholds fail.
 - Discovery-pending gates: `BP-18-GATE-Z1`, `BP-18-GATE-Z2`, `BP-18-GATE-P1`
 - Next dependency-ready increment after green Phase 9 evidence: `codex/closy-forge-phase-10-zeroone-static-contract`.
@@ -132,11 +132,11 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 | BP-17-PHASE-08 | partial | Additional garment families, now literal across the listed eight-family D0 ladder. | Proven T-shirt, shared family assembly and Phase 7 material contracts | `garments/families.py`, `garments/assembly.py`, `garments/vertical_slice/`, eight family modules/pipelines, schemas and tests | The layered/asymmetric slice executes four non-empty inner/outer panels, eight seams and openings, collision orders 10/20, `0.020 m` measured rest clearance, `0.090 m` outer hem asymmetry, bounded fit, all four material runs, four-armhole stress, 1,524-record dense binding, independent fallback, decoded PBR and source/render comparison. Repeated local 41-file trees match digest `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`. | prior Phase 8 commits; layered implementation pending evidence sync | The D0 family ladder is literal, but global Phase 8 remains partial: button mechanics, private-user fit, production GPU/multilayer cloth, continuous collision and product-calibrated visual acceptance remain absent. | Begin the runnable Phase 9 structured-pattern grammar/retrieval/dataset/evaluation foundation without claiming model training. |
 | BP-17-PHASE-09 | partial | Learned structured-pattern inference foundation. | Phase 8 family grammar/evidence | `pattern_inference/foundation.py`, six schemas, tests and docs | Eight garment-only productions, 24 synthetic samples, disjoint 8/8/8 splits, correction record and deterministic retrieval benchmark execute. All 24 authored targets are selected, explicitly as fixture correctness rather than learned accuracy. | `b05f1e4` | No trained model, weights, authorised production dataset, private data, learned accuracy or generalisation evidence. | Implement Phase 10 static/offline ZeroOne contracts with actual runtime marked not run. |
 | BP-17-PHASE-09 | not_started | Learned structured pattern inference. | Data/eval infrastructure | None | None | None | No training data/models. | Build synthetic dataset first. |
-| BP-17-PHASE-10 | discovery_pending | ZeroOne offline/static integration. | ZeroOne repo and Gate Z1 | None | None | None | ZeroOne unavailable. | Locate/integrate headless ZeroOne. |
-| BP-17-PHASE-11 | discovery_pending | ZeroOne deformation integration. | Gate C3 and Z1 | None | None | None | No ZeroOne dynamic path. | After Phase 10 and C3. |
-| BP-17-PHASE-12 | not_started | Runtime/mobile optimisation. | Valid packages and app integration plan | None | None | None | App untouched by Forge. | Later, isolate from dirty avatar files. |
-| BP-17-PHASE-13 | not_started | Personalised avatars and outfit layering. | Privacy, body model rights, multiple garments | None | None | None | Fixed avatar only. | Synthetic avatars before real captures. |
-| BP-17-PHASE-14 | not_started | Closy-native trained models. | Data/eval/model registry | None | None | None | No training. | Only after baselines and datasets. |
+| BP-17-PHASE-10 | partial | ZeroOne offline/static integration. | ZeroOne repo and Gate Z1 | `future_foundations/contracts.py`, schema/tests | Fake reference process validates negotiation and fallback preservation. | `30ea629` | Actual ZeroOne absent/not run. | Execute with authorised binary later. |
+| BP-17-PHASE-11 | partial | ZeroOne deformation integration. | Gate C3 and Z1 | influence/bounds/frame/crack/culling/LOD contracts | Package-side harness validates. | `30ea629` | Actual ZeroOne/GPU compute not run. | Bind authorised runtime later. |
+| BP-17-PHASE-12 | partial | Runtime/mobile optimisation. | Valid packages | mobile profile/compression/streaming contracts | Deterministic reference round trip and resume state validate. | `30ea629` | No physical-device evidence or production codec. | Add authorised device profiling. |
+| BP-17-PHASE-13 | partial | Personalised avatars and outfit layering. | Privacy, body model rights, multiple garments | synthetic measurement/ease/layering contracts | Bounded two-garment fixture validates order and clearance. | `30ea629` | No private-user or licensed body-model run. | Validate public licensed avatar variation. |
+| BP-17-PHASE-14 | partial | Closy-native trained models. | Data/eval/model registry | dataset/model-card/command/baseline/rollback contracts | Failure fixtures and governance contracts validate. | `30ea629` | No training, weights or superiority evidence. | Obtain authorised data/compute. |
 
 ## Gates
 

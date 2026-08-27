@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "Phase 9 structured-pattern foundation on codex/closy-forge-phase-9-structured-pattern-foundation at b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b",
+  "generatedBy": "Phase 10-14 runnable foundations on codex/closy-forge-phases-10-14-runnable-foundations at 30ea629639cb34894511d49b1b965fc344adb4c3",
   "rows": [
     {
       "commitSha": [
@@ -2181,69 +2181,69 @@
       ]
     },
     {
-      "commitSha": null,
+      "commitSha": ["30ea629639cb34894511d49b1b965fc344adb4c3"],
       "dependencies": [],
-      "executableEvidence": null,
+      "executableEvidence": ["version negotiation and deterministic fake reference import/process/export execute", "fallback bytes are hash-preserved when actual ZeroOne is absent", "unsupported versions fail closed and actualZeroOneRuntimeExecuted remains false"],
       "id": "BP-17-PHASE-10",
-      "implementationPaths": null,
-      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "implementationPaths": ["closy-forge/src/closy_forge/future_foundations/contracts.py", "closy-forge/schemas/v1/zeroone-static-contract.schema.json"],
+      "limitations": "Phase 10 is partial: only an explicitly fake reference executable ran; no actual ZeroOne repository, binary or output bytes were available.",
+      "nextAction": "Run the same contract against an authorised versioned ZeroOne executable when available.",
       "sourceSection": "Phases 0-14",
-      "status": "discovery_pending",
-      "summary": "Blueprint phase 10.",
-      "tests": null
+      "status": "partial",
+      "summary": "Blueprint phase 10 has a fail-safe offline/static handoff contract and reference-only execution.",
+      "tests": ["closy-forge/tests/unit/test_future_foundations.py"]
     },
     {
-      "commitSha": null,
+      "commitSha": ["30ea629639cb34894511d49b1b965fc344adb4c3"],
       "dependencies": [],
-      "executableEvidence": null,
+      "executableEvidence": ["three normalised influence clusters, deformed bounds and frame-update contracts validate", "crack/culling fixtures and a three-level dynamic LOD harness execute", "actual ZeroOne deformation compute remains false"],
       "id": "BP-17-PHASE-11",
-      "implementationPaths": null,
-      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "implementationPaths": ["closy-forge/src/closy_forge/future_foundations/contracts.py", "closy-forge/schemas/v1/zeroone-deformation-foundation.schema.json"],
+      "limitations": "Phase 11 is partial: package-side metadata and fixtures execute, but no actual ZeroOne dynamic compute, GPU path or production culling/LOD runtime ran.",
+      "nextAction": "Bind these contracts to an authorised ZeroOne runtime after Gate Z1 discovery.",
       "sourceSection": "Phases 0-14",
-      "status": "discovery_pending",
-      "summary": "Blueprint phase 11.",
-      "tests": null
+      "status": "partial",
+      "summary": "Blueprint phase 11 has package-side influence, bounds, frames, crack/culling and LOD validation foundations.",
+      "tests": ["closy-forge/tests/unit/test_future_foundations.py"]
     },
     {
-      "commitSha": null,
+      "commitSha": ["30ea629639cb34894511d49b1b965fc344adb4c3"],
       "dependencies": [],
-      "executableEvidence": null,
+      "executableEvidence": ["two mobile profiles and deterministic profile negotiation validate", "reference compression/decode round trip preserves the source hash", "stream resume offset and fallback-until-decode state validate"],
       "id": "BP-17-PHASE-12",
-      "implementationPaths": null,
-      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "implementationPaths": ["closy-forge/src/closy_forge/future_foundations/contracts.py", "closy-forge/schemas/v1/mobile-runtime-foundation.schema.json"],
+      "limitations": "Phase 12 is partial: reference compression and state-machine tests are not mobile-device battery, thermal, frame-time or production mesh-codec evidence.",
+      "nextAction": "Integrate a production codec and record authorised physical-device performance evidence.",
       "sourceSection": "Phases 0-14",
-      "status": "not_started",
-      "summary": "Blueprint phase 12.",
-      "tests": null
+      "status": "partial",
+      "summary": "Blueprint phase 12 has deterministic profile, compression/decode, streaming/resume and fallback foundations.",
+      "tests": ["closy-forge/tests/unit/test_future_foundations.py"]
     },
     {
-      "commitSha": null,
+      "commitSha": ["30ea629639cb34894511d49b1b965fc344adb4c3"],
       "dependencies": [],
-      "executableEvidence": null,
+      "executableEvidence": ["synthetic measurement values include units, confidence, source and bounded correction", "ease/resizing controls and two-garment collision ordering 10/20 validate", "authored public fixture records zero unresolved layer contacts"],
       "id": "BP-17-PHASE-13",
-      "implementationPaths": null,
-      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "implementationPaths": ["closy-forge/src/closy_forge/future_foundations/contracts.py", "closy-forge/schemas/v1/avatar-layering-foundation.schema.json"],
+      "limitations": "Phase 13 is partial: synthetic measurements and two-garment ordering are not private-user fitting, licensed body-model execution or production outfit simulation.",
+      "nextAction": "Validate licensed public avatar variation before any private-user Gate P1 work.",
       "sourceSection": "Phases 0-14",
-      "status": "not_started",
-      "summary": "Blueprint phase 13.",
-      "tests": null
+      "status": "partial",
+      "summary": "Blueprint phase 13 has synthetic measurement/correction/ease and bounded outfit-layering foundations.",
+      "tests": ["closy-forge/tests/unit/test_future_foundations.py"]
     },
     {
-      "commitSha": null,
+      "commitSha": ["30ea629639cb34894511d49b1b965fc344adb4c3"],
       "dependencies": [],
-      "executableEvidence": null,
+      "executableEvidence": ["synthetic dataset/version/split and model-card/licence contracts validate", "reproducible training command fields exist while actualTrainingRun remains false", "baseline, rollback and three failure-model fixtures execute without superiority claims"],
       "id": "BP-17-PHASE-14",
-      "implementationPaths": null,
-      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "implementationPaths": ["closy-forge/src/closy_forge/future_foundations/contracts.py", "closy-forge/schemas/v1/native-model-foundation.schema.json"],
+      "limitations": "Phase 14 is partial: no training/fine-tuning ran, no weights exist and no benchmark superiority or production licence acceptance is claimed.",
+      "nextAction": "Obtain authorised data/compute governance before executing the reproducible training contract.",
       "sourceSection": "Phases 0-14",
-      "status": "not_started",
-      "summary": "Blueprint phase 14.",
-      "tests": null
+      "status": "partial",
+      "summary": "Blueprint phase 14 has dataset, model-card, command, baseline, rollback and failure-evaluation contracts without training claims.",
+      "tests": ["closy-forge/tests/unit/test_future_foundations.py"]
     },
     {
       "commitSha": [
