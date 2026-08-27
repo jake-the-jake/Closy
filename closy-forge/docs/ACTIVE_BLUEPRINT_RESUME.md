@@ -276,8 +276,8 @@ authorised ZeroOne runtime, physical mobile hardware, private/licensed avatar da
 data/compute. After remote evidence is green, the exact external continuation begins with:
 
 ```powershell
-cd E:\apps\Closy
-python -m closy_forge schemas check --schema-dir schemas/v1
+cd E:\apps\Closy\closy-forge
+.\.venv\Scripts\python.exe -m closy_forge schemas check --schema-dir schemas/v1
 ```
 
 ## Next Safe Action

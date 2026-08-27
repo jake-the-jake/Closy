@@ -749,6 +749,9 @@ def test_active_resume_points_to_future_foundations_validation() -> None:
     assert "105 schemas" in resume
     assert "111 schemas" in resume
     assert "Acquire and inspect an authorised versioned ZeroOne executable" in resume
+    assert "cd E:\\apps\\Closy\\closy-forge" in resume
+    assert ".\\.venv\\Scripts\\python.exe -m closy_forge schemas check" in resume
+    assert "cd E:\\apps\\Closy\npython -m closy_forge" not in resume
 
 
 def test_ledger_table_statuses_use_bp46_vocabulary() -> None:
