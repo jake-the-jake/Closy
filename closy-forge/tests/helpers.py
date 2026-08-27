@@ -9,6 +9,9 @@ from typing import Any
 from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt_package
 from closy_forge.pipeline.build_jacket_outerwear_demo import build_demo_jacket_outerwear_package
+from closy_forge.pipeline.build_layered_asymmetric_demo import (
+    build_demo_layered_asymmetric_package,
+)
 from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_simple_dress_demo import build_demo_simple_dress_package
 from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt_package
@@ -24,6 +27,7 @@ _SIMPLE_TROUSERS_CACHE: Path | None = None
 _SIMPLE_DRESS_CACHE: Path | None = None
 _BUTTON_SHIRT_CACHE: Path | None = None
 _JACKET_OUTERWEAR_CACHE: Path | None = None
+_LAYERED_ASYMMETRIC_CACHE: Path | None = None
 
 
 def build_demo(tmp_path: Path, name: str = "demo_tshirt.closygarment") -> Path:
@@ -66,6 +70,13 @@ def build_jacket_outerwear(
 ) -> Path:
     output = tmp_path / name
     return clone_package(_cached_jacket_outerwear_package(), output)
+
+
+def build_layered_asymmetric(
+    tmp_path: Path, name: str = "demo_layered_asymmetric.closygarment"
+) -> Path:
+    output = tmp_path / name
+    return clone_package(_cached_layered_asymmetric_package(), output)
 
 
 def clone_package(package_dir: Path, target: Path) -> Path:
@@ -167,3 +178,13 @@ def _cached_jacket_outerwear_package() -> Path:
         build_demo_jacket_outerwear_package(package, force=True)
         _JACKET_OUTERWEAR_CACHE = package
     return _JACKET_OUTERWEAR_CACHE
+
+
+def _cached_layered_asymmetric_package() -> Path:
+    global _LAYERED_ASYMMETRIC_CACHE
+    if _LAYERED_ASYMMETRIC_CACHE is None:
+        cache_root = Path(tempfile.mkdtemp(prefix="closy_forge_pytest_layered_asymmetric_"))
+        package = cache_root / "demo_layered_asymmetric.closygarment"
+        build_demo_layered_asymmetric_package(package, force=True)
+        _LAYERED_ASYMMETRIC_CACHE = package
+    return _LAYERED_ASYMMETRIC_CACHE

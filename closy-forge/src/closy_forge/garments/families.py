@@ -90,6 +90,30 @@ GARMENT_FAMILIES: dict[str, dict[str, Any]] = {
         "requiredFacingLayerClass": "outer_shell_internal_facing",
         "forbiddenOpenings": ["armhole_left", "armhole_right", "front_placket"],
     },
+    "layered_asymmetric": {
+        "id": "family.layered.asymmetric_tunic",
+        "category": "layered_unusual",
+        "requiredParts": [
+            "inner_front_torso",
+            "inner_back_torso",
+            "outer_front_torso",
+            "outer_back_torso",
+        ],
+        "requiredOpenings": [
+            "inner_neck",
+            "inner_hem",
+            "inner_armhole_left",
+            "inner_armhole_right",
+            "outer_neck",
+            "outer_hem",
+            "outer_armhole_left",
+            "outer_armhole_right",
+        ],
+        "requiredLayerClasses": ["base_layer", "outerwear"],
+        "requiredLayerCount": 2,
+        "requiresAsymmetry": True,
+        "forbiddenParts": ["sleeve", "cuff"],
+    },
 }
 
 

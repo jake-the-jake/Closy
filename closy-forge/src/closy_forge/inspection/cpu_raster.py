@@ -180,6 +180,10 @@ def _visible_panels(label: str) -> set[str]:
         if back
         else ("panel.jacket_outerwear.front.left", "panel.jacket_outerwear.front.right")
     )
+    layered_torso = (
+        f"panel.layered_asymmetric.inner.{'back' if back else 'front'}",
+        f"panel.layered_asymmetric.outer.{'back' if back else 'front'}",
+    )
     simple_skirt = "panel.simple_skirt.back" if back else "panel.simple_skirt.front"
     trouser_face = "back" if back else "front"
     return {
@@ -188,6 +192,7 @@ def _visible_panels(label: str) -> set[str]:
         long_sleeved_torso,
         *button_shirt_torso,
         *jacket_torso,
+        *layered_torso,
         simple_skirt,
         f"panel.simple_trousers.{trouser_face}.left",
         f"panel.simple_trousers.{trouser_face}.right",
