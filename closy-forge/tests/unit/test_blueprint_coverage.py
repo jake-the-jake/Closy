@@ -572,7 +572,8 @@ def test_phase8_layered_checkpoint_is_partial_and_evidenced() -> None:
     assert any("0.090 metre asymmetric hem drop" in item for item in phase8["executableEvidence"])
     assert any("digest 24ddc94e37e9b2ce" in item for item in phase8["executableEvidence"])
     assert "Phase 8 remains globally partial" in phase8["limitations"]
-    assert "Phase 9" in phase8["nextAction"]
+    assert "authorised production/private acceptance evidence" in phase8["nextAction"]
+    assert "Begin the Phase 9" not in phase8["nextAction"]
     assert "closy-forge/src/closy_forge/garments/sleeveless_top" in phase8["implementationPaths"]
     assert "closy-forge/src/closy_forge/garments/long_sleeved_top" in phase8["implementationPaths"]
     assert "closy-forge/src/closy_forge/garments/simple_skirt" in phase8["implementationPaths"]
@@ -606,7 +607,8 @@ def test_phase9_foundation_is_partial_and_does_not_claim_training() -> None:
     )
     assert any("disjoint 8/8/8" in item for item in phase9["executableEvidence"])
     assert "no model training" in phase9["limitations"]
-    assert "Phase 10" in phase9["nextAction"]
+    assert "authorised garment data, training compute and governance" in phase9["nextAction"]
+    assert "Implement the Phase 10" not in phase9["nextAction"]
     assert (
         "closy-forge/src/closy_forge/pattern_inference/foundation.py"
         in phase9["implementationPaths"]
@@ -632,6 +634,11 @@ def test_markdown_ledger_matches_future_foundations_state() -> None:
 
     assert "Branch: `codex/closy-forge-phases-10-14-runnable-foundations`" in ledger
     assert "Current active increment: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0`" in ledger
+    assert (
+        "Next dependency-ready increment requires an authorised versioned ZeroOne executable"
+        in ledger
+    )
+    assert "Phase 9 is next" not in ledger
     assert "b01a9c13e31ced489adb3330d28dff74b903b256" in ledger
     assert "478,681 inventoried bytes" in ledger
     assert "24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417" in ledger
