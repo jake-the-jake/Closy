@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-8-LAYERED-ASYMMETRIC-D0`.
-- Branch: `codex/closy-forge-phase-8-layered-unusual`, based on jacket/outerwear evidence head
-  `b01a9c13e31ced489adb3330d28dff74b903b256` from draft PR #16.
+- Active checkpoint: `PHASE-9-STRUCTURED-PATTERN-FOUNDATION-D0`.
+- Branch: `codex/closy-forge-phase-9-structured-pattern-foundation`, based on Phase 8 layered
+  implementation head `a26d14b` from draft PR #17.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -58,6 +58,11 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`.
   Two 41-file package trees are byte-identical; focused unit, integration, CLI and corruption
   checks pass and 99 schemas are fresh. Remote evidence is pending the implementation push.
+- Phase 9 adds eight garment-only grammar productions, 24 synthetic samples, disjoint 8/8/8
+  splits, a project-authored correction record and a deterministic retrieval benchmark. The
+  baseline selects 24/24 authored targets, which is fixture correctness rather than learned
+  accuracy. Seven focused foundation/schema tests pass and 105 schemas are fresh.
+- Phase 9 implementation commit: `b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b`.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -259,16 +264,15 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After the layered/asymmetric implementation is committed and cross-OS evidence is green:
+After the Phase 9 foundation is committed and cross-OS evidence is green:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-9-structured-pattern-foundation
+git switch -c codex/closy-forge-phase-10-zeroone-static-contract
 ```
 
 ## Next Safe Action
 
-Implement the runnable Phase 9 foundation: versioned structured-pattern grammar, deterministic
-template retrieval/ranking, synthetic public-fixture split contract, grammar/geometry validation,
-variable-panel-count fixtures, correction records and a benchmark harness. Preserve every Phase 8
-golden and explicitly report that no learned model training or generalisation evaluation ran.
+Implement the Phase 10 headless import/process/export contract, version negotiation, fallback
+preservation and deterministic fake/reference executable. Keep actual ZeroOne execution explicitly
+not run because no authorised ZeroOne repository or binary is present.
