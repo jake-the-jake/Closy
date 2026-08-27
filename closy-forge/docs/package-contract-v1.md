@@ -227,3 +227,23 @@ Its authoritative dense shell is reconstructed only through `binding/sim_to_rend
 simulation fallback remains topologically independent. This is deterministic public CPU evidence,
 not button mechanics, private-user fitting, measured fabric, production GPU cloth or global Phase 8
 acceptance.
+
+## Jacket/Outerwear D0 Profile
+
+The Phase 8 jacket/outerwear profile contains seven literal panels: split left/right fronts, one
+back, two long sleeves and separate left/right internal facings. Twelve seams include two explicit
+facing attachments. The facing outer edges are sewn to the fronts while facing inner edges remain
+the two-edge front opening; neck, hem and both cuffs are independently resolved openings.
+Family-specific artifacts are:
+
+```text
+fitting/jacket_outerwear_fit.json
+textures/jacket_outerwear_pbr_report.json
+reports/jacket_outerwear_quality.json
+```
+
+The semantic graph records the torso/sleeves as an outer shell and places internal facings one
+collision order beneath it. The public fixture selects heavy jersey, executes four authored D0
+material presets and cuff stress, reconstructs its dense shell only through the authoritative
+binding, and preserves an independent simulation-topology fallback. It is not fastening mechanics,
+private-user fit, measured fabric, production GPU cloth or global Phase 8 acceptance.

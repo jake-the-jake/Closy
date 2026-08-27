@@ -73,6 +73,23 @@ GARMENT_FAMILIES: dict[str, dict[str, Any]] = {
         "requiredClosures": ["button_buttonhole"],
         "forbiddenOpenings": ["armhole_left", "armhole_right"],
     },
+    "jacket_outerwear": {
+        "id": "family.outerwear.open_front_jacket",
+        "category": "outerwear",
+        "requiredParts": [
+            "front_left_torso",
+            "front_right_torso",
+            "back_torso",
+            "left_long_sleeve",
+            "right_long_sleeve",
+            "front_left_facing",
+            "front_right_facing",
+        ],
+        "requiredOpenings": ["neck", "hem", "front", "left_cuff", "right_cuff"],
+        "requiredLayerClass": "outer_shell",
+        "requiredFacingLayerClass": "outer_shell_internal_facing",
+        "forbiddenOpenings": ["armhole_left", "armhole_right", "front_placket"],
+    },
 }
 
 

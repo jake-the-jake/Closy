@@ -3,9 +3,9 @@
 Closy Forge is the isolated Python sidecar for deterministic avatar-and-garment package construction. It is not imported by the Expo app, does not run on phones, and does not depend on ZeroOne, GPU tooling, AI providers, user imagery, or external services.
 
 The current deterministic fixtures build an authored T-shirt plus literal sleeveless-top,
-long-sleeved-top, simple-skirt, simple-trousers, simple-dress and button-shirt families. All retain pattern, simulation,
-conventional GLB and authoritative binding evidence; the Phase 8 slices prove the shared pipeline
-is not restricted to T-shirt semantics:
+long-sleeved-top, simple-skirt, simple-trousers, simple-dress, button-shirt and jacket/outerwear
+families. All retain pattern, simulation, conventional GLB and authoritative binding evidence; the
+Phase 8 slices prove the shared pipeline is not restricted to T-shirt semantics:
 
 ```bash
 python -m closy_forge demo build-tshirt --output generated/garments/demo_tshirt.closygarment
@@ -23,6 +23,8 @@ python -m closy_forge demo build-simple-dress --output generated/garments/demo_s
 python -m closy_forge validate generated/garments/demo_simple_dress.closygarment
 python -m closy_forge demo build-button-shirt --output generated/garments/demo_button_shirt.closygarment
 python -m closy_forge validate generated/garments/demo_button_shirt.closygarment
+python -m closy_forge demo build-jacket-outerwear --output generated/garments/demo_jacket_outerwear.closygarment
+python -m closy_forge validate generated/garments/demo_jacket_outerwear.closygarment
 python -m closy_forge capture build-synthetic --output generated/capture/synthetic_tshirt --force
 ```
 
@@ -86,6 +88,8 @@ python -m closy_forge demo build-simple-dress --output ../generated/garments/dem
 python -m closy_forge validate ../generated/garments/demo_simple_dress.closygarment
 python -m closy_forge demo build-button-shirt --output ../generated/garments/demo_button_shirt.closygarment --force
 python -m closy_forge validate ../generated/garments/demo_button_shirt.closygarment
+python -m closy_forge demo build-jacket-outerwear --output ../generated/garments/demo_jacket_outerwear.closygarment --force
+python -m closy_forge validate ../generated/garments/demo_jacket_outerwear.closygarment
 ```
 
 CLI exit codes:
@@ -118,6 +122,7 @@ See:
 - `docs/simple-trousers-d0.md` for the Phase 8 trousers family fixture and cuff evidence.
 - `docs/simple-dress-d0.md` for the Phase 8 one-piece dress fixture and armhole evidence.
 - `docs/button-shirt-d0.md` for the Phase 8 split-front shirt, opening and closure-pair evidence.
+- `docs/jacket-outerwear-d0.md` for the Phase 8 open-front outer shell and facing evidence.
 - `docs/MASTER_BLUEPRINT_PROGRESS.md` for the evidence ledger across the master blueprint.
 - `docs/future-handoff.md` for future reconstruction and ZeroOne boundaries.
 - `../docs/closy-garment-package-v1.md` for the repository-level package overview.

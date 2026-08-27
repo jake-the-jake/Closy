@@ -17,6 +17,7 @@ from closy_forge.capture import (
 from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.button_shirt.parameters import ButtonShirtParameters
+from closy_forge.garments.jacket_outerwear.parameters import JacketOuterwearParameters
 from closy_forge.garments.long_sleeved_top.parameters import LongSleevedTopParameters
 from closy_forge.garments.simple_dress.parameters import SimpleDressParameters
 from closy_forge.garments.simple_skirt.parameters import SimpleSkirtParameters
@@ -26,6 +27,7 @@ from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
 from closy_forge.package_io.determinism import compare_package_trees
 from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt_package
+from closy_forge.pipeline.build_jacket_outerwear_demo import build_demo_jacket_outerwear_package
 from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_simple_dress_demo import build_demo_simple_dress_package
 from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt_package
@@ -263,6 +265,25 @@ def _parser() -> argparse.ArgumentParser:
     button_shirt.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     button_shirt.set_defaults(handler=_build_button_shirt)
 
+    jacket = demo_sub.add_parser(
+        "build-jacket-outerwear", help="Build the canonical open-front jacket D0 package."
+    )
+    jacket.add_argument(
+        "--output", required=True, type=Path, help="Output .closygarment directory."
+    )
+    jacket.add_argument(
+        "--force", action="store_true", help="Replace exactly the requested target package."
+    )
+    jacket.add_argument(
+        "--seed", type=int, default=101, help="Deterministic fixture seed recorded in provenance."
+    )
+    jacket.add_argument("--body-length", type=float, default=None)
+    jacket.add_argument("--half-chest-width", type=float, default=None)
+    jacket.add_argument("--sleeve-length", type=float, default=None)
+    jacket.add_argument("--facing-width", type=float, default=None)
+    jacket.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    jacket.set_defaults(handler=_build_jacket_outerwear)
+
     capture = subparsers.add_parser("capture", help="Build deterministic capture fixtures.")
     capture_sub = capture.add_subparsers(dest="capture_command")
     capture_demo = capture_sub.add_parser(
@@ -482,6 +503,27 @@ def _build_simple_dress(args: argparse.Namespace) -> int:
 def _build_button_shirt(args: argparse.Namespace) -> int:
     params = _button_shirt_params_from_args(args)
     result = build_demo_button_shirt_package(
+        args.output, params=params, seed=args.seed, force=args.force
+    )
+    payload = {
+        "status": "built",
+        "package": str(result.package_dir),
+        "garmentId": result.manifest["garmentId"],
+        "canonicalPackageDigest": result.manifest["packageDigest"],
+        "validation": result.validation["counts"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(f"Built {result.package_dir}")
+        print(f"Digest: {payload['canonicalPackageDigest']}")
+        print(f"Validation: {payload['validation']}")
+    return EXIT_SUCCESS
+
+
+def _build_jacket_outerwear(args: argparse.Namespace) -> int:
+    params = _jacket_outerwear_params_from_args(args)
+    result = build_demo_jacket_outerwear_package(
         args.output, params=params, seed=args.seed, force=args.force
     )
     payload = {
@@ -750,4 +792,24 @@ def _button_shirt_params_from_args(args: argparse.Namespace) -> ButtonShirtParam
             defaults.sleeve_length_meters if args.sleeve_length is None else args.sleeve_length
         ),
         button_count=defaults.button_count if args.button_count is None else args.button_count,
+    )
+
+
+def _jacket_outerwear_params_from_args(args: argparse.Namespace) -> JacketOuterwearParameters:
+    defaults = JacketOuterwearParameters()
+    return JacketOuterwearParameters(
+        body_length_meters=(
+            defaults.body_length_meters if args.body_length is None else args.body_length
+        ),
+        half_chest_width_meters=(
+            defaults.half_chest_width_meters
+            if args.half_chest_width is None
+            else args.half_chest_width
+        ),
+        sleeve_length_meters=(
+            defaults.sleeve_length_meters if args.sleeve_length is None else args.sleeve_length
+        ),
+        facing_width_meters=(
+            defaults.facing_width_meters if args.facing_width is None else args.facing_width
+        ),
     )

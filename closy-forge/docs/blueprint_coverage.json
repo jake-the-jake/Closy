@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "Phase 8 button-shirt evidence sync on codex/closy-forge-phase-8-shirt-openings at 943f0b5d06198c5a97c11cd1121e6244899569ea",
+  "generatedBy": "Phase 8 jacket/outerwear evidence sync on codex/closy-forge-phase-8-jacket-outerwear at d79e1b8c725242e65389081a6b0b8c078fd41f9f",
   "rows": [
     {
       "commitSha": [
@@ -2001,7 +2001,8 @@
         "80adff0e35375701dc43553dc8b810f924cfface",
         "40fee8ed7106ba7435d40e488c67370d32cab6ee",
         "61c27c4eacfff92dee8d468119277a38e7759fc7",
-        "943f0b5d06198c5a97c11cd1121e6244899569ea"
+        "943f0b5d06198c5a97c11cd1121e6244899569ea",
+        "d79e1b8c725242e65389081a6b0b8c078fd41f9f"
       ],
       "dependencies": [
         "BP-17-PHASE-07"
@@ -2039,7 +2040,13 @@
         "25-candidate button-shirt bounded fit accepts objective 0.00156; authored cues select lightweight woven and all four material presets execute with both cuffs non-collapsed, cuff drifts 0.00002032 and 0.00007738 metres and max dense seam crack 0.00247185 metres",
         "button-shirt authoritative 1506-record dense binding and independent 256-vertex direct-simulation fallback record minimum silhouette IoU 0.302626779, maximum normalised boundary Chamfer 0.054750816 and foreground colour MAE 0.0",
         "repeated local button-shirt builds produce byte-identical 41-file trees with 37 inventory entries at digest 4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91",
-        "PR #15 run 33020344545 passes 322 tests, 89 fresh schemas, strict mypy across 170 source files, all seven family rebuild/diff/validation paths and the binding benchmark on Ubuntu job 98348931958 and Windows job 98348932103"
+        "PR #15 run 33020344545 passes 322 tests, 89 fresh schemas, strict mypy across 170 source files, all seven family rebuild/diff/validation paths and the binding benchmark on Ubuntu job 98348931958 and Windows job 98348932103",
+        "literal jacket/outerwear pattern contains split left/right fronts, back, two sleeves and separate left/right internal facings, twelve sewn seams and five neck/hem/front/cuff openings",
+        "jacket facing outer edges attach to fronts while inner edges remain the open-front boundary; torso/sleeves and internal facings preserve explicit outer-shell collision order",
+        "25-candidate jacket bounded fit accepts objective 0.00156; authored cues select heavy jersey and all four material presets execute with both cuffs non-collapsed, cuff drifts 0.00004389 and 0.0011949 metres and max dense seam crack 0.00788269 metres",
+        "jacket authoritative 1944-record dense binding and independent 331-vertex direct-simulation fallback record minimum silhouette IoU 0.453862146, maximum normalised boundary Chamfer 0.032568771 and foreground colour MAE 0.0",
+        "repeated local, Ubuntu and Windows jacket builds produce byte-identical 41-file trees with 37 inventory entries at digest 2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a",
+        "PR #16 run 33029602357 passes 337 tests, 94 fresh schemas, strict mypy across 180 source files, all eight fixture rebuild/diff/validation paths and the binding benchmark on Ubuntu job 98378800026 and Windows job 98378800076"
       ],
       "id": "BP-17-PHASE-08",
       "implementationPaths": [
@@ -2052,12 +2059,14 @@
         "closy-forge/src/closy_forge/garments/simple_trousers",
         "closy-forge/src/closy_forge/garments/simple_dress",
         "closy-forge/src/closy_forge/garments/button_shirt",
+        "closy-forge/src/closy_forge/garments/jacket_outerwear",
         "closy-forge/src/closy_forge/pipeline/build_sleeveless_demo.py",
         "closy-forge/src/closy_forge/pipeline/build_long_sleeved_demo.py",
         "closy-forge/src/closy_forge/pipeline/build_simple_skirt_demo.py",
         "closy-forge/src/closy_forge/pipeline/build_simple_trousers_demo.py",
         "closy-forge/src/closy_forge/pipeline/build_simple_dress_demo.py",
         "closy-forge/src/closy_forge/pipeline/build_button_shirt_demo.py",
+        "closy-forge/src/closy_forge/pipeline/build_jacket_outerwear_demo.py",
         "closy-forge/schemas/v1/sleeveless-top-pattern.schema.json",
         "closy-forge/schemas/v1/sleeveless-top-fit.schema.json",
         "closy-forge/schemas/v1/sleeveless-top-motion.schema.json",
@@ -2087,13 +2096,18 @@
         "closy-forge/schemas/v1/button-shirt-fit.schema.json",
         "closy-forge/schemas/v1/button-shirt-motion.schema.json",
         "closy-forge/schemas/v1/button-shirt-quality.schema.json",
-        "closy-forge/schemas/v1/button-shirt-package-manifest.schema.json"
+        "closy-forge/schemas/v1/button-shirt-package-manifest.schema.json",
+        "closy-forge/schemas/v1/jacket-outerwear-pattern.schema.json",
+        "closy-forge/schemas/v1/jacket-outerwear-fit.schema.json",
+        "closy-forge/schemas/v1/jacket-outerwear-motion.schema.json",
+        "closy-forge/schemas/v1/jacket-outerwear-quality.schema.json",
+        "closy-forge/schemas/v1/jacket-outerwear-package-manifest.schema.json"
       ],
-      "limitations": "Phase 8 remains partial after six bounded public/synthetic families. Button fastening mechanics, jackets and layered/unusual garments are not implemented; there is no private-user fit, production GPU cloth or product-calibrated visual acceptance.",
-      "nextAction": "Implement a literal jacket/outerwear vertical slice through the shared family contracts while preserving all six family goldens.",
+      "limitations": "Phase 8 remains partial after seven bounded public/synthetic families. Button fastening mechanics and layered/unusual garments are not implemented; there is no private-user fit, production GPU cloth or product-calibrated visual acceptance.",
+      "nextAction": "Implement a literal layered/unusual garment vertical slice through the shared family contracts while preserving all seven family goldens.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
-      "summary": "Blueprint phase 8 now has complete sleeveless, long-sleeved, simple-skirt, simple-trousers, simple-dress and button-shirt D0 vertical slices while the multi-family phase remains globally partial.",
+      "summary": "Blueprint phase 8 now has complete sleeveless, long-sleeved, simple-skirt, simple-trousers, simple-dress, button-shirt and jacket/outerwear D0 vertical slices while the multi-family phase remains globally partial.",
       "tests": [
         "closy-forge/tests/unit/test_sleeveless_top.py",
         "closy-forge/tests/integration/test_sleeveless_package.py",
@@ -2112,7 +2126,10 @@
         "closy-forge/tests/corruption/test_simple_dress_corruption.py",
         "closy-forge/tests/unit/test_button_shirt.py",
         "closy-forge/tests/integration/test_button_shirt_package.py",
-        "closy-forge/tests/corruption/test_button_shirt_corruption.py"
+        "closy-forge/tests/corruption/test_button_shirt_corruption.py",
+        "closy-forge/tests/unit/test_jacket_outerwear.py",
+        "closy-forge/tests/integration/test_jacket_outerwear_package.py",
+        "closy-forge/tests/corruption/test_jacket_outerwear_corruption.py"
       ]
     },
     {
