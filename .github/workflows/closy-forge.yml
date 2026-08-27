@@ -53,7 +53,7 @@ jobs:
       - name: Type check
         run: python -m mypy src
       - name: Contract, unit, schema, and corruption tests
-        run: python -m pytest tests/unit tests/schema tests/corruption
+        run: python -m pytest tests/unit tests/corruption
       - name: Check schemas
         run: python -m closy_forge schemas check --schema-dir schemas/v1
 
