@@ -122,6 +122,23 @@ Representative current codes:
 - `jacket_outerwear_inventory_file_set_mismatch`: inventory paths differ from persisted files.
 - `jacket_outerwear_inventory_hash_mismatch`: an inventoried jacket artifact hash/size differs.
 - `jacket_outerwear_package_digest_mismatch`: canonical jacket digest does not match inventory.
+- `layered_asymmetric_family_mismatch`: manifest identity is not the canonical layered fixture.
+- `layered_asymmetric_manifest_contract_invalid`: package kind or schema version is unsupported.
+- `layered_asymmetric_contract_unreadable`: a required layered contract cannot be decoded.
+- `layered_asymmetric_semantic_ids_invalid`: inner/outer panels, seams or openings are not literal.
+- `layered_asymmetric_false_sleeve_semantics`: the sleeveless layered fixture retained sleeve/cuff IDs.
+- `layered_asymmetric_layer_contract_invalid`: ordered layers, clearance or asymmetric hem evidence is invalid.
+- `layered_asymmetric_opening_loop_invalid`: a layer-specific neck, hem or armhole does not resolve.
+- `layered_asymmetric_constraint_pairing_invalid`: an inner/outer shoulder or side seam is absent.
+- `layered_asymmetric_fit_integrity_invalid`: bounded fit evidence or its hash is invalid.
+- `layered_asymmetric_motion_suite_invalid`: four-preset or four-armhole stress evidence is invalid.
+- `layered_asymmetric_material_selection_invalid`: material registry/selection evidence is invalid.
+- `layered_asymmetric_binding_validation_failed`: persisted dense/fallback geometry is invalid.
+- `layered_asymmetric_appearance_validation_failed`: decoded source/render or PBR evidence is invalid.
+- `layered_asymmetric_quality_claim_invalid`: family readiness or global Phase 8 status is overclaimed.
+- `layered_asymmetric_inventory_file_set_mismatch`: inventory paths differ from persisted files.
+- `layered_asymmetric_inventory_hash_mismatch`: an inventoried layered artifact hash/size differs.
+- `layered_asymmetric_package_digest_mismatch`: canonical layered digest does not match inventory.
 
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.

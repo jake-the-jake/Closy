@@ -20,7 +20,8 @@ jobs:
   forge:
     name: Forge ${{ matrix.os }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    # Windows crosses 30 minutes once the cumulative family matrix rebuilds every fixture.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -125,6 +126,15 @@ jobs:
           python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/jacket_outerwear_a.closygarment" "$RUNNER_TEMP/closy-forge/jacket_outerwear_b.closygarment" --json
           python -m closy_forge validate "$RUNNER_TEMP/closy-forge/jacket_outerwear_a.closygarment"
           python -m closy_forge report "$RUNNER_TEMP/closy-forge/jacket_outerwear_a.closygarment"
+      - name: Build layered-asymmetric deterministic fixture twice
+        run: |
+          python -m closy_forge demo build-layered-asymmetric --output "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment" --force
+          python -m closy_forge demo build-layered-asymmetric --output "$RUNNER_TEMP/closy-forge/layered_asymmetric_b.closygarment" --force
+      - name: Compare, validate and report layered-asymmetric fixture
+        run: |
+          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment" "$RUNNER_TEMP/closy-forge/layered_asymmetric_b.closygarment" --json
+          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment"
+          python -m closy_forge report "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment"
       - name: Measure non-canonical binding workloads
         run: |
           python -m closy_forge benchmark binding-c3 \

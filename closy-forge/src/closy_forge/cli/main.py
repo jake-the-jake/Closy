@@ -18,6 +18,7 @@ from closy_forge.ci import export_sanitized_ci_diagnostics
 from closy_forge.contracts.schema_export import checked_in_schemas_fresh, export_schemas
 from closy_forge.garments.button_shirt.parameters import ButtonShirtParameters
 from closy_forge.garments.jacket_outerwear.parameters import JacketOuterwearParameters
+from closy_forge.garments.layered_asymmetric.parameters import LayeredAsymmetricParameters
 from closy_forge.garments.long_sleeved_top.parameters import LongSleevedTopParameters
 from closy_forge.garments.simple_dress.parameters import SimpleDressParameters
 from closy_forge.garments.simple_skirt.parameters import SimpleSkirtParameters
@@ -28,6 +29,9 @@ from closy_forge.package_io.canonical_json import canonical_dumps, write_canonic
 from closy_forge.package_io.determinism import compare_package_trees
 from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt_package
 from closy_forge.pipeline.build_jacket_outerwear_demo import build_demo_jacket_outerwear_package
+from closy_forge.pipeline.build_layered_asymmetric_demo import (
+    build_demo_layered_asymmetric_package,
+)
 from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved_package
 from closy_forge.pipeline.build_simple_dress_demo import build_demo_simple_dress_package
 from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt_package
@@ -284,6 +288,27 @@ def _parser() -> argparse.ArgumentParser:
     jacket.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     jacket.set_defaults(handler=_build_jacket_outerwear)
 
+    layered = demo_sub.add_parser(
+        "build-layered-asymmetric",
+        help="Build the canonical two-layer asymmetric D0 package.",
+    )
+    layered.add_argument(
+        "--output", required=True, type=Path, help="Output .closygarment directory."
+    )
+    layered.add_argument(
+        "--force", action="store_true", help="Replace exactly the requested target package."
+    )
+    layered.add_argument(
+        "--seed", type=int, default=101, help="Deterministic fixture seed recorded in provenance."
+    )
+    layered.add_argument("--body-length", type=float, default=None)
+    layered.add_argument("--half-chest-width", type=float, default=None)
+    layered.add_argument("--outer-layer-ease", type=float, default=None)
+    layered.add_argument("--asymmetry-drop", type=float, default=None)
+    layered.add_argument("--layer-clearance", type=float, default=None)
+    layered.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    layered.set_defaults(handler=_build_layered_asymmetric)
+
     capture = subparsers.add_parser("capture", help="Build deterministic capture fixtures.")
     capture_sub = capture.add_subparsers(dest="capture_command")
     capture_demo = capture_sub.add_parser(
@@ -524,6 +549,27 @@ def _build_button_shirt(args: argparse.Namespace) -> int:
 def _build_jacket_outerwear(args: argparse.Namespace) -> int:
     params = _jacket_outerwear_params_from_args(args)
     result = build_demo_jacket_outerwear_package(
+        args.output, params=params, seed=args.seed, force=args.force
+    )
+    payload = {
+        "status": "built",
+        "package": str(result.package_dir),
+        "garmentId": result.manifest["garmentId"],
+        "canonicalPackageDigest": result.manifest["packageDigest"],
+        "validation": result.validation["counts"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(f"Built {result.package_dir}")
+        print(f"Digest: {payload['canonicalPackageDigest']}")
+        print(f"Validation: {payload['validation']}")
+    return EXIT_SUCCESS
+
+
+def _build_layered_asymmetric(args: argparse.Namespace) -> int:
+    params = _layered_asymmetric_params_from_args(args)
+    result = build_demo_layered_asymmetric_package(
         args.output, params=params, seed=args.seed, force=args.force
     )
     payload = {
@@ -813,3 +859,17 @@ def _jacket_outerwear_params_from_args(args: argparse.Namespace) -> JacketOuterw
             defaults.facing_width_meters if args.facing_width is None else args.facing_width
         ),
     )
+
+
+def _layered_asymmetric_params_from_args(args: argparse.Namespace) -> LayeredAsymmetricParameters:
+    defaults = LayeredAsymmetricParameters()
+    values = defaults.to_json()
+    overrides = {
+        "body_length_meters": args.body_length,
+        "half_chest_width_meters": args.half_chest_width,
+        "outer_layer_ease_meters": args.outer_layer_ease,
+        "outer_asymmetry_drop_meters": args.asymmetry_drop,
+        "layer_clearance_meters": args.layer_clearance,
+    }
+    values.update({key: value for key, value in overrides.items() if value is not None})
+    return LayeredAsymmetricParameters(**values)

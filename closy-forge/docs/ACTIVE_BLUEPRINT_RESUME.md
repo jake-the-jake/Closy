@@ -5,9 +5,9 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Current State
 
-- Active checkpoint: `PHASE-8-JACKET-OUTERWEAR-D0`.
-- Branch: `codex/closy-forge-phase-8-jacket-outerwear`, based on button-shirt evidence head
-  `f55b2a50080b28c55c28ce7c18474920b19cf3f3` from draft PR #15.
+- Active checkpoint: `PHASE-8-LAYERED-ASYMMETRIC-D0`.
+- Branch: `codex/closy-forge-phase-8-layered-unusual`, based on jacket/outerwear evidence head
+  `b01a9c13e31ced489adb3330d28dff74b903b256` from draft PR #16.
 - Phase 7 final run `32949980632` passed Ubuntu job `98118989676` and Windows job `98118989530`
   with 246 tests per OS, 59 fresh schemas and deterministic T-shirt package evidence.
 - Phase 8 substantive head `d49227b3e13ba269dfa33b65c7221a54838631d5` is draft PR #10.
@@ -52,6 +52,12 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   Each job passed 337 tests, rebuilt all predecessor families, and produced identical 41-file
   jacket trees at digest
   `2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a`.
+- Jacket evidence head `b01a9c13e31ced489adb3330d28dff74b903b256` passed final run
+  `33031422497` on Windows job `98384584086` and Ubuntu job `98384584245`.
+- The layered/asymmetric implementation builds and validates locally at digest
+  `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`.
+  Two 41-file package trees are byte-identical; focused unit, integration, CLI and corruption
+  checks pass and 99 schemas are fresh. Remote evidence is pending the implementation push.
 - Unrelated app edits in `metro.config.js` and `src/features/avatar-*` remain unstaged and must
   be preserved. `closy-forge/.tmp/` remains untracked local evidence only.
 
@@ -194,10 +200,27 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   entries, 583,414 bytes and digest
   `2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a`.
 
+### Layered Asymmetric
+
+- Four non-empty panels form inner and outer front/back layers; each layer owns shoulder/side
+  seams plus neck/hem/left-armhole/right-armhole openings.
+- The inner cotton-jersey component has collision order `10`; the outer lightweight-woven
+  component has collision order `20`. Inter-layer collision is explicit, declared clearance is
+  `0.014 m`, and measured front rest clearance is `0.020 m`.
+- Outer front/back hems preserve a literal `0.090 m` asymmetric drop.
+- Bounded fit accepts objective `0.00182`; four material presets and a four-armhole stress state
+  execute. No armhole collapses and maximum dense seam crack is `0.0079439 m`.
+- The simulation mesh has 258 vertices / 254 triangles. The dense shell has 1,524 vertices /
+  1,016 triangles and 1,524 binding records; the independent fallback keeps 258 vertices.
+- Decoded source/render evidence records minimum IoU `0.394545455`, maximum normalised boundary
+  Chamfer `0.058526042`, and foreground colour MAE `0.0`.
+- Repeated local builds produce matching 41-file trees with 37 inventory entries, 478,681 bytes
+  and digest `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`.
+
 ## Current Validation
 
-- Ruff format/lint pass; strict mypy passes across 180 source files.
-- 94 schemas are freshly generated.
+- Layered-focused unit, package, CLI, validator and corruption checks pass.
+- 99 schemas are freshly generated.
 - Focused family, package, CLI, validator and corruption suites pass.
 - The complete local Forge suite passes all 337 collected tests in `3082.10s`. PR #16 run
   `33029602357` confirms the same eight-family matrix on Ubuntu and Windows Python 3.11.
@@ -217,12 +240,14 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
   and zero validator issues in repeated local and cross-OS builds.
 - The jacket package has 41 physical files, 37 inventory entries, 583,414 inventoried bytes and
   zero validator issues in repeated local and cross-OS builds.
+- The layered/asymmetric package has 41 physical files, 37 inventory entries, 478,681 inventoried
+  bytes and zero validator issues in repeated local builds.
 
 ## Truthful Limits
 
-- Phase 8 is partial globally. Sleeveless, long-sleeved, simple-skirt, simple-trousers,
-  simple-dress, button-shirt and jacket/outerwear D0 slices are complete for bounded public
-  fixtures; layered/unusual garments are not started.
+- The listed Phase 8 D0 family ladder is literal, including layered/asymmetric. Phase 8 remains
+  partial globally because button mechanics, private-user fit, production GPU/multilayer cloth,
+  continuous collision and product-calibrated visual acceptance remain absent.
 - Phase 7 and Stage Q remain partial globally. Authored preset execution is not measured real-fabric
   calibration, learned inference, private-user estimation or production GPU cloth.
 - The new family uses a fixed synthetic avatar and CPU reference solver. Mobile/device performance,
@@ -234,16 +259,16 @@ literal evidence only; green CI does not by itself promote a global blueprint ga
 
 ## Next Exact Command
 
-After PR #16 cross-OS evidence is green and truth-synced:
+After the layered/asymmetric implementation is committed and cross-OS evidence is green:
 
 ```powershell
 cd E:\apps\Closy
-git switch -c codex/closy-forge-phase-8-layered-unusual
+git switch -c codex/closy-forge-phase-9-structured-pattern-foundation
 ```
 
 ## Next Safe Action
 
-Implement one literal layered/unusual garment fixture through the shared contracts with explicit
-inner/outer layer identity, deterministic collision order and bounded inter-layer motion evidence.
-Preserve all seven completed Phase 8 family goldens and keep Phase 8 globally partial unless that
-final family scope is fully literal.
+Implement the runnable Phase 9 foundation: versioned structured-pattern grammar, deterministic
+template retrieval/ranking, synthetic public-fixture split contract, grammar/geometry validation,
+variable-panel-count fixtures, correction records and a benchmark harness. Preserve every Phase 8
+golden and explicitly report that no learned model training or generalisation evaluation ran.

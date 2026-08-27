@@ -2994,6 +2994,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_simple_dress_schemas(),
         **_button_shirt_schemas(),
         **_jacket_outerwear_schemas(),
+        **_layered_asymmetric_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
             {
@@ -3476,6 +3477,41 @@ def _jacket_outerwear_schemas() -> dict[str, dict[str, Any]]:
     quality = schemas["jacket-outerwear-quality.schema.json"]
     quality["properties"]["material"] = {"type": "object"}
     quality["required"].insert(quality["required"].index("appearance"), "material")
+    return schemas
+
+
+def _layered_asymmetric_schemas() -> dict[str, dict[str, Any]]:
+    def replace_tokens(value: Any) -> Any:
+        if isinstance(value, str):
+            return (
+                value.replace("long-sleeved-top", "layered-asymmetric")
+                .replace("long-sleeved", "layered-asymmetric")
+                .replace("Long sleeved top", "Layered asymmetric")
+                .replace("long sleeved top", "layered asymmetric")
+                .replace("long_sleeved_top", "layered_asymmetric")
+                .replace("longSleevedTop", "layeredAsymmetric")
+            )
+        if isinstance(value, dict):
+            return {str(replace_tokens(key)): replace_tokens(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [replace_tokens(item) for item in value]
+        return value
+
+    schemas = {
+        str(replace_tokens(name)): replace_tokens(schema)
+        for name, schema in _long_sleeved_schemas().items()
+    }
+    pattern = schemas["layered-asymmetric-pattern.schema.json"]
+    pattern["properties"]["panels"] = {"type": "array", "minItems": 4, "maxItems": 4}
+    pattern["properties"]["seams"] = {"type": "array", "minItems": 8, "maxItems": 8}
+    pattern["properties"]["openings"] = {"type": "array", "minItems": 8, "maxItems": 8}
+    pattern["properties"]["layerCount"] = {"const": 2}
+    pattern["properties"]["asymmetric"] = {"const": True}
+    pattern["required"].insert(pattern["required"].index("panels"), "layerCount")
+    pattern["required"].insert(pattern["required"].index("panels"), "asymmetric")
+    quality = schemas["layered-asymmetric-quality.schema.json"]
+    quality["properties"]["layering"] = {"type": "object"}
+    quality["required"].insert(quality["required"].index("binding"), "layering")
     return schemas
 
 

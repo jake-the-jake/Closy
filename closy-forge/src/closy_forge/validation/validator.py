@@ -332,6 +332,14 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
         )
 
         return validate_jacket_outerwear_package(package_dir, manifest=manifest)
+    if manifest.get("garmentClass") == "layered_asymmetric" or str(
+        manifest.get("packageVersion", "")
+    ).startswith("closy.layered_asymmetric."):
+        from closy_forge.validation.layered_asymmetric_validator import (
+            validate_layered_asymmetric_package,
+        )
+
+        return validate_layered_asymmetric_package(package_dir, manifest=manifest)
     _validate_required_files(package_dir, issues)
     if manifest.get("schemaVersion") != 1:
         issues.append(
