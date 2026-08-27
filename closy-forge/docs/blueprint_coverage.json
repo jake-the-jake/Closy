@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "Phase 8 layered/asymmetric implementation on codex/closy-forge-phase-8-layered-unusual",
+  "generatedBy": "Phase 9 structured-pattern foundation on codex/closy-forge-phase-9-structured-pattern-foundation at b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b",
   "rows": [
     {
       "commitSha": [
@@ -2148,17 +2148,37 @@
       ]
     },
     {
-      "commitSha": null,
+      "commitSha": [
+        "b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b"
+      ],
       "dependencies": [],
-      "executableEvidence": null,
+      "executableEvidence": [
+        "versioned human-avatar-garment-only grammar contains eight literal template productions and variable panel-count constraints",
+        "deterministic retrieval baseline executes against 24 project-authored synthetic samples across eight families",
+        "dataset split contract yields disjoint 8/8/8 train/validation/test sample sets with no identity leakage",
+        "benchmark independently reruns ranking and selects all 24 authored targets; this is fixture correctness, not learned accuracy",
+        "correction record and corruption controls reject split overlap, benchmark drift, evidence-tier overclaim and stale bundle hashes",
+        "six Phase 9 schemas are generated; local focused foundation/schema suite passes seven tests"
+      ],
       "id": "BP-17-PHASE-09",
-      "implementationPaths": null,
-      "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-      "nextAction": "Advance dependency-ready prerequisites.",
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/pattern_inference/foundation.py",
+        "closy-forge/schemas/v1/structured-pattern-grammar.schema.json",
+        "closy-forge/schemas/v1/synthetic-pattern-dataset.schema.json",
+        "closy-forge/schemas/v1/pattern-dataset-split.schema.json",
+        "closy-forge/schemas/v1/pattern-correction-record.schema.json",
+        "closy-forge/schemas/v1/template-retrieval-benchmark.schema.json",
+        "closy-forge/schemas/v1/pattern-inference-foundation.schema.json"
+      ],
+      "limitations": "Phase 9 is partial: deterministic retrieval executes on authored synthetic fixtures, but no model training, weights, private/external dataset, learned accuracy or generalisation evidence exists.",
+      "nextAction": "Implement the Phase 10 offline/static ZeroOne import-process-export contract with an explicitly fake reference executable because no actual ZeroOne runtime is present.",
       "sourceSection": "Phases 0-14",
-      "status": "not_started",
-      "summary": "Blueprint phase 9.",
-      "tests": null
+      "status": "partial",
+      "summary": "Blueprint phase 9 has a runnable grammar, deterministic retrieval, synthetic split, correction and benchmark foundation without learned-model claims.",
+      "tests": [
+        "closy-forge/tests/unit/test_pattern_inference_foundation.py",
+        "closy-forge/tests/unit/test_schema_freshness.py"
+      ]
     },
     {
       "commitSha": null,
