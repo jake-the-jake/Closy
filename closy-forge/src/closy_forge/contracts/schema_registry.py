@@ -2995,6 +2995,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_button_shirt_schemas(),
         **_jacket_outerwear_schemas(),
         **_layered_asymmetric_schemas(),
+        **_pattern_inference_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
             {
@@ -3513,6 +3514,141 @@ def _layered_asymmetric_schemas() -> dict[str, dict[str, Any]]:
     quality["properties"]["layering"] = {"type": "object"}
     quality["required"].insert(quality["required"].index("binding"), "layering")
     return schemas
+
+
+def _pattern_inference_schemas() -> dict[str, dict[str, Any]]:
+    return {
+        "structured-pattern-grammar.schema.json": _schema(
+            "Closy structured pattern grammar D0",
+            {
+                "schemaVersion": {"const": 1},
+                "grammarVersion": {"const": "closy.structured_pattern_grammar.d0.v1"},
+                "domain": {"const": "human_avatar_garments_only"},
+                "productions": {"type": "array", "minItems": 8},
+                "supportsVariablePanelCount": {"const": True},
+            },
+            [
+                "schemaVersion",
+                "grammarVersion",
+                "domain",
+                "productions",
+                "supportsVariablePanelCount",
+            ],
+        ),
+        "synthetic-pattern-dataset.schema.json": _schema(
+            "Closy synthetic pattern dataset D0",
+            {
+                "schemaVersion": {"const": 1},
+                "datasetVersion": {"const": "closy.synthetic_pattern_dataset.d0.v1"},
+                "seed": {"type": "integer"},
+                "samples": {"type": "array", "minItems": 24},
+                "generatedByLearnedModel": {"const": False},
+            },
+            ["schemaVersion", "datasetVersion", "seed", "samples", "generatedByLearnedModel"],
+        ),
+        "pattern-dataset-split.schema.json": _schema(
+            "Closy pattern dataset split D0",
+            {
+                "schemaVersion": {"const": 1},
+                "splitVersion": {"const": "closy.pattern_dataset_split.d0.v1"},
+                "train": {"type": "array", "minItems": 1},
+                "validation": {"type": "array", "minItems": 1},
+                "test": {"type": "array", "minItems": 1},
+                "identityLeakage": {"const": False},
+                "splitPolicy": {"type": "string"},
+            },
+            [
+                "schemaVersion",
+                "splitVersion",
+                "train",
+                "validation",
+                "test",
+                "identityLeakage",
+                "splitPolicy",
+            ],
+        ),
+        "pattern-correction-record.schema.json": _schema(
+            "Closy pattern correction record D0",
+            {
+                "schemaVersion": {"const": 1},
+                "correctionVersion": {"const": "closy.pattern_correction_record.d0.v1"},
+                "recordId": {"type": "string"},
+                "sampleId": {"type": "string"},
+                "beforeTemplateId": {"type": "string"},
+                "afterTemplateId": {"type": "string"},
+                "changedFields": {"type": "array", "minItems": 1},
+                "reasonCode": {"type": "string"},
+                "humanCorrectionRecord": {"const": True},
+                "sourceKind": {"const": "project_authored_synthetic_fixture"},
+                "containsPrivateData": {"const": False},
+            },
+            [
+                "schemaVersion",
+                "correctionVersion",
+                "recordId",
+                "sampleId",
+                "beforeTemplateId",
+                "afterTemplateId",
+                "changedFields",
+                "reasonCode",
+                "humanCorrectionRecord",
+                "sourceKind",
+                "containsPrivateData",
+            ],
+        ),
+        "template-retrieval-benchmark.schema.json": _schema(
+            "Closy template retrieval benchmark D0",
+            {
+                "schemaVersion": {"const": 1},
+                "benchmarkVersion": {"const": "closy.template_retrieval_benchmark.d0.v1"},
+                "baseline": {"const": "deterministic_template_retrieval_not_learned"},
+                "actualBaselineRun": {"const": True},
+                "sampleCount": {"type": "integer", "minimum": 1},
+                "top1Correct": {"type": "integer", "minimum": 0},
+                "top1Accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+                "records": {"type": "array", "minItems": 1},
+                "trainedModelCompared": {"const": False},
+                "generalisationClaimed": {"const": False},
+            },
+            [
+                "schemaVersion",
+                "benchmarkVersion",
+                "baseline",
+                "actualBaselineRun",
+                "sampleCount",
+                "top1Correct",
+                "top1Accuracy",
+                "records",
+                "trainedModelCompared",
+                "generalisationClaimed",
+            ],
+        ),
+        "pattern-inference-foundation.schema.json": _schema(
+            "Closy pattern inference foundation D0",
+            {
+                "schemaVersion": {"const": 1},
+                "foundationVersion": {"const": "closy.pattern_inference_foundation.d0.v1"},
+                "grammar": {"type": "object"},
+                "dataset": {"type": "object"},
+                "split": {"type": "object"},
+                "correction": {"type": "object"},
+                "benchmark": {"type": "object"},
+                "evidenceTier": {"type": "object"},
+                "integrity": {"type": "object"},
+            },
+            [
+                "schemaVersion",
+                "foundationVersion",
+                "grammar",
+                "dataset",
+                "split",
+                "correction",
+                "benchmark",
+                "evidenceTier",
+                "integrity",
+            ],
+        ),
+    }
 
 
 def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
