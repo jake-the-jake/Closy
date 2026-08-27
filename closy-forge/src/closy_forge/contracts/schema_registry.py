@@ -2996,6 +2996,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_jacket_outerwear_schemas(),
         **_layered_asymmetric_schemas(),
         **_pattern_inference_schemas(),
+        **_future_foundation_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
             {
@@ -3649,6 +3650,80 @@ def _pattern_inference_schemas() -> dict[str, dict[str, Any]]:
             ],
         ),
     }
+
+
+def _future_foundation_schemas() -> dict[str, dict[str, Any]]:
+    contracts = {
+        "zeroone-static-contract": (
+            "closy.zeroone.offline_static.d0.v1",
+            ["input", "negotiation", "output"],
+        ),
+        "zeroone-deformation-foundation": (
+            "closy.zeroone.deformation_foundation.d0.v1",
+            [
+                "influenceClusters",
+                "deformedBounds",
+                "frameUpdateContract",
+                "fixtures",
+                "dynamicLodHarness",
+            ],
+        ),
+        "mobile-runtime-foundation": (
+            "closy.mobile_runtime_foundation.d0.v1",
+            ["profiles", "negotiation", "streaming", "evidenceTier"],
+        ),
+        "avatar-layering-foundation": (
+            "closy.personalised_avatar_layering.d0.v1",
+            ["measurements", "correction", "easeControls", "outfit", "quality"],
+        ),
+        "native-model-foundation": (
+            "closy.native_model_foundation.d0.v1",
+            ["dataset", "modelCard", "training", "evaluation", "rollback"],
+        ),
+    }
+    schemas: dict[str, dict[str, Any]] = {}
+    for name, (version, fields) in contracts.items():
+        properties: dict[str, Any] = {
+            "schemaVersion": {"const": 1},
+            "contractVersion": {"const": version},
+            **{
+                field: {
+                    "type": "object"
+                    if field != "influenceClusters" and field != "profiles"
+                    else "array"
+                }
+                for field in fields
+            },
+        }
+        schemas[f"{name}.schema.json"] = _schema(
+            f"Closy {name.replace('-', ' ')} D0",
+            properties,
+            ["schemaVersion", "contractVersion", *fields],
+        )
+    schemas["future-foundations.schema.json"] = _schema(
+        "Closy future foundations D0",
+        {
+            "schemaVersion": {"const": 1},
+            "foundationVersion": {"const": "closy.future_foundations.d0.v1"},
+            "phase10": {"type": "object"},
+            "phase11": {"type": "object"},
+            "phase12": {"type": "object"},
+            "phase13": {"type": "object"},
+            "phase14": {"type": "object"},
+            "integrity": {"type": "object"},
+        },
+        [
+            "schemaVersion",
+            "foundationVersion",
+            "phase10",
+            "phase11",
+            "phase12",
+            "phase13",
+            "phase14",
+            "integrity",
+        ],
+    )
+    return schemas
 
 
 def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
