@@ -6,9 +6,9 @@ from pathlib import Path
 
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
-EVIDENCE_ANCHOR = "e83e1e897c9539d246926f8148c5a9ac347982d1"
+EVIDENCE_ANCHOR = "628738e5e8bc2da89be2ae1c349d9a2a220d8839"
 VERSION = "closy.blueprint_coverage.integrity_reconciliation.v1"
-GENERATED_BY = "Canonical status reconciliation from draft PR #19 exact head " + EVIDENCE_ANCHOR
+GENERATED_BY = "Canonical C3 reconciliation from exact implementation head " + EVIDENCE_ANCHOR
 
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
@@ -107,8 +107,8 @@ NEXT_ACTIONS = {
         "Validate texture/PBR fidelity against independent targets and authorised source tiers."
     ),
     "BP-17-PHASE-06": (
-        "Close only the declared D0 CPU C3 profile with independent reconstruction and collision "
-        "evidence."
+        "Resolve stitched-shell body clearance/source correspondence and bring recomputed "
+        "self-collision residual depth within the declared D0 budget."
     ),
     "BP-17-PHASE-08": (
         "Retain package-contract-complete D0 fixture verticals while adding continuous collision, "
@@ -123,9 +123,8 @@ NEXT_ACTIONS = {
         "Begin actual dynamic deformation only after scoped C3 and real ZeroOne static gates pass."
     ),
     "BP-18-GATE-C3": (
-        "Close the exact D0 CPU profile using independent surface/landmark metrics, real "
-        "stitched-shell "
-        "deformation, and zero unresolved scoped penetrations."
+        "Resolve stitched-shell body clearance/source correspondence and zero or budget the "
+        "remaining recomputed collision penetrations without widening thresholds."
     ),
     "BP-20-RESEARCH-PROTOTYPE": (
         "Integrate corrected topology, scoped C3, trained synthetic D0 inference, and real ZeroOne "

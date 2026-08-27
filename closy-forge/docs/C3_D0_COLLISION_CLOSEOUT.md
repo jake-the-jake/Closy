@@ -78,3 +78,22 @@ true without widening the existing thresholds:
 
 Broader C3 also remains blocked on provider/private-avatar tiers, production GPU/mobile evidence,
 and broader garment/motion coverage.
+
+## Exact-Commit Host Performance
+
+`docs/evidence/C3_D0_CPU_BENCHMARK_628738e.json` was measured from implementation commit
+`628738e5e8bc2da89be2ae1c349d9a2a220d8839` on Windows, Python 3.11, using three warmups and
+twenty binding-route samples. Solver/collision routes use five samples; stitched-shell and C3
+validator routes use three because they are substantially slower.
+
+- dense route, one state: median `16.780950 ms`, p95 `20.824400 ms`;
+- dense route, eleven states: median `205.413100 ms`, p95 `238.309200 ms`;
+- fallback route, eleven states: median `0.931900 ms`, p95 `1.147700 ms`;
+- solver, one state: median `5976.551200 ms`, p95 `6245.301800 ms`;
+- self-collision, one state: median `6382.796900 ms`, p95 `6477.767300 ms`;
+- stitched-shell suite: median `11189.541800 ms`, p95 `11189.541800 ms`;
+- C3 validator: median `52542.102900 ms`, p95 `52542.102900 ms`.
+
+Peak memory is Python-allocation-only and is recorded per route in the JSON evidence. In
+particular, the roughly `205 ms` dense suite is offline CPU evidence and is not described as
+real-time mobile performance.
