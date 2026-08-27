@@ -105,6 +105,24 @@ Representative current codes:
 - `button_shirt_inventory_hash_mismatch`: an inventoried shirt artifact hash/size differs.
 - `button_shirt_package_digest_mismatch`: canonical shirt digest does not match inventory.
 
+- `jacket_outerwear_family_mismatch`: manifest identity is not the canonical jacket fixture.
+- `jacket_outerwear_manifest_contract_invalid`: package kind or schema version is unsupported.
+- `jacket_outerwear_contract_unreadable`: a required jacket contract cannot be decoded.
+- `jacket_outerwear_semantic_ids_invalid`: split fronts, facings, sleeves, seams or openings are not literal.
+- `jacket_outerwear_opening_loop_invalid`: neck, hem, facing-backed front or either cuff does not resolve.
+- `jacket_outerwear_facing_contract_invalid`: facing attachments or the open inner-facing edges are wrong.
+- `jacket_outerwear_collision_layer_invalid`: outer-shell or internal-facing collision orders are invalid.
+- `jacket_outerwear_constraint_pairing_invalid`: a torso, armhole, underarm or facing seam is absent.
+- `jacket_outerwear_fit_integrity_invalid`: bounded fit evidence or its hash is invalid.
+- `jacket_outerwear_motion_suite_invalid`: four-preset or two-cuff stress evidence is invalid.
+- `jacket_outerwear_material_selection_invalid`: the public fixture does not select intact heavy-jersey evidence.
+- `jacket_outerwear_binding_validation_failed`: persisted dense/fallback geometry is invalid.
+- `jacket_outerwear_appearance_validation_failed`: decoded source/render or PBR evidence is invalid.
+- `jacket_outerwear_quality_claim_invalid`: family readiness or Phase 8 status is overclaimed.
+- `jacket_outerwear_inventory_file_set_mismatch`: inventory paths differ from persisted files.
+- `jacket_outerwear_inventory_hash_mismatch`: an inventoried jacket artifact hash/size differs.
+- `jacket_outerwear_package_digest_mismatch`: canonical jacket digest does not match inventory.
+
 - `material_preset_registry_invalid`: required four-preset versioned D0 registry is malformed.
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
 - `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.

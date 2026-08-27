@@ -2993,6 +2993,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_simple_trousers_schemas(),
         **_simple_dress_schemas(),
         **_button_shirt_schemas(),
+        **_jacket_outerwear_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
             {
@@ -3442,6 +3443,37 @@ def _button_shirt_schemas() -> dict[str, dict[str, Any]]:
     pattern["properties"]["closures"] = {"type": "array", "minItems": 6, "maxItems": 6}
     pattern["required"].insert(pattern["required"].index("provenance"), "closures")
     quality = schemas["button-shirt-quality.schema.json"]
+    quality["properties"]["material"] = {"type": "object"}
+    quality["required"].insert(quality["required"].index("appearance"), "material")
+    return schemas
+
+
+def _jacket_outerwear_schemas() -> dict[str, dict[str, Any]]:
+    def replace_tokens(value: Any) -> Any:
+        if isinstance(value, str):
+            return (
+                value.replace("long-sleeved-top", "jacket-outerwear")
+                .replace("long-sleeved", "jacket-outerwear")
+                .replace("Long sleeved top", "Jacket outerwear")
+                .replace("long sleeved top", "jacket outerwear")
+                .replace("long_sleeved_top", "jacket_outerwear")
+                .replace("longSleevedTop", "jacketOuterwear")
+            )
+        if isinstance(value, dict):
+            return {str(replace_tokens(key)): replace_tokens(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [replace_tokens(item) for item in value]
+        return value
+
+    schemas = {
+        str(replace_tokens(name)): replace_tokens(schema)
+        for name, schema in _long_sleeved_schemas().items()
+    }
+    pattern = schemas["jacket-outerwear-pattern.schema.json"]
+    pattern["properties"]["panels"] = {"type": "array", "minItems": 7, "maxItems": 7}
+    pattern["properties"]["seams"] = {"type": "array", "minItems": 12, "maxItems": 12}
+    pattern["properties"]["openings"] = {"type": "array", "minItems": 5, "maxItems": 5}
+    quality = schemas["jacket-outerwear-quality.schema.json"]
     quality["properties"]["material"] = {"type": "object"}
     quality["required"].insert(quality["required"].index("appearance"), "material")
     return schemas

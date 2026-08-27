@@ -324,6 +324,14 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
         )
 
         return validate_button_shirt_package(package_dir, manifest=manifest)
+    if manifest.get("garmentClass") == "jacket_outerwear" or str(
+        manifest.get("packageVersion", "")
+    ).startswith("closy.jacket_outerwear."):
+        from closy_forge.validation.jacket_outerwear_validator import (
+            validate_jacket_outerwear_package,
+        )
+
+        return validate_jacket_outerwear_package(package_dir, manifest=manifest)
     _validate_required_files(package_dir, issues)
     if manifest.get("schemaVersion") != 1:
         issues.append(

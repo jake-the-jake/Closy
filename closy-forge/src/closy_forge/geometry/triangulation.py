@@ -70,6 +70,10 @@ def _map_point(point: Vec2, transform: str) -> Vec3:
     garment_bottom = 0.74
     if transform == "front":
         return (x, garment_bottom + y, 0.115)
+    if transform == "jacket.facing.left":
+        return (x, garment_bottom + y, 0.119)
+    if transform == "jacket.facing.right":
+        return (x, garment_bottom + y, 0.119)
     if transform == "back":
         return (-x, garment_bottom + y, -0.115)
     if transform == "lower.front":
