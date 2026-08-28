@@ -9,6 +9,11 @@ from closy_forge.binding.binary_format import BindingFile, read_binding
 from closy_forge.binding.c3_metrics import evaluate_independent_surface_agreement
 from closy_forge.binding.reconstruct import reconstruct_vertices
 from closy_forge.binding.stitched_deformation import evaluate_stitched_shell_state
+from closy_forge.capabilities.profiles import (
+    C3_BINDING_D0_PROFILE_ID,
+    load_capability_profile,
+    validate_profile_package_inputs,
+)
 from closy_forge.geometry.frame_attributes import meshset_frame_metrics
 from closy_forge.geometry.glb_io import audit_glb, read_glb_meshset, write_glb
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, mesh_bounds
@@ -152,6 +157,7 @@ def prepare_c3_evidence_assets(
 def build_c3_report_from_package(
     *, package_dir: Path, garment_id: str, garment_class: str
 ) -> dict[str, Any]:
+    capability_profile = load_capability_profile(C3_BINDING_D0_PROFILE_ID)
     sim_manifest = read_json(package_dir / "simulation" / "mesh_manifest.json")
     render_manifest = read_json(package_dir / "render" / "mesh_manifest.json")
     constraints = read_json(package_dir / "simulation" / "constraints.json")
@@ -168,6 +174,9 @@ def build_c3_report_from_package(
     simulation_mesh = _meshset_from_manifest(sim_manifest)
     render_mesh = _meshset_from_manifest(render_manifest)
     fallback_mesh = read_glb_meshset(package_dir / "render" / "simulation_fallback.glb")
+    profile_input_issues = validate_profile_package_inputs(capability_profile, package_dir)
+    if profile_input_issues:
+        raise ValueError(f"c3_capability_profile_input_drift:{profile_input_issues}")
     thresholds = _thresholds(simulation_mesh)
     persisted = _persisted_validation(
         package_dir,
@@ -196,8 +205,8 @@ def build_c3_report_from_package(
     collision_gate = _collision_gate(package_dir)
     literal_pass = (
         persisted["status"] == "pass"
-        and aggregate["motionSuiteStatus"] == "pass"
-        and collision_gate["status"] == "pass"
+        and aggregate["bindingSuiteStatus"] == "pass"
+        and aggregate["bindingStatePassCount"] == len(capability_profile["poseSuite"]["stateIds"])
     )
     report: dict[str, Any] = {
         "schemaVersion": 1,
@@ -207,6 +216,9 @@ def build_c3_report_from_package(
         "garmentClass": garment_class,
         "profile": {
             "id": "d0_fixed_avatar_tshirt_solver_state_dense_independent_fallback",
+            "capabilityId": capability_profile["capabilityId"],
+            "capabilityProfileVersion": capability_profile["profileVersion"],
+            "capabilityProfileHash": capability_profile["integrity"]["profileHash"],
             "scope": "fixed_avatar_public_tshirt_fixture_only",
             "globalPhase6Complete": False,
             "cleanGeometryPromoted": False,
@@ -223,7 +235,12 @@ def build_c3_report_from_package(
             "states": states,
         },
         "aggregate": aggregate,
-        "collisionGate": collision_gate,
+        "collisionGate": {
+            **collision_gate,
+            "gateScope": "physical",
+            "includedInC3BindingDecision": False,
+            "governingCapability": "PHY1-SingleLayer-D0",
+        },
         "performanceProfile": {
             "executionState": "not_run_in_canonical_build",
             "canonicalTimingIncluded": False,
@@ -253,6 +270,8 @@ def build_c3_report_from_package(
             "stitchedShellBodyClearanceRun": True,
             "collisionEvidenceValidated": True,
             "performanceWorkloadProfileRun": False,
+            "capabilityProfileValidated": True,
+            "mandatoryBindingCoverageValidated": True,
         },
         "capabilities": {
             "productionBindingC3EvidenceAvailable": True,
@@ -260,6 +279,7 @@ def build_c3_report_from_package(
             "denseBindingAvailable": True,
             "independentFallbackAvailable": True,
             "stitchedShellDeformationEvidenceAvailable": True,
+            "physicalQualityAvailable": collision_gate["status"] == "pass",
             "globalPhase6Complete": False,
         },
         "readiness": {
@@ -273,9 +293,11 @@ def build_c3_report_from_package(
             "acceptedForGlobalPhase6": False,
             "acceptedForCleanProposal": False,
             "acceptedForCanonical": False,
-            "blockingReasons": [
-                *([] if literal_pass else aggregate["failureIds"]),
-                *([] if collision_gate["status"] == "pass" else collision_gate["failureIds"]),
+            "blockingReasons": [] if literal_pass else aggregate["bindingFailureIds"],
+            "physicalBlockingReasons": (
+                [] if collision_gate["status"] == "pass" else collision_gate["failureIds"]
+            ),
+            "globalPhase6BlockingReasons": [
                 "provider_geometry_visual_fidelity_not_run",
                 "private_user_avatar_garment_profiles_not_run",
                 "mobile_runtime_gpu_profile_not_run",
@@ -492,7 +514,22 @@ def _evaluate_state(
         "triangleQuality": triangle_count == 0,
         "finite": all(isfinite(value) for point in dense_positions for value in point),
     }
+    binding_checks = {
+        "deterministicRecompute": checks["deterministicRecompute"],
+        "denseFallbackAreaCentroids": checks["denseFallbackAreaCentroids"],
+        "denseFallbackSampledSurface": checks["denseFallbackSampledSurface"],
+        "denseFallbackSemanticLandmarks": checks["denseFallbackSemanticLandmarks"],
+        "denseFallbackOpeningLandmarks": checks["denseFallbackOpeningLandmarks"],
+        "denseFallbackSeamLandmarks": checks["denseFallbackSeamLandmarks"],
+        "denseFallbackSilhouette": checks["denseFallbackSilhouette"],
+        "mappingCoverage": agreement["mappingCoverage"]["status"] == "complete",
+        "normalAndTangents": checks["frames"],
+        "finite": checks["finite"],
+        "simulationTopologyStable": topology_hash(state_mesh) == topology_hash(reference_sim),
+        "renderTopologyStable": topology_hash(dense_mesh) == topology_hash(render_mesh),
+    }
     failures = [name for name, passed in checks.items() if not passed]
+    binding_failures = [name for name, passed in binding_checks.items() if not passed]
     return {
         "stateId": state["stateId"],
         "statePath": str(entry["path"]),
@@ -501,6 +538,7 @@ def _evaluate_state(
         "stateProvenance": state["stateProvenance"],
         "solverVersion": state["solverVersion"],
         "status": "pass" if not failures else "fail",
+        "bindingStatus": "pass" if not binding_failures else "fail",
         "simulationTopologyHash": topology_hash(state_mesh),
         "deformedSimulationContentHash": geometry_content_hash(state_mesh),
         "renderTopologyHash": topology_hash(dense_mesh),
@@ -531,7 +569,11 @@ def _evaluate_state(
         "stitchedShellDeformation": stitched,
         "deformedBounds": mesh_bounds(dense_mesh),
         "checks": checks,
+        "bindingChecks": binding_checks,
         "failureIds": [f"motion_state.{state['stateId']}.{failure}" for failure in failures],
+        "bindingFailureIds": [
+            f"binding_state.{state['stateId']}.{failure}" for failure in binding_failures
+        ],
     }
 
 
@@ -692,6 +734,9 @@ def _opening_metrics(
 
 def _aggregate(states: list[dict[str, Any]]) -> dict[str, Any]:
     failures = sorted({failure for state in states for failure in state["failureIds"]})
+    binding_failures = sorted(
+        {failure for state in states for failure in state["bindingFailureIds"]}
+    )
     rest_errors = [
         state["motionTargetComparison"]["restTargetErrorMeters"]
         for state in states
@@ -699,6 +744,9 @@ def _aggregate(states: list[dict[str, Any]]) -> dict[str, Any]:
     ]
     return {
         "motionSuiteStatus": "pass" if not failures else "fail",
+        "bindingSuiteStatus": "pass" if not binding_failures else "fail",
+        "bindingStatePassCount": sum(state["bindingStatus"] == "pass" for state in states),
+        "bindingFailureIds": binding_failures,
         "stateCount": len(states),
         "failureIds": failures,
         "restStateMaxReconstructionErrorMeters": max(rest_errors, default=0.0),

@@ -3,6 +3,7 @@ from __future__ import annotations
 from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.simulation.self_collision import (
     SelfCollisionSettings,
+    _correction_preserves_local_orientation,
     analyze_self_collision,
     analyze_swept_self_collision,
     broad_phase_candidates,
@@ -62,6 +63,73 @@ def test_self_collision_projection_is_bounded_and_reduces_penetration() -> None:
     assert len(corrected_positions) == len(positions)
 
 
+def test_self_collision_projection_is_symmetric_and_preserves_equal_mass_centroid() -> None:
+    mesh = _close_parallel_triangle_mesh(0.001)
+    settings = SelfCollisionSettings(correction_fraction=0.35, max_iterations=1)
+    positions = [vertex for item in mesh.meshes for vertex in item.vertices]
+    triangles, _ = build_triangle_refs(mesh)
+
+    corrected, diagnostics = project_self_collisions(
+        positions,
+        triangles,
+        settings=settings,
+    )
+
+    assert diagnostics["totalCorrectionCount"] > 0
+    assert any(corrected[index] != positions[index] for index in range(3))
+    assert any(corrected[index] != positions[index] for index in range(3, 6))
+    before_centroid = tuple(sum(point[axis] for point in positions) / 6.0 for axis in range(3))
+    after_centroid = tuple(sum(point[axis] for point in corrected) / 6.0 for axis in range(3))
+    assert max(abs(a - b) for a, b in zip(before_centroid, after_centroid, strict=True)) < 1e-12
+
+
+def test_self_collision_projection_respects_fixed_support_inverse_mass() -> None:
+    mesh = _close_parallel_triangle_mesh(0.001)
+    positions = [vertex for item in mesh.meshes for vertex in item.vertices]
+    triangles, _ = build_triangle_refs(mesh)
+
+    corrected, diagnostics = project_self_collisions(
+        positions,
+        triangles,
+        fixed_indices={0, 1, 2},
+        settings=SelfCollisionSettings(correction_fraction=0.35, max_iterations=1),
+    )
+
+    assert diagnostics["totalCorrectionCount"] > 0
+    assert corrected[:3] == positions[:3]
+    assert any(corrected[index] != positions[index] for index in range(3, 6))
+
+
+def test_orientation_guard_rejects_gradual_crossing_of_frozen_rest_normal() -> None:
+    reference = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    current = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 0.01, 1.0)]
+    deltas = {2: (0.0, -0.02, 0.0)}
+
+    accepted = _correction_preserves_local_orientation(
+        current,
+        reference,
+        deltas,
+        1.0,
+        {2: ((0, 1, 2),)},
+    )
+
+    assert accepted is False
+
+
+def test_uniform_grid_broad_phase_is_deterministic_and_oracle_complete() -> None:
+    mesh = _close_parallel_triangle_mesh(0.001)
+    settings = SelfCollisionSettings()
+    positions = [vertex for item in mesh.meshes for vertex in item.vertices]
+    triangles, _ = build_triangle_refs(mesh)
+
+    first = broad_phase_candidates(positions, triangles, settings)
+    second = broad_phase_candidates(positions, triangles, settings)
+    oracle = brute_force_candidate_oracle(positions, triangles, settings)
+
+    assert first == second == sorted(first)
+    assert set(oracle).issubset(first)
+
+
 def test_self_collision_report_documents_fixtures_and_tunnelling_limit() -> None:
     mesh = _close_parallel_triangle_mesh(0.001)
     report = build_self_collision_report(
@@ -84,6 +152,20 @@ def test_self_collision_report_documents_fixtures_and_tunnelling_limit() -> None
     assert report["adversarialFixtures"]["boundedUnsupportedMotion"]["status"] == "pass"
     assert report["execution"]["continuousCollisionDetectionRun"] is True
     assert report["readiness"]["acceptedForProductionGpuSolver"] is False
+    assert report["settings"]["residualDepthBudgetAppliesTo"] == ("self_collision_contacts_only")
+    assert report["settings"]["broadPhase"] == (
+        "deterministic_bounded_uniform_grid_then_inflated_aabb"
+    )
+    assert (
+        report["metrics"]["narrowPhaseWitnessCount"]
+        >= report["metrics"]["geometricallyUniqueContactCountBefore"]
+    )
+    assert report["metrics"]["solverConstraintCountCreated"] > 0
+    assert report["metrics"]["sharedVertexExcludedPairCount"] >= 0
+    assert report["metrics"]["residualViolationAboveDepthBudgetCount"] >= 0
+    assert report["collisionQuantityDomains"]["bodySignedClearance"] == (
+        "reported_by_independent_body_signed_distance_audit"
+    )
 
 
 def test_swept_collision_detects_crossing_and_fails_closed_when_bound_is_exceeded() -> None:

@@ -171,6 +171,7 @@ def settle_reference_cloth(
         thickness_meters=active_settings.self_collision_thickness_meters,
         clearance_meters=active_settings.self_collision_clearance_meters,
         max_iterations=1,
+        response_mode="legacy_vertex_only",
     )
     self_collision_triangles, _ = build_triangle_refs(rest_mesh)
     fixed_support_indices = {support.index for support in supports}
@@ -232,6 +233,7 @@ def settle_reference_cloth(
                 fixed_indices=fixed_support_indices,
                 settings=self_collision_settings,
                 excluded_vertex_pairs=self_collision_exclusions,
+                orientation_reference_positions=flat.positions,
             )
             self_collision_corrections += int(convergence.get("totalCorrectionCount", 0))
             self_collision_convergence.append({"substep": step + 1, **convergence})
@@ -257,6 +259,7 @@ def settle_reference_cloth(
         fixed_indices=fixed_support_indices,
         settings=self_collision_settings,
         excluded_vertex_pairs=self_collision_exclusions,
+        orientation_reference_positions=flat.positions,
     )
     positions = _canonicalize_positions(positions, canonical_position_digits)
     for _ in range(active_settings.solver_iterations * 2):
@@ -360,6 +363,7 @@ def simulate_reference_motion_state(
         thickness_meters=settings.self_collision_thickness_meters,
         clearance_meters=settings.self_collision_clearance_meters,
         max_iterations=1,
+        response_mode="legacy_vertex_only",
     )
     convergence: list[dict[str, Any]] = []
     energy_history: list[float] = []
@@ -400,6 +404,7 @@ def simulate_reference_motion_state(
                 fixed_indices=fixed,
                 settings=collision_settings,
                 excluded_vertex_pairs=exclusions,
+                orientation_reference_positions=flat.positions,
             )
             convergence.append({"substep": step + 1, **collision})
             positions = _canonicalize_positions(positions, canonical_position_digits)
@@ -914,9 +919,13 @@ def _diagnostics(
             "constraintProjection": "xpbd_compliance_with_per_substep_lagrange_accumulation",
             "particleMassPolicy": "triangle_area_times_areal_density_lumped_one_third",
             "constraintOrder": (
-                "mesh_stretch_then_bend_then_seams_then_support_then_body_collision_then_"
-                "self_collision"
+                "integrate_prediction_then_structural_then_support_then_body_collision_then_"
+                "seams_per_iteration_then_self_collision_at_declared_frame_cadence"
             ),
+            "selfCollisionCadenceFrames": 10,
+            "selfCollisionCadenceSeconds": _round(10 * settings.time_step_seconds),
+            "selfCollisionTerminalProjection": True,
+            "constraintOrderConvergenceReady": False,
         },
         "elapsedTimeSeconds": 0.0,
         "elapsedTimePolicy": "wall_clock_omitted_from_canonical_package_for_determinism",
