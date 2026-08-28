@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "capabilityId": "C3-Binding-D0",
+  "profileVersion": "closy.c3_binding.d0_tshirt.v1",
+  "axes": {
+    "computeProfile": "D0",
+    "dataProvenance": "project_authored_synthetic",
+    "executionProfile": "CPU",
+    "gateScope": "binding"
+  },
+  "scope": "fixed_reference_avatar_single_tshirt_dense_and_independent_fallback",
+  "canonicalAuthority": {
+    "garmentId": "garment.demo_tshirt.reference_v1",
+    "simulationTopologyHash": "4e5195d12e5f93579c5f97acb8716ff1e4b6fdbb2b885c434e57edbf3feb179c",
+    "simulationVertexCount": 218,
+    "simulationTriangleCount": 208,
+    "renderTopologyHash": "f5bf0dbbdb69239833784b2cbc072b1bed740a3bb19de2ae7d3f05d19dbe6e26",
+    "renderVertexCount": 1248,
+    "bindingRouteId": "settled_simulation_to_subdivided_render_v1",
+    "bindingRecordCount": 1248
+  },
+  "frozenFiles": [
+    {"path": "avatar/avatar_contract.json", "sha256": "9beb183c1547efb03c091c0108cad9d924241d50d44edffc837cdc03fde6f4ed"},
+    {"path": "avatar/collision.glb", "sha256": "90f120323185ecbc26237cfaabbf7c2b8ee1c352868a62fe5173a734e534b5fe"},
+    {"path": "simulation/constraints.json", "sha256": "9e684427a6084648e9f21c71987dc525366e3cfab6b4ac2369e7372f5920c04a"},
+    {"path": "binding/binding_manifest.json", "sha256": "0826e982ad9bc775cb125f131bcc679051f98168db078dfd5f9fe1276db0b143"}
+  ],
+  "semanticInventory": {
+    "panelIds": ["panel.back", "panel.front", "panel.neck_band", "panel.sleeve.left", "panel.sleeve.right"],
+    "seamIds": ["seam.armhole.left.back", "seam.armhole.left.front", "seam.armhole.right.back", "seam.armhole.right.front", "seam.neck_band.attachment", "seam.neck_band.attachment.back", "seam.shoulder.left", "seam.shoulder.right", "seam.side.left", "seam.side.right", "seam.sleeve_underarm.left", "seam.sleeve_underarm.right"],
+    "openingIds": ["opening.cuff.left", "opening.cuff.right", "opening.hem", "opening.neck"],
+    "requiredMappingKinds": ["triangle_barycentric"],
+    "layers": ["layer.base"]
+  },
+  "poseSuite": {
+    "suiteVersion": "closy.binding_solver_state_suite.d0_tshirt.v1",
+    "stateIds": ["neutral_settled", "left_arm_raise", "right_arm_raise", "forward_bend", "side_bend", "torso_twist", "moderate_gust", "lightweight_material_extreme", "stiff_material_extreme", "opening_stress", "seam_stress"],
+    "routes": ["dense_barycentric", "direct_simulation_fallback"],
+    "candidateDerivedTargetEvidenceAllowed": false
+  },
+  "literalGate": {
+    "stableTopologyAndIndexBuffersRequired": true,
+    "completeVersionedBindingRequired": true,
+    "allPoseStatesBothRoutesRequired": true,
+    "topologyAndContentDriftFailClosed": true,
+    "normalAndVec4TangentValidationRequired": true,
+    "completeSemanticCoverageRequired": true,
+    "corruptDenseAndFallbackRoutesDetected": true,
+    "physicalCollisionQualityRequired": false
+  },
+  "integrity": {"profileHash": "c80e6123c360ab1633e4aa821cdbefbac3553807ee330d28867ac870e0a625a1"}
+}
