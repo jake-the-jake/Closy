@@ -171,6 +171,7 @@ def settle_reference_cloth(
         thickness_meters=active_settings.self_collision_thickness_meters,
         clearance_meters=active_settings.self_collision_clearance_meters,
         max_iterations=1,
+        response_mode="legacy_vertex_only",
     )
     self_collision_triangles, _ = build_triangle_refs(rest_mesh)
     fixed_support_indices = {support.index for support in supports}
@@ -362,6 +363,7 @@ def simulate_reference_motion_state(
         thickness_meters=settings.self_collision_thickness_meters,
         clearance_meters=settings.self_collision_clearance_meters,
         max_iterations=1,
+        response_mode="legacy_vertex_only",
     )
     convergence: list[dict[str, Any]] = []
     energy_history: list[float] = []

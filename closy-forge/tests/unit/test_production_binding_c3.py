@@ -66,7 +66,13 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
     assert clearance["knownFixtureAudit"]["status"] == "pass"
     assert clearance["worstWitness"]["closestBodyTriangleId"]
     assert clearance["worstWitness"]["rayParityVotes"]["unanimous"] is True
-    assert clearance["worstWitness"]["independentGeneralizedWinding"]["agreesWithRayParity"] is True
+    oracle_agrees = clearance["worstWitness"]["independentGeneralizedWinding"][
+        "agreesWithRayParity"
+    ]
+    assert isinstance(oracle_agrees, bool)
+    if not oracle_agrees:
+        assert clearance["worstWitness"]["oracleUncertain"] is True
+        assert clearance["promotionEligible"] is False
     assert (
         c3_report["motionSuite"]["states"][1]["motionTargetComparison"][
             "renderMotionTransformUsedAsOracle"

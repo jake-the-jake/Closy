@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from math import floor, isfinite, sqrt
-from typing import Any
+from typing import Any, Literal
 
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross, scale, sub
 from closy_forge.package_io.canonical_json import canonical_dumps
@@ -32,6 +32,7 @@ class SelfCollisionSettings:
     epsilon_meters: float = 1e-9
     residual_depth_budget_ratio: float = 0.10
     maximum_ccd_substeps: int = 64
+    response_mode: Literal["symmetric_gradient", "legacy_vertex_only"] = "symmetric_gradient"
 
     @property
     def contact_threshold_meters(self) -> float:
@@ -246,6 +247,16 @@ def project_self_collisions(
         max_iteration_penetration = max(max_iteration_penetration, analysis.max_penetration_meters)
         correction_count = 0
         for contact in analysis.contacts:
+            if active_settings.response_mode == "legacy_vertex_only":
+                if contact.vertex_index in fixed:
+                    continue
+                correction = scale(
+                    contact.normal,
+                    contact.penetration_meters * active_settings.correction_fraction,
+                )
+                current[contact.vertex_index] = add(current[contact.vertex_index], correction)
+                correction_count += 1
+                continue
             movable = tuple(
                 (vertex_index, coefficient)
                 for vertex_index, coefficient in contact.gradient_coefficients
@@ -255,9 +266,7 @@ def project_self_collisions(
             if denominator <= active_settings.epsilon_meters:
                 continue
             multiplier = (
-                contact.penetration_meters
-                * active_settings.correction_fraction
-                / denominator
+                contact.penetration_meters * active_settings.correction_fraction / denominator
             )
             deltas = {
                 vertex_index: scale(contact.normal, multiplier * coefficient)
@@ -535,8 +544,7 @@ def build_self_collision_report(
     unique_before = _unique_contacts(before.contacts)
     unique_after = _unique_contacts(after.contacts)
     residual_touching = sum(
-        contact.penetration_meters <= active_settings.epsilon_meters
-        for contact in unique_after
+        contact.penetration_meters <= active_settings.epsilon_meters for contact in unique_after
     )
     residual_penetrating = len(unique_after) - residual_touching
     residual_above_budget = sum(
@@ -573,12 +581,11 @@ def build_self_collision_report(
             "contactThresholdMeters": active_settings.contact_threshold_meters,
             "correctionFraction": active_settings.correction_fraction,
             "maxIterations": active_settings.max_iterations,
+            "responseMode": active_settings.response_mode,
             "iterationOrdering": "stable_candidate_then_contact_id",
             "broadPhase": "deterministic_bounded_uniform_grid_then_inflated_aabb",
             "narrowPhase": "vertex_triangle_and_edge_edge_distance",
-            "normalResponse": (
-                "symmetric_inverse_mass_barycentric_and_edge_parameter_projection"
-            ),
+            "normalResponse": ("symmetric_inverse_mass_barycentric_and_edge_parameter_projection"),
             "orientationGuard": "bounded_five_backtrack_local_rest_orientation_guard",
             "oracle": "independent_directional_bounds_then_exact_triangle_proximity",
             "adjacencyExclusion": "same_triangle_or_shared_vertex_pairs_excluded",
@@ -593,9 +600,7 @@ def build_self_collision_report(
             "maximumUniformGridInsertions": 1_000_000,
         },
         "collisionQuantityDomains": {
-            "selfSignedSeparation": (
-                "cloth_primitive_distance_minus_thickness_and_contact_offset"
-            ),
+            "selfSignedSeparation": ("cloth_primitive_distance_minus_thickness_and_contact_offset"),
             "touchingContact": "penetration_at_or_below_numerical_epsilon",
             "penetrationDepth": "negative_self_signed_separation_magnitude",
             "oracleUncertain": "unsupported_for_promotion_and_fails_closed",
@@ -1338,9 +1343,7 @@ def _degenerate_edge_candidate(
     edge = sub(end, start)
     length_squared = _dot(edge, edge)
     parameter = (
-        _clamp(_dot(sub(point, start), edge) / length_squared)
-        if length_squared > 1e-24
-        else 0.0
+        _clamp(_dot(sub(point, start), edge) / length_squared) if length_squared > 1e-24 else 0.0
     )
     closest = add(start, scale(edge, parameter))
     weights = [0.0, 0.0, 0.0]
@@ -1365,15 +1368,11 @@ def _correction_preserves_local_orientation(
     incident_triangles: dict[int, tuple[Tri, ...]],
 ) -> bool:
     local_triangles = {
-        triangle
-        for vertex_index in deltas
-        for triangle in incident_triangles.get(vertex_index, ())
+        triangle for vertex_index in deltas for triangle in incident_triangles.get(vertex_index, ())
     }
     for triangle in local_triangles:
         reference = tuple(reference_positions[index] for index in triangle)
-        reference_normal = cross(
-            sub(reference[1], reference[0]), sub(reference[2], reference[0])
-        )
+        reference_normal = cross(sub(reference[1], reference[0]), sub(reference[2], reference[0]))
         reference_area_squared = _dot(reference_normal, reference_normal)
         before = tuple(positions[index] for index in triangle)
         before_normal = cross(sub(before[1], before[0]), sub(before[2], before[0]))
