@@ -87,8 +87,10 @@ global blueprint phase.
 
 ## ZeroOne Static Evidence
 
-- ZeroOne source: `jake-the-jake/ZeroOne` at
-  `c6388cbbf53ba8a47831ec25e83808e1edf32194`, draft PR #1.
+- ZeroOne source evidence: `jake-the-jake/ZeroOne` at
+  `c6388cbbf53ba8a47831ec25e83808e1edf32194`. Draft PR #1 was owner-closed
+  unmerged at `2026-08-28T03:07:10Z` and its branch ref was deleted after the exact-head
+  verification runs; this checkpoint does not recreate or reopen owner-closed review state.
 - Executable: standalone Windows MSVC 19.36 Release, CPU-only and headless; it requires no GPU or
   window. SHA-256:
   `7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e`.
@@ -116,6 +118,11 @@ The primary Closy checkout remains untouched with unrelated edits in `metro.conf
 
 Task worktrees also retain line-ending-only schema status and task-owned `.tmp/` directories.
 Recovery stashes are intentionally retained and must not be dropped until the stack is accepted.
+The Integrity worktree additionally reports a stat-only modification for
+`tests/integration/test_determinism_and_variants.py` whose worktree, index, and HEAD blob hashes
+are identical, plus task audit `.tmp*` directories; none are staged or cleaned. The current
+ZeroOne primary checkout is clean on owner-updated `master` at
+`a17762bc1fc12fbd33f0488634635a5dcfdf8da3`; the former task worktree is no longer present.
 
 ## Exact Next Command
 
@@ -124,7 +131,7 @@ The next implementation must continue C3 rather than Phase 11:
 ```powershell
 cd E:\apps\Closy-c3\closy-forge
 $env:PYTHONPATH = (Resolve-Path src).Path
-& E:\apps\Closy-integrity\closy-forge\.venv\Scripts\python.exe -m pytest tests\unit\test_production_binding_c3.py tests\unit\test_production_self_collision.py -q
+& E:\apps\Closy-integrity\closy-forge\.venv\Scripts\python.exe -m pytest tests\unit\test_production_binding_c3.py tests\unit\test_self_collision.py -q
 ```
 
 Do not merge, retarget, force-push, write to `main`/`master`, widen thresholds, filter unresolved
