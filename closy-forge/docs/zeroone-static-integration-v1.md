@@ -13,11 +13,12 @@ executable itself, compares it with the independently captured build record, the
 flags. A caller-supplied hash alone is never trusted. Missing or incompatible tools return an
 explicit unavailable result and leave the package untouched.
 
-The historical source pin for this vertical is
-`c6388cbbf53ba8a47831ec25e83808e1edf32194` from the owner-closed, unmerged ZeroOne PR #1.
-Current ZeroOne master is tracked separately and must be requalified before it replaces this
-historical scope. Native executable bytes are toolchain-specific and are recorded in trusted
-build evidence rather than stored in Closy.
+The active candidate-static source pin for this vertical is
+`13a844d240f4bbb2cafde105c4a0bdca8d89a06b` from unmerged ZeroOne PR #2. Its exact raw head passed
+the bounded Windows and Ubuntu standalone CPU workflow in run `33187775880`; the private Windows
+artifact is independently hash-bound to executable SHA-256
+`59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065`. This is candidate-branch
+evidence, not current-mainline qualification. Native executable bytes are never stored in Closy.
 
 ## Execution and authority
 
@@ -40,8 +41,12 @@ not remove any garment authority.
 
 ## Evidence boundary
 
-The committed PR #23 report is a historical local pass for the exact tested D0 CPU/static
-profile, not durable current-mainline qualification. Global Phase 10 remains partial without
-turntable or human visual review, broader garment/provider evidence, and a mobile profile.
+The refreshed report executes all nine predeclared project-authored synthetic garment families
+with a private authenticated candidate-static binary. Each family proves clean/cache agreement,
+namespace deletion/rebuild, and independent V3 page-byte decode with deterministic four-view
+machine review. Human visual review remains not run, and the paired Closy execution remains local
+candidate evidence rather than durable current-mainline qualification. Global Phase 10 remains
+partial without current-master pairing, human review, mobile, dynamic, private-user and production
+provider evidence.
 `C3-Binding-D0` plus refreshed paired scoped Z1 permits only a mechanical/reference Phase 11
 slice; `PHY1-SingleLayer-D0` remains required for solver-driven physical-quality claims.

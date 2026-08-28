@@ -1,10 +1,10 @@
 {
   "attestation": {
-    "available": false,
-    "kind": "historical_local_hash_only",
-    "reason": "owner_closed_source_branch_and_no_durable_artifact_attestation"
+    "available": true,
+    "kind": "github_actions_exact_raw_head",
+    "reason": "authenticated_short_lived_workflow_artifact"
   },
-  "buildId": "historical-local-zeroone-pr1-release-build",
+  "buildId": "33187775880-1-windows-release",
   "buildType": "Release",
   "capture": {
     "commandTemplate": [
@@ -19,9 +19,9 @@
     "networkAllowed": false,
     "sourceClean": true
   },
-  "compiler": "msvc-1936",
+  "compiler": "msvc-1944",
   "executableRelativeName": "ZeroOneProcess.exe",
-  "executableSha256": "7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e",
+  "executableSha256": "59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065",
   "recordVersion": "closy.zeroone.trusted-build-record.v1",
   "reportSchemaVersions": [
     "zeroone.closy.static-report.v1"
@@ -31,9 +31,9 @@
     "closy.zeroone.static-request.v1"
   ],
   "schemaVersion": 1,
-  "sourceSha": "c6388cbbf53ba8a47831ec25e83808e1edf32194",
+  "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
   "supportedProfiles": [
     "closy-static-d0-cpu-v1"
   ],
-  "trustDomain": "local_exact_source_capture"
+  "trustDomain": "verified_workflow_artifact"
 }

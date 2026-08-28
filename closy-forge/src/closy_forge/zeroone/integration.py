@@ -120,14 +120,16 @@ def integrate_zeroone_static(
             {"packageValidation": validation_before},
         )
 
-    with tempfile.TemporaryDirectory(prefix=".closy-zeroone-", dir=root) as temp_value:
+    # ZeroOne cache paths contain two SHA-256 directory names. Keep task-owned
+    # staging names short enough for legacy Win32 path handling.
+    with tempfile.TemporaryDirectory(prefix=".z1-", dir=root) as temp_value:
         work = Path(temp_value)
         run_a = _execute_clean_run(
             tool.executable,
             root,
             package_root,
-            work / "run-a",
-            work / "request-a.json",
+            work / "a",
+            work / "a.json",
             closy_sha,
             "closy-phase10-clean-a",
         )
@@ -135,7 +137,7 @@ def integrate_zeroone_static(
             return _failed(
                 tool, package_root, fallback_before, before_files, "process_failed", run_a
             )
-        run_a_hit = _invoke(tool.executable, "cook", root, work / "request-a.json")
+        run_a_hit = _invoke(tool.executable, "cook", root, run_a["requestPath"])
         if not _successful_compute_report(run_a_hit) or run_a_hit.get("cacheState") != "hit":
             return _failed(
                 tool,
@@ -149,8 +151,8 @@ def integrate_zeroone_static(
             tool.executable,
             root,
             package_root,
-            work / "run-b",
-            work / "request-b.json",
+            work / "b",
+            work / "b.json",
             closy_sha,
             "closy-phase10-clean-b",
         )
