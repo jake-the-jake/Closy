@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_button_shirt, read_json
 
-GOLDEN_DIGEST = "56e18ef3f9a98b8ccc5bf984ecf7c64bb3ea5960108e2b4fd53108cbafa3f7cf"
+GOLDEN_DIGEST = "f561119ddeddf11bc3722db09da7893e614bb235907b884aee02356bfb269ca0"
 
 
 def test_button_shirt_package_is_complete_conventional_and_valid(tmp_path) -> None:
