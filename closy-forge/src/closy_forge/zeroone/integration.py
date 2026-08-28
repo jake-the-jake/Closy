@@ -207,8 +207,27 @@ def integrate_zeroone_static(
         "profile": cook_a.get("profile"),
         "zeroOneGitSha": cook_a.get("zeroOneGitSha"),
         "executableSha256": tool.executable_sha256,
+        "canonicalAuthorityHashes": authority_before,
         "canonicalDerivativeHash": cook_a.get("canonicalDerivativeHash"),
         "outputHashes": cook_a.get("outputHashes"),
+        "assetAudit": {
+            key: cook_a.get(key)
+            for key in (
+                "meshCount",
+                "primitiveCount",
+                "vertexCount",
+                "triangleCount",
+                "materialCount",
+                "panelCount",
+                "seamCount",
+                "openingCount",
+                "clusterCount",
+                "hierarchyNodeCount",
+                "pageCount",
+                "pagePackCount",
+                "stitchRowCount",
+            )
+        },
         "cleanRunA": _bounded_report(run_a),
         "cacheHitRun": _bounded_report(run_a_hit),
         "cleanRunB": _bounded_report(run_b),
