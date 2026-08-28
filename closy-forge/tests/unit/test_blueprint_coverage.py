@@ -175,14 +175,9 @@ def test_next_actions_do_not_point_to_already_completed_stack_steps() -> None:
         assert stale not in next_actions
 
 
-def test_resume_and_ledger_reference_machine_authority_and_truthful_scope() -> None:
-    resume = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
-    ledger = (DOCS / "MASTER_BLUEPRINT_PROGRESS.md").read_text(encoding="utf-8")
+def test_human_ledgers_are_not_machine_readiness_authorities() -> None:
+    status = _json("current_blueprint_status.json")
+    stack = _json("pr_stack_manifest.json")
+    coverage = _json("blueprint_coverage.json")
 
-    for document in (resume, ledger):
-        assert "current_blueprint_status.json" in document
-        assert "pr_stack_manifest.json" in document
-        assert "deterministic D0 fixture" in document
-        assert "contract-fixture" in document
-    assert "No further independent implementation item" not in resume
-    assert "PR #19" in ledger
+    assert validate_status_model(status, coverage, stack) == []
