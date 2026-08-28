@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
+import tracemalloc
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -27,6 +29,10 @@ from closy_forge.garments.sleeveless_top.parameters import SleevelessTopParamete
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
 from closy_forge.package_io.determinism import compare_package_trees
+from closy_forge.pattern_inference.execution_evidence_v2 import write_execution_evidence_v2
+from closy_forge.pattern_inference.learned_foundation import (
+    write_learned_pattern_inference_foundation,
+)
 from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt_package
 from closy_forge.pipeline.build_jacket_outerwear_demo import build_demo_jacket_outerwear_package
 from closy_forge.pipeline.build_layered_asymmetric_demo import (
@@ -375,6 +381,21 @@ def _parser() -> argparse.ArgumentParser:
     diff.add_argument("--json", action="store_true")
     diff.set_defaults(handler=_packages_diff)
 
+    inference = subparsers.add_parser(
+        "pattern-inference", help="Train and audit bounded pattern-inference fixtures."
+    )
+    inference_sub = inference.add_subparsers(dest="pattern_inference_command")
+    train = inference_sub.add_parser(
+        "train-synthetic-d0",
+        help="Train the real project-owned synthetic D0 model and persist canonical evidence.",
+    )
+    train.add_argument("--output", required=True, type=Path)
+    train.add_argument("--seed", type=int, default=2901)
+    train.add_argument("--commit-sha", default=None)
+    train.add_argument("--force", action="store_true")
+    train.add_argument("--json", action="store_true")
+    train.set_defaults(handler=_train_pattern_inference_d0)
+
     benchmark = subparsers.add_parser("benchmark", help="Write non-canonical host evidence.")
     benchmark_sub = benchmark.add_subparsers(dest="benchmark_command")
     binding_benchmark = benchmark_sub.add_parser(
@@ -715,6 +736,41 @@ def _packages_diff(args: argparse.Namespace) -> int:
     else:
         print(json.dumps(diff, indent=2, sort_keys=True))
     return EXIT_SUCCESS if diff["status"] == "identical" else EXIT_VALIDATION_FAILURE
+
+
+def _train_pattern_inference_d0(args: argparse.Namespace) -> int:
+    if args.output.exists() and any(args.output.iterdir()) and not args.force:
+        raise FileExistsError(f"output directory is not empty: {args.output}")
+    tracemalloc.start()
+    wall_start = time.perf_counter_ns()
+    cpu_start = time.process_time_ns()
+    bundle = write_learned_pattern_inference_foundation(args.output, seed=args.seed)
+    cpu_ns = time.process_time_ns() - cpu_start
+    wall_ns = time.perf_counter_ns() - wall_start
+    _, peak_bytes = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    execution = write_execution_evidence_v2(
+        args.output / "execution_evidence.json",
+        bundle,
+        training_pipeline_wall_ns=wall_ns,
+        training_pipeline_cpu_ns=cpu_ns,
+        training_pipeline_peak_bytes=peak_bytes,
+        commit_sha=args.commit_sha,
+    )
+    payload = {
+        "status": "trained",
+        "output": str(args.output),
+        "modelHash": bundle["model"]["integrity"]["modelHash"],
+        "datasetHash": bundle["hashes"]["dataset"],
+        "heldOutTop1Accuracy": bundle["evaluation"]["familyTemplate"]["top1Accuracy"],
+        "postSettleStatus": execution["postSettle"]["status"],
+        "globalPhase9Status": bundle["evidenceTier"]["globalPhase9Status"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    return EXIT_SUCCESS
 
 
 def _benchmark_binding_c3(args: argparse.Namespace) -> int:
