@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from closy_forge.binding.c3_evidence import _seam_metrics
 from closy_forge.binding.c3_metrics import (
+    _closest_point_on_triangle,
     evaluate_independent_surface_agreement,
     unweighted_vertex_centroid,
+)
+from closy_forge.binding.stitched_deformation import (
+    _closest_point_on_triangle as _stitched_closest_point_on_triangle,
 )
 from closy_forge.geometry.mesh_model import Mesh, MeshSet
 
@@ -57,6 +61,21 @@ def test_surface_metric_detects_symmetric_corruption_hidden_by_vertex_centroid()
     assert unweighted_vertex_centroid(corrupt) == unweighted_vertex_centroid(fallback)
     assert report["maxSampledSurfaceDistanceMeters"] == 0.5
     assert report["maxSemanticLandmarkDeltaMeters"] == 0.5
+
+
+def test_closest_point_queries_handle_collapsed_triangle_edges() -> None:
+    point = (0.5, 1.0, 0.0)
+    collapsed_a = (0.0, 0.0, 0.0)
+    collapsed_b = (0.0, 0.0, 0.0)
+    end = (1.0, 0.0, 0.0)
+
+    assert _closest_point_on_triangle(point, collapsed_a, collapsed_b, end) == (0.5, 0.0, 0.0)
+    assert _stitched_closest_point_on_triangle(point, collapsed_a, collapsed_b, end) == (
+        0.5,
+        0.0,
+        0.0,
+    )
+    assert _closest_point_on_triangle(point, collapsed_a, collapsed_a, collapsed_a) == collapsed_a
 
 
 def test_relative_seam_slip_removes_common_cloth_motion() -> None:

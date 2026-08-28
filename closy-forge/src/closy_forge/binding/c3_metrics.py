@@ -238,6 +238,8 @@ def _triangle_area(a: Vec3, b: Vec3, c: Vec3) -> float:
 def _closest_point_on_triangle(point: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3:
     ab = _sub(b, a)
     ac = _sub(c, a)
+    if _triangle_area(a, b, c) <= 1e-15:
+        return _closest_point_on_degenerate_triangle(point, a, b, c)
     ap = _sub(point, a)
     d1, d2 = _dot(ab, ap), _dot(ac, ap)
     if d1 <= 0.0 and d2 <= 0.0:
@@ -262,6 +264,24 @@ def _closest_point_on_triangle(point: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3:
     denominator = 1.0 / max(1e-15, va + vb + vc)
     v, w = vb * denominator, vc * denominator
     return _add(a, _add(_scale(ab, v), _scale(ac, w)))
+
+
+def _closest_point_on_degenerate_triangle(point: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3:
+    candidates = (
+        _closest_point_on_segment(point, a, b),
+        _closest_point_on_segment(point, b, c),
+        _closest_point_on_segment(point, c, a),
+    )
+    return min(candidates, key=lambda candidate: (_distance(point, candidate), candidate))
+
+
+def _closest_point_on_segment(point: Vec3, start: Vec3, end: Vec3) -> Vec3:
+    segment = _sub(end, start)
+    length_squared = _dot(segment, segment)
+    if length_squared <= 1e-30:
+        return start
+    parameter = max(0.0, min(1.0, _dot(_sub(point, start), segment) / length_squared))
+    return _add(start, _scale(segment, parameter))
 
 
 def _add(a: Vec3, b: Vec3) -> Vec3:
