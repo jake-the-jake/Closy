@@ -157,7 +157,7 @@ def validate_dataset_v2(dataset: dict[str, Any], split: dict[str, Any]) -> list[
         issues.append("dataset_feature_contract_invalid")
     for sample in samples:
         observation = sample.get("input", {})
-        if tuple(observation) != FEATURE_NAMES:
+        if set(observation) != set(FEATURE_NAMES) or len(observation) != len(FEATURE_NAMES):
             issues.append("capture_feature_set_invalid")
         if _contains_forbidden_input_key(observation):
             issues.append("adversarial_feature_leakage_detected")
