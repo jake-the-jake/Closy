@@ -53,12 +53,14 @@ from closy_forge.visual_understanding import (
     build_multiview_fusion_record,
     build_tshirt_visual_observations,
 )
+from closy_forge.zeroone.integration import integrate_zeroone_static
 
 EXIT_SUCCESS = 0
 EXIT_ARGUMENT_ERROR = 2
 EXIT_VALIDATION_FAILURE = 3
 EXIT_BUILD_FAILURE = 4
 EXIT_UNSAFE_PATH = 5
+EXIT_EXTERNAL_TOOL_UNAVAILABLE = 6
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -397,6 +399,23 @@ def _parser() -> argparse.ArgumentParser:
     train.add_argument("--force", action="store_true")
     train.add_argument("--json", action="store_true")
     train.set_defaults(handler=_train_pattern_inference_d0)
+
+    zeroone = subparsers.add_parser(
+        "zeroone", help="Build optional derivatives with a pinned ZeroOne processor."
+    )
+    zeroone_sub = zeroone.add_subparsers(dest="zeroone_command")
+    zeroone_static = zeroone_sub.add_parser(
+        "static", help="Run and validate the real headless ZeroOne D0 static profile."
+    )
+    zeroone_static.add_argument("package", type=Path)
+    zeroone_static.add_argument("--invocation-root", required=True, type=Path)
+    zeroone_static.add_argument("--executable", type=Path, default=None)
+    zeroone_static.add_argument("--expected-executable-sha256", default=None)
+    zeroone_static.add_argument("--closy-sha", required=True)
+    zeroone_static.add_argument("--no-publish", action="store_true")
+    zeroone_static.add_argument("--replace-existing", action="store_true")
+    zeroone_static.add_argument("--json", action="store_true")
+    zeroone_static.set_defaults(handler=_integrate_zeroone_static)
 
     benchmark = subparsers.add_parser("benchmark", help="Write non-canonical host evidence.")
     benchmark_sub = benchmark.add_subparsers(dest="benchmark_command")
@@ -791,6 +810,28 @@ def _benchmark_binding_c3(args: argparse.Namespace) -> int:
     else:
         print(f"Wrote {args.output}")
     return EXIT_SUCCESS
+
+
+def _integrate_zeroone_static(args: argparse.Namespace) -> int:
+    result = integrate_zeroone_static(
+        package=args.package,
+        invocation_root=args.invocation_root,
+        closy_sha=args.closy_sha,
+        executable=args.executable,
+        expected_executable_sha256=args.expected_executable_sha256,
+        publish=not args.no_publish,
+        replace_existing=args.replace_existing,
+    )
+    payload = result.to_json()
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    if result.status == "valid":
+        return EXIT_SUCCESS
+    if result.status == "unavailable":
+        return EXIT_EXTERNAL_TOOL_UNAVAILABLE
+    return EXIT_VALIDATION_FAILURE
 
 
 def _ci_diagnostics(args: argparse.Namespace) -> int:

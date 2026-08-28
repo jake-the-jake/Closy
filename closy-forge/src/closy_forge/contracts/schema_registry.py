@@ -3001,6 +3001,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_layered_asymmetric_schemas(),
         **_pattern_inference_schemas(),
         **_future_foundation_schemas(),
+        **_zeroone_integration_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
             {
@@ -3938,6 +3939,49 @@ def _future_foundation_schemas() -> dict[str, dict[str, Any]]:
         ],
     )
     return schemas
+
+
+def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
+    return {
+        "zeroone-integration-result.schema.json": _schema(
+            "Closy ZeroOne integration result v1",
+            {
+                "schemaVersion": {"const": "closy.zeroone.integration-result.v1"},
+                "status": {
+                    "enum": [
+                        "unavailable",
+                        "request_invalid",
+                        "process_failed",
+                        "derivative_corrupt",
+                        "derivative_incompatible",
+                        "valid",
+                    ]
+                },
+                "reason": {"type": "string", "minLength": 1},
+                "actualZeroOneRuntimeExecuted": {"type": "boolean"},
+                "actualZeroOneComputeExecuted": {"type": "boolean"},
+                "fallbackPreserved": {"type": "boolean"},
+                "canonicalAuthorityPreserved": {"type": "boolean"},
+                "deterministicDerivative": {"type": "boolean"},
+                "packagedDerivative": {"type": ["string", "null"]},
+                "tool": {"type": "object"},
+                "report": {"type": "object"},
+            },
+            [
+                "schemaVersion",
+                "status",
+                "reason",
+                "actualZeroOneRuntimeExecuted",
+                "actualZeroOneComputeExecuted",
+                "fallbackPreserved",
+                "canonicalAuthorityPreserved",
+                "deterministicDerivative",
+                "packagedDerivative",
+                "tool",
+                "report",
+            ],
+        )
+    }
 
 
 def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
