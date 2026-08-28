@@ -7,9 +7,9 @@ name = "closy-forge"
 version = "0.1.0"
 description = "Deterministic Closy garment foundry foundation and T-shirt vertical slice."
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11,<3.13"
 authors = [{ name = "Closy" }]
-dependencies = []
+dependencies = ["Pillow==11.1.0"]
 
 [project.optional-dependencies]
 dev = [

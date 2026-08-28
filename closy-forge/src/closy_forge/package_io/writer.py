@@ -1,17 +1,23 @@
 from __future__ import annotations
 
-import shutil
 from collections.abc import Iterable
 from pathlib import Path
 
 from closy_forge.package_io.hashing import package_digest, sha256_file
-from closy_forge.package_io.paths import assert_safe_child, posix_rel, validate_package_relpath
+from closy_forge.package_io.managed_output import (
+    MARKER_NAME,
+    cleanup_managed_staging,
+    create_managed_staging,
+    publish_managed_staging,
+)
+from closy_forge.package_io.paths import posix_rel, validate_package_relpath
 
 EXCLUDED_FROM_CANONICAL_INVENTORY = {
     "manifest.json",
     "reports/package_validation.json",
     "reports/summary.json",
     "reports/summary.md",
+    MARKER_NAME,
 }
 
 
@@ -26,35 +32,35 @@ MEDIA_TYPES = {
 
 
 def staging_dir_for(target: Path) -> Path:
-    return target.with_name(f".{target.name}.staging.closygarment")
+    return target.with_name(f".{target.name}.canonical-package.staging{target.suffix}")
 
 
 def prepare_staging(target: Path) -> Path:
     if target.suffix != ".closygarment":
         raise ValueError("output path must end with .closygarment")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    staging = staging_dir_for(target)
-    _safe_remove_staging(staging)
-    staging.mkdir(parents=True)
-    return staging
+    return create_managed_staging(
+        target,
+        allowed_root=target.parent,
+        purpose="canonical-package",
+    )
 
 
 def publish_staging(staging: Path, target: Path, *, force: bool) -> None:
-    if target.exists():
-        if not force:
-            raise FileExistsError(
-                f"{target} already exists; pass --force to replace only this package"
-            )
-        assert_safe_child(target.parent, target)
-        if target.is_dir():
-            shutil.rmtree(target)
-        else:
-            target.unlink()
-    staging.replace(target)
+    publish_managed_staging(
+        staging,
+        target,
+        allowed_root=target.parent,
+        purpose="canonical-package",
+        force=force,
+    )
 
 
 def cleanup_staging(staging: Path) -> None:
-    _safe_remove_staging(staging)
+    cleanup_managed_staging(
+        staging,
+        allowed_root=staging.parent,
+        purpose="canonical-package",
+    )
 
 
 def collect_inventory(package_dir: Path, *, exclude: Iterable[str] = ()) -> list[dict[str, object]]:
@@ -85,15 +91,6 @@ def collect_inventory(package_dir: Path, *, exclude: Iterable[str] = ()) -> list
 
 def canonical_package_digest(inventory: list[dict[str, object]]) -> str:
     return package_digest(inventory)
-
-
-def _safe_remove_staging(staging: Path) -> None:
-    if not staging.exists():
-        return
-    if not staging.name.startswith(".") or not staging.name.endswith(".staging.closygarment"):
-        raise ValueError(f"refusing to remove non-Forge staging path: {staging}")
-    assert_safe_child(staging.parent, staging)
-    shutil.rmtree(staging)
 
 
 def _role_for_path(rel: str) -> str:

@@ -47,9 +47,9 @@ def test_simple_dress_pattern_has_literal_bodice_skirt_and_opening_semantics() -
         "armhole_right",
         "hem",
     ]
-    assert mesh.vertex_count == 193
-    assert mesh.triangle_count == 189
-    assert len(constraints["constraints"]) == 62
+    assert mesh.vertex_count == 189
+    assert mesh.triangle_count == 181
+    assert len(constraints["constraints"]) == 72
     assert all(
         edge["status"] == "resolved"
         for opening in constraints["openings"]

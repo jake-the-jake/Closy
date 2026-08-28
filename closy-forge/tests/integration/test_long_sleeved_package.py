@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_long_sleeved_demo import build_demo_long_sleeved
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_long_sleeved, read_json
 
-GOLDEN_DIGEST = "35155eb1581219532b6784033358b97f7a6d743db70193f58a48662045674baf"
+GOLDEN_DIGEST = "fea9d2bb9fad5216ffe92ea681756d96b8c4be133492d5e036dc55cbd59ee2b1"
 
 
 def test_long_sleeved_package_is_complete_conventional_and_valid(tmp_path) -> None:
@@ -28,11 +28,11 @@ def test_long_sleeved_package_is_complete_conventional_and_valid(tmp_path) -> No
     assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["counts"] == {
         "panelCount": 4,
-        "simulationVertexCount": 212,
-        "simulationTriangleCount": 208,
-        "renderVertexCount": 1248,
-        "renderTriangleCount": 832,
-        "bindingRecordCount": 1248,
+        "simulationVertexCount": 208,
+        "simulationTriangleCount": 200,
+        "renderVertexCount": 1200,
+        "renderTriangleCount": 800,
+        "bindingRecordCount": 1200,
     }
     assert quality["readiness"]["longSleevedTopD0Complete"] is True
     assert quality["readiness"]["phase8GloballyComplete"] is False

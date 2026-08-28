@@ -19,7 +19,7 @@ def test_cli_build_validate_report_workflow(tmp_path, capsys) -> None:  # type: 
     assert "warnings=2" in captured.out
     report = validate_package(package)
     assert report["status"] == "passed"
-    assert report["counts"]["warning"] == 1
+    assert report["counts"]["warning"] == 7
 
 
 def test_generated_canonical_text_artifacts_use_lf_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -105,7 +105,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["multiviewFusion"]["fusedMaskCount"] == 4
     assert payload["multiviewFusion"]["fusedLandmarkCount"] == 10
     assert payload["multiviewFusion"]["expensiveDownstreamAllowed"] is True
-    assert payload["fitting"]["status"] == "pass"
+    assert payload["fitting"]["status"] == "fail"
     assert payload["fitting"]["method"] == (
         "bounded_iterative_decoded_raster_fit_with_full_solver_verification"
     )
@@ -114,7 +114,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["fitting"]["candidateEvaluationCount"] == 33
     assert payload["fitting"]["optimizationHistoryCount"] == 17
     assert payload["fitting"]["acceptedMoveCount"] == 8
-    assert payload["fitting"]["settledRenderComparisonStatus"] == "pass"
+    assert payload["fitting"]["settledRenderComparisonStatus"] == "fail"
     assert payload["fitting"]["heldOutStatus"] == "pass"
     assert payload["fitting"]["perturbationStatus"] == "pass"
     assert payload["texture"]["sourceTextureAvailable"] is True
@@ -125,9 +125,9 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["texture"]["decodedRasterAssetsPersisted"] is True
     assert payload["texture"]["sourceObservedFraction"] == 0.659362793
     assert payload["texture"]["generatedControlledFillFraction"] == 0.340637207
-    assert payload["sourceRenderFidelity"]["status"] == "pass_d0_public_fixture"
+    assert payload["sourceRenderFidelity"]["status"] == "fail_d0_public_fixture"
     assert payload["sourceRenderFidelity"]["allViewsNonBlank"] is True
-    assert payload["sourceRenderFidelity"]["acceptedForD0PublicFixture"] is True
+    assert payload["sourceRenderFidelity"]["acceptedForD0PublicFixture"] is False
     assert payload["sourceRenderFidelity"]["acceptedForCanonicalProduction"] is False
     assert payload["geometryProposal"]["qualityStatus"] == "accepted_visual_reference"
     assert payload["geometryProposal"]["acceptedForCanonical"] is False
@@ -158,8 +158,8 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     )
     assert payload["geometryBindingCandidate"]["candidateBindingRun"] is True
     assert payload["geometryBindingCandidate"]["runtimeBindingWritten"] is False
-    assert payload["geometryBindingCandidate"]["cleanupVertexCount"] == 223
-    assert payload["geometryBindingCandidate"]["mappedVertexCount"] == 223
+    assert payload["geometryBindingCandidate"]["cleanupVertexCount"] == 218
+    assert payload["geometryBindingCandidate"]["mappedVertexCount"] == 218
     assert payload["geometryBindingCandidate"]["unmappedVertexCount"] == 0
     assert payload["geometryBindingCandidate"]["candidateCompleteness"] == 1.0
     assert payload["geometryBindingCandidate"]["acceptedForCleanProposal"] is False
@@ -168,10 +168,10 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     )
     assert payload["geometryBindingValidation"]["deformationValidationRun"] is True
     assert payload["geometryBindingValidation"]["runtimeBindingAccepted"] is False
-    assert payload["geometryBindingValidation"]["validationRecordCount"] == 223
+    assert payload["geometryBindingValidation"]["validationRecordCount"] == 218
     assert payload["geometryBindingValidation"]["failedCheckCount"] == 1
     assert payload["geometryBindingValidation"]["notRunCheckCount"] == 4
-    assert payload["geometryBindingValidation"]["maxCleanupToSettledOffsetMeters"] == 0.928638078
+    assert payload["geometryBindingValidation"]["maxCleanupToSettledOffsetMeters"] == 0.625101317
     assert payload["geometryBindingValidation"]["acceptedForCleanProposal"] is False
     assert payload["geometryRepairRetopologyPlan"]["status"] == (
         "repair_retopology_plan_generated_execution_pending"
@@ -181,7 +181,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryRepairRetopologyPlan"]["retopologyRun"] is False
     assert payload["geometryRepairRetopologyPlan"]["seamSplitRun"] is False
     assert payload["geometryRepairRetopologyPlan"]["requiredOperationCount"] == 8
-    assert payload["geometryRepairRetopologyPlan"]["deformationFailedVertexCount"] == 203
+    assert payload["geometryRepairRetopologyPlan"]["deformationFailedVertexCount"] == 212
     assert (
         payload["geometryRepairRetopologyPlan"]["estimatedRepairComplexity"]
         == "retopology_required"
@@ -195,7 +195,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryRepairResult"]["repairRun"] is True
     assert payload["geometryRepairResult"]["retopologyRun"] is False
     assert payload["geometryRepairResult"]["seamSplitRun"] is False
-    assert payload["geometryRepairResult"]["movedVertexCount"] == 223
+    assert payload["geometryRepairResult"]["movedVertexCount"] == 218
     assert payload["geometryRepairResult"]["unmappedVertexCount"] == 0
     assert payload["geometryRepairResult"]["deferredOperationCount"] == 7
     assert payload["geometryRepairResult"]["maxOutputToSettledOffsetMeters"] == 0.0
@@ -208,7 +208,7 @@ def test_report_json_is_machine_readable(tmp_path, capsys) -> None:  # type: ign
     assert payload["geometryRuntimeBindingResult"]["componentStitchingRun"] is True
     assert payload["geometryRuntimeBindingResult"]["runtimeBindingWritten"] is True
     assert payload["geometryRuntimeBindingResult"]["runtimeBindingAccepted"] is True
-    assert payload["geometryRuntimeBindingResult"]["runtimeBindingRecordCount"] == 1308
+    assert payload["geometryRuntimeBindingResult"]["runtimeBindingRecordCount"] == 1248
     assert payload["geometryRuntimeBindingResult"]["maxReconstructionError"] == 0.0
     assert payload["geometryRuntimeBindingResult"]["acceptedForCleanProposal"] is False
     assert payload["cleanGeometryProposal"]["qualityStatus"] == "rejected"

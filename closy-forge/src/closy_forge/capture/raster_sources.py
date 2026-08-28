@@ -3,18 +3,26 @@ from __future__ import annotations
 import binascii
 import math
 import re
-import shutil
 import struct
+import warnings
 import zlib
 from collections import Counter
 from copy import deepcopy
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
+
+from PIL import Image, ImageOps
 
 from closy_forge.contracts.common import COORDINATE_CONVENTION, FIXED_TIMESTAMP
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json, write_canonical_json
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.package_io.managed_output import (
+    cleanup_managed_staging,
+    create_managed_staging,
+    publish_managed_staging,
+)
 
 RASTER_FIXTURE_PROFILE = "synthetic_fixture_raster_v1"
 RASTER_INGEST_RECORD_VERSION = "closy.raster_fixture_ingest_record.v1"
@@ -68,6 +76,7 @@ def ingest_raster_fixture_manifest(
     input_root: Path,
     private_registry_dir: Path,
     portable_output_dir: Path,
+    allowed_output_root: Path,
     force: bool = False,
 ) -> dict[str, Any]:
     """Ingest allowlisted project-authored PNG/JPEG fixtures into private records.
@@ -76,11 +85,8 @@ def ingest_raster_fixture_manifest(
     arbitrary user paths and does not copy raw images into portable artifacts.
     """
 
-    if private_registry_dir.resolve() == portable_output_dir.resolve():
+    if private_registry_dir.absolute() == portable_output_dir.absolute():
         raise RasterIngestError("registry_and_portable_output_must_be_separate")
-    _prepare_output_dir(private_registry_dir, force=force)
-    _prepare_output_dir(portable_output_dir, force=force)
-
     result = build_raster_fixture_records(manifest_path=manifest_path, input_root=input_root)
     private_files = {
         "private_ingest_record.json": result.private_record,
@@ -92,10 +98,46 @@ def ingest_raster_fixture_manifest(
         "source_summary.json": result.portable_source_summary,
         "privacy_report.json": result.privacy_report,
     }
-    for name, payload in private_files.items():
-        write_canonical_json(private_registry_dir / name, payload)
-    for name, payload in portable_files.items():
-        write_canonical_json(portable_output_dir / name, payload)
+    private_staging = create_managed_staging(
+        private_registry_dir,
+        allowed_root=allowed_output_root,
+        purpose="raster-private",
+    )
+    portable_staging = create_managed_staging(
+        portable_output_dir,
+        allowed_root=allowed_output_root,
+        purpose="raster-portable",
+    )
+    try:
+        for name, payload in private_files.items():
+            write_canonical_json(private_staging / name, payload)
+        for name, payload in portable_files.items():
+            write_canonical_json(portable_staging / name, payload)
+        publish_managed_staging(
+            private_staging,
+            private_registry_dir,
+            allowed_root=allowed_output_root,
+            purpose="raster-private",
+            force=force,
+        )
+        publish_managed_staging(
+            portable_staging,
+            portable_output_dir,
+            allowed_root=allowed_output_root,
+            purpose="raster-portable",
+            force=force,
+        )
+    finally:
+        cleanup_managed_staging(
+            private_staging,
+            allowed_root=allowed_output_root,
+            purpose="raster-private",
+        )
+        cleanup_managed_staging(
+            portable_staging,
+            allowed_root=allowed_output_root,
+            purpose="raster-portable",
+        )
 
     return {
         "status": "ingested",
@@ -442,26 +484,29 @@ def inspect_raster(path: Path, *, declared_mime: str) -> dict[str, Any]:
 
 
 def decode_raster_fixture_pixels(path: Path, *, declared_mime: str) -> DecodedRasterPixels:
-    """Decode approved fixture PNG pixels for D0 visual-understanding tests.
-
-    JPEG remains structural-only in the stdlib profile, so this helper fails
-    closed for JPEG instead of pretending decoded pixels are available.
-    """
+    """Decode approved fixture PNG/JPEG pixels under the shared byte/pixel limits."""
 
     audit = inspect_raster(path, declared_mime=declared_mime)
-    if audit["verifiedMime"] != "image/png":
-        raise RasterIngestError("decoded_pixels_unavailable_for_mime")
     data = path.read_bytes()
-    chunks = _png_chunks(data)
-    width, height, bit_depth, color_type, compression, filter_method, interlace = struct.unpack(
-        ">IIBBBBB", chunks[0][1]
-    )
-    if bit_depth != 8 or color_type not in {0, 2, 4, 6}:
-        raise RasterIngestError("unsupported_png_color_type_or_bit_depth")
-    if compression != 0 or filter_method != 0 or interlace != 0:
-        raise RasterIngestError("unsupported_png_compression_or_filter")
-    rgba = _decode_png_rgba(chunks, width, height, color_type)
-    pixel_hash = sha256_bytes(b"CLOSY_PNG_RGBA_V1" + rgba)
+    if audit["verifiedMime"] == "image/png":
+        chunks = _png_chunks(data)
+        width, height, bit_depth, color_type, compression, filter_method, interlace = struct.unpack(
+            ">IIBBBBB", chunks[0][1]
+        )
+        if bit_depth != 8 or color_type not in {0, 2, 4, 6}:
+            raise RasterIngestError("unsupported_png_color_type_or_bit_depth")
+        if compression != 0 or filter_method != 0 or interlace != 0:
+            raise RasterIngestError("unsupported_png_compression_or_filter")
+        rgba = _decode_png_rgba(chunks, width, height, color_type)
+        pixel_hash = sha256_bytes(b"CLOSY_PNG_RGBA_V1" + rgba)
+    elif audit["verifiedMime"] == "image/jpeg":
+        decoded = _decode_jpeg_rgba(data)
+        width = decoded["width"]
+        height = decoded["height"]
+        rgba = decoded["rgba"]
+        pixel_hash = sha256_bytes(b"CLOSY_JPEG_RGBA_V1" + rgba)
+    else:
+        raise RasterIngestError("decoded_pixels_unavailable_for_mime")
     if pixel_hash != audit["pixelHash"]:
         raise RasterIngestError("decoded_pixel_hash_mismatch")
     return DecodedRasterPixels(
@@ -528,83 +573,23 @@ def _parse_png(data: bytes) -> dict[str, Any]:
 
 
 def _parse_jpeg(data: bytes) -> dict[str, Any]:
-    if not data.startswith(_JPEG_SIGNATURE):
-        raise RasterIngestError("bad_jpeg_magic")
-    index = 2
-    width = 0
-    height = 0
-    components = 0
-    orientation = 1
-    sof_count = 0
-    while index < len(data):
-        if data[index] != 0xFF:
-            raise RasterIngestError("corrupt_jpeg_marker_stream")
-        while index < len(data) and data[index] == 0xFF:
-            index += 1
-        if index >= len(data):
-            raise RasterIngestError("truncated_jpeg")
-        marker = data[index]
-        index += 1
-        if marker in {0xD8, 0xD9, 0x01} or 0xD0 <= marker <= 0xD7:
-            if marker == 0xD9:
-                break
-            continue
-        if index + 2 > len(data):
-            raise RasterIngestError("truncated_jpeg")
-        segment_length = int.from_bytes(data[index : index + 2], "big")
-        if segment_length < 2 or index + segment_length > len(data):
-            raise RasterIngestError("truncated_jpeg")
-        payload = data[index + 2 : index + segment_length]
-        index += segment_length
-        if marker == 0xE1 and payload.startswith(b"Exif\x00\x00"):
-            orientation = _jpeg_exif_orientation(payload[6:]) or orientation
-        if marker == 0xE2 and payload.startswith(b"ICC_PROFILE"):
-            raise RasterIngestError("unsupported_color_profile")
-        if marker in {
-            0xC0,
-            0xC1,
-            0xC2,
-            0xC3,
-            0xC5,
-            0xC6,
-            0xC7,
-            0xC9,
-            0xCA,
-            0xCB,
-            0xCD,
-            0xCE,
-            0xCF,
-        }:
-            if len(payload) < 6:
-                raise RasterIngestError("truncated_jpeg")
-            sof_count += 1
-            height = int.from_bytes(payload[1:3], "big")
-            width = int.from_bytes(payload[3:5], "big")
-            components = payload[5]
-    if sof_count != 1 or width <= 0 or height <= 0:
-        raise RasterIngestError("jpeg_dimensions_missing")
-    _check_dimensions(width, height)
-    normalized_width, normalized_height = _oriented_dimensions(width, height, orientation)
+    decoded = _decode_jpeg_rgba(data)
+    rgba = decoded["rgba"]
+    width = decoded["width"]
+    height = decoded["height"]
     return {
-        "decodedDimensions": {"width": width, "height": height},
-        "normalizedDimensions": {"width": normalized_width, "height": normalized_height},
-        "exifOrientation": orientation,
-        "pixelHash": sha256_bytes(
-            b"CLOSY_JPEG_STRUCTURAL_FALLBACK_V1"
-            + canonical_dumps(
-                {
-                    "components": components,
-                    "height": height,
-                    "orientation": orientation,
-                    "width": width,
-                }
-            ).encode("utf-8")
-        ),
-        "decodedContentHashPolicy": "jpeg_structural_private_fallback_pixels_not_decoded",
+        "decodedDimensions": {
+            "width": decoded["sourceWidth"],
+            "height": decoded["sourceHeight"],
+        },
+        "normalizedDimensions": {"width": width, "height": height},
+        "exifOrientation": decoded["orientation"],
+        "pixelHash": sha256_bytes(b"CLOSY_JPEG_RGBA_V1" + rgba),
+        "decodedContentHashPolicy": "normalized_exif_transposed_rgba8_sha256",
         "decoder": {
-            "name": "closy_stdlib_jpeg_header_reader",
+            "name": "Pillow",
             "version": "v1",
-            "dependency": "python-stdlib-only",
+            "dependency": "Pillow==11.1.0",
             "colorSpacePolicy": "reject_icc_profiles_no_os_color_management",
         },
         "colorPolicy": {
@@ -613,11 +598,52 @@ def _parse_jpeg(data: bytes) -> dict[str, Any]:
             "unsupportedProfilesRejected": True,
         },
         "alphaPolicy": {"mode": "opaque_jpeg", "compositeBackground": None},
-        "pixelStats": {
-            "available": False,
-            "reason": "jpeg_pixel_decode_dependency_unavailable_in_d0_stdlib_profile",
-        },
-        "warnings": ["jpeg_pixel_quality_limited_to_structural_metadata"],
+        "pixelStats": _pixel_stats_from_rgba(rgba, width, height),
+        "warnings": [],
+    }
+
+
+def _decode_jpeg_rgba(data: bytes) -> dict[str, Any]:
+    if not data.startswith(_JPEG_SIGNATURE):
+        raise RasterIngestError("bad_jpeg_magic")
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(BytesIO(data)) as image:
+                if image.format != "JPEG":
+                    raise RasterIngestError("bad_jpeg_magic")
+                if int(getattr(image, "n_frames", 1)) != 1:
+                    raise RasterIngestError("animated_or_multipage_rejected")
+                source_width, source_height = image.size
+                _check_dimensions(source_width, source_height)
+                if image.info.get("icc_profile"):
+                    raise RasterIngestError("unsupported_color_profile")
+                orientation = int(image.getexif().get(0x0112, 1))
+                if orientation not in range(1, 9):
+                    raise RasterIngestError("invalid_exif_orientation")
+                normalized = ImageOps.exif_transpose(image)
+                if normalized is None:
+                    raise RasterIngestError("jpeg_pixel_decode_failed")
+                width, height = normalized.size
+                _check_dimensions(width, height)
+                if width * height * 4 > MAX_DECOMPRESSED_BYTES:
+                    raise RasterIngestError("decompression_limit_exceeded")
+                rgba = normalized.convert("RGBA").tobytes()
+    except RasterIngestError:
+        raise
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning) as error:
+        raise RasterIngestError("decompression_limit_exceeded") from error
+    except (OSError, ValueError) as error:
+        raise RasterIngestError("jpeg_pixel_decode_failed") from error
+    if len(rgba) != width * height * 4:
+        raise RasterIngestError("jpeg_pixel_decode_failed")
+    return {
+        "height": height,
+        "orientation": orientation,
+        "rgba": rgba,
+        "sourceHeight": source_height,
+        "sourceWidth": source_width,
+        "width": width,
     }
 
 
@@ -818,10 +844,10 @@ def _quality_report(
                 for source in private_record["acceptedSources"]
                 if source["pixelStats"]["available"]
             ),
-            "jpegStructuralOnlyViewCount": sum(
+            "jpegPixelDecodedViewCount": sum(
                 1
                 for source in private_record["acceptedSources"]
-                if not source["pixelStats"]["available"]
+                if source["verifiedMime"] == "image/jpeg" and source["pixelStats"]["available"]
             ),
             "duplicateDecodedHashGroups": duplicate_groups,
         },
@@ -1146,43 +1172,6 @@ def _check_dimensions(width: int, height: int) -> None:
         raise RasterIngestError("pixel_count_limit_exceeded")
 
 
-def _jpeg_exif_orientation(tiff: bytes) -> int | None:
-    if len(tiff) < 8:
-        return None
-    endian_flag = tiff[:2]
-    if endian_flag == b"II":
-        endian: Literal["little", "big"] = "little"
-    elif endian_flag == b"MM":
-        endian = "big"
-    else:
-        return None
-    if int.from_bytes(tiff[2:4], endian) != 42:
-        return None
-    offset = int.from_bytes(tiff[4:8], endian)
-    if offset + 2 > len(tiff):
-        return None
-    count = int.from_bytes(tiff[offset : offset + 2], endian)
-    cursor = offset + 2
-    for _index in range(count):
-        if cursor + 12 > len(tiff):
-            return None
-        tag = int.from_bytes(tiff[cursor : cursor + 2], endian)
-        value_type = int.from_bytes(tiff[cursor + 2 : cursor + 4], endian)
-        value_count = int.from_bytes(tiff[cursor + 4 : cursor + 8], endian)
-        if tag == 0x0112 and value_type == 3 and value_count == 1:
-            orientation = int.from_bytes(tiff[cursor + 8 : cursor + 10], endian)
-            if 1 <= orientation <= 8:
-                return orientation
-        cursor += 12
-    return None
-
-
-def _oriented_dimensions(width: int, height: int, orientation: int) -> tuple[int, int]:
-    if orientation in {5, 6, 7, 8}:
-        return height, width
-    return width, height
-
-
 def _paeth(left: int, up: int, up_left: int) -> int:
     estimate = left + up - up_left
     left_delta = abs(estimate - left)
@@ -1193,16 +1182,6 @@ def _paeth(left: int, up: int, up_left: int) -> int:
     if up_delta <= up_left_delta:
         return up
     return up_left
-
-
-def _prepare_output_dir(path: Path, *, force: bool) -> None:
-    if path.exists():
-        if not force:
-            raise RasterIngestError("output_exists")
-        if path.is_symlink() or not path.is_dir():
-            raise RasterIngestError("output_path_not_real_directory")
-        shutil.rmtree(path)
-    path.mkdir(parents=True)
 
 
 def _required_safe_text(mapping: dict[str, Any], key: str) -> str:

@@ -1,19 +1,19 @@
 # Master Blueprint Progress Ledger
 
-This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`. It is not a roadmap substitute: entries marked complete require code, fixtures, reports, tests or explicit validation evidence.
+This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`. It is not a roadmap substitute: entries marked complete require code, fixtures, reports, tests or explicit validation evidence. Current status and stack topology are generated from and cross-checked against `current_blueprint_status.json`, `blueprint_coverage.json`, and `pr_stack_manifest.json`; historical run details below are append-only evidence, not readiness authority.
 
 ## Dashboard
 
-- Branch: `codex/closy-forge-phases-10-14-runnable-foundations`
+- Branch: `codex/closy-forge-evidence-topology-physics-integrity`
 - Master blueprint source: [`Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`](./Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md), byte-faithful copy of the user-supplied document, SHA-256 `AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D`
-- Exact stacked base: Phase 8 jacket/outerwear evidence head `b01a9c13e31ced489adb3330d28dff74b903b256`; final evidence-head run `33031422497` passed Windows job `98384584086` and Ubuntu job `98384584245`.
-- Latest verified predecessor state: jacket/outerwear implementation `d79e1b8`, evidence sync `b01a9c1`, draft PR #16.
-- Current active increment: `PHASE-10-14-RUNNABLE-FOUNDATIONS-D0` implements offline/reference contracts while external runtime, device, private-data and training tiers remain not run.
+- Exact stacked base: PR #19 head `e83e1e897c9539d246926f8148c5a9ac347982d1`; run `33040669088` passed Ubuntu job `98413292239` and Windows job `98413292114`.
+- Latest verified predecessor state: draft PR #19, six commits and fifteen files over exact PR #18 head `eb1e64a8ea294f0099e0021e65191b50d69aaa75`.
+- Current active increment: evidence/topology/physics integrity. The eight Phase 8 bundles are deterministic D0 fixture family verticals. Phase 10-14 work is limited to versioned contract-fixture foundations; actual runtime, device, private-data, human-review, and training tiers remain not run.
 - Completed phases: `BP-17-PHASE-00`
 - Partially complete phases: `BP-17-PHASE-01` through `BP-17-PHASE-14`
 - Passed gates: `BP-18-GATE-C1`, `BP-18-GATE-C2`; C3 remains partial while repaired independent fallback and tangential-sliding thresholds fail.
-- Discovery-pending gates: `BP-18-GATE-Z1`, `BP-18-GATE-Z2`, `BP-18-GATE-P1`
-- Next dependency-ready increment requires an authorised versioned ZeroOne executable; the runnable static/deformation/mobile/avatar/model contract foundations are already represented by Phases 10-14 without claiming their external tiers.
+- Partial gates: `BP-18-GATE-C3`, `BP-18-GATE-Z1`, `BP-18-GATE-Z2`, and `BP-18-GATE-P1`.
+- Independent work remains: deterministic topology/seams, actual XPBD/material coupling, scoped C3 collision closeout, identity-disjoint synthetic training, and the task-owned private ZeroOne static garment processor.
 - Last focused verification: the layered/asymmetric package has 41 physical and 37 inventoried files, 478,681 inventoried bytes and digest `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`. It contains 258/254 simulation vertices/triangles, 1,524/1,016 dense vertices/triangles and 1,524 binding records. Bounded fit objective is `0.00182`; four non-empty panels preserve two ordered material layers, `0.020 m` measured front clearance and a `0.090 m` asymmetric outer hem. All four armholes remain non-collapsed with maximum dense seam crack `0.0079439 m`. Focused unit, integration, CLI and corruption checks pass locally with 99 fresh schemas. Phase 8 remains partial globally under production/private acceptance requirements; Phase 9 remains partial until authorised data, training and evaluation exist.
 
 ## Status Vocabulary

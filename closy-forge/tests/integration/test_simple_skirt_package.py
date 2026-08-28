@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_simple_skirt, read_json
 
-GOLDEN_DIGEST = "c5989b4b0d164aebd866fe98eaa9fed85477d73f23d55eead05e04a14a7ae2df"
+GOLDEN_DIGEST = "ea66fa66a611d22c7bfff44dde87681dcddefe02fbd3441a6fcd4703eeac0898"
 
 
 def test_simple_skirt_package_is_complete_conventional_and_valid(tmp_path) -> None:
@@ -28,11 +28,11 @@ def test_simple_skirt_package_is_complete_conventional_and_valid(tmp_path) -> No
     assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["counts"] == {
         "panelCount": 2,
-        "simulationVertexCount": 106,
-        "simulationTriangleCount": 104,
-        "renderVertexCount": 624,
-        "renderTriangleCount": 416,
-        "bindingRecordCount": 624,
+        "simulationVertexCount": 104,
+        "simulationTriangleCount": 100,
+        "renderVertexCount": 600,
+        "renderTriangleCount": 400,
+        "bindingRecordCount": 600,
     }
     assert quality["readiness"]["simpleSkirtD0Complete"] is True
     assert quality["readiness"]["phase8GloballyComplete"] is False

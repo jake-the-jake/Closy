@@ -46,9 +46,9 @@ def test_long_sleeved_pattern_has_literal_sleeve_cuff_and_seam_semantics() -> No
         "left_cuff",
         "right_cuff",
     ]
-    assert mesh.vertex_count == 212
-    assert mesh.triangle_count == 208
-    assert len(constraints["constraints"]) == 77
+    assert mesh.vertex_count == 208
+    assert mesh.triangle_count == 200
+    assert len(constraints["constraints"]) == 90
     assert all(
         edge["status"] == "resolved"
         for opening in constraints["openings"]

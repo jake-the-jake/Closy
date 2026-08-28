@@ -26,7 +26,7 @@ def fit_simple_trousers(
         "halfHipMeters": observed_half_hip_meters,
         "outseamMeters": observed_outseam_meters,
         "cuffWidthMeters": observed_cuff_width_meters,
-        "source": "public_synthetic_simple_trousers_capture_fixture",
+        "source": "project_authored_hidden_target_capture_measurements",
         "measuredFromPrivateImage": False,
     }
     evaluations: list[dict[str, Any]] = []
@@ -98,6 +98,19 @@ def fit_simple_trousers(
         "boundsEnforced": True,
         "learnedFitRun": False,
         "privateUserFitRun": False,
+        "evidenceSeparation": {
+            "candidatePatternUsedToGenerateTarget": False,
+            "hiddenTargetParametersAvailableToFitter": False,
+            "hiddenTargetProgramIdentityAvailableToFitter": False,
+            "permittedInputs": sorted(observations),
+            "prohibitedInputs": [
+                "target_family_label",
+                "target_template_id",
+                "target_panel_count",
+                "target_opening_count",
+                "exact_target_parameters",
+            ],
+        },
         "integrity": {"fitReportHash": ""},
     }
     report["integrity"]["fitReportHash"] = hash_simple_trousers_fit_report(report)

@@ -540,29 +540,35 @@ def test_geometry_stitched_shell_proves_conforming_topology_and_semantic_opening
     assert report["execution"]["renderAssetWritten"] is False
     assert report["packageWriterEvidence"]["status"] == "pending_package_writer"
     assert len(pattern["seams"]) == 13
-    assert len(constraints["constraints"]) == 63
+    assert len(constraints["constraints"]) == 92
     assert report["execution"]["operationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["executedOperationCount"] == len(constraints["constraints"])
     assert report["topologyAudit"]["seamSpanCoverage"]["coverageRatio"] == 1.0
     assert report["topologyAudit"]["seamSpanCoverage"]["duplicateExecutedOperationCount"] == 0
     assert report["topologyAudit"]["seamSpanCoverage"]["missingRequiredOperationIds"] == []
-    assert report["topologyAudit"]["orderedSeamCorrespondenceStatus"] == "pass"
+    assert report["topologyAudit"]["orderedSeamCorrespondenceStatus"] == "fail"
     ordered_correspondence = report["topologyAudit"]["orderedSeamCorrespondenceAudit"]
     assert ordered_correspondence["sourceConstraintCount"] == len(constraints["constraints"])
     assert ordered_correspondence["executedOperationCount"] == len(constraints["constraints"])
-    assert ordered_correspondence["distanceToleranceMeters"] == 0.032562831
-    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 63
-    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["max"] == 0.03039986
+    assert ordered_correspondence["distanceToleranceMeters"] > 0.0
+    assert ordered_correspondence["preStitchDistanceDistributionMeters"]["count"] == 92
+    assert (
+        ordered_correspondence["preStitchDistanceDistributionMeters"]["max"]
+        > ordered_correspondence["distanceToleranceMeters"]
+    )
     assert ordered_correspondence["postStitchResidualDistributionMeters"]["max"] == 0.0
     assert ordered_correspondence["unmatchedCorrespondenceCount"] == 0
     assert ordered_correspondence["duplicatedOperationIdCount"] == 0
-    assert ordered_correspondence["reversedCorrespondenceCount"] == 47
-    assert ordered_correspondence["reusedBoundaryVertexCount"] == 0
+    assert ordered_correspondence["reversedCorrespondenceCount"] > 0
+    assert ordered_correspondence["reusedBoundaryVertexCount"] > 0
+    assert ordered_correspondence["weightedSupportReuseExpected"] is True
     assert ordered_correspondence["reusedBoundarySpanCount"] == 0
     assert ordered_correspondence["reusedBoundarySpans"] == []
     assert ordered_correspondence["multiSpanFanoutSeamIds"] == []
-    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] == 0
-    assert ordered_correspondence["failureReasons"] == []
+    assert ordered_correspondence["oversizedPreStitchCorrespondenceCount"] > 0
+    assert ordered_correspondence["failureReasons"] == [
+        "pre_stitch_distance_exceeds_local_edge_tolerance"
+    ]
     assert ordered_correspondence["boundarySpanPartitions"] == [
         {
             "meshIndex": 2,
@@ -684,7 +690,7 @@ def test_geometry_stitched_shell_proves_conforming_topology_and_semantic_opening
         "edgeId": "edge.neck_band.long.top",
         "panelId": "panel.neck_band",
         "meshIndex": 4,
-        "sourceVertexCount": 20,
+        "sourceVertexCount": 21,
         "logicalVertexCount": 6,
         "logicalVertexIds": [
             "logicalVertex.000057",
@@ -725,10 +731,12 @@ def test_geometry_stitched_shell_proves_conforming_topology_and_semantic_opening
     assert report["topologyAudit"]["sourceDisplacement"]["maxSourceDisplacementMeters"] > 0.0
     assert report["topologyAudit"]["vertexCount"] == stitched_mesh.vertex_count
     assert report["topologyAudit"]["triangleCount"] == stitched_mesh.triangle_count
-    assert report["readiness"]["meshStitchOrWeldProven"] is True
+    assert report["readiness"]["meshStitchOrWeldProven"] is False
     assert report["readiness"]["acceptedForCleanProposal"] is False
-    assert report["readiness"]["blockingReasons"] == []
-    assert "ordered_seam_correspondence_failed" not in report["readiness"]["blockingReasons"]
+    assert report["readiness"]["blockingReasons"] == [
+        "mesh_stitch_or_weld_not_proven",
+        "ordered_seam_correspondence_failed",
+    ]
     assert "opening_panel_edge_provenance_missing" not in report["readiness"]["blockingReasons"]
     assert "stitched_shell_duplicate_faces" not in report["readiness"]["blockingReasons"]
     assert "stitched_shell_duplicate_operation_ids" not in report["readiness"]["blockingReasons"]

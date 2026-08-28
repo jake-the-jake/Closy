@@ -11,7 +11,7 @@ from closy_forge.pipeline.build_simple_trousers_demo import (
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_simple_trousers, read_json
 
-GOLDEN_DIGEST = "4c023d82785791335d966fe81e64928fdbe646e47c7d60786c8666eed4e9a886"
+GOLDEN_DIGEST = "9d91b70a9da016d5baf63eb26f57479192ae50040b45ef308632e8b285d05ac6"
 
 
 def test_simple_trousers_package_is_complete_conventional_and_valid(tmp_path) -> None:
@@ -30,11 +30,11 @@ def test_simple_trousers_package_is_complete_conventional_and_valid(tmp_path) ->
     assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["counts"] == {
         "panelCount": 4,
-        "simulationVertexCount": 186,
-        "simulationTriangleCount": 182,
-        "renderVertexCount": 1092,
-        "renderTriangleCount": 728,
-        "bindingRecordCount": 1092,
+        "simulationVertexCount": 178,
+        "simulationTriangleCount": 170,
+        "renderVertexCount": 1020,
+        "renderTriangleCount": 680,
+        "bindingRecordCount": 1020,
     }
     assert quality["readiness"]["simpleTrousersD0Complete"] is True
     assert quality["readiness"]["phase8GloballyComplete"] is False
@@ -42,7 +42,7 @@ def test_simple_trousers_package_is_complete_conventional_and_valid(tmp_path) ->
     assert motion["cuffStress"]["cuffMetrics"]["cuffOpeningCount"] == 2
     assert motion["cuffStress"]["metrics"]["converged"] is False
     assert fidelity["acceptedForD0SimpleTrousersFixture"] is True
-    assert fidelity["aggregate"]["minimumSilhouetteIoU"] == 0.26662234
+    assert fidelity["aggregate"]["minimumSilhouetteIoU"] == 0.732459848
     for relpath in [
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",

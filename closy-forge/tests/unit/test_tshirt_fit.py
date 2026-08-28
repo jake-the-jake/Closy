@@ -64,12 +64,14 @@ def test_tshirt_multiview_fit_report_is_image_conditioned_and_hash_linked() -> N
     assert first["evidenceSeparation"]["expectedParametersFromFixtureSource"] is False
     assert len(first["evidenceSeparation"]["observedEvidence"]) == 2
     assert len(first["optimizationTrace"]) >= 4
-    assert first["convergence"]["status"] == "converged_d0_public_fixture"
+    assert first["status"] == "fail"
+    assert first["accepted"] is False
+    assert first["convergence"]["status"] == "bounded_without_acceptance"
     assert first["convergence"]["absoluteImprovement"] > 0.0
     assert first["convergence"]["noOpCandidateAccepted"] is False
     assert first["heldOutEvaluation"]["status"] == "pass"
     assert first["perturbationEvaluation"]["status"] == "pass"
-    assert first["settledRenderComparison"]["status"] == "pass"
+    assert first["settledRenderComparison"]["status"] == "fail"
     assert first["settledRenderComparison"]["fullSolverRun"] is True
     assert first["settledRenderComparison"]["renderedCandidateEvaluated"] is True
     assert len(first["alternatives"]) >= 2

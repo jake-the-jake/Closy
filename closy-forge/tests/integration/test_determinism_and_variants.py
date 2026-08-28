@@ -47,5 +47,5 @@ def test_bounded_tshirt_variants_validate_and_keep_stable_semantics(tmp_path) ->
         fit_acceptance[name] = fit["accepted"]
     assert len(set(seam_sets)) == 1
     assert len(set(body_lengths)) == len(PARAMETER_VARIANTS)
-    assert source_acceptance == {"boxy": False, "default": True, "long_slim": True}
-    assert fit_acceptance == {"boxy": False, "default": True, "long_slim": True}
+    assert source_acceptance == {"boxy": False, "default": False, "long_slim": False}
+    assert fit_acceptance == {"boxy": False, "default": False, "long_slim": False}

@@ -55,9 +55,9 @@ def test_jacket_outerwear_has_split_front_facings_and_outer_layer_semantics() ->
     assert components["component.jacket_outerwear.torso"]["collisionOrder"] == 30
     assert components["component.jacket_outerwear.sleeve.left"]["collisionOrder"] == 31
     assert components["component.jacket_outerwear.facing.left"]["collisionOrder"] == 29
-    assert mesh.vertex_count == 331
-    assert mesh.triangle_count == 324
-    assert len(constraints["constraints"]) == 108
+    assert mesh.vertex_count == 324
+    assert mesh.triangle_count == 310
+    assert len(constraints["constraints"]) == 124
     assert not any(
         "facing.inner" in str(span["edgeId"]) for seam in pattern["seams"] for span in seam["spans"]
     )

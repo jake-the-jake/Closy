@@ -18,6 +18,7 @@ from closy_forge.simulation.reference_cloth_solver import (
     simulate_reference_motion_state,
     simulation_state_json,
 )
+from closy_forge.simulation.seam_mapping import span_position as mapped_span_position
 
 CANONICAL_POSITION_DIGITS = 6
 
@@ -260,7 +261,7 @@ def binding_panel_ids(binding: BindingFile, panel_ids: tuple[str, ...]) -> tuple
 
 
 def span_position(meshset: MeshSet, span: dict[str, Any]) -> Vec3:
-    return meshset.meshes[int(span["meshIndex"])].vertices[int(span["vertexIndex"])]
+    return mapped_span_position(meshset, span)
 
 
 def distance(a: Vec3, b: Vec3) -> float:

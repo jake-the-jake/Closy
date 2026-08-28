@@ -26,7 +26,7 @@ def fit_layered_asymmetric(
         "halfWidthMeters": observed_half_width_meters,
         "bodyLengthMeters": observed_body_length_meters,
         "armholeDepthMeters": observed_armhole_depth_meters,
-        "source": "public_synthetic_layered_asymmetric_capture_fixture",
+        "source": "project_authored_hidden_target_capture_measurements",
         "measuredFromPrivateImage": False,
     }
     evaluations: list[dict[str, Any]] = []
@@ -85,6 +85,19 @@ def fit_layered_asymmetric(
         "boundsEnforced": True,
         "learnedFitRun": False,
         "privateUserFitRun": False,
+        "evidenceSeparation": {
+            "candidatePatternUsedToGenerateTarget": False,
+            "hiddenTargetParametersAvailableToFitter": False,
+            "hiddenTargetProgramIdentityAvailableToFitter": False,
+            "permittedInputs": sorted(observations),
+            "prohibitedInputs": [
+                "target_family_label",
+                "target_template_id",
+                "target_panel_count",
+                "target_opening_count",
+                "exact_target_parameters",
+            ],
+        },
         "integrity": {"fitReportHash": ""},
     }
     report["integrity"]["fitReportHash"] = hash_layered_asymmetric_fit_report(report)

@@ -55,7 +55,7 @@ def rasterize_settled_garment(
         if mesh.panel_id in allowed
     ]
     unframed = [
-        _project(vertex, label, width, height)
+        _project(vertex, label, width, height, active_camera)
         for mesh in visible_meshes
         for vertex in mesh.vertices
     ]
@@ -63,7 +63,7 @@ def rasterize_settled_garment(
 
     for mesh in visible_meshes:
         projected = [
-            _apply_frame(_project(vertex, label, width, height), frame_offset)
+            _apply_frame(_project(vertex, label, width, height, active_camera), frame_offset)
             for vertex in mesh.vertices
         ]
         projected_vertices += len(projected)
@@ -93,6 +93,9 @@ def rasterize_settled_garment(
             "projection": str(active_camera.get("projection", "orthographic")),
             "azimuthDegrees": _number(active_camera.get("azimuthDegrees"), _label_azimuth(label)),
             "elevationDegrees": _number(active_camera.get("elevationDegrees"), 4.0),
+            "principalPointNormalized": [
+                round(value, 6) for value in _principal_point(active_camera)
+            ],
             "fixtureProjection": "fixed_avatar_d0_orthographic_xy_v1",
             "runtimeBoundsFramed": True,
             "frameOffsetPixels": [round(frame_offset[0], 6), round(frame_offset[1], 6)],
@@ -146,8 +149,25 @@ def _raster_triangle(
     return wrote
 
 
-def _project(vertex: Vec3, label: str, width: int, height: int) -> tuple[float, float, float]:
+def _project(
+    vertex: Vec3,
+    label: str,
+    width: int,
+    height: int,
+    camera: Mapping[str, object],
+) -> tuple[float, float, float]:
     x, y, z = vertex
+    expected_azimuth = _label_azimuth(label)
+    azimuth_delta = math.radians(
+        _number(camera.get("azimuthDegrees"), expected_azimuth) - expected_azimuth
+    )
+    elevation_delta = math.radians(_number(camera.get("elevationDegrees"), 4.0) - 4.0)
+    rotated_x = x * math.cos(azimuth_delta) + z * math.sin(azimuth_delta)
+    rotated_z = -x * math.sin(azimuth_delta) + z * math.cos(azimuth_delta)
+    centered_y = y - 1.04
+    rotated_y = centered_y * math.cos(elevation_delta) - rotated_z * math.sin(elevation_delta)
+    rotated_z = centered_y * math.sin(elevation_delta) + rotated_z * math.cos(elevation_delta)
+    x, y, z = rotated_x, rotated_y + 1.04, rotated_z
     if label == "back":
         horizontal = -x
         camera_depth = z
@@ -220,11 +240,9 @@ def _frame_offset(
 ) -> tuple[float, float]:
     if not projected:
         return (0.0, 0.0)
-    principal = camera.get("principalPointNormalized", [0.5, 0.5])
-    if not isinstance(principal, list | tuple) or len(principal) != 2:
-        principal = [0.5, 0.5]
-    target_x = _number(principal[0], 0.5) * width
-    target_y = _number(principal[1], 0.5) * height
+    principal = _principal_point(camera)
+    target_x = principal[0] * width
+    target_y = principal[1] * height
     center_x = (min(point[0] for point in projected) + max(point[0] for point in projected)) / 2
     center_y = (min(point[1] for point in projected) + max(point[1] for point in projected)) / 2
     return (target_x - center_x, target_y - center_y)
@@ -245,6 +263,16 @@ def _validate_camera(camera: Mapping[str, object], label: str) -> None:
     ]
     if not all(math.isfinite(value) for value in values):
         raise ValueError("nonfinite_d0_camera")
+    principal = _principal_point(camera)
+    if not all(0.0 <= value <= 1.0 for value in principal):
+        raise ValueError("invalid_d0_camera_principal_point")
+
+
+def _principal_point(camera: Mapping[str, object]) -> tuple[float, float]:
+    principal = camera.get("principalPointNormalized", [0.5, 0.5])
+    if not isinstance(principal, list | tuple) or len(principal) != 2:
+        return (0.5, 0.5)
+    return (_number(principal[0], 0.5), _number(principal[1], 0.5))
 
 
 def _label_azimuth(label: str) -> float:

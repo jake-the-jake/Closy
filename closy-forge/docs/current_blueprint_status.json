@@ -1,0 +1,64 @@
+{
+  "coverage": {
+    "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
+    "counts": {
+      "complete": 20,
+      "discovery_pending": 16,
+      "not_started": 8,
+      "partial": 57
+    },
+    "total": 101
+  },
+  "evidenceAnchorSha": "e83e1e897c9539d246926f8148c5a9ac347982d1",
+  "gates": {
+    "C1": "complete",
+    "C2": "complete",
+    "C3": "partial",
+    "P1": "discovery_pending",
+    "Z1": "discovery_pending",
+    "Z2": "discovery_pending"
+  },
+  "maturity": {
+    "ALPHA": "not_started",
+    "BETA": "not_started",
+    "PRODUCTION": "not_started",
+    "RESEARCH-PROTOTYPE": "partial"
+  },
+  "phases": {
+    "00": "complete",
+    "01": "partial",
+    "02": "partial",
+    "03": "partial",
+    "04": "partial",
+    "05": "partial",
+    "06": "partial",
+    "07": "partial",
+    "08": "partial",
+    "09": "partial",
+    "10": "partial",
+    "11": "partial",
+    "12": "partial",
+    "13": "partial",
+    "14": "partial"
+  },
+  "schemaVersion": 1,
+  "stack": {
+    "exactHeadForgeExceptions": [
+      10
+    ],
+    "latestPullRequest": 19,
+    "linear": true,
+    "pullRequestCount": 19
+  },
+  "statusModelVersion": "closy.blueprint_status_model.v1",
+  "truth": {
+    "actualPhase9TrainingExecuted": false,
+    "actualZeroOneComputeExecuted": false,
+    "actualZeroOneRuntimeExecuted": false,
+    "humanReviewRun": false,
+    "phase8EvidenceScope": "deterministic_d0_fixture_family_verticals",
+    "phases10To14EvidenceScope": "versioned_contract_fixture_foundations",
+    "physicalMobileEvidenceRun": false,
+    "privateUserEvidenceRun": false
+  }
+}

@@ -126,6 +126,7 @@ from closy_forge.simulation.material_calibration import (
     run_material_calibration,
 )
 from closy_forge.simulation.material_motion_suite import (
+    MATERIAL_MOTION_CANONICAL_POSITION_DIGITS,
     MATERIAL_MOTION_SUITE_VERSION,
     build_material_motion_suite,
 )
@@ -328,7 +329,13 @@ def _write_package_contents(
     material_selection = select_material_preset(_material_selection_input(), material_registry)
     material_physics = solver_material_payload(material_selection["selectedDescriptor"])
     material_calibration = run_material_calibration(material_selection["selectedDescriptor"])
-    settle = settle_reference_cloth(rest_mesh, constraints, avatar, material_physics)
+    settle = settle_reference_cloth(
+        rest_mesh,
+        constraints,
+        avatar,
+        material_physics,
+        canonical_position_digits=MATERIAL_MOTION_CANONICAL_POSITION_DIGITS,
+    )
     simulation_mesh = settle.settled_mesh
     self_collision_report = build_self_collision_report(
         garment_id="garment.demo_tshirt.reference_v1",
@@ -935,6 +942,7 @@ def _material_selection_input() -> dict[str, Any]:
     return {
         "schemaVersion": 1,
         "inputId": "material_selection.public_tshirt_d0_v1",
+        "garmentFamily": "tshirt",
         "observations": {
             "massClass": "medium",
             "stretchClass": "moderate",

@@ -18,6 +18,7 @@ from closy_forge.package_io.hashing import (
     sha256_file,
     topology_hash,
 )
+from closy_forge.simulation.seam_mapping import span_position_flat
 
 PRODUCTION_BINDING_CONTRACT_VERSION = "closy.production_binding_contract.d0_tshirt.v1"
 PRODUCTION_BINDING_C3_REPORT_VERSION = "closy.production_binding_c3.d0_tshirt.integrity_v2"
@@ -790,9 +791,9 @@ def _seam_metrics(meshset: MeshSet, constraints: dict[str, Any]) -> dict[str, An
     for constraint in constraints.get("constraints", []):
         span_a = constraint["spanA"]
         span_b = constraint["spanB"]
-        a = offsets[int(span_a["meshIndex"])] + int(span_a["vertexIndex"])
-        b = offsets[int(span_b["meshIndex"])] + int(span_b["vertexIndex"])
-        distance = _distance(positions[a], positions[b])
+        position_a = span_position_flat(positions, offsets, span_a)
+        position_b = span_position_flat(positions, offsets, span_b)
+        distance = _distance(position_a, position_b)
         distances.append(distance)
         sliding.append(abs(distance - _constraint_target_length(constraint)))
     return {

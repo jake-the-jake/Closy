@@ -44,6 +44,7 @@ from closy_forge.garments.vertical_slice.package import (
 )
 from closy_forge.geometry.mesh_model import MeshSet, mesh_bounds
 from closy_forge.geometry.subdivision import subdivide_for_render
+from closy_forge.inspection.independent_targets import build_simple_trousers_target
 from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
 from closy_forge.package_io.writer import (
@@ -119,7 +120,15 @@ def build_demo_simple_trousers_package(
 def _write_package_contents(
     package_dir: Path, prior: SimpleTrousersParameters, seed: int
 ) -> dict[str, Any]:
-    fitted, fit_report = fit_simple_trousers(prior)
+    independent_target = build_simple_trousers_target(seed)
+    measurements = independent_target.capture_measurements
+    fitted, fit_report = fit_simple_trousers(
+        prior,
+        observed_half_waist_meters=measurements["halfWaistMeters"],
+        observed_half_hip_meters=measurements["halfHipMeters"],
+        observed_outseam_meters=measurements["outseamMeters"],
+        observed_cuff_width_meters=measurements["cuffWidthMeters"],
+    )
     pattern = build_simple_trousers_pattern(fitted)
     semantic = build_simple_trousers_semantic_graph(pattern)
     rest_mesh, edge_maps = build_simulation_mesh(pattern)
@@ -157,7 +166,10 @@ def _write_package_contents(
         }
     )
     appearance = build_simple_trousers_appearance_bundle(
-        pattern=pattern, settled_mesh=simulation_mesh, seed=seed
+        pattern=pattern,
+        settled_mesh=simulation_mesh,
+        seed=seed,
+        independent_target=independent_target,
     )
     quality = _quality_report(
         pattern=pattern,

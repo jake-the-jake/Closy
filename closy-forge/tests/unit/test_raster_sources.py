@@ -5,10 +5,12 @@ import json
 import os
 import struct
 import zlib
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
 import pytest
+from PIL import Image
 
 from closy_forge.capture import (
     RasterIngestError,
@@ -21,6 +23,7 @@ from closy_forge.capture import (
 from closy_forge.cli.main import EXIT_BUILD_FAILURE, EXIT_SUCCESS, main
 from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
 from closy_forge.package_io.hashing import sha256_file
+from closy_forge.package_io.managed_output import MARKER_NAME
 
 
 def test_raster_fixture_ingest_accepts_png_and_jpeg_without_portable_leakage(
@@ -46,8 +49,8 @@ def test_raster_fixture_ingest_accepts_png_and_jpeg_without_portable_leakage(
     assert result.private_record["recordType"] == "raster_fixture_ingest_private"
     assert len(result.private_record["acceptedSources"]) == 2
     assert result.quality_report["overallStatus"] == "pass"
-    assert result.quality_report["aggregate"]["pixelDerivedViewCount"] == 1
-    assert result.quality_report["aggregate"]["jpegStructuralOnlyViewCount"] == 1
+    assert result.quality_report["aggregate"]["pixelDerivedViewCount"] == 2
+    assert result.quality_report["aggregate"]["jpegPixelDecodedViewCount"] == 1
     assert result.portable_source_summary["privacy"]["rawSourceBytesCopied"] is False
 
     private_payload = canonical_dumps(result.private_record)
@@ -84,18 +87,22 @@ def test_raster_fixture_cli_writes_private_and_portable_outputs(tmp_path: Path) 
             str(private_registry),
             "--portable-output",
             str(portable_output),
+            "--output-root",
+            str(tmp_path),
             "--json",
         ]
     )
 
     assert exit_code == EXIT_SUCCESS
     assert sorted(path.name for path in private_registry.iterdir()) == [
+        MARKER_NAME,
         "lifecycle_journal.json",
         "normalization_record.json",
         "private_ingest_record.json",
         "raster_quality.json",
     ]
     assert sorted(path.name for path in portable_output.iterdir()) == [
+        MARKER_NAME,
         "privacy_report.json",
         "source_summary.json",
     ]
@@ -113,6 +120,18 @@ def test_jpeg_exif_orientation_is_normalized_deterministically(tmp_path: Path) -
     assert audit["decodedDimensions"] == {"width": 11, "height": 29}
     assert audit["normalizedDimensions"] == {"width": 29, "height": 11}
     assert audit["exifOrientation"] == 6
+    assert audit["pixelStats"]["available"] is True
+    assert audit["decoder"]["dependency"] == "Pillow==11.1.0"
+
+
+def test_structural_only_jpeg_header_is_rejected_without_pixel_decode(tmp_path: Path) -> None:
+    path = tmp_path / "header-only.jpg"
+    path.write_bytes(b"\xff\xd8\xff\xc0\x00\x08\x08\x00\x08\x00\x08\x03\xff\xd9")
+
+    with pytest.raises(RasterIngestError) as error:
+        inspect_raster(path, declared_mime="image/jpeg")
+
+    assert error.value.code == "jpeg_pixel_decode_failed"
 
 
 @pytest.mark.parametrize(
@@ -121,7 +140,7 @@ def test_jpeg_exif_orientation_is_normalized_deterministically(tmp_path: Path) -
         ("wrong.jpg", "image/jpeg", "png", "magic_mime_mismatch"),
         ("bad.png", "image/png", "bad", "bad_magic"),
         ("truncated.png", "image/png", "truncated_png", "truncated_png"),
-        ("truncated.jpg", "image/jpeg", "truncated_jpeg", "truncated_jpeg"),
+        ("truncated.jpg", "image/jpeg", "truncated_jpeg", "jpeg_pixel_decode_failed"),
     ],
 )
 def test_raster_ingest_rejects_bad_magic_and_truncated_inputs(
@@ -296,6 +315,7 @@ def test_raster_deletion_tombstone_is_idempotent_and_non_recoverable(tmp_path: P
         input_root=root,
         private_registry_dir=private_registry,
         portable_output_dir=portable_output,
+        allowed_output_root=tmp_path,
         force=True,
     )
 
@@ -346,6 +366,8 @@ def test_raster_cli_errors_are_redacted(tmp_path: Path, capsys: pytest.CaptureFi
             str(tmp_path / "private-registry"),
             "--portable-output",
             str(tmp_path / "portable-output"),
+            "--output-root",
+            str(tmp_path),
         ]
     )
 
@@ -458,33 +480,16 @@ def _png_header_only(width: int, height: int) -> bytes:
 
 
 def _jpeg(width: int, height: int, *, orientation: int = 1) -> bytes:
-    app1 = b"Exif\x00\x00" + _tiff_orientation(orientation)
-    sof = (
-        b"\x08"
-        + height.to_bytes(2, "big")
-        + width.to_bytes(2, "big")
-        + b"\x03"
-        + b"\x01\x11\x00"
-        + b"\x02\x11\x00"
-        + b"\x03\x11\x00"
+    image = Image.new("RGB", (width, height))
+    image.putdata(
+        [
+            (184, 154, 122) if ((x // 4) + (y // 4)) % 2 == 0 else (72, 96, 132)
+            for y in range(height)
+            for x in range(width)
+        ]
     )
-    return b"\xff\xd8" + _jpeg_segment(0xE1, app1) + _jpeg_segment(0xC0, sof) + b"\xff\xd9"
-
-
-def _jpeg_segment(marker: int, payload: bytes) -> bytes:
-    return b"\xff" + bytes([marker]) + (len(payload) + 2).to_bytes(2, "big") + payload
-
-
-def _tiff_orientation(orientation: int) -> bytes:
-    return (
-        b"II"
-        + (42).to_bytes(2, "little")
-        + (8).to_bytes(4, "little")
-        + (1).to_bytes(2, "little")
-        + (0x0112).to_bytes(2, "little")
-        + (3).to_bytes(2, "little")
-        + (1).to_bytes(4, "little")
-        + orientation.to_bytes(2, "little")
-        + b"\x00\x00"
-        + (0).to_bytes(4, "little")
-    )
+    exif = Image.Exif()
+    exif[0x0112] = orientation
+    output = BytesIO()
+    image.save(output, format="JPEG", quality=88, optimize=False, progressive=False, exif=exif)
+    return output.getvalue()

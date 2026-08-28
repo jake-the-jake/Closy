@@ -17,9 +17,14 @@ from closy_forge.package_io.hashing import (
     sha256_file,
     topology_hash,
 )
+from closy_forge.simulation.material_motion_suite import MATERIAL_MOTION_CANONICAL_POSITION_DIGITS
 from closy_forge.simulation.reference_cloth_solver import (
     SOLVER_VERSION,
     simulate_reference_motion_state,
+)
+from closy_forge.simulation.seam_mapping import (
+    span_dominant_global_index,
+    span_position_flat,
 )
 
 C3_EVIDENCE_VERSION = "closy.production_binding_c3.d0_tshirt.integrity_v2"
@@ -64,7 +69,12 @@ def prepare_c3_evidence_assets(
             settings: dict[str, Any] = {"source": "simulation/settled_state.json"}
         else:
             result = simulate_reference_motion_state(
-                settled_mesh, constraints, avatar_contract, material, state_id
+                settled_mesh,
+                constraints,
+                avatar_contract,
+                material,
+                state_id,
+                canonical_position_digits=MATERIAL_MOTION_CANONICAL_POSITION_DIGITS,
             )
             mesh = result.mesh
             diagnostics = result.diagnostics
@@ -529,17 +539,21 @@ def _seam_metrics(
     records: list[dict[str, Any]] = []
     by_seam: dict[str, list[dict[str, Any]]] = {}
     for item in constraints.get("constraints", []):
-        left = offsets[int(item["spanA"]["meshIndex"])] + int(item["spanA"]["vertexIndex"])
-        right = offsets[int(item["spanB"]["meshIndex"])] + int(item["spanB"]["vertexIndex"])
+        left = span_dominant_global_index(item["spanA"], offsets)
+        right = span_dominant_global_index(item["spanB"], offsets)
         intended = (
             0.02
             if "panel.neck_band" in {str(item["spanA"]["panelId"]), str(item["spanB"]["panelId"])}
             else 0.0
         )
-        separation = _distance(current_positions[left], current_positions[right])
-        reference_mid = _mid(reference_positions[left], reference_positions[right])
-        current_mid = _mid(current_positions[left], current_positions[right])
-        tangent = _normalise(_sub(reference_positions[right], reference_positions[left]))
+        current_left = span_position_flat(current_positions, offsets, item["spanA"])
+        current_right = span_position_flat(current_positions, offsets, item["spanB"])
+        reference_left = span_position_flat(reference_positions, offsets, item["spanA"])
+        reference_right = span_position_flat(reference_positions, offsets, item["spanB"])
+        separation = _distance(current_left, current_right)
+        reference_mid = _mid(reference_left, reference_right)
+        current_mid = _mid(current_left, current_right)
+        tangent = _normalise(_sub(reference_right, reference_left))
         sliding = abs(_dot(_sub(current_mid, reference_mid), tangent))
         dense_left = _best_render_vertex_for_source(render_source_map, left)
         dense_right = _best_render_vertex_for_source(render_source_map, right)

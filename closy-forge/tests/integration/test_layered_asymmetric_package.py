@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_layered_asymmetric_demo import build_demo_layere
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_layered_asymmetric, read_json
 
-GOLDEN_DIGEST = "24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417"
+GOLDEN_DIGEST = "b8d211d347b1d74f6ff14a89ff81b150e8994a94fa07769081a1e3fedcc0faff"
 
 
 def test_layered_asymmetric_package_is_complete_conventional_and_valid(tmp_path) -> None:
@@ -27,23 +27,24 @@ def test_layered_asymmetric_package_is_complete_conventional_and_valid(tmp_path)
     }
     assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["garmentClass"] == "layered_asymmetric"
-    assert len(manifest["inventory"]) == 37
+    assert len(manifest["inventory"]) == 41
     assert manifest["counts"] == {
         "panelCount": 4,
-        "simulationVertexCount": 258,
-        "simulationTriangleCount": 254,
-        "renderVertexCount": 1524,
-        "renderTriangleCount": 1016,
-        "bindingRecordCount": 1524,
+        "simulationVertexCount": 256,
+        "simulationTriangleCount": 248,
+        "renderVertexCount": 1488,
+        "renderTriangleCount": 992,
+        "bindingRecordCount": 1488,
     }
-    assert quality["readiness"]["layeredAsymmetricD0Complete"] is True
-    assert quality["readiness"]["phase8FamilyLadderComplete"] is True
+    assert quality["readiness"]["layeredAsymmetricD0Complete"] is False
+    assert quality["readiness"]["phase8FamilyLadderComplete"] is False
     assert quality["readiness"]["phase8GloballyComplete"] is False
     assert quality["layering"] == {
         "layerCount": 2,
         "innerPanelCount": 2,
         "outerPanelCount": 2,
-        "interLayerCollisionEnabled": True,
+        "interLayerCollisionEnabled": False,
+        "interLayerCollisionStatus": "not_executed_reference_solver",
         "minimumDeclaredClearanceMeters": 0.014,
         "restFrontClearanceMeters": 0.02,
         "outerAsymmetricHemDropMeters": 0.09,
@@ -107,7 +108,7 @@ def test_layered_asymmetric_cli_build_validate_report_and_diff(tmp_path, capsys)
     outputs = capsys.readouterr().out.splitlines()
     payload = json.loads(outputs[-1])
     assert payload["garmentClass"] == "layered_asymmetric"
-    assert payload["readiness"]["layeredAsymmetricD0Complete"] is True
+    assert payload["readiness"]["layeredAsymmetricD0Complete"] is False
 
 
 def _golden_diagnostics(manifest: dict) -> str:

@@ -329,6 +329,7 @@ def _parser() -> argparse.ArgumentParser:
     capture_raster.add_argument("--input-root", required=True, type=Path)
     capture_raster.add_argument("--private-registry", required=True, type=Path)
     capture_raster.add_argument("--portable-output", required=True, type=Path)
+    capture_raster.add_argument("--output-root", required=True, type=Path)
     capture_raster.add_argument("--force", action="store_true")
     capture_raster.add_argument(
         "--json", action="store_true", help="Print machine-readable result."
@@ -394,7 +395,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     diagnostics.add_argument("--source-dir", required=True, type=Path)
     diagnostics.add_argument("--output", required=True, type=Path)
-    diagnostics.add_argument("--label", default="forge")
+    diagnostics.add_argument("--output-root", required=True, type=Path)
     diagnostics.add_argument("--force", action="store_true")
     diagnostics.add_argument("--json", action="store_true")
     diagnostics.set_defaults(handler=_ci_diagnostics)
@@ -640,6 +641,7 @@ def _ingest_raster_fixture(args: argparse.Namespace) -> int:
             input_root=args.input_root,
             private_registry_dir=args.private_registry,
             portable_output_dir=args.portable_output,
+            allowed_output_root=args.output_root,
             force=args.force,
         )
     except RasterIngestError as exc:
@@ -740,7 +742,7 @@ def _ci_diagnostics(args: argparse.Namespace) -> int:
     summary = export_sanitized_ci_diagnostics(
         args.source_dir,
         args.output,
-        label=args.label,
+        allowed_output_root=args.output_root,
         force=args.force,
     )
     if args.json:

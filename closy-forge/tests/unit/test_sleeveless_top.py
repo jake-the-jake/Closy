@@ -90,7 +90,7 @@ def test_sleeveless_seams_pair_front_to_back_with_reverse_orientation() -> None:
         constraint["orientation"] == ["forward", "reverse"]
         for constraint in constraints["constraints"]
     )
-    assert mesh.triangle_count == 124
+    assert mesh.triangle_count == 120
 
 
 def test_sleeveless_mesh_coordinates_are_canonical() -> None:

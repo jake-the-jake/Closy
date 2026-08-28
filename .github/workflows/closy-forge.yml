@@ -17,16 +17,10 @@ permissions:
   contents: read
 
 jobs:
-  forge:
-    name: Forge ${{ matrix.os }} Python ${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
-    # Windows crosses 30 minutes once the cumulative family matrix rebuilds every fixture.
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.11"]
+  contracts-static:
+    name: Contracts static Ubuntu Python 3.11
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         shell: bash
@@ -37,8 +31,10 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Forge dev environment
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install hash-pinned Forge dev environment
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]" -c requirements-dev.lock
@@ -48,114 +44,179 @@ jobs:
         run: python -m ruff check .
       - name: Type check
         run: python -m mypy src
-      - name: Test
-        run: python -m pytest
       - name: Check schemas
         run: python -m closy_forge schemas check --schema-dir schemas/v1
-      - name: Build deterministic demo twice
+
+  test-shards:
+    name: Tests ${{ matrix.group }} ${{ matrix.runtime.os }} Python ${{ matrix.runtime.python-version }}
+    runs-on: ${{ matrix.runtime.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [shard-0, shard-1, shard-2, shard-3]
+        runtime:
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: windows-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Evidence tests resolve historical commit references from the ledger.
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.runtime.python-version }}
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install hash-pinned Forge dev environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Run stable unit and corruption shard
+        run: python -m closy_forge.ci.test_shards --group "${{ matrix.group }}"
+
+  family-rebuilds:
+    name: Families ${{ matrix.group }} ${{ matrix.os }} Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {group: upper, os: ubuntu-latest, python-version: "3.11"}
+          - {group: lower, os: ubuntu-latest, python-version: "3.11"}
+          - {group: structured, os: ubuntu-latest, python-version: "3.11"}
+          - {group: upper, os: windows-latest, python-version: "3.11"}
+          - {group: lower, os: windows-latest, python-version: "3.11"}
+          - {group: structured, os: windows-latest, python-version: "3.11"}
+          - {group: upper, os: ubuntu-latest, python-version: "3.12"}
+          - {group: lower, os: ubuntu-latest, python-version: "3.12"}
+          - {group: structured, os: ubuntu-latest, python-version: "3.12"}
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install hash-pinned Forge dev environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Build, compare, validate, and report family shard
         run: |
           mkdir -p "$RUNNER_TEMP/closy-forge"
-          python -m closy_forge demo build-tshirt --output "$RUNNER_TEMP/closy-forge/demo_a.closygarment" --force
-          python -m closy_forge demo build-tshirt --output "$RUNNER_TEMP/closy-forge/demo_b.closygarment" --force
-      - name: Compare deterministic outputs
-        run: python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/demo_a.closygarment" "$RUNNER_TEMP/closy-forge/demo_b.closygarment" --json
-      - name: Validate and report
-        run: |
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/demo_a.closygarment"
-      - name: Build sleeveless-top deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-sleeveless --output "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment" --force
-          python -m closy_forge demo build-sleeveless --output "$RUNNER_TEMP/closy-forge/sleeveless_b.closygarment" --force
-      - name: Compare, validate and report sleeveless-top fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment" "$RUNNER_TEMP/closy-forge/sleeveless_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/sleeveless_a.closygarment"
-      - name: Build long-sleeved-top deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-long-sleeved --output "$RUNNER_TEMP/closy-forge/long_sleeved_a.closygarment" --force
-          python -m closy_forge demo build-long-sleeved --output "$RUNNER_TEMP/closy-forge/long_sleeved_b.closygarment" --force
-      - name: Compare, validate and report long-sleeved-top fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/long_sleeved_a.closygarment" "$RUNNER_TEMP/closy-forge/long_sleeved_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/long_sleeved_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/long_sleeved_a.closygarment"
-      - name: Build simple-skirt deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-simple-skirt --output "$RUNNER_TEMP/closy-forge/simple_skirt_a.closygarment" --force
-          python -m closy_forge demo build-simple-skirt --output "$RUNNER_TEMP/closy-forge/simple_skirt_b.closygarment" --force
-      - name: Compare, validate and report simple-skirt fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/simple_skirt_a.closygarment" "$RUNNER_TEMP/closy-forge/simple_skirt_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/simple_skirt_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/simple_skirt_a.closygarment"
-      - name: Build simple-trousers deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-simple-trousers --output "$RUNNER_TEMP/closy-forge/simple_trousers_a.closygarment" --force
-          python -m closy_forge demo build-simple-trousers --output "$RUNNER_TEMP/closy-forge/simple_trousers_b.closygarment" --force
-      - name: Compare, validate and report simple-trousers fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/simple_trousers_a.closygarment" "$RUNNER_TEMP/closy-forge/simple_trousers_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/simple_trousers_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/simple_trousers_a.closygarment"
-      - name: Build simple-dress deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-simple-dress --output "$RUNNER_TEMP/closy-forge/simple_dress_a.closygarment" --force
-          python -m closy_forge demo build-simple-dress --output "$RUNNER_TEMP/closy-forge/simple_dress_b.closygarment" --force
-      - name: Compare, validate and report simple-dress fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/simple_dress_a.closygarment" "$RUNNER_TEMP/closy-forge/simple_dress_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/simple_dress_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/simple_dress_a.closygarment"
-      - name: Build button-shirt deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-button-shirt --output "$RUNNER_TEMP/closy-forge/button_shirt_a.closygarment" --force
-          python -m closy_forge demo build-button-shirt --output "$RUNNER_TEMP/closy-forge/button_shirt_b.closygarment" --force
-      - name: Compare, validate and report button-shirt fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/button_shirt_a.closygarment" "$RUNNER_TEMP/closy-forge/button_shirt_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/button_shirt_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/button_shirt_a.closygarment"
-      - name: Build jacket-outerwear deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-jacket-outerwear --output "$RUNNER_TEMP/closy-forge/jacket_outerwear_a.closygarment" --force
-          python -m closy_forge demo build-jacket-outerwear --output "$RUNNER_TEMP/closy-forge/jacket_outerwear_b.closygarment" --force
-      - name: Compare, validate and report jacket-outerwear fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/jacket_outerwear_a.closygarment" "$RUNNER_TEMP/closy-forge/jacket_outerwear_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/jacket_outerwear_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/jacket_outerwear_a.closygarment"
-      - name: Build layered-asymmetric deterministic fixture twice
-        run: |
-          python -m closy_forge demo build-layered-asymmetric --output "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment" --force
-          python -m closy_forge demo build-layered-asymmetric --output "$RUNNER_TEMP/closy-forge/layered_asymmetric_b.closygarment" --force
-      - name: Compare, validate and report layered-asymmetric fixture
-        run: |
-          python -m closy_forge packages diff "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment" "$RUNNER_TEMP/closy-forge/layered_asymmetric_b.closygarment" --json
-          python -m closy_forge validate "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment"
-          python -m closy_forge report "$RUNNER_TEMP/closy-forge/layered_asymmetric_a.closygarment"
-      - name: Measure non-canonical binding workloads
-        run: |
-          python -m closy_forge benchmark binding-c3 \
-            "$RUNNER_TEMP/closy-forge/demo_a.closygarment" \
-            --output "$RUNNER_TEMP/closy-forge/binding-benchmark.json" \
-            --warmups 3 \
-            --repeats 20 \
-            --commit-sha "$GITHUB_SHA" \
-            --json
-      - name: Prepare sanitized determinism diagnostics
+          python scripts/ci_family_shard.py \
+            --group "${{ matrix.group }}" \
+            --output-root "$RUNNER_TEMP/closy-forge"
+      - name: Upload cross-minor digest summary
+        uses: actions/upload-artifact@v7
+        with:
+          name: family-digests-${{ matrix.group }}-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: ${{ runner.temp }}/closy-forge/family-shard-${{ matrix.group }}.json
+      - name: Prepare bounded sanitized diagnostics
         if: failure()
         run: |
           python -m closy_forge ci diagnostics \
             --source-dir "$RUNNER_TEMP/closy-forge" \
             --output "$RUNNER_TEMP/closy-forge-safe-diagnostics" \
-            --label "${{ matrix.os }}-py${{ matrix.python-version }}" \
+            --output-root "$RUNNER_TEMP" \
             --force
-      - name: Upload determinism diagnostics
+      - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: forge-diagnostics-${{ matrix.os }}-py${{ matrix.python-version }}
+          name: forge-diagnostics-${{ matrix.group }}-${{ matrix.os }}-py${{ matrix.python-version }}
           path: ${{ runner.temp }}/closy-forge-safe-diagnostics
           if-no-files-found: ignore
+
+  cumulative-integration:
+    name: Integration ${{ matrix.group }} Ubuntu Python 3.11
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [shard-0, shard-1]
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install hash-pinned Forge dev environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Run stable integration and golden shard
+        run: python -m closy_forge.ci.test_shards --suite integration --group "${{ matrix.group }}"
+      - name: Measure non-canonical binding workloads
+        if: matrix.group == 'shard-0'
+        run: |
+          mkdir -p "$RUNNER_TEMP/closy-forge"
+          python -m closy_forge demo build-tshirt \
+            --output "$RUNNER_TEMP/closy-forge/demo.closygarment" --force
+          python -m closy_forge benchmark binding-c3 \
+            "$RUNNER_TEMP/closy-forge/demo.closygarment" \
+            --output "$RUNNER_TEMP/closy-forge/binding-benchmark.json" \
+            --warmups 3 --repeats 20 --commit-sha "$GITHUB_SHA" --json
+
+  digest-consistency:
+    name: Cross-platform and cross-minor digest consistency
+    needs: [family-rebuilds]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: family-digests-*
+          path: ${{ runner.temp }}/family-digests
+      - name: Compare every family digest
+        run: |
+          python closy-forge/scripts/verify_ci_family_digests.py \
+            --input-root "$RUNNER_TEMP/family-digests" \
+            --family-index-output "$RUNNER_TEMP/validated-family-index.json"
+      - name: Upload validated family readiness index
+        uses: actions/upload-artifact@v7
+        with:
+          name: validated-family-readiness-index
+          path: ${{ runner.temp }}/validated-family-index.json
+
+  forge-required:
+    name: Forge required
+    if: always()
+    needs: [contracts-static, test-shards, family-rebuilds, cumulative-integration, digest-consistency]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every lane
+        env:
+          CONTRACTS_STATIC: ${{ needs.contracts-static.result }}
+          TEST_SHARDS: ${{ needs.test-shards.result }}
+          FAMILIES: ${{ needs.family-rebuilds.result }}
+          INTEGRATION: ${{ needs.cumulative-integration.result }}
+          DIGESTS: ${{ needs.digest-consistency.result }}
+        run: |
+          test "$CONTRACTS_STATIC" = success
+          test "$TEST_SHARDS" = success
+          test "$FAMILIES" = success
+          test "$INTEGRATION" = success
+          test "$DIGESTS" = success

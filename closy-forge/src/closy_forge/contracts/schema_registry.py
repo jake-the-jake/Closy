@@ -2113,7 +2113,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
             "Closy garment seam constraints",
             {
                 "schemaVersion": {"const": SCHEMA_VERSION},
-                "constraintModel": {"const": "seam_pairs_v1"},
+                "constraintModel": {"const": "full_span_seam_mapping_v2"},
                 "constraints": {"type": "array", "items": {"type": "object"}},
                 "derivableFutureConstraints": {"type": "array", "items": {"type": "string"}},
             },

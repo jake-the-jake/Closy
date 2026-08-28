@@ -10,6 +10,17 @@ from closy_forge.package_io.hashing import sha256_bytes
 FABRIC_DESCRIPTOR_VERSION = "closy.fabric_physics_descriptor.v1"
 PRESET_REGISTRY_VERSION = "closy.fabric_preset_registry.d0.v1"
 MATERIAL_SELECTION_VERSION = "closy.material_preset_selection.d0.v1"
+SUPPORTED_GARMENT_FAMILIES = [
+    "tshirt",
+    "sleeveless_top",
+    "long_sleeved_top",
+    "simple_skirt",
+    "simple_trousers",
+    "simple_dress",
+    "button_shirt",
+    "jacket_outerwear",
+    "layered_asymmetric",
+]
 
 
 class FabricDescriptorError(ValueError):
@@ -71,6 +82,12 @@ def _descriptor(
         "presetId": preset_id,
         "label": label,
         "fabricFamily": family,
+        "applicability": {
+            "compatibleGarmentFamilies": list(SUPPORTED_GARMENT_FAMILIES),
+            "compatibleMaterialRegions": ["body", "sleeve", "bodice", "skirt", "leg", "layer"],
+            "familyOverrides": {},
+            "contractVersion": "closy.fabric_applicability.d0.v1",
+        },
         "status": "bounded_authored_d0_not_calibrated_real_fabric",
         "fields": {
             "thickness": _field(thickness, "m", 0.0002, 0.008),
@@ -206,7 +223,7 @@ def build_material_preset_registry() -> dict[str, Any]:
         "status": "bounded_authored_presets_not_real_fabric_measurements",
         "presets": presets,
         "policy": {
-            "garmentBoundary": ["tshirt", "sleeveless_top"],
+            "garmentBoundary": list(SUPPORTED_GARMENT_FAMILIES),
             "learnedClassifierRun": False,
             "calibratedRealFabricInferenceRun": False,
             "privateUserMaterialEstimationRun": False,
@@ -266,6 +283,16 @@ def validate_fabric_descriptor(descriptor: dict[str, Any]) -> None:
     solver = descriptor.get("solverCoefficients")
     if not isinstance(solver, dict) or not all(_finite_number(value) for value in solver.values()):
         raise FabricDescriptorError("invalid_solver_coefficients")
+    applicability = descriptor.get("applicability", {})
+    compatible = applicability.get("compatibleGarmentFamilies", [])
+    if (
+        applicability.get("contractVersion") != "closy.fabric_applicability.d0.v1"
+        or not isinstance(compatible, list)
+        or not compatible
+        or len(compatible) != len(set(compatible))
+        or any(family not in SUPPORTED_GARMENT_FAMILIES for family in compatible)
+    ):
+        raise FabricDescriptorError("invalid_material_applicability")
     expected_hash = hash_fabric_descriptor(descriptor)
     if descriptor.get("integrity", {}).get("descriptorHash") != expected_hash:
         raise FabricDescriptorError("descriptor_hash_mismatch")
@@ -346,6 +373,9 @@ def select_material_preset(
     selected_descriptor = next(
         deepcopy(preset) for preset in presets if preset["presetId"] == selected_id
     )
+    garment_family = _garment_family_from_input(inputs)
+    if garment_family not in selected_descriptor["applicability"]["compatibleGarmentFamilies"]:
+        raise FabricDescriptorError("unsupported_family_preset_combination")
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "selectionVersion": MATERIAL_SELECTION_VERSION,
@@ -362,6 +392,8 @@ def select_material_preset(
             "scoreMargin": _round(winning_score - runner_up),
             "calibratedPhysicalMeasurement": False,
             "learnedClassifierRun": False,
+            "garmentFamily": garment_family,
+            "applicabilityValidated": True,
         },
         "override": override_record,
         "selectedDescriptor": selected_descriptor,
@@ -380,6 +412,17 @@ def descriptor_field_value(descriptor: dict[str, Any], field_name: str) -> float
     return float(descriptor["fields"][field_name]["value"])
 
 
+def _garment_family_from_input(inputs: dict[str, Any]) -> str:
+    explicit = inputs.get("garmentFamily")
+    if isinstance(explicit, str) and explicit in SUPPORTED_GARMENT_FAMILIES:
+        return explicit
+    identity = " ".join(str(inputs.get(key, "")) for key in ("selectionId", "inputId"))
+    for family in sorted(SUPPORTED_GARMENT_FAMILIES, key=len, reverse=True):
+        if family in identity:
+            return family
+    raise FabricDescriptorError("material_selection_garment_family_missing")
+
+
 def solver_material_payload(descriptor: dict[str, Any]) -> dict[str, Any]:
     validate_fabric_descriptor(descriptor)
     coefficients = descriptor["solverCoefficients"]
@@ -388,7 +431,10 @@ def solver_material_payload(descriptor: dict[str, Any]) -> dict[str, Any]:
         **deepcopy(descriptor),
         "surfaceDensityKgM2": descriptor_field_value(descriptor, "arealDensity"),
         "stretchStiffnessNPerM": descriptor_field_value(descriptor, "warpStretchStiffness"),
+        "weftStretchStiffnessNPerM": descriptor_field_value(descriptor, "weftStretchStiffness"),
+        "shearStiffnessNPerM": descriptor_field_value(descriptor, "shearStiffness"),
         "bendStiffnessNm": descriptor_field_value(descriptor, "bendStiffness"),
+        "warpOrientationDegrees": descriptor_field_value(descriptor, "warpOrientation"),
         "dampingRatio": float(coefficients["dampingRatio"]),
         "frictionCoefficient": float(coefficients["frictionCoefficient"]),
         "thicknessMeters": descriptor_field_value(descriptor, "thickness"),

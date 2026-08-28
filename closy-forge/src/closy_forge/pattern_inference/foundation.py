@@ -114,6 +114,23 @@ def validate_pattern_inference_foundation(bundle: dict[str, Any]) -> list[str]:
     if len({int(item.get("features", {}).get("panelCount", 0)) for item in samples}) < 4:
         issues.append("variable_panel_count_evidence_missing")
     split_ids = {key: set(map(str, split.get(key, []))) for key in ("train", "validation", "test")}
+    samples_by_id = {str(item.get("sampleId")): item for item in samples}
+    split_templates = {
+        name: {
+            str(samples_by_id[sample_id].get("targetTemplateId"))
+            for sample_id in ids
+            if sample_id in samples_by_id
+        }
+        for name, ids in split_ids.items()
+    }
+    identity_leakage = any(
+        split_templates[left] & split_templates[right]
+        for left, right in (
+            ("train", "validation"),
+            ("train", "test"),
+            ("validation", "test"),
+        )
+    )
     if (
         any(not ids for ids in split_ids.values())
         or any(
@@ -123,6 +140,8 @@ def validate_pattern_inference_foundation(bundle: dict[str, Any]) -> list[str]:
         or set().union(*split_ids.values()) != set(sample_ids)
     ):
         issues.append("pattern_dataset_split_invalid")
+    if split.get("identityLeakage") is not identity_leakage:
+        issues.append("pattern_dataset_identity_leakage_claim_invalid")
     if benchmark.get("actualBaselineRun") is not True or benchmark.get("sampleCount") != 24:
         issues.append("template_retrieval_benchmark_invalid")
     expected_correct = sum(
@@ -131,8 +150,11 @@ def validate_pattern_inference_foundation(bundle: dict[str, Any]) -> list[str]:
     )
     if benchmark.get("top1Correct") != expected_correct:
         issues.append("template_retrieval_benchmark_recompute_mismatch")
-    if correction.get("humanCorrectionRecord") is not True or correction.get("sourceKind") != (
-        "project_authored_synthetic_fixture"
+    if (
+        correction.get("humanCorrectionRecord") is not False
+        or correction.get("simulatedCorrectionFixture") is not True
+        or correction.get("humanReviewStatus") != "not_run"
+        or correction.get("sourceKind") != "project_authored_synthetic_fixture"
     ):
         issues.append("pattern_correction_record_invalid")
     tier = bundle.get("evidenceTier", {})
@@ -209,7 +231,8 @@ def _split(dataset: dict[str, Any]) -> dict[str, Any]:
         "schemaVersion": 1,
         "splitVersion": "closy.pattern_dataset_split.d0.v1",
         **groups,
-        "identityLeakage": False,
+        "identityLeakage": True,
+        "identityLeakageStatus": "known_baseline_defect_template_identity_crosses_all_splits",
         "splitPolicy": "variant_zero_train_one_validation_two_test",
     }
 
@@ -256,7 +279,9 @@ def _correction(sample: dict[str, Any]) -> dict[str, Any]:
         "afterTemplateId": sample["targetTemplateId"],
         "changedFields": ["templateId"],
         "reasonCode": "project_authored_wrong_template_fixture",
-        "humanCorrectionRecord": True,
+        "humanCorrectionRecord": False,
+        "simulatedCorrectionFixture": True,
+        "humanReviewStatus": "not_run",
         "sourceKind": "project_authored_synthetic_fixture",
         "containsPrivateData": False,
     }

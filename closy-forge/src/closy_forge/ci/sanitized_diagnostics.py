@@ -2,22 +2,27 @@ from __future__ import annotations
 
 import math
 import re
-import shutil
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from closy_forge.package_io.canonical_json import read_json, write_canonical_json
-from closy_forge.package_io.hashing import sha256_file
+from closy_forge.package_io.managed_output import (
+    MARKER_NAME,
+    cleanup_managed_staging,
+    create_managed_staging,
+    publish_managed_staging,
+)
 
 DIAGNOSTICS_VERSION = "closy.ci_sanitized_diagnostics.v1"
 MAX_INPUT_FILE_BYTES = 1_000_000
 MAX_SCANNED_FILES = 2_000
-MAX_OUTPUT_FILES = 4
+MAX_OUTPUT_FILES = 5
 MAX_OUTPUT_TOTAL_BYTES = 200_000
 
 FIXED_OUTPUT_FILES = (
+    MARKER_NAME,
     "summary.json",
     "package_inventory.json",
     "validation_summary.json",
@@ -74,23 +79,28 @@ def export_sanitized_ci_diagnostics(
     source_dir: Path,
     output_dir: Path,
     *,
-    label: str = "forge",
+    allowed_output_root: Path,
     force: bool = False,
 ) -> dict[str, Any]:
     source = source_dir.resolve()
-    output = output_dir.resolve()
-    _prepare_output_dir(source, output, force=force)
+    output = output_dir.absolute()
+    if output == source or _is_relative_to(output.resolve(strict=False), source):
+        raise ValueError("diagnostics output must not be inside the raw source directory")
 
     scan = _scan_source(source)
     package_dirs = [path for path in sorted(source.glob("*.closygarment")) if path.is_dir()]
-    packages = [_package_summary(path) for path in package_dirs]
-    validations = [_validation_summary(path) for path in package_dirs]
+    packages = [
+        _package_summary(path, ordinal=index) for index, path in enumerate(package_dirs, start=1)
+    ]
+    validations = [
+        _validation_summary(path, ordinal=index) for index, path in enumerate(package_dirs, start=1)
+    ]
     validations = [validation for validation in validations if validation is not None]
 
     summary: dict[str, Any] = {
         "schemaVersion": 1,
         "diagnosticsVersion": DIAGNOSTICS_VERSION,
-        "label": _safe_text(label),
+        "diagnosticProfile": "forge-ci-bounded-v1",
         "sourceDirectoryLabel": "ci-source",
         "scannedFileCount": scan["scannedFileCount"],
         "rejectedInputCount": scan["rejectedInputCount"],
@@ -103,6 +113,9 @@ def export_sanitized_ci_diagnostics(
             "allowsImages": False,
             "allowsGlbOrBinaryPayloads": False,
             "allowsAbsolutePaths": False,
+            "allowsSourceNames": False,
+            "allowsSourceHashes": False,
+            "allowsStableUserIdentifiers": False,
             "maxOutputFiles": MAX_OUTPUT_FILES,
             "maxOutputTotalBytes": MAX_OUTPUT_TOTAL_BYTES,
         },
@@ -114,30 +127,37 @@ def export_sanitized_ci_diagnostics(
         "countsByExtension": dict(sorted(scan["countsByExtension"].items())),
     }
 
-    write_canonical_json(output / "summary.json", summary)
-    write_canonical_json(
-        output / "package_inventory.json",
-        {"packages": packages, "schemaVersion": 1},
+    staging = create_managed_staging(
+        output,
+        allowed_root=allowed_output_root,
+        purpose="ci-diagnostics",
     )
-    write_canonical_json(
-        output / "validation_summary.json",
-        {"schemaVersion": 1, "validations": validations},
-    )
-    write_canonical_json(output / "rejections.json", rejections)
-    _assert_output_allowlist(output)
+    try:
+        write_canonical_json(staging / "summary.json", summary)
+        write_canonical_json(
+            staging / "package_inventory.json",
+            {"packages": packages, "schemaVersion": 1},
+        )
+        write_canonical_json(
+            staging / "validation_summary.json",
+            {"schemaVersion": 1, "validations": validations},
+        )
+        write_canonical_json(staging / "rejections.json", rejections)
+        _assert_output_allowlist(staging)
+        publish_managed_staging(
+            staging,
+            output,
+            allowed_root=allowed_output_root,
+            purpose="ci-diagnostics",
+            force=force,
+        )
+    finally:
+        cleanup_managed_staging(
+            staging,
+            allowed_root=allowed_output_root,
+            purpose="ci-diagnostics",
+        )
     return summary
-
-
-def _prepare_output_dir(source: Path, output: Path, *, force: bool) -> None:
-    if output == source or _is_relative_to(output, source):
-        raise ValueError("diagnostics output must not be inside the raw source directory")
-    if output.exists():
-        if not force:
-            raise FileExistsError(f"{output} already exists; pass --force")
-        if output.is_symlink() or not output.is_dir():
-            raise ValueError("diagnostics output must be a real directory")
-        shutil.rmtree(output)
-    output.mkdir(parents=True)
 
 
 def _scan_source(source: Path) -> dict[str, Any]:
@@ -208,40 +228,32 @@ def _classify_input(path: Path, source: Path) -> Rejection | None:
     return None
 
 
-def _package_summary(package_dir: Path) -> dict[str, Any]:
+def _package_summary(package_dir: Path, *, ordinal: int) -> dict[str, Any]:
     manifest = _safe_json(package_dir / "manifest.json")
     inventory = manifest.get("inventory", []) if isinstance(manifest, dict) else []
-    inventory_entries = [
-        {
-            "path": _safe_package_path(str(entry.get("path", ""))),
-            "role": _safe_text(str(entry.get("role", ""))),
-            "sha256": _safe_sha(str(entry.get("sha256", ""))),
-            "canonical": bool(entry.get("canonical", False)),
-        }
-        for entry in inventory
-        if isinstance(entry, dict)
-    ]
+    inventory_entries = [entry for entry in inventory if isinstance(entry, dict)]
+    roles = Counter(_safe_text(str(entry.get("role", "unknown"))) for entry in inventory_entries)
     return {
-        "packageLabel": _safe_text(package_dir.name),
-        "canonicalPackageDigest": _safe_sha(str(manifest.get("canonicalPackageDigest", ""))),
-        "garmentId": _safe_text(str(manifest.get("garmentId", ""))),
+        "packageOrdinal": ordinal,
         "schemaVersion": manifest.get("schemaVersion") if isinstance(manifest, dict) else None,
         "inventoryCount": len(inventory_entries),
-        "inventory": inventory_entries,
-        "manifestSha256": sha256_file(package_dir / "manifest.json")
-        if (package_dir / "manifest.json").is_file()
-        else None,
+        "canonicalEntryCount": sum(
+            bool(entry.get("canonical", False)) for entry in inventory_entries
+        ),
+        "roleCounts": dict(sorted(roles.items())),
+        "hashesIncluded": False,
+        "pathsIncluded": False,
     }
 
 
-def _validation_summary(package_dir: Path) -> dict[str, Any] | None:
+def _validation_summary(package_dir: Path, *, ordinal: int) -> dict[str, Any] | None:
     validation_path = package_dir / "reports" / "package_validation.json"
     if not validation_path.is_file():
         return None
     validation = _safe_json(validation_path)
     issues = validation.get("issues", []) if isinstance(validation, dict) else []
     return {
-        "packageLabel": _safe_text(package_dir.name),
+        "packageOrdinal": ordinal,
         "status": _safe_text(str(validation.get("status", ""))),
         "counts": validation.get("counts", {}),
         "issueCodes": sorted(
@@ -258,7 +270,7 @@ def _validation_summary(package_dir: Path) -> dict[str, Any] | None:
                 if isinstance(issue, dict) and issue.get("severity")
             }
         ),
-        "validationSha256": sha256_file(validation_path),
+        "hashesIncluded": False,
     }
 
 
@@ -295,23 +307,12 @@ def _safe_json(path: Path) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def _safe_package_path(value: str) -> str:
-    normalized = value.replace("\\", "/").lstrip("/")
-    if ".." in normalized.split("/"):
-        return "[redacted-path]"
-    return _safe_text(normalized)
-
-
 def _safe_text(value: str) -> str:
     text = ABSOLUTE_PATH_RE.sub("[redacted-path]", value)
     text = HIGH_ENTROPY_RE.sub("[redacted-token]", text)
     text = BASE64_CAPTURE_RE.sub("[redacted-capture-payload]", text)
     text = IDENTITY_NAME_RE.sub("[redacted-name]", text)
     return text[:500]
-
-
-def _safe_sha(value: str) -> str:
-    return value if re.fullmatch(r"[0-9a-f]{64}", value) else ""
 
 
 def _read_text_sample(path: Path) -> str | None:

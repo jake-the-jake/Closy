@@ -19,9 +19,15 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
     validation = validate_package(package)
 
     assert validation["status"] == "passed"
-    assert [issue["code"] for issue in validation["issues"]] == [
-        "self_collision_unresolved_contacts"
-    ]
+    assert {issue["code"] for issue in validation["issues"]} == {
+        "tshirt_fit_not_accepted_for_public_fixture",
+        "tshirt_fit_solver_quality_gate_partial",
+        "tshirt_fit_settled_render_quality_partial",
+        "cloth_settle_constraintconvergence_failed",
+        "cloth_settle_collisionresolution_failed",
+        "cloth_settle_strainquality_failed",
+        "self_collision_unresolved_contacts",
+    }
     assert manifest["capabilities"]["productionBindingContractAvailable"] is True
     assert manifest["capabilities"]["productionBindingC3EvidenceAvailable"] is True
     assert manifest["capabilities"]["productionBindingC3ProfileAvailable"] is False

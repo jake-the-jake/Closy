@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_jacket_outerwear_demo import build_demo_jacket_o
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_jacket_outerwear, read_json
 
-GOLDEN_DIGEST = "2ca4a210d560c3452106767dce12c775b9733b9a5e5237d2222026260228101a"
+GOLDEN_DIGEST = "fe66f9a5b78a7829169c9ce3b479c671e97b99f7dddf0fcb8da99994082358c7"
 
 
 def test_jacket_outerwear_package_is_complete_conventional_and_valid(tmp_path) -> None:
@@ -28,11 +28,11 @@ def test_jacket_outerwear_package_is_complete_conventional_and_valid(tmp_path) -
     assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["counts"] == {
         "panelCount": 7,
-        "simulationVertexCount": 331,
-        "simulationTriangleCount": 324,
-        "renderVertexCount": 1944,
-        "renderTriangleCount": 1296,
-        "bindingRecordCount": 1944,
+        "simulationVertexCount": 324,
+        "simulationTriangleCount": 310,
+        "renderVertexCount": 1860,
+        "renderTriangleCount": 1240,
+        "bindingRecordCount": 1860,
     }
     assert quality["readiness"]["jacketOuterwearD0Complete"] is True
     assert quality["readiness"]["phase8GloballyComplete"] is False

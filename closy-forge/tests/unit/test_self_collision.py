@@ -95,7 +95,13 @@ def test_package_self_collision_evidence_is_recomputed_and_not_silent(tmp_path) 
     assert report["execution"]["selfCollisionRun"] is True
     assert report["readiness"]["acceptedForProductionGpuSolver"] is False
     assert [issue["code"] for issue in validation["issues"]] == [
-        "self_collision_unresolved_contacts"
+        "tshirt_fit_not_accepted_for_public_fixture",
+        "tshirt_fit_solver_quality_gate_partial",
+        "tshirt_fit_settled_render_quality_partial",
+        "cloth_settle_constraintconvergence_failed",
+        "cloth_settle_collisionresolution_failed",
+        "cloth_settle_strainquality_failed",
+        "self_collision_unresolved_contacts",
     ]
 
     corrupt = clone_package(package, tmp_path / "bad_self_collision_report.closygarment")

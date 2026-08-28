@@ -8,6 +8,7 @@ from closy_forge.garments.vertical_slice.appearance import (
     build_appearance_bundle,
 )
 from closy_forge.geometry.mesh_model import MeshSet
+from closy_forge.inspection.independent_targets import IndependentTargetEvidence
 from closy_forge.visual_understanding.raster_parser import TORSO_RGBA
 
 SimpleTrousersAppearanceBundle: TypeAlias = AppearanceBundle
@@ -43,11 +44,16 @@ APPEARANCE_SPEC = AppearanceSpec(
 
 
 def build_simple_trousers_appearance_bundle(
-    *, pattern: dict[str, Any], settled_mesh: MeshSet, seed: int
+    *,
+    pattern: dict[str, Any],
+    settled_mesh: MeshSet,
+    seed: int,
+    independent_target: IndependentTargetEvidence | None = None,
 ) -> SimpleTrousersAppearanceBundle:
     return build_appearance_bundle(
         spec=APPEARANCE_SPEC,
         pattern=pattern,
         settled_mesh=settled_mesh,
         seed=seed,
+        independent_target=independent_target,
     )

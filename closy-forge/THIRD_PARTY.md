@@ -1,6 +1,8 @@
 # Third-Party Dependencies
 
-Closy Forge Implementation 01 has no runtime third-party dependencies. Geometry, GLB, package hashing, CLI parsing, and binary binding are implemented with the Python standard library to keep the deterministic foundation small and inspectable.
+Closy Forge keeps geometry, GLB, package hashing, CLI parsing, and binary binding project-owned. It uses one pinned runtime dependency for bounded local image decode:
+
+- `Pillow==11.1.0`: bounded PNG/JPEG pixel decoding for project-authored fixture captures. Source: <https://python-pillow.org/>. Licence: HPND (Pillow License). No network or external service is used.
 
 Development dependencies are pinned in `pyproject.toml`; transitive versions are constrained in `requirements-dev.lock`:
 
@@ -12,6 +14,7 @@ Development dependencies are pinned in `pyproject.toml`; transitive versions are
 - `colorama==0.4.6`: pytest colour support on Windows. Licence: BSD-3-Clause.
 - `iniconfig==2.3.0`: pytest configuration parser. Licence: MIT.
 - `packaging==26.3`: pytest packaging/version utility. Licence: Apache-2.0 or BSD-2-Clause.
+- `Pillow==11.1.0`: runtime raster decoder. Licence: HPND (Pillow License).
 - `pluggy==1.6.0`: pytest plugin system. Licence: MIT.
 - `typing_extensions==4.16.0`: typing backports used by mypy. Licence: PSF-2.0.
 - `mypy_extensions==1.1.0`: mypy support package. Licence: MIT.

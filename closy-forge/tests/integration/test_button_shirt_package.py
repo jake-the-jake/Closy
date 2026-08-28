@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_button_shirt_demo import build_demo_button_shirt
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_button_shirt, read_json
 
-GOLDEN_DIGEST = "4805c708f9058b1c0bfe2d298953779402607271ece505fa36d97cfd0f583b91"
+GOLDEN_DIGEST = "f561119ddeddf11bc3722db09da7893e614bb235907b884aee02356bfb269ca0"
 
 
 def test_button_shirt_package_is_complete_conventional_and_valid(tmp_path) -> None:
@@ -30,11 +30,11 @@ def test_button_shirt_package_is_complete_conventional_and_valid(tmp_path) -> No
     assert manifest["packageDigest"] == GOLDEN_DIGEST, _golden_diagnostics(manifest)
     assert manifest["counts"] == {
         "panelCount": 5,
-        "simulationVertexCount": 256,
-        "simulationTriangleCount": 251,
-        "renderVertexCount": 1506,
-        "renderTriangleCount": 1004,
-        "bindingRecordCount": 1506,
+        "simulationVertexCount": 251,
+        "simulationTriangleCount": 241,
+        "renderVertexCount": 1446,
+        "renderTriangleCount": 964,
+        "bindingRecordCount": 1446,
     }
     assert quality["readiness"]["buttonShirtD0Complete"] is True
     assert quality["readiness"]["phase8GloballyComplete"] is False
@@ -47,7 +47,7 @@ def test_button_shirt_package_is_complete_conventional_and_valid(tmp_path) -> No
     assert motion["cuffStress"]["cuffMetrics"]["cuffCount"] == 2
     assert motion["cuffStress"]["metrics"]["converged"] is False
     assert fidelity["acceptedForD0ButtonShirtFixture"] is True
-    assert fidelity["aggregate"]["minimumSilhouetteIoU"] == 0.302626779
+    assert fidelity["aggregate"]["minimumSilhouetteIoU"] == 0.288568257
     for relpath in [
         "simulation/simulation_mesh.glb",
         "render/fallback.glb",
