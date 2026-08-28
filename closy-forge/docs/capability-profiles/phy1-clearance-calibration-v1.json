@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "calibrationVersion": "closy.phy1.body_clearance_calibration.provisional.v1",
+  "authoritySurface": "avatar/collision.glb",
+  "authoritySurfaceSha256": "90f120323185ecbc26237cfaabbf7c2b8ee1c352868a62fe5173a734e534b5fe",
+  "signConvention": "positive_outside_negative_inside_authoritative_closed_surface",
+  "clothHalfThicknessMeters": 0.0008,
+  "skinMarginMeters": 0.0,
+  "numericalOracleUncertaintyMeters": 0.000001,
+  "promotionGuardBandMeters": 0.000005,
+  "minimumAcceptedBodySignedClearanceMeters": 0.000005,
+  "contactBandMeters": [0.000005, 0.0024],
+  "bodyPenetrationDepthBudgetMeters": 0.00016,
+  "selfPenetrationDepthBudgetMeters": 0.00016,
+  "independentOracle": "bounded_generalized_winding_or_equivalent_required_before_promotion",
+  "calibrationStatus": "provisional_not_independently_qualified",
+  "limitations": [
+    "the provisional ceilings are frozen before solver tuning",
+    "this record does not make the current collision GLB watertight or qualified",
+    "oracle-uncertain witnesses fail closed"
+  ]
+}
