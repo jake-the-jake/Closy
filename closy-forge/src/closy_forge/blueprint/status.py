@@ -59,9 +59,11 @@ def build_status_model(
         },
         "truth": {
             "phase8EvidenceScope": "deterministic_d0_fixture_family_verticals",
-            "phases10To14EvidenceScope": "versioned_contract_fixture_foundations",
-            "actualZeroOneRuntimeExecuted": False,
-            "actualZeroOneComputeExecuted": False,
+            "phases10To14EvidenceScope": (
+                "phase10_real_d0_cpu_static_plus_phases11_to14_contract_fixtures"
+            ),
+            "actualZeroOneRuntimeExecuted": True,
+            "actualZeroOneComputeExecuted": True,
             "actualPhase9TrainingExecuted": True,
             "privateUserEvidenceRun": False,
             "physicalMobileEvidenceRun": False,
@@ -85,8 +87,10 @@ def validate_status_model(
         issues.append("phase_completion_overclaimed")
     if model.get("stack", {}).get("exactHeadForgeExceptions") != [10]:
         issues.append("stack_exception_set_invalid")
-    if model.get("truth", {}).get("actualZeroOneRuntimeExecuted") is not False:
-        issues.append("zeroone_runtime_overclaimed")
+    if model.get("truth", {}).get("actualZeroOneRuntimeExecuted") is not True:
+        issues.append("zeroone_runtime_evidence_missing")
+    if model.get("truth", {}).get("actualZeroOneComputeExecuted") is not True:
+        issues.append("zeroone_compute_evidence_missing")
     if model.get("truth", {}).get("actualPhase9TrainingExecuted") is not True:
         issues.append("phase9_training_evidence_missing")
     return issues
@@ -114,5 +118,6 @@ def render_status_summary(model: dict[str, Any]) -> str:
         f"{gate_lines}\n\n"
         "Phase 8 evidence is limited to deterministic D0 fixture family verticals. "
         "Phase 9 training evidence is limited to project-authored synthetic D0 fixtures. "
-        "Phase 10-14 evidence is limited to versioned contract-fixture foundations.\n"
+        "Phase 10 has real D0 CPU/static ZeroOne execution for T-shirt and layered-asymmetric "
+        "fixtures; Phases 11-14 remain versioned contract-fixture foundations.\n"
     )

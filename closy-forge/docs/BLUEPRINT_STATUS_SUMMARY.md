@@ -1,13 +1,13 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v1` at evidence anchor `de1177268cd09e6988689fa175638492757a9bed`.
+Authority: `closy.blueprint_status_model.v1` at evidence anchor `13c3d281843750c7bcd9db50e309ed129066e9fe`.
 
 ## Requirement Rows
 
-- complete: 20
-- partial: 57
+- complete: 22
+- partial: 58
 - not started: 8
-- discovery pending: 16
+- discovery pending: 13
 - total: 101
 
 ## Phases
@@ -34,7 +34,7 @@ Authority: `closy.blueprint_status_model.v1` at evidence anchor `de1177268cd09e6
 - C2: `complete`
 - C3: `partial`
 - P1: `discovery_pending`
-- Z1: `discovery_pending`
+- Z1: `complete`
 - Z2: `discovery_pending`
 
-Phase 8 evidence is limited to deterministic D0 fixture family verticals. Phase 9 training evidence is limited to project-authored synthetic D0 fixtures. Phase 10-14 evidence is limited to versioned contract-fixture foundations.
+Phase 8 evidence is limited to deterministic D0 fixture family verticals. Phase 9 training evidence is limited to project-authored synthetic D0 fixtures. Phase 10 has real D0 CPU/static ZeroOne execution for T-shirt and layered-asymmetric fixtures; Phases 11-14 remain versioned contract-fixture foundations.
