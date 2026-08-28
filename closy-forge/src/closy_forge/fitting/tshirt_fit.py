@@ -153,7 +153,8 @@ def _fit_multiview_image_conditioned(
     losses.update(
         {
             "multiviewSilhouetteMeanIoU": _round(
-                sum(float(item["silhouetteIoU"]) for item in final_views) / max(1, len(final_views))
+                math.fsum(float(item["silhouetteIoU"]) for item in final_views)
+                / max(1, len(final_views))
             ),
             "boundaryErrorNormalised": final_terms["boundaryChamferNormalised"],
             "landmarkErrorNormalised": final_terms["landmarkReprojectionRmsNormalised"],
@@ -318,9 +319,9 @@ def _estimate_multiview_parameters(
         if item["available"]
     ]
     observed_width = (
-        sum(required_widths) / len(required_widths)
+        math.fsum(required_widths) / len(required_widths)
         if required_widths
-        else sum(all_widths) / max(1, len(all_widths))
+        else math.fsum(all_widths) / max(1, len(all_widths))
     )
     body_length = (hem_center[1] - neck[1]) * _BODY_LENGTH_METERS_PER_NORMALIZED_Y
     shoulder_width = (shoulder_r[0] - shoulder_l[0]) * _SHOULDER_METERS_PER_NORMALIZED_X
@@ -351,7 +352,7 @@ def _fit_losses(
         if predicted_point is None:
             continue
         squared_errors.append(_distance_squared(observed, predicted_point))
-    landmark_rms = math.sqrt(sum(squared_errors) / max(1, len(squared_errors)))
+    landmark_rms = math.sqrt(math.fsum(squared_errors) / max(1, len(squared_errors)))
     expected_mask_width = (fitted.half_chest_width + fitted.body_ease) * 2.0
     observed_mask_width = _polygon_width(front_mask) * _MASK_WIDTH_METERS_PER_NORMALIZED_X
     max_delta = max(abs(value) for value in _parameter_deltas(fitted, TShirtParameters()).values())
@@ -391,7 +392,9 @@ def _image_conditioned_losses(
         weight = _clamp(float(landmark.get("confidence", 0.0)), 0.05, 1.0)
         weighted_landmark_errors.append(_distance_squared(observed, predicted_point) * weight)
         landmark_weight_total += weight
-    landmark_rms = math.sqrt(sum(weighted_landmark_errors) / max(0.000001, landmark_weight_total))
+    landmark_rms = math.sqrt(
+        math.fsum(weighted_landmark_errors) / max(0.000001, landmark_weight_total)
+    )
     view_metrics = _view_fit_metrics(visual_observations, fitted)
     silhouette_values = [_number(item.get("silhouetteIoU"), 0.0) for item in view_metrics]
     boundary_values = [_number(item.get("boundaryErrorNormalised"), 1.0) for item in view_metrics]
@@ -408,20 +411,22 @@ def _image_conditioned_losses(
     confidence = _mean_fused_confidence(multiview_fusion)
     confidence_weighted_loss = (
         landmark_rms * 0.38
-        + (1.0 - sum(silhouette_values) / max(1, len(silhouette_values))) * 0.24
-        + (sum(boundary_values) / max(1, len(boundary_values))) * 0.18
+        + (1.0 - math.fsum(silhouette_values) / max(1, len(silhouette_values))) * 0.24
+        + (math.fsum(boundary_values) / max(1, len(boundary_values))) * 0.18
         + opening_error * 0.10
         + camera_error * 0.06
         + ease_penalty * 0.04
     ) * _clamp(1.08 - confidence * 0.08, 0.9, 1.08)
     return {
         "landmarkRmsNormalised": _round(landmark_rms),
-        "maskWidthErrorMeters": _round(sum(mask_errors) / max(1, len(mask_errors))),
+        "maskWidthErrorMeters": _round(math.fsum(mask_errors) / max(1, len(mask_errors))),
         "maximumParameterDeltaMeters": _round(max_delta),
         "multiviewSilhouetteMeanIoU": _round(
-            sum(silhouette_values) / max(1, len(silhouette_values))
+            math.fsum(silhouette_values) / max(1, len(silhouette_values))
         ),
-        "boundaryErrorNormalised": _round(sum(boundary_values) / max(1, len(boundary_values))),
+        "boundaryErrorNormalised": _round(
+            math.fsum(boundary_values) / max(1, len(boundary_values))
+        ),
         "landmarkErrorNormalised": _round(landmark_rms),
         "openingAlignmentErrorNormalised": _round(opening_error),
         "cameraBodyAlignmentErrorNormalised": _round(camera_error),
@@ -573,10 +578,10 @@ def _multiview_input_measurements(
             _point(fused_landmarks, "landmark.shoulder.right")[0]
             - _point(fused_landmarks, "landmark.shoulder.left")[0]
         ),
-        "meanTargetMaskWidthNormalised": _round(sum(widths) / max(1, len(widths))),
-        "meanTargetMaskHeightNormalised": _round(sum(heights) / max(1, len(heights))),
+        "meanTargetMaskWidthNormalised": _round(math.fsum(widths) / max(1, len(widths))),
+        "meanTargetMaskHeightNormalised": _round(math.fsum(heights) / max(1, len(heights))),
         "frontBackTargetMaskWidthNormalised": _round(
-            sum(
+            math.fsum(
                 item["width"]
                 for item in bbox_measurements
                 if item["available"] and item["label"] in {"front", "back"}
@@ -659,8 +664,8 @@ def _confidence_weights(
         "registrationConfidence": _round(
             float(multiview_fusion.get("registration", {}).get("confidence", 0.0))
         ),
-        "meanLandmarkConfidence": _round(sum(landmark_values) / max(1, len(landmark_values))),
-        "meanOpeningConfidence": _round(sum(opening_values) / max(1, len(opening_values))),
+        "meanLandmarkConfidence": _round(math.fsum(landmark_values) / max(1, len(landmark_values))),
+        "meanOpeningConfidence": _round(math.fsum(opening_values) / max(1, len(opening_values))),
         "viewWeights": view_weights,
     }
 
@@ -908,7 +913,7 @@ def _opening_alignment_error(multiview_fusion: Mapping[str, Any]) -> float:
         confidence = _clamp(float(opening.get("confidence", 0.0)), 0.0, 1.0)
         status_penalty = 0.0 if opening.get("status") == "visible" else 0.004
         penalties.append((1.0 - confidence) * 0.01 + status_penalty)
-    return sum(penalties) / max(1, len(penalties))
+    return math.fsum(penalties) / max(1, len(penalties))
 
 
 def _camera_body_alignment_error(multiview_fusion: Mapping[str, Any]) -> float:
@@ -925,7 +930,7 @@ def _camera_body_alignment_error(multiview_fusion: Mapping[str, Any]) -> float:
         evidence = record.get("orientationEvidence", {})
         if isinstance(evidence, Mapping):
             orientation_errors.append(float(evidence.get("azimuthErrorDegrees", 90.0)) / 180.0)
-    return _round(residual + sum(orientation_errors) / max(1, len(orientation_errors)) * 0.02)
+    return _round(residual + math.fsum(orientation_errors) / max(1, len(orientation_errors)) * 0.02)
 
 
 def _seam_length_ease_penalty(fitted: TShirtParameters) -> float:

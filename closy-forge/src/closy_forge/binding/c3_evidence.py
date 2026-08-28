@@ -19,6 +19,7 @@ from closy_forge.package_io.hashing import (
     sha256_file,
     topology_hash,
 )
+from closy_forge.simulation.material_motion_suite import MATERIAL_MOTION_CANONICAL_POSITION_DIGITS
 from closy_forge.simulation.reference_cloth_solver import (
     SOLVER_VERSION,
     simulate_reference_motion_state,
@@ -70,7 +71,12 @@ def prepare_c3_evidence_assets(
             settings: dict[str, Any] = {"source": "simulation/settled_state.json"}
         else:
             result = simulate_reference_motion_state(
-                settled_mesh, constraints, avatar_contract, material, state_id
+                settled_mesh,
+                constraints,
+                avatar_contract,
+                material,
+                state_id,
+                canonical_position_digits=MATERIAL_MOTION_CANONICAL_POSITION_DIGITS,
             )
             mesh = result.mesh
             diagnostics = result.diagnostics

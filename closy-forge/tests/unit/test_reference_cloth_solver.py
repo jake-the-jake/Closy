@@ -19,7 +19,13 @@ def test_reference_cloth_solver_settles_without_changing_topology() -> None:
     constraints = build_constraints(pattern, edge_maps)
     avatar = avatar_contract(build_reference_avatar_mesh(), build_collision_mesh())
 
-    result = settle_reference_cloth(rest_mesh, constraints, avatar, _material_physics())
+    result = settle_reference_cloth(
+        rest_mesh,
+        constraints,
+        avatar,
+        _material_physics(),
+        canonical_position_digits=9,
+    )
 
     assert topology_hash(result.rest_mesh) == topology_hash(result.settled_mesh)
     assert result.diagnostics["numericalTermination"] == "completed"
@@ -33,3 +39,15 @@ def test_reference_cloth_solver_settles_without_changing_topology() -> None:
     assert result.diagnostics["selfCollision"]["highVelocityTunnelling"] == (
         "unsupported_high_velocity_tunnelling"
     )
+    assert result.diagnostics["canonicalPositionDigits"] == 9
+    assert all(value == round(value, 9) for value in _float_values(result.diagnostics))
+
+
+def _float_values(value: object) -> list[float]:
+    if isinstance(value, float):
+        return [value]
+    if isinstance(value, dict):
+        return [item for child in value.values() for item in _float_values(child)]
+    if isinstance(value, list):
+        return [item for child in value for item in _float_values(child)]
+    return []

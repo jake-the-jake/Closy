@@ -35,9 +35,7 @@ def main() -> int:
         _run("validate", str(left))
         _run("report", str(left))
         manifest = json.loads((left / "manifest.json").read_text(encoding="utf-8"))
-        canonical_digest = manifest.get("packageDigest") or manifest.get(
-            "canonicalPackageDigest"
-        )
+        canonical_digest = manifest.get("packageDigest") or manifest.get("canonicalPackageDigest")
         if not isinstance(canonical_digest, str) or len(canonical_digest) != 64:
             raise ValueError(f"{family} manifest has no canonical package digest")
         validation = json.loads(
@@ -45,6 +43,12 @@ def main() -> int:
         )
         settle_path = left / "simulation" / "settle_diagnostics.json"
         settle = json.loads(settle_path.read_text(encoding="utf-8")) if settle_path.exists() else {}
+        material_motion_path = left / "reports" / "material_motion_suite.json"
+        material_motion = (
+            json.loads(material_motion_path.read_text(encoding="utf-8"))
+            if material_motion_path.exists()
+            else None
+        )
         inter_layer_collision = None
         layered_quality_path = left / "reports" / "layered_asymmetric_quality.json"
         if layered_quality_path.exists():
@@ -62,6 +66,20 @@ def main() -> int:
                 "validationFatals": int(validation.get("counts", {}).get("fatal", 0)),
                 "physicalQualityAccepted": bool(settle.get("physicalQualityAccepted", False)),
                 "interLayerCollisionEnabled": inter_layer_collision,
+                "canonicalInventory": manifest.get("inventory", []),
+                "materialMotionSuiteHash": (
+                    material_motion.get("integrity", {}).get("suiteHash")
+                    if isinstance(material_motion, dict)
+                    else None
+                ),
+                "materialMotionCollisionCounts": (
+                    [
+                        record.get("diagnostics", {}).get("collisionCount")
+                        for record in material_motion.get("presetRecords", [])
+                    ]
+                    if isinstance(material_motion, dict)
+                    else []
+                ),
             }
         )
     summary = {
