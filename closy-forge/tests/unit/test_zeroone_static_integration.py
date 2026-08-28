@@ -3,11 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from closy_forge.garments.sleeveless_top.parameters import SleevelessTopParameters
-from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_package
 from closy_forge.package_io.writer import (
     EXCLUDED_FROM_CANONICAL_INVENTORY,
     collect_inventory,
 )
+from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_package
 from closy_forge.validation.validator import validate_package
 from closy_forge.zeroone.integration import integrate_zeroone_static
 from closy_forge.zeroone.request import authority_hashes, build_zeroone_request
