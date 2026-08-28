@@ -50,7 +50,7 @@ def publish_managed_staging(
     root, resolved_target = validate_output_target(
         target, allowed_root=allowed_root, purpose=purpose
     )
-    resolved_staging = staging.absolute()
+    resolved_staging = staging.resolve(strict=False)
     if resolved_staging.parent != root or resolved_staging == resolved_target:
         raise ManagedOutputError("staging_outside_allowed_root")
     staging_marker = _validate_managed_directory(resolved_staging, purpose=purpose, kind="staging")
@@ -90,7 +90,7 @@ def cleanup_managed_staging(
     purpose: str,
 ) -> None:
     root = _resolve_allowed_root(allowed_root)
-    candidate = staging.absolute()
+    candidate = staging.resolve(strict=False)
     if candidate.parent != root:
         raise ManagedOutputError("staging_outside_allowed_root")
     if not candidate.exists() and not candidate.is_symlink():
@@ -109,12 +109,12 @@ def validate_output_target(
         raise ManagedOutputError("invalid_output_purpose")
     root = _resolve_allowed_root(allowed_root)
     candidate = target.absolute()
-    if candidate.parent != root:
-        raise ManagedOutputError("output_must_be_direct_child_of_allowed_root")
     if candidate.name in {"", ".", ".."}:
         raise ManagedOutputError("invalid_output_name")
     if candidate.is_symlink():
         raise ManagedOutputError("output_symlink_rejected")
+    if candidate.parent.resolve(strict=False) != root:
+        raise ManagedOutputError("output_must_be_direct_child_of_allowed_root")
     resolved_candidate = candidate.resolve(strict=False)
     if resolved_candidate.parent != root:
         raise ManagedOutputError("output_symlink_escape_rejected")
