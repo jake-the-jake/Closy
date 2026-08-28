@@ -4,31 +4,52 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 
 ## Dashboard
 
-- Branch: `codex/closy-forge-phase-10-zeroone-static-integration`
+- Branch: `codex/closy-forge-phase11-prerequisite-reconciliation-v2`
 - Master blueprint source: [`Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`](./Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md), byte-faithful copy of the user-supplied document, SHA-256 `AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D`
 - Exact published continuation base: PR #23 head
   `a481ba26a424bd91607b8c1d41b6173a2c9579d9`; its explicit DAG node records 14 unique
   commits, 24 changed files, and exact-head run `33150483293` with 26 successful jobs.
-- PR #23's ZeroOne execution is historical local evidence from owner-closed, unmerged source
-  `c6388cbbf53ba8a47831ec25e83808e1edf32194`; current ZeroOne master
-  `a17762bc1fc12fbd33f0488634635a5dcfdf8da3` is not yet requalified.
-- Current active increment: real pinned ZeroOne Windows MSVC Release CPU/static execution for canonical T-shirt and layered-asymmetric D0 fixtures. The optional derivative path, deterministic cache behavior, fallback preservation, and deletion/rebuild recovery pass. Global Phase 10 remains partial, and Phases 11-14 remain contract-fixture foundations.
+- PR #24 is the common integrity/trust parent at
+  `5d080caad354bcecff94a7eadf16d080d68a606c`. PR #25 requalifies C3/PHY1, PR #26 is
+  the independent Phase 9 raster-trained synthetic branch, and PR #27 refreshes paired ZeroOne
+  static integration. The current branch replays PR #25's eight commits onto PR #27 without
+  rewriting either sibling.
+- Exact-head runs `33201911956` (Phase 9) and `33203908161` (Phase 10) each pass all 26 jobs.
+  PR #25 run `33203903630` passes static and family lanes but fails both integration shards from
+  package-byte drift; the immutable source is retained and the reconciliation descendant restores
+  compatibility while preserving explicit PHY1 diagnostics.
+- ZeroOne execution is candidate-static evidence from unmerged ZeroOne PR #2 source
+  `13a844d240f4bbb2cafde105c4a0bdca8d89a06b`; its independently inspected Windows
+  Release executable has SHA-256
+  `59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065`.
+- Current active increment: exact prerequisite reconciliation for Phase 11. C3-Binding-D0 passes,
+  but refreshed paired scoped Z1 and PHY1-SingleLayer-D0 fail. Phase 11 dynamic execution and Z2
+  therefore remain unexecuted; only independent Phase 12 static runtime preparation is eligible.
 - Completed phases: `BP-17-PHASE-00`
 - Partially complete phases: `BP-17-PHASE-01` through `BP-17-PHASE-14`
-- Scoped C1 and C2 pass; their global status remains partial. Z1 has a historical local scoped
-  pass and a partial global status. Z2 through Z8 and P1 are not run or discovery pending.
-- `C3-Binding-D0` is awaiting literal five-requirement requalification. The separate
-  `PHY1-SingleLayer-D0` witness fails with 137 unresolved contacts, `0.002327721 m` residual depth
-  against `0.000160000 m`, minimum body clearance `-0.099391794 m`, and `0/11` passing states.
-- Requirement rows moved from 20 complete / 57 partial / 8 not started / 16 discovery pending to 22 / 58 / 8 / 13, with 101 total. Phase 0 alone is complete; Phases 1-14 remain partial. Research prototype is partial; Alpha, Beta, and Production are not started.
-- Learned Phase 9 evidence uses 96 identity-disjoint synthetic programs and 384 observations, reaches 64/64 held-out top-1 and grammar/seam validity, but ties the deterministic baseline and has no authorised real/public/private or human-review generalisation.
-- ZeroOne evidence uses source `c6388cbbf53ba8a47831ec25e83808e1edf32194` and Release executable SHA-256 `7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e`. T-shirt derivative `8b89b204ef7407c28ce709041809a621b69c3256f198c738ff1ff5eaa8d23461` and layered-asymmetric derivative `0cd8e9ebd6a92ebf9295db87aa10e95e2a9f6f594119694e71e3209bbe36e834` are deterministic and non-authoritative.
-- CI verification now separates static contracts, four exact-cover unit/corruption shards across Ubuntu 3.11, Windows 3.11 and Ubuntu 3.12, two exact-cover integration/golden shards, nine family/runtime shards, and cross-runtime digest aggregation. Local integration shard 0 passes 19 tests in 1,446.01 seconds; the prior serial lane exceeded its hosted 35-minute limit, and no timeout was widened.
-- Independent work remains: C3 binding requalification, PHY1 physical convergence, current-master
-  ZeroOne requalification, independent source fidelity, broader provider/mobile evidence,
+- Scoped C1, C2, and fixed-profile C3-Binding-D0 pass; global statuses remain partial. Refreshed
+  paired scoped Z1 attempted all nine frozen families: six accepted and three failed exactly with
+  `E_SURFACE_BUILD:invalid_surface_topology:surface triangle is degenerate`. Z2 through Z8 and P1
+  are not run or discovery pending.
+- `PHY1-SingleLayer-D0` improves 33 initial contacts to 9 unresolved contacts, but residual depth
+  is `0.001878992 m` against the `0.000160000 m` budget, minimum body clearance is
+  `-0.009084014 m`, maximum seam crack is `0.109609688 m`, and `0/11` trajectories/states pass.
+- Requirement rows now total 21 complete / 59 partial / 8 not started / 13 discovery pending.
+  Phase 0 alone is complete; Phases 1-14 remain partial. Research Prototype is partial; Alpha,
+  Beta, and Production are not started.
+- Phase 9 uses 96 identity-disjoint synthetic programs and 384 raster-derived observations. Its
+  held-out top-1 is `53/64` (`0.828125`) and top-3 is `1.0`; the nearest-centroid baseline reaches
+  `0.90625`, so learned superiority is false. Four of eight downstream learned fits are accepted;
+  all package builds remain valid through deterministic fallback.
+- Refreshed ZeroOne execution attempts all nine frozen families using candidate-static source
+  `13a844d240f4bbb2cafde105c4a0bdca8d89a06b`. Six derivatives validate; three reject
+  deterministically. Cache-hit authority, deletion/rebuild recovery, and fixture fallback remain
+  preserved, but the scoped Z1 candidate does not pass.
+- Independent work remains: PHY1 physical convergence, current-master ZeroOne requalification,
+  successful all-family paired scoped Z1, independent source fidelity, broader provider/mobile evidence,
   authorised private-user tiers, licence review, and human visual acceptance. A Phase 11
-  mechanical/reference slice requires C3-Binding-D0 plus refreshed paired scoped Z1; solver-driven
-  physical quality additionally requires PHY1.
+  mechanical/reference slice still requires a passing refreshed paired scoped Z1; solver-driven
+  physical quality additionally requires PHY1. No Phase 11 dynamic artifact has been created.
 
 ## Status Vocabulary
 

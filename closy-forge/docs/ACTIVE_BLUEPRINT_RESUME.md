@@ -1,142 +1,120 @@
 # Active Blueprint Resume
 
-This checkpoint is subordinate to the machine-readable authorities
-`current_blueprint_status.json`, `blueprint_coverage.json`, and
-`pr_stack_manifest.json`. Green CI proves only the checks that ran; it does not promote a
-global blueprint phase.
+This checkpoint is subordinate to `current_blueprint_status.json`,
+`blueprint_coverage.json`, `pr_stack_manifest.json`, and the committed execution evidence.
+Green CI proves only the exact checks that ran and never promotes a global blueprint phase.
 
 ## Active Stack
 
 - Repository: `jake-the-jake/Closy`.
-- Audited cumulative parent: draft PR #19, branch
-  `codex/closy-forge-phases-10-14-runnable-foundations`, SHA
-  `e83e1e897c9539d246926f8148c5a9ac347982d1`.
-- Integrity: draft PR #20, branch
-  `codex/closy-forge-evidence-topology-physics-integrity`, head
-  `3f02a9fde0cbbb52526bd3dd11e6d0bf0f665148`.
-- C3 closeout: draft PR #21, branch `codex/closy-forge-c3-collision-closeout`, head
-  `c5db68d4054141e3bd82aea848c292ec78179fcd`.
-- Learned Phase 9: draft PR #22, branch
-  `codex/closy-forge-phase-9-trained-synthetic-d0`, head
-  `988b242cc441006257d969d9980373213330743c`.
-- Real static Phase 10: draft PR #23, branch
-  `codex/closy-forge-phase-10-zeroone-static-integration`; final head
-  `a481ba26a424bd91607b8c1d41b6173a2c9579d9`, 14 unique commits, 24 changed files,
-  and exact-head Forge run `33150483293` with all 26 jobs successful.
-- Every continuation branch is stacked on its preceding draft PR with an exact direct-parent
-  merge base and zero behind commits. No PR was merged, retargeted, or force-pushed.
+- Integrity parent: draft PR #24, branch
+  `codex/closy-forge-evidence-security-integrity-v2`, head
+  `5d080caad354bcecff94a7eadf16d080d68a606c`; exact-head Forge run `33183367784`
+  passed all required jobs.
+- C3/PHY1 sibling: draft PR #25, branch
+  `codex/closy-forge-c3-physical-convergence-v2`, head
+  `f9f1ff86089f6b43157431bdd3ccdc83cbc8b974`; based directly on PR #24. Exact-head
+  run `33203903630` passed static and family lanes but failed both cumulative integration shards
+  because new collision diagnostics changed established package bytes.
+- Independent Phase 9 sibling: draft PR #26, branch
+  `codex/closy-forge-phase-9-raster-trained-synthetic-d0`, head
+  `ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53`; based directly on PR #24. Exact-head
+  run `33201911956` passed all 26 jobs.
+- Phase 10 sibling and reconciliation parent: draft PR #27, branch
+  `codex/closy-forge-phase-10-zeroone-static-integration-v2`, head
+  `2a4fcd8146d95d2fab9a3d39751ffdafd5196387`; based directly on PR #24. Exact-head
+  run `33203908161` passed all 26 jobs.
+- Reconciliation candidate: branch
+  `codex/closy-forge-phase11-prerequisite-reconciliation-v2`, based on exact PR #27 head.
+  It replays only the eight reviewed PR #25 commits with `-x`, then restores legacy reference
+  package payload compatibility and updates only the intentionally changed T-shirt C3 golden.
+  Phase 9 remains independent.
+- No PR was merged, retargeted, or force-pushed. Published parent branches remain immutable.
 
 ## Canonical Status
 
-- Requirement rows before this progression: 20 complete, 57 partial, 8 not started,
-  16 discovery pending, 101 total.
-- Requirement rows after scoped-truth reconciliation: 20 complete, 60 partial, 8 not started,
-  13 discovery pending, 101 total.
+- Requirement rows: 21 complete, 59 partial, 8 not started, 13 discovery pending,
+  101 total.
 - Phase 0 is complete. Phases 1 through 14 remain partial.
-- C1 and C2 have scoped passing evidence. `C3-Binding-D0` requires literal requalification and
-  `PHY1-SingleLayer-D0` fails its current witnesses. Z1 has only a historical local scoped pass;
-  global Z1 is partial. Z2 through Z8 and P1 remain not run or discovery pending.
-- The research prototype is partial. Alpha, Beta, and Production are not started.
-- Phase 8 family bundles remain deterministic D0 fixture artifact bundles, not globally complete
-  garment families.
-- Phase 10 now has real, pinned ZeroOne CPU/static execution for two project-authored D0 fixtures.
-  Phases 11 through 14 remain versioned contract-fixture foundations.
+- C1 and C2 retain scoped passes.
+- `C3-Binding-D0` passes only for the fixed-avatar, project-authored T-shirt D0 profile.
+- `PHY1-SingleLayer-D0` fails its exact physical profile.
+- Refreshed paired candidate Z1 fails its all-family scope: all nine families ran, six passed,
+  and three were rejected fail-closed.
+- Z2 through Z8 and P1 remain not run or discovery pending.
+- Research Prototype is partial. Alpha, Beta, and Production are not started.
 
-## Verification Scaling
+## C3 Binding And PHY1 Truth
 
-- Unit and corruption tests are assigned exactly once across four deterministic shards on Ubuntu
-  Python 3.11, Windows Python 3.11, and Ubuntu Python 3.12. Static format, lint, typing, and schema
-  checks run in a separate fast lane.
-- Integration and golden tests are assigned exactly once across two cumulative shards; the
-  non-canonical binding benchmark runs on shard 0. The eight family rebuilds remain split across
-  three stable family groups and all three supported runtime combinations.
-- The former serial local unit/corruption run exceeded 3,838 CPU seconds and the former hosted
-  cumulative lane hit its 35-minute limit. The bounded local integration shard 0 now passes 19
-  tests in 1,446.01 seconds without increasing a timeout.
+- C3 source evidence is commit `1a500b1720edeae4a3f28b88a31f7cd14125854b` under profile
+  `closy.c3_binding.d0_tshirt.v1` with profile hash
+  `c80e6123c360ab1633e4aa821cdbefbac3553807ee330d28867ac870e0a625a1`.
+- All 11 binding states pass. There are 1,248 persisted binding records and 1,248 stable
+  render-vertex IDs. Maximum reconstruction error is `0`, and maximum independent
+  dense/fallback sampled-surface distance is `0.000000038 m`.
+- PHY1 self-collision falls from 33 contacts to 9 unresolved contacts. Residual depth is
+  `0.001878992 m` against a `0.000160000 m` budget, with four violations above budget.
+- Contact count is monotonic non-increasing; maximum depth is not. Rest-referenced
+  inverted-or-degenerate triangles fall from 70 to 68, with zero newly introduced triangles.
+- Maximum seam crack is `0.109609688 m`; minimum stitched-shell body clearance is
+  `-0.009084014 m`; 0 of 11 physical states pass.
+- Bounded CCD fixtures pass, but no canonical performance benchmark, GPU run, mobile run,
+  private-user run, or human review ran.
+- C3 permits a mechanical/reference Phase 11 slice only after refreshed paired scoped Z1 passes.
+  PHY1 remains separately required for solver-driven physical-quality claims.
 
-## Binding And Physical Gate Truth
+## Refreshed Phase 10 And Z1 Truth
 
-- Independent area-centroid and semantic-landmark error are `0`; sampled-surface maximum error is
-  `0.000000033 m`.
-- Relative seam slip is `0.016578367 m` and seam crack is `0.057059358 m`, both within their
-  unchanged scoped thresholds.
-- The persisted stitched render shell passes `0/11` states. Minimum signed body clearance is
-  `-0.099391794 m`.
-- Self-collision falls from `271` contacts to `137` unresolved contacts, with
-  `0.002327721 m` residual depth against the declared `0.000160000 m` budget.
-- Bounded swept/CCD fixtures pass, but CCD response is not integrated into the reference motion
-  solver.
-- These physical failures belong to `PHY1-SingleLayer-D0`, not the master blueprint's five-part
-  binding gate. `C3-Binding-D0` still requires separate requalification. A mechanical/reference
-  Phase 11 slice requires that binding pass plus refreshed paired scoped Z1; solver-driven quality
-  additionally requires PHY1.
+- ZeroOne source is the unmerged candidate PR #2 head
+  `13a844d240f4bbb2cafde105c4a0bdca8d89a06b`.
+- The trusted Windows Release executable SHA-256 is
+  `59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065`.
+- The exact durable ZeroOne workflow run is `33187775880`; the paired Closy execution is local
+  candidate evidence, not a durable paired workflow artifact or current-master qualification.
+- T-shirt, sleeveless top, simple skirt, simple trousers, simple dress, and layered asymmetric
+  pass static cook, cache, deletion/rebuild, namespace validation, authority preservation,
+  fallback preservation, and independent derivative inspection.
+- Long-sleeved top, button shirt, and jacket/outerwear are rejected during cook with
+  `E_SURFACE_BUILD:invalid_surface_topology:surface triangle is degenerate`.
+- No failed family silently receives a derivative. Every conventional fallback remains present.
+- Therefore candidate all-family Z1 is failed, global Z1 and Phase 10 remain partial, and Phase 11
+  does not branch from this checkpoint.
 
-## Learned Phase 9 Evidence
+## Independent Phase 9 Truth
 
-- The v2 project-authored synthetic D0 dataset contains 96 identity-disjoint garment programs and
-  384 observations. Held-out evaluation contains 64 observations.
-- Training loss decreases from `2.346648555557` to `0.088242930902`.
-- Held-out top-1 and top-3 family accuracy are `64/64`; grammar and seam validity are `64/64`.
-- Mean absolute errors are `0.019518082` length scale, `0.021652209` width scale, and
-  `0.267459873` normalized ease. OOD family accuracy is `30/32` (`0.9375`).
-- The deterministic baseline is also `64/64`; no learned-superiority claim is made.
-- Model hash is `2662e6a2e64fdfca6add84a1648da421652b6ef4249217078b5ad05e34a925ea` and
-  weights hash is `59e7351a6b11a5381edfa31806727006c47c1a4c0ec3e4f6ba8508babd8a8e4c`.
-- Training wall/CPU time is approximately `48.508 s`/`48.406 s`, peak memory is
-  `44,036,096` bytes, and inference median/p95 is `0.3777 ms`/`0.5066 ms`.
-- Global Phase 9 remains partial: evidence is synthetic, corrections are simulated, and no
-  authorised real/public/private or human-review generalisation exists.
+- Phase 9 executed an actual deterministic CPU optimisation on 384 raster-derived captures from
+  96 identity-disjoint project-authored programs across eight families.
+- Held-out top-1 is `53/64` (`0.828125`) and top-3 is `1.0`; the deterministic nearest-centroid
+  baseline top-1 is `0.90625`, so no learned-superiority claim is made.
+- Four of eight learned downstream builders are accepted; all eight downstream package paths
+  validate through deterministic fallback where required.
+- E1 is partial, E2 was not run, and global Phase 9 remains partial.
+- PR #26 remains an independent sibling and does not block Phase 11 or static Phase 12 preparation.
 
-## ZeroOne Static Evidence
+## Phase 11 Decision
 
-- ZeroOne source evidence: `jake-the-jake/ZeroOne` at
-  `c6388cbbf53ba8a47831ec25e83808e1edf32194`. Draft PR #1 was owner-closed
-  unmerged at `2026-08-28T03:07:10Z` and its branch ref was deleted after the exact-head
-  verification runs; this checkpoint does not recreate or reopen owner-closed review state.
-- Executable: standalone Windows MSVC 19.36 Release, CPU-only and headless; it requires no GPU or
-  window. SHA-256:
-  `7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e`.
-- Request/report profiles are `closy.zeroone.static-request.v1`,
-  `zeroone.closy.static-report.v1`, and `closy-static-d0-cpu-v1`.
-- T-shirt canonical digest is
-  `2a97db3332ffce56f44c5ed7ff4bd5eb037c67219f3bcdc66e0131036f6c15d1`; derivative digest is
-  `8b89b204ef7407c28ce709041809a621b69c3256f198c738ff1ff5eaa8d23461`.
-- Layered-asymmetric canonical digest is
-  `b8d211d347b1d74f6ff14a89ff81b150e8994a94fa07769081a1e3fedcc0faff`; derivative digest is
-  `0cd8e9ebd6a92ebf9295db87aa10e95e2a9f6f594119694e71e3209bbe36e834`.
-- Clean miss, cache hit, and second clean miss outputs agree. Canonical authority and conventional
-  fallback hashes are unchanged. The optional namespaces validate. Deleting and rebuilding the
-  T-shirt derivative reproduces the same hash.
-- Final historical evidence records clean Closy and ZeroOne trees, `338,336,495,100` wall
-  nanoseconds and `306,593,750,000` CPU nanoseconds. It is a historical local scoped pass, not
-  current-master requalification, durable Z1, or global Phase 10 completion.
+- No compiled ZeroOne dynamic request, report, command, profile, derivative namespace, or Z2
+  evidence was created.
+- `C3-Binding-D0` is satisfied, but refreshed paired scoped Z1 is not. The mechanical/reference
+  Phase 11 prerequisite set is therefore incomplete.
+- `PHY1-SingleLayer-D0` also fails, so solver-driven physical-quality claims remain prohibited.
+- The next eligible implementation lane is one bounded, source-only Phase 12 static-runtime
+  preparation sibling, plus repair of the three canonical surfaces required to rerun paired Z1.
 
-## Preserved Local State
+## Preserved State
 
-The primary Closy checkout remains untouched with unrelated edits in `metro.config.js`,
-`src/features/avatar-export/components/avatar-preview-dev-screen.tsx`,
-`src/features/avatar-viewport/avatar-viewport-live.tsx`,
-`src/features/avatar-viewport/live-viewport-debug-types.ts`,
-`src/features/avatar-viewport/three.ts`, and untracked `closy-forge/.tmp/`.
+- The primary Closy checkout and all earlier published worktrees remain untouched by this
+  reconciliation.
+- Task-owned evidence, generated review images, recovery state, and exact executable records are
+  retained. No unrelated user edits or untracked files were deleted.
+- Native ZeroOne binaries are not committed into Closy.
 
-Task worktrees also retain line-ending-only schema status and task-owned `.tmp/` directories.
-Recovery stashes are intentionally retained and must not be dropped until the stack is accepted.
-The Integrity worktree additionally reports a stat-only modification for
-`tests/integration/test_determinism_and_variants.py` whose worktree, index, and HEAD blob hashes
-are identical, plus task audit `.tmp*` directories; none are staged or cleaned. The current
-ZeroOne primary checkout is clean on owner-updated `master` at
-`a17762bc1fc12fbd33f0488634635a5dcfdf8da3`; the former task worktree is no longer present.
+## Exact Next Action
 
-## Exact Next Command
+Repair the three rejected conventional fallback surfaces without changing canonical pattern,
+seam, opening, layer, or material authority. The preferred bounded direction is a seam-aware
+render-side weld/remap or a new versioned nondegenerate surface profile, followed by regenerated
+bindings, exact package validation, rebuilt ZeroOne, and a fresh paired all-family Z1 run.
 
-The next implementation must create a fresh descendant from the exact integrity head and run the
-separate binding and physical focused suites:
-
-```powershell
-Set-Location <fresh-c3-physical-worktree>/closy-forge
-$env:PYTHONPATH = (Resolve-Path src).Path
-python -m pytest tests/unit/test_production_binding_c3.py tests/unit/test_self_collision.py -q
-```
-
-Do not merge, retarget, force-push, write to `main`/`master`, widen thresholds, filter unresolved
-contacts, or promote Phase 11 before `C3-Binding-D0` and refreshed paired scoped Z1 pass.
+Do not begin Phase 11, claim Z2, claim PHY1, merge, retarget, force-push, widen thresholds,
+filter contacts, or silently skip failed families.

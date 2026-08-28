@@ -1,9 +1,13 @@
-# Evidence Integrity Audit v2
+# Evidence Integrity Audit v3
 
 The blocking evidence scan covers generated status, PR graph, execution-budget, active-resume,
 ZeroOne integration documentation, and every committed file under `docs/evidence/`. The supplied
 canonical master blueprint is intentionally excluded because it is source authority, not generated
 output.
+
+The v3 scope includes the C3/PHY1 evidence, refreshed paired scoped Z1 evidence, Phase 9
+raster-trained evidence, and the exact Phase 11 prerequisite reconciliation map. The audit is a
+publication-hygiene check only; it does not upgrade any failed scientific or execution gate.
 
 ## Blocking Result
 

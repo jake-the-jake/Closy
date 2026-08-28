@@ -36,7 +36,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.evidence_security_integrity.v2"
+    assert coverage["version"] == "closy.blueprint_coverage.c3_durable_z1_phase11.v3"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -94,10 +94,13 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert set(status["phases"][f"{index:02d}"] for index in range(1, 15)) == {"partial"}
     assert status["gates"]["C1"]["scopedStatus"] == "pass"
     assert status["gates"]["C2"]["scopedStatus"] == "pass"
-    assert status["gates"]["C3-Binding-D0"]["scopedStatus"] == "requalification_required"
+    assert status["gates"]["C3-Binding-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["PHY1-SingleLayer-D0"]["scopedStatus"] == "failed"
     assert status["gates"]["Z1"]["globalStatus"] == "partial"
-    assert status["gates"]["Z1"]["scopedStatus"] == "historical_local_pass"
+    assert status["gates"]["Z1"]["scopedStatus"] == "candidate_all_family_failed"
+    assert status["gates"]["Z1"]["allFamilyAttemptCount"] == 9
+    assert status["gates"]["Z1"]["successfulFamilyCount"] == 6
+    assert status["gates"]["Z1"]["rejectedFamilyCount"] == 3
     assert status["gates"]["Z1"]["currentMasterRequalified"] is False
     assert status["gates"]["P1"]["scopedStatus"] == "not_run"
     assert {status["gates"][f"Z{index}"]["scopedStatus"] for index in range(2, 9)} == {"not_run"}
@@ -109,9 +112,12 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     }
     assert status["truth"] == {
         "actualPhase9TrainingExecuted": True,
-        "actualZeroOneStaticCookExecutedThisInvocation": False,
-        "actualZeroOneStaticArtifactLoaded": False,
-        "cacheValidated": True,
+        "actualZeroOneStaticCookExecutedThisInvocation": True,
+        "actualZeroOneStaticArtifactLoaded": True,
+        "zeroOneStaticFamilyAttemptCount": 9,
+        "zeroOneStaticSuccessfulFamilyCount": 6,
+        "zeroOneStaticRejectedFamilyCount": 3,
+        "cacheValidated": False,
         "historicalZeroOneStaticCookEvidencePresent": True,
         "actualZeroOneDynamicDeformationExecuted": False,
         "actualZeroOneGpuRuntimeExecuted": False,
@@ -119,7 +125,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "humanReviewRun": False,
         "phase8EvidenceScope": "deterministic_fixture_family_verticals",
         "phases10To14EvidenceScope": (
-            "historical_phase10_cpu_static_plus_phase11_to14_contract_fixtures"
+            "candidate_all_family_phase10_partial_plus_phase11_to14_contract_fixtures"
         ),
         "physicalMobileEvidenceRun": False,
         "privateUserEvidenceRun": False,
@@ -198,8 +204,59 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     summary = (DOCS / "BLUEPRINT_STATUS_SUMMARY.md").read_text(encoding="utf-8")
 
     assert summary == render_status_summary(status)
-    assert "C3-Binding-D0 and PHY1-SingleLayer-D0 are separate gates" in summary
-    assert "no dynamic, GPU, mobile, private-user, or human-review execution" in summary
+    assert "C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile" in summary
+    assert "No dynamic, GPU, mobile, private-user, or human-review execution" in summary
+
+
+def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:
+    evidence = _json("evidence/phase11_prerequisite_reconciliation_v2.json")
+    base_sha = "2a4fcd8146d95d2fab9a3d39751ffdafd5196387"
+    source_head = "f9f1ff86089f6b43157431bdd3ccdc83cbc8b974"
+    implementation_head = "f64c4ff2225141aa3fa04405e77fef0af360e050"
+
+    assert evidence["base"]["sha"] == base_sha
+    assert evidence["source"]["headSha"] == source_head
+    assert evidence["destination"]["implementationHeadSha"] == implementation_head
+    assert evidence["destination"]["directParentMergeBase"] == base_sha
+    assert evidence["destination"]["behindParentCommitCount"] == 0
+    assert len(evidence["mappings"]) == 8
+
+    merge_base = subprocess.run(
+        ["git", "merge-base", base_sha, implementation_head],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert merge_base == base_sha
+
+    replayed_count = subprocess.run(
+        ["git", "rev-list", "--count", f"{base_sha}..{implementation_head}"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert replayed_count == "8"
+
+    for mapping in evidence["mappings"]:
+        for commit in (mapping["source"], mapping["destination"]):
+            subprocess.run(
+                ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+                cwd=REPO_ROOT,
+                check=True,
+                capture_output=True,
+            )
+
+    assert evidence["gates"] == {
+        "C3-Binding-D0": "pass",
+        "PHY1-SingleLayer-D0": "fail",
+        "refreshedPairedScopedZ1": "fail",
+        "mechanicalReferencePhase11Eligible": False,
+        "solverDrivenPhysicalPhase11Eligible": False,
+        "Z2Executed": False,
+    }
+    assert evidence["decision"] == "phase11_blocked_by_refreshed_paired_scoped_z1"
 
 
 def test_next_actions_do_not_point_to_already_completed_stack_steps() -> None:
