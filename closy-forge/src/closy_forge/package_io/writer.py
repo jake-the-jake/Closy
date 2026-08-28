@@ -17,6 +17,7 @@ EXCLUDED_FROM_CANONICAL_INVENTORY = {
     "reports/package_validation.json",
     "reports/summary.json",
     "reports/summary.md",
+    "zeroone/",
     MARKER_NAME,
 }
 
@@ -65,6 +66,7 @@ def cleanup_staging(staging: Path) -> None:
 
 def collect_inventory(package_dir: Path, *, exclude: Iterable[str] = ()) -> list[dict[str, object]]:
     exclude_set = set(exclude)
+    exclude_prefixes = tuple(value for value in exclude_set if value.endswith("/"))
     entries: list[dict[str, object]] = []
     for path in sorted(package_dir.rglob("*")):
         if not path.is_file():
@@ -72,7 +74,7 @@ def collect_inventory(package_dir: Path, *, exclude: Iterable[str] = ()) -> list
         if path.is_symlink():
             continue
         rel = posix_rel(path, package_dir)
-        if rel in exclude_set:
+        if rel in exclude_set or rel.startswith(exclude_prefixes):
             continue
         validate_package_relpath(rel)
         entries.append(

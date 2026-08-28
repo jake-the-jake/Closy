@@ -4,6 +4,10 @@ from pathlib import Path
 
 from closy_forge.garments.sleeveless_top.parameters import SleevelessTopParameters
 from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_package
+from closy_forge.package_io.writer import (
+    EXCLUDED_FROM_CANONICAL_INVENTORY,
+    collect_inventory,
+)
 from closy_forge.validation.validator import validate_package
 from closy_forge.zeroone.integration import integrate_zeroone_static
 from closy_forge.zeroone.request import authority_hashes, build_zeroone_request
@@ -88,3 +92,15 @@ def test_optional_namespace_fails_closed_when_incompatible_or_corrupt(tmp_path: 
     assert corrupt["status"] == "derivative_corrupt"
     report = validate_package(package)
     assert any(issue["code"] == "zeroone_derivative_corrupt" for issue in report["issues"])
+
+
+def test_optional_zeroone_namespace_is_excluded_from_canonical_inventory(tmp_path: Path) -> None:
+    package = _package(tmp_path)
+    before = collect_inventory(package, exclude=EXCLUDED_FROM_CANONICAL_INVENTORY)
+    derivative = package / "zeroone" / "static-d0" / "derivative" / "artifact.geomesh"
+    derivative.parent.mkdir(parents=True)
+    derivative.write_bytes(b"optional-provider-derivative")
+
+    after = collect_inventory(package, exclude=EXCLUDED_FROM_CANONICAL_INVENTORY)
+
+    assert after == before
