@@ -914,9 +914,13 @@ def _diagnostics(
             "constraintProjection": "xpbd_compliance_with_per_substep_lagrange_accumulation",
             "particleMassPolicy": "triangle_area_times_areal_density_lumped_one_third",
             "constraintOrder": (
-                "mesh_stretch_then_bend_then_seams_then_support_then_body_collision_then_"
-                "self_collision"
+                "integrate_prediction_then_structural_then_support_then_body_collision_then_"
+                "seams_per_iteration_then_self_collision_at_declared_frame_cadence"
             ),
+            "selfCollisionCadenceFrames": 10,
+            "selfCollisionCadenceSeconds": _round(10 * settings.time_step_seconds),
+            "selfCollisionTerminalProjection": True,
+            "constraintOrderConvergenceReady": False,
         },
         "elapsedTimeSeconds": 0.0,
         "elapsedTimePolicy": "wall_clock_omitted_from_canonical_package_for_determinism",

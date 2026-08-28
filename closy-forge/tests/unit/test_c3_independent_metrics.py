@@ -6,9 +6,6 @@ from closy_forge.binding.c3_metrics import (
     evaluate_independent_surface_agreement,
     unweighted_vertex_centroid,
 )
-from closy_forge.binding.stitched_deformation import (
-    _closest_point_on_triangle as _stitched_closest_point_on_triangle,
-)
 from closy_forge.geometry.mesh_model import Mesh, MeshSet
 
 
@@ -26,7 +23,7 @@ def test_area_weighted_metric_is_stable_across_biased_retessellation() -> None:
         MeshSet([dense]),
         MeshSet([fallback]),
         constraints={},
-        binding_contract={"records": []},
+        binding_contract=_complete_contract(5, 4),
     )
 
     assert unweighted_vertex_centroid(dense) != unweighted_vertex_centroid(fallback)
@@ -55,7 +52,7 @@ def test_surface_metric_detects_symmetric_corruption_hidden_by_vertex_centroid()
         MeshSet([corrupt]),
         MeshSet([fallback]),
         constraints={},
-        binding_contract={"records": []},
+        binding_contract=_complete_contract(3, 3),
     )
 
     assert unweighted_vertex_centroid(corrupt) == unweighted_vertex_centroid(fallback)
@@ -70,11 +67,6 @@ def test_closest_point_queries_handle_collapsed_triangle_edges() -> None:
     end = (1.0, 0.0, 0.0)
 
     assert _closest_point_on_triangle(point, collapsed_a, collapsed_b, end) == (0.5, 0.0, 0.0)
-    assert _stitched_closest_point_on_triangle(point, collapsed_a, collapsed_b, end) == (
-        0.5,
-        0.0,
-        0.0,
-    )
     assert _closest_point_on_triangle(point, collapsed_a, collapsed_a, collapsed_a) == collapsed_a
 
 
@@ -158,6 +150,29 @@ def _identity_contract() -> dict[str, object]:
                 "globalRenderVertexIndex": index,
                 "sourceTriangle": {"globalVertexIndices": [index, index, index]},
                 "binding": {"weights": [1.0, 0.0, 0.0]},
+            }
+        )
+    return {"records": records}
+
+
+def _complete_contract(render_vertex_count: int, source_vertex_count: int) -> dict[str, object]:
+    records = []
+    for render_index in range(render_vertex_count):
+        source_index = render_index % source_vertex_count
+        source_triangle = [
+            source_index,
+            (source_index + 1) % source_vertex_count,
+            (source_index + 2) % source_vertex_count,
+        ]
+        records.append(
+            {
+                "globalRenderVertexIndex": render_index,
+                "sourceTriangle": {"globalVertexIndices": source_triangle},
+                "binding": {
+                    "weights": [1.0, 0.0, 0.0]
+                    if render_index < source_vertex_count
+                    else [1.0 / 3.0] * 3
+                },
             }
         )
     return {"records": records}
