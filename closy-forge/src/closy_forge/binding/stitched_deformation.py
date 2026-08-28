@@ -7,6 +7,7 @@ from typing import Any
 from closy_forge.geometry.frame_attributes import meshset_frame_metrics
 from closy_forge.geometry.glb_io import read_glb_meshset
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3
+from closy_forge.geometry.signed_distance import audit_body_signed_clearance
 from closy_forge.package_io.canonical_json import read_json
 from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
 
@@ -44,7 +45,22 @@ def evaluate_stitched_shell_state(
         and item.get("logicalVertexIndexA") == item.get("logicalVertexIndexB")
     ]
     body = read_glb_meshset(package_dir / "avatar" / "collision.glb")
-    minimum_body_clearance = _minimum_signed_clearance(state_positions, body)
+    clearance_calibration = read_json(
+        Path(__file__).resolve().parents[3]
+        / "docs"
+        / "capability-profiles"
+        / "phy1-clearance-calibration-v1.json"
+    )
+    body_clearance_audit = audit_body_signed_clearance(
+        state_positions,
+        body,
+        point_ids=[f"logicalVertex.{index}" for index in range(len(state_positions))],
+        cloth_half_thickness_meters=float(clearance_calibration["clothHalfThicknessMeters"]),
+        skin_margin_meters=float(clearance_calibration["skinMarginMeters"]),
+        oracle_uncertainty_meters=float(clearance_calibration["numericalOracleUncertaintyMeters"]),
+        promotion_guard_band_meters=float(clearance_calibration["promotionGuardBandMeters"]),
+    )
+    minimum_body_clearance = float(body_clearance_audit["minimumBodySignedClearanceMeters"])
     deterministic_error = max(
         (
             _distance(left, right)
@@ -66,7 +82,7 @@ def evaluate_stitched_shell_state(
         "semanticOpeningStability": opening_metrics["collapsedOpeningCount"] == 0,
         "topologyStable": topology_stable,
         "indicesStable": indices_stable,
-        "bodyClearance": minimum_body_clearance >= -0.001,
+        "bodyClearance": body_clearance_audit["promotionEligible"],
         "singleLayerSeparation": True,
         "fallbackIndependent": True,
         "sourceStitchProof": source_stitch_proven,
@@ -89,6 +105,7 @@ def evaluate_stitched_shell_state(
         "maxSeamCrackMeters": 0.0 if len(welded_operations) == len(operation_records) else None,
         "openingStability": opening_metrics,
         "minimumSignedBodyClearanceMeters": _round(minimum_body_clearance),
+        "bodySignedClearanceAudit": body_clearance_audit,
         "layerSeparation": {
             "status": "not_applicable_single_layer_tshirt",
             "layerCount": 1,
@@ -191,119 +208,6 @@ def _opening_metrics(
         "collapsedOpeningCount": sum(bool(item["collapsed"]) for item in results),
         "openings": sorted(results, key=lambda item: str(item["openingId"])),
     }
-
-
-def _minimum_signed_clearance(points: list[Vec3], body: MeshSet) -> float:
-    minimum = float("inf")
-    for point in points:
-        point_clearance = float("inf")
-        inside = False
-        for mesh in body.meshes:
-            triangles: list[tuple[Vec3, Vec3, Vec3]] = [
-                (
-                    mesh.vertices[tri[0]],
-                    mesh.vertices[tri[1]],
-                    mesh.vertices[tri[2]],
-                )
-                for tri in mesh.triangles
-            ]
-            if not triangles:
-                continue
-            distance = min(
-                _distance(point, _closest_point_on_triangle(point, *triangle))
-                for triangle in triangles
-            )
-            point_clearance = min(point_clearance, distance)
-            inside = inside or _inside_closed_mesh(point, triangles)
-        if point_clearance != float("inf"):
-            minimum = min(minimum, -point_clearance if inside else point_clearance)
-    if minimum == float("inf"):
-        raise ValueError("avatar_collision_mesh_has_no_triangles")
-    return minimum
-
-
-def _inside_closed_mesh(point: Vec3, triangles: list[tuple[Vec3, Vec3, Vec3]]) -> bool:
-    direction: Vec3 = (1.0, 0.1732050808, 0.0714285714)
-    distances = sorted(
-        distance
-        for triangle in triangles
-        if (distance := _ray_triangle_distance(point, direction, *triangle)) is not None
-    )
-    unique: list[float] = []
-    for distance in distances:
-        if not unique or abs(distance - unique[-1]) > 1e-8:
-            unique.append(distance)
-    return len(unique) % 2 == 1
-
-
-def _ray_triangle_distance(
-    origin: Vec3, direction: Vec3, a: Vec3, b: Vec3, c: Vec3
-) -> float | None:
-    edge1 = _sub(b, a)
-    edge2 = _sub(c, a)
-    h = _cross(direction, edge2)
-    determinant = _dot(edge1, h)
-    if abs(determinant) <= 1e-12:
-        return None
-    inverse = 1.0 / determinant
-    s = _sub(origin, a)
-    u = inverse * _dot(s, h)
-    if u < 0.0 or u > 1.0:
-        return None
-    q = _cross(s, edge1)
-    v = inverse * _dot(direction, q)
-    if v < 0.0 or u + v > 1.0:
-        return None
-    distance = inverse * _dot(edge2, q)
-    return distance if distance > 1e-9 else None
-
-
-def _closest_point_on_triangle(point: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3:
-    ab, ac, ap = _sub(b, a), _sub(c, a), _sub(point, a)
-    triangle_normal = _cross(ab, ac)
-    if sqrt(_dot(triangle_normal, triangle_normal)) <= 2e-15:
-        return _closest_point_on_degenerate_triangle(point, a, b, c)
-    d1, d2 = _dot(ab, ap), _dot(ac, ap)
-    if d1 <= 0.0 and d2 <= 0.0:
-        return a
-    bp = _sub(point, b)
-    d3, d4 = _dot(ab, bp), _dot(ac, bp)
-    if d3 >= 0.0 and d4 <= d3:
-        return b
-    vc = d1 * d4 - d3 * d2
-    if vc <= 0.0 and d1 >= 0.0 and d3 <= 0.0:
-        return _add(a, _scale(ab, d1 / (d1 - d3)))
-    cp = _sub(point, c)
-    d5, d6 = _dot(ab, cp), _dot(ac, cp)
-    if d6 >= 0.0 and d5 <= d6:
-        return c
-    vb = d5 * d2 - d1 * d6
-    if vb <= 0.0 and d2 >= 0.0 and d6 <= 0.0:
-        return _add(a, _scale(ac, d2 / (d2 - d6)))
-    va = d3 * d6 - d5 * d4
-    if va <= 0.0 and (d4 - d3) >= 0.0 and (d5 - d6) >= 0.0:
-        return _add(b, _scale(_sub(c, b), (d4 - d3) / ((d4 - d3) + (d5 - d6))))
-    denominator = 1.0 / max(1e-15, va + vb + vc)
-    v, w = vb * denominator, vc * denominator
-    return _add(a, _add(_scale(ab, v), _scale(ac, w)))
-
-
-def _closest_point_on_degenerate_triangle(point: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3:
-    candidates = (
-        _closest_point_on_segment(point, a, b),
-        _closest_point_on_segment(point, b, c),
-        _closest_point_on_segment(point, c, a),
-    )
-    return min(candidates, key=lambda candidate: (_distance(point, candidate), candidate))
-
-
-def _closest_point_on_segment(point: Vec3, start: Vec3, end: Vec3) -> Vec3:
-    segment = _sub(end, start)
-    length_squared = _dot(segment, segment)
-    if length_squared <= 1e-30:
-        return start
-    parameter = max(0.0, min(1.0, _dot(_sub(point, start), segment) / length_squared))
-    return _add(start, _scale(segment, parameter))
 
 
 def _frames_valid(metrics: dict[str, Any]) -> bool:
