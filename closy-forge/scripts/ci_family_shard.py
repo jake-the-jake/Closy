@@ -35,6 +35,11 @@ def main() -> int:
         _run("validate", str(left))
         _run("report", str(left))
         manifest = json.loads((left / "manifest.json").read_text(encoding="utf-8"))
+        canonical_digest = manifest.get("packageDigest") or manifest.get(
+            "canonicalPackageDigest"
+        )
+        if not isinstance(canonical_digest, str) or len(canonical_digest) != 64:
+            raise ValueError(f"{family} manifest has no canonical package digest")
         validation = json.loads(
             (left / "reports" / "package_validation.json").read_text(encoding="utf-8")
         )
@@ -49,7 +54,7 @@ def main() -> int:
             )
         results.append(
             {
-                "canonicalDigest": manifest["packageDigest"],
+                "canonicalDigest": canonical_digest,
                 "elapsedSeconds": round(time.perf_counter() - family_started, 6),
                 "family": family,
                 "validationStatus": validation.get("status"),

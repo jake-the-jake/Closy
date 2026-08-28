@@ -37,6 +37,9 @@ jobs:
         working-directory: closy-forge
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Evidence tests resolve historical commit references from the ledger.
+          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
