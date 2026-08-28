@@ -293,7 +293,17 @@ def main() -> int:
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)
         write_canonical_json(args.output, evidence)
-        print(json.dumps({"output": str(args.output), "status": "passed"}, sort_keys=True))
+        print(
+            json.dumps(
+                {
+                    "output": str(args.output),
+                    "status": "passed" if scoped_pass else "partial",
+                    "allPredeclaredFamiliesExecuted": len(garment_rows) == 9,
+                    "scopedCandidateBranchGateZ1Passed": scoped_pass,
+                },
+                sort_keys=True,
+            )
+        )
         return 0
     finally:
         cleanup_managed_staging(
