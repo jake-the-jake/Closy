@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
@@ -40,7 +40,7 @@ def load_capability_profile(profile_id: str) -> dict[str, Any]:
     path = _PROFILE_PATHS.get(profile_id)
     if path is None:
         raise CapabilityProfileError(f"capability_profile_unknown:{profile_id}")
-    profile = read_json(path)
+    profile = cast(dict[str, Any], read_json(path))
     validate_capability_profile(profile)
     return profile
 
@@ -66,9 +66,7 @@ def validate_capability_profile(profile: dict[str, Any]) -> None:
         _validate_phy1_profile(profile)
 
 
-def validate_profile_package_inputs(
-    profile: dict[str, Any], package_dir: Path
-) -> list[str]:
+def validate_profile_package_inputs(profile: dict[str, Any], package_dir: Path) -> list[str]:
     """Fail-closed comparison of frozen inputs; generated trajectories are not goldens."""
 
     validate_capability_profile(profile)
@@ -87,9 +85,7 @@ def validate_profile_package_inputs(
         issues.append("capability_simulation_topology_drift")
     if int(simulation.get("vertexCount", -1)) != int(authority["simulationVertexCount"]):
         issues.append("capability_simulation_vertex_inventory_drift")
-    if int(simulation.get("triangleCount", -1)) != int(
-        authority["simulationTriangleCount"]
-    ):
+    if int(simulation.get("triangleCount", -1)) != int(authority["simulationTriangleCount"]):
         issues.append("capability_simulation_triangle_inventory_drift")
     if profile["capabilityId"] == C3_BINDING_D0_PROFILE_ID:
         state_index = read_json(package_dir / "simulation" / "motion_states" / "index.json")

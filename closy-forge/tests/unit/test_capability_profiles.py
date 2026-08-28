@@ -38,9 +38,13 @@ def test_profile_hash_and_numeric_budget_drift_fail_closed() -> None:
 def test_frozen_profile_inputs_match_canonical_demo(tmp_path) -> None:  # type: ignore[no-untyped-def]
     package = build_demo(tmp_path)
 
-    assert validate_profile_package_inputs(
-        load_capability_profile(C3_BINDING_D0_PROFILE_ID), package
-    ) == []
-    assert validate_profile_package_inputs(
-        load_capability_profile(PHY1_SINGLE_LAYER_D0_PROFILE_ID), package
-    ) == []
+    assert (
+        validate_profile_package_inputs(load_capability_profile(C3_BINDING_D0_PROFILE_ID), package)
+        == []
+    )
+    assert (
+        validate_profile_package_inputs(
+            load_capability_profile(PHY1_SINGLE_LAYER_D0_PROFILE_ID), package
+        )
+        == []
+    )

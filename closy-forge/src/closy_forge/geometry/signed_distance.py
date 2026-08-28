@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Sequence
 from math import atan2, isfinite, pi, sqrt
-from typing import Any
+from typing import Any, cast
 
 from closy_forge.geometry.mesh_model import MeshSet, Vec3
 
@@ -24,6 +24,7 @@ _RAY_DIRECTIONS: tuple[Vec3, ...] = (
 
 VertexKey = tuple[float, float, float]
 EdgeKey = tuple[VertexKey, VertexKey]
+TriangleKey = tuple[VertexKey, VertexKey, VertexKey]
 
 
 def audit_body_signed_clearance(
@@ -138,13 +139,21 @@ def _canonical_surface(body: MeshSet) -> dict[str, Any]:
         source_duplicate = 0
         mesh_triangles: list[dict[str, Any]] = []
         for triangle_index, triangle in enumerate(mesh.triangles):
-            points = tuple(mesh.vertices[index] for index in triangle)
-            keys = tuple(_vertex_key(point) for point in points)
+            points: tuple[Vec3, Vec3, Vec3] = (
+                mesh.vertices[triangle[0]],
+                mesh.vertices[triangle[1]],
+                mesh.vertices[triangle[2]],
+            )
+            keys: TriangleKey = (
+                _vertex_key(points[0]),
+                _vertex_key(points[1]),
+                _vertex_key(points[2]),
+            )
             normal = _cross(_sub(points[1], points[0]), _sub(points[2], points[0]))
             if len(set(keys)) != 3 or _dot(normal, normal) <= _DEGENERATE_AREA_SQUARED:
                 source_degenerate += 1
                 continue
-            canonical_triangle = tuple(sorted(keys))
+            canonical_triangle = cast(TriangleKey, tuple(sorted(keys)))
             if canonical_triangle in seen_triangles:
                 source_duplicate += 1
                 continue
@@ -163,7 +172,8 @@ def _canonical_surface(body: MeshSet) -> dict[str, Any]:
                 (keys[1], keys[2]),
                 (keys[2], keys[0]),
             ):
-                edge_counts[tuple(sorted((start, end)))] += 1
+                edge: EdgeKey = (start, end) if start <= end else (end, start)
+                edge_counts[edge] += 1
                 directed_edges[(start, end)] += 1
         boundary = sum(count == 1 for count in edge_counts.values())
         nonmanifold = sum(count > 2 for count in edge_counts.values())
@@ -292,13 +302,29 @@ def _known_fixture_audit(
     uncertainty_meters: float,
 ) -> dict[str, Any]:
     all_points = [point for mesh in body.meshes for point in mesh.vertices]
-    minimum = tuple(min(point[axis] for point in all_points) for axis in range(3))
-    maximum = tuple(max(point[axis] for point in all_points) for axis in range(3))
-    center = tuple((minimum[axis] + maximum[axis]) * 0.5 for axis in range(3))
+    minimum: Vec3 = (
+        min(point[0] for point in all_points),
+        min(point[1] for point in all_points),
+        min(point[2] for point in all_points),
+    )
+    maximum: Vec3 = (
+        max(point[0] for point in all_points),
+        max(point[1] for point in all_points),
+        max(point[2] for point in all_points),
+    )
+    center: Vec3 = (
+        (minimum[0] + maximum[0]) * 0.5,
+        (minimum[1] + maximum[1]) * 0.5,
+        (minimum[2] + maximum[2]) * 0.5,
+    )
     extent = max(maximum[axis] - minimum[axis] for axis in range(3))
     outside = (maximum[0] + extent, maximum[1] + extent, maximum[2] + extent)
-    first_triangle = triangles[0]["points"]
-    near_surface = tuple(sum(point[axis] for point in first_triangle) / 3.0 for axis in range(3))
+    first_triangle = cast(tuple[Vec3, Vec3, Vec3], triangles[0]["points"])
+    near_surface: Vec3 = (
+        sum(point[0] for point in first_triangle) / 3.0,
+        sum(point[1] for point in first_triangle) / 3.0,
+        sum(point[2] for point in first_triangle) / 3.0,
+    )
     records = [
         _query_point(
             center,

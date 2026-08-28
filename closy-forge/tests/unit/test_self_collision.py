@@ -152,15 +152,14 @@ def test_self_collision_report_documents_fixtures_and_tunnelling_limit() -> None
     assert report["adversarialFixtures"]["boundedUnsupportedMotion"]["status"] == "pass"
     assert report["execution"]["continuousCollisionDetectionRun"] is True
     assert report["readiness"]["acceptedForProductionGpuSolver"] is False
-    assert report["settings"]["residualDepthBudgetAppliesTo"] == (
-        "self_collision_contacts_only"
-    )
+    assert report["settings"]["residualDepthBudgetAppliesTo"] == ("self_collision_contacts_only")
     assert report["settings"]["broadPhase"] == (
         "deterministic_bounded_uniform_grid_then_inflated_aabb"
     )
-    assert report["metrics"]["narrowPhaseWitnessCount"] >= report["metrics"][
-        "geometricallyUniqueContactCountBefore"
-    ]
+    assert (
+        report["metrics"]["narrowPhaseWitnessCount"]
+        >= report["metrics"]["geometricallyUniqueContactCountBefore"]
+    )
     assert report["metrics"]["solverConstraintCountCreated"] > 0
     assert report["metrics"]["sharedVertexExcludedPairCount"] >= 0
     assert report["metrics"]["residualViolationAboveDepthBudgetCount"] >= 0
