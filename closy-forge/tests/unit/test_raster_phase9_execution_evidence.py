@@ -4,12 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-EVIDENCE = (
-    Path(__file__).resolve().parents[2]
-    / "docs"
-    / "evidence"
-    / "phase9_raster_synthetic_d0"
-)
+EVIDENCE = Path(__file__).resolve().parents[2] / "docs" / "evidence" / "phase9_raster_synthetic_d0"
 
 
 def test_committed_phase9_raster_evidence_is_bounded_and_fail_closed() -> None:

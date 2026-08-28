@@ -44,9 +44,7 @@ def train_model_v2(
     ]
     width = len(FEATURE_NAMES) + 1
     random_source = random.Random(seed)
-    class_weights = [
-        [random_source.uniform(-0.001, 0.001) for _ in range(width)] for _ in FAMILIES
-    ]
+    class_weights = [[random_source.uniform(-0.001, 0.001) for _ in range(width)] for _ in FAMILIES]
     regression_weights = [
         [random_source.uniform(-0.001, 0.001) for _ in range(width)] for _ in TARGET_NAMES
     ]
@@ -340,8 +338,7 @@ def multitask_sample_loss_gradient(
         residual = probabilities[class_index] - (1.0 if class_index == label else 0.0)
         class_gradient.append(
             [
-                residual * value
-                + (0.0 if index == 0 else 2.0 * l2 * weights[index])
+                residual * value + (0.0 if index == 0 else 2.0 * l2 * weights[index])
                 for index, value in enumerate(row)
             ]
         )
