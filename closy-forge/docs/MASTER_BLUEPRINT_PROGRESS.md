@@ -4,17 +4,20 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 
 ## Dashboard
 
-- Branch: `codex/closy-forge-c3-collision-closeout`
+- Branch: `codex/closy-forge-phase-10-zeroone-static-integration`
 - Master blueprint source: [`Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`](./Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md), byte-faithful copy of the user-supplied document, SHA-256 `AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D`
-- Exact stacked base: PR #19 head `e83e1e897c9539d246926f8148c5a9ac347982d1`; run `33040669088` passed Ubuntu job `98413292239` and Windows job `98413292114`.
-- Latest verified predecessor state: draft PR #19, six commits and fifteen files over exact PR #18 head `eb1e64a8ea294f0099e0021e65191b50d69aaa75`.
-- Current active increment: C3 independent-metric, stitched-shell and collision closeout at implementation SHA `628738e5e8bc2da89be2ae1c349d9a2a220d8839`. This is deterministic D0 fixture evidence only; the exact D0 profile and global C3 remain partial. Existing Phase 10-14 artifacts remain contract-fixture foundations, not runtime proof.
+- Exact continuation base: PR #19 head `e83e1e897c9539d246926f8148c5a9ac347982d1`; PRs #20 through #23 form draft layers with exact preceding-branch merge bases for integrity, C3, trained synthetic D0 Phase 9, and real static Phase 10.
+- Current clean Phase 10 execution anchor: `13c3d281843750c7bcd9db50e309ed129066e9fe`; evidence commit: `c1a97f1b23a7a2fb3eda666e03fc66c369916031`; inherited verification/evaluation head: `7016a53f89d6085678652c30df6346e67db9da4c`; draft PR #23.
+- Current active increment: real pinned ZeroOne Windows MSVC Release CPU/static execution for canonical T-shirt and layered-asymmetric D0 fixtures. The optional derivative path, deterministic cache behavior, fallback preservation, and deletion/rebuild recovery pass. Global Phase 10 remains partial, and Phases 11-14 remain contract-fixture foundations.
 - Completed phases: `BP-17-PHASE-00`
 - Partially complete phases: `BP-17-PHASE-01` through `BP-17-PHASE-14`
-- Passed gates: `BP-18-GATE-C1`, `BP-18-GATE-C2`; C3 remains partial because stitched-shell body clearance/source proof and collision residual depth fail.
-- Partial gates: `BP-18-GATE-C3`, `BP-18-GATE-Z1`, `BP-18-GATE-Z2`, and `BP-18-GATE-P1`.
-- Independent work remains: stitched-shell/body correction, collision convergence, identity-disjoint synthetic training, and Closy integration of the pinned task-owned ZeroOne static processor.
-- Last focused verification: the layered/asymmetric package has 41 physical and 37 inventoried files, 478,681 inventoried bytes and digest `24ddc94e37e9b2cee3f1118b57df9ca233b9dec3815a075a9ca161ffd0523417`. It contains 258/254 simulation vertices/triangles, 1,524/1,016 dense vertices/triangles and 1,524 binding records. Bounded fit objective is `0.00182`; four non-empty panels preserve two ordered material layers, `0.020 m` measured front clearance and a `0.090 m` asymmetric outer hem. All four armholes remain non-collapsed with maximum dense seam crack `0.0079439 m`. Focused unit, integration, CLI and corruption checks pass locally with 99 fresh schemas. Phase 8 remains partial globally under production/private acceptance requirements; Phase 9 remains partial until authorised data, training and evaluation exist.
+- Passed gates: `BP-18-GATE-C1`, `BP-18-GATE-C2`, and `BP-18-GATE-Z1` only at the exact tested D0 CPU/static Windows profile.
+- Partial/discovery gates: C3 is partial; Z2 and P1 are discovery pending. C3 retains 137 unresolved contacts, `0.002327721 m` residual depth against a `0.000160000 m` budget, minimum body clearance `-0.099391794 m`, and `0/11` passing stitched-shell states.
+- Requirement rows moved from 20 complete / 57 partial / 8 not started / 16 discovery pending to 22 / 58 / 8 / 13, with 101 total. Phase 0 alone is complete; Phases 1-14 remain partial. Research prototype is partial; Alpha, Beta, and Production are not started.
+- Learned Phase 9 evidence uses 96 identity-disjoint synthetic programs and 384 observations, reaches 64/64 held-out top-1 and grammar/seam validity, but ties the deterministic baseline and has no authorised real/public/private or human-review generalisation.
+- ZeroOne evidence uses source `c6388cbbf53ba8a47831ec25e83808e1edf32194` and Release executable SHA-256 `7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e`. T-shirt derivative `8b89b204ef7407c28ce709041809a621b69c3256f198c738ff1ff5eaa8d23461` and layered-asymmetric derivative `0cd8e9ebd6a92ebf9295db87aa10e95e2a9f6f594119694e71e3209bbe36e834` are deterministic and non-authoritative.
+- CI verification now separates static contracts, four exact-cover unit/corruption shards across Ubuntu 3.11, Windows 3.11 and Ubuntu 3.12, two exact-cover integration/golden shards, nine family/runtime shards, and cross-runtime digest aggregation. Local integration shard 0 passes 19 tests in 1,446.01 seconds; the prior serial lane exceeded its hosted 35-minute limit, and no timeout was widened.
+- Independent work remains: C3 body/self-collision convergence, independent source fidelity, broader provider and mobile evidence, authorised private-user tiers, licence review for future assets/providers, and human visual acceptance. Phase 11 is prohibited until C3 passes literally.
 
 ## Status Vocabulary
 

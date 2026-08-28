@@ -46,9 +46,9 @@
     "exactHeadForgeExceptions": [
       10
     ],
-    "latestPullRequest": 19,
+    "latestPullRequest": 23,
     "linear": true,
-    "pullRequestCount": 19
+    "pullRequestCount": 23
   },
   "statusModelVersion": "closy.blueprint_status_model.v1",
   "truth": {
