@@ -1,0 +1,39 @@
+{
+  "attestation": {
+    "available": false,
+    "kind": "historical_local_hash_only",
+    "reason": "owner_closed_source_branch_and_no_durable_artifact_attestation"
+  },
+  "buildId": "historical-local-zeroone-pr1-release-build",
+  "buildType": "Release",
+  "capture": {
+    "commandTemplate": [
+      "cmake",
+      "--build",
+      "<isolated-build-root>",
+      "--config",
+      "Release",
+      "--target",
+      "ZeroOneProcess"
+    ],
+    "networkAllowed": false,
+    "sourceClean": true
+  },
+  "compiler": "msvc-1936",
+  "executableRelativeName": "ZeroOneProcess.exe",
+  "executableSha256": "7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e",
+  "recordVersion": "closy.zeroone.trusted-build-record.v1",
+  "reportSchemaVersions": [
+    "zeroone.closy.static-report.v1"
+  ],
+  "repository": "jake-the-jake/ZeroOne",
+  "requestSchemaVersions": [
+    "closy.zeroone.static-request.v1"
+  ],
+  "schemaVersion": 1,
+  "sourceSha": "c6388cbbf53ba8a47831ec25e83808e1edf32194",
+  "supportedProfiles": [
+    "closy-static-d0-cpu-v1"
+  ],
+  "trustDomain": "local_exact_source_capture"
+}

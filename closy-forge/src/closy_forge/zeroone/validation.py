@@ -1,11 +1,19 @@
 from __future__ import annotations
 
-import json
+import hashlib
 from pathlib import Path
 from typing import Any
 
 from closy_forge.package_io.hashing import sha256_file
+from closy_forge.package_io.managed_output import ManagedOutputError, read_managed_marker
 from closy_forge.package_io.paths import validate_package_relpath
+from closy_forge.security.strict_json import StrictJsonError, load_strict_json_object
+from closy_forge.zeroone.namespace import (
+    DERIVATIVE_SPECS,
+    NamespaceIntegrityError,
+    read_verified_regular_file,
+    validate_namespace_manifest,
+)
 from closy_forge.zeroone.tool import PROFILE, REPORT_SCHEMA_VERSION, REQUEST_SCHEMA_VERSION
 
 
@@ -16,39 +24,24 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
     target = root / "static-d0"
     if not target.is_dir():
         return {"status": "derivative_incompatible", "reason": "static_profile_directory_missing"}
-    if any(path.is_symlink() for path in root.rglob("*")):
-        return {"status": "derivative_corrupt", "reason": "zeroone_namespace_contains_symlink"}
-    required = (
-        "request.json",
-        "processing_report.json",
-        "validation_report.json",
-        "compatibility.json",
-        "provenance.json",
-        "derivative/artifact.geomesh",
-        "derivative/native/cooked_asset.z1ddc",
-        "derivative/native/page_packs/manifest.json",
-        "derivative/native/page_packs/packs.bin",
-        "derivative/garment/stitch_rows.json",
-        "derivative/lod.json",
-        "derivative/materials.json",
-    )
-    missing = [relative for relative in required if not (target / relative).is_file()]
-    if missing:
-        return {
-            "status": "derivative_corrupt",
-            "reason": "zeroone_derivative_file_missing",
-            "missing": missing,
-        }
     try:
+        marker = read_managed_marker(target)
+        if (
+            marker.get("owner") != "closy-forge"
+            or marker.get("purpose") != "zeroone-static-d0"
+            or marker.get("kind") != "published"
+        ):
+            raise ManagedOutputError("managed_output_marker_mismatch")
+        namespace_manifest = validate_namespace_manifest(target)
         request = _read_object(target / "request.json")
         processing = _read_object(target / "processing_report.json")
         validation = _read_object(target / "validation_report.json")
         compatibility = _read_object(target / "compatibility.json")
         provenance = _read_object(target / "provenance.json")
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+    except (ManagedOutputError, NamespaceIntegrityError, StrictJsonError, OSError) as error:
         return {
             "status": "derivative_corrupt",
-            "reason": "zeroone_metadata_unreadable",
+            "reason": getattr(error, "code", "zeroone_metadata_unreadable"),
             "detail": str(error)[:240],
         }
     if (
@@ -62,8 +55,8 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
         return {"status": "derivative_incompatible", "reason": "zeroone_contract_version_mismatch"}
     if (
         processing.get("success") is not True
-        or processing.get("actualZeroOneRuntimeExecuted") is not True
-        or processing.get("actualZeroOneComputeExecuted") is not True
+        or not _static_cook_executed(processing)
+        or not _static_artifact_loaded(processing)
         or processing.get("canonicalAuthorityPreserved") is not True
         or processing.get("globalPhase10Complete") is not False
         or validation.get("success") is not True
@@ -81,8 +74,12 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
         or compatibility.get("fallbackRequired") is not True
         or compatibility.get("dynamicDeformationAvailable") is not False
         or provenance.get("zeroOneGitSha") != processing.get("zeroOneGitSha")
-        or provenance.get("actualZeroOneRuntimeExecuted") is not True
-        or provenance.get("actualZeroOneComputeExecuted") is not True
+        or provenance.get("actualZeroOneStaticCookExecutedThisInvocation") is not True
+        or provenance.get("actualZeroOneStaticArtifactLoaded") is not True
+        or provenance.get("cacheValidated") is not True
+        or provenance.get("actualZeroOneDynamicDeformationExecuted") is not False
+        or provenance.get("actualZeroOneGpuRuntimeExecuted") is not False
+        or provenance.get("actualZeroOneMobileRuntimeExecuted") is not False
         or provenance.get("globalPhase10Complete") is not False
     ):
         return {"status": "derivative_corrupt", "reason": "zeroone_provenance_linkage_invalid"}
@@ -91,6 +88,7 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
         "reason": "scoped_d0_cpu_static_derivative_valid",
         "profile": PROFILE,
         "canonicalDerivativeHash": processing.get("canonicalDerivativeHash"),
+        "canonicalInventoryDigest": namespace_manifest["canonicalInventoryDigest"],
         "zeroOneGitSha": processing.get("zeroOneGitSha"),
         "outputCount": len(processing.get("outputHashes", [])),
     }
@@ -120,8 +118,10 @@ def _validate_authority(
             validate_package_relpath(relative)
         except ValueError:
             return "zeroone_authority_path_unsafe"
+        if role in expected:
+            return "zeroone_authority_role_duplicate"
         path = package / relative
-        if not path.is_file() or sha256_file(path) != declared:
+        if not path.is_file() or path.is_symlink() or sha256_file(path) != declared:
             return "zeroone_canonical_authority_changed"
         expected[role] = declared
         fallback_seen = fallback_seen or role == "conventional_fallback"
@@ -144,9 +144,10 @@ def _validate_outputs(
         return "zeroone_output_hashes_missing"
     if provenance.get("outputHashes") != rows:
         return "zeroone_output_provenance_mismatch"
+    expected_paths = {spec.path.removeprefix("derivative/") for spec in DERIVATIVE_SPECS}
     seen: set[str] = set()
     for row in rows:
-        if not isinstance(row, dict):
+        if not isinstance(row, dict) or set(row) != {"path", "sha256"}:
             return "zeroone_output_hash_entry_invalid"
         relative = row.get("path")
         declared = row.get("sha256")
@@ -159,14 +160,38 @@ def _validate_outputs(
         if relative in seen:
             return "zeroone_output_path_duplicate"
         seen.add(relative)
-        path = derivative / relative
-        if not path.is_file() or sha256_file(path) != declared:
+        try:
+            data = read_verified_regular_file(derivative, relative, maximum_bytes=67_108_864)
+        except NamespaceIntegrityError as error:
+            return error.code
+        if hashlib.sha256(data).hexdigest() != declared:
             return "zeroone_derivative_hash_mismatch"
+    if seen != expected_paths:
+        return "zeroone_output_exact_inventory_mismatch"
     return None
 
 
+def _static_cook_executed(report: dict[str, Any]) -> bool:
+    explicit = report.get("actualZeroOneStaticCookExecutedThisInvocation")
+    if isinstance(explicit, bool):
+        return explicit
+    # Legacy report compatibility never promotes a cache hit to a fresh cook.
+    return (
+        report.get("cacheState") == "miss"
+        and report.get("actualZeroOneRuntimeExecuted") is True
+        and report.get("actualZeroOneComputeExecuted") is True
+    )
+
+
+def _static_artifact_loaded(report: dict[str, Any]) -> bool:
+    explicit = report.get("actualZeroOneStaticArtifactLoaded")
+    if isinstance(explicit, bool):
+        return explicit
+    return (
+        report.get("actualZeroOneRuntimeExecuted") is True
+        and report.get("actualZeroOneComputeExecuted") is True
+    )
+
+
 def _read_object(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise ValueError(f"expected object in {path.name}")
-    return value
+    return load_strict_json_object(path)

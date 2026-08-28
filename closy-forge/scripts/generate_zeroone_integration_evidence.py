@@ -3,14 +3,17 @@ from __future__ import annotations
 import argparse
 import json
 import platform
-import shutil
 import subprocess
-import sys
 import time
 from pathlib import Path
 from typing import Any
 
 from closy_forge.package_io.canonical_json import write_canonical_json
+from closy_forge.package_io.managed_output import (
+    cleanup_managed_staging,
+    create_managed_staging,
+    remove_managed_output,
+)
 from closy_forge.pipeline.build_layered_asymmetric_demo import (
     build_demo_layered_asymmetric_package,
 )
@@ -23,7 +26,8 @@ from closy_forge.zeroone.validation import inspect_zeroone_namespace
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run real Closy-to-ZeroOne static evidence.")
     parser.add_argument("--executable", required=True, type=Path)
-    parser.add_argument("--expected-executable-sha256", required=True)
+    parser.add_argument("--trusted-build-record", required=True, type=Path)
+    parser.add_argument("--expected-executable-sha256", default=None)
     parser.add_argument("--zeroone-repo", required=True, type=Path)
     parser.add_argument("--work-root", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
@@ -37,16 +41,19 @@ def main() -> int:
     _require_git_head(args.zeroone_repo, args.zeroone_sha)
     tool = resolve_zeroone_tool(
         args.executable,
+        trusted_build_record=args.trusted_build_record,
         expected_executable_sha256=args.expected_executable_sha256,
         expected_source_sha=args.zeroone_sha,
     )
     if not tool.available:
         raise RuntimeError(f"pinned ZeroOne executable is unavailable: {tool.reason}")
 
-    root = args.work_root.resolve(strict=False)
-    if root.exists():
-        raise FileExistsError(f"evidence work root already exists: {root}")
-    root.mkdir(parents=True)
+    requested_root = args.work_root.resolve(strict=False)
+    root = create_managed_staging(
+        requested_root,
+        allowed_root=requested_root.parent,
+        purpose="zeroone-evidence-work",
+    )
     started_wall = time.perf_counter_ns()
     started_cpu = time.process_time_ns()
     try:
@@ -63,6 +70,7 @@ def main() -> int:
                 invocation_root=root,
                 closy_sha=args.closy_sha,
                 executable=args.executable,
+                trusted_build_record=args.trusted_build_record,
                 expected_executable_sha256=args.expected_executable_sha256,
                 expected_zeroone_sha=args.zeroone_sha,
                 publish=True,
@@ -85,7 +93,12 @@ def main() -> int:
             if family == "tshirt":
                 first_hash = result.report["canonicalDerivativeHash"]
                 optional_root = build.package_dir / "zeroone"
-                shutil.rmtree(optional_root)
+                remove_managed_output(
+                    optional_root / "static-d0",
+                    allowed_root=optional_root,
+                    purpose="zeroone-static-d0",
+                )
+                optional_root.rmdir()
                 if inspect_zeroone_namespace(build.package_dir).get("status") != "not_present":
                     raise RuntimeError(
                         "ZeroOne namespace deletion did not preserve an absent state"
@@ -95,6 +108,7 @@ def main() -> int:
                     invocation_root=root,
                     closy_sha=args.closy_sha,
                     executable=args.executable,
+                    trusted_build_record=args.trusted_build_record,
                     expected_executable_sha256=args.expected_executable_sha256,
                     expected_zeroone_sha=args.zeroone_sha,
                     publish=True,
@@ -119,35 +133,45 @@ def main() -> int:
         wall_ns = time.perf_counter_ns() - started_wall
         cpu_ns = time.process_time_ns() - started_cpu
         evidence = {
-            "schemaVersion": "closy.zeroone.execution-evidence.v1",
-            "scope": "d0_cpu_static_tshirt_and_layered_asymmetric",
+            "schemaVersion": "closy.zeroone.execution-evidence.v2",
+            "scope": "historical_or_current_local_cpu_static_tshirt_and_layered_asymmetric",
+            "axes": {
+                "computeProfile": "D0",
+                "dataProvenance": "project-authored synthetic",
+                "executionProfile": "CPU",
+                "gateScope": "static ZeroOne",
+            },
             "closy": {
                 "repository": "jake-the-jake/Closy",
                 "gitSha": args.closy_sha,
                 "contentDirty": _content_dirty(repository_root),
-                "draftPullRequest": 23,
+                "evidenceRole": "paired_closy_source",
             },
             "zeroOne": {
                 "repository": "jake-the-jake/ZeroOne",
                 "gitSha": args.zeroone_sha,
                 "contentDirty": _content_dirty(args.zeroone_repo),
-                "draftPullRequest": 1,
+                "evidenceRole": "exact_source_checkout",
             },
             "tool": tool.version,
+            "trustedBuildRecord": tool.trusted_build_record,
             "executableSha256": tool.executable_sha256,
-            "command": _command_record(args),
+            "commandTemplate": _command_record(args),
             "exitCode": 0,
             "host": {
-                "platform": platform.platform(),
-                "machine": platform.machine(),
+                "platform": platform.system().lower(),
+                "architecture": platform.machine().lower(),
                 "python": platform.python_version(),
-                "processor": platform.processor(),
             },
             "timings": {"wallNanoseconds": wall_ns, "cpuNanoseconds": cpu_ns},
             "garments": garment_rows,
             "acceptance": {
-                "actualZeroOneRuntimeExecuted": True,
-                "actualZeroOneComputeExecuted": True,
+                "actualZeroOneStaticCookExecutedThisInvocation": True,
+                "actualZeroOneStaticArtifactLoaded": True,
+                "cacheValidated": True,
+                "actualZeroOneDynamicDeformationExecuted": False,
+                "actualZeroOneGpuRuntimeExecuted": False,
+                "actualZeroOneMobileRuntimeExecuted": False,
                 "allCanonicalAuthoritiesPreserved": all(
                     row["integration"]["canonicalAuthorityPreserved"] for row in garment_rows
                 ),
@@ -174,7 +198,11 @@ def main() -> int:
         print(json.dumps({"output": str(args.output), "status": "passed"}, sort_keys=True))
         return 0
     finally:
-        shutil.rmtree(root, ignore_errors=True)
+        cleanup_managed_staging(
+            root,
+            allowed_root=requested_root.parent,
+            purpose="zeroone-evidence-work",
+        )
 
 
 def _require_git_head(repository: Path, expected: str) -> None:
@@ -197,18 +225,18 @@ def _content_dirty(repository: Path) -> bool:
 
 def _command_record(args: argparse.Namespace) -> list[str]:
     return [
-        sys.executable,
+        "python",
         "scripts/generate_zeroone_integration_evidence.py",
         "--executable",
-        str(args.executable.resolve()),
-        "--expected-executable-sha256",
-        args.expected_executable_sha256,
+        "<trusted-zeroone-executable>",
+        "--trusted-build-record",
+        "<trusted-build-record>",
         "--zeroone-repo",
-        str(args.zeroone_repo.resolve()),
+        "<exact-zeroone-source-checkout>",
         "--work-root",
-        str(args.work_root.resolve(strict=False)),
+        "<managed-work-root>",
         "--output",
-        str(args.output.resolve(strict=False)),
+        "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json",
         "--closy-sha",
         args.closy_sha,
         "--zeroone-sha",

@@ -6,18 +6,29 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 
 - Branch: `codex/closy-forge-phase-10-zeroone-static-integration`
 - Master blueprint source: [`Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`](./Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md), byte-faithful copy of the user-supplied document, SHA-256 `AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D`
-- Exact continuation base: PR #19 head `e83e1e897c9539d246926f8148c5a9ac347982d1`; PRs #20 through #23 form draft layers with exact preceding-branch merge bases for integrity, C3, trained synthetic D0 Phase 9, and real static Phase 10.
-- Current clean Phase 10 execution anchor: `13c3d281843750c7bcd9db50e309ed129066e9fe`; evidence commit: `c1a97f1b23a7a2fb3eda666e03fc66c369916031`; inherited verification/evaluation head: `7016a53f89d6085678652c30df6346e67db9da4c`; draft PR #23.
+- Exact published continuation base: PR #23 head
+  `a481ba26a424bd91607b8c1d41b6173a2c9579d9`; its explicit DAG node records 14 unique
+  commits, 24 changed files, and exact-head run `33150483293` with 26 successful jobs.
+- PR #23's ZeroOne execution is historical local evidence from owner-closed, unmerged source
+  `c6388cbbf53ba8a47831ec25e83808e1edf32194`; current ZeroOne master
+  `a17762bc1fc12fbd33f0488634635a5dcfdf8da3` is not yet requalified.
 - Current active increment: real pinned ZeroOne Windows MSVC Release CPU/static execution for canonical T-shirt and layered-asymmetric D0 fixtures. The optional derivative path, deterministic cache behavior, fallback preservation, and deletion/rebuild recovery pass. Global Phase 10 remains partial, and Phases 11-14 remain contract-fixture foundations.
 - Completed phases: `BP-17-PHASE-00`
 - Partially complete phases: `BP-17-PHASE-01` through `BP-17-PHASE-14`
-- Passed gates: `BP-18-GATE-C1`, `BP-18-GATE-C2`, and `BP-18-GATE-Z1` only at the exact tested D0 CPU/static Windows profile.
-- Partial/discovery gates: C3 is partial; Z2 and P1 are discovery pending. C3 retains 137 unresolved contacts, `0.002327721 m` residual depth against a `0.000160000 m` budget, minimum body clearance `-0.099391794 m`, and `0/11` passing stitched-shell states.
+- Scoped C1 and C2 pass; their global status remains partial. Z1 has a historical local scoped
+  pass and a partial global status. Z2 through Z8 and P1 are not run or discovery pending.
+- `C3-Binding-D0` is awaiting literal five-requirement requalification. The separate
+  `PHY1-SingleLayer-D0` witness fails with 137 unresolved contacts, `0.002327721 m` residual depth
+  against `0.000160000 m`, minimum body clearance `-0.099391794 m`, and `0/11` passing states.
 - Requirement rows moved from 20 complete / 57 partial / 8 not started / 16 discovery pending to 22 / 58 / 8 / 13, with 101 total. Phase 0 alone is complete; Phases 1-14 remain partial. Research prototype is partial; Alpha, Beta, and Production are not started.
 - Learned Phase 9 evidence uses 96 identity-disjoint synthetic programs and 384 observations, reaches 64/64 held-out top-1 and grammar/seam validity, but ties the deterministic baseline and has no authorised real/public/private or human-review generalisation.
 - ZeroOne evidence uses source `c6388cbbf53ba8a47831ec25e83808e1edf32194` and Release executable SHA-256 `7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e`. T-shirt derivative `8b89b204ef7407c28ce709041809a621b69c3256f198c738ff1ff5eaa8d23461` and layered-asymmetric derivative `0cd8e9ebd6a92ebf9295db87aa10e95e2a9f6f594119694e71e3209bbe36e834` are deterministic and non-authoritative.
 - CI verification now separates static contracts, four exact-cover unit/corruption shards across Ubuntu 3.11, Windows 3.11 and Ubuntu 3.12, two exact-cover integration/golden shards, nine family/runtime shards, and cross-runtime digest aggregation. Local integration shard 0 passes 19 tests in 1,446.01 seconds; the prior serial lane exceeded its hosted 35-minute limit, and no timeout was widened.
-- Independent work remains: C3 body/self-collision convergence, independent source fidelity, broader provider and mobile evidence, authorised private-user tiers, licence review for future assets/providers, and human visual acceptance. Phase 11 is prohibited until C3 passes literally.
+- Independent work remains: C3 binding requalification, PHY1 physical convergence, current-master
+  ZeroOne requalification, independent source fidelity, broader provider/mobile evidence,
+  authorised private-user tiers, licence review, and human visual acceptance. A Phase 11
+  mechanical/reference slice requires C3-Binding-D0 plus refreshed paired scoped Z1; solver-driven
+  physical quality additionally requires PHY1.
 
 ## Status Vocabulary
 

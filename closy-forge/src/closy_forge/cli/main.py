@@ -410,6 +410,7 @@ def _parser() -> argparse.ArgumentParser:
     zeroone_static.add_argument("package", type=Path)
     zeroone_static.add_argument("--invocation-root", required=True, type=Path)
     zeroone_static.add_argument("--executable", type=Path, default=None)
+    zeroone_static.add_argument("--trusted-build-record", type=Path, default=None)
     zeroone_static.add_argument("--expected-executable-sha256", default=None)
     zeroone_static.add_argument("--closy-sha", required=True)
     zeroone_static.add_argument("--no-publish", action="store_true")
@@ -818,6 +819,7 @@ def _integrate_zeroone_static(args: argparse.Namespace) -> int:
         invocation_root=args.invocation_root,
         closy_sha=args.closy_sha,
         executable=args.executable,
+        trusted_build_record=args.trusted_build_record,
         expected_executable_sha256=args.expected_executable_sha256,
         publish=not args.no_publish,
         replace_existing=args.replace_existing,

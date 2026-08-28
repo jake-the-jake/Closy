@@ -20,10 +20,9 @@ global blueprint phase.
   `codex/closy-forge-phase-9-trained-synthetic-d0`, head
   `988b242cc441006257d969d9980373213330743c`.
 - Real static Phase 10: draft PR #23, branch
-  `codex/closy-forge-phase-10-zeroone-static-integration`; clean execution anchor
-  `13c3d281843750c7bcd9db50e309ed129066e9fe` and evidence commit
-  `c1a97f1b23a7a2fb3eda666e03fc66c369916031`; inherited verification/evaluation
-  head `7016a53f89d6085678652c30df6346e67db9da4c`.
+  `codex/closy-forge-phase-10-zeroone-static-integration`; final head
+  `a481ba26a424bd91607b8c1d41b6173a2c9579d9`, 14 unique commits, 24 changed files,
+  and exact-head Forge run `33150483293` with all 26 jobs successful.
 - Every continuation branch is stacked on its preceding draft PR with an exact direct-parent
   merge base and zero behind commits. No PR was merged, retargeted, or force-pushed.
 
@@ -31,11 +30,12 @@ global blueprint phase.
 
 - Requirement rows before this progression: 20 complete, 57 partial, 8 not started,
   16 discovery pending, 101 total.
-- Requirement rows after reconciliation: 22 complete, 58 partial, 8 not started,
+- Requirement rows after scoped-truth reconciliation: 20 complete, 60 partial, 8 not started,
   13 discovery pending, 101 total.
 - Phase 0 is complete. Phases 1 through 14 remain partial.
-- C1 and C2 have scoped passing evidence. C3 remains partial. Z1 is complete only for the exact
-  tested Windows MSVC Release D0 CPU/static profile. Z2 and P1 remain discovery pending.
+- C1 and C2 have scoped passing evidence. `C3-Binding-D0` requires literal requalification and
+  `PHY1-SingleLayer-D0` fails its current witnesses. Z1 has only a historical local scoped pass;
+  global Z1 is partial. Z2 through Z8 and P1 remain not run or discovery pending.
 - The research prototype is partial. Alpha, Beta, and Production are not started.
 - Phase 8 family bundles remain deterministic D0 fixture artifact bundles, not globally complete
   garment families.
@@ -54,7 +54,7 @@ global blueprint phase.
   cumulative lane hit its 35-minute limit. The bounded local integration shard 0 now passes 19
   tests in 1,446.01 seconds without increasing a timeout.
 
-## C3 Truth And Phase 11 Gate
+## Binding And Physical Gate Truth
 
 - Independent area-centroid and semantic-landmark error are `0`; sampled-surface maximum error is
   `0.000000033 m`.
@@ -66,8 +66,10 @@ global blueprint phase.
   `0.002327721 m` residual depth against the declared `0.000160000 m` budget.
 - Bounded swept/CCD fixtures pass, but CCD response is not integrated into the reference motion
   solver.
-- C3 therefore does not pass. Phase 11 must not begin even though the independent static Z1 gate
-  passes.
+- These physical failures belong to `PHY1-SingleLayer-D0`, not the master blueprint's five-part
+  binding gate. `C3-Binding-D0` still requires separate requalification. A mechanical/reference
+  Phase 11 slice requires that binding pass plus refreshed paired scoped Z1; solver-driven quality
+  additionally requires PHY1.
 
 ## Learned Phase 9 Evidence
 
@@ -105,8 +107,9 @@ global blueprint phase.
 - Clean miss, cache hit, and second clean miss outputs agree. Canonical authority and conventional
   fallback hashes are unchanged. The optional namespaces validate. Deleting and rebuilding the
   T-shirt derivative reproduces the same hash.
-- Final evidence records clean Closy and ZeroOne trees, `338,336,495,100` wall nanoseconds and
-  `306,593,750,000` CPU nanoseconds. This proves scoped Z1, not global Phase 10 completion.
+- Final historical evidence records clean Closy and ZeroOne trees, `338,336,495,100` wall
+  nanoseconds and `306,593,750,000` CPU nanoseconds. It is a historical local scoped pass, not
+  current-master requalification, durable Z1, or global Phase 10 completion.
 
 ## Preserved Local State
 
@@ -126,13 +129,14 @@ ZeroOne primary checkout is clean on owner-updated `master` at
 
 ## Exact Next Command
 
-The next implementation must continue C3 rather than Phase 11:
+The next implementation must create a fresh descendant from the exact integrity head and run the
+separate binding and physical focused suites:
 
 ```powershell
-cd E:\apps\Closy-c3\closy-forge
+Set-Location <fresh-c3-physical-worktree>/closy-forge
 $env:PYTHONPATH = (Resolve-Path src).Path
-& E:\apps\Closy-integrity\closy-forge\.venv\Scripts\python.exe -m pytest tests\unit\test_production_binding_c3.py tests\unit\test_self_collision.py -q
+python -m pytest tests/unit/test_production_binding_c3.py tests/unit/test_self_collision.py -q
 ```
 
 Do not merge, retarget, force-push, write to `main`/`master`, widen thresholds, filter unresolved
-contacts, or promote Phase 11 while C3 remains partial.
+contacts, or promote Phase 11 before `C3-Binding-D0` and refreshed paired scoped Z1 pass.

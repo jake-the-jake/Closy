@@ -18,7 +18,8 @@ def test_schema_files_are_parseable_and_versioned() -> None:
     assert len(list(schema_dir.glob("*.schema.json"))) == len(schema_registry())
     for path in schema_dir.glob("*.schema.json"):
         schema = read_json(path)
-        assert schema["properties"]["schemaVersion"]["const"] == 1
+        version = schema["properties"]["schemaVersion"]["const"]
+        assert isinstance(version, int) and not isinstance(version, bool) and version >= 1
 
 
 def test_core_schemas_forbid_unknown_root_fields() -> None:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
+import stat
 from pathlib import Path
 from typing import Any
 
@@ -99,6 +99,19 @@ def cleanup_managed_staging(
     _remove_validated_tree(candidate)
 
 
+def remove_managed_output(
+    target: Path,
+    *,
+    allowed_root: Path,
+    purpose: str,
+) -> None:
+    _, candidate = validate_output_target(target, allowed_root=allowed_root, purpose=purpose)
+    if not candidate.exists() and not candidate.is_symlink():
+        return
+    _validate_managed_directory(candidate, purpose=purpose, kind="published")
+    _remove_validated_tree(candidate)
+
+
 def validate_output_target(
     target: Path,
     *,
@@ -111,7 +124,7 @@ def validate_output_target(
     candidate = target.absolute()
     if candidate.name in {"", ".", ".."}:
         raise ManagedOutputError("invalid_output_name")
-    if candidate.is_symlink():
+    if _path_is_link_like(candidate):
         raise ManagedOutputError("output_symlink_rejected")
     if candidate.parent.resolve(strict=False) != root:
         raise ManagedOutputError("output_must_be_direct_child_of_allowed_root")
@@ -137,7 +150,7 @@ def read_managed_marker(path: Path) -> dict[str, Any]:
 
 def _resolve_allowed_root(path: Path) -> Path:
     lexical = path.absolute()
-    if lexical.is_symlink():
+    if _path_is_link_like(lexical):
         raise ManagedOutputError("allowed_root_symlink_rejected")
     lexical.mkdir(parents=True, exist_ok=True)
     resolved = lexical.resolve()
@@ -160,7 +173,7 @@ def _reject_protected_target(path: Path) -> None:
 
 
 def _validate_managed_directory(path: Path, *, purpose: str, kind: str) -> dict[str, Any]:
-    if path.is_symlink() or not path.is_dir():
+    if _path_is_link_like(path) or not path.is_dir():
         raise ManagedOutputError("managed_output_not_real_directory")
     marker = read_managed_marker(path)
     if marker.get("schemaVersion") != 1 or marker.get("markerVersion") != MARKER_VERSION:
@@ -173,9 +186,7 @@ def _validate_managed_directory(path: Path, *, purpose: str, kind: str) -> dict[
         raise ManagedOutputError("managed_output_kind_mismatch")
     if kind == "staging" and marker.get("targetName") is None:
         raise ManagedOutputError("managed_output_target_name_missing")
-    for child in path.rglob("*"):
-        if child.is_symlink():
-            raise ManagedOutputError("managed_output_nested_symlink_rejected")
+    _inventory_managed_tree(path)
     return marker
 
 
@@ -223,9 +234,58 @@ def _recover_or_reject_stale_backup(
 
 
 def _remove_validated_tree(path: Path) -> None:
-    if path.is_symlink() or not path.is_dir():
+    if _path_is_link_like(path) or not path.is_dir():
         raise ManagedOutputError("managed_output_not_real_directory")
-    shutil.rmtree(path)
+    entries = _inventory_managed_tree(path)
+    for child, metadata in sorted(
+        entries, key=lambda row: len(row[0].relative_to(path).parts), reverse=True
+    ):
+        if stat.S_ISDIR(metadata.st_mode):
+            os.chmod(child, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+            child.rmdir()
+        else:
+            os.chmod(child, stat.S_IWRITE | stat.S_IREAD)
+            child.unlink()
+    os.chmod(path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+    path.rmdir()
+
+
+def _inventory_managed_tree(root: Path) -> list[tuple[Path, os.stat_result]]:
+    found: list[tuple[Path, os.stat_result]] = []
+    pending = [root]
+    while pending:
+        current = pending.pop()
+        with os.scandir(current) as children:
+            for child in children:
+                path = Path(child.path)
+                # DirEntry.stat reports st_nlink=0 on some Windows/Python builds.
+                metadata = path.stat(follow_symlinks=False)
+                if _metadata_is_link_like(metadata):
+                    raise ManagedOutputError("managed_output_nested_symlink_rejected")
+                if stat.S_ISDIR(metadata.st_mode):
+                    pending.append(path)
+                elif stat.S_ISREG(metadata.st_mode):
+                    if metadata.st_nlink != 1:
+                        raise ManagedOutputError("managed_output_hardlink_rejected")
+                else:
+                    raise ManagedOutputError("managed_output_special_file_rejected")
+                found.append((path, metadata))
+    return found
+
+
+def _path_is_link_like(path: Path) -> bool:
+    try:
+        metadata = path.stat(follow_symlinks=False)
+    except OSError:
+        return path.is_symlink()
+    return _metadata_is_link_like(metadata)
+
+
+def _metadata_is_link_like(metadata: os.stat_result) -> bool:
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return stat.S_ISLNK(metadata.st_mode) or bool(
+        getattr(metadata, "st_file_attributes", 0) & reparse_flag
+    )
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:

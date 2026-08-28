@@ -26,18 +26,18 @@ jobs:
         shell: bash
         working-directory: closy-forge
     steps:
-      - uses: actions/checkout@v7
+      # actions/checkout v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      # actions/setup-python v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: closy-forge/requirements-dev.lock
-      - name: Install hash-pinned Forge dev environment
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Install version-constrained Forge dev environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
       - name: Format check
         run: python -m ruff format --check .
       - name: Lint
@@ -46,6 +46,10 @@ jobs:
         run: python -m mypy src
       - name: Check schemas
         run: python -m closy_forge schemas check --schema-dir schemas/v1
+      - name: Record recursive test inventory digests
+        run: |
+          python -m closy_forge.ci.test_shards --group shard-0 --inventory-digest
+          python -m closy_forge.ci.test_shards --suite integration --group shard-0 --inventory-digest
 
   test-shards:
     name: Tests ${{ matrix.group }} ${{ matrix.runtime.os }} Python ${{ matrix.runtime.python-version }}
@@ -67,19 +71,19 @@ jobs:
         shell: bash
         working-directory: closy-forge
     steps:
-      - uses: actions/checkout@v7
+      # actions/checkout v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           # Evidence tests resolve historical commit references from the ledger.
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      # actions/setup-python v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: ${{ matrix.runtime.python-version }}
           cache: pip
           cache-dependency-path: closy-forge/requirements-dev.lock
-      - name: Install hash-pinned Forge dev environment
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Install version-constrained Forge dev environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
       - name: Run stable unit and corruption shard
         run: python -m closy_forge.ci.test_shards --group "${{ matrix.group }}"
 
@@ -105,16 +109,16 @@ jobs:
         shell: bash
         working-directory: closy-forge
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      # actions/checkout v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      # actions/setup-python v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: closy-forge/requirements-dev.lock
-      - name: Install hash-pinned Forge dev environment
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Install version-constrained Forge dev environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
       - name: Build, compare, validate, and report family shard
         run: |
           mkdir -p "$RUNNER_TEMP/closy-forge"
@@ -122,7 +126,8 @@ jobs:
             --group "${{ matrix.group }}" \
             --output-root "$RUNNER_TEMP/closy-forge"
       - name: Upload cross-minor digest summary
-        uses: actions/upload-artifact@v7
+        # actions/upload-artifact v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: family-digests-${{ matrix.group }}-${{ matrix.os }}-py${{ matrix.python-version }}
           path: ${{ runner.temp }}/closy-forge/family-shard-${{ matrix.group }}.json
@@ -136,7 +141,8 @@ jobs:
             --force
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@v7
+        # actions/upload-artifact v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: forge-diagnostics-${{ matrix.group }}-${{ matrix.os }}-py${{ matrix.python-version }}
           path: ${{ runner.temp }}/closy-forge-safe-diagnostics
@@ -155,18 +161,18 @@ jobs:
         shell: bash
         working-directory: closy-forge
     steps:
-      - uses: actions/checkout@v7
+      # actions/checkout v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+      # actions/setup-python v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: closy-forge/requirements-dev.lock
-      - name: Install hash-pinned Forge dev environment
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Install version-constrained Forge dev environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
       - name: Run stable integration and golden shard
         run: python -m closy_forge.ci.test_shards --suite integration --group "${{ matrix.group }}"
       - name: Measure non-canonical binding workloads
@@ -185,8 +191,10 @@ jobs:
     needs: [family-rebuilds]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v8
+      # actions/checkout v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      # actions/download-artifact v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           pattern: family-digests-*
           path: ${{ runner.temp }}/family-digests
@@ -196,7 +204,8 @@ jobs:
             --input-root "$RUNNER_TEMP/family-digests" \
             --family-index-output "$RUNNER_TEMP/validated-family-index.json"
       - name: Upload validated family readiness index
-        uses: actions/upload-artifact@v7
+        # actions/upload-artifact v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: validated-family-readiness-index
           path: ${{ runner.temp }}/validated-family-index.json

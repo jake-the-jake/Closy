@@ -6,17 +6,18 @@ replaces the conventional `render/fallback.glb` asset.
 
 ## Tool contract
 
-Configure `CLOSY_ZEROONE_PROCESS` or pass `--executable`. The resolver hashes the executable,
-runs `version-json`, and requires the pinned ZeroOne source SHA, a clean source build, the
-versioned request/report schemas, the `closy-static-d0-cpu-v1` profile, and headless CPU flags.
-`CLOSY_ZEROONE_EXECUTABLE_SHA256` or `--expected-executable-sha256` can pin the local build
-bytes as well. Missing or incompatible tools return an explicit unavailable result and leave
-the package untouched.
+Configure `CLOSY_ZEROONE_PROCESS` or pass `--executable`, and separately configure
+`CLOSY_ZEROONE_TRUSTED_BUILD_RECORD` or pass `--trusted-build-record`. The resolver hashes the
+executable itself, compares it with the independently captured build record, then runs
+`version-json` and cross-checks source, compiler, build type, schemas, profile, and headless CPU
+flags. A caller-supplied hash alone is never trusted. Missing or incompatible tools return an
+explicit unavailable result and leave the package untouched.
 
-The source pin for this vertical is
-`c6388cbbf53ba8a47831ec25e83808e1edf32194` from draft ZeroOne PR #1. Native executable bytes
-are toolchain-specific and are therefore recorded in execution evidence rather than stored in
-Closy.
+The historical source pin for this vertical is
+`c6388cbbf53ba8a47831ec25e83808e1edf32194` from the owner-closed, unmerged ZeroOne PR #1.
+Current ZeroOne master is tracked separately and must be requalified before it replaces this
+historical scope. Native executable bytes are toolchain-specific and are recorded in trusted
+build evidence rather than stored in Closy.
 
 ## Execution and authority
 
@@ -28,8 +29,9 @@ Closy.
 4. repeat the clean cook/validation in a second output root;
 5. compare every declared canonical derivative byte hash;
 6. verify pattern, simulation, binding, source, appearance, and fallback hashes before/after;
-7. publish the accepted derivative only under `zeroone/static-d0`;
-8. rerun ordinary package validation, including the optional namespace validator.
+7. import only exact-manifest regular files through no-follow same-handle validation;
+8. publish the accepted derivative through marker-owned staging only under `zeroone/static-d0`;
+9. rerun ordinary package validation, including the optional namespace validator.
 
 The package manifest and all inventoried canonical assets remain byte-identical. The optional
 namespace contains the request, processing/validation reports, compatibility metadata,
@@ -38,7 +40,8 @@ not remove any garment authority.
 
 ## Evidence boundary
 
-This closes only the exact tested D0 CPU/static profile when real compiled execution evidence
-passes. Global Phase 10 remains partial without turntable or human visual review, broader
-garment/provider evidence, and a mobile profile. It does not authorize Phase 11 dynamic
-deformation while C3 remains partial.
+The committed PR #23 report is a historical local pass for the exact tested D0 CPU/static
+profile, not durable current-mainline qualification. Global Phase 10 remains partial without
+turntable or human visual review, broader garment/provider evidence, and a mobile profile.
+`C3-Binding-D0` plus refreshed paired scoped Z1 permits only a mechanical/reference Phase 11
+slice; `PHY1-SingleLayer-D0` remains required for solver-driven physical-quality claims.
