@@ -355,9 +355,12 @@ def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
     seams = sorted(str(item["id"]) for item in semantics.get("seams", []))
     openings = sorted(str(item["id"]) for item in semantics.get("openings", []))
     asset = report["assetAudit"]
+    topology_hash = mesh.get("meshTopologyHash", mesh.get("topologyHash"))
+    if not isinstance(topology_hash, str) or len(topology_hash) != 64:
+        raise ValueError("rest_state_topology_hash_missing_or_invalid")
     return {
         "exactCanonicalInputHashes": report["canonicalAuthorityHashes"],
-        "topologyHash": mesh["meshTopologyHash"],
+        "topologyHash": topology_hash,
         "panelIds": panels,
         "seamIds": seams,
         "openingIds": openings,
@@ -373,10 +376,22 @@ def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
 
 
 def _state_bounds(state: dict[str, Any]) -> dict[str, list[float]]:
+    declared = state.get("bounds")
+    if isinstance(declared, dict) and all(
+        isinstance(declared.get(name), list) and len(declared[name]) == 3
+        for name in ("min", "max", "size")
+    ):
+        values = [float(value) for name in ("min", "max", "size") for value in declared[name]]
+        if any(not math.isfinite(value) for value in values):
+            raise ValueError("rest_state_bounds_nonfinite")
+        return {
+            name: [round(float(value), 9) for value in declared[name]]
+            for name in ("min", "max", "size")
+        }
     positions = [
         [float(value) for value in position]
         for mesh in state.get("meshes", [])
-        for position in mesh.get("positions", [])
+        for position in mesh.get("positions", mesh.get("vertices", []))
     ]
     if not positions or any(len(position) != 3 for position in positions):
         raise ValueError("rest_state_positions_missing_or_invalid")
