@@ -36,7 +36,9 @@ def validate_future_foundations(document: dict[str, Any]) -> list[str]:
     phase13 = document.get("phase13", {})
     phase14 = document.get("phase14", {})
     if (
-        phase10.get("actualZeroOneRuntimeExecuted") is not False
+        phase10.get("actualZeroOneStaticCookExecutedThisInvocation") is not False
+        or phase10.get("actualZeroOneStaticArtifactLoaded") is not False
+        or phase10.get("cacheValidated") is not False
         or phase10.get("referenceExecutableExecuted") is not True
         or phase10.get("input", {}).get("fallbackHash")
         != phase10.get("output", {}).get("preservedFallbackHash")
@@ -50,7 +52,8 @@ def validate_future_foundations(document: dict[str, Any]) -> list[str]:
             abs(sum(float(weight) for weight in item["weights"].values()) - 1.0) > 1e-9
             for item in clusters
         )
-        or phase11.get("dynamicLodHarness", {}).get("actualZeroOneComputeExecuted") is not False
+        or phase11.get("dynamicLodHarness", {}).get("actualZeroOneDynamicDeformationExecuted")
+        is not False
         or phase11.get("frameUpdateContract", {}).get("normalAndTangentUpdateRequired") is not True
     ):
         issues.append("zeroone_deformation_foundation_invalid")
@@ -103,7 +106,9 @@ def _zeroone_static(fallback: bytes) -> dict[str, Any]:
         },
         "referenceExecutableExecuted": True,
         "referenceExecutableLabel": "deterministic_fake_not_zeroone",
-        "actualZeroOneRuntimeExecuted": False,
+        "actualZeroOneStaticCookExecutedThisInvocation": False,
+        "actualZeroOneStaticArtifactLoaded": False,
+        "cacheValidated": False,
         "fallbackPreserved": True,
     }
 
@@ -136,7 +141,7 @@ def _deformation() -> dict[str, Any]:
         "dynamicLodHarness": {
             "lods": [0, 1, 2],
             "topologyStableWithinLod": True,
-            "actualZeroOneComputeExecuted": False,
+            "actualZeroOneDynamicDeformationExecuted": False,
         },
     }
 

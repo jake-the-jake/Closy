@@ -1,5 +1,1565 @@
 {
   "capturePolicy": "read_only_github_and_local_git_snapshot",
+  "edges": [
+    {
+      "from": "github:jake-the-jake/Closy:pr/1",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/2"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/1",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/2"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/2",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/3"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/2",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/3"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/3",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/4"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/3",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/4"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/4",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/5"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/4",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/5"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/5",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/6"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/5",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/6"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/6",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/7"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/6",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/7"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/7",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/8"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/7",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/8"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/8",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/9"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/8",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/9"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/9",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/10"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/9",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/10"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/10",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/11"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/10",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/11"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/11",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/12"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/11",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/12"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/12",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/13"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/12",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/13"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/13",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/14"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/13",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/14"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/14",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/15"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/14",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/15"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/15",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/16"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/15",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/16"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/16",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/17"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/16",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/17"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/17",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/18"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/17",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/18"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/18",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/19"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/18",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/19"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/19",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/20"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/19",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/20"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/20",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/21"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/20",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/21"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/21",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/22"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/21",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/22"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/22",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/23"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/22",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/23"
+    }
+  ],
+  "graphVersion": "closy.pr_stack.dag.v2",
+  "nodes": [
+    {
+      "baseRef": "main",
+      "baseSha": "859d4ee9a8a3386e95ec8c29043aa9ecc246769a",
+      "branch": "codex/closy-forge-phase-0",
+      "capabilityRole": "closy_forge_garment_foundry_foundations_and_validated_proposal_pipeline",
+      "dependencyIds": [],
+      "headSha": "32abaf64308c2a5da748b8e3c9c177568512b772",
+      "id": "github:jake-the-jake/Closy:pr/1",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97267909708",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97267909966",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32669470115"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [],
+      "pullRequest": 1,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "859d4ee9a8a3386e95ec8c29043aa9ecc246769a..32abaf64308c2a5da748b8e3c9c177568512b772"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-0",
+      "baseSha": "32abaf64308c2a5da748b8e3c9c177568512b772",
+      "branch": "codex/closy-forge-phase-2-capture",
+      "capabilityRole": "bp49_bp51_phase_2_capture_and_multiview_fusion",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/1"
+      ],
+      "headSha": "f6051f9b8ae79e47d47fe1dee7c2cf8da2f1521e",
+      "id": "github:jake-the-jake/Closy:pr/2",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97407535366",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97407535566",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32719446390"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/1"
+      ],
+      "pullRequest": 2,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "32abaf64308c2a5da748b8e3c9c177568512b772..f6051f9b8ae79e47d47fe1dee7c2cf8da2f1521e"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-2-capture",
+      "baseSha": "f6051f9b8ae79e47d47fe1dee7c2cf8da2f1521e",
+      "branch": "codex/closy-forge-phase-3-fitting",
+      "capabilityRole": "bp52_phase_3_image_conditioned_fitting",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/2"
+      ],
+      "headSha": "bb496684f4ba9c41fdfe5c69bc272679aaecafac",
+      "id": "github:jake-the-jake/Closy:pr/3",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97438405296",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97438405597",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32729539416"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/2"
+      ],
+      "pullRequest": 3,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "f6051f9b8ae79e47d47fe1dee7c2cf8da2f1521e..bb496684f4ba9c41fdfe5c69bc272679aaecafac"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-3-fitting",
+      "baseSha": "bb496684f4ba9c41fdfe5c69bc272679aaecafac",
+      "branch": "codex/closy-forge-phase-4-texture",
+      "capabilityRole": "bp53_phase_4_source_texture_pbr_recovery",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/3"
+      ],
+      "headSha": "93f2e6587cc4f5f3237aba669870648a01118a09",
+      "id": "github:jake-the-jake/Closy:pr/4",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97479333762",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97479333560",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32742283522"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/3"
+      ],
+      "pullRequest": 4,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "bb496684f4ba9c41fdfe5c69bc272679aaecafac..93f2e6587cc4f5f3237aba669870648a01118a09"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-4-texture",
+      "baseSha": "93f2e6587cc4f5f3237aba669870648a01118a09",
+      "branch": "codex/closy-forge-foundation-proof-closeout",
+      "capabilityRole": "bp46_foundation_topology_audit_closeout",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/4"
+      ],
+      "headSha": "756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a",
+      "id": "github:jake-the-jake/Closy:pr/5",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97762247917",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97762247732",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32835151202"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/4"
+      ],
+      "pullRequest": 5,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "93f2e6587cc4f5f3237aba669870648a01118a09..756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a"
+    },
+    {
+      "baseRef": "codex/closy-forge-foundation-proof-closeout",
+      "baseSha": "756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a",
+      "branch": "codex/closy-forge-phase-5-provider",
+      "capabilityRole": "phase_5_provider_contract_bake_off",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/5"
+      ],
+      "headSha": "97bf23ccff13e806132b732534d131d80b146467",
+      "id": "github:jake-the-jake/Closy:pr/6",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97803514100",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "97803513678",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32848455025"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/5"
+      ],
+      "pullRequest": 6,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "756b0211d9c3ba7aa3b63b0f9c1896d7da143c9a..97bf23ccff13e806132b732534d131d80b146467"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-5-provider",
+      "baseSha": "97bf23ccff13e806132b732534d131d80b146467",
+      "branch": "codex/closy-forge-phase-6-binding",
+      "capabilityRole": "add_scoped_phase_6_binding_c3_evidence",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/6"
+      ],
+      "headSha": "a8d6500639e1aa662ef95c10754c618f12f42e10",
+      "id": "github:jake-the-jake/Closy:pr/7",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98011304345",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98011304509",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32913193640"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/6"
+      ],
+      "pullRequest": 7,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "97bf23ccff13e806132b732534d131d80b146467..a8d6500639e1aa662ef95c10754c618f12f42e10"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-6-binding",
+      "baseSha": "a8d6500639e1aa662ef95c10754c618f12f42e10",
+      "branch": "codex/closy-forge-d0-fidelity-closeout",
+      "capabilityRole": "forge_close_d0_fitting_bitmap_and_source_render_fidelity",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/7"
+      ],
+      "headSha": "91b9ececae3097a42cba45cad90fa81b1ef31d6a",
+      "id": "github:jake-the-jake/Closy:pr/8",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98079634048",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98079633929",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32936865331"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/7"
+      ],
+      "pullRequest": 8,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "a8d6500639e1aa662ef95c10754c618f12f42e10..91b9ececae3097a42cba45cad90fa81b1ef31d6a"
+    },
+    {
+      "baseRef": "codex/closy-forge-d0-fidelity-closeout",
+      "baseSha": "91b9ececae3097a42cba45cad90fa81b1ef31d6a",
+      "branch": "codex/closy-forge-phase-7-material-physics",
+      "capabilityRole": "forge_phase_7_material_physics_d0_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/8"
+      ],
+      "headSha": "7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df",
+      "id": "github:jake-the-jake/Closy:pr/9",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98118989676",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98118989530",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32949980632"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/8"
+      ],
+      "pullRequest": 9,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "91b9ececae3097a42cba45cad90fa81b1ef31d6a..7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-7-material-physics",
+      "baseSha": "7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df",
+      "branch": "codex/closy-forge-phase-8-sleeveless-top",
+      "capabilityRole": "forge_phase_8_add_sleeveless_top_vertical_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/9"
+      ],
+      "headSha": "fe884fdedf3c0cc6a8db9b210cd83f4d631362a3",
+      "id": "github:jake-the-jake/Closy:pr/10",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": null,
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/9"
+      ],
+      "pullRequest": 10,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "7103e5db66ca1ab4c8dc02a69d5f7ac4c49823df..fe884fdedf3c0cc6a8db9b210cd83f4d631362a3"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-sleeveless-top",
+      "baseSha": "fe884fdedf3c0cc6a8db9b210cd83f4d631362a3",
+      "branch": "codex/closy-forge-phase-8-long-sleeved-top",
+      "capabilityRole": "forge_phase_8_add_long_sleeved_top_vertical_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/10"
+      ],
+      "headSha": "5fed0c17d9abc1e72c36df65f60143bd44490d1b",
+      "id": "github:jake-the-jake/Closy:pr/11",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98262689213",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98262689507",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "32995270988"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/10"
+      ],
+      "pullRequest": 11,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "fe884fdedf3c0cc6a8db9b210cd83f4d631362a3..5fed0c17d9abc1e72c36df65f60143bd44490d1b"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-long-sleeved-top",
+      "baseSha": "5fed0c17d9abc1e72c36df65f60143bd44490d1b",
+      "branch": "codex/closy-forge-phase-8-simple-skirt",
+      "capabilityRole": "forge_phase_8_add_simple_skirt_vertical_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/11"
+      ],
+      "headSha": "ef2823c5f5838e640b76e338d58f2976706e5c4b",
+      "id": "github:jake-the-jake/Closy:pr/12",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98285605379",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98285605597",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33001894508"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/11"
+      ],
+      "pullRequest": 12,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "5fed0c17d9abc1e72c36df65f60143bd44490d1b..ef2823c5f5838e640b76e338d58f2976706e5c4b"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-simple-skirt",
+      "baseSha": "ef2823c5f5838e640b76e338d58f2976706e5c4b",
+      "branch": "codex/closy-forge-phase-8-simple-trousers",
+      "capabilityRole": "forge_phase_8_add_simple_trousers_vertical_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/12"
+      ],
+      "headSha": "9d3d8cf3af23d0d2c922743fdb85af1a5f9669da",
+      "id": "github:jake-the-jake/Closy:pr/13",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98312632115",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98312631776",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33009745594"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/12"
+      ],
+      "pullRequest": 13,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "ef2823c5f5838e640b76e338d58f2976706e5c4b..9d3d8cf3af23d0d2c922743fdb85af1a5f9669da"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-simple-trousers",
+      "baseSha": "9d3d8cf3af23d0d2c922743fdb85af1a5f9669da",
+      "branch": "codex/closy-forge-phase-8-simple-dress",
+      "capabilityRole": "forge_phase_8_simple_dress_vertical_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/13"
+      ],
+      "headSha": "bc16e6e72a462d43c46aa31147909990a50e41b0",
+      "id": "github:jake-the-jake/Closy:pr/14",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98336131207",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98336130965",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33016544200"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/13"
+      ],
+      "pullRequest": 14,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "9d3d8cf3af23d0d2c922743fdb85af1a5f9669da..bc16e6e72a462d43c46aa31147909990a50e41b0"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-simple-dress",
+      "baseSha": "bc16e6e72a462d43c46aa31147909990a50e41b0",
+      "branch": "codex/closy-forge-phase-8-shirt-openings",
+      "capabilityRole": "forge_phase_8_literal_button_shirt_d0_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/14"
+      ],
+      "headSha": "f55b2a50080b28c55c28ce7c18474920b19cf3f3",
+      "id": "github:jake-the-jake/Closy:pr/15",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98358336907",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98358336680",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33023202931"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/14"
+      ],
+      "pullRequest": 15,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "bc16e6e72a462d43c46aa31147909990a50e41b0..f55b2a50080b28c55c28ce7c18474920b19cf3f3"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-shirt-openings",
+      "baseSha": "f55b2a50080b28c55c28ce7c18474920b19cf3f3",
+      "branch": "codex/closy-forge-phase-8-jacket-outerwear",
+      "capabilityRole": "forge_phase_8_jacket_outerwear_d0_vertical_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/15"
+      ],
+      "headSha": "b01a9c13e31ced489adb3330d28dff74b903b256",
+      "id": "github:jake-the-jake/Closy:pr/16",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98384584245",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98384584086",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33031422497"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/15"
+      ],
+      "pullRequest": 16,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "f55b2a50080b28c55c28ce7c18474920b19cf3f3..b01a9c13e31ced489adb3330d28dff74b903b256"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-jacket-outerwear",
+      "baseSha": "b01a9c13e31ced489adb3330d28dff74b903b256",
+      "branch": "codex/closy-forge-phase-8-layered-unusual",
+      "capabilityRole": "forge_phase_8_layered_asymmetric_vertical_slice",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/16"
+      ],
+      "headSha": "f76d0eb40854813e1242acb67ff7651971a61288",
+      "id": "github:jake-the-jake/Closy:pr/17",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407750569",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407750772",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33038891483"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/16"
+      ],
+      "pullRequest": 17,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "b01a9c13e31ced489adb3330d28dff74b903b256..f76d0eb40854813e1242acb67ff7651971a61288"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-8-layered-unusual",
+      "baseSha": "f76d0eb40854813e1242acb67ff7651971a61288",
+      "branch": "codex/closy-forge-phase-9-structured-pattern-foundation",
+      "capabilityRole": "forge_phase_9_structured_pattern_foundation",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/17"
+      ],
+      "headSha": "eb1e64a8ea294f0099e0021e65191b50d69aaa75",
+      "id": "github:jake-the-jake/Closy:pr/18",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407819540",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98407819337",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33038914219"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/17"
+      ],
+      "pullRequest": 18,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "f76d0eb40854813e1242acb67ff7651971a61288..eb1e64a8ea294f0099e0021e65191b50d69aaa75"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-9-structured-pattern-foundation",
+      "baseSha": "eb1e64a8ea294f0099e0021e65191b50d69aaa75",
+      "branch": "codex/closy-forge-phases-10-14-runnable-foundations",
+      "capabilityRole": "forge_phases_10_14_runnable_foundations",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/18"
+      ],
+      "headSha": "e83e1e897c9539d246926f8148c5a9ac347982d1",
+      "id": "github:jake-the-jake/Closy:pr/19",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98413292239",
+            "name": "Forge ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98413292114",
+            "name": "Forge windows-latest Python 3.11"
+          }
+        ],
+        "runId": "33040669088"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/18"
+      ],
+      "pullRequest": 19,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "eb1e64a8ea294f0099e0021e65191b50d69aaa75..e83e1e897c9539d246926f8148c5a9ac347982d1"
+    },
+    {
+      "baseRef": "codex/closy-forge-phases-10-14-runnable-foundations",
+      "baseSha": "e83e1e897c9539d246926f8148c5a9ac347982d1",
+      "branch": "codex/closy-forge-evidence-topology-physics-integrity",
+      "capabilityRole": "forge_evidence_topology_and_physics_integrity",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/19"
+      ],
+      "headSha": "3f02a9fde0cbbb52526bd3dd11e6d0bf0f665148",
+      "id": "github:jake-the-jake/Closy:pr/20",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658406",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658759",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658709",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658738",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658692",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658754",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658713",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658819",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658721",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658723",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658695",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658596",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658739",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658664",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658591",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658645",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658703",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658630",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658632",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658766",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658789",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658628",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658532",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658540",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98773067461",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98774506974",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33146847220"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/19"
+      ],
+      "pullRequest": 20,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "e83e1e897c9539d246926f8148c5a9ac347982d1..3f02a9fde0cbbb52526bd3dd11e6d0bf0f665148"
+    },
+    {
+      "baseRef": "codex/closy-forge-evidence-topology-physics-integrity",
+      "baseSha": "3f02a9fde0cbbb52526bd3dd11e6d0bf0f665148",
+      "branch": "codex/closy-forge-c3-collision-closeout",
+      "capabilityRole": "correct_c3_metrics_and_collision_evidence",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/20"
+      ],
+      "headSha": "c5db68d4054141e3bd82aea848c292ec78179fcd",
+      "id": "github:jake-the-jake/Closy:pr/21",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684559",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684773",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684906",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684876",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684916",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684929",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684870",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684947",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684869",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684936",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684901",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684886",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684949",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684785",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684699",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684850",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684695",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684798",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684867",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684894",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684884",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684752",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684705",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684675",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98772710613",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98776799195",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33146855709"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/20"
+      ],
+      "pullRequest": 21,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "3f02a9fde0cbbb52526bd3dd11e6d0bf0f665148..c5db68d4054141e3bd82aea848c292ec78179fcd"
+    },
+    {
+      "baseRef": "codex/closy-forge-c3-collision-closeout",
+      "baseSha": "c5db68d4054141e3bd82aea848c292ec78179fcd",
+      "branch": "codex/closy-forge-phase-9-trained-synthetic-d0",
+      "capabilityRole": "forge_phase_9_trained_synthetic_d0_inference",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/21"
+      ],
+      "headSha": "988b242cc441006257d969d9980373213330743c",
+      "id": "github:jake-the-jake/Closy:pr/22",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769707960",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708225",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708245",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708202",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708167",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708219",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708289",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708188",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708224",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708206",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708293",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708227",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708284",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708182",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708201",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708231",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708173",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708218",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708288",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708204",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708178",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708100",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708089",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708122",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98774009580",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98777246242",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33146863706"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/21"
+      ],
+      "pullRequest": 22,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "c5db68d4054141e3bd82aea848c292ec78179fcd..988b242cc441006257d969d9980373213330743c"
+    },
+    {
+      "baseRef": "codex/closy-forge-phase-9-trained-synthetic-d0",
+      "baseSha": "988b242cc441006257d969d9980373213330743c",
+      "branch": "codex/closy-forge-phase-10-zeroone-static-integration",
+      "capabilityRole": "forge_phase_10_real_zeroone_static_integration",
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/22"
+      ],
+      "headSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+      "id": "github:jake-the-jake/Closy:pr/23",
+      "integrationMappings": [],
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060581",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060668",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060705",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060728",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060771",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060791",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060896",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060919",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060931",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060938",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060941",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060947",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060965",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060976",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060978",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060997",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061003",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061014",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061015",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061022",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061066",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061096",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061187",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061564",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98782039797",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98784926669",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33150483293"
+      },
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/22"
+      ],
+      "pullRequest": 23,
+      "repository": "jake-the-jake/Closy",
+      "sourceOnly": false,
+      "superseded": false,
+      "uniqueCommitRange": "988b242cc441006257d969d9980373213330743c..a481ba26a424bd91607b8c1d41b6173a2c9579d9"
+    }
+  ],
   "pullRequests": [
     {
       "baseBranch": "main",
@@ -1105,150 +2665,150 @@
       "baseBranch": "codex/closy-forge-phase-9-trained-synthetic-d0",
       "baseSha": "988b242cc441006257d969d9980373213330743c",
       "branch": "codex/closy-forge-phase-10-zeroone-static-integration",
-      "changedFileCount": 21,
+      "changedFileCount": 24,
       "directParentMergeBaseVerified": true,
       "draft": true,
-      "headSha": "7016a53f89d6085678652c30df6346e67db9da4c",
+      "headSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
       "knownException": null,
       "latestExactHeadForgeRun": {
         "exactHead": true,
         "jobs": [
           {
             "conclusion": "SUCCESS",
-            "jobId": "98769743823",
+            "jobId": "98781060581",
             "name": "Contracts static Ubuntu Python 3.11"
           },
           {
             "conclusion": "SUCCESS",
-            "jobId": "98769743903",
-            "name": "Tests shard-0 ubuntu-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769744049",
-            "name": "Tests shard-0 windows-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743831",
-            "name": "Tests shard-0 ubuntu-latest Python 3.12"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743930",
-            "name": "Tests shard-1 ubuntu-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743744",
-            "name": "Tests shard-1 windows-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769744119",
-            "name": "Tests shard-1 ubuntu-latest Python 3.12"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743778",
-            "name": "Tests shard-2 ubuntu-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769744028",
-            "name": "Tests shard-2 windows-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743826",
-            "name": "Tests shard-2 ubuntu-latest Python 3.12"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743827",
-            "name": "Tests shard-3 ubuntu-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743736",
-            "name": "Tests shard-3 windows-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769744060",
-            "name": "Tests shard-3 ubuntu-latest Python 3.12"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743937",
-            "name": "Families upper ubuntu-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743901",
-            "name": "Families lower ubuntu-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769744027",
-            "name": "Families structured ubuntu-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743941",
-            "name": "Families upper windows-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743968",
-            "name": "Families lower windows-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743905",
-            "name": "Families structured windows-latest Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743787",
-            "name": "Families upper ubuntu-latest Python 3.12"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743999",
-            "name": "Families lower ubuntu-latest Python 3.12"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743942",
-            "name": "Families structured ubuntu-latest Python 3.12"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743751",
-            "name": "Integration shard-0 Ubuntu Python 3.11"
-          },
-          {
-            "conclusion": "SUCCESS",
-            "jobId": "98769743575",
+            "jobId": "98781060668",
             "name": "Integration shard-1 Ubuntu Python 3.11"
           },
           {
             "conclusion": "SUCCESS",
-            "jobId": "98774187159",
+            "jobId": "98781060705",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060728",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060771",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060791",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060896",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060919",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060931",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060938",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060941",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060947",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060965",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060976",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060978",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781060997",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061003",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061014",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061015",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061022",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061066",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061096",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061187",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98781061564",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98782039797",
             "name": "Cross-platform and cross-minor digest consistency"
           },
           {
             "conclusion": "SUCCESS",
-            "jobId": "98777485769",
+            "jobId": "98784926669",
             "name": "Forge required"
           }
         ],
-        "runId": "33146875378"
+        "runId": "33150483293"
       },
-      "layerAhead": 12,
+      "layerAhead": 14,
       "layerBehind": 0,
-      "layerCommitCount": 12,
+      "layerCommitCount": 14,
       "mergeability": "MERGEABLE",
       "number": 23,
       "repository": "jake-the-jake/Closy",
@@ -1257,7 +2817,7 @@
     }
   ],
   "repository": "jake-the-jake/Closy",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "sequentialMergeOrder": [
     1,
     2,
@@ -1286,5 +2846,12 @@
   "sequentialMergeRehearsal": {
     "mode": "read_only_direct_parent_merge_base_verification",
     "passed": true
+  },
+  "topology": "explicit_dag",
+  "validation": {
+    "acyclic": true,
+    "exactMergeBases": true,
+    "mode": "read_only_git_graph_verification",
+    "replayedCommonAncestryAbsent": true
   }
 }

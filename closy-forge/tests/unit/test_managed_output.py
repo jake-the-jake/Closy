@@ -11,6 +11,7 @@ from closy_forge.package_io.managed_output import (
     ManagedOutputError,
     create_managed_staging,
     publish_managed_staging,
+    remove_managed_output,
     validate_output_target,
 )
 
@@ -165,3 +166,38 @@ def test_interrupted_publish_restores_last_good_output(
     assert (target / "payload.txt").read_text(encoding="utf-8") == "old"
     marker = json.loads((target / MARKER_NAME).read_text(encoding="utf-8"))
     assert marker["kind"] == "published"
+
+
+def test_managed_removal_handles_read_only_owned_output(tmp_path: Path) -> None:
+    root = tmp_path / "allowed"
+    target = root / "result"
+    _publish(root, target, "owned", force=False)
+    os.chmod(target / "payload.txt", 0o444)
+
+    remove_managed_output(target, allowed_root=root, purpose=PURPOSE)
+
+    assert not target.exists()
+
+
+def test_managed_output_rejects_wrong_producer_and_hardlinks(tmp_path: Path) -> None:
+    root = tmp_path / "allowed"
+    target = root / "result"
+    _publish(root, target, "owned", force=False)
+    marker_path = target / MARKER_NAME
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    marker["owner"] = "untrusted-producer"
+    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+    with pytest.raises(ManagedOutputError, match="owner_mismatch"):
+        remove_managed_output(target, allowed_root=root, purpose=PURPOSE)
+
+    marker["owner"] = "closy-forge"
+    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+    outside = tmp_path / "outside.txt"
+    outside.write_text("owned", encoding="utf-8")
+    (target / "payload.txt").unlink()
+    try:
+        os.link(outside, target / "payload.txt")
+    except OSError:
+        pytest.skip("hardlink creation is unavailable on this host")
+    with pytest.raises(ManagedOutputError, match="hardlink_rejected"):
+        remove_managed_output(target, allowed_root=root, purpose=PURPOSE)

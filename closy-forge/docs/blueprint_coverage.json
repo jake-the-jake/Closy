@@ -1,7 +1,7 @@
 {
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "generatedBy": "Canonical C3, learned Phase 9, and real static Phase 10 reconciliation at 13c3d281843750c7bcd9db50e309ed129066e9fe",
+  "generatedBy": "Scoped gate, evidence security, and PR DAG reconciliation at a481ba26a424bd91607b8c1d41b6173a2c9579d9",
   "rows": [
     {
       "commitSha": [
@@ -105,7 +105,8 @@
         "0db14ee",
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -878,7 +879,8 @@
         "12322a1eb23e5f0cd8361ecc01be419bbc175364",
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1316,7 +1318,8 @@
       "commitSha": [
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -1336,11 +1339,11 @@
         "closy-forge/src/closy_forge/zeroone/validation.py",
         "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json"
       ],
-      "limitations": "This is not global Phase 10 completion: mobile, broader garment/provider, turntable/human-review, and other profiles remain unrun.",
-      "nextAction": "Retain the pinned Z1 profile while adding human visual review, broader provider evidence, and mobile execution without changing package authority.",
+      "limitations": "The source PR was owner-closed unmerged and current ZeroOne master is not yet requalified; global Z1 and Phase 10 remain partial.",
+      "nextAction": "Requalify current ZeroOne master and refresh paired Closy static evidence.",
       "sourceSection": "ZeroOne Z1-Z8",
-      "status": "complete",
-      "summary": "ZeroOne stage Z1 passes for the exact tested Windows MSVC Release D0 CPU/static profile.",
+      "status": "partial",
+      "summary": "ZeroOne Z1 has a historical local pass for the exact Windows MSVC Release D0 CPU/headless static T-shirt and layered-asymmetric profile.",
       "tests": [
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
         "closy-forge/tests/unit/test_zeroone_execution_evidence.py"
@@ -1354,11 +1357,11 @@
       "executableEvidence": null,
       "id": "BP-09-Z2",
       "implementationPaths": null,
-      "limitations": "No read-only ZeroOne discovery completed in this increment.",
-      "nextAction": "Implement and validate the scoped task-owned ZeroOne garment path; do not infer global gate completion from repository access.",
+      "limitations": "No compiled dynamic, GPU, mobile, provider, or product evidence exists for Z2; static Z1 evidence must not be replayed into this stage.",
+      "nextAction": "Implement and execute Z2 only after its explicit prerequisites pass.",
       "sourceSection": "ZeroOne Z1-Z8",
       "status": "discovery_pending",
-      "summary": "ZeroOne stage Z2.",
+      "summary": "ZeroOne stage Z2 is not implemented or executed.",
       "tests": null
     },
     {
@@ -1369,11 +1372,11 @@
       "executableEvidence": null,
       "id": "BP-09-Z3",
       "implementationPaths": null,
-      "limitations": "No read-only ZeroOne discovery completed in this increment.",
-      "nextAction": "Implement and validate the scoped task-owned ZeroOne garment path; do not infer global gate completion from repository access.",
+      "limitations": "No compiled dynamic, GPU, mobile, provider, or product evidence exists for Z3; static Z1 evidence must not be replayed into this stage.",
+      "nextAction": "Implement and execute Z3 only after its explicit prerequisites pass.",
       "sourceSection": "ZeroOne Z1-Z8",
       "status": "discovery_pending",
-      "summary": "ZeroOne stage Z3.",
+      "summary": "ZeroOne stage Z3 is not implemented or executed.",
       "tests": null
     },
     {
@@ -1384,11 +1387,11 @@
       "executableEvidence": null,
       "id": "BP-09-Z4",
       "implementationPaths": null,
-      "limitations": "No read-only ZeroOne discovery completed in this increment.",
-      "nextAction": "Implement and validate the scoped task-owned ZeroOne garment path; do not infer global gate completion from repository access.",
+      "limitations": "No compiled dynamic, GPU, mobile, provider, or product evidence exists for Z4; static Z1 evidence must not be replayed into this stage.",
+      "nextAction": "Implement and execute Z4 only after its explicit prerequisites pass.",
       "sourceSection": "ZeroOne Z1-Z8",
       "status": "discovery_pending",
-      "summary": "ZeroOne stage Z4.",
+      "summary": "ZeroOne stage Z4 is not implemented or executed.",
       "tests": null
     },
     {
@@ -1399,11 +1402,11 @@
       "executableEvidence": null,
       "id": "BP-09-Z5",
       "implementationPaths": null,
-      "limitations": "No read-only ZeroOne discovery completed in this increment.",
-      "nextAction": "Implement and validate the scoped task-owned ZeroOne garment path; do not infer global gate completion from repository access.",
+      "limitations": "No compiled dynamic, GPU, mobile, provider, or product evidence exists for Z5; static Z1 evidence must not be replayed into this stage.",
+      "nextAction": "Implement and execute Z5 only after its explicit prerequisites pass.",
       "sourceSection": "ZeroOne Z1-Z8",
       "status": "discovery_pending",
-      "summary": "ZeroOne stage Z5.",
+      "summary": "ZeroOne stage Z5 is not implemented or executed.",
       "tests": null
     },
     {
@@ -1414,11 +1417,11 @@
       "executableEvidence": null,
       "id": "BP-09-Z6",
       "implementationPaths": null,
-      "limitations": "No read-only ZeroOne discovery completed in this increment.",
-      "nextAction": "Implement and validate the scoped task-owned ZeroOne garment path; do not infer global gate completion from repository access.",
+      "limitations": "No compiled dynamic, GPU, mobile, provider, or product evidence exists for Z6; static Z1 evidence must not be replayed into this stage.",
+      "nextAction": "Implement and execute Z6 only after its explicit prerequisites pass.",
       "sourceSection": "ZeroOne Z1-Z8",
       "status": "discovery_pending",
-      "summary": "ZeroOne stage Z6.",
+      "summary": "ZeroOne stage Z6 is not implemented or executed.",
       "tests": null
     },
     {
@@ -1429,11 +1432,11 @@
       "executableEvidence": null,
       "id": "BP-09-Z7",
       "implementationPaths": null,
-      "limitations": "No read-only ZeroOne discovery completed in this increment.",
-      "nextAction": "Implement and validate the scoped task-owned ZeroOne garment path; do not infer global gate completion from repository access.",
+      "limitations": "No compiled dynamic, GPU, mobile, provider, or product evidence exists for Z7; static Z1 evidence must not be replayed into this stage.",
+      "nextAction": "Implement and execute Z7 only after its explicit prerequisites pass.",
       "sourceSection": "ZeroOne Z1-Z8",
       "status": "discovery_pending",
-      "summary": "ZeroOne stage Z7.",
+      "summary": "ZeroOne stage Z7 is not implemented or executed.",
       "tests": null
     },
     {
@@ -1444,18 +1447,19 @@
       "executableEvidence": null,
       "id": "BP-09-Z8",
       "implementationPaths": null,
-      "limitations": "No read-only ZeroOne discovery completed in this increment.",
-      "nextAction": "Implement and validate the scoped task-owned ZeroOne garment path; do not infer global gate completion from repository access.",
+      "limitations": "No compiled dynamic, GPU, mobile, provider, or product evidence exists for Z8; static Z1 evidence must not be replayed into this stage.",
+      "nextAction": "Implement and execute Z8 only after its explicit prerequisites pass.",
       "sourceSection": "ZeroOne Z1-Z8",
       "status": "discovery_pending",
-      "summary": "ZeroOne stage Z8.",
+      "summary": "ZeroOne stage Z8 is not implemented or executed.",
       "tests": null
     },
     {
       "commitSha": [
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -1540,7 +1544,8 @@
         "a8a053a68d8f455134e5a2bfed0fe340467a039a",
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -1613,7 +1618,8 @@
         "12322a1eb23e5f0cd8361ecc01be419bbc175364",
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -2309,13 +2315,14 @@
         "30ea629639cb34894511d49b1b965fc344adb4c3",
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [],
       "executableEvidence": [
         "version negotiation and deterministic fake reference import/process/export execute",
         "fallback bytes are hash-preserved when actual ZeroOne is absent",
-        "unsupported versions fail closed and actualZeroOneRuntimeExecuted remains false",
+        "unsupported versions fail closed and actualZeroOneStaticCookExecutedThisInvocation remains false",
         "the compiled pinned ZeroOneProcess Release executable ran headlessly on canonical D0 T-shirt and layered-asymmetric packages",
         "both packages produced real mesh, cluster, hierarchy, page-pack, material, and garment stitch-row derivatives",
         "clean miss, cache hit, and second clean miss outputs agree while canonical authority and fallback hashes remain unchanged",
@@ -2333,7 +2340,7 @@
         "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json"
       ],
       "limitations": "Phase 10 remains partial without turntable or human visual review, broader garment/provider evidence, mobile execution, and other blueprint profiles.",
-      "nextAction": "Run human visual review and broaden provider/mobile evidence; do not begin Phase 11 while C3 remains partial.",
+      "nextAction": "Requalify current ZeroOne master and refresh paired scoped Z1; keep global Phase 10 partial pending broader provider, mobile, and human-review evidence.",
       "sourceSection": "Phases 0-14",
       "status": "partial",
       "summary": "Blueprint Phase 10 now has real pinned ZeroOne D0 CPU/static execution and optional derivative packaging for two required garments.",
@@ -2528,11 +2535,11 @@
         "closy-forge/src/closy_forge/rendering/frame_pose_suite.py",
         "closy-forge/src/closy_forge/validation/validator.py"
       ],
-      "limitations": "The fixed-avatar T-shirt D0 profile is not accepted because stitched-shell body clearance/source correspondence and collision residual-depth budget fail. No clean/canonical, provider, mobile/GPU, private-user or multi-garment proof exists.",
-      "nextAction": "Resolve stitched-shell body clearance/source correspondence and zero or budget the remaining recomputed collision penetrations without widening thresholds.",
+      "limitations": "Earlier reports conflated C3 binding with the stricter PHY1 physical campaign; neither a fresh binding pass nor a PHY1 pass is claimed here.",
+      "nextAction": "Requalify the five literal C3-Binding-D0 requirements separately from the stricter PHY1-SingleLayer-D0 physical campaign.",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "status": "partial",
-      "summary": "Gate C3 has independently recomputable D0 evidence but remains partial both for the scoped profile and globally.",
+      "summary": "C3-Binding-D0 is the master-blueprint dynamic-binding gate and requires separate literal requalification against topology, binding, poses, topology hash, and frames.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/golden/test_golden_demo.py"
@@ -2542,7 +2549,8 @@
       "commitSha": [
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -2560,11 +2568,11 @@
         "closy-forge/src/closy_forge/zeroone/validation.py",
         "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json"
       ],
-      "limitations": "The scoped Z1 pass does not imply global Phase 10, Z2, mobile, dynamic deformation, provider breadth, or human-review completion.",
-      "nextAction": "Preserve the exact pinned static profile and close the independent C3 blocker before any Phase 11 work.",
+      "limitations": "Current ZeroOne master, durable workflow execution, mobile, dynamic deformation, provider breadth, and human review are not established.",
+      "nextAction": "Requalify current master, then regenerate paired scoped Z1 evidence.",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
-      "status": "complete",
-      "summary": "Gate Z1 passes only for the exact tested D0 CPU/static Windows MSVC Release profile.",
+      "status": "partial",
+      "summary": "Gate Z1 retains a historical local scoped pass; global Z1 remains partial.",
       "tests": [
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
         "closy-forge/tests/unit/test_zeroone_execution_evidence.py"
@@ -3056,7 +3064,8 @@
         "a8a053a68d8f455134e5a2bfed0fe340467a039a",
         "90619277ccccc2283f57ebe01644802843ae639c",
         "d35073b63046dec3d394934548525b4e27ecd79e",
-        "13c3d281843750c7bcd9db50e309ed129066e9fe"
+        "13c3d281843750c7bcd9db50e309ed129066e9fe",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
       ],
       "dependencies": [],
       "executableEvidence": [
@@ -3230,5 +3239,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.integrity_reconciliation.v1"
+  "version": "closy.blueprint_coverage.evidence_security_integrity.v2"
 }

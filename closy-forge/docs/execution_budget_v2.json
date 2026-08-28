@@ -1,0 +1,33 @@
+{
+  "budgetVersion": "closy.execution_budget.v2",
+  "ci": {
+    "infrastructureOnlyRetries": 1,
+    "localFullSuiteRunsPerCandidateHead": 1,
+    "remoteExactHeadWorkflowRunsPerPullRequestHead": 1,
+    "remoteWorkflowWaitMinutesBeforeIndependentLane": 45
+  },
+  "generatedNamespaces": {
+    "maximumFileBytes": 67108864,
+    "maximumFileCount": 32,
+    "maximumNestingDepth": 8,
+    "maximumTotalBytes": 134217728
+  },
+  "physics": {
+    "maximumMateriallyDistinctStrategies": 2,
+    "maximumSolverIterationsPerSubstep": 24,
+    "maximumSolverSteps": 720,
+    "maximumSolverSubsteps": 8,
+    "maximumTuningTrialsPerStrategy": 4
+  },
+  "processes": {
+    "maximumCancellationOvershootSeconds": 5,
+    "maximumTimeoutSeconds": 180
+  },
+  "training": {
+    "maximumCpuSeconds": 3600,
+    "maximumEpochs": 80,
+    "maximumMemoryBytes": 2147483648,
+    "maximumTrials": 4,
+    "maximumWallSeconds": 3600
+  }
+}

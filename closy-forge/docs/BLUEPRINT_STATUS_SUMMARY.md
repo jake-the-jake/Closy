@@ -1,11 +1,11 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v1` at evidence anchor `13c3d281843750c7bcd9db50e309ed129066e9fe`.
+Authority: `closy.blueprint_status_model.v2` at evidence anchor `a481ba26a424bd91607b8c1d41b6173a2c9579d9`.
 
 ## Requirement Rows
 
-- complete: 22
-- partial: 58
+- complete: 20
+- partial: 60
 - not started: 8
 - discovery pending: 13
 - total: 101
@@ -28,13 +28,20 @@ Authority: `closy.blueprint_status_model.v1` at evidence anchor `13c3d281843750c
 - Phase 13: `partial`
 - Phase 14: `partial`
 
-## Gates
+## Scoped Gates
 
-- C1: `complete`
-- C2: `complete`
-- C3: `partial`
-- P1: `discovery_pending`
-- Z1: `complete`
-- Z2: `discovery_pending`
+- C1: global `partial`, scoped `pass`
+- C2: global `partial`, scoped `pass`
+- C3-Binding-D0: global `partial`, scoped `requalification_required`
+- P1: global `discovery_pending`, scoped `not_run`
+- PHY1-SingleLayer-D0: global `partial`, scoped `failed`
+- Z1: global `partial`, scoped `historical_local_pass`
+- Z2: global `discovery_pending`, scoped `not_run`
+- Z3: global `discovery_pending`, scoped `not_run`
+- Z4: global `discovery_pending`, scoped `not_run`
+- Z5: global `discovery_pending`, scoped `not_run`
+- Z6: global `discovery_pending`, scoped `not_run`
+- Z7: global `discovery_pending`, scoped `not_run`
+- Z8: global `discovery_pending`, scoped `not_run`
 
-Phase 8 evidence is limited to deterministic D0 fixture family verticals. Phase 9 training evidence is limited to project-authored synthetic D0 fixtures. Phase 10 has real D0 CPU/static ZeroOne execution for T-shirt and layered-asymmetric fixtures; Phases 11-14 remain versioned contract-fixture foundations.
+Compute profile, data provenance, execution profile, and gate scope are independent axes. PR #23 is historical local static evidence only. C3-Binding-D0 and PHY1-SingleLayer-D0 are separate gates; no dynamic, GPU, mobile, private-user, or human-review execution is claimed.

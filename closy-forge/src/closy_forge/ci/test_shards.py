@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import subprocess
 import sys
 from collections.abc import Sequence
@@ -24,10 +25,15 @@ def discover_sharded_tests(forge_root: Path, suite: str = "unit") -> tuple[str, 
         sorted(
             path.relative_to(forge_root).as_posix()
             for directory in directories
-            for path in directory.glob("test_*.py")
+            for path in directory.rglob("test_*.py")
             if path.is_file()
         )
     )
+
+
+def test_inventory_digest(forge_root: Path, suite: str = "unit") -> str:
+    payload = "".join(f"{path}\n" for path in discover_sharded_tests(forge_root, suite))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def assign_test_shards(forge_root: Path, suite: str = "unit") -> dict[str, tuple[str, ...]]:
@@ -54,6 +60,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--suite", choices=sorted(SHARD_COUNTS), default="unit")
     parser.add_argument("--group", choices=TEST_SHARD_NAMES, required=True)
     parser.add_argument("--list", action="store_true", help="List files without running pytest.")
+    parser.add_argument(
+        "--inventory-digest",
+        action="store_true",
+        help="Print the exact discovered inventory digest.",
+    )
     args = parser.parse_args(argv)
     forge_root = Path(__file__).resolve().parents[3]
     errors = validate_test_shards(forge_root, args.suite)
@@ -66,6 +77,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"invalid shard for {args.suite}: {args.group}", file=sys.stderr)
         return 2
     paths = shards[args.group]
+    if args.inventory_digest:
+        print(test_inventory_digest(forge_root, args.suite))
+        return 0
     if args.list:
         print("\n".join(paths))
         return 0

@@ -3943,11 +3943,194 @@ def _future_foundation_schemas() -> dict[str, dict[str, Any]]:
 
 def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
     return {
-        "zeroone-integration-result.schema.json": _schema(
-            "Closy ZeroOne integration result v1",
+        "zeroone-namespace-manifest.schema.json": _schema(
+            "Closy ZeroOne namespace manifest v1",
             {
-                "schemaVersion": {"const": SCHEMA_VERSION},
-                "contractVersion": {"const": "closy.zeroone.integration-result.v1"},
+                "schemaVersion": {"const": 1},
+                "manifestVersion": {"const": "closy.zeroone.namespace-manifest.v1"},
+                "profile": {"const": "closy-static-d0-cpu-v1"},
+                "canonicalInventoryDigest": _sha256(),
+                "files": {
+                    "type": "array",
+                    "minItems": 12,
+                    "maxItems": 12,
+                    "items": {
+                        "oneOf": [
+                            _zeroone_namespace_entry(*entry)
+                            for entry in (
+                                (
+                                    "request.json",
+                                    "request",
+                                    "application/json",
+                                    "closy_canonical_authority_request",
+                                ),
+                                (
+                                    "processing_report.json",
+                                    "processing_report",
+                                    "application/json",
+                                    "zeroone_process",
+                                ),
+                                (
+                                    "validation_report.json",
+                                    "validation_report",
+                                    "application/json",
+                                    "zeroone_validation",
+                                ),
+                                (
+                                    "compatibility.json",
+                                    "compatibility",
+                                    "application/json",
+                                    "closy_contract",
+                                ),
+                                (
+                                    "provenance.json",
+                                    "provenance",
+                                    "application/json",
+                                    "closy_publication",
+                                ),
+                                (
+                                    "derivative/artifact.geomesh",
+                                    "geometry_artifact",
+                                    "application/vnd.zeroone.geomesh",
+                                    "zeroone_static_output",
+                                ),
+                                (
+                                    "derivative/native/cooked_asset.z1ddc",
+                                    "cooked_asset",
+                                    "application/vnd.zeroone.cooked-asset",
+                                    "zeroone_static_output",
+                                ),
+                                (
+                                    "derivative/native/page_packs/manifest.json",
+                                    "page_pack_manifest",
+                                    "application/json",
+                                    "zeroone_static_output",
+                                ),
+                                (
+                                    "derivative/native/page_packs/packs.bin",
+                                    "page_pack_data",
+                                    "application/octet-stream",
+                                    "zeroone_static_output",
+                                ),
+                                (
+                                    "derivative/garment/stitch_rows.json",
+                                    "garment_stitch_rows",
+                                    "application/json",
+                                    "zeroone_static_output",
+                                ),
+                                (
+                                    "derivative/lod.json",
+                                    "lod_manifest",
+                                    "application/json",
+                                    "zeroone_static_output",
+                                ),
+                                (
+                                    "derivative/materials.json",
+                                    "material_manifest",
+                                    "application/json",
+                                    "zeroone_static_output",
+                                ),
+                            )
+                        ]
+                    },
+                },
+            },
+            [
+                "schemaVersion",
+                "manifestVersion",
+                "profile",
+                "canonicalInventoryDigest",
+                "files",
+            ],
+        ),
+        "zeroone-trusted-build-record.schema.json": _schema(
+            "Closy ZeroOne trusted build record v1",
+            {
+                "schemaVersion": {"const": 1},
+                "recordVersion": {"const": "closy.zeroone.trusted-build-record.v1"},
+                "trustDomain": {
+                    "enum": [
+                        "verified_workflow_artifact",
+                        "owner_controlled_registry",
+                        "local_exact_source_capture",
+                    ]
+                },
+                "repository": {"const": "jake-the-jake/ZeroOne"},
+                "sourceSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                "buildId": {"type": "string", "minLength": 1},
+                "compiler": {"type": "string", "minLength": 1},
+                "buildType": {"const": "Release"},
+                "executableRelativeName": {
+                    "type": "string",
+                    "pattern": r"^[^/\\]+$",
+                    "minLength": 1,
+                },
+                "executableSha256": _sha256(),
+                "requestSchemaVersions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": True,
+                    "contains": {"const": "closy.zeroone.static-request.v1"},
+                    "items": {"type": "string", "minLength": 1},
+                },
+                "reportSchemaVersions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": True,
+                    "contains": {"const": "zeroone.closy.static-report.v1"},
+                    "items": {"type": "string", "minLength": 1},
+                },
+                "supportedProfiles": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": True,
+                    "contains": {"const": "closy-static-d0-cpu-v1"},
+                    "items": {"type": "string", "minLength": 1},
+                },
+                "attestation": _object(
+                    {
+                        "available": {"type": "boolean"},
+                        "kind": {"type": "string", "minLength": 1},
+                        "reason": {"type": "string", "minLength": 1},
+                    },
+                    ["available", "kind", "reason"],
+                ),
+                "capture": _object(
+                    {
+                        "commandTemplate": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {"type": "string", "minLength": 1},
+                        },
+                        "networkAllowed": {"const": False},
+                        "sourceClean": {"const": True},
+                    },
+                    ["commandTemplate", "networkAllowed", "sourceClean"],
+                ),
+            },
+            [
+                "schemaVersion",
+                "recordVersion",
+                "trustDomain",
+                "repository",
+                "sourceSha",
+                "buildId",
+                "compiler",
+                "buildType",
+                "executableRelativeName",
+                "executableSha256",
+                "requestSchemaVersions",
+                "reportSchemaVersions",
+                "supportedProfiles",
+                "attestation",
+                "capture",
+            ],
+        ),
+        "zeroone-integration-result.schema.json": _schema(
+            "Closy ZeroOne integration result v2",
+            {
+                "schemaVersion": {"const": 2},
+                "contractVersion": {"const": "closy.zeroone.integration-result.v2"},
                 "status": {
                     "enum": [
                         "unavailable",
@@ -3959,8 +4142,12 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                     ]
                 },
                 "reason": {"type": "string", "minLength": 1},
-                "actualZeroOneRuntimeExecuted": {"type": "boolean"},
-                "actualZeroOneComputeExecuted": {"type": "boolean"},
+                "actualZeroOneStaticCookExecutedThisInvocation": {"type": "boolean"},
+                "actualZeroOneStaticArtifactLoaded": {"type": "boolean"},
+                "cacheValidated": {"type": "boolean"},
+                "actualZeroOneDynamicDeformationExecuted": {"type": "boolean"},
+                "actualZeroOneGpuRuntimeExecuted": {"type": "boolean"},
+                "actualZeroOneMobileRuntimeExecuted": {"type": "boolean"},
                 "fallbackPreserved": {"type": "boolean"},
                 "canonicalAuthorityPreserved": {"type": "boolean"},
                 "deterministicDerivative": {"type": "boolean"},
@@ -3973,8 +4160,12 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                 "contractVersion",
                 "status",
                 "reason",
-                "actualZeroOneRuntimeExecuted",
-                "actualZeroOneComputeExecuted",
+                "actualZeroOneStaticCookExecutedThisInvocation",
+                "actualZeroOneStaticArtifactLoaded",
+                "cacheValidated",
+                "actualZeroOneDynamicDeformationExecuted",
+                "actualZeroOneGpuRuntimeExecuted",
+                "actualZeroOneMobileRuntimeExecuted",
                 "fallbackPreserved",
                 "canonicalAuthorityPreserved",
                 "deterministicDerivative",
@@ -3982,8 +4173,33 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                 "tool",
                 "report",
             ],
-        )
+        ),
     }
+
+
+def _zeroone_namespace_entry(
+    path: str, role: str, media_type: str, source_relationship: str
+) -> dict[str, Any]:
+    return _object(
+        {
+            "path": {"const": path},
+            "role": {"const": role},
+            "size": {"type": "integer", "minimum": 0, "maximum": 67_108_864},
+            "sha256": _sha256(),
+            "mediaType": {"const": media_type},
+            "sourceRelationship": {"const": source_relationship},
+            "required": {"const": True},
+        },
+        [
+            "path",
+            "role",
+            "size",
+            "sha256",
+            "mediaType",
+            "sourceRelationship",
+            "required",
+        ],
+    )
 
 
 def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
@@ -10,13 +9,25 @@ from typing import Any
 
 from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.package_io.hashing import sha256_file
+from closy_forge.package_io.managed_output import (
+    cleanup_managed_staging,
+    create_managed_staging,
+    publish_managed_staging,
+)
 from closy_forge.package_io.paths import assert_safe_child, posix_rel
+from closy_forge.security.strict_json import StrictJsonError, loads_strict_json_object
 from closy_forge.validation.validator import validate_package
+from closy_forge.zeroone.namespace import (
+    copy_verified_derivative,
+    validate_namespace_manifest,
+    write_namespace_manifest,
+)
 from closy_forge.zeroone.request import authority_hashes, build_zeroone_request
 from closy_forge.zeroone.tool import (
     PINNED_ZEROONE_SOURCE_SHA,
     REPORT_SCHEMA_VERSION,
     ZeroOneToolResolution,
+    minimal_subprocess_environment,
     resolve_zeroone_tool,
 )
 
@@ -25,8 +36,9 @@ from closy_forge.zeroone.tool import (
 class ZeroOneIntegrationResult:
     status: str
     reason: str
-    actual_runtime_executed: bool
-    actual_compute_executed: bool
+    actual_static_cook_executed: bool
+    actual_static_artifact_loaded: bool
+    cache_validated: bool
     fallback_preserved: bool
     canonical_authority_preserved: bool
     deterministic_derivative: bool
@@ -36,12 +48,16 @@ class ZeroOneIntegrationResult:
 
     def to_json(self) -> dict[str, Any]:
         return {
-            "schemaVersion": 1,
-            "contractVersion": "closy.zeroone.integration-result.v1",
+            "schemaVersion": 2,
+            "contractVersion": "closy.zeroone.integration-result.v2",
             "status": self.status,
             "reason": self.reason,
-            "actualZeroOneRuntimeExecuted": self.actual_runtime_executed,
-            "actualZeroOneComputeExecuted": self.actual_compute_executed,
+            "actualZeroOneStaticCookExecutedThisInvocation": self.actual_static_cook_executed,
+            "actualZeroOneStaticArtifactLoaded": self.actual_static_artifact_loaded,
+            "cacheValidated": self.cache_validated,
+            "actualZeroOneDynamicDeformationExecuted": False,
+            "actualZeroOneGpuRuntimeExecuted": False,
+            "actualZeroOneMobileRuntimeExecuted": False,
             "fallbackPreserved": self.fallback_preserved,
             "canonicalAuthorityPreserved": self.canonical_authority_preserved,
             "deterministicDerivative": self.deterministic_derivative,
@@ -51,6 +67,7 @@ class ZeroOneIntegrationResult:
                 "reason": self.tool.reason,
                 "executableSha256": self.tool.executable_sha256,
                 "version": self.tool.version,
+                "trustedBuildRecord": self.tool.trusted_build_record,
             },
             "report": self.report,
         }
@@ -62,6 +79,7 @@ def integrate_zeroone_static(
     invocation_root: Path,
     closy_sha: str,
     executable: Path | None = None,
+    trusted_build_record: Path | None = None,
     expected_executable_sha256: str | None = None,
     expected_zeroone_sha: str = PINNED_ZEROONE_SOURCE_SHA,
     publish: bool = True,
@@ -79,6 +97,7 @@ def integrate_zeroone_static(
             "canonical_package_validation_failed",
             resolve_zeroone_tool(
                 executable,
+                trusted_build_record=trusted_build_record,
                 expected_executable_sha256=expected_executable_sha256,
                 expected_source_sha=expected_zeroone_sha,
             ),
@@ -88,6 +107,7 @@ def integrate_zeroone_static(
 
     tool = resolve_zeroone_tool(
         executable,
+        trusted_build_record=trusted_build_record,
         expected_executable_sha256=expected_executable_sha256,
         expected_source_sha=expected_zeroone_sha,
     )
@@ -156,15 +176,22 @@ def integrate_zeroone_static(
             and report.get("canonicalAuthorityPreserved") is True
             for report in (cook_a, run_a_hit, cook_b, run_a["validate"], run_b["validate"])
         )
-        actual_runtime = all(
-            report.get("actualZeroOneRuntimeExecuted") is True
-            for report in (cook_a, run_a_hit, cook_b)
+        actual_static_cook = all(_static_cook_executed(report) for report in (cook_a, cook_b))
+        actual_static_artifact_loaded = all(
+            _static_artifact_loaded(report) for report in (cook_a, run_a_hit, cook_b)
         )
-        actual_compute = all(
-            report.get("actualZeroOneComputeExecuted") is True
-            for report in (cook_a, run_a_hit, cook_b)
+        cache_validated = (
+            run_a_hit.get("cacheState") == "hit"
+            and not _static_cook_executed(run_a_hit)
+            and _static_artifact_loaded(run_a_hit)
         )
-        if not (deterministic and authority_preserved and actual_runtime and actual_compute):
+        if not (
+            deterministic
+            and authority_preserved
+            and actual_static_cook
+            and actual_static_artifact_loaded
+            and cache_validated
+        ):
             return _failed(
                 tool,
                 package_root,
@@ -174,8 +201,9 @@ def integrate_zeroone_static(
                 {
                     "deterministicDerivative": deterministic,
                     "canonicalAuthorityPreserved": authority_preserved,
-                    "actualRuntimeExecuted": actual_runtime,
-                    "actualComputeExecuted": actual_compute,
+                    "actualZeroOneStaticCookExecutedThisInvocation": actual_static_cook,
+                    "actualZeroOneStaticArtifactLoaded": actual_static_artifact_loaded,
+                    "cacheValidated": cache_validated,
                 },
             )
 
@@ -241,8 +269,9 @@ def integrate_zeroone_static(
     return ZeroOneIntegrationResult(
         "valid" if accepted else "derivative_corrupt",
         "scoped_d0_cpu_static_derivative_valid" if accepted else "post_package_validation_failed",
-        actual_runtime,
-        actual_compute,
+        actual_static_cook,
+        actual_static_artifact_loaded,
+        cache_validated,
         fallback_preserved,
         authority_preserved and package_preserved,
         deterministic,
@@ -296,6 +325,8 @@ def _invoke(executable: Path, command: str, root: Path, request: Path) -> dict[s
         capture_output=True,
         text=True,
         timeout=180,
+        cwd=root,
+        env=minimal_subprocess_environment(),
     )
     lines = [line.strip() for line in completed.stdout.splitlines() if line.strip()]
     if not lines:
@@ -307,16 +338,14 @@ def _invoke(executable: Path, command: str, root: Path, request: Path) -> dict[s
             "stderrTail": completed.stderr[-1024:],
         }
     try:
-        report = json.loads(lines[-1])
-    except json.JSONDecodeError:
+        report = loads_strict_json_object(lines[-1])
+    except (json.JSONDecodeError, StrictJsonError):
         return {
             "schemaVersion": REPORT_SCHEMA_VERSION,
             "success": False,
             "exitCode": completed.returncode,
             "diagnostic": "zeroone_report_invalid_json",
         }
-    if not isinstance(report, dict):
-        raise ValueError("ZeroOne report root must be an object")
     if report.get("exitCode") != completed.returncode:
         report = dict(report)
         report["success"] = False
@@ -328,10 +357,33 @@ def _successful_compute_report(report: dict[str, Any]) -> bool:
     return (
         report.get("schemaVersion") == REPORT_SCHEMA_VERSION
         and report.get("success") is True
-        and report.get("actualZeroOneRuntimeExecuted") is True
-        and report.get("actualZeroOneComputeExecuted") is True
+        and _static_artifact_loaded(report)
         and report.get("canonicalAuthorityPreserved") is True
         and report.get("globalPhase10Complete") is False
+    )
+
+
+def _static_cook_executed(report: dict[str, Any]) -> bool:
+    if report.get("cacheState") == "hit":
+        return False
+    explicit = report.get("actualZeroOneStaticCookExecutedThisInvocation")
+    if isinstance(explicit, bool):
+        return explicit
+    # Historical processors used two ambiguous booleans; cache state narrows them to static truth.
+    return (
+        report.get("cacheState") == "miss"
+        and report.get("actualZeroOneRuntimeExecuted") is True
+        and report.get("actualZeroOneComputeExecuted") is True
+    )
+
+
+def _static_artifact_loaded(report: dict[str, Any]) -> bool:
+    explicit = report.get("actualZeroOneStaticArtifactLoaded")
+    if isinstance(explicit, bool):
+        return explicit
+    return (
+        report.get("actualZeroOneRuntimeExecuted") is True
+        and report.get("actualZeroOneComputeExecuted") is True
     )
 
 
@@ -351,45 +403,57 @@ def _publish_derivative(
     if target.exists() and not replace_existing:
         raise FileExistsError(f"optional ZeroOne derivative already exists: {target}")
     namespace.mkdir(parents=True, exist_ok=True)
-    staging = namespace / ".static-d0.staging"
-    if staging.exists():
-        shutil.rmtree(staging)
-    staging.mkdir()
-    shutil.copytree(source, staging / "derivative")
-    write_canonical_json(staging / "request.json", request)
-    write_canonical_json(staging / "processing_report.json", clean_run["cook"])
-    write_canonical_json(staging / "validation_report.json", clean_run["validate"])
-    write_canonical_json(
-        staging / "compatibility.json",
-        {
-            "schemaVersion": "closy.zeroone.compatibility.v1",
-            "profile": clean_run["cook"].get("profile"),
-            "requestSchemaVersion": request.get("schemaVersion"),
-            "reportSchemaVersion": clean_run["cook"].get("schemaVersion"),
-            "canonicalDerivativeHash": clean_run["cook"].get("canonicalDerivativeHash"),
-            "fallbackRequired": True,
-            "dynamicDeformationAvailable": False,
-        },
-    )
-    write_canonical_json(
-        staging / "provenance.json",
-        {
-            "schemaVersion": "closy.zeroone.provenance.v1",
-            "closyGitSha": request.get("producer", {}).get("closyGitSha"),
-            "zeroOneGitSha": clean_run["cook"].get("zeroOneGitSha"),
-            "executableSha256": tool.executable_sha256,
-            "canonicalAuthorityHashes": authority_hashes(request),
-            "outputHashes": clean_run["cook"].get("outputHashes"),
-            "cacheMissState": clean_run["cook"].get("cacheState"),
-            "cacheHitState": cache_hit.get("cacheState"),
-            "actualZeroOneRuntimeExecuted": True,
-            "actualZeroOneComputeExecuted": True,
-            "globalPhase10Complete": False,
-        },
-    )
-    if target.exists():
-        shutil.rmtree(target)
-    staging.replace(target)
+    staging = create_managed_staging(target, allowed_root=namespace, purpose="zeroone-static-d0")
+    try:
+        copy_verified_derivative(source, staging)
+        write_canonical_json(staging / "request.json", request)
+        write_canonical_json(staging / "processing_report.json", clean_run["cook"])
+        write_canonical_json(staging / "validation_report.json", clean_run["validate"])
+        write_canonical_json(
+            staging / "compatibility.json",
+            {
+                "schemaVersion": "closy.zeroone.compatibility.v1",
+                "profile": clean_run["cook"].get("profile"),
+                "requestSchemaVersion": request.get("schemaVersion"),
+                "reportSchemaVersion": clean_run["cook"].get("schemaVersion"),
+                "canonicalDerivativeHash": clean_run["cook"].get("canonicalDerivativeHash"),
+                "fallbackRequired": True,
+                "dynamicDeformationAvailable": False,
+            },
+        )
+        write_canonical_json(
+            staging / "provenance.json",
+            {
+                "schemaVersion": "closy.zeroone.provenance.v1",
+                "closyGitSha": request.get("producer", {}).get("closyGitSha"),
+                "zeroOneGitSha": clean_run["cook"].get("zeroOneGitSha"),
+                "executableSha256": tool.executable_sha256,
+                "canonicalAuthorityHashes": authority_hashes(request),
+                "outputHashes": clean_run["cook"].get("outputHashes"),
+                "cacheMissState": clean_run["cook"].get("cacheState"),
+                "cacheHitState": cache_hit.get("cacheState"),
+                "actualZeroOneStaticCookExecutedThisInvocation": True,
+                "actualZeroOneStaticArtifactLoaded": True,
+                "cacheValidated": True,
+                "actualZeroOneDynamicDeformationExecuted": False,
+                "actualZeroOneGpuRuntimeExecuted": False,
+                "actualZeroOneMobileRuntimeExecuted": False,
+                "globalPhase10Complete": False,
+            },
+        )
+        write_namespace_manifest(staging)
+        validate_namespace_manifest(staging)
+        publish_managed_staging(
+            staging,
+            target,
+            allowed_root=namespace,
+            purpose="zeroone-static-d0",
+            force=replace_existing,
+        )
+    except BaseException:
+        cleanup_managed_staging(staging, allowed_root=namespace, purpose="zeroone-static-d0")
+        raise
+    validate_namespace_manifest(target)
     return target
 
 
@@ -423,7 +487,7 @@ def _validation_passed(report: dict[str, Any]) -> bool:
 
 def _bounded_report(value: dict[str, Any]) -> dict[str, Any]:
     report = value.get("cook", value)
-    return {
+    bounded = {
         key: report.get(key)
         for key in (
             "success",
@@ -431,13 +495,14 @@ def _bounded_report(value: dict[str, Any]) -> dict[str, Any]:
             "diagnostic",
             "cacheState",
             "canonicalDerivativeHash",
-            "actualZeroOneRuntimeExecuted",
-            "actualZeroOneComputeExecuted",
             "canonicalAuthorityPreserved",
             "timingsMs",
             "peakMemoryBytes",
         )
     }
+    bounded["actualZeroOneStaticCookExecutedThisInvocation"] = _static_cook_executed(report)
+    bounded["actualZeroOneStaticArtifactLoaded"] = _static_artifact_loaded(report)
+    return bounded
 
 
 def _unexecuted(
@@ -450,6 +515,7 @@ def _unexecuted(
     return ZeroOneIntegrationResult(
         status,
         reason,
+        False,
         False,
         False,
         fallback_preserved,
@@ -474,6 +540,7 @@ def _failed(
     return ZeroOneIntegrationResult(
         "process_failed",
         reason,
+        False,
         False,
         False,
         fallback_preserved,

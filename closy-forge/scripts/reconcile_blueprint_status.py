@@ -4,13 +4,42 @@ import argparse
 import json
 from pathlib import Path
 
+from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
-EVIDENCE_ANCHOR = "13c3d281843750c7bcd9db50e309ed129066e9fe"
-VERSION = "closy.blueprint_coverage.integrity_reconciliation.v1"
-GENERATED_BY = (
-    "Canonical C3, learned Phase 9, and real static Phase 10 reconciliation at " + EVIDENCE_ANCHOR
-)
+EVIDENCE_ANCHOR = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
+VERSION = "closy.blueprint_coverage.evidence_security_integrity.v2"
+GENERATED_BY = "Scoped gate, evidence security, and PR DAG reconciliation at " + EVIDENCE_ANCHOR
+PR23_FINAL_RUN = "33150483293"
+PR23_FINAL_HEAD = EVIDENCE_ANCHOR
+PR23_FINAL_JOB_IDS = {
+    "Contracts static Ubuntu Python 3.11": "98781060581",
+    "Integration shard-1 Ubuntu Python 3.11": "98781060668",
+    "Integration shard-0 Ubuntu Python 3.11": "98781060705",
+    "Tests shard-3 windows-latest Python 3.11": "98781060728",
+    "Families structured ubuntu-latest Python 3.11": "98781060771",
+    "Tests shard-3 ubuntu-latest Python 3.12": "98781060791",
+    "Tests shard-0 ubuntu-latest Python 3.12": "98781060896",
+    "Families lower ubuntu-latest Python 3.12": "98781060919",
+    "Families upper ubuntu-latest Python 3.12": "98781060931",
+    "Tests shard-1 ubuntu-latest Python 3.11": "98781060938",
+    "Families lower windows-latest Python 3.11": "98781060941",
+    "Families lower ubuntu-latest Python 3.11": "98781060947",
+    "Families upper windows-latest Python 3.11": "98781060965",
+    "Families structured ubuntu-latest Python 3.12": "98781060976",
+    "Families upper ubuntu-latest Python 3.11": "98781060978",
+    "Tests shard-1 windows-latest Python 3.11": "98781060997",
+    "Tests shard-0 ubuntu-latest Python 3.11": "98781061003",
+    "Tests shard-2 windows-latest Python 3.11": "98781061014",
+    "Families structured windows-latest Python 3.11": "98781061015",
+    "Tests shard-1 ubuntu-latest Python 3.12": "98781061022",
+    "Tests shard-2 ubuntu-latest Python 3.12": "98781061066",
+    "Tests shard-0 windows-latest Python 3.11": "98781061096",
+    "Tests shard-2 ubuntu-latest Python 3.11": "98781061187",
+    "Tests shard-3 ubuntu-latest Python 3.11": "98781061564",
+    "Cross-platform and cross-minor digest consistency": "98782039797",
+    "Forge required": "98784926669",
+}
 
 PHASE10_PATHS = [
     "closy-forge/src/closy_forge/zeroone/integration.py",
@@ -68,18 +97,17 @@ ROW_UPDATES = {
         ),
     },
     "BP-09-Z1": {
-        "status": "complete",
+        "status": "partial",
         "summary": (
-            "ZeroOne stage Z1 passes for the exact tested Windows MSVC Release D0 CPU/static "
-            "profile."
+            "ZeroOne Z1 has a historical local pass for the exact Windows MSVC Release D0 "
+            "CPU/headless static T-shirt and layered-asymmetric profile."
         ),
         "limitations": (
-            "This is not global Phase 10 completion: mobile, broader garment/provider, "
-            "turntable/human-review, and other profiles remain unrun."
+            "The source PR was owner-closed unmerged and current ZeroOne master is not yet "
+            "requalified; global Z1 and Phase 10 remain partial."
         ),
         "nextAction": (
-            "Retain the pinned Z1 profile while adding human visual review, broader provider "
-            "evidence, and mobile execution without changing package authority."
+            "Requalify current ZeroOne master and refresh paired Closy static evidence."
         ),
     },
     "BP-09-GEOMOTREE": {
@@ -131,18 +159,25 @@ ROW_UPDATES = {
         ),
     },
     "BP-18-GATE-Z1": {
-        "status": "complete",
+        "status": "partial",
+        "summary": ("Gate Z1 retains a historical local scoped pass; global Z1 remains partial."),
+        "limitations": (
+            "Current ZeroOne master, durable workflow execution, mobile, dynamic deformation, "
+            "provider breadth, and human review are not established."
+        ),
+        "nextAction": "Requalify current master, then regenerate paired scoped Z1 evidence.",
+    },
+    "BP-18-GATE-C3": {
+        "status": "partial",
         "summary": (
-            "Gate Z1 passes only for the exact tested D0 CPU/static Windows MSVC Release profile."
+            "C3-Binding-D0 is the master-blueprint dynamic-binding gate and requires separate "
+            "literal requalification against topology, binding, poses, topology hash, and frames."
         ),
         "limitations": (
-            "The scoped Z1 pass does not imply global Phase 10, Z2, mobile, dynamic deformation, "
-            "provider breadth, or human-review completion."
+            "Earlier reports conflated C3 binding with the stricter PHY1 physical campaign; "
+            "neither a fresh binding pass nor a PHY1 pass is claimed here."
         ),
-        "nextAction": (
-            "Preserve the exact pinned static profile and close the independent C3 blocker "
-            "before any Phase 11 work."
-        ),
+        "nextAction": "Run literal C3-Binding-D0 independently from PHY1-SingleLayer-D0.",
     },
     "BP-20-RESEARCH-PROTOTYPE": {
         "status": "partial",
@@ -274,15 +309,15 @@ NEXT_ACTIONS = {
         "provider, private, hardware, and human-review evidence."
     ),
     "BP-17-PHASE-10": (
-        "Run human visual review and broaden provider/mobile evidence; do not begin Phase 11 "
-        "while C3 remains partial."
+        "Requalify current ZeroOne master and refresh paired scoped Z1; keep global Phase 10 "
+        "partial pending broader provider, mobile, and human-review evidence."
     ),
     "BP-17-PHASE-11": (
         "Begin actual dynamic deformation only after scoped C3 and real ZeroOne static gates pass."
     ),
     "BP-18-GATE-C3": (
-        "Resolve stitched-shell body clearance/source correspondence and zero or budget the "
-        "remaining recomputed collision penetrations without widening thresholds."
+        "Requalify the five literal C3-Binding-D0 requirements separately from the stricter "
+        "PHY1-SingleLayer-D0 physical campaign."
     ),
     "BP-20-RESEARCH-PROTOTYPE": (
         "Integrate corrected topology, scoped C3, trained synthetic D0 inference, and real ZeroOne "
@@ -299,7 +334,12 @@ def main() -> int:
     docs = args.docs.resolve()
     coverage_path = docs / "blueprint_coverage.json"
     stack_path = docs / "pr_stack_manifest.json"
-    coverage = json.loads(coverage_path.read_text(encoding="utf-8"))
+    coverage_value = _replace_legacy_truth_terms(
+        json.loads(coverage_path.read_text(encoding="utf-8"))
+    )
+    if not isinstance(coverage_value, dict):
+        raise ValueError("coverage authority root must be an object")
+    coverage = coverage_value
     coverage["version"] = VERSION
     coverage["generatedBy"] = GENERATED_BY
     for row in coverage["rows"]:
@@ -319,14 +359,23 @@ def main() -> int:
         if row_id in NEXT_ACTIONS:
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id != "BP-09-Z1":
+            stage = row_id.removeprefix("BP-09-")
+            row["status"] = "discovery_pending"
+            row["summary"] = f"ZeroOne stage {stage} is not implemented or executed."
+            row["limitations"] = (
+                "No compiled dynamic, GPU, mobile, provider, or product evidence exists for "
+                f"{stage}; static Z1 evidence must not be replayed into this stage."
+            )
             row["nextAction"] = (
-                "Implement and validate the scoped task-owned ZeroOne garment path; do not infer "
-                "global gate completion from repository access."
+                f"Implement and execute {stage} only after its explicit prerequisites pass."
             )
     coverage_path.write_text(
         json.dumps(coverage, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
-    stack = json.loads(stack_path.read_text(encoding="utf-8"))
+    stack = _upgrade_stack_to_dag(json.loads(stack_path.read_text(encoding="utf-8")))
+    stack_path.write_text(
+        json.dumps(stack, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+    )
     model = build_status_model(coverage, stack, evidence_anchor_sha=EVIDENCE_ANCHOR)
     (docs / "current_blueprint_status.json").write_text(
         json.dumps(model, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
@@ -340,6 +389,93 @@ def main() -> int:
 def _append_unique(current: object, additions: list[str]) -> list[str]:
     values = list(current) if isinstance(current, list) else []
     return values + [value for value in additions if value not in values]
+
+
+def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
+    rows = list(stack["pullRequests"])  # type: ignore[arg-type]
+    for row in rows:
+        if int(row["number"]) != 23:
+            continue
+        row["headSha"] = PR23_FINAL_HEAD
+        row["layerAhead"] = 14
+        row["layerCommitCount"] = 14
+        row["changedFileCount"] = 24
+        row["latestExactHeadForgeRun"] = {
+            "exactHead": True,
+            "runId": PR23_FINAL_RUN,
+            "jobs": [
+                {"jobId": job_id, "name": name, "conclusion": "SUCCESS"}
+                for name, job_id in PR23_FINAL_JOB_IDS.items()
+            ],
+        }
+    nodes: list[dict[str, object]] = []
+    edges: list[dict[str, str]] = []
+    for index, row in enumerate(rows):
+        node_id = f"github:jake-the-jake/Closy:pr/{row['number']}"
+        parent_ids: list[str] = []
+        if index:
+            parent_id = f"github:jake-the-jake/Closy:pr/{rows[index - 1]['number']}"
+            parent_ids.append(parent_id)
+            edges.extend(
+                (
+                    {"from": parent_id, "to": node_id, "kind": "parent"},
+                    {"from": parent_id, "to": node_id, "kind": "dependency"},
+                )
+            )
+        nodes.append(
+            {
+                "id": node_id,
+                "repository": row["repository"],
+                "pullRequest": row["number"],
+                "capabilityRole": _capability_role(str(row["title"])),
+                "branch": row["branch"],
+                "baseRef": row["baseBranch"],
+                "baseSha": row["baseSha"],
+                "headSha": row["headSha"],
+                "parentIds": parent_ids,
+                "dependencyIds": list(parent_ids),
+                "uniqueCommitRange": f"{row['baseSha']}..{row['headSha']}",
+                "integrationMappings": [],
+                "sourceOnly": False,
+                "superseded": False,
+                "mergeEligible": True,
+                "neverMergeWith": [],
+                "latestExactHeadForgeRun": row["latestExactHeadForgeRun"],
+            }
+        )
+    stack["schemaVersion"] = 2
+    stack["graphVersion"] = "closy.pr_stack.dag.v2"
+    stack["topology"] = "explicit_dag"
+    stack["nodes"] = nodes
+    stack["edges"] = edges
+    stack["validation"] = {
+        "acyclic": True,
+        "exactMergeBases": True,
+        "replayedCommonAncestryAbsent": True,
+        "mode": "read_only_git_graph_verification",
+    }
+    issues = validate_pr_dag(stack)
+    if issues:
+        raise ValueError(";".join(issues))
+    return stack
+
+
+def _capability_role(title: str) -> str:
+    return "_".join(
+        "".join(character.lower() if character.isalnum() else " " for character in title).split()
+    )
+
+
+def _replace_legacy_truth_terms(value: object) -> object:
+    if isinstance(value, str):
+        return value.replace(
+            "actualZeroOneRuntimeExecuted", "actualZeroOneStaticCookExecutedThisInvocation"
+        )
+    if isinstance(value, list):
+        return [_replace_legacy_truth_terms(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _replace_legacy_truth_terms(item) for key, item in value.items()}
+    return value
 
 
 if __name__ == "__main__":
