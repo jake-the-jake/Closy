@@ -3,6 +3,7 @@ from __future__ import annotations
 from closy_forge.geometry.mesh_model import Mesh, MeshSet
 from closy_forge.simulation.self_collision import (
     SelfCollisionSettings,
+    _correction_preserves_local_orientation,
     analyze_self_collision,
     analyze_swept_self_collision,
     broad_phase_candidates,
@@ -97,6 +98,22 @@ def test_self_collision_projection_respects_fixed_support_inverse_mass() -> None
     assert diagnostics["totalCorrectionCount"] > 0
     assert corrected[:3] == positions[:3]
     assert any(corrected[index] != positions[index] for index in range(3, 6))
+
+
+def test_orientation_guard_rejects_gradual_crossing_of_frozen_rest_normal() -> None:
+    reference = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    current = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 0.01, 1.0)]
+    deltas = {2: (0.0, -0.02, 0.0)}
+
+    accepted = _correction_preserves_local_orientation(
+        current,
+        reference,
+        deltas,
+        1.0,
+        {2: ((0, 1, 2),)},
+    )
+
+    assert accepted is False
 
 
 def test_uniform_grid_broad_phase_is_deterministic_and_oracle_complete() -> None:

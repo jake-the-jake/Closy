@@ -221,10 +221,14 @@ def project_self_collisions(
     fixed_indices: set[int] | None = None,
     settings: SelfCollisionSettings | None = None,
     excluded_vertex_pairs: set[tuple[int, int]] | None = None,
+    orientation_reference_positions: list[Vec3] | None = None,
 ) -> tuple[list[Vec3], dict[str, Any]]:
     active_settings = settings or SelfCollisionSettings()
     fixed = fixed_indices or set()
     current = list(positions)
+    orientation_reference = orientation_reference_positions or positions
+    if len(orientation_reference) != len(positions):
+        raise ValueError("self_collision_orientation_reference_size_mismatch")
     incident_triangles = _incident_triangle_map(triangles)
     total_corrections = 0
     total_backtracks = 0
@@ -263,6 +267,7 @@ def project_self_collisions(
             backtracks = 0
             while backtracks < 5 and not _correction_preserves_local_orientation(
                 current,
+                orientation_reference,
                 deltas,
                 line_scale,
                 incident_triangles,
@@ -272,6 +277,7 @@ def project_self_collisions(
             total_backtracks += backtracks
             if not _correction_preserves_local_orientation(
                 current,
+                orientation_reference,
                 deltas,
                 line_scale,
                 incident_triangles,
@@ -488,6 +494,9 @@ def build_self_collision_report(
         fixed_indices=_support_like_indices(rest_mesh, offsets),
         settings=active_settings,
         excluded_vertex_pairs=excluded_pairs,
+        orientation_reference_positions=[
+            vertex for mesh in rest_mesh.meshes for vertex in mesh.vertices
+        ],
     )
     corrected_mesh = replace_mesh_positions(settled_mesh, corrected_positions, offsets)
     after = analyze_self_collision(
@@ -1350,6 +1359,7 @@ def _incident_triangle_map(triangles: list[TriangleRef]) -> dict[int, tuple[Tri,
 
 def _correction_preserves_local_orientation(
     positions: list[Vec3],
+    reference_positions: list[Vec3],
     deltas: dict[int, Vec3],
     line_scale: float,
     incident_triangles: dict[int, tuple[Tri, ...]],
@@ -1360,6 +1370,11 @@ def _correction_preserves_local_orientation(
         for triangle in incident_triangles.get(vertex_index, ())
     }
     for triangle in local_triangles:
+        reference = tuple(reference_positions[index] for index in triangle)
+        reference_normal = cross(
+            sub(reference[1], reference[0]), sub(reference[2], reference[0])
+        )
+        reference_area_squared = _dot(reference_normal, reference_normal)
         before = tuple(positions[index] for index in triangle)
         before_normal = cross(sub(before[1], before[0]), sub(before[2], before[0]))
         before_area_squared = _dot(before_normal, before_normal)
@@ -1370,9 +1385,16 @@ def _correction_preserves_local_orientation(
             for index in triangle
         )
         after_normal = cross(sub(after[1], after[0]), sub(after[2], after[0]))
+        after_area_squared = _dot(after_normal, after_normal)
         if (
-            _dot(after_normal, after_normal) <= before_area_squared * 1e-10
+            after_area_squared <= max(before_area_squared * 1e-10, reference_area_squared * 1e-12)
             or _dot(before_normal, after_normal) <= 0.0
+        ):
+            return False
+        if (
+            reference_area_squared > 1e-20
+            and _dot(reference_normal, before_normal) > 0.0
+            and _dot(reference_normal, after_normal) <= 0.0
         ):
             return False
     return True
