@@ -4,12 +4,13 @@ This checkpoint is subordinate to the machine-readable authorities
 `current_blueprint_status.json`, `blueprint_coverage.json`, and `pr_stack_manifest.json`.
 Green CI proves only the checks that ran; it does not promote a global blueprint phase.
 
-## Verified Base
+## Verified C3 Increment
 
 - Repository: `jake-the-jake/Closy`.
-- Integrity branch: `codex/closy-forge-evidence-topology-physics-integrity`.
-- Direct parent: draft PR #19, `codex/closy-forge-phases-10-14-runnable-foundations`.
-- Parent/base SHA: `e83e1e897c9539d246926f8148c5a9ac347982d1`.
+- C3 branch: `codex/closy-forge-c3-collision-closeout`.
+- Direct parent: `codex/closy-forge-evidence-topology-physics-integrity`.
+- Parent/base SHA: `5908b4af0aa326a0d7b5bf57a9da3009a03f156c`.
+- C3 implementation SHA: `628738e5e8bc2da89be2ae1c349d9a2a220d8839`.
 - `main`: `859d4ee9a8a3386e95ec8c29043aa9ecc246769a`.
 - Parent is 152 commits ahead and 0 behind `main`; its own layer is six commits and fifteen
   changed files.
@@ -23,7 +24,9 @@ Green CI proves only the checks that ran; it does not promote a global blueprint
 - Requirement rows before this integrity layer: 20 complete, 57 partial, 8 not started,
   16 discovery pending, 101 total.
 - Phase 0 is complete. Phases 1-14 are partial.
-- C1 and C2 have scoped passing evidence. C3, Z1, Z2, and P1 remain partial.
+- C1 and C2 have scoped passing evidence. C3 remains partial after independent metric repair;
+  Z1 is separately scoped in the task-owned ZeroOne repository, while global Z1, Z2, and P1
+  remain partial.
 - Research prototype is partial. Alpha, Beta, and Production are not started.
 - The eight Phase 8 bundles are deterministic D0 fixture artifact bundles and family vertical
   slices. They are not globally complete garment families.
@@ -31,17 +34,17 @@ Green CI proves only the checks that ran; it does not promote a global blueprint
   report/schema fixtures. They are not actual ZeroOne execution, actual deformation compute,
   production compression, physical-device proof, private-user fitting, or completed training.
 
-## Reproduced Integrity Defects
+## Recomputed C3 Truth
 
-- The pre-fix centroid fan emits outside-polygon triangles in all trousers panels: front left 3,
-  front right 3, back left 5, and back right 5.
-- Seam construction truncates unequal sampled spans to the shorter span.
-- The solver identifies itself as XPBD but performs stiffness-weighted PBD projection without
-  accumulated multipliers or compliance.
-- The current T-shirt package reports 226 self-collision contacts at settle analysis and the
-  authoritative correction report retains 205 unresolved contacts with maximum penetration
-  `0.002390163 m`.
-- The same settle reports generic `converged` despite maximum strain `6.58349836`.
+- Independent area/surface/landmark agreement passes without using unweighted vertex centroids.
+- Relative seam slip is `0.016578367 m` after subtracting shared cloth motion; seam crack is
+  `0.057059358 m`, both inside their unchanged thresholds.
+- The persisted stitched render shell fails all eleven states, including minimum signed body
+  clearance `-0.099391794 m` and an existing source-correspondence proof failure.
+- The authoritative self-collision report records `271` contacts before correction and `137`
+  unresolved contacts after correction, with `0.002327721 m` residual depth against the declared
+  `0.000160000 m` budget.
+- Bounded swept fixtures pass, but CCD response is not integrated into the reference motion solver.
 - Phase 9 has 24 samples whose template identities cross every split; category, panel count, and
   opening count leak the target, and a generated correction fixture is mislabeled as human.
 
@@ -55,8 +58,10 @@ Green CI proves only the checks that ran; it does not promote a global blueprint
 4. Replace centroid fans with deterministic concave-safe triangulation and full-span seam maps.
 5. Implement actual XPBD coupling, material applicability, lower-body/layer contacts, independent
    rerender fidelity, and honest physical acceptance.
-6. Close only the exact scoped C3 CPU profile, train an identity-disjoint synthetic D0 model, and
-   integrate the pinned real ZeroOne static processor on child branches.
+6. Resolve the measured stitched-shell/body and self-collision blockers; do not promote C3 from
+   partial until the literal gate passes.
+7. Train the identity-disjoint synthetic D0 Phase 9 model and integrate the pinned real ZeroOne
+   static processor on child branches independently of the failed C3 gate.
 
 ## Preserved Local State
 
@@ -71,8 +76,8 @@ The original Closy checkout remains untouched with unrelated edits in `metro.con
 Continue from the task-owned worktree:
 
 ```powershell
-cd E:\apps\Closy-integrity\closy-forge
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_blueprint_coverage.py
+cd E:\apps\Closy-c3\closy-forge
+py -3.11 -m pytest tests\unit\test_production_binding_c3.py
 ```
 
 Do not merge, retarget, force-push, or write to `main`.

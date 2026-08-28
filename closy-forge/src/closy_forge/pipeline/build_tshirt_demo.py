@@ -1445,7 +1445,7 @@ def _manifest(
         "warnings": [
             "self_collision_d0_reference_only",
             "self_collision_unresolved_contacts_d0_reference",
-            "unsupported_high_velocity_tunnelling",
+            "bounded_ccd_not_integrated_into_reference_motion_solver",
             "synthetic_capture_metadata_only",
             "d0_pixel_parser_synthetic_fixture_only",
             "d0_multiview_fusion_synthetic_fixture_only",
@@ -2683,7 +2683,7 @@ def _provenance(
         "warnings": [
             "self_collision_d0_reference_only",
             "self_collision_unresolved_contacts_d0_reference",
-            "unsupported_high_velocity_tunnelling",
+            "bounded_ccd_not_integrated_into_reference_motion_solver",
             "performance_wall_clock_omitted_from_canonical_digest",
             "manual_raw_geometry_proposal_not_canonical",
             "geometry_binding_candidate_not_runtime_binding",
@@ -3734,8 +3734,8 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"high velocity=`{summary['selfCollision']['highVelocityTunnelling']}`\n"
         f"- Binding max error: {summary['binding']['maximumReconstructionError']:.8f}\n"
         f"- Validation: {validation['status']} {validation['counts']}\n"
-        "- Limitation: self-collision is D0 reference-only; high-velocity tunnelling is "
-        "explicitly unsupported.\n"
+        "- Limitation: self-collision is D0 reference-only; bounded swept fixtures run, but "
+        "CCD response is not integrated into the reference motion solver.\n"
     )
 
 

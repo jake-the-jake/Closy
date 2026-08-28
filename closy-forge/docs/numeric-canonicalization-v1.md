@@ -43,3 +43,8 @@ were accepted.
 The same run retained package validation, byte-identical clean rebuilds, and the full canonical
 inventory comparison. Its cumulative lane failed only because the old golden constants above had
 not yet been transitioned; the corrected exact-head rerun is the acceptance authority.
+
+Downstream package layers that add canonical evidence have their own derived package digest. The
+C3 child layer moved from `c8e3fee54cb6625664f131eb605a42759a1b5c283ef4da6dc717c2ea6f6c8faf`
+to `2a97db3332ffce56f44c5ed7ff4bd5eb037c67219f3bcdc66e0131036f6c15d1` under the same
+policy; its exact-head cross-minor matrix is the authority for that child digest.

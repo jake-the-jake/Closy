@@ -1,5 +1,5 @@
 {
-  "canonicalPackageDigest": "617200c174cb583df0cbcf59c113b3b853a4668b89416cbdca3b6bab521d56a1",
+  "canonicalPackageDigest": "2a97db3332ffce56f44c5ed7ff4bd5eb037c67219f3bcdc66e0131036f6c15d1",
   "capabilities": {
     "acceptedForD0PublicFixture": false,
     "actualClothSettleAvailable": true,
@@ -156,7 +156,7 @@
   },
   "selfCollision": {
     "acceptedForProductionGpuSolver": false,
-    "highVelocityTunnelling": "unsupported_high_velocity_tunnelling",
+    "highVelocityTunnelling": "pass",
     "status": "d0_reference_self_collision_run_with_unresolved_contacts",
     "unresolvedContactCount": 137
   },

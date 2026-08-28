@@ -21,7 +21,9 @@ from closy_forge.package_io.hashing import (
 from closy_forge.simulation.seam_mapping import span_position_flat
 
 PRODUCTION_BINDING_CONTRACT_VERSION = "closy.production_binding_contract.d0_tshirt.v1"
-PRODUCTION_BINDING_C3_REPORT_VERSION = "closy.production_binding_c3.d0_tshirt.integrity_v2"
+PRODUCTION_BINDING_C3_REPORT_VERSION = (
+    "closy.production_binding_c3.d0_tshirt.independent_metrics_v3"
+)
 
 _MOTION_STATE_IDS = [
     "neutral_settled",

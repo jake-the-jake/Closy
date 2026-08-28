@@ -9,7 +9,7 @@ from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
 
-SELF_COLLISION_REPORT_VERSION = "closy.self_collision.reference_d0.integrated_v2"
+SELF_COLLISION_REPORT_VERSION = "closy.self_collision.reference_d0.integrated_ccd_v3"
 
 _ORACLE_DIRECTIONS: tuple[Vec3, ...] = (
     (1.0, 1.0, 1.0),
@@ -29,10 +29,16 @@ class SelfCollisionSettings:
     correction_fraction: float = 0.55
     max_iterations: int = 3
     epsilon_meters: float = 1e-9
+    residual_depth_budget_ratio: float = 0.10
+    maximum_ccd_substeps: int = 64
 
     @property
     def contact_threshold_meters(self) -> float:
         return self.thickness_meters + self.clearance_meters
+
+    @property
+    def residual_depth_budget_meters(self) -> float:
+        return self.thickness_meters * self.residual_depth_budget_ratio
 
 
 @dataclass(frozen=True)
@@ -64,6 +70,16 @@ class SelfCollisionAnalysis:
     mean_penetration_meters: float
     unresolved_contact_count: int
     broad_phase_matches_oracle: bool
+
+
+@dataclass(frozen=True)
+class SweptCollisionAnalysis:
+    status: str
+    supported: bool
+    substep_count: int
+    first_contact_fraction: float | None
+    contact_count: int
+    max_penetration_meters: float
 
 
 def build_triangle_refs(meshset: MeshSet) -> tuple[list[TriangleRef], list[int]]:
@@ -131,6 +147,67 @@ def analyze_self_collision_positions(
             1 for value in penetrations if value > settings.epsilon_meters
         ),
         broad_phase_matches_oracle=not evaluate_oracle or set(oracle).issubset(candidates),
+    )
+
+
+def analyze_swept_self_collision(
+    previous_positions: list[Vec3],
+    current_positions: list[Vec3],
+    triangles: list[TriangleRef],
+    settings: SelfCollisionSettings,
+    *,
+    excluded_vertex_pairs: set[tuple[int, int]] | None = None,
+    maximum_substeps: int | None = None,
+) -> SweptCollisionAnalysis:
+    """Bounded conservative temporal subdivision for the D0 CPU CCD fixture profile."""
+
+    if len(previous_positions) != len(current_positions):
+        raise ValueError("swept_collision_position_count_mismatch")
+    if not previous_positions:
+        return SweptCollisionAnalysis("pass_no_vertices", True, 0, None, 0, 0.0)
+    displacement = max(
+        _length(sub(current, previous))
+        for previous, current in zip(previous_positions, current_positions, strict=True)
+    )
+    sampling_distance = max(settings.contact_threshold_meters * 0.5, settings.epsilon_meters)
+    required_substeps = max(1, int(displacement / sampling_distance) + 1)
+    limit = maximum_substeps or settings.maximum_ccd_substeps
+    if required_substeps > limit:
+        return SweptCollisionAnalysis(
+            "unsupported_motion_exceeds_bounded_substeps",
+            False,
+            required_substeps,
+            None,
+            0,
+            0.0,
+        )
+    first_fraction: float | None = None
+    maximum_contacts = 0
+    maximum_penetration = 0.0
+    for step in range(required_substeps + 1):
+        fraction = step / required_substeps
+        positions = [
+            add(previous, scale(sub(current, previous), fraction))
+            for previous, current in zip(previous_positions, current_positions, strict=True)
+        ]
+        analysis = analyze_self_collision_positions(
+            positions,
+            triangles,
+            settings,
+            excluded_vertex_pairs=excluded_vertex_pairs,
+            evaluate_oracle=False,
+        )
+        if analysis.contacts and first_fraction is None:
+            first_fraction = fraction
+        maximum_contacts = max(maximum_contacts, len(analysis.contacts))
+        maximum_penetration = max(maximum_penetration, analysis.max_penetration_meters)
+    return SweptCollisionAnalysis(
+        "contact_detected" if first_fraction is not None else "no_contact",
+        True,
+        required_substeps,
+        first_fraction,
+        maximum_contacts,
+        maximum_penetration,
     )
 
 
@@ -354,6 +431,22 @@ def build_self_collision_report(
         all(isfinite(component) for component in vertex) for vertex in corrected_positions
     )
     unresolved = after.unresolved_contact_count
+    adversarial_fixtures = _adversarial_fixture_results(active_settings)
+    ccd_fixture_pass = all(
+        item.get("status") == "pass"
+        for key, item in adversarial_fixtures.items()
+        if key
+        in {
+            "highVelocityTunnelling",
+            "thinLayerSweep",
+            "openingBoundarySweep",
+            "boundedUnsupportedMotion",
+        }
+    )
+    residual_depth_within_budget = (
+        after.max_penetration_meters <= active_settings.residual_depth_budget_meters
+    )
+    literal_collision_pass = (unresolved == 0 or residual_depth_within_budget) and ccd_fixture_pass
     report: dict[str, Any] = {
         "schemaVersion": 1,
         "reportId": "self_collision.demo_tshirt_reference_d0_v1",
@@ -391,6 +484,9 @@ def build_self_collision_report(
             "seamExclusion": "seam_constraint_vertex_pairs_excluded",
             "seamExcludedVertexPairCount": len(excluded_pairs),
             "fixedSupportPolicy": "support_like_vertices_are_not_moved_by_self_collision",
+            "residualDepthBudgetMeters": active_settings.residual_depth_budget_meters,
+            "residualDepthBudgetBasis": "ten_percent_of_declared_material_thickness",
+            "maximumCcdSubsteps": active_settings.maximum_ccd_substeps,
         },
         "execution": {
             "selfCollisionRun": True,
@@ -404,7 +500,9 @@ def build_self_collision_report(
             "bodyCollisionCompatible": True,
             "seamConstraintCompatible": True,
             "fixedSupportCompatible": True,
-            "continuousCollisionDetectionRun": False,
+            "continuousCollisionDetectionRun": True,
+            "continuousCollisionDetectionScope": "bounded_d0_adversarial_fixture_suite_only",
+            "continuousCollisionIntegratedIntoReferenceMotionSolver": False,
         },
         "metrics": {
             "triangleCount": len(triangles),
@@ -419,6 +517,7 @@ def build_self_collision_report(
             "maxPenetrationAfterMeters": _round(after.max_penetration_meters),
             "meanPenetrationBeforeMeters": _round(before.mean_penetration_meters),
             "unresolvedContactCount": after.unresolved_contact_count,
+            "residualDepthWithinBudget": residual_depth_within_budget,
             "correction": correction,
             "unresolvedCountsMonotonicNonIncreasing": correction[
                 "unresolvedCountsMonotonicNonIncreasing"
@@ -436,7 +535,7 @@ def build_self_collision_report(
             ],
             "contactSamples": [_contact_payload(contact) for contact in before.contacts[:8]],
         },
-        "adversarialFixtures": _adversarial_fixture_results(active_settings),
+        "adversarialFixtures": adversarial_fixtures,
         "timingProfile": {
             "timingEvidenceKind": "deterministic_workload_budget_canonical_wall_clock_omitted",
             "hardware": "not_recorded_in_canonical_package",
@@ -460,20 +559,26 @@ def build_self_collision_report(
             },
             "budgetStatus": "pass"
             if len(before.candidate_pairs) <= 20000
-            and after.unresolved_contact_count == 0
+            and literal_collision_pass
             and inverted_after <= inverted_before
             else "fail",
         },
         "readiness": {
-            "status": "d0_reference_self_collision_available_with_tunnelling_limitation"
-            if unresolved == 0
+            "status": "d0_reference_self_collision_literal_pass"
+            if literal_collision_pass
             else "d0_reference_self_collision_run_with_unresolved_contacts",
-            "acceptedForD0ReferenceSolver": unresolved == 0,
+            "acceptedForD0ReferenceSolver": literal_collision_pass,
             "acceptedForProductionGpuSolver": False,
             "formalPackageWarningRemoved": True,
             "limitations": [
-                "unsupported_high_velocity_tunnelling",
+                "bounded_ccd_not_integrated_into_reference_motion_solver",
+                *([] if ccd_fixture_pass else ["bounded_ccd_fixture_failure"]),
                 *([] if unresolved == 0 else ["self_collision_unresolved_contacts_d0_reference"]),
+                *(
+                    []
+                    if residual_depth_within_budget
+                    else ["self_collision_residual_depth_budget_exceeded"]
+                ),
             ],
         },
         "policy": {
@@ -572,6 +677,45 @@ def _adversarial_fixture_results(settings: SelfCollisionSettings) -> dict[str, A
         ]
     )
     crossing = analyze_self_collision(crossing_mesh, settings=settings)
+    swept_mesh = MeshSet(
+        [
+            Mesh(
+                "fixture.swept",
+                "panel.fixture",
+                _swept_fixture_positions(-0.03),
+                [(0.0, 0.0)] * 6,
+                [(0, 1, 2), (3, 5, 4)],
+            )
+        ]
+    )
+    swept_triangles, _ = build_triangle_refs(swept_mesh)
+    high_velocity = analyze_swept_self_collision(
+        _swept_fixture_positions(-0.03),
+        _swept_fixture_positions(0.03),
+        swept_triangles,
+        settings,
+    )
+    thin_layer = analyze_swept_self_collision(
+        _swept_fixture_positions(0.006),
+        _swept_fixture_positions(0.001),
+        swept_triangles,
+        settings,
+    )
+    opening_previous = _swept_fixture_positions(-0.012, x_offset=0.045)
+    opening_current = _swept_fixture_positions(0.012, x_offset=0.045)
+    opening_boundary = analyze_swept_self_collision(
+        opening_previous,
+        opening_current,
+        swept_triangles,
+        settings,
+    )
+    bounded_rejection = analyze_swept_self_collision(
+        _swept_fixture_positions(-1.0),
+        _swept_fixture_positions(1.0),
+        swept_triangles,
+        settings,
+        maximum_substeps=8,
+    )
     return {
         "knownContact": {
             "fixtureId": "self_collision_fixture.parallel_triangles_close",
@@ -607,11 +751,57 @@ def _adversarial_fixture_results(settings: SelfCollisionSettings) -> dict[str, A
         },
         "highVelocityTunnelling": {
             "fixtureId": "self_collision_fixture.fast_crossing_triangles",
-            "status": "unsupported_high_velocity_tunnelling",
-            "continuousHandlingRun": False,
-            "testedLimitation": True,
+            "status": (
+                "pass"
+                if high_velocity.supported and high_velocity.first_contact_fraction is not None
+                else "fail"
+            ),
+            "continuousHandlingRun": True,
+            "substepCount": high_velocity.substep_count,
+            "firstContactFraction": high_velocity.first_contact_fraction,
+            "contactCount": high_velocity.contact_count,
+        },
+        "thinLayerSweep": {
+            "fixtureId": "self_collision_fixture.thin_layer_approach",
+            "status": (
+                "pass"
+                if thin_layer.supported and thin_layer.first_contact_fraction is not None
+                else "fail"
+            ),
+            "continuousHandlingRun": True,
+            "substepCount": thin_layer.substep_count,
+            "firstContactFraction": thin_layer.first_contact_fraction,
+        },
+        "openingBoundarySweep": {
+            "fixtureId": "self_collision_fixture.opening_boundary_crossing",
+            "status": (
+                "pass"
+                if opening_boundary.supported
+                and opening_boundary.first_contact_fraction is not None
+                else "fail"
+            ),
+            "continuousHandlingRun": True,
+            "substepCount": opening_boundary.substep_count,
+            "firstContactFraction": opening_boundary.first_contact_fraction,
+        },
+        "boundedUnsupportedMotion": {
+            "fixtureId": "self_collision_fixture.motion_exceeds_ccd_bound",
+            "status": "pass" if not bounded_rejection.supported else "fail",
+            "continuousHandlingRun": True,
+            "failureStatus": bounded_rejection.status,
         },
     }
+
+
+def _swept_fixture_positions(z: float, *, x_offset: float = 0.0) -> list[Vec3]:
+    return [
+        (-0.05, 0.0, 0.0),
+        (0.05, 0.0, 0.0),
+        (0.0, 0.05, 0.0),
+        (-0.04 + x_offset, 0.005, z),
+        (0.04 + x_offset, 0.005, z),
+        (x_offset, 0.045, z),
+    ]
 
 
 def _vertex_triangle_contacts(

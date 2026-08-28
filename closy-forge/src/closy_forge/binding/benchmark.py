@@ -11,11 +11,14 @@ from typing import Any
 
 from closy_forge.binding.binary_format import read_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices
+from closy_forge.binding.stitched_deformation import evaluate_stitched_shell_state
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3
-from closy_forge.package_io.canonical_json import read_json
+from closy_forge.package_io.canonical_json import canonical_dumps, read_json
 from closy_forge.package_io.hashing import sha256_bytes
+from closy_forge.simulation.reference_cloth_solver import simulate_reference_motion_state
+from closy_forge.simulation.self_collision import analyze_self_collision
 
-BENCHMARK_VERSION = "closy.production_binding_benchmark.noncanonical.v1"
+BENCHMARK_VERSION = "closy.production_binding_benchmark.noncanonical.v2"
 
 
 def benchmark_binding_c3(
@@ -44,16 +47,55 @@ def benchmark_binding_c3(
     fallback_suite = _measure(
         lambda: [_fallback_positions(state) for state in state_meshes], warmups, repeats
     )
+    constraints = read_json(package_dir / "simulation" / "constraints.json")
+    avatar_contract = read_json(package_dir / "avatar" / "avatar_contract.json")
+    material = read_json(package_dir / "simulation" / "material_physics.json")
+    solver_repeats = min(5, repeats)
+    validator_repeats = min(3, repeats)
+    solver = _measure(
+        lambda: simulate_reference_motion_state(
+            state_meshes[0],
+            constraints,
+            avatar_contract,
+            material,
+            "moderate_gust",
+        ),
+        1,
+        solver_repeats,
+    )
+    collision = _measure(lambda: analyze_self_collision(state_meshes[0]), 1, solver_repeats)
+    stitched = _measure(
+        lambda: [
+            evaluate_stitched_shell_state(
+                package_dir,
+                state_mesh=state,
+                reference_mesh=simulation,
+            )
+            for state in state_meshes
+        ],
+        1,
+        validator_repeats,
+    )
+    c3_validator = _measure(
+        lambda: _validate_c3_evidence(package_dir),
+        1,
+        validator_repeats,
+    )
     profile = {
         "schemaVersion": 1,
         "reportVersion": BENCHMARK_VERSION,
         "evidenceKind": "noncanonical_host_cpu_measurement",
         "commitSha": commit_sha or os.environ.get("GITHUB_SHA", "not_recorded_local_run"),
-        "bindingReportVersion": "closy.production_binding_c3.d0_tshirt.integrity_v2",
+        "bindingReportVersion": "closy.production_binding_c3.d0_tshirt.independent_metrics_v3",
         "operatingSystem": platform.platform(),
         "architecture": platform.machine() or "unknown",
-        "cpuModel": platform.processor() or "not_reported_by_runtime",
+        "cpuModel": (
+            platform.processor()
+            or os.environ.get("PROCESSOR_IDENTIFIER")
+            or "not_reported_by_runtime"
+        ),
         "pythonVersion": platform.python_version(),
+        "buildType": "python_reference_cpu",
         "workload": {
             "simulationVertices": simulation.vertex_count,
             "simulationTriangles": simulation.triangle_count,
@@ -70,11 +112,25 @@ def benchmark_binding_c3(
             "denseFullSuite": dense_suite,
             "fallbackOneState": fallback_one,
             "fallbackFullSuite": fallback_suite,
+            "solverOneState": solver,
+            "selfCollisionOneState": collision,
+            "stitchedShellFullSuite": stitched,
+            "c3Validator": c3_validator,
         },
         "measurementMethod": {
             "duration": "time.perf_counter_ns",
             "peakMemory": "tracemalloc_process_python_allocations",
             "statistics": "median_and_nearest_rank_p95",
+            "warmupPolicy": {
+                "bindingRoutes": warmups,
+                "solverAndCollision": 1,
+                "stitchedAndValidator": 1,
+            },
+            "sampleCounts": {
+                "bindingRoutes": repeats,
+                "solverAndCollision": solver_repeats,
+                "stitchedAndValidator": validator_repeats,
+            },
         },
         "success": True,
         "limitations": [
@@ -84,7 +140,7 @@ def benchmark_binding_c3(
             "python_allocations_only_peak_memory",
         ],
     }
-    profile["reportHash"] = sha256_bytes(repr(profile).encode("utf-8"))
+    profile["reportHash"] = sha256_bytes(canonical_dumps(profile).encode("utf-8"))
     return profile
 
 
@@ -118,6 +174,20 @@ def _measure(operation: Callable[[], object], warmups: int, repeats: int) -> dic
 def _fallback_positions(meshset: MeshSet) -> list[Vec3]:
     # Deliberately independent: direct simulation positions, no binding or dense reconstruction.
     return [(point[0], point[1], point[2]) for mesh in meshset.meshes for point in mesh.vertices]
+
+
+def _validate_c3_evidence(package_dir: Path) -> list[object]:
+    # Import locally to keep the validator's package-level dependency direction acyclic.
+    from closy_forge.validation.issues import ValidationIssue
+    from closy_forge.validation.validator import _validate_production_binding_c3
+
+    issues: list[ValidationIssue] = []
+    _validate_production_binding_c3(
+        package_dir,
+        read_json(package_dir / "manifest.json"),
+        issues,
+    )
+    return list(issues)
 
 
 def _meshset_from_manifest(manifest: dict[str, Any]) -> MeshSet:

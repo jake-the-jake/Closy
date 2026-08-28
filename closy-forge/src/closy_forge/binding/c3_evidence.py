@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import Any
 
 from closy_forge.binding.binary_format import BindingFile, read_binding
+from closy_forge.binding.c3_metrics import evaluate_independent_surface_agreement
 from closy_forge.binding.reconstruct import reconstruct_vertices
+from closy_forge.binding.stitched_deformation import evaluate_stitched_shell_state
 from closy_forge.geometry.frame_attributes import meshset_frame_metrics
 from closy_forge.geometry.glb_io import audit_glb, read_glb_meshset, write_glb
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, mesh_bounds
@@ -27,7 +29,7 @@ from closy_forge.simulation.seam_mapping import (
     span_position_flat,
 )
 
-C3_EVIDENCE_VERSION = "closy.production_binding_c3.d0_tshirt.integrity_v2"
+C3_EVIDENCE_VERSION = "closy.production_binding_c3.d0_tshirt.independent_metrics_v3"
 C3_STATE_SUITE_VERSION = "closy.binding_solver_state_suite.d0_tshirt.v1"
 REQUIRED_OPENING_IDS = ["opening.hem", "opening.left_cuff", "opening.neck", "opening.right_cuff"]
 MOTION_STATE_IDS = [
@@ -191,10 +193,15 @@ def build_c3_report_from_package(
         for entry in state_index["states"]
     ]
     aggregate = _aggregate(states)
-    literal_pass = persisted["status"] == "pass" and aggregate["motionSuiteStatus"] == "pass"
+    collision_gate = _collision_gate(package_dir)
+    literal_pass = (
+        persisted["status"] == "pass"
+        and aggregate["motionSuiteStatus"] == "pass"
+        and collision_gate["status"] == "pass"
+    )
     report: dict[str, Any] = {
         "schemaVersion": 1,
-        "reportId": "production_binding_c3.demo_tshirt_d0_integrity_v2",
+        "reportId": "production_binding_c3.demo_tshirt_d0_independent_metrics_v3",
         "stageVersion": C3_EVIDENCE_VERSION,
         "garmentId": garment_id,
         "garmentClass": garment_class,
@@ -216,6 +223,7 @@ def build_c3_report_from_package(
             "states": states,
         },
         "aggregate": aggregate,
+        "collisionGate": collision_gate,
         "performanceProfile": {
             "executionState": "not_run_in_canonical_build",
             "canonicalTimingIncluded": False,
@@ -240,6 +248,10 @@ def build_c3_report_from_package(
             "fallbackBindingRun": True,
             "crackSlidingOpeningChecksRun": True,
             "normalTangentChecksRun": True,
+            "independentSurfaceAgreementRun": True,
+            "stitchedShellDeformationRun": True,
+            "stitchedShellBodyClearanceRun": True,
+            "collisionEvidenceValidated": True,
             "performanceWorkloadProfileRun": False,
         },
         "capabilities": {
@@ -247,6 +259,7 @@ def build_c3_report_from_package(
             "productionBindingC3ProfileAvailable": literal_pass,
             "denseBindingAvailable": True,
             "independentFallbackAvailable": True,
+            "stitchedShellDeformationEvidenceAvailable": True,
             "globalPhase6Complete": False,
         },
         "readiness": {
@@ -262,6 +275,7 @@ def build_c3_report_from_package(
             "acceptedForCanonical": False,
             "blockingReasons": [
                 *([] if literal_pass else aggregate["failureIds"]),
+                *([] if collision_gate["status"] == "pass" else collision_gate["failureIds"]),
                 "provider_geometry_visual_fidelity_not_run",
                 "private_user_avatar_garment_profiles_not_run",
                 "mobile_runtime_gpu_profile_not_run",
@@ -428,7 +442,17 @@ def _evaluate_state(
         state_mesh, reference_sim, dense_positions, render_mesh, contract, constraints
     )
     openings = _opening_metrics(state_mesh, reference_sim, constraints)
-    agreement = _dense_fallback_agreement(dense_mesh, fallback_mesh)
+    agreement = evaluate_independent_surface_agreement(
+        dense_mesh,
+        fallback_mesh,
+        constraints=constraints,
+        binding_contract=contract,
+    )
+    stitched = evaluate_stitched_shell_state(
+        package_dir,
+        state_mesh=state_mesh,
+        reference_mesh=reference_sim,
+    )
     dense_frames = meshset_frame_metrics(dense_mesh)
     fallback_frames = meshset_frame_metrics(fallback_mesh)
     triangle_count = _degenerate_count(dense_mesh) + _degenerate_count(fallback_mesh)
@@ -451,10 +475,19 @@ def _evaluate_state(
             thresholds["maxOpeningCircumferenceDriftMeters"],
         ),
         "openingNonCollapse": openings["collapsedOpeningCount"] == 0,
-        "denseFallbackLandmarks": agreement["maxPanelCentroidDeltaMeters"]
+        "denseFallbackAreaCentroids": agreement["maxAreaWeightedCentroidDeltaMeters"]
+        <= thresholds["maxDenseFallbackPanelCentroidDeltaMeters"],
+        "denseFallbackSampledSurface": agreement["maxSampledSurfaceDistanceMeters"]
+        <= thresholds["maxDenseFallbackPanelCentroidDeltaMeters"],
+        "denseFallbackSemanticLandmarks": agreement["maxSemanticLandmarkDeltaMeters"]
+        <= thresholds["maxDenseFallbackPanelCentroidDeltaMeters"],
+        "denseFallbackOpeningLandmarks": agreement["openingLandmarkDeltaMeters"]
+        <= thresholds["maxDenseFallbackPanelCentroidDeltaMeters"],
+        "denseFallbackSeamLandmarks": agreement["seamPathLandmarkDeltaMeters"]
         <= thresholds["maxDenseFallbackPanelCentroidDeltaMeters"],
         "denseFallbackSilhouette": agreement["silhouetteBoundsDeltaNormalised"]
         <= thresholds["maxDenseFallbackSilhouetteBoundsDeltaNormalised"],
+        "stitchedShellDeformation": stitched["status"] == "pass",
         "frames": _frames_valid(dense_frames) and _frames_valid(fallback_frames),
         "triangleQuality": triangle_count == 0,
         "finite": all(isfinite(value) for point in dense_positions for value in point),
@@ -485,7 +518,8 @@ def _evaluate_state(
         "seamCrack": seam,
         "boundarySliding": {
             "maxTangentialSlidingMeters": seam["maxTangentialSlidingMeters"],
-            "metricFrame": "persisted_reference_seam_tangent",
+            "metricFrame": "relative_seam_side_motion_on_average_rest_path_tangent",
+            "sharedClothMotionSubtracted": True,
         },
         "openingContinuity": openings,
         "triangleQuality": {
@@ -494,6 +528,7 @@ def _evaluate_state(
         },
         "frameMetrics": {"dense": dense_frames, "fallback": fallback_frames},
         "denseFallbackAgreement": agreement,
+        "stitchedShellDeformation": stitched,
         "deformedBounds": mesh_bounds(dense_mesh),
         "checks": checks,
         "failureIds": [f"motion_state.{state['stateId']}.{failure}" for failure in failures],
@@ -553,8 +588,20 @@ def _seam_metrics(
         separation = _distance(current_left, current_right)
         reference_mid = _mid(reference_left, reference_right)
         current_mid = _mid(current_left, current_right)
-        tangent = _normalise(_sub(reference_right, reference_left))
-        sliding = abs(_dot(_sub(current_mid, reference_mid), tangent))
+        tangent_a = _span_tangent(reference_positions, offsets, item["spanA"])
+        tangent_b = _span_tangent(reference_positions, offsets, item["spanB"])
+        if _dot(tangent_a, tangent_b) < 0.0:
+            tangent_b = tuple(-value for value in tangent_b)  # type: ignore[assignment]
+        tangent = _normalise(_add(tangent_a, tangent_b))
+        if _length(tangent) <= 1e-12:
+            tangent = tangent_a
+        relative_gap_motion = _sub(
+            _sub(current_right, current_left),
+            _sub(reference_right, reference_left),
+        )
+        sliding = abs(_dot(relative_gap_motion, tangent))
+        common_motion = _sub(current_mid, reference_mid)
+        legacy_absolute_midpoint_travel = abs(_dot(common_motion, tangent))
         dense_left = _best_render_vertex_for_source(render_source_map, left)
         dense_right = _best_render_vertex_for_source(render_source_map, right)
         dense_separation = (
@@ -570,6 +617,8 @@ def _seam_metrics(
             "denseDuplicatedSeamSeparationMeters": _round(dense_separation),
             "crackResidualMeters": _round(max(0.0, dense_separation - intended)),
             "tangentialSlidingMeters": _round(sliding),
+            "commonMotionRemovedMeters": _round(_length(common_motion)),
+            "legacyAbsoluteMidpointTravelMeters": _round(legacy_absolute_midpoint_travel),
         }
         records.append(record)
         by_seam.setdefault(seam_id, []).append(record)
@@ -581,11 +630,16 @@ def _seam_metrics(
             "maxTangentialSlidingMeters": max(
                 float(item["tangentialSlidingMeters"]) for item in items
             ),
+            "maxLegacyAbsoluteMidpointTravelMeters": max(
+                float(item["legacyAbsoluteMidpointTravelMeters"]) for item in items
+            ),
         }
         for seam_id, items in sorted(by_seam.items())
     ]
     return {
-        "metricVersion": "closy.seam_crack_sliding.dense_split_v2",
+        "metricVersion": "closy.seam_relative_slip_common_motion_removed.v3",
+        "metricFrame": "average_rest_seam_path_tangent",
+        "sharedClothMotionSubtracted": True,
         "units": "metres",
         "pairCount": len(records),
         "maxCrackResidualMeters": max(
@@ -593,6 +647,9 @@ def _seam_metrics(
         ),
         "maxTangentialSlidingMeters": max(
             (float(item["tangentialSlidingMeters"]) for item in records), default=0.0
+        ),
+        "maxLegacyAbsoluteMidpointTravelMeters": max(
+            (float(item["legacyAbsoluteMidpointTravelMeters"]) for item in records), default=0.0
         ),
         "seams": seam_summaries,
         "samples": records[:12],
@@ -633,34 +690,6 @@ def _opening_metrics(
     }
 
 
-def _dense_fallback_agreement(dense: MeshSet, fallback: MeshSet) -> dict[str, Any]:
-    dense_centroids = {mesh.panel_id: _centroid(mesh.vertices) for mesh in dense.meshes}
-    fallback_centroids = {mesh.panel_id: _centroid(mesh.vertices) for mesh in fallback.meshes}
-    shared = sorted(set(dense_centroids) & set(fallback_centroids))
-    centroid_deltas = {
-        panel_id: _round(_distance(dense_centroids[panel_id], fallback_centroids[panel_id]))
-        for panel_id in shared
-    }
-    dense_bounds = mesh_bounds(dense)
-    fallback_bounds = mesh_bounds(fallback)
-    scale = max(max(dense_bounds["size"]), 1e-9)
-    silhouette_delta = max(
-        abs(float(a) - float(b)) / scale
-        for key in ("min", "max")
-        for a, b in zip(dense_bounds[key][:2], fallback_bounds[key][:2], strict=True)
-    )
-    return {
-        "comparisonKind": "independent_topology_shared_panel_landmarks_and_xy_bounds",
-        "fallbackCallsDensePath": False,
-        "denseVertexCount": dense.vertex_count,
-        "fallbackVertexCount": fallback.vertex_count,
-        "sharedPanelIds": shared,
-        "panelCentroidDeltasMeters": centroid_deltas,
-        "maxPanelCentroidDeltaMeters": max(centroid_deltas.values(), default=0.0),
-        "silhouetteBoundsDeltaNormalised": _round(silhouette_delta),
-    }
-
-
 def _aggregate(states: list[dict[str, Any]]) -> dict[str, Any]:
     failures = sorted({failure for state in states for failure in state["failureIds"]})
     rest_errors = [
@@ -688,12 +717,31 @@ def _aggregate(states: list[dict[str, Any]]) -> dict[str, Any]:
             float(state["openingContinuity"]["maxCircumferenceDriftMeters"]) for state in states
         ),
         "maxDenseFallbackParityErrorMeters": max(
-            float(state["denseFallbackAgreement"]["maxPanelCentroidDeltaMeters"])
+            float(state["denseFallbackAgreement"]["maxSampledSurfaceDistanceMeters"])
             for state in states
         ),
         "maxDenseFallbackPanelCentroidDeltaMeters": max(
-            float(state["denseFallbackAgreement"]["maxPanelCentroidDeltaMeters"])
+            float(state["denseFallbackAgreement"]["maxAreaWeightedCentroidDeltaMeters"])
             for state in states
+        ),
+        "maxDenseFallbackSampledSurfaceDistanceMeters": max(
+            float(state["denseFallbackAgreement"]["maxSampledSurfaceDistanceMeters"])
+            for state in states
+        ),
+        "maxDenseFallbackSemanticLandmarkDeltaMeters": max(
+            float(state["denseFallbackAgreement"]["maxSemanticLandmarkDeltaMeters"])
+            for state in states
+        ),
+        "maxStitchedShellPositionReconstructionErrorMeters": max(
+            float(state["stitchedShellDeformation"]["maxPositionReconstructionErrorMeters"])
+            for state in states
+        ),
+        "minStitchedShellBodyClearanceMeters": min(
+            float(state["stitchedShellDeformation"]["minimumSignedBodyClearanceMeters"])
+            for state in states
+        ),
+        "stitchedShellStatePassCount": sum(
+            state["stitchedShellDeformation"]["status"] == "pass" for state in states
         ),
         "maxInvertedOrDegenerateTriangleCount": max(
             int(state["triangleQuality"]["invertedOrDegenerateTriangleCount"]) for state in states
@@ -712,9 +760,48 @@ def _source_assets(package_dir: Path) -> dict[str, Any]:
         "independentFallbackGlb": "render/simulation_fallback.glb",
         "independentFallbackManifest": "render/simulation_fallback_manifest.json",
         "motionStateIndex": "simulation/motion_states/index.json",
+        "selfCollisionReport": "reports/self_collision_report.json",
+        "stitchedShellReport": "reports/geometry_stitched_shell.json",
+        "stitchedAnalysisShell": "stitch/logical_stitched_analysis_shell.json",
+        "stitchedRenderShell": "render/stitched_shell.glb",
+        "avatarCollision": "avatar/collision.glb",
     }
     return {
         key: {"path": rel, "sha256": sha256_file(package_dir / rel)} for key, rel in paths.items()
+    }
+
+
+def _collision_gate(package_dir: Path) -> dict[str, Any]:
+    report = read_json(package_dir / "reports" / "self_collision_report.json")
+    readiness = report.get("readiness", {})
+    metrics = report.get("metrics", {})
+    fixtures = report.get("adversarialFixtures", {})
+    accepted = bool(readiness.get("acceptedForD0ReferenceSolver"))
+    ccd_pass = all(
+        isinstance(fixtures.get(key), dict) and fixtures[key].get("status") == "pass"
+        for key in (
+            "highVelocityTunnelling",
+            "thinLayerSweep",
+            "openingBoundarySweep",
+            "boundedUnsupportedMotion",
+        )
+    )
+    failures = [
+        *([] if accepted else ["collision.unresolved_or_depth_budget_failed"]),
+        *([] if ccd_pass else ["collision.bounded_ccd_fixtures_failed"]),
+    ]
+    return {
+        "status": "pass" if not failures else "fail",
+        "failureIds": failures,
+        "acceptedForD0ReferenceSolver": accepted,
+        "unresolvedContactCount": int(metrics.get("unresolvedContactCount", 0)),
+        "maxResidualDepthMeters": float(metrics.get("maxPenetrationAfterMeters", 0.0)),
+        "residualDepthBudgetMeters": float(
+            report.get("settings", {}).get("residualDepthBudgetMeters", 0.0)
+        ),
+        "residualDepthWithinBudget": metrics.get("residualDepthWithinBudget") is True,
+        "boundedCcdFixturesPass": ccd_pass,
+        "selfCollisionReportHash": report.get("integrity", {}).get("selfCollisionReportHash"),
     }
 
 
@@ -909,6 +996,17 @@ def _max_pair_distance(left: list[Vec3], right: list[Vec3]) -> float:
 
 def _mid(a: Vec3, b: Vec3) -> Vec3:
     return ((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5, (a[2] + b[2]) * 0.5)
+
+
+def _span_tangent(positions: list[Vec3], offsets: list[int], span: dict[str, Any]) -> Vec3:
+    offset = offsets[int(span["meshIndex"])]
+    start = positions[offset + int(span["vertexIndex"])]
+    end = positions[offset + int(span.get("nextVertexIndex", span["vertexIndex"]))]
+    return _normalise(_sub(end, start))
+
+
+def _add(a: Vec3, b: Vec3) -> Vec3:
+    return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
 
 
 def _sub(a: Vec3, b: Vec3) -> Vec3:
