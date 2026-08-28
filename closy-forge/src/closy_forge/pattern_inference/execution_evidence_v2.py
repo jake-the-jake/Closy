@@ -162,12 +162,11 @@ def _build_family_evidence(
     quality = read_json(output / quality_path)
     fidelity = read_json(output / "reports/fidelity/source_render_fidelity.json")
     settled = read_json(output / "simulation/settled_state.json")
-    decoded_accepted = bool(
-        quality.get("appearance", {}).get(
-            f"acceptedForD0{_family_title(family)}Fixture",
-            False,
-        )
-    )
+    acceptance_key = {
+        "sleeveless_top": "acceptedForD0SleevelessFixture",
+        "simple_skirt": "acceptedForD0SimpleSkirtFixture",
+    }[family]
+    decoded_accepted = bool(quality.get("appearance", {}).get(acceptance_key, False))
     return {
         "family": family,
         "heldOutSampleId": sample["sampleId"],
@@ -193,10 +192,6 @@ def _build_family_evidence(
             "cpuMilliseconds": round(cpu_ns / 1_000_000, 6),
         },
     }
-
-
-def _family_title(family: str) -> str:
-    return "".join(part.title() for part in family.split("_"))
 
 
 def _fidelity_metrics(fidelity: dict[str, Any]) -> dict[str, Any]:
@@ -236,9 +231,17 @@ def process_memory_snapshot() -> dict[str, Any]:
         counters.cb = ctypes.sizeof(counters)
         kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
         psapi = ctypes.WinDLL("psapi", use_last_error=True)
-        if not psapi.GetProcessMemoryInfo(
-            kernel32.GetCurrentProcess(), ctypes.byref(counters), counters.cb
-        ):
+        get_current_process = kernel32.GetCurrentProcess
+        get_current_process.argtypes = []
+        get_current_process.restype = ctypes.c_void_p
+        get_process_memory_info = psapi.GetProcessMemoryInfo
+        get_process_memory_info.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ProcessMemoryCounters),
+            ctypes.c_ulong,
+        ]
+        get_process_memory_info.restype = ctypes.c_int
+        if not get_process_memory_info(get_current_process(), ctypes.byref(counters), counters.cb):
             return {"measurement": "windows_process_memory_unavailable"}
         return {
             "measurement": "windows_process_memory_counters",
