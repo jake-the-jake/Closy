@@ -19,6 +19,7 @@ from closy_forge.simulation.reference_cloth_solver import (
 from closy_forge.simulation.seam_mapping import span_position_flat
 
 MATERIAL_MOTION_SUITE_VERSION = "closy.material_motion_suite.d0.v1"
+MATERIAL_MOTION_CANONICAL_POSITION_DIGITS = 9
 
 
 def build_material_motion_suite(
@@ -36,7 +37,13 @@ def build_material_motion_suite(
     for descriptor in preset_registry.get("presets", []):
         preset_id = str(descriptor["presetId"])
         material = solver_material_payload(descriptor)
-        result = settle_reference_cloth(rest_mesh, constraints, avatar_contract, material)
+        result = settle_reference_cloth(
+            rest_mesh,
+            constraints,
+            avatar_contract,
+            material,
+            canonical_position_digits=MATERIAL_MOTION_CANONICAL_POSITION_DIGITS,
+        )
         settled = result.settled_mesh
         reconstructed = reconstruct_vertices(settled, binding)
         metrics = measure_motion_metrics(rest_mesh, settled, constraints, result.diagnostics)
