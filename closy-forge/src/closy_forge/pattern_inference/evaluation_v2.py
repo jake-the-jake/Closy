@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from decimal import ROUND_HALF_EVEN, Decimal
 from typing import Any
 
 from .dataset_v2 import feature_vector, samples_for_split
@@ -135,7 +136,7 @@ def _evaluate_centroid_baseline(
     means = list(map(float, model["normalization"]["means"]))
     scales = list(map(float, model["normalization"]["scales"]))
     correct = 0
-    parameter_errors: dict[str, list[float]] = {name: [] for name in TARGET_NAMES}
+    parameter_errors: dict[str, list[Decimal]] = {name: [] for name in TARGET_NAMES}
     for sample in samples:
         normalized = [
             (value - mean) / scale
@@ -158,10 +159,14 @@ def _evaluate_centroid_baseline(
             ),
         )
         correct += int(selected == sample["target"]["garmentFamily"])
-        defaults = {"lengthScale": 1.0, "widthScale": 1.0, "easeNormalized": 0.0}
+        defaults = {
+            "lengthScale": Decimal("1"),
+            "widthScale": Decimal("1"),
+            "easeNormalized": Decimal("0"),
+        }
         for name in TARGET_NAMES:
             parameter_errors[name].append(
-                abs(defaults[name] - float(sample["target"]["continuousParameters"][name]))
+                abs(defaults[name] - Decimal(str(sample["target"]["continuousParameters"][name])))
             )
     return {
         "name": "nearest_training_centroid_plus_default_parameters",
@@ -169,7 +174,12 @@ def _evaluate_centroid_baseline(
         "top1Correct": correct,
         "top1Accuracy": round(correct / len(samples), 9),
         "continuousParameterMae": {
-            name: round(sum(values) / len(values), 9) for name, values in parameter_errors.items()
+            name: float(
+                (sum(values, Decimal(0)) / Decimal(len(values))).quantize(
+                    Decimal("0.000000001"), rounding=ROUND_HALF_EVEN
+                )
+            )
+            for name, values in parameter_errors.items()
         },
     }
 
