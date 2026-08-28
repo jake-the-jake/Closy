@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import math
 import os
 import platform
@@ -28,7 +29,7 @@ def write_execution_evidence_v2(
     *,
     training_pipeline_wall_ns: int,
     training_pipeline_cpu_ns: int,
-    training_pipeline_peak_bytes: int,
+    training_pipeline_memory: dict[str, Any],
     commit_sha: str | None,
 ) -> dict[str, Any]:
     inference = _benchmark_inference(bundle)
@@ -49,7 +50,7 @@ def write_execution_evidence_v2(
             "includesTwoRunReproducibilityAndEvaluation": True,
             "wallMilliseconds": round(training_pipeline_wall_ns / 1_000_000, 6),
             "cpuMilliseconds": round(training_pipeline_cpu_ns / 1_000_000, 6),
-            "peakTracedBytes": training_pipeline_peak_bytes,
+            "memory": training_pipeline_memory,
             "modelHash": bundle["model"]["integrity"]["modelHash"],
             "weightsHash": bundle["model"]["integrity"]["weightsHash"],
         },
@@ -172,7 +173,7 @@ def _build_family_evidence(
         "heldOutSampleId": sample["sampleId"],
         "predictedFamily": prediction["family"],
         "packageValidation": result.validation["status"],
-        "canonicalPackageDigest": result.manifest["canonicalPackageDigest"],
+        "canonicalPackageDigest": result.manifest["packageDigest"],
         "manifestHash": sha256_file(output / "manifest.json"),
         "settledStateContentHash": settled["meshContentHash"],
         "fit": {
@@ -212,3 +213,40 @@ def _fidelity_metrics(fidelity: dict[str, Any]) -> dict[str, Any]:
 def _percentile(values: list[int], quantile: float) -> int:
     index = min(len(values) - 1, max(0, int(math.ceil(quantile * len(values))) - 1))
     return values[index]
+
+
+def process_memory_snapshot() -> dict[str, Any]:
+    if os.name == "nt":
+
+        class ProcessMemoryCounters(ctypes.Structure):
+            _fields_ = [
+                ("cb", ctypes.c_ulong),
+                ("PageFaultCount", ctypes.c_ulong),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
+            ]
+
+        counters = ProcessMemoryCounters()
+        counters.cb = ctypes.sizeof(counters)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        psapi = ctypes.WinDLL("psapi", use_last_error=True)
+        if not psapi.GetProcessMemoryInfo(
+            kernel32.GetCurrentProcess(), ctypes.byref(counters), counters.cb
+        ):
+            return {"measurement": "windows_process_memory_unavailable"}
+        return {
+            "measurement": "windows_process_memory_counters",
+            "workingSetBytes": int(counters.WorkingSetSize),
+            "peakWorkingSetBytes": int(counters.PeakWorkingSetSize),
+        }
+    return {
+        "measurement": "portable_memory_not_available_on_this_host",
+        "workingSetBytes": None,
+        "peakWorkingSetBytes": None,
+    }
