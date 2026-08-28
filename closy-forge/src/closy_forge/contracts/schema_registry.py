@@ -3001,6 +3001,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_layered_asymmetric_schemas(),
         **_pattern_inference_schemas(),
         **_future_foundation_schemas(),
+        **_runtime_delivery_schemas(),
         **_zeroone_integration_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
@@ -3939,6 +3940,177 @@ def _future_foundation_schemas() -> dict[str, dict[str, Any]]:
         ],
     )
     return schemas
+
+
+def _runtime_delivery_schemas() -> dict[str, dict[str, Any]]:
+    source_link = _object(
+        {
+            "opaqueId": {"type": "string", "pattern": "^src_[A-Za-z0-9_.:-]{1,76}$"},
+            "consentScope": {"type": "string", "minLength": 1},
+            "retentionPolicy": {"type": "string", "minLength": 1},
+            "deletionPolicy": {"type": "string", "minLength": 1},
+            "derivationPolicy": {"type": "string", "minLength": 1},
+            "withdrawalStatus": {"enum": ["active", "withdrawn"]},
+        },
+        [
+            "opaqueId",
+            "consentScope",
+            "retentionPolicy",
+            "deletionPolicy",
+            "derivationPolicy",
+            "withdrawalStatus",
+        ],
+    )
+    inventory_entry = _object(
+        {
+            "path": _rel_path(),
+            "byteSize": {"type": "integer", "minimum": 0, "maximum": 67_108_864},
+            "sha256": _sha256(),
+        },
+        ["path", "byteSize", "sha256"],
+    )
+    page_record = _object(
+        {
+            "index": {"type": "integer", "minimum": 0},
+            "path": _rel_path(),
+            "sourceOffset": {"type": "integer", "minimum": 0},
+            "sourceLength": {"type": "integer", "minimum": 1},
+            "compressedLength": {"type": "integer", "minimum": 1},
+            "compressedSha256": _sha256(),
+            "decodedSha256": _sha256(),
+        },
+        [
+            "index",
+            "path",
+            "sourceOffset",
+            "sourceLength",
+            "compressedLength",
+            "compressedSha256",
+            "decodedSha256",
+        ],
+    )
+    runtime_manifest = _schema(
+        "Closy runtime package static prep v1",
+        {
+            "schemaVersion": {"const": 1},
+            "packageVersion": {"const": "closy.runtime_package.static_prep.v1"},
+            "capabilityVersion": {"const": "closy.runtime_capabilities.static_prep.v1"},
+            "candidatePreparatoryOnly": {"const": True},
+            "platformProfile": {"type": "string", "minLength": 1},
+            "sourceLink": source_link,
+            "artifacts": _object(
+                {
+                    "zeroOneDynamic": {"type": ["string", "null"]},
+                    "zeroOneStatic": {"type": ["string", "null"]},
+                    "conventionalGlb": _rel_path(),
+                },
+                ["zeroOneDynamic", "zeroOneStatic", "conventionalGlb"],
+            ),
+            "fallbackOrder": {
+                "const": [
+                    "zeroone_dynamic",
+                    "zeroone_static",
+                    "conventional_glb",
+                    "failure",
+                ]
+            },
+            "motion": _object(
+                {
+                    "prebakedOptions": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": _object(
+                            {"poseId": {"type": "string", "minLength": 1}, "path": _rel_path()},
+                            ["poseId", "path"],
+                        ),
+                    },
+                    "actualZeroOneDynamicDeformationExecuted": {"const": False},
+                },
+                ["prebakedOptions", "actualZeroOneDynamicDeformationExecuted"],
+            ),
+            "pages": _object(
+                {
+                    "compression": {"const": "zlib"},
+                    "decodedAggregateSha256": _sha256(),
+                    "decodedBytes": {"type": "integer", "minimum": 1},
+                    "records": {"type": "array", "minItems": 1, "items": page_record},
+                },
+                ["compression", "decodedAggregateSha256", "decodedBytes", "records"],
+            ),
+            "inventory": {"type": "array", "minItems": 1, "items": inventory_entry},
+            "packageDigest": _sha256(),
+            "evidenceTruth": _object(
+                {
+                    "deviceRun": {"const": False},
+                    "gpuRun": {"const": False},
+                    "mobileRuntimeRun": {"const": False},
+                    "remoteStreamingServiceRun": {"const": False},
+                    "staticPackageConsumerExecuted": {"const": True},
+                },
+                [
+                    "deviceRun",
+                    "gpuRun",
+                    "mobileRuntimeRun",
+                    "remoteStreamingServiceRun",
+                    "staticPackageConsumerExecuted",
+                ],
+            ),
+        },
+        [
+            "schemaVersion",
+            "packageVersion",
+            "capabilityVersion",
+            "candidatePreparatoryOnly",
+            "platformProfile",
+            "sourceLink",
+            "artifacts",
+            "fallbackOrder",
+            "motion",
+            "pages",
+            "inventory",
+            "packageDigest",
+            "evidenceTruth",
+        ],
+    )
+    stream_inventory = _schema(
+        "Closy runtime stream static prep v1",
+        {
+            "schemaVersion": {"const": 1},
+            "streamVersion": {"const": "closy.runtime_stream.static_prep.v1"},
+            "aggregateSha256": _sha256(),
+            "totalBytes": {"type": "integer", "minimum": 1, "maximum": 134_217_728},
+            "chunks": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4096,
+                "items": _object(
+                    {
+                        "index": {"type": "integer", "minimum": 0},
+                        "byteSize": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1_048_576,
+                        },
+                        "sha256": _sha256(),
+                    },
+                    ["index", "byteSize", "sha256"],
+                ),
+            },
+            "transferId": {"type": "string", "pattern": "^transfer_[0-9a-f]{24}$"},
+        },
+        [
+            "schemaVersion",
+            "streamVersion",
+            "aggregateSha256",
+            "totalBytes",
+            "chunks",
+            "transferId",
+        ],
+    )
+    return {
+        "runtime-package-manifest.schema.json": runtime_manifest,
+        "runtime-stream-inventory.schema.json": stream_inventory,
+    }
 
 
 def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
