@@ -157,17 +157,51 @@ def _execute_family(
         base_seed=53_000 + family_index,
     )
     baseline_pattern = compile_program(baseline_program)
-    pattern_hash = _hash(pattern)
-    baseline_hash = _hash(baseline_pattern)
-    learned_fit_run = bool(learned_selected and pattern_hash != baseline_hash)
+    requested_program_hash = _hash(program)
+    requested_pattern_hash = _hash(pattern)
     package_dir = root / f"{family}.closygarment"
     spec = _BUILD_SPECS[family]
     params = spec.parameter_type(**program["parameters"])
     wall_start = time.perf_counter_ns()
     cpu_start = time.process_time_ns()
-    result = spec.builder(package_dir, params=params, seed=53_000 + family_index)
+    build_rejection: dict[str, Any] | None = None
+    try:
+        result = spec.builder(package_dir, params=params, seed=53_000 + family_index)
+    except (RuntimeError, ValueError) as error:
+        if not learned_selected:
+            raise
+        build_rejection = {
+            "status": "rejected",
+            "reason": "learned_candidate_failed_family_builder_contract",
+            "exceptionType": type(error).__name__,
+        }
+        program = program_from_parameters(
+            family,
+            default_parameters(family),
+            program_id=f"fallback.e1.{family}",
+            base_seed=53_000 + family_index,
+        )
+        params = spec.parameter_type(**program["parameters"])
+        result = spec.builder(package_dir, params=params, seed=53_000 + family_index)
+        selection_reason = "validated_template_fallback_after_learned_builder_rejection"
     cpu_ns = time.process_time_ns() - cpu_start
     wall_ns = time.perf_counter_ns() - wall_start
+    pattern = read_json(package_dir / "pattern" / "pattern.json")
+    pattern_hash = _hash(pattern)
+    if learned_selected and build_rejection is None:
+        baseline_package_dir = root / f"{family}-baseline.closygarment"
+        spec.builder(
+            baseline_package_dir,
+            params=spec.parameter_type(**default_parameters(family)),
+            seed=53_000 + family_index,
+        )
+        baseline_pattern = read_json(baseline_package_dir / "pattern" / "pattern.json")
+    else:
+        baseline_pattern = pattern
+    baseline_hash = _hash(baseline_pattern)
+    learned_fit_run = bool(
+        learned_selected and build_rejection is None and pattern_hash != baseline_hash
+    )
     settled = read_json(package_dir / "simulation" / "settled_state.json")
     fit = read_json(package_dir / spec.fit_path)
     rerender_root = root / f"rerender-{family}"
@@ -181,9 +215,23 @@ def _execute_family(
         "heldOutSampleId": sample["sampleId"],
         "prediction": prediction,
         "selectionReason": selection_reason,
-        "fallbackUsed": not learned_selected,
+        "fallbackUsed": not learned_selected or build_rejection is not None,
+        "learnedCandidateBuild": (
+            build_rejection
+            if build_rejection is not None
+            else (
+                {"status": "accepted", "reason": "family_builder_contract_passed"}
+                if learned_selected
+                else {
+                    "status": "not_run",
+                    "reason": "prediction_wrong_family_or_deferred",
+                }
+            )
+        ),
         "learnedFitRun": learned_fit_run,
         "modelOutputHash": _hash(prediction),
+        "requestedDecodedProgramHash": requested_program_hash,
+        "requestedCompiledPatternHash": requested_pattern_hash,
         "decodedProgramHash": _hash(program),
         "compiledPatternHash": pattern_hash,
         "baselinePatternHash": baseline_hash,
