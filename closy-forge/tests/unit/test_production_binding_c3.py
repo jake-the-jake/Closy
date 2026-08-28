@@ -30,7 +30,7 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
     }
     assert manifest["capabilities"]["productionBindingContractAvailable"] is True
     assert manifest["capabilities"]["productionBindingC3EvidenceAvailable"] is True
-    assert manifest["capabilities"]["productionBindingC3ProfileAvailable"] is False
+    assert manifest["capabilities"]["productionBindingC3ProfileAvailable"] is True
     assert contract["authority"]["status"] == "authoritative"
     assert contract["authority"]["routeId"] == "settled_simulation_to_subdivided_render_v1"
     assert contract["destinationRender"]["vertexCount"] == contract["splitMapping"]["recordCount"]
@@ -40,8 +40,8 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
         abs(sum(record["binding"]["weights"]) - 1.0) <= contract["safeguards"]["weightSumTolerance"]
         for record in contract["records"]
     )
-    assert c3_report["readiness"]["gateC3Status"] == "partial"
-    assert c3_report["readiness"]["acceptedForD0RuntimeBindingProfile"] is False
+    assert c3_report["readiness"]["gateC3Status"] == ("complete_for_d0_fixed_avatar_tshirt_profile")
+    assert c3_report["readiness"]["acceptedForD0RuntimeBindingProfile"] is True
     assert c3_report["readiness"]["acceptedForGlobalPhase6"] is False
     assert c3_report["persistedValidation"]["status"] == "pass"
     assert c3_report["motionSuite"]["stateCount"] >= 9
@@ -52,6 +52,10 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
     assert c3_report["aggregate"]["maxDenseFallbackPanelCentroidDeltaMeters"] <= 1e-8
     assert c3_report["aggregate"]["maxDenseFallbackSampledSurfaceDistanceMeters"] <= 1e-6
     assert c3_report["aggregate"]["stitchedShellStatePassCount"] == 0
+    assert c3_report["aggregate"]["bindingSuiteStatus"] == "pass"
+    assert c3_report["aggregate"]["bindingStatePassCount"] == 11
+    assert c3_report["aggregate"]["motionSuiteStatus"] == "fail"
+    assert c3_report["readiness"]["physicalBlockingReasons"]
     assert c3_report["execution"]["independentSurfaceAgreementRun"] is True
     assert c3_report["execution"]["stitchedShellDeformationRun"] is True
     assert c3_report["motionSuite"]["states"][0]["seamCrack"]["sharedClothMotionSubtracted"] is True
@@ -67,6 +71,18 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
     fallback = read_json(package / "render" / "simulation_fallback_manifest.json")
     assert fallback["callsDenseReconstruction"] is False
     assert fallback["vertexCount"] != contract["destinationRender"]["vertexCount"]
+    coverage = c3_report["motionSuite"]["states"][0]["denseFallbackAgreement"]["mappingCoverage"]
+    assert coverage["status"] == "complete"
+    assert coverage["expectedSourceCount"] == coverage["mappedSourceCount"] == 218
+    assert coverage["expectedRenderRecordCount"] == coverage["observedRenderRecordCount"] == 1248
+    assert (
+        coverage["openingLandmarks"]["expectedSourceCount"]
+        == coverage["openingLandmarks"]["evaluatedSourceCount"]
+    )
+    assert (
+        coverage["seamLandmarks"]["expectedSourceCount"]
+        == coverage["seamLandmarks"]["evaluatedSourceCount"]
+    )
 
 
 def test_c3_recompute_does_not_call_legacy_render_motion_transform(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -149,6 +165,38 @@ def test_tampered_production_binding_contract_ids_are_rejected(tmp_path) -> None
     assert "production_binding_contract_missing_render_vertex_id" in codes
     assert "production_binding_c3_source_hash_mismatch" in codes
     assert "production_binding_c3_recompute_mismatch" in codes
+
+
+def test_dense_mapping_that_silently_omits_a_source_fails_closed(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "missing_source.closygarment")
+    contract = read_json(corrupt / "binding" / "production_binding_contract.json")
+    for record in contract["records"]:
+        source_ids = record["sourceTriangle"]["globalVertexIndices"]
+        record["sourceTriangle"]["globalVertexIndices"] = [
+            216 if int(source_id) == 217 else source_id for source_id in source_ids
+        ]
+    contract["integrity"]["productionBindingContractHash"] = hash_production_binding_contract(
+        contract
+    )
+    write_json(corrupt / "binding" / "production_binding_contract.json", contract)
+
+    codes = issue_codes(validate_package(corrupt))
+
+    assert "production_binding_c3_recompute_failed" in codes
+
+
+def test_dense_mapping_zero_records_never_passes_as_zero_delta(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    corrupt = clone_package(build_demo(tmp_path), tmp_path / "zero_records.closygarment")
+    contract = read_json(corrupt / "binding" / "production_binding_contract.json")
+    contract["records"] = []
+    contract["integrity"]["productionBindingContractHash"] = hash_production_binding_contract(
+        contract
+    )
+    write_json(corrupt / "binding" / "production_binding_contract.json", contract)
+
+    codes = issue_codes(validate_package(corrupt))
+
+    assert "production_binding_c3_recompute_failed" in codes
 
 
 def test_tampered_production_binding_c3_metrics_are_rejected_even_with_fresh_hash(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from math import sqrt
+from math import isfinite, sqrt
 from typing import Any
 
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Vec3, mesh_bounds
@@ -17,7 +17,11 @@ def evaluate_independent_surface_agreement(
 
     dense_by_panel = _unique_panel_meshes(dense)
     fallback_by_panel = _unique_panel_meshes(fallback)
-    shared = sorted(set(dense_by_panel) & set(fallback_by_panel))
+    dense_panels = set(dense_by_panel)
+    fallback_panels = set(fallback_by_panel)
+    if dense_panels != fallback_panels:
+        raise ValueError("dense_fallback_panel_inventory_mismatch")
+    shared = sorted(dense_panels)
     if not shared:
         raise ValueError("dense_fallback_no_shared_panels")
 
@@ -46,18 +50,39 @@ def evaluate_independent_surface_agreement(
         for key in ("min", "max")
         for left, right in zip(dense_bounds[key], fallback_bounds[key], strict=True)
     )
-    source_to_dense = _source_to_dense_vertex_map(dense, binding_contract)
     fallback_positions = [point for mesh in fallback.meshes for point in mesh.vertices]
+    source_to_dense, mapping_coverage = _source_to_dense_vertex_map(
+        dense,
+        binding_contract,
+        expected_source_count=len(fallback_positions),
+    )
     offsets = _offsets(fallback)
-    opening_landmarks = _constraint_landmark_delta(
+    opening_landmarks = _constraint_landmark_coverage(
         constraints.get("openings", []),
         source_to_dense,
         fallback_positions,
         offsets,
         "boundaryEdges",
     )
-    seam_landmarks = _constraint_landmark_delta(
+    seam_landmarks = _constraint_landmark_coverage(
         constraints.get("constraints", []), source_to_dense, fallback_positions, offsets, "spans"
+    )
+    semantic_inventory = {
+        "requiredPanelIds": shared,
+        "evaluatedPanelIds": shared,
+        "requiredOpeningIds": sorted(
+            str(item.get("id")) for item in constraints.get("openings", [])
+        ),
+        "requiredSeamIds": sorted(
+            {str(item.get("seamId")) for item in constraints.get("constraints", [])}
+        ),
+        "implicitSingleLayerIds": ["layer.base"],
+    }
+    coverage_complete = bool(
+        mapping_coverage["complete"]
+        and opening_landmarks["complete"]
+        and seam_landmarks["complete"]
+        and shared
     )
 
     return {
@@ -77,9 +102,16 @@ def evaluate_independent_surface_agreement(
         "maxSampledSurfaceDistanceMeters": max(sampled_surface_distances.values(), default=0.0),
         "panelSemanticLandmarkDeltasMeters": landmark_deltas,
         "maxSemanticLandmarkDeltaMeters": max(landmark_deltas.values(), default=0.0),
-        "openingLandmarkDeltaMeters": _round(opening_landmarks),
-        "seamPathLandmarkDeltaMeters": _round(seam_landmarks),
+        "openingLandmarkDeltaMeters": opening_landmarks["maximumDeltaMeters"],
+        "seamPathLandmarkDeltaMeters": seam_landmarks["maximumDeltaMeters"],
         "silhouetteBoundsDeltaNormalised": _round(bounds_delta),
+        "mappingCoverage": {
+            **mapping_coverage,
+            "openingLandmarks": opening_landmarks,
+            "seamLandmarks": seam_landmarks,
+            "semanticInventory": semantic_inventory,
+            "status": "complete" if coverage_complete else "incomplete",
+        },
     }
 
 
@@ -169,29 +201,80 @@ def _axis_landmarks(points: list[Vec3]) -> dict[str, Vec3]:
     return result
 
 
-def _source_to_dense_vertex_map(dense: MeshSet, contract: dict[str, Any]) -> dict[int, Vec3]:
+def _source_to_dense_vertex_map(
+    dense: MeshSet,
+    contract: dict[str, Any],
+    *,
+    expected_source_count: int | None = None,
+) -> tuple[dict[int, Vec3], dict[str, Any]]:
     dense_positions = [point for mesh in dense.meshes for point in mesh.vertices]
     candidates: dict[int, list[tuple[float, int]]] = {}
-    for record in contract.get("records", []):
+    records = contract.get("records", [])
+    if not isinstance(records, list) or not records:
+        raise ValueError("dense_mapping_has_no_records")
+    if len(records) != len(dense_positions):
+        raise ValueError("dense_mapping_render_record_count_mismatch")
+    observed_render_indices: list[int] = []
+    duplicate_source_ids: list[int] = []
+    for record in records:
         render_index = int(record["globalRenderVertexIndex"])
-        source_indices = record["sourceTriangle"]["globalVertexIndices"]
-        weights = record["binding"]["weights"]
+        if render_index < 0 or render_index >= len(dense_positions):
+            raise ValueError("dense_mapping_render_target_out_of_range")
+        observed_render_indices.append(render_index)
+        source_indices = [int(value) for value in record["sourceTriangle"]["globalVertexIndices"]]
+        weights = [float(value) for value in record["binding"]["weights"]]
+        if len(source_indices) != 3 or len(set(source_indices)) != 3:
+            duplicate_source_ids.extend(source_indices)
+            raise ValueError("dense_mapping_source_triangle_invalid")
+        if len(weights) != 3 or not all(isfinite(value) for value in weights):
+            raise ValueError("dense_mapping_weights_nonfinite_or_wrong_count")
+        if any(value < -1e-9 or value > 1.0 + 1e-9 for value in weights):
+            raise ValueError("dense_mapping_weight_out_of_range")
+        if abs(sum(weights) - 1.0) > 1e-6:
+            raise ValueError("dense_mapping_weight_sum_invalid")
         for source_index, weight in zip(source_indices, weights, strict=True):
-            candidates.setdefault(int(source_index), []).append((float(weight), render_index))
+            if expected_source_count is not None and not 0 <= source_index < expected_source_count:
+                raise ValueError("dense_mapping_source_index_out_of_range")
+            candidates.setdefault(source_index, []).append((weight, render_index))
+    if sorted(observed_render_indices) != list(range(len(dense_positions))):
+        raise ValueError("dense_mapping_render_index_inventory_invalid")
     result: dict[int, Vec3] = {}
     for source_index, weighted in candidates.items():
         _, render_index = max(weighted, key=lambda item: (item[0], -item[1]))
         result[source_index] = dense_positions[render_index]
-    return result
+    expected_ids = set(range(expected_source_count or len(result)))
+    observed_ids = set(result)
+    missing = sorted(expected_ids - observed_ids)
+    unexpected = sorted(observed_ids - expected_ids)
+    if missing:
+        raise ValueError(f"dense_mapping_missing_mandatory_sources:{missing[:16]}")
+    if unexpected:
+        raise ValueError(f"dense_mapping_unexpected_sources:{unexpected[:16]}")
+    return result, {
+        "expectedRenderRecordCount": len(dense_positions),
+        "observedRenderRecordCount": len(records),
+        "uniqueRenderTargetCount": len(set(observed_render_indices)),
+        "expectedSourceCount": len(expected_ids),
+        "mappedSourceCount": len(observed_ids),
+        "unmappedSourceIds": missing,
+        "unexpectedSourceIds": unexpected,
+        "duplicateSourceIdsWithinTriangle": sorted(set(duplicate_source_ids)),
+        "weightedMappingRecordCount": len(records),
+        "finiteWeights": True,
+        "weightSumsValid": True,
+        "targetsInRange": True,
+        "deterministicOrdering": observed_render_indices == list(range(len(dense_positions))),
+        "complete": not missing and not unexpected,
+    }
 
 
-def _constraint_landmark_delta(
+def _constraint_landmark_coverage(
     records: list[dict[str, Any]],
     source_to_dense: dict[int, Vec3],
     fallback_positions: list[Vec3],
     offsets: list[int],
     kind: str,
-) -> float:
+) -> dict[str, Any]:
     source_indices: set[int] = set()
     if kind == "boundaryEdges":
         for record in records:
@@ -207,12 +290,22 @@ def _constraint_landmark_delta(
                 offset = offsets[int(span["meshIndex"])]
                 source_indices.add(offset + int(span["vertexIndex"]))
                 source_indices.add(offset + int(span.get("nextVertexIndex", span["vertexIndex"])))
+    missing = sorted(index for index in source_indices if index not in source_to_dense)
+    if missing:
+        raise ValueError(f"dense_mapping_missing_constraint_sources:{missing[:16]}")
     distances = [
         _distance(source_to_dense[index], fallback_positions[index])
         for index in sorted(source_indices)
-        if index in source_to_dense
     ]
-    return max(distances, default=0.0)
+    if source_indices and not distances:
+        raise ValueError("dense_mapping_zero_constraint_landmarks_evaluated")
+    return {
+        "expectedSourceCount": len(source_indices),
+        "evaluatedSourceCount": len(distances),
+        "missingSourceIds": missing,
+        "maximumDeltaMeters": _round(max(distances, default=0.0)),
+        "complete": len(distances) == len(source_indices) and not missing,
+    }
 
 
 def _offsets(meshset: MeshSet) -> list[int]:
