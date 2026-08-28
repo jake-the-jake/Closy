@@ -193,7 +193,7 @@ def _top1(model: dict[str, Any], samples: list[dict[str, Any]]) -> float:
     if not samples:
         return 0.0
     correct = sum(
-        predict_v2(model, sample["input"])["family"] == sample["target"]["garmentFamily"]
+        str(predict_v2(model, sample["input"])["family"]) == str(sample["target"]["garmentFamily"])
         for sample in samples
     )
     return round(correct / len(samples), 9)
