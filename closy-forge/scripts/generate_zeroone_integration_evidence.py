@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import platform
 import subprocess
 import time
@@ -337,7 +338,6 @@ def _build_all_declared_families(root: Path) -> dict[str, Any]:
 
 def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
     mesh = read_json(package / "simulation" / "rest_state.json")
-    mesh_manifest = read_json(package / "simulation" / "mesh_manifest.json")
     semantics = read_json(package / "semantic" / "garment_graph.json")
     panels = sorted(str(panel_id) for panel_id in semantics.get("panelMapping", {}))
     derivative_materials = read_json(
@@ -367,8 +367,27 @@ def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
         "hierarchyNodeCount": int(asset["hierarchyNodeCount"]),
         "pageCount": int(asset["pageCount"]),
         "pagePackCount": int(asset["pagePackCount"]),
-        "bounds": mesh_manifest["bounds"],
+        "bounds": _state_bounds(mesh),
         "semanticBoundaryPreservation": bool(panels and seams and openings and materials),
+    }
+
+
+def _state_bounds(state: dict[str, Any]) -> dict[str, list[float]]:
+    positions = [
+        [float(value) for value in position]
+        for mesh in state.get("meshes", [])
+        for position in mesh.get("positions", [])
+    ]
+    if not positions or any(len(position) != 3 for position in positions):
+        raise ValueError("rest_state_positions_missing_or_invalid")
+    if any(not math.isfinite(value) for position in positions for value in position):
+        raise ValueError("rest_state_position_nonfinite")
+    minimum = [min(position[axis] for position in positions) for axis in range(3)]
+    maximum = [max(position[axis] for position in positions) for axis in range(3)]
+    return {
+        "min": [round(value, 9) for value in minimum],
+        "max": [round(value, 9) for value in maximum],
+        "size": [round(maximum[axis] - minimum[axis], 9) for axis in range(3)],
     }
 
 
