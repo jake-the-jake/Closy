@@ -3,15 +3,16 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import cast
 
 from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
-EVIDENCE_ANCHOR = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
-VERSION = "closy.blueprint_coverage.evidence_security_integrity.v2"
-GENERATED_BY = "Scoped gate, evidence security, and PR DAG reconciliation at " + EVIDENCE_ANCHOR
+EVIDENCE_ANCHOR = "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42"
+VERSION = "closy.blueprint_coverage.c3_durable_z1_phase11.v3"
+GENERATED_BY = "C3, PHY1, paired Z1, and Phase 11 prerequisite reconciliation at " + EVIDENCE_ANCHOR
 PR23_FINAL_RUN = "33150483293"
-PR23_FINAL_HEAD = EVIDENCE_ANCHOR
+PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
     "Contracts static Ubuntu Python 3.11": "98781060581",
     "Integration shard-1 Ubuntu Python 3.11": "98781060668",
@@ -46,6 +47,7 @@ PHASE10_PATHS = [
     "closy-forge/src/closy_forge/zeroone/request.py",
     "closy-forge/src/closy_forge/zeroone/tool.py",
     "closy-forge/src/closy_forge/zeroone/validation.py",
+    "closy-forge/src/closy_forge/zeroone/derivative_inspection.py",
     "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json",
 ]
 PHASE10_TESTS = [
@@ -54,20 +56,20 @@ PHASE10_TESTS = [
 ]
 PHASE10_EVIDENCE = [
     (
-        "the compiled pinned ZeroOneProcess Release executable ran headlessly on canonical D0 "
-        "T-shirt and layered-asymmetric packages"
+        "the durable candidate ZeroOneProcess Release executable attempted all nine declared "
+        "canonical D0 garment families headlessly"
     ),
     (
-        "both packages produced real mesh, cluster, hierarchy, page-pack, material, and garment "
-        "stitch-row derivatives"
+        "six families produced validated mesh, cluster, hierarchy, page-pack, material, and "
+        "garment semantic derivatives"
     ),
     (
-        "clean miss, cache hit, and second clean miss outputs agree while canonical authority "
-        "and fallback hashes remain unchanged"
+        "long-sleeved top, button shirt, and jacket were rejected fail-closed for exact "
+        "degenerate-surface diagnostics"
     ),
     (
-        "optional zeroone/static-d0 namespaces validate and T-shirt deletion/rebuild reproduces "
-        "the canonical derivative hash"
+        "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, "
+        "canonical-authority preservation, and conventional-fallback preservation"
     ),
     (
         "exact execution records clean Closy and ZeroOne SHAs, executable hash, commands, "
@@ -81,8 +83,8 @@ ROW_UPDATES = {
             "canonical package authority."
         ),
         "limitations": (
-            "Validated only for the exact task-owned D0 CPU/static profile; every conventional "
-            "GLB fallback remains mandatory."
+            "All nine families were attempted, but three structured families were rejected for "
+            "degenerate surfaces; every conventional GLB fallback remains mandatory."
         ),
     },
     "BP-08-I-GEOMETRY-PROVIDERS": {
@@ -92,33 +94,34 @@ ROW_UPDATES = {
             "derivatives from canonical packages."
         ),
         "limitations": (
-            "Only two D0 project-authored fixtures and one Windows CPU/static toolchain ran; "
-            "provider breadth, visual review, mobile, and dynamic tiers remain open."
+            "Six of nine D0 families passed on one Windows CPU/static toolchain; three structured "
+            "families, visual review, mobile, and dynamic tiers remain open."
         ),
     },
     "BP-09-Z1": {
         "status": "partial",
         "summary": (
-            "ZeroOne Z1 has a historical local pass for the exact Windows MSVC Release D0 "
-            "CPU/headless static T-shirt and layered-asymmetric profile."
+            "The refreshed candidate ZeroOne pairing attempted all nine families; six passed and "
+            "three were rejected, so the candidate all-family scoped Z1 result is failed."
         ),
         "limitations": (
-            "The source PR was owner-closed unmerged and current ZeroOne master is not yet "
-            "requalified; global Z1 and Phase 10 remain partial."
+            "The durable ZeroOne candidate is unmerged, the paired Closy run is local, and "
+            "long-sleeved top, button shirt, and jacket contain rejected degenerate surfaces."
         ),
         "nextAction": (
-            "Requalify current ZeroOne master and refresh paired Closy static evidence."
+            "Repair the three canonical surfaces without changing authority, rebuild ZeroOne, "
+            "and rerun the paired all-family profile."
         ),
     },
     "BP-09-GEOMOTREE": {
         "status": "partial",
         "summary": (
-            "A real bounded GeomoTree/Nanite CPU static garment route now imports Closy GLB "
-            "semantics and publishes validated derivatives."
+            "A real bounded GeomoTree/Nanite CPU static route publishes validated optional "
+            "derivatives for six of nine declared garment families."
         ),
         "limitations": (
-            "The route covers T-shirt stitch rows and two D0 fixtures only; broad garment "
-            "semantics and dynamic deformation are not established."
+            "Three structured surfaces are rejected; dynamic deformation, mobile execution, and "
+            "human review are not established."
         ),
     },
     "BP-12-MODEL-STRATEGY": {
@@ -135,27 +138,27 @@ ROW_UPDATES = {
     "BP-14-EVALUATION": {
         "status": "partial",
         "summary": (
-            "Evaluation now consumes authoritative C3, trained synthetic D0, and real ZeroOne "
-            "static execution reports without promoting global readiness."
+            "Evaluation now consumes a scoped C3 binding pass, a separate PHY1 failure, trained "
+            "synthetic D0 evidence, and an all-family paired ZeroOne failure."
         ),
         "limitations": (
-            "C3 still fails, and independent real/public, provider, mobile, private-user, licence, "
-            "and human-review evidence remains incomplete."
+            "PHY1 and paired Z1 fail; independent real/public, provider, mobile, private-user, "
+            "licence, and human-review evidence remains incomplete."
         ),
     },
     "BP-17-PHASE-10": {
         "status": "partial",
         "summary": (
-            "Blueprint Phase 10 now has real pinned ZeroOne D0 CPU/static execution and optional "
-            "derivative packaging for two required garments."
+            "Blueprint Phase 10 now attempts all nine declared families with a durable candidate "
+            "ZeroOne executable and records six valid derivatives plus three exact rejections."
         ),
         "limitations": (
-            "Phase 10 remains partial without turntable or human visual review, broader "
-            "garment/provider evidence, mobile execution, and other blueprint profiles."
+            "Phase 10 and paired Z1 remain partial/failed until the three rejected surfaces pass; "
+            "human review, mobile execution, and dynamic profiles also remain open."
         ),
         "nextAction": (
-            "Run human visual review and broaden provider/mobile evidence; do not begin Phase 11 "
-            "while C3 remains partial."
+            "Repair and reprocess the three rejected families; do not begin Phase 11 while the "
+            "refreshed paired scoped Z1 prerequisite remains failed."
         ),
     },
     "BP-18-GATE-Z1": {
@@ -168,16 +171,16 @@ ROW_UPDATES = {
         "nextAction": "Requalify current master, then regenerate paired scoped Z1 evidence.",
     },
     "BP-18-GATE-C3": {
-        "status": "partial",
+        "status": "complete",
         "summary": (
-            "C3-Binding-D0 is the master-blueprint dynamic-binding gate and requires separate "
-            "literal requalification against topology, binding, poses, topology hash, and frames."
+            "C3-Binding-D0 passes its literal five-part fixed-avatar D0 T-shirt profile across "
+            "all 11 binding states with exact persisted lineage and frame validation."
         ),
         "limitations": (
-            "Earlier reports conflated C3 binding with the stricter PHY1 physical campaign; "
-            "neither a fresh binding pass nor a PHY1 pass is claimed here."
+            "This is a scoped binding pass only. PHY1 fails and broader avatars, garments, mobile, "
+            "private-user, and production profiles remain unproven."
         ),
-        "nextAction": "Run literal C3-Binding-D0 independently from PHY1-SingleLayer-D0.",
+        "nextAction": "Preserve the scoped pass while repairing paired Z1 and PHY1 separately.",
     },
     "BP-20-RESEARCH-PROTOTYPE": {
         "status": "partial",
@@ -186,8 +189,8 @@ ROW_UPDATES = {
             "synthetic D0 model, and real optional ZeroOne CPU/static derivatives."
         ),
         "limitations": (
-            "C3, independent fidelity, mobile, broader provider, private-user, licence, and "
-            "human-review gates remain open; Alpha is not reached."
+            "Paired Z1, PHY1, independent fidelity, mobile, broader provider, private-user, "
+            "licence, and human-review gates remain open; Alpha is not reached."
         ),
     },
 }
@@ -200,6 +203,7 @@ ROW_EVIDENCE_ADDITIONS = {
     "BP-14-EVALUATION": True,
     "BP-17-PHASE-10": True,
     "BP-18-GATE-Z1": True,
+    "BP-18-GATE-C3": True,
     "BP-20-RESEARCH-PROTOTYPE": True,
 }
 
@@ -309,15 +313,16 @@ NEXT_ACTIONS = {
         "provider, private, hardware, and human-review evidence."
     ),
     "BP-17-PHASE-10": (
-        "Requalify current ZeroOne master and refresh paired scoped Z1; keep global Phase 10 "
-        "partial pending broader provider, mobile, and human-review evidence."
+        "Repair the three rejected canonical family surfaces and rerun paired scoped Z1; keep "
+        "global Phase 10 partial pending broader provider, mobile, and human-review evidence."
     ),
     "BP-17-PHASE-11": (
-        "Begin actual dynamic deformation only after scoped C3 and real ZeroOne static gates pass."
+        "Keep dynamic deformation blocked until refreshed paired scoped Z1 passes; C3 already "
+        "passes and PHY1 remains separately required for solver-driven physical claims."
     ),
     "BP-18-GATE-C3": (
-        "Requalify the five literal C3-Binding-D0 requirements separately from the stricter "
-        "PHY1-SingleLayer-D0 physical campaign."
+        "Preserve the scoped five-part C3-Binding-D0 pass while repairing paired Z1 and the "
+        "stricter PHY1-SingleLayer-D0 physical campaign independently."
     ),
     "BP-20-RESEARCH-PROTOTYPE": (
         "Integrate corrected topology, scoped C3, trained synthetic D0 inference, and real ZeroOne "
@@ -392,9 +397,9 @@ def _append_unique(current: object, additions: list[str]) -> list[str]:
 
 
 def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
-    rows = list(stack["pullRequests"])  # type: ignore[arg-type]
+    rows = list(cast(list[dict[str, object]], stack["pullRequests"]))
     for row in rows:
-        if int(row["number"]) != 23:
+        if row.get("number") != 23:
             continue
         row["headSha"] = PR23_FINAL_HEAD
         row["layerAhead"] = 14

@@ -12,10 +12,10 @@ MATURITY_IDS = (
     "BP-20-BETA",
     "BP-20-PRODUCTION",
 )
-PR23_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
-ZEROONE_HISTORICAL_SHA = "c6388cbbf53ba8a47831ec25e83808e1edf32194"
-ZEROONE_CURRENT_MASTER = "a17762bc1fc12fbd33f0488634635a5dcfdf8da3"
-ZEROONE_EXECUTABLE_SHA256 = "7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e"
+A1_HEAD = "5d080caad354bcecff94a7eadf16d080d68a606c"
+C3_EVIDENCE_SHA = "1a500b1720edeae4a3f28b88a31f7cd14125854b"
+ZEROONE_CANDIDATE_SHA = "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
+ZEROONE_EXECUTABLE_SHA256 = "59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -26,7 +26,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "evidenceTier": "committed_deterministic_fixture_reports",
         "platform": ["ubuntu", "windows"],
         "toolchain": ["CPython 3.11", "CPython 3.12"],
-        "sourceSha": PR23_HEAD,
+        "sourceSha": A1_HEAD,
         "executableSha": None,
         "garmentFamilies": ["tshirt"],
         "avatarProfile": "fixed_reference_avatar_v1",
@@ -35,7 +35,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "executionKind": "CPU",
         "gateScope": "capture_contract",
         "evidenceDurability": "committed_reports_plus_exact_head_ci",
-        "workflowRun": "33150483293",
+        "workflowRun": "33183367784",
         "unsupportedTiers": _COMMON_UNSUPPORTED,
         "blockers": ["authorised_capture_breadth", "private_user_evidence"],
     },
@@ -46,7 +46,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "evidenceTier": "committed_deterministic_fixture_reports",
         "platform": ["ubuntu", "windows"],
         "toolchain": ["CPython 3.11", "CPython 3.12"],
-        "sourceSha": PR23_HEAD,
+        "sourceSha": A1_HEAD,
         "executableSha": None,
         "garmentFamilies": ["tshirt"],
         "avatarProfile": "fixed_reference_avatar_v1",
@@ -55,18 +55,18 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "executionKind": "CPU",
         "gateScope": "canonical_generation_contract",
         "evidenceDurability": "committed_reports_plus_exact_head_ci",
-        "workflowRun": "33150483293",
+        "workflowRun": "33183367784",
         "unsupportedTiers": _COMMON_UNSUPPORTED,
         "blockers": ["independent_provider_breadth", "human_visual_review"],
     },
     "C3-Binding-D0": {
         "gateId": "C3-Binding-D0",
         "globalStatus": "partial",
-        "scopedStatus": "requalification_required",
-        "evidenceTier": "committed_pre_requalification_reports",
-        "platform": ["ubuntu", "windows"],
-        "toolchain": ["CPython 3.11", "CPython 3.12"],
-        "sourceSha": PR23_HEAD,
+        "scopedStatus": "pass",
+        "evidenceTier": "committed_executed_candidate_profile",
+        "platform": ["windows"],
+        "toolchain": ["CPython 3.11"],
+        "sourceSha": C3_EVIDENCE_SHA,
         "executableSha": None,
         "garmentFamilies": ["tshirt"],
         "avatarProfile": "fixed_reference_avatar_v1",
@@ -74,13 +74,10 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "dataProvenance": "project-authored synthetic",
         "executionKind": "CPU",
         "gateScope": "binding",
-        "evidenceDurability": "committed_reports_plus_exact_head_ci",
-        "workflowRun": "33150483293",
+        "evidenceDurability": "committed_candidate_report_plus_exact_head_ci_pending",
+        "workflowRun": "33203903630",
         "unsupportedTiers": _COMMON_UNSUPPORTED,
-        "blockers": [
-            "literal_five_requirement_binding_manifest_not_yet_reconciled",
-            "pose_suite_requalification_pending",
-        ],
+        "blockers": ["broader_avatar_garment_platform_and_private_user_profiles"],
     },
     "PHY1-SingleLayer-D0": {
         "gateId": "PHY1-SingleLayer-D0",
@@ -89,7 +86,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "evidenceTier": "committed_failure_witnesses",
         "platform": ["windows"],
         "toolchain": ["CPython 3.11"],
-        "sourceSha": PR23_HEAD,
+        "sourceSha": C3_EVIDENCE_SHA,
         "executableSha": None,
         "garmentFamilies": ["tshirt"],
         "avatarProfile": "fixed_reference_avatar_v1",
@@ -98,39 +95,60 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "executionKind": "CPU",
         "gateScope": "physical",
         "evidenceDurability": "committed_failure_reports",
-        "workflowRun": "33150483293",
+        "workflowRun": "33203903630",
         "unsupportedTiers": _COMMON_UNSUPPORTED + ["multilayer"],
         "blockers": [
             "timestamped_states_passed_0_of_11",
-            "unresolved_contacts_137",
-            "residual_depth_0.002327721_exceeds_0.000160000",
-            "minimum_body_clearance_negative_0.099391794",
-            "strict_seam_crack_and_slip_not_met",
+            "unresolved_contacts_9",
+            "residual_depth_0.001878992_exceeds_0.000160000",
+            "minimum_body_clearance_negative_0.009084014",
+            "maximum_seam_crack_0.109609688",
+            "rest_referenced_inversions_or_degeneracies_68",
         ],
     },
     "Z1": {
         "gateId": "Z1",
         "globalStatus": "partial",
-        "scopedStatus": "historical_local_pass",
+        "scopedStatus": "candidate_all_family_failed",
         "historicalProfileStatus": "pass",
+        "candidateAllFamilyStatus": "fail",
         "currentMasterRequalified": False,
         "phase10Status": "partial",
-        "evidenceTier": "historical_local_binary_plus_committed_reports",
+        "evidenceTier": "durable_candidate_binary_plus_committed_all_family_reports",
         "platform": ["windows"],
         "toolchain": ["MSVC 19.36 Release"],
-        "sourceSha": ZEROONE_HISTORICAL_SHA,
-        "currentMasterSha": ZEROONE_CURRENT_MASTER,
+        "sourceSha": ZEROONE_CANDIDATE_SHA,
+        "currentMasterSha": None,
         "executableSha": ZEROONE_EXECUTABLE_SHA256,
-        "garmentFamilies": ["tshirt", "layered_asymmetric"],
+        "garmentFamilies": [
+            "tshirt",
+            "sleeveless_top",
+            "long_sleeved_top",
+            "simple_skirt",
+            "simple_trousers",
+            "simple_dress",
+            "button_shirt",
+            "jacket_outerwear",
+            "layered_asymmetric",
+        ],
         "avatarProfile": "not_applicable_static_cook",
         "computeProfile": "D0",
         "dataProvenance": "project-authored synthetic",
         "executionKind": "CPU/headless/static",
         "gateScope": "static ZeroOne",
-        "evidenceDurability": "local_historical_binary_plus_committed_reports",
-        "workflowRun": "33150483293",
+        "evidenceDurability": "durable_zeroone_build_artifact_plus_local_paired_reports",
+        "workflowRun": "33203908161",
+        "allFamilyAttemptCount": 9,
+        "successfulFamilyCount": 6,
+        "rejectedFamilyCount": 3,
         "unsupportedTiers": ["current_master", "GPU", "mobile", "dynamic", "human_review"],
-        "blockers": ["current_master_requalification", "durable_processor_workflow"],
+        "blockers": [
+            "long_sleeved_top_degenerate_surface",
+            "button_shirt_degenerate_surface",
+            "jacket_outerwear_degenerate_surface",
+            "candidate_static_not_merged_to_master",
+            "paired_closy_workflow_not_durable",
+        ],
     },
     "Z2": {
         "gateId": "Z2",
@@ -139,7 +157,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "evidenceTier": "none",
         "platform": [],
         "toolchain": [],
-        "sourceSha": ZEROONE_CURRENT_MASTER,
+        "sourceSha": ZEROONE_CANDIDATE_SHA,
         "executableSha": None,
         "garmentFamilies": [],
         "avatarProfile": "none",
@@ -159,7 +177,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "evidenceTier": "none",
         "platform": [],
         "toolchain": [],
-        "sourceSha": PR23_HEAD,
+        "sourceSha": A1_HEAD,
         "executableSha": None,
         "garmentFamilies": [],
         "avatarProfile": "none",
@@ -192,7 +210,7 @@ def build_status_model(
                     "evidenceTier": "none",
                     "platform": [],
                     "toolchain": [],
-                    "sourceSha": ZEROONE_CURRENT_MASTER,
+                    "sourceSha": ZEROONE_CANDIDATE_SHA,
                     "executableSha": None,
                     "garmentFamilies": [],
                     "avatarProfile": "none",
@@ -248,11 +266,14 @@ def build_status_model(
         "truth": {
             "phase8EvidenceScope": "deterministic_fixture_family_verticals",
             "phases10To14EvidenceScope": (
-                "historical_phase10_cpu_static_plus_phase11_to14_contract_fixtures"
+                "candidate_all_family_phase10_partial_plus_phase11_to14_contract_fixtures"
             ),
-            "actualZeroOneStaticCookExecutedThisInvocation": False,
-            "actualZeroOneStaticArtifactLoaded": False,
-            "cacheValidated": True,
+            "actualZeroOneStaticCookExecutedThisInvocation": True,
+            "actualZeroOneStaticArtifactLoaded": True,
+            "zeroOneStaticFamilyAttemptCount": 9,
+            "zeroOneStaticSuccessfulFamilyCount": 6,
+            "zeroOneStaticRejectedFamilyCount": 3,
+            "cacheValidated": False,
             "historicalZeroOneStaticCookEvidencePresent": True,
             "actualZeroOneDynamicDeformationExecuted": False,
             "actualZeroOneGpuRuntimeExecuted": False,
@@ -278,14 +299,16 @@ def validate_status_model(
         issues.append("phase_zero_not_complete")
     if any(model.get("phases", {}).get(f"{index:02d}") != "partial" for index in range(1, 15)):
         issues.append("phase_completion_overclaimed")
-    if model.get("stack", {}).get("exactHeadForgeExceptions") != [10]:
+    if 10 not in model.get("stack", {}).get("exactHeadForgeExceptions", []):
         issues.append("stack_exception_set_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
-    if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != "historical_local_pass":
+    if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (
+        "candidate_all_family_failed"
+    ):
         issues.append("zeroone_z1_scope_inflated")
     truth = model.get("truth", {})
-    if truth.get("actualZeroOneStaticCookExecutedThisInvocation") is not False:
-        issues.append("status_reconciliation_must_not_claim_fresh_static_cook")
+    if truth.get("actualZeroOneStaticCookExecutedThisInvocation") is not True:
+        issues.append("status_reconciliation_missing_candidate_static_cook")
     if truth.get("actualZeroOneDynamicDeformationExecuted") is not False:
         issues.append("dynamic_execution_overclaimed")
     if truth.get("actualZeroOneGpuRuntimeExecuted") is not False:
@@ -319,7 +342,7 @@ def render_status_summary(model: dict[str, Any]) -> str:
         "## Scoped Gates\n\n"
         f"{gate_lines}\n\n"
         "Compute profile, data provenance, execution profile, and gate scope are independent "
-        "axes. PR #23 is historical local static evidence only. C3-Binding-D0 and "
-        "PHY1-SingleLayer-D0 are separate gates; no dynamic, GPU, mobile, private-user, or "
-        "human-review execution is claimed.\n"
+        "axes. C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile; "
+        "PHY1-SingleLayer-D0 and refreshed paired Z1 fail their declared scopes. No dynamic, "
+        "GPU, mobile, private-user, or human-review execution is claimed.\n"
     )

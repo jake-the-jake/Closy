@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "evidenceVersion": "closy.phase11_prerequisite_reconciliation.v2",
+  "repository": "jake-the-jake/Closy",
+  "base": {
+    "pullRequest": 27,
+    "branch": "codex/closy-forge-phase-10-zeroone-static-integration-v2",
+    "sha": "2a4fcd8146d95d2fab9a3d39751ffdafd5196387"
+  },
+  "source": {
+    "pullRequest": 25,
+    "branch": "codex/closy-forge-c3-physical-convergence-v2",
+    "baseSha": "5d080caad354bcecff94a7eadf16d080d68a606c",
+    "headSha": "f9f1ff86089f6b43157431bdd3ccdc83cbc8b974",
+    "uniqueCommitCount": 8
+  },
+  "destination": {
+    "branch": "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+    "implementationHeadSha": "f64c4ff2225141aa3fa04405e77fef0af360e050",
+    "directParentMergeBase": "2a4fcd8146d95d2fab9a3d39751ffdafd5196387",
+    "behindParentCommitCount": 0,
+    "replayedCommitCount": 8
+  },
+  "mappings": [
+    {
+      "source": "47e6724df1f2480138645132b489d82332a85d2a",
+      "destination": "6f3900d64a8d64db5b92c963f3c74f6405a78525"
+    },
+    {
+      "source": "c304f23376ab8d4a18e56eb7bf7380b9a48d8ad0",
+      "destination": "5c5c12cf77a228954a660c9d2fcd0048148d5b95"
+    },
+    {
+      "source": "aea95a3a15c6e23ab56090a3239842bcd430754a",
+      "destination": "5869a137af87dc52fc398180b7dbba15872fd6da"
+    },
+    {
+      "source": "9f16cf69e0e8b8fa31ee6ed7940643e1cd70aa2c",
+      "destination": "5107b435c1f5440c3adebc1d268cdf5933e2a183"
+    },
+    {
+      "source": "67f50c4c590543a40275de33e48fd3412cbcff92",
+      "destination": "dee96fe86192e3fee6b63be39456dd383d72825e"
+    },
+    {
+      "source": "1a500b1720edeae4a3f28b88a31f7cd14125854b",
+      "destination": "816626992bf6bc451521ec5b9f2fdbc68e9ef012"
+    },
+    {
+      "source": "37fc2d8e6f4d658bf2b9dd61dae0f43dfbe21362",
+      "destination": "0b2b9b729c559785ebd0abc921bb6e6f079a7d9f"
+    },
+    {
+      "source": "f9f1ff86089f6b43157431bdd3ccdc83cbc8b974",
+      "destination": "f64c4ff2225141aa3fa04405e77fef0af360e050"
+    }
+  ],
+  "patchProof": {
+    "method": "git_range_diff",
+    "sourceRange": "5d080caad354bcecff94a7eadf16d080d68a606c..f9f1ff86089f6b43157431bdd3ccdc83cbc8b974",
+    "destinationRange": "2a4fcd8146d95d2fab9a3d39751ffdafd5196387..f64c4ff2225141aa3fa04405e77fef0af360e050",
+    "equivalentCommitCount": 8,
+    "onlyExpectedDifference": "cherry_pick_x_provenance_trailers"
+  },
+  "independentSibling": {
+    "pullRequest": 26,
+    "branch": "codex/closy-forge-phase-9-raster-trained-synthetic-d0",
+    "headSha": "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
+    "included": false,
+    "reason": "phase9_does_not_block_phase11_and_remains_independent"
+  },
+  "sourceValidation": {
+    "phase9": {
+      "headSha": "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
+      "runId": "33201911956",
+      "jobCount": 26,
+      "conclusion": "success"
+    },
+    "phase10Parent": {
+      "headSha": "2a4fcd8146d95d2fab9a3d39751ffdafd5196387",
+      "runId": "33203908161",
+      "jobCount": 26,
+      "conclusion": "success"
+    },
+    "c3Phy1Source": {
+      "headSha": "f9f1ff86089f6b43157431bdd3ccdc83cbc8b974",
+      "runId": "33203903630",
+      "contractsStaticConclusion": "success",
+      "familyMatrixConclusion": "success",
+      "integrationShard0Conclusion": "failure",
+      "integrationShard1Conclusion": "failure",
+      "overallConclusion": "failure",
+      "failureReason": "new_phy1_collision_diagnostics_changed_established_package_bytes_and_stale_tshirt_structural_golden"
+    }
+  },
+  "integrationCorrection": {
+    "headSha": "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
+    "location": "reconciliation_descendant_only_published_source_head_not_mutated",
+    "compatibilityPolicy": "legacy_reference_package_payloads_remain_byte_stable_while_phy1_explicitly_records_symmetric_orientation_guards",
+    "updatedGoldenScope": "tshirt_only_for_intentional_c3_binding_profile_and_evidence_changes",
+    "establishedFamilyGoldensRebased": false
+  },
+  "gates": {
+    "C3-Binding-D0": "pass",
+    "PHY1-SingleLayer-D0": "fail",
+    "refreshedPairedScopedZ1": "fail",
+    "mechanicalReferencePhase11Eligible": false,
+    "solverDrivenPhysicalPhase11Eligible": false,
+    "Z2Executed": false
+  },
+  "decision": "phase11_blocked_by_refreshed_paired_scoped_z1"
+}

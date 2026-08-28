@@ -47,7 +47,8 @@ def main() -> int:
         physical_accepted = all(item.get("physicalQualityAccepted") is True for item in items)
         inter_layer_values = {item.get("interLayerCollisionEnabled") for item in items}
         if len(inter_layer_values) != 1:
-            raise SystemExit(f"{family}: inter-layer evidence drift: {sorted(inter_layer_values)}")
+            display_values = sorted(repr(value) for value in inter_layer_values)
+            raise SystemExit(f"{family}: inter-layer evidence drift: {display_values}")
         inter_layer_collision = next(iter(inter_layer_values))
         family_records.append(
             {

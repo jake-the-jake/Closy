@@ -1,5 +1,5 @@
 {
-  "canonicalPackageDigest": "2a97db3332ffce56f44c5ed7ff4bd5eb037c67219f3bcdc66e0131036f6c15d1",
+  "canonicalPackageDigest": "c1ad76661ff0642a58343f8d9639c3aa0bb3d084f9bb38d6bff2a9dd429b807a",
   "capabilities": {
     "acceptedForD0PublicFixture": false,
     "actualClothSettleAvailable": true,
@@ -7,7 +7,7 @@
     "geometryStitchedShellAvailable": true,
     "imageConditionedFittingAvailable": true,
     "productionBindingC3EvidenceAvailable": true,
-    "productionBindingC3ProfileAvailable": false,
+    "productionBindingC3ProfileAvailable": true,
     "selfCollisionAvailable": true,
     "sourceRenderFidelityAvailable": true,
     "zeroOneDynamicAvailable": false,
@@ -133,9 +133,9 @@
   },
   "productionBindingC3": {
     "acceptedForGlobalPhase6": false,
-    "gateC3Status": "partial",
+    "gateC3Status": "complete_for_d0_fixed_avatar_tshirt_profile",
     "motionStateCount": 11,
-    "status": "partial_scoped_reference_profile"
+    "status": "d0_c3_literal_profile_pass"
   },
   "providerBakeoff": {
     "canonicalAcceptedProviderCount": 0,
@@ -158,7 +158,7 @@
     "acceptedForProductionGpuSolver": false,
     "highVelocityTunnelling": "pass",
     "status": "d0_reference_self_collision_run_with_unresolved_contacts",
-    "unresolvedContactCount": 137
+    "unresolvedContactCount": 43
   },
   "settle": {
     "convergenceState": "failed",

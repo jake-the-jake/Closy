@@ -2,15 +2,15 @@
   "coverage": {
     "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
     "counts": {
-      "complete": 20,
+      "complete": 21,
       "discovery_pending": 13,
       "not_started": 8,
-      "partial": 60
+      "partial": 59
     },
-    "coverageVersion": "closy.blueprint_coverage.evidence_security_integrity.v2",
+    "coverageVersion": "closy.blueprint_coverage.c3_durable_z1_phase11.v3",
     "total": 101
   },
-  "evidenceAnchorSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+  "evidenceAnchorSha": "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -35,7 +35,7 @@
         "windows"
       ],
       "scopedStatus": "pass",
-      "sourceSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+      "sourceSha": "5d080caad354bcecff94a7eadf16d080d68a606c",
       "toolchain": [
         "CPython 3.11",
         "CPython 3.12"
@@ -48,7 +48,7 @@
         "mobile",
         "private_user"
       ],
-      "workflowRun": "33150483293"
+      "workflowRun": "33183367784"
     },
     "C2": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -73,7 +73,7 @@
         "windows"
       ],
       "scopedStatus": "pass",
-      "sourceSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+      "sourceSha": "5d080caad354bcecff94a7eadf16d080d68a606c",
       "toolchain": [
         "CPython 3.11",
         "CPython 3.12"
@@ -86,18 +86,17 @@
         "mobile",
         "private_user"
       ],
-      "workflowRun": "33150483293"
+      "workflowRun": "33183367784"
     },
     "C3-Binding-D0": {
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
-        "literal_five_requirement_binding_manifest_not_yet_reconciled",
-        "pose_suite_requalification_pending"
+        "broader_avatar_garment_platform_and_private_user_profiles"
       ],
       "computeProfile": "D0",
       "dataProvenance": "project-authored synthetic",
-      "evidenceDurability": "committed_reports_plus_exact_head_ci",
-      "evidenceTier": "committed_pre_requalification_reports",
+      "evidenceDurability": "committed_candidate_report_plus_exact_head_ci_pending",
+      "evidenceTier": "committed_executed_candidate_profile",
       "executableSha": null,
       "executionKind": "CPU",
       "garmentFamilies": [
@@ -107,14 +106,12 @@
       "gateScope": "binding",
       "globalStatus": "partial",
       "platform": [
-        "ubuntu",
         "windows"
       ],
-      "scopedStatus": "requalification_required",
-      "sourceSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+      "scopedStatus": "pass",
+      "sourceSha": "1a500b1720edeae4a3f28b88a31f7cd14125854b",
       "toolchain": [
-        "CPython 3.11",
-        "CPython 3.12"
+        "CPython 3.11"
       ],
       "unsupportedTiers": [
         "D1",
@@ -124,7 +121,7 @@
         "mobile",
         "private_user"
       ],
-      "workflowRun": "33150483293"
+      "workflowRun": "33203903630"
     },
     "P1": {
       "avatarProfile": "none",
@@ -146,7 +143,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+      "sourceSha": "5d080caad354bcecff94a7eadf16d080d68a606c",
       "toolchain": [],
       "unsupportedTiers": [
         "private_user",
@@ -160,10 +157,11 @@
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
         "timestamped_states_passed_0_of_11",
-        "unresolved_contacts_137",
-        "residual_depth_0.002327721_exceeds_0.000160000",
-        "minimum_body_clearance_negative_0.099391794",
-        "strict_seam_crack_and_slip_not_met"
+        "unresolved_contacts_9",
+        "residual_depth_0.001878992_exceeds_0.000160000",
+        "minimum_body_clearance_negative_0.009084014",
+        "maximum_seam_crack_0.109609688",
+        "rest_referenced_inversions_or_degeneracies_68"
       ],
       "computeProfile": "D0",
       "dataProvenance": "project-authored synthetic",
@@ -181,7 +179,7 @@
         "windows"
       ],
       "scopedStatus": "failed",
-      "sourceSha": "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+      "sourceSha": "1a500b1720edeae4a3f28b88a31f7cd14125854b",
       "toolchain": [
         "CPython 3.11"
       ],
@@ -194,24 +192,36 @@
         "private_user",
         "multilayer"
       ],
-      "workflowRun": "33150483293"
+      "workflowRun": "33203903630"
     },
     "Z1": {
+      "allFamilyAttemptCount": 9,
       "avatarProfile": "not_applicable_static_cook",
       "blockers": [
-        "current_master_requalification",
-        "durable_processor_workflow"
+        "long_sleeved_top_degenerate_surface",
+        "button_shirt_degenerate_surface",
+        "jacket_outerwear_degenerate_surface",
+        "candidate_static_not_merged_to_master",
+        "paired_closy_workflow_not_durable"
       ],
+      "candidateAllFamilyStatus": "fail",
       "computeProfile": "D0",
       "currentMasterRequalified": false,
-      "currentMasterSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "currentMasterSha": null,
       "dataProvenance": "project-authored synthetic",
-      "evidenceDurability": "local_historical_binary_plus_committed_reports",
-      "evidenceTier": "historical_local_binary_plus_committed_reports",
-      "executableSha": "7629cb8d6953887636f1863d23f17e2e79002af79eedbacb3d3e99bba830990e",
+      "evidenceDurability": "durable_zeroone_build_artifact_plus_local_paired_reports",
+      "evidenceTier": "durable_candidate_binary_plus_committed_all_family_reports",
+      "executableSha": "59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065",
       "executionKind": "CPU/headless/static",
       "garmentFamilies": [
         "tshirt",
+        "sleeveless_top",
+        "long_sleeved_top",
+        "simple_skirt",
+        "simple_trousers",
+        "simple_dress",
+        "button_shirt",
+        "jacket_outerwear",
         "layered_asymmetric"
       ],
       "gateId": "Z1",
@@ -222,8 +232,10 @@
       "platform": [
         "windows"
       ],
-      "scopedStatus": "historical_local_pass",
-      "sourceSha": "c6388cbbf53ba8a47831ec25e83808e1edf32194",
+      "rejectedFamilyCount": 3,
+      "scopedStatus": "candidate_all_family_failed",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
+      "successfulFamilyCount": 6,
       "toolchain": [
         "MSVC 19.36 Release"
       ],
@@ -234,7 +246,7 @@
         "dynamic",
         "human_review"
       ],
-      "workflowRun": "33150483293"
+      "workflowRun": "33203908161"
     },
     "Z2": {
       "avatarProfile": "none",
@@ -255,7 +267,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
       "toolchain": [],
       "unsupportedTiers": [
         "mechanical_reference",
@@ -282,7 +294,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
       "toolchain": [],
       "unsupportedTiers": [
         "all_runtime_profiles"
@@ -306,7 +318,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
       "toolchain": [],
       "unsupportedTiers": [
         "all_runtime_profiles"
@@ -330,7 +342,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
       "toolchain": [],
       "unsupportedTiers": [
         "all_runtime_profiles"
@@ -354,7 +366,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
       "toolchain": [],
       "unsupportedTiers": [
         "all_runtime_profiles"
@@ -378,7 +390,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
       "toolchain": [],
       "unsupportedTiers": [
         "all_runtime_profiles"
@@ -402,7 +414,7 @@
       "globalStatus": "discovery_pending",
       "platform": [],
       "scopedStatus": "not_run",
-      "sourceSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
       "toolchain": [],
       "unsupportedTiers": [
         "all_runtime_profiles"
@@ -451,14 +463,17 @@
     "actualZeroOneDynamicDeformationExecuted": false,
     "actualZeroOneGpuRuntimeExecuted": false,
     "actualZeroOneMobileRuntimeExecuted": false,
-    "actualZeroOneStaticArtifactLoaded": false,
-    "actualZeroOneStaticCookExecutedThisInvocation": false,
-    "cacheValidated": true,
+    "actualZeroOneStaticArtifactLoaded": true,
+    "actualZeroOneStaticCookExecutedThisInvocation": true,
+    "cacheValidated": false,
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
     "phase8EvidenceScope": "deterministic_fixture_family_verticals",
-    "phases10To14EvidenceScope": "historical_phase10_cpu_static_plus_phase11_to14_contract_fixtures",
+    "phases10To14EvidenceScope": "candidate_all_family_phase10_partial_plus_phase11_to14_contract_fixtures",
     "physicalMobileEvidenceRun": false,
-    "privateUserEvidenceRun": false
+    "privateUserEvidenceRun": false,
+    "zeroOneStaticFamilyAttemptCount": 9,
+    "zeroOneStaticRejectedFamilyCount": 3,
+    "zeroOneStaticSuccessfulFamilyCount": 6
   }
 }

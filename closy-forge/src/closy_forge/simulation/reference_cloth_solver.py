@@ -171,6 +171,7 @@ def settle_reference_cloth(
         thickness_meters=active_settings.self_collision_thickness_meters,
         clearance_meters=active_settings.self_collision_clearance_meters,
         max_iterations=1,
+        response_mode="legacy_vertex_only",
     )
     self_collision_triangles, _ = build_triangle_refs(rest_mesh)
     fixed_support_indices = {support.index for support in supports}
@@ -232,6 +233,7 @@ def settle_reference_cloth(
                 fixed_indices=fixed_support_indices,
                 settings=self_collision_settings,
                 excluded_vertex_pairs=self_collision_exclusions,
+                orientation_reference_positions=flat.positions,
             )
             self_collision_corrections += int(convergence.get("totalCorrectionCount", 0))
             self_collision_convergence.append({"substep": step + 1, **convergence})
@@ -257,6 +259,7 @@ def settle_reference_cloth(
         fixed_indices=fixed_support_indices,
         settings=self_collision_settings,
         excluded_vertex_pairs=self_collision_exclusions,
+        orientation_reference_positions=flat.positions,
     )
     positions = _canonicalize_positions(positions, canonical_position_digits)
     for _ in range(active_settings.solver_iterations * 2):
@@ -360,6 +363,7 @@ def simulate_reference_motion_state(
         thickness_meters=settings.self_collision_thickness_meters,
         clearance_meters=settings.self_collision_clearance_meters,
         max_iterations=1,
+        response_mode="legacy_vertex_only",
     )
     convergence: list[dict[str, Any]] = []
     energy_history: list[float] = []
@@ -400,6 +404,7 @@ def simulate_reference_motion_state(
                 fixed_indices=fixed,
                 settings=collision_settings,
                 excluded_vertex_pairs=exclusions,
+                orientation_reference_positions=flat.positions,
             )
             convergence.append({"substep": step + 1, **collision})
             positions = _canonicalize_positions(positions, canonical_position_digits)
