@@ -59,6 +59,14 @@ def test_demo_package_emits_scoped_production_binding_c3_evidence(tmp_path) -> N
     assert c3_report["execution"]["independentSurfaceAgreementRun"] is True
     assert c3_report["execution"]["stitchedShellDeformationRun"] is True
     assert c3_report["motionSuite"]["states"][0]["seamCrack"]["sharedClothMotionSubtracted"] is True
+    clearance = c3_report["motionSuite"]["states"][0]["stitchedShellDeformation"][
+        "bodySignedClearanceAudit"
+    ]
+    assert clearance["surfaceTopology"]["querySurfaceQualified"] is True
+    assert clearance["knownFixtureAudit"]["status"] == "pass"
+    assert clearance["worstWitness"]["closestBodyTriangleId"]
+    assert clearance["worstWitness"]["rayParityVotes"]["unanimous"] is True
+    assert clearance["worstWitness"]["independentGeneralizedWinding"]["agreesWithRayParity"] is True
     assert (
         c3_report["motionSuite"]["states"][1]["motionTargetComparison"][
             "renderMotionTransformUsedAsOracle"
