@@ -55,6 +55,10 @@ def main() -> int:
     repository_root = forge_root.parent
     _require_git_head(repository_root, args.closy_sha)
     _require_git_head(args.zeroone_repo, args.zeroone_sha)
+    closy_content_dirty = _content_dirty(repository_root)
+    zeroone_content_dirty = _content_dirty(args.zeroone_repo)
+    if closy_content_dirty or zeroone_content_dirty:
+        raise RuntimeError("evidence source checkout must be clean before generation")
     tool = resolve_zeroone_tool(
         args.executable,
         trusted_build_record=args.trusted_build_record,
@@ -161,13 +165,13 @@ def main() -> int:
             "closy": {
                 "repository": "jake-the-jake/Closy",
                 "gitSha": args.closy_sha,
-                "contentDirty": _content_dirty(repository_root),
+                "contentDirty": closy_content_dirty,
                 "evidenceRole": "paired_closy_source",
             },
             "zeroOne": {
                 "repository": "jake-the-jake/ZeroOne",
                 "gitSha": args.zeroone_sha,
-                "contentDirty": _content_dirty(args.zeroone_repo),
+                "contentDirty": zeroone_content_dirty,
                 "evidenceRole": "exact_candidate_static_source_checkout",
                 "sourceClassification": "unmerged_candidate_static_pr_head",
                 "pullRequest": args.zeroone_pr_url,
