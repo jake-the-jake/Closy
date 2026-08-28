@@ -229,8 +229,11 @@ def process_memory_snapshot() -> dict[str, Any]:
 
         counters = ProcessMemoryCounters()
         counters.cb = ctypes.sizeof(counters)
-        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-        psapi = ctypes.WinDLL("psapi", use_last_error=True)
+        win_dll_factory = getattr(ctypes, "WinDLL", None)
+        if win_dll_factory is None:
+            return {"measurement": "windows_process_memory_unavailable"}
+        kernel32 = win_dll_factory("kernel32", use_last_error=True)
+        psapi = win_dll_factory("psapi", use_last_error=True)
         get_current_process = kernel32.GetCurrentProcess
         get_current_process.argtypes = []
         get_current_process.restype = ctypes.c_void_p
