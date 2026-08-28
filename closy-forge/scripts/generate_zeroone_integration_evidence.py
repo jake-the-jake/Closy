@@ -337,6 +337,7 @@ def _build_all_declared_families(root: Path) -> dict[str, Any]:
 
 def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
     mesh = read_json(package / "simulation" / "rest_state.json")
+    mesh_manifest = read_json(package / "simulation" / "mesh_manifest.json")
     semantics = read_json(package / "semantic" / "garment_graph.json")
     panels = sorted(str(panel_id) for panel_id in semantics.get("panelMapping", {}))
     derivative_materials = read_json(
@@ -356,7 +357,7 @@ def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
     asset = report["assetAudit"]
     return {
         "exactCanonicalInputHashes": report["canonicalAuthorityHashes"],
-        "topologyHash": mesh["topologyHash"],
+        "topologyHash": mesh["meshTopologyHash"],
         "panelIds": panels,
         "seamIds": seams,
         "openingIds": openings,
@@ -366,7 +367,7 @@ def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
         "hierarchyNodeCount": int(asset["hierarchyNodeCount"]),
         "pageCount": int(asset["pageCount"]),
         "pagePackCount": int(asset["pagePackCount"]),
-        "bounds": mesh["bounds"],
+        "bounds": mesh_manifest["bounds"],
         "semanticBoundaryPreservation": bool(panels and seams and openings and materials),
     }
 
