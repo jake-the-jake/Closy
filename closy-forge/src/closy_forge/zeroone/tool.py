@@ -15,7 +15,7 @@ from closy_forge.security.strict_json import (
     loads_strict_json_object,
 )
 
-PINNED_ZEROONE_SOURCE_SHA = "c6388cbbf53ba8a47831ec25e83808e1edf32194"
+PINNED_ZEROONE_SOURCE_SHA = "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
 CURRENT_ZEROONE_MASTER_ANCHOR = "a17762bc1fc12fbd33f0488634635a5dcfdf8da3"
 REQUEST_SCHEMA_VERSION = "closy.zeroone.static-request.v1"
 REPORT_SCHEMA_VERSION = "zeroone.closy.static-report.v1"

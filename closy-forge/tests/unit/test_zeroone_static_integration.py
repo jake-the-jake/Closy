@@ -29,7 +29,7 @@ def _trusted_record(path: Path, executable: Path) -> Path:
         "recordVersion": "closy.zeroone.trusted-build-record.v1",
         "trustDomain": "local_exact_source_capture",
         "repository": "jake-the-jake/ZeroOne",
-        "sourceSha": "c6388cbbf53ba8a47831ec25e83808e1edf32194",
+        "sourceSha": tool_module.PINNED_ZEROONE_SOURCE_SHA,
         "buildId": "unit-exact-source-build",
         "compiler": "msvc-unit",
         "buildType": "Release",
@@ -134,7 +134,7 @@ def test_trusted_record_is_cross_checked_against_observed_version_and_minimal_en
         observed_environment.update(kwargs["env"])  # type: ignore[arg-type]
         version = {
             "tool": "ZeroOneProcess",
-            "zeroOneGitSha": "c6388cbbf53ba8a47831ec25e83808e1edf32194",
+            "zeroOneGitSha": tool_module.PINNED_ZEROONE_SOURCE_SHA,
             "executableSha256": sha256_file(executable),
             "buildConfiguration": "Release",
             "compiler": "msvc-unit",
