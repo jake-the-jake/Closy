@@ -22,6 +22,7 @@ from closy_forge.binding.c3_evidence import prepare_c3_evidence_assets
 from closy_forge.binding.production_binding import (
     PRODUCTION_BINDING_C3_REPORT_VERSION,
     PRODUCTION_BINDING_CONTRACT_VERSION,
+    build_legacy_production_binding_c3_report_from_package,
     build_production_binding_c3_report_from_package,
     build_production_binding_contract,
 )
@@ -678,11 +679,21 @@ def _write_package_contents(
         package_dir / "reports" / "geometry_stitched_shell.json",
         geometry_stitched_shell,
     )
-    production_binding_c3 = build_production_binding_c3_report_from_package(
-        package_dir=package_dir,
-        garment_id="garment.demo_tshirt.reference_v1",
-        garment_class="tshirt",
-    )
+    if params == TShirtParameters():
+        production_binding_c3 = build_production_binding_c3_report_from_package(
+            package_dir=package_dir,
+            garment_id="garment.demo_tshirt.reference_v1",
+            garment_class="tshirt",
+        )
+    else:
+        # C3-Binding-D0 is frozen to the canonical default T-shirt. Supported
+        # parameter variants retain executable binding evidence without being
+        # misclassified as members of that exact capability profile.
+        production_binding_c3 = build_legacy_production_binding_c3_report_from_package(
+            garment_id="garment.demo_tshirt.reference_v1",
+            garment_class="tshirt",
+            package_dir=package_dir,
+        )
     write_canonical_json(
         package_dir / "reports" / "production_binding_c3.json",
         production_binding_c3,

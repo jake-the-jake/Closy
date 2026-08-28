@@ -323,11 +323,9 @@ def project_self_collisions(
     penetration_history = [float(item["maxPenetrationMeters"]) for item in iteration_summaries] + [
         final.max_penetration_meters
     ]
-    return current, {
+    convergence: dict[str, Any] = {
         "iterationCount": len(iteration_summaries),
         "totalCorrectionCount": total_corrections,
-        "orientationBacktrackCount": total_backtracks,
-        "orientationRejectedCorrectionCount": rejected_orientation_corrections,
         "maxIterationPenetrationMeters": _round(max_iteration_penetration),
         "finalContactCount": len(final.contacts),
         "finalUnresolvedContactCount": final.unresolved_contact_count,
@@ -338,6 +336,12 @@ def project_self_collisions(
         "maxPenetrationHistoryMeters": [_round(value) for value in penetration_history],
         "iterations": iteration_summaries,
     }
+    # Keep the established package contract byte-stable when the compatibility
+    # response is selected; PHY1 opts into and records the stronger guard data.
+    if active_settings.response_mode == "symmetric_gradient":
+        convergence["orientationBacktrackCount"] = total_backtracks
+        convergence["orientationRejectedCorrectionCount"] = rejected_orientation_corrections
+    return current, convergence
 
 
 def broad_phase_candidates(

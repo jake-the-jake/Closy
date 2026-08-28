@@ -5,7 +5,7 @@ from math import isfinite, sqrt
 from pathlib import Path
 from typing import Any
 
-from closy_forge.binding.binary_format import BindingFile
+from closy_forge.binding.binary_format import BindingFile, read_binding
 from closy_forge.binding.reconstruct import reconstruct_vertices
 from closy_forge.geometry.frame_attributes import meshset_frame_metrics
 from closy_forge.geometry.glb_io import audit_glb, read_glb_meshset
@@ -229,6 +229,67 @@ def build_production_binding_c3_report_from_package(
         package_dir=package_dir,
         garment_id=garment_id,
         garment_class=garment_class,
+    )
+
+
+def build_legacy_production_binding_c3_report_from_package(
+    *,
+    package_dir: Path,
+    garment_id: str,
+    garment_class: str,
+) -> dict[str, Any]:
+    """Recompute non-canonical-variant binding evidence without claiming frozen C3 scope."""
+    report = build_production_binding_c3_report(
+        garment_id=garment_id,
+        garment_class=garment_class,
+        package_dir=package_dir,
+        simulation_mesh=_meshset_from_package_manifest(
+            package_dir / "simulation" / "mesh_manifest.json"
+        ),
+        render_mesh=_meshset_from_package_manifest(package_dir / "render" / "mesh_manifest.json"),
+        binding=read_binding(package_dir / "binding" / "sim_to_render.bin"),
+        binding_manifest=read_json(package_dir / "binding" / "binding_manifest.json"),
+        contract=read_json(package_dir / "binding" / "production_binding_contract.json"),
+        constraints=read_json(package_dir / "simulation" / "constraints.json"),
+    )
+    report["profile"]["id"] = "d0_parameter_variant_binding_evidence"
+    report["capabilities"]["productionBindingC3ProfileAvailable"] = False
+    report["readiness"].update(
+        {
+            "status": "partial_noncanonical_tshirt_variant_binding_evidence",
+            "gateC3Status": "partial",
+            "acceptedForD0RuntimeBindingProfile": False,
+        }
+    )
+    report["readiness"]["blockingReasons"] = [
+        "outside_frozen_c3_capability_profile",
+        *report["readiness"]["blockingReasons"],
+    ]
+    report["limitations"] = [
+        "noncanonical_tshirt_parameter_variant",
+        *report["limitations"],
+    ]
+    report["integrity"]["productionBindingC3ReportHash"] = hash_production_binding_c3_report(report)
+    return report
+
+
+def _meshset_from_package_manifest(path: Path) -> MeshSet:
+    manifest = read_json(path)
+    return MeshSet(
+        [
+            Mesh(
+                name=str(item["name"]),
+                panel_id=str(item["panelId"]),
+                vertices=[_vec3(point) for point in item["vertices"]],
+                panel_uvs=[(float(point[0]), float(point[1])) for point in item["panelUvs"]],
+                triangles=[
+                    (int(triangle[0]), int(triangle[1]), int(triangle[2]))
+                    for triangle in item["triangles"]
+                ],
+                material_id=str(item["materialId"]),
+            )
+            for item in manifest["meshes"]
+        ]
     )
 
 

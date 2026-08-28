@@ -12,6 +12,7 @@ from closy_forge.appearance.bitmap_atlas import (
 )
 from closy_forge.binding.binary_format import read_binding, write_binding
 from closy_forge.binding.production_binding import (
+    build_legacy_production_binding_c3_report_from_package,
     build_production_binding_c3_report_from_package,
     hash_production_binding_c3_report,
     hash_production_binding_contract,
@@ -8058,8 +8059,15 @@ def _validate_production_binding_c3(
                         rel,
                     )
                 )
+    profile = report.get("profile", {})
+    uses_frozen_capability = isinstance(profile, dict) and "capabilityId" in profile
     try:
-        expected = build_production_binding_c3_report_from_package(
+        recompute = (
+            build_production_binding_c3_report_from_package
+            if uses_frozen_capability
+            else build_legacy_production_binding_c3_report_from_package
+        )
+        expected = recompute(
             package_dir=package_dir,
             garment_id=str(manifest["garmentId"]),
             garment_class=str(manifest["garmentClass"]),
