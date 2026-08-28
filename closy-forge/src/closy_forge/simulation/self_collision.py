@@ -8,6 +8,7 @@ from typing import Any
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Tri, Vec3, add, cross, scale, sub
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, topology_hash
+from closy_forge.simulation.deformation_quality import audit_rest_referenced_deformation
 
 SELF_COLLISION_REPORT_VERSION = "closy.self_collision.reference_d0.integrated_ccd_v3"
 
@@ -425,8 +426,14 @@ def build_self_collision_report(
         settings=active_settings,
         excluded_vertex_pairs=excluded_pairs,
     )
-    inverted_before = _inverted_or_degenerate_triangle_count(settled_mesh)
-    inverted_after = _inverted_or_degenerate_triangle_count(corrected_mesh)
+    deformation_before = audit_rest_referenced_deformation(rest_mesh, settled_mesh)
+    deformation_after = audit_rest_referenced_deformation(rest_mesh, corrected_mesh)
+    inverted_before = int(deformation_before["counts"]["inverted"]) + int(
+        deformation_before["counts"]["degenerate"]
+    )
+    inverted_after = int(deformation_after["counts"]["inverted"]) + int(
+        deformation_after["counts"]["degenerate"]
+    )
     finite_after = all(
         all(isfinite(component) for component in vertex) for vertex in corrected_positions
     )
@@ -528,6 +535,8 @@ def build_self_collision_report(
             "invertedOrDegenerateBefore": inverted_before,
             "invertedOrDegenerateAfter": inverted_after,
             "newInvertedOrDegenerateTriangleCount": max(0, inverted_after - inverted_before),
+            "restReferencedDeformationBefore": deformation_before,
+            "restReferencedDeformationAfter": deformation_after,
             "finiteCorrectedPositions": finite_after,
             "candidateSamples": [
                 {"leftTriangle": left, "rightTriangle": right}
@@ -1140,23 +1149,6 @@ def _support_like_indices(rest_mesh: MeshSet, offsets: list[int]) -> set[int]:
             if mesh.panel_id == "panel.neck_band" or vertex[1] >= 1.345:
                 indices.add(offsets[mesh_index] + vertex_index)
     return indices
-
-
-def _inverted_or_degenerate_triangle_count(meshset: MeshSet) -> int:
-    count = 0
-    for mesh in meshset.meshes:
-        for tri in mesh.triangles:
-            if (
-                _length(
-                    cross(
-                        sub(mesh.vertices[tri[1]], mesh.vertices[tri[0]]),
-                        sub(mesh.vertices[tri[2]], mesh.vertices[tri[0]]),
-                    )
-                )
-                <= 1e-10
-            ):
-                count += 1
-    return count
 
 
 def _contact_payload(contact: Contact) -> dict[str, Any]:
