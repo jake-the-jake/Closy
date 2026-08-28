@@ -336,12 +336,17 @@ def _build_all_declared_families(root: Path) -> dict[str, Any]:
 
 
 def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
-    mesh = read_json(package / "simulation" / "mesh_manifest.json")
+    mesh = read_json(package / "simulation" / "rest_state.json")
     semantics = read_json(package / "semantic" / "garment_graph.json")
     meshes = mesh.get("meshes", [])
     panels = sorted(str(panel_id) for panel_id in semantics.get("panelMapping", {}))
     materials = sorted({str(item["materialId"]) for item in meshes})
-    layers = sorted({str(item.get("layerId", "layer.base")) for item in meshes})
+    layers = sorted(
+        {
+            str(item.get("layerId", "layer.default"))
+            for item in semantics.get("components", [])
+        }
+    )
     seams = sorted(str(item["id"]) for item in semantics.get("seams", []))
     openings = sorted(str(item["id"]) for item in semantics.get("openings", []))
     asset = report["assetAudit"]
