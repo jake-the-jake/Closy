@@ -91,9 +91,32 @@ def main() -> int:
                 expected_zeroone_sha=args.zeroone_sha,
                 publish=True,
             )
-            if result.status != "valid":
-                raise RuntimeError(f"{family} integration failed: {result.reason}")
             namespace_audit = inspect_zeroone_namespace(build.package_dir)
+            if result.status != "valid":
+                garment_rows.append(
+                    {
+                        "family": family,
+                        "garmentId": build.manifest["garmentId"],
+                        "canonicalPackageDigest": build.manifest.get(
+                            "canonicalPackageDigest", build.manifest.get("packageDigest")
+                        ),
+                        "integration": result.to_json(),
+                        "namespaceAudit": namespace_audit,
+                        "familyInventory": _failed_family_inventory(
+                            build.package_dir, result.report
+                        ),
+                        "independentDerivativeInspection": {
+                            "status": "not_run",
+                            "reason": "zeroone_static_derivative_not_produced",
+                        },
+                        "deleteAndRebuild": {
+                            "executed": False,
+                            "passed": False,
+                            "reason": "zeroone_static_derivative_not_produced",
+                        },
+                    }
+                )
+                continue
             if namespace_audit.get("status") != "derivative_valid":
                 raise RuntimeError(f"{family} packaged derivative validation failed")
             derivative_inspection = inspect_static_derivative(
@@ -154,6 +177,15 @@ def main() -> int:
             garment_rows.append(row)
         wall_ns = time.perf_counter_ns() - started_wall
         cpu_ns = time.process_time_ns() - started_cpu
+        scoped_pass = all(row["integration"]["status"] == "valid" for row in garment_rows)
+        failed_families = [
+            {
+                "family": row["family"],
+                "reason": row["integration"]["reason"],
+            }
+            for row in garment_rows
+            if row["integration"]["status"] != "valid"
+        ]
         evidence = {
             "schemaVersion": "closy.zeroone.execution-evidence.v2",
             "scope": "candidate_branch_local_cpu_static_all_predeclared_families",
@@ -194,7 +226,7 @@ def main() -> int:
                 "zeroOneDurableWorkflowArtifact": True,
                 "pairedClosyExecutionDurableWorkflowArtifact": False,
                 "localCandidatePairedEvidence": True,
-                "scopedCandidateStaticPass": True,
+                "scopedCandidateStaticPass": scoped_pass,
                 "globalZ1Pass": False,
             },
             "tool": tool.version,
@@ -210,9 +242,17 @@ def main() -> int:
             "timings": {"wallNanoseconds": wall_ns, "cpuNanoseconds": cpu_ns},
             "garments": garment_rows,
             "acceptance": {
-                "actualZeroOneStaticCookExecutedThisInvocation": True,
-                "actualZeroOneStaticArtifactLoaded": True,
-                "cacheValidated": True,
+                "actualZeroOneStaticCookExecutedThisInvocation": all(
+                    row["integration"]["actualZeroOneStaticCookExecutedThisInvocation"]
+                    for row in garment_rows
+                ),
+                "actualZeroOneStaticArtifactLoaded": all(
+                    row["integration"]["actualZeroOneStaticArtifactLoaded"]
+                    for row in garment_rows
+                ),
+                "cacheValidated": all(
+                    row["integration"]["cacheValidated"] for row in garment_rows
+                ),
                 "actualZeroOneDynamicDeformationExecuted": False,
                 "actualZeroOneGpuRuntimeExecuted": False,
                 "actualZeroOneMobileRuntimeExecuted": False,
@@ -236,7 +276,7 @@ def main() -> int:
                 "allDeleteAndRebuildProofsPassed": all(
                     row["deleteAndRebuild"]["passed"] for row in garment_rows
                 ),
-                "scopedCandidateBranchGateZ1Passed": True,
+                "scopedCandidateBranchGateZ1Passed": scoped_pass,
                 "currentMasterGateZ1Passed": False,
                 "globalPhase10Complete": False,
                 "remainingBlockers": [
@@ -244,6 +284,10 @@ def main() -> int:
                     "zeroone_candidate_static_not_merged_to_master",
                     "mobile_profile",
                     "dynamic_profile",
+                    *[
+                        f"family_static_rejected:{item['family']}:{item['reason']}"
+                        for item in failed_families
+                    ],
                 ],
             },
         }
@@ -372,6 +416,58 @@ def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
         "pagePackCount": int(asset["pagePackCount"]),
         "bounds": _state_bounds(mesh),
         "semanticBoundaryPreservation": bool(panels and seams and openings and materials),
+    }
+
+
+def _failed_family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
+    mesh = read_json(package / "simulation" / "rest_state.json")
+    semantics = read_json(package / "semantic" / "garment_graph.json")
+    canonical_materials = read_json(package / "render" / "materials.json")
+    processor_report = report.get("report", {}).get("report", {})
+    if not isinstance(processor_report, dict):
+        processor_report = {}
+    topology_hash = mesh.get("meshTopologyHash", mesh.get("topologyHash"))
+    if not isinstance(topology_hash, str) or len(topology_hash) != 64:
+        raise ValueError("rest_state_topology_hash_missing_or_invalid")
+    panels = sorted(str(panel_id) for panel_id in semantics.get("panelMapping", {}))
+    seams = sorted(str(item["id"]) for item in semantics.get("seams", []))
+    openings = sorted(str(item["id"]) for item in semantics.get("openings", []))
+    materials = sorted(
+        str(item["materialId"]) for item in canonical_materials.get("materials", [])
+    )
+    layers = sorted(
+        {
+            str(item.get("layerId", "layer.default"))
+            for item in semantics.get("components", [])
+        }
+    )
+    return {
+        "status": "canonical_input_audited_derivative_unavailable",
+        "exactCanonicalInputHashes": processor_report.get(
+            "canonicalAuthorityHashesBefore", {}
+        ),
+        "topologyHash": topology_hash,
+        "panelIds": panels,
+        "seamIds": seams,
+        "openingIds": openings,
+        "materialIds": materials,
+        "layerIds": layers,
+        "bounds": _state_bounds(mesh),
+        "semanticBoundaryPreservation": bool(panels and seams and openings and materials),
+        "processorInputAudit": {
+            key: processor_report.get(key)
+            for key in (
+                "meshCount",
+                "primitiveCount",
+                "vertexCount",
+                "triangleCount",
+                "materialCount",
+                "panelCount",
+                "seamCount",
+                "openingCount",
+                "diagnostic",
+            )
+        },
     }
 
 
