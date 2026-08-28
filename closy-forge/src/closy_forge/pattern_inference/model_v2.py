@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import random
 from copy import deepcopy
 from typing import Any
 
@@ -13,6 +14,7 @@ from .grammar_v2 import FAMILY_SPECS, compile_program, default_parameters, progr
 MODEL_VERSION = "closy.pattern_inference.linear_multitask.d0.v1"
 FAMILIES = tuple(FAMILY_SPECS)
 TARGET_NAMES = ("lengthScale", "widthScale", "easeNormalized")
+MULTITASK_REGRESSION_WEIGHT = 0.35
 
 
 def train_model_v2(
@@ -20,9 +22,9 @@ def train_model_v2(
     split: dict[str, Any],
     *,
     seed: int = 9102,
-    epochs: int = 360,
+    epochs: int = 80,
     learning_rate: float = 0.16,
-    regression_learning_rate: float = 0.055,
+    regression_learning_rate: float = 0.45,
     l2: float = 0.0008,
 ) -> dict[str, Any]:
     train = samples_for_split(dataset, split, "train")
@@ -41,8 +43,13 @@ def train_model_v2(
         for sample in train
     ]
     width = len(FEATURE_NAMES) + 1
-    class_weights = [[0.0 for _ in range(width)] for _ in FAMILIES]
-    regression_weights = [[0.0 for _ in range(width)] for _ in TARGET_NAMES]
+    random_source = random.Random(seed)
+    class_weights = [
+        [random_source.uniform(-0.001, 0.001) for _ in range(width)] for _ in FAMILIES
+    ]
+    regression_weights = [
+        [random_source.uniform(-0.001, 0.001) for _ in range(width)] for _ in TARGET_NAMES
+    ]
     curve: list[dict[str, float | int]] = []
     for epoch in range(epochs + 1):
         class_gradient = [[0.0 for _ in range(width)] for _ in FAMILIES]
@@ -69,8 +76,10 @@ def train_model_v2(
             sum(value * value for weights in class_weights for value in weights[1:])
             + sum(value * value for weights in regression_weights for value in weights[1:])
         )
-        total_loss = cross_entropy + 0.35 * mean_squared_error + regularization
-        if epoch % 30 == 0 or epoch == epochs:
+        total_loss = (
+            cross_entropy + MULTITASK_REGRESSION_WEIGHT * mean_squared_error + regularization
+        )
+        if epoch % 10 == 0 or epoch == epochs:
             curve.append(
                 {
                     "epoch": epoch,
@@ -100,7 +109,10 @@ def train_model_v2(
                     else 2.0 * l2 * regression_weights[target_index][feature_index]
                 )
                 regression_weights[target_index][feature_index] -= regression_learning_rate * (
-                    regression_gradient[target_index][feature_index] / sample_count + penalty
+                    MULTITASK_REGRESSION_WEIGHT
+                    * regression_gradient[target_index][feature_index]
+                    / (sample_count * len(TARGET_NAMES))
+                    + penalty
                 )
 
     centroids = _family_centroids(train, means, scales)
@@ -125,6 +137,15 @@ def train_model_v2(
             "regressionLearningRate": regression_learning_rate,
             "l2": l2,
             "declaredLoss": "cross_entropy + 0.35 * parameter_mse + l2",
+            "regressionLossWeight": MULTITASK_REGRESSION_WEIGHT,
+            "parameterMseReduction": "mean_over_samples_and_three_targets",
+            "seed": seed,
+            "seedUse": "deterministic_uniform_weight_initialization",
+        },
+        "numericPolicy": {
+            "trainingArithmetic": "python_binary64",
+            "canonicalWeightDigits": 12,
+            "canonicalPredictionDigits": 9,
         },
         "featureNames": list(FEATURE_NAMES),
         "families": list(FAMILIES),
@@ -145,7 +166,11 @@ def train_model_v2(
         "trainingCurve": curve,
         "trainingSampleCount": len(train),
         "learnedParametersPersisted": True,
-        "integrity": {"weightsHash": "", "modelHash": ""},
+        "integrity": {
+            "weightsHash": "",
+            "modelHash": "",
+            "modelHashSemantics": "canonical_model_bytes_with_modelHash_field_blank",
+        },
     }
     weights_payload = {
         "classWeights": model["classWeights"],
@@ -295,6 +320,53 @@ def regression_sample_loss_gradient(
         for index, value in enumerate(row)
     ]
     return loss, gradient
+
+
+def multitask_sample_loss_gradient(
+    class_weights: list[list[float]],
+    regression_weights: list[list[float]],
+    row: list[float],
+    label: int,
+    targets: list[float],
+    *,
+    l2: float,
+    regression_weight: float = MULTITASK_REGRESSION_WEIGHT,
+) -> tuple[float, list[list[float]], list[list[float]]]:
+    if len(regression_weights) != len(targets) or not targets:
+        raise ValueError("multitask_target_axis_invalid")
+    probabilities = _softmax([_dot(weights, row) for weights in class_weights])
+    class_gradient: list[list[float]] = []
+    for class_index, weights in enumerate(class_weights):
+        residual = probabilities[class_index] - (1.0 if class_index == label else 0.0)
+        class_gradient.append(
+            [
+                residual * value
+                + (0.0 if index == 0 else 2.0 * l2 * weights[index])
+                for index, value in enumerate(row)
+            ]
+        )
+    regression_gradient: list[list[float]] = []
+    squared_error = 0.0
+    for weights, target in zip(regression_weights, targets, strict=True):
+        residual = _dot(weights, row) - target
+        squared_error += residual * residual
+        regression_gradient.append(
+            [
+                regression_weight * 2.0 * residual * value / len(targets)
+                + (0.0 if index == 0 else 2.0 * l2 * weights[index])
+                for index, value in enumerate(row)
+            ]
+        )
+    regularization = l2 * (
+        sum(value * value for weights in class_weights for value in weights[1:])
+        + sum(value * value for weights in regression_weights for value in weights[1:])
+    )
+    loss = (
+        -math.log(max(probabilities[label], 1e-15))
+        + regression_weight * squared_error / len(targets)
+        + regularization
+    )
+    return loss, class_gradient, regression_gradient
 
 
 def validate_model_v2(model: dict[str, Any]) -> list[str]:
