@@ -3002,6 +3002,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_pattern_inference_schemas(),
         **_future_foundation_schemas(),
         **_runtime_delivery_schemas(),
+        **_avatar_variation_schemas(),
         **_zeroone_integration_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
@@ -4110,6 +4111,65 @@ def _runtime_delivery_schemas() -> dict[str, dict[str, Any]]:
     return {
         "runtime-package-manifest.schema.json": runtime_manifest,
         "runtime-stream-inventory.schema.json": stream_inventory,
+    }
+
+
+def _avatar_variation_schemas() -> dict[str, dict[str, Any]]:
+    return {
+        "synthetic-avatar-fit-evidence.schema.json": _schema(
+            "Closy synthetic avatar fit evidence D0 v1",
+            {
+                "schemaVersion": {"const": 1},
+                "evidenceVersion": {"const": "closy.synthetic_avatar_fit.evidence.d0.v1"},
+                "capabilityVersion": {"const": "closy.synthetic_avatar_fit.d0.v1"},
+                "classification": {"const": "source-only-project-authored-synthetic-d0"},
+                "base": _object(
+                    {
+                        "branch": {"type": "string", "minLength": 1},
+                        "sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                    },
+                    ["branch", "sha"],
+                ),
+                "evidenceAnchorSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                "suite": _object(
+                    {
+                        "caseCount": {"const": 88},
+                        "coverageCounts": _object(
+                            {
+                                "baseline": {"const": 1},
+                                "boundary": {"const": 20},
+                                "pairwise": {"const": 65},
+                                "posture": {"const": 2},
+                            },
+                            ["baseline", "boundary", "pairwise", "posture"],
+                        ),
+                        "declaredRanges": {"type": "object"},
+                        "fitThresholds": {"type": "object"},
+                        "suiteDigest": _sha256(),
+                    },
+                    [
+                        "caseCount",
+                        "coverageCounts",
+                        "declaredRanges",
+                        "fitThresholds",
+                        "suiteDigest",
+                    ],
+                ),
+                "execution": {"type": "object"},
+                "truth": {"type": "object"},
+            },
+            [
+                "schemaVersion",
+                "evidenceVersion",
+                "capabilityVersion",
+                "classification",
+                "base",
+                "evidenceAnchorSha",
+                "suite",
+                "execution",
+                "truth",
+            ],
+        )
     }
 
 
