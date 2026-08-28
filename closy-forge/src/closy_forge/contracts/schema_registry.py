@@ -3946,7 +3946,8 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
         "zeroone-integration-result.schema.json": _schema(
             "Closy ZeroOne integration result v1",
             {
-                "schemaVersion": {"const": "closy.zeroone.integration-result.v1"},
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "contractVersion": {"const": "closy.zeroone.integration-result.v1"},
                 "status": {
                     "enum": [
                         "unavailable",
@@ -3969,6 +3970,7 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
             },
             [
                 "schemaVersion",
+                "contractVersion",
                 "status",
                 "reason",
                 "actualZeroOneRuntimeExecuted",

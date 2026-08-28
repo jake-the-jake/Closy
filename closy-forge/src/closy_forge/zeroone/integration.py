@@ -36,7 +36,8 @@ class ZeroOneIntegrationResult:
 
     def to_json(self) -> dict[str, Any]:
         return {
-            "schemaVersion": "closy.zeroone.integration-result.v1",
+            "schemaVersion": 1,
+            "contractVersion": "closy.zeroone.integration-result.v1",
             "status": self.status,
             "reason": self.reason,
             "actualZeroOneRuntimeExecuted": self.actual_runtime_executed,

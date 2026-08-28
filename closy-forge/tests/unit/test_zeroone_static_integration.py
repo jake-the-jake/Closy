@@ -70,6 +70,8 @@ def test_missing_tool_is_explicit_and_preserves_fallback(tmp_path: Path) -> None
     assert resolution.available is False
     assert resolution.reason == "zeroone_executable_missing"
     assert result.status == "unavailable"
+    assert result.to_json()["schemaVersion"] == 1
+    assert result.to_json()["contractVersion"] == "closy.zeroone.integration-result.v1"
     assert result.actual_runtime_executed is False
     assert result.actual_compute_executed is False
     assert result.fallback_preserved is True
