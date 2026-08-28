@@ -45,4 +45,3 @@ python -m closy_forge schemas check --schema-dir schemas/v1
 python -m pytest tests/unit/test_avatar_variation_fit.py tests/unit/test_schema_freshness.py
 python scripts/run_phase13_synthetic_avatar_fit_evidence.py --base-sha <sha> --evidence-anchor-sha <sha> --output docs/evidence/phase13_synthetic_avatar_fit_v1.json
 ```
-
