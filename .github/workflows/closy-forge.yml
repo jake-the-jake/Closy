@@ -54,7 +54,9 @@ jobs:
   test-shards:
     name: Tests ${{ matrix.group }} ${{ matrix.runtime.os }} Python ${{ matrix.runtime.python-version }}
     runs-on: ${{ matrix.runtime.os }}
-    timeout-minutes: 25
+    # The exact-cover corruption shard has a measured 62-minute Windows CPU
+    # worst case; keep the timeout finite without cancelling valid coverage.
+    timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
