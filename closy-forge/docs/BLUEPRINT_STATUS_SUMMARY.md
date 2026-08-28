@@ -1,6 +1,6 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v1` at evidence anchor `628738e5e8bc2da89be2ae1c349d9a2a220d8839`.
+Authority: `closy.blueprint_status_model.v1` at evidence anchor `de1177268cd09e6988689fa175638492757a9bed`.
 
 ## Requirement Rows
 
@@ -37,4 +37,4 @@ Authority: `closy.blueprint_status_model.v1` at evidence anchor `628738e5e8bc2da
 - Z1: `discovery_pending`
 - Z2: `discovery_pending`
 
-Phase 8 evidence is limited to deterministic D0 fixture family verticals. Phase 10-14 evidence is limited to versioned contract-fixture foundations.
+Phase 8 evidence is limited to deterministic D0 fixture family verticals. Phase 9 training evidence is limited to project-authored synthetic D0 fixtures. Phase 10-14 evidence is limited to versioned contract-fixture foundations.

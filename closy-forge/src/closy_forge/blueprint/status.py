@@ -62,7 +62,7 @@ def build_status_model(
             "phases10To14EvidenceScope": "versioned_contract_fixture_foundations",
             "actualZeroOneRuntimeExecuted": False,
             "actualZeroOneComputeExecuted": False,
-            "actualPhase9TrainingExecuted": False,
+            "actualPhase9TrainingExecuted": True,
             "privateUserEvidenceRun": False,
             "physicalMobileEvidenceRun": False,
             "humanReviewRun": False,
@@ -87,8 +87,8 @@ def validate_status_model(
         issues.append("stack_exception_set_invalid")
     if model.get("truth", {}).get("actualZeroOneRuntimeExecuted") is not False:
         issues.append("zeroone_runtime_overclaimed")
-    if model.get("truth", {}).get("actualPhase9TrainingExecuted") is not False:
-        issues.append("phase9_training_overclaimed")
+    if model.get("truth", {}).get("actualPhase9TrainingExecuted") is not True:
+        issues.append("phase9_training_evidence_missing")
     return issues
 
 
@@ -113,5 +113,6 @@ def render_status_summary(model: dict[str, Any]) -> str:
         "## Gates\n\n"
         f"{gate_lines}\n\n"
         "Phase 8 evidence is limited to deterministic D0 fixture family verticals. "
+        "Phase 9 training evidence is limited to project-authored synthetic D0 fixtures. "
         "Phase 10-14 evidence is limited to versioned contract-fixture foundations.\n"
     )

@@ -1,5 +1,9 @@
 # Phase 9 Structured-Pattern Foundation D0
 
+> Historical v1 baseline: this document describes the original non-learned 24-sample retrieval
+> fixture. The implemented learned synthetic D0 successor is documented in
+> `pattern-inference-learned-synthetic-d0.md`; v1 remains reproducible as the rollback/audit anchor.
+
 This phase implements only the runnable, non-learned foundation for future structured-pattern
 inference. It is restricted to human-avatar garments and uses project-authored synthetic records.
 
