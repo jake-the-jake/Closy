@@ -95,7 +95,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "C2": "complete",
         "C3": "partial",
         "P1": "discovery_pending",
-        "Z1": "discovery_pending",
+        "Z1": "complete",
         "Z2": "discovery_pending",
     }
     assert status["maturity"] == {
@@ -106,11 +106,13 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     }
     assert status["truth"] == {
         "actualPhase9TrainingExecuted": True,
-        "actualZeroOneComputeExecuted": False,
-        "actualZeroOneRuntimeExecuted": False,
+        "actualZeroOneComputeExecuted": True,
+        "actualZeroOneRuntimeExecuted": True,
         "humanReviewRun": False,
         "phase8EvidenceScope": "deterministic_d0_fixture_family_verticals",
-        "phases10To14EvidenceScope": "versioned_contract_fixture_foundations",
+        "phases10To14EvidenceScope": (
+            "phase10_real_d0_cpu_static_plus_phases11_to14_contract_fixtures"
+        ),
         "physicalMobileEvidenceRun": False,
         "privateUserEvidenceRun": False,
     }
@@ -120,12 +122,13 @@ def test_pr_stack_manifest_is_linear_draft_and_exact_head_evidenced() -> None:
     stack = _json("pr_stack_manifest.json")
     rows = stack["pullRequests"]
 
-    assert stack["sequentialMergeOrder"] == list(range(1, 20))
+    numbers = [int(row["number"]) for row in rows]
+    assert numbers == list(range(numbers[0], numbers[-1] + 1))
+    assert stack["sequentialMergeOrder"] == numbers
     assert stack["sequentialMergeRehearsal"] == {
         "mode": "read_only_direct_parent_merge_base_verification",
         "passed": True,
     }
-    assert [row["number"] for row in rows] == list(range(1, 20))
     for index, row in enumerate(rows):
         assert row["draft"] is True
         assert row["mergeability"] == "MERGEABLE"
@@ -158,7 +161,7 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
 
     assert summary == render_status_summary(status)
     assert "deterministic D0 fixture family verticals" in summary
-    assert "versioned contract-fixture foundations" in summary
+    assert "Phases 11-14 remain versioned contract-fixture foundations" in summary
 
 
 def test_next_actions_do_not_point_to_already_completed_stack_steps() -> None:

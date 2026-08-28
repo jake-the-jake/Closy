@@ -638,6 +638,622 @@
       "repository": "jake-the-jake/Closy",
       "title": "Forge Phases 10-14: runnable foundations",
       "url": "https://github.com/jake-the-jake/Closy/pull/19"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phases-10-14-runnable-foundations",
+      "baseSha": "e83e1e897c9539d246926f8148c5a9ac347982d1",
+      "branch": "codex/closy-forge-evidence-topology-physics-integrity",
+      "changedFileCount": 93,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "3f02a9fde0cbbb52526bd3dd11e6d0bf0f665148",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658406",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658759",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658709",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658738",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658692",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658754",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658713",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658819",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658721",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658723",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658695",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658596",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658739",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658664",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658591",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658645",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658703",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658630",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658632",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658766",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658789",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658628",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658532",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769658540",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98773067461",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98774506974",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33146847220"
+      },
+      "layerAhead": 9,
+      "layerBehind": 0,
+      "layerCommitCount": 9,
+      "mergeability": "MERGEABLE",
+      "number": 20,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge evidence, topology, and physics integrity",
+      "url": "https://github.com/jake-the-jake/Closy/pull/20"
+    },
+    {
+      "baseBranch": "codex/closy-forge-evidence-topology-physics-integrity",
+      "baseSha": "3f02a9fde0cbbb52526bd3dd11e6d0bf0f665148",
+      "branch": "codex/closy-forge-c3-collision-closeout",
+      "changedFileCount": 26,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "c5db68d4054141e3bd82aea848c292ec78179fcd",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684559",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684773",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684906",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684876",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684916",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684929",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684870",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684947",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684869",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684936",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684901",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684886",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684949",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684785",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684699",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684850",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684695",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684798",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684867",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684894",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684884",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684752",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684705",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769684675",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98772710613",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98776799195",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33146855709"
+      },
+      "layerAhead": 12,
+      "layerBehind": 0,
+      "layerCommitCount": 12,
+      "mergeability": "MERGEABLE",
+      "number": 21,
+      "repository": "jake-the-jake/Closy",
+      "title": "Correct C3 metrics and collision evidence",
+      "url": "https://github.com/jake-the-jake/Closy/pull/21"
+    },
+    {
+      "baseBranch": "codex/closy-forge-c3-collision-closeout",
+      "baseSha": "c5db68d4054141e3bd82aea848c292ec78179fcd",
+      "branch": "codex/closy-forge-phase-9-trained-synthetic-d0",
+      "changedFileCount": 39,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "988b242cc441006257d969d9980373213330743c",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769707960",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708225",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708245",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708202",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708167",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708219",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708289",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708188",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708224",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708206",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708293",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708227",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708284",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708182",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708201",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708231",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708173",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708218",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708288",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708204",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708178",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708100",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708089",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769708122",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98774009580",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98777246242",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33146863706"
+      },
+      "layerAhead": 12,
+      "layerBehind": 0,
+      "layerCommitCount": 12,
+      "mergeability": "MERGEABLE",
+      "number": 22,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 9: trained synthetic D0 inference",
+      "url": "https://github.com/jake-the-jake/Closy/pull/22"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase-9-trained-synthetic-d0",
+      "baseSha": "988b242cc441006257d969d9980373213330743c",
+      "branch": "codex/closy-forge-phase-10-zeroone-static-integration",
+      "changedFileCount": 21,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "7016a53f89d6085678652c30df6346e67db9da4c",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "exactHead": true,
+        "jobs": [
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743823",
+            "name": "Contracts static Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743903",
+            "name": "Tests shard-0 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769744049",
+            "name": "Tests shard-0 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743831",
+            "name": "Tests shard-0 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743930",
+            "name": "Tests shard-1 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743744",
+            "name": "Tests shard-1 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769744119",
+            "name": "Tests shard-1 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743778",
+            "name": "Tests shard-2 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769744028",
+            "name": "Tests shard-2 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743826",
+            "name": "Tests shard-2 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743827",
+            "name": "Tests shard-3 ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743736",
+            "name": "Tests shard-3 windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769744060",
+            "name": "Tests shard-3 ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743937",
+            "name": "Families upper ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743901",
+            "name": "Families lower ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769744027",
+            "name": "Families structured ubuntu-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743941",
+            "name": "Families upper windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743968",
+            "name": "Families lower windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743905",
+            "name": "Families structured windows-latest Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743787",
+            "name": "Families upper ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743999",
+            "name": "Families lower ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743942",
+            "name": "Families structured ubuntu-latest Python 3.12"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743751",
+            "name": "Integration shard-0 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98769743575",
+            "name": "Integration shard-1 Ubuntu Python 3.11"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98774187159",
+            "name": "Cross-platform and cross-minor digest consistency"
+          },
+          {
+            "conclusion": "SUCCESS",
+            "jobId": "98777485769",
+            "name": "Forge required"
+          }
+        ],
+        "runId": "33146875378"
+      },
+      "layerAhead": 12,
+      "layerBehind": 0,
+      "layerCommitCount": 12,
+      "mergeability": "MERGEABLE",
+      "number": 23,
+      "repository": "jake-the-jake/Closy",
+      "title": "Forge Phase 10: real ZeroOne static integration",
+      "url": "https://github.com/jake-the-jake/Closy/pull/23"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -661,7 +1277,11 @@
     16,
     17,
     18,
-    19
+    19,
+    20,
+    21,
+    22,
+    23
   ],
   "sequentialMergeRehearsal": {
     "mode": "read_only_direct_parent_merge_base_verification",

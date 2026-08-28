@@ -118,6 +118,7 @@ from closy_forge.visual_understanding import (
     hash_multiview_fusion_record,
     hash_visual_observations,
 )
+from closy_forge.zeroone.validation import inspect_zeroone_namespace
 
 EXPECTED_FILES = [
     "manifest.json",
@@ -285,7 +286,9 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             validate_sleeveless_package,
         )
 
-        return validate_sleeveless_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_sleeveless_package(package_dir, manifest=manifest)
+        )
     if manifest.get("garmentClass") == "long_sleeved_top" or str(
         manifest.get("packageVersion", "")
     ).startswith("closy.long_sleeved_top."):
@@ -293,13 +296,17 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             validate_long_sleeved_package,
         )
 
-        return validate_long_sleeved_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_long_sleeved_package(package_dir, manifest=manifest)
+        )
     if manifest.get("garmentClass") == "simple_skirt" or str(
         manifest.get("packageVersion", "")
     ).startswith("closy.simple_skirt."):
         from closy_forge.validation.simple_skirt_validator import validate_simple_skirt_package
 
-        return validate_simple_skirt_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_simple_skirt_package(package_dir, manifest=manifest)
+        )
     if manifest.get("garmentClass") == "simple_trousers" or str(
         manifest.get("packageVersion", "")
     ).startswith("closy.simple_trousers."):
@@ -307,7 +314,9 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             validate_simple_trousers_package,
         )
 
-        return validate_simple_trousers_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_simple_trousers_package(package_dir, manifest=manifest)
+        )
     if manifest.get("garmentClass") == "simple_dress" or str(
         manifest.get("packageVersion", "")
     ).startswith("closy.simple_dress."):
@@ -315,7 +324,9 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             validate_simple_dress_package,
         )
 
-        return validate_simple_dress_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_simple_dress_package(package_dir, manifest=manifest)
+        )
     if manifest.get("garmentClass") == "button_shirt" or str(
         manifest.get("packageVersion", "")
     ).startswith("closy.button_shirt."):
@@ -323,7 +334,9 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             validate_button_shirt_package,
         )
 
-        return validate_button_shirt_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_button_shirt_package(package_dir, manifest=manifest)
+        )
     if manifest.get("garmentClass") == "jacket_outerwear" or str(
         manifest.get("packageVersion", "")
     ).startswith("closy.jacket_outerwear."):
@@ -331,7 +344,9 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             validate_jacket_outerwear_package,
         )
 
-        return validate_jacket_outerwear_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_jacket_outerwear_package(package_dir, manifest=manifest)
+        )
     if manifest.get("garmentClass") == "layered_asymmetric" or str(
         manifest.get("packageVersion", "")
     ).startswith("closy.layered_asymmetric."):
@@ -339,7 +354,9 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
             validate_layered_asymmetric_package,
         )
 
-        return validate_layered_asymmetric_package(package_dir, manifest=manifest)
+        return _with_zeroone_validation(
+            package_dir, validate_layered_asymmetric_package(package_dir, manifest=manifest)
+        )
     _validate_required_files(package_dir, issues)
     if manifest.get("schemaVersion") != 1:
         issues.append(
@@ -483,7 +500,7 @@ def validate_package(package_dir: Path) -> dict[str, Any]:
     _validate_glbs(package_dir, issues)
     _validate_binding(package_dir, issues)
     _validate_capabilities(manifest, issues)
-    return _report(issues)
+    return _with_zeroone_validation(package_dir, _report(issues))
 
 
 def _validate_avatar(package_dir: Path, issues: list[ValidationIssue]) -> None:
@@ -12208,6 +12225,31 @@ def _issue(
         "Inspect and regenerate the package from canonical Forge inputs.",
         entity_id,
     )
+
+
+def _with_zeroone_validation(package_dir: Path, report: dict[str, Any]) -> dict[str, Any]:
+    audit = inspect_zeroone_namespace(package_dir)
+    status = audit.get("status")
+    if status in {"not_present", "derivative_valid"}:
+        return report
+    result = {
+        "schemaVersion": report.get("schemaVersion", 1),
+        "status": "failed",
+        "counts": dict(report.get("counts", {})),
+        "issues": list(report.get("issues", [])),
+    }
+    result["counts"]["fatal"] = int(result["counts"].get("fatal", 0)) + 1
+    result["issues"].append(
+        _issue(
+            "zeroone_derivative_incompatible"
+            if status == "derivative_incompatible"
+            else "zeroone_derivative_corrupt",
+            "fatal",
+            "zeroone/static-d0",
+            str(audit.get("reason", "optional ZeroOne derivative validation failed")),
+        ).to_json()
+    )
+    return result
 
 
 def _report(issues: list[ValidationIssue]) -> dict[str, Any]:
