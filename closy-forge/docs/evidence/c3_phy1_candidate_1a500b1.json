@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "evidenceVersion": "closy.c3_phy1.candidate.d0.v1",
+  "source": {
+    "repository": "jake-the-jake/Closy",
+    "gitSha": "1a500b1720edeae4a3f28b88a31f7cd14125854b",
+    "classification": "candidate_branch_local_cpu"
+  },
+  "package": {
+    "canonicalPackageDigest": "588db8ca67a20a572315a8a1b72c4afed021aed6b01602026e291126560dc5d9",
+    "manifestSha256": "1bacf19837194d6c35218d4b3531f38445c8a677ee748f3ebf62ec2ed0c58128",
+    "validation": {
+      "status": "passed",
+      "info": 0,
+      "warning": 7,
+      "error": 0,
+      "fatal": 0
+    }
+  },
+  "C3-Binding-D0": {
+    "status": "pass",
+    "scope": "fixed_avatar_public_tshirt_fixture_only",
+    "capabilityProfileVersion": "closy.c3_binding.d0_tshirt.v1",
+    "capabilityProfileHash": "c80e6123c360ab1633e4aa821cdbefbac3553807ee330d28867ac870e0a625a1",
+    "stateCount": 11,
+    "bindingStatePassCount": 11,
+    "persistedBindingRecordCount": 1248,
+    "stableRenderVertexIdCount": 1248,
+    "maximumReconstructionErrorMeters": 0.0,
+    "maximumDenseFallbackSurfaceDistanceMeters": 0.000000038,
+    "acceptedForD0RuntimeBindingProfile": true,
+    "globalPhase6Complete": false
+  },
+  "PHY1-SingleLayer-D0": {
+    "status": "fail",
+    "profile": "closy.phy1_single_layer.d0_tshirt.v1",
+    "contactsBefore": 33,
+    "contactsAfter": 9,
+    "unresolvedContactCount": 9,
+    "maximumPenetrationBeforeMeters": 0.002306428,
+    "maximumPenetrationAfterMeters": 0.001878992,
+    "residualDepthBudgetMeters": 0.00016,
+    "residualDepthWithinBudget": false,
+    "residualViolationsAboveBudget": 4,
+    "unresolvedCountMonotonicNonIncreasing": true,
+    "maximumDepthMonotonicNonIncreasing": false,
+    "invertedOrDegenerateBefore": 70,
+    "invertedOrDegenerateAfter": 68,
+    "newInvertedOrDegenerateTriangleCount": 0,
+    "maximumSeamCrackMeters": 0.109609688,
+    "minimumStitchedShellBodyClearanceMeters": -0.009084014,
+    "motionStateCount": 11,
+    "motionStatePassCount": 0,
+    "acceptedForD0ReferenceSolver": false,
+    "acceptedForProductionGpuSolver": false
+  },
+  "execution": {
+    "actualReferenceCpuSolverExecuted": true,
+    "actualBindingReconstructionExecuted": true,
+    "actualIndependentSignedDistanceAuditExecuted": true,
+    "actualSelfCollisionResponseExecuted": true,
+    "boundedCcdFixturesPassed": true,
+    "performanceBenchmark": "not_run_in_canonical_build",
+    "gpuExecution": false,
+    "mobileExecution": false,
+    "privateUserExecution": false,
+    "humanReview": false
+  },
+  "decision": {
+    "mechanicalReferencePhase11PrerequisiteC3": true,
+    "solverDrivenPhysicalPhase11PrerequisitePHY1": false,
+    "globalPhase11Complete": false,
+    "remainingBlockers": [
+      "refreshed_paired_scoped_Z1_pass_required",
+      "PHY1_residual_self_collision",
+      "PHY1_rest_referenced_inversions",
+      "PHY1_seam_continuity",
+      "PHY1_body_clearance",
+      "hardware_performance_not_run"
+    ]
+  }
+}
