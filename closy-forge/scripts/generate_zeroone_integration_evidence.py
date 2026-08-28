@@ -247,12 +247,9 @@ def main() -> int:
                     for row in garment_rows
                 ),
                 "actualZeroOneStaticArtifactLoaded": all(
-                    row["integration"]["actualZeroOneStaticArtifactLoaded"]
-                    for row in garment_rows
+                    row["integration"]["actualZeroOneStaticArtifactLoaded"] for row in garment_rows
                 ),
-                "cacheValidated": all(
-                    row["integration"]["cacheValidated"] for row in garment_rows
-                ),
+                "cacheValidated": all(row["integration"]["cacheValidated"] for row in garment_rows),
                 "actualZeroOneDynamicDeformationExecuted": False,
                 "actualZeroOneGpuRuntimeExecuted": False,
                 "actualZeroOneMobileRuntimeExecuted": False,
@@ -401,10 +398,7 @@ def _family_inventory(package: Path, report: dict[str, Any]) -> dict[str, Any]:
         str(item["materialId"]) for item in derivative_materials.get("materials", [])
     )
     layers = sorted(
-        {
-            str(item.get("layerId", "layer.default"))
-            for item in semantics.get("components", [])
-        }
+        {str(item.get("layerId", "layer.default")) for item in semantics.get("components", [])}
     )
     seams = sorted(str(item["id"]) for item in semantics.get("seams", []))
     openings = sorted(str(item["id"]) for item in semantics.get("openings", []))
@@ -442,20 +436,13 @@ def _failed_family_inventory(package: Path, report: dict[str, Any]) -> dict[str,
     panels = sorted(str(panel_id) for panel_id in semantics.get("panelMapping", {}))
     seams = sorted(str(item["id"]) for item in semantics.get("seams", []))
     openings = sorted(str(item["id"]) for item in semantics.get("openings", []))
-    materials = sorted(
-        str(item["materialId"]) for item in canonical_materials.get("materials", [])
-    )
+    materials = sorted(str(item["materialId"]) for item in canonical_materials.get("materials", []))
     layers = sorted(
-        {
-            str(item.get("layerId", "layer.default"))
-            for item in semantics.get("components", [])
-        }
+        {str(item.get("layerId", "layer.default")) for item in semantics.get("components", [])}
     )
     return {
         "status": "canonical_input_audited_derivative_unavailable",
-        "exactCanonicalInputHashes": processor_report.get(
-            "canonicalAuthorityHashesBefore", {}
-        ),
+        "exactCanonicalInputHashes": processor_report.get("canonicalAuthorityHashesBefore", {}),
         "topologyHash": topology_hash,
         "panelIds": panels,
         "seamIds": seams,

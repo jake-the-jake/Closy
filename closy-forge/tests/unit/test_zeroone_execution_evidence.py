@@ -41,9 +41,7 @@ def test_committed_zeroone_evidence_proves_all_family_execution_truth() -> None:
     assert evidence["closy"]["gitSha"] == "16a23d7244a3c0e920056eaf60d21d35d77a427c"
     assert evidence["closy"]["contentDirty"] is False
     assert evidence["zeroOne"]["gitSha"] == "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
-    assert evidence["zeroOne"]["sourceClassification"] == (
-        "unmerged_candidate_static_pr_head"
-    )
+    assert evidence["zeroOne"]["sourceClassification"] == ("unmerged_candidate_static_pr_head")
     assert evidence["zeroOne"]["contentDirty"] is False
     assert evidence["tool"]["zeroOneGitSha"] == evidence["zeroOne"]["gitSha"]
     assert evidence["tool"]["executableSha256"] == evidence["executableSha256"]
