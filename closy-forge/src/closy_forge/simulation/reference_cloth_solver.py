@@ -275,6 +275,7 @@ def settle_reference_cloth(
         )
         for constraint in stitch_constraints:
             _solve_distance(positions, inverse_masses, constraint, dt)
+        positions = _canonicalize_positions(positions, canonical_position_digits)
     collision_events += _project_collisions(
         positions,
         previous,
@@ -304,6 +305,7 @@ def settle_reference_cloth(
         self_collision_convergence,
     )
     if canonical_position_digits is not None:
+        diagnostics = _canonicalize_numeric_payload(diagnostics, canonical_position_digits)
         diagnostics["canonicalPositionDigits"] = canonical_position_digits
     return SettleResult(rest_mesh, settled_mesh, diagnostics, active_settings)
 
@@ -437,6 +439,16 @@ def _canonicalize_positions(positions: list[Vec3], digits: int | None) -> list[V
         )
         for position in positions
     ]
+
+
+def _canonicalize_numeric_payload(value: Any, digits: int) -> Any:
+    if isinstance(value, float):
+        return round(value, digits)
+    if isinstance(value, dict):
+        return {key: _canonicalize_numeric_payload(item, digits) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_canonicalize_numeric_payload(item, digits) for item in value]
+    return value
 
 
 def flatten_mesh(meshset: MeshSet) -> FlattenedMesh:

@@ -43,6 +43,17 @@ def test_managed_output_publishes_and_replaces_only_marked_direct_child(tmp_path
     assert marker["kind"] == "published"
 
 
+def test_managed_output_accepts_direct_child_after_path_normalization(tmp_path: Path) -> None:
+    base = tmp_path / "base"
+    base.mkdir()
+    root = base / "unused" / ".." / "allowed"
+    target = root / "result"
+
+    _publish(root, target, "normalized", force=False)
+
+    assert (root.resolve() / "result" / "payload.txt").read_text(encoding="utf-8") == "normalized"
+
+
 def test_managed_output_rejects_unmarked_force_target(tmp_path: Path) -> None:
     root = tmp_path / "allowed"
     target = root / "result"

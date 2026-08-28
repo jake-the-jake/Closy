@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from html import escape
+from math import fsum
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -616,8 +617,8 @@ def _pattern_svg(pattern: dict[str, Any]) -> str:
             f'<polygon points="{points}" fill="{color}" fill-opacity="0.12" '
             f'stroke="{color}" stroke-width="1.6"/>'
         )
-        cx = sum(x for x, _y in samples) / len(samples)
-        cy = sum(y for _x, y in samples) / len(samples)
+        cx = fsum(x for x, _y in samples) / len(samples)
+        cy = fsum(y for _x, y in samples) / len(samples)
         parts.append(
             f'<text x="{cx * scale + tx:.3f}" y="{HEIGHT - (cy * scale + ty):.3f}" '
             'font-family="monospace" font-size="10" text-anchor="middle" '
@@ -706,9 +707,9 @@ def _mesh_labels(meshset: MeshSet, point_fn: Any) -> list[str]:
     for mesh in meshset.meshes:
         if not mesh.vertices:
             continue
-        cx = sum(v[0] for v in mesh.vertices) / len(mesh.vertices)
-        cy = sum(v[1] for v in mesh.vertices) / len(mesh.vertices)
-        cz = sum(v[2] for v in mesh.vertices) / len(mesh.vertices)
+        cx = fsum(v[0] for v in mesh.vertices) / len(mesh.vertices)
+        cy = fsum(v[1] for v in mesh.vertices) / len(mesh.vertices)
+        cz = fsum(v[2] for v in mesh.vertices) / len(mesh.vertices)
         x, y, _depth = point_fn((cx, cy, cz))
         parts.append(
             f'<text x="{x:.3f}" y="{y:.3f}" font-family="monospace" font-size="9" '
@@ -1002,7 +1003,7 @@ def _limitations(clean_geometry_proposal: dict[str, Any]) -> list[str]:
 
 
 def _triangle_depth(vertices: list[Vec3], tri: tuple[int, int, int]) -> float:
-    return sum(vertices[index][2] for index in tri) / 3.0
+    return fsum(vertices[index][2] for index in tri) / 3.0
 
 
 def _round(value: float) -> float:

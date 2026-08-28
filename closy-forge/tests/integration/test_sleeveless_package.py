@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_pac
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_sleeveless, read_json
 
-GOLDEN_DIGEST = "c5a5f3b1b59a0f96b821e68e9f7aaefa548c0fc9df72bef8704e517fb9a240d3"
+GOLDEN_DIGEST = "6cae3ba73991f4355db6a8045747128f64b8d6bafaf50616055f16cfd966053a"
 
 
 def test_sleeveless_package_is_complete_conventional_and_valid(tmp_path) -> None:

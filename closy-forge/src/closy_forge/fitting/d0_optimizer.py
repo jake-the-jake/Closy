@@ -17,6 +17,7 @@ from closy_forge.garments.tshirt.pattern_generator import build_tshirt_pattern
 from closy_forge.geometry.mesh_model import finite_mesh
 from closy_forge.inspection.cpu_raster import rasterize_settled_garment
 from closy_forge.package_io.hashing import geometry_content_hash, topology_hash
+from closy_forge.simulation.material_motion_suite import MATERIAL_MOTION_CANONICAL_POSITION_DIGITS
 from closy_forge.simulation.reference_cloth_solver import settle_reference_cloth
 
 D0_OPTIMIZER_VERSION = "closy.tshirt_fit.bounded_coordinate_search.d0_v2"
@@ -261,6 +262,7 @@ def _full_solver_verification(
             "dampingRatio": 0.18,
             "source": "fixed_d0_cotton_reference_for_fit_verification",
         },
+        canonical_position_digits=MATERIAL_MOTION_CANONICAL_POSITION_DIGITS,
     )
     rendered_views: list[dict[str, Any]] = []
     for view in _views(visual_observations):
