@@ -9,7 +9,7 @@
     },
     "total": 101
   },
-  "evidenceAnchorSha": "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
+  "evidenceAnchorSha": "de1177268cd09e6988689fa175638492757a9bed",
   "gates": {
     "C1": "complete",
     "C2": "complete",
@@ -52,7 +52,7 @@
   },
   "statusModelVersion": "closy.blueprint_status_model.v1",
   "truth": {
-    "actualPhase9TrainingExecuted": false,
+    "actualPhase9TrainingExecuted": true,
     "actualZeroOneComputeExecuted": false,
     "actualZeroOneRuntimeExecuted": false,
     "humanReviewRun": false,

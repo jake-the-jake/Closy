@@ -45,8 +45,10 @@ Green CI proves only the checks that ran; it does not promote a global blueprint
   unresolved contacts after correction, with `0.002327721 m` residual depth against the declared
   `0.000160000 m` budget.
 - Bounded swept fixtures pass, but CCD response is not integrated into the reference motion solver.
-- Phase 9 has 24 samples whose template identities cross every split; category, panel count, and
-  opening count leak the target, and a generated correction fixture is mislabeled as human.
+- The historical Phase 9 v1 baseline has 24 leaky lookup samples and remains only as an explicit
+  rollback/audit anchor. The v2 synthetic D0 route now trains on 96 identity-disjoint programs and
+  384 target-safe observations, persists byte-reproducible learned weights, and evaluates 64 held-out
+  observations without claiming real-camera or learned-over-baseline superiority.
 
 ## Active Implementation Sequence
 
@@ -60,8 +62,9 @@ Green CI proves only the checks that ran; it does not promote a global blueprint
    rerender fidelity, and honest physical acceptance.
 6. Resolve the measured stitched-shell/body and self-collision blockers; do not promote C3 from
    partial until the literal gate passes.
-7. Train the identity-disjoint synthetic D0 Phase 9 model and integrate the pinned real ZeroOne
-   static processor on child branches independently of the failed C3 gate.
+7. Integrate the pinned real ZeroOne static processor on the Phase 10 child branch; the scoped
+   identity-disjoint synthetic D0 Phase 9 model is now trained and evidenced at `de11772`, while
+   global Phase 9 remains partial pending real/public and human-review evidence.
 
 ## Preserved Local State
 

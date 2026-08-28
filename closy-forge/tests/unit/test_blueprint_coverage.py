@@ -105,7 +105,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "RESEARCH-PROTOTYPE": "partial",
     }
     assert status["truth"] == {
-        "actualPhase9TrainingExecuted": False,
+        "actualPhase9TrainingExecuted": True,
         "actualZeroOneComputeExecuted": False,
         "actualZeroOneRuntimeExecuted": False,
         "humanReviewRun": False,

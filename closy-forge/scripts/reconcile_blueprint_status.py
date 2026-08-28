@@ -6,9 +6,9 @@ from pathlib import Path
 
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
-EVIDENCE_ANCHOR = "628738e5e8bc2da89be2ae1c349d9a2a220d8839"
+EVIDENCE_ANCHOR = "de1177268cd09e6988689fa175638492757a9bed"
 VERSION = "closy.blueprint_coverage.integrity_reconciliation.v1"
-GENERATED_BY = "Canonical C3 reconciliation from exact implementation head " + EVIDENCE_ANCHOR
+GENERATED_BY = "Canonical C3 and learned Phase 9 reconciliation at " + EVIDENCE_ANCHOR
 
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
