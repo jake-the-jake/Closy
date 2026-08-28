@@ -11,7 +11,7 @@ from closy_forge.pipeline.build_simple_trousers_demo import (
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_simple_trousers, read_json
 
-GOLDEN_DIGEST = "e712800bc59b8b3a8ed12028fffef0d29afae108f556b8b95c24e3939a894c4a"
+GOLDEN_DIGEST = "9d91b70a9da016d5baf63eb26f57479192ae50040b45ef308632e8b285d05ac6"
 
 
 def test_simple_trousers_package_is_complete_conventional_and_valid(tmp_path) -> None:

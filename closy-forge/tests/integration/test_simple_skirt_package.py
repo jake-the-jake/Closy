@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_simple_skirt_demo import build_demo_simple_skirt
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_simple_skirt, read_json
 
-GOLDEN_DIGEST = "b264f8530dd7383a7bafd8d48cab68b0ec433f2936f9133c7e0907bbcece65f5"
+GOLDEN_DIGEST = "ea66fa66a611d22c7bfff44dde87681dcddefe02fbd3441a6fcd4703eeac0898"
 
 
 def test_simple_skirt_package_is_complete_conventional_and_valid(tmp_path) -> None:

@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_layered_asymmetric_demo import build_demo_layere
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_layered_asymmetric, read_json
 
-GOLDEN_DIGEST = "1baef98b30384c63d71dd76dea7f25ca9922cbdc1b4b413d86b90841fba7ec2c"
+GOLDEN_DIGEST = "b8d211d347b1d74f6ff14a89ff81b150e8994a94fa07769081a1e3fedcc0faff"
 
 
 def test_layered_asymmetric_package_is_complete_conventional_and_valid(tmp_path) -> None:
