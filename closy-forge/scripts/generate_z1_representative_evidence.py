@@ -180,7 +180,7 @@ def main() -> int:
             "executableSha256": executable_hash,
             "family": FAMILY,
             "garmentId": manifest["garmentId"],
-            "canonicalPackageDigest": manifest["packageDigest"],
+            "canonicalPackageDigest": _package_digest(manifest),
             "packageValidationBefore": validation_before,
             "c3Binding": {
                 "status": "pass" if c3_pass else "fail",
@@ -251,7 +251,7 @@ def _frozen_manifest(
         "frozenBeforeExecution": True,
         "family": FAMILY,
         "garmentId": package_manifest["garmentId"],
-        "canonicalPackageDigest": package_manifest["packageDigest"],
+        "canonicalPackageDigest": _package_digest(package_manifest),
         "packageManifestSha256": package_manifest_hash,
         "closySha": args.closy_sha,
         "staticRequest": {
@@ -303,6 +303,13 @@ def _require_clean_exact_head(repository: Path, expected: str) -> None:
         ["git", "diff", "--cached", "--quiet"], cwd=repository, check=False
     ).returncode:
         raise RuntimeError("representative evidence source checkout has staged changes")
+
+
+def _package_digest(manifest: dict[str, Any]) -> str:
+    digest = manifest.get("canonicalPackageDigest", manifest.get("packageDigest"))
+    if not isinstance(digest, str) or len(digest) != 64:
+        raise ValueError("representative package digest is missing")
+    return digest
 
 
 if __name__ == "__main__":
