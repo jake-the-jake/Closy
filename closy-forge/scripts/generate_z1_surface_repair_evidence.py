@@ -104,7 +104,10 @@ def main() -> int:
             "preFixWitnesses": args.pre_fix_witnesses.name,
             "thresholdProfile": "closy.surface_equivalence.z1.v1",
             "executionBudget": {
-                "strategyClass": "Z1-S2-SEAM-AWARE-LOCAL-VERTEX-SPLIT",
+                "strategyIdsAttempted": [
+                    "Z1-S2-SEAM-AWARE-LOCAL-VERTEX-SPLIT",
+                    "Z1-S3-VERSIONED-PROCESSING-PATCH",
+                ],
                 "maximumStrategiesPerFamily": 3,
                 "maximumTrialsPerStrategy": 4,
             },
@@ -112,13 +115,39 @@ def main() -> int:
             "caseCount": len(rows),
             "passedCaseCount": sum(row["status"] == "pass" for row in rows),
             "failedCaseCount": sum(row["status"] != "pass" for row in rows),
-            "canonicalAuthorityMutationCount": sum(
-                not row.get("canonicalAuthorityPreserved", False) for row in rows
+            "processingSurfacePassCount": sum(
+                row.get("processingSurfaceStatus")
+                in {"pass", "passed_before_package_validation"}
+                for row in rows
             ),
-            "fallbackLossCount": sum(not row.get("fallbackPreserved", False) for row in rows),
+            "failureClassCounts": {
+                failure_class: sum(
+                    row.get("failureClass") == failure_class for row in rows
+                )
+                for failure_class in sorted(
+                    {
+                        str(row["failureClass"])
+                        for row in rows
+                        if row.get("failureClass") is not None
+                    }
+                )
+            },
+            "canonicalAuthorityMutationCount": sum(
+                row.get("canonicalAuthorityPreserved") is False for row in rows
+            ),
+            "canonicalAuthorityUnknownCount": sum(
+                row.get("canonicalAuthorityPreserved") is None for row in rows
+            ),
+            "fallbackLossCount": sum(
+                row.get("fallbackPreserved") is False for row in rows
+            ),
+            "fallbackUnknownCount": sum(
+                row.get("fallbackPreserved") is None for row in rows
+            ),
             "priorCollapseReplayChecks": replay_checks,
             "cases": rows,
             "status": "pass" if passed else "partial",
+            "originalDeclaredRangeStatus": "pass" if passed else "partial",
             "elapsedWallNanoseconds": time.perf_counter_ns() - started,
             "limitations": [
                 "project-authored synthetic garment families",
@@ -219,6 +248,7 @@ def _execute_case(
             "canonicalAuthorityPreserved": canonical_preserved,
             "packageValidation": validation,
             "processingAudit": processing,
+            "processingSurfaceStatus": "pass",
             "processingTopologyHash": surface_manifest["topologyHash"],
             "processingContentHash": surface_manifest["contentHash"],
             "processingCounts": surface_manifest["counts"],
@@ -228,15 +258,29 @@ def _execute_case(
             "elapsedWallNanoseconds": time.perf_counter_ns() - started,
         }
     except Exception as exc:
+        reason = f"{type(exc).__name__}:{exc}"
+        failure_class, processing_status = _failure_classification(reason)
         return {
             **case.to_json(),
             "family": family,
             "status": "fail",
-            "reason": f"{type(exc).__name__}:{exc}",
-            "fallbackPreserved": False,
-            "canonicalAuthorityPreserved": False,
+            "reason": reason,
+            "failureClass": failure_class,
+            "processingSurfaceStatus": processing_status,
+            "fallbackPreserved": None,
+            "canonicalAuthorityPreserved": None,
             "elapsedWallNanoseconds": time.perf_counter_ns() - started,
         }
+
+
+def _failure_classification(reason: str) -> tuple[str, str]:
+    if "processing_surface_repair_budget_exhausted" in reason:
+        return "processing_surface_repair_budget_exhausted", "fail"
+    if "package validation failed before publish" in reason:
+        return "downstream_package_validation", "passed_before_package_validation"
+    if "outside safe bounds" in reason:
+        return "parameter_generation_rejected", "not_generated"
+    return "generation_failure", "unknown"
 
 
 def _replay_checks(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:

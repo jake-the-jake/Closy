@@ -44,6 +44,12 @@ _STRATEGIES: tuple[tuple[str, int, int, tuple[tuple[float, float], ...]], ...] =
         2,
         ((6e-8, 6e-8), (9e-8, 6e-8), (1.2e-7, 6e-8), (1e-7, 8e-8)),
     ),
+    (
+        "Z1-S3-VERSIONED-PROCESSING-PATCH",
+        0,
+        0,
+        ((6e-8, 6e-8), (9e-8, 6e-8), (1.2e-7, 6e-8), (1e-7, 8e-8)),
+    ),
 )
 
 
