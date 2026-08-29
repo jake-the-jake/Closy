@@ -320,6 +320,56 @@
       "from": "github:jake-the-jake/Closy:pr/28",
       "kind": "dependency",
       "to": "github:jake-the-jake/Closy:pr/32"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/28",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/33"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/28",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/33"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/33",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/34"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/33",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/34"
+    },
+    {
+      "from": "github:jake-the-jake/ZeroOne:pr/3",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/34"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/33",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/35"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/33",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/35"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/26",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/35"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/31",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/35"
+    },
+    {
+      "from": "github:jake-the-jake/ZeroOne:pr/2",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/ZeroOne:pr/3"
     }
   ],
   "externalPullRequests": [
@@ -359,6 +409,44 @@
       "state": "OPEN",
       "title": "Requalify the headless Closy static processor",
       "url": "https://github.com/jake-the-jake/ZeroOne/pull/2"
+    },
+    {
+      "baseBranch": "master",
+      "baseSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "branch": "codex/closy-zeroone-dynamic-reference-v1",
+      "changedFileCount": 23,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+      "knownException": null,
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 2,
+          "runId": "33262736792",
+          "workflow": "Closy Static Processor"
+        },
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 1,
+          "runId": "33262736795",
+          "workflow": "Viewport UI Corrective CPU Validation"
+        }
+      ],
+      "layerAhead": 12,
+      "layerBehind": 0,
+      "layerCommitCount": 12,
+      "mergeBase": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "mergeability": "MERGEABLE",
+      "number": 3,
+      "repository": "jake-the-jake/ZeroOne",
+      "role": "compiled_dynamic_source",
+      "sourceParentSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
+      "state": "OPEN",
+      "title": "Add compiled Closy dynamic reference processor",
+      "url": "https://github.com/jake-the-jake/ZeroOne/pull/3"
     }
   ],
   "graphVersion": "closy.cross_repository_pr_dag.v3",
@@ -1589,6 +1677,157 @@
       "uniqueCommitRange": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72..386effb254d4ba15499399dfd7fd94c70a0e0fc5"
     },
     {
+      "ahead": 12,
+      "baseRef": "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+      "baseSha": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+      "behind": 0,
+      "branch": "codex/closy-forge-z1-surface-topology-repair-v3",
+      "capabilityRole": "repair_z1_garment_processing_surfaces",
+      "changedFileCount": 43,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/28"
+      ],
+      "headSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "id": "github:jake-the-jake/Closy:pr/33",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33264403890",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/28"
+      ],
+      "pullRequest": 33,
+      "repository": "jake-the-jake/Closy",
+      "role": "frozen_integration_base",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72..531689b1d542dd9aeeec29a975e7136ee986c582"
+    },
+    {
+      "ahead": 11,
+      "baseRef": "codex/closy-forge-z1-surface-topology-repair-v3",
+      "baseSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "behind": 0,
+      "branch": "codex/closy-forge-phase11-zeroone-dynamic-reference-v1",
+      "capabilityRole": "integrate_and_audit_compiled_zeroone_deformation",
+      "changedFileCount": 26,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/33",
+        "github:jake-the-jake/ZeroOne:pr/3"
+      ],
+      "headSha": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "id": "github:jake-the-jake/Closy:pr/34",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33270987449",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "mergeEligible": false,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/33"
+      ],
+      "pullRequest": 34,
+      "repository": "jake-the-jake/Closy",
+      "role": "failed_dynamic_pairing_source",
+      "sourceOnly": true,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "531689b1d542dd9aeeec29a975e7136ee986c582..960662d237e187cd8ecbcc9ebe9192367f194317"
+    },
+    {
+      "ahead": 14,
+      "baseRef": "codex/closy-forge-z1-surface-topology-repair-v3",
+      "baseSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "behind": 0,
+      "branch": "codex/closy-forge-learned-structured-garment-v2",
+      "capabilityRole": "evaluate_bounded_structured_garment_models",
+      "changedFileCount": 66,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/33",
+        "github:jake-the-jake/Closy:pr/26",
+        "github:jake-the-jake/Closy:pr/31"
+      ],
+      "headSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "id": "github:jake-the-jake/Closy:pr/35",
+      "integrationMappings": [
+        {
+          "destinationCommit": "b90d795125671778ed27075492bad0cd57cdafaf",
+          "disposition": "replayed",
+          "sourceCommit": "12cdfd60e841bf33903f6e75b102d9d48f69501c",
+          "sourceNode": "github:jake-the-jake/Closy:pr/26"
+        },
+        {
+          "destinationCommit": "b2621ea7e5644d743e5a8a5717e40b8f8ba3bd7d",
+          "disposition": "replayed",
+          "sourceCommit": "644da7468d890a2a8600f7fa141ee3298f00bad8",
+          "sourceNode": "github:jake-the-jake/Closy:pr/26"
+        },
+        {
+          "destinationCommit": "7b2176a6a8fb22ef8a1b960656b36061f1356aa9",
+          "disposition": "replayed",
+          "sourceCommit": "fdcdfb22c02c796b97ee6406bbd76025a645822f",
+          "sourceNode": "github:jake-the-jake/Closy:pr/26"
+        },
+        {
+          "destinationCommit": "5c9abbbf953407810a3efccebebcef7cf3b2bb5c",
+          "disposition": "replayed",
+          "sourceCommit": "86f8175769191ef6231cbafd04b72c4a23bd4720",
+          "sourceNode": "github:jake-the-jake/Closy:pr/26"
+        },
+        {
+          "destinationCommit": "dba7f57e2484780a4de9a2d13617d2c368be433e",
+          "disposition": "replayed",
+          "sourceCommit": "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
+          "sourceNode": "github:jake-the-jake/Closy:pr/26"
+        },
+        {
+          "destinationCommit": "0f7e10c98a75e15a061aa00e538e8b0a4526c68d",
+          "disposition": "replayed",
+          "sourceCommit": "f99ab295677556a0df37af25c7a1b8541a648ad3",
+          "sourceNode": "github:jake-the-jake/Closy:pr/31"
+        }
+      ],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "FAILURE",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33275306155",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/33"
+      ],
+      "pullRequest": 35,
+      "repository": "jake-the-jake/Closy",
+      "role": "candidate_structured_integration",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "531689b1d542dd9aeeec29a975e7136ee986c582..461436c22f8c5cd1948e0f6906961d0c512dcc34"
+    },
+    {
       "ahead": 3,
       "baseRef": "master",
       "baseSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
@@ -1627,6 +1866,48 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3..13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
+    },
+    {
+      "ahead": 12,
+      "baseRef": "master",
+      "baseSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "behind": 0,
+      "branch": "codex/closy-zeroone-dynamic-reference-v1",
+      "capabilityRole": "compiled_dynamic_source",
+      "changedFileCount": 23,
+      "dependencyIds": [
+        "github:jake-the-jake/ZeroOne:pr/2"
+      ],
+      "headSha": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+      "id": "github:jake-the-jake/ZeroOne:pr/3",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 2,
+          "runId": "33262736792",
+          "workflow": "Closy Static Processor"
+        },
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 1,
+          "runId": "33262736795",
+          "workflow": "Viewport UI Corrective CPU Validation"
+        }
+      ],
+      "mergeBase": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [],
+      "pullRequest": 3,
+      "repository": "jake-the-jake/ZeroOne",
+      "role": "compiled_dynamic_source",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3..413aecd24434f90d89ad35c6a8f909de75df34c7"
     }
   ],
   "pullRequests": [
@@ -3146,6 +3427,95 @@
       "state": "OPEN",
       "title": "Forge: implement LayerCollision-D0 core",
       "url": "https://github.com/jake-the-jake/Closy/pull/32"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+      "baseSha": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+      "branch": "codex/closy-forge-z1-surface-topology-repair-v3",
+      "changedFileCount": 43,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33264403890",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 12,
+      "layerBehind": 0,
+      "layerCommitCount": 12,
+      "mergeBase": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+      "mergeability": "MERGEABLE",
+      "number": 33,
+      "repository": "jake-the-jake/Closy",
+      "role": "frozen_integration_base",
+      "state": "OPEN",
+      "title": "Repair Z1 garment processing surfaces",
+      "url": "https://github.com/jake-the-jake/Closy/pull/33"
+    },
+    {
+      "baseBranch": "codex/closy-forge-z1-surface-topology-repair-v3",
+      "baseSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "branch": "codex/closy-forge-phase11-zeroone-dynamic-reference-v1",
+      "changedFileCount": 26,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33270987449",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 11,
+      "layerBehind": 0,
+      "layerCommitCount": 11,
+      "mergeBase": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "mergeability": "MERGEABLE",
+      "number": 34,
+      "repository": "jake-the-jake/Closy",
+      "role": "failed_dynamic_pairing_source",
+      "state": "OPEN",
+      "title": "Integrate and audit compiled ZeroOne deformation",
+      "url": "https://github.com/jake-the-jake/Closy/pull/34"
+    },
+    {
+      "baseBranch": "codex/closy-forge-z1-surface-topology-repair-v3",
+      "baseSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "branch": "codex/closy-forge-learned-structured-garment-v2",
+      "changedFileCount": 66,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "cancelledJobCount": 0,
+        "conclusion": "FAILURE",
+        "exactHead": true,
+        "failedJobCount": 2,
+        "jobCount": 26,
+        "runId": "33275306155",
+        "successfulJobCount": 24,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 14,
+      "layerBehind": 0,
+      "layerCommitCount": 14,
+      "mergeBase": "531689b1d542dd9aeeec29a975e7136ee986c582",
+      "mergeability": "MERGEABLE",
+      "number": 35,
+      "repository": "jake-the-jake/Closy",
+      "role": "candidate_structured_integration",
+      "state": "OPEN",
+      "title": "Evaluate bounded structured garment models",
+      "url": "https://github.com/jake-the-jake/Closy/pull/35"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -3183,7 +3553,11 @@
     "github:jake-the-jake/Closy:pr/28",
     "github:jake-the-jake/Closy:pr/30",
     "github:jake-the-jake/Closy:pr/31",
-    "github:jake-the-jake/Closy:pr/32"
+    "github:jake-the-jake/Closy:pr/32",
+    "github:jake-the-jake/Closy:pr/33",
+    "github:jake-the-jake/Closy:pr/35",
+    "github:jake-the-jake/ZeroOne:pr/3",
+    "github:jake-the-jake/Closy:pr/34"
   ],
   "topology": "explicit_dag",
   "validation": {
