@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import math
 import struct
+from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -376,6 +378,151 @@ def audit_glb(path: Path) -> dict[str, Any]:
         and semantic_accessor_counts.get("TANGENT", 0) > 0
         and set(semantic_accessor_types.get("TANGENT", [])) == {"VEC4"},
     }
+
+
+def audit_glb_geometry(path: Path, *, minimum_triangle_area: float = 1e-12) -> dict[str, Any]:
+    """Independently decode render attributes and audit processor-critical geometry."""
+
+    gltf, binary = _read_glb(path)
+    totals = {
+        "vertexCount": 0,
+        "triangleCount": 0,
+        "nonfinitePositionCount": 0,
+        "nonfiniteNormalCount": 0,
+        "nonfiniteTangentCount": 0,
+        "nonfiniteUvCount": 0,
+        "repeatedIndexTriangleCount": 0,
+        "duplicateOrientedTriangleCount": 0,
+        "duplicateUnorientedTriangleCount": 0,
+        "zeroAreaTriangleCount": 0,
+        "indexOutOfRangeCount": 0,
+    }
+    witnesses: list[dict[str, Any]] = []
+    global_triangle = 0
+    for mesh_index, mesh_doc in enumerate(gltf.get("meshes", [])):
+        mesh_extras = mesh_doc.get("extras", {})
+        for primitive_index, primitive in enumerate(mesh_doc.get("primitives", [])):
+            attributes = primitive.get("attributes", {})
+            required = ("POSITION", "NORMAL", "TANGENT", "TEXCOORD_0")
+            if any(name not in attributes for name in required):
+                raise ValueError("missing_required_render_attribute")
+            positions = [_vec3(row) for row in _read_accessor(gltf, binary, attributes["POSITION"])]
+            normals = [_vec3(row) for row in _read_accessor(gltf, binary, attributes["NORMAL"])]
+            tangents = _read_accessor(gltf, binary, attributes["TANGENT"])
+            uvs = [_vec2(row) for row in _read_accessor(gltf, binary, attributes["TEXCOORD_0"])]
+            if not (len(positions) == len(normals) == len(tangents) == len(uvs)):
+                raise ValueError("render_attribute_count_mismatch")
+            if "indices" in primitive:
+                flat_indices = [
+                    _scalar_int(row)
+                    for row in _read_accessor(gltf, binary, int(primitive["indices"]))
+                ]
+            else:
+                flat_indices = list(range(len(positions)))
+            if len(flat_indices) % 3:
+                raise ValueError("triangle_index_count_not_divisible_by_three")
+            totals["vertexCount"] += len(positions)
+            totals["triangleCount"] += len(flat_indices) // 3
+            totals["nonfinitePositionCount"] += sum(
+                not all(math.isfinite(value) for value in row) for row in positions
+            )
+            totals["nonfiniteNormalCount"] += sum(
+                not all(math.isfinite(value) for value in row) for row in normals
+            )
+            totals["nonfiniteTangentCount"] += sum(
+                len(row) != 4 or not all(math.isfinite(float(value)) for value in row)
+                for row in tangents
+            )
+            totals["nonfiniteUvCount"] += sum(
+                not all(math.isfinite(value) for value in row) for row in uvs
+            )
+            primitive_extras = primitive.get("extras", {})
+            panel_id = str(
+                primitive_extras.get("panelId")
+                or (mesh_extras.get("panelId") if isinstance(mesh_extras, dict) else None)
+                or mesh_doc.get("name", f"mesh_{mesh_index}")
+            )
+            material_index = int(primitive.get("material", 0))
+            primitive_triangles = [
+                tuple(flat_indices[index : index + 3]) for index in range(0, len(flat_indices), 3)
+            ]
+            oriented_counts = Counter(primitive_triangles)
+            unoriented_counts = Counter(tuple(sorted(tri)) for tri in primitive_triangles)
+            totals["duplicateOrientedTriangleCount"] += sum(
+                count - 1 for count in oriented_counts.values()
+            )
+            totals["duplicateUnorientedTriangleCount"] += sum(
+                count - 1 for count in unoriented_counts.values()
+            )
+            for local_triangle in range(len(flat_indices) // 3):
+                tri = tuple(flat_indices[local_triangle * 3 : local_triangle * 3 + 3])
+                out_of_range = any(index < 0 or index >= len(positions) for index in tri)
+                repeated = len(set(tri)) != 3
+                if out_of_range:
+                    totals["indexOutOfRangeCount"] += 1
+                    area = 0.0
+                else:
+                    area = _triangle_area(positions[tri[0]], positions[tri[1]], positions[tri[2]])
+                if repeated:
+                    totals["repeatedIndexTriangleCount"] += 1
+                if not math.isfinite(area) or area <= minimum_triangle_area:
+                    totals["zeroAreaTriangleCount"] += 1
+                    if len(witnesses) < 64:
+                        witnesses.append(
+                            {
+                                "globalTriangleIndex": global_triangle,
+                                "meshIndex": mesh_index,
+                                "primitiveIndex": primitive_index,
+                                "localTriangleIndex": local_triangle,
+                                "panelId": panel_id,
+                                "materialIndex": material_index,
+                                "indices": list(tri),
+                                "positions": [
+                                    list(positions[index])
+                                    for index in tri
+                                    if 0 <= index < len(positions)
+                                ],
+                                "areaMeters2": area,
+                                "repeatedIndex": repeated,
+                                "indexOutOfRange": out_of_range,
+                            }
+                        )
+                global_triangle += 1
+    failure_count = sum(
+        int(totals[key])
+        for key in (
+            "nonfinitePositionCount",
+            "nonfiniteNormalCount",
+            "nonfiniteTangentCount",
+            "nonfiniteUvCount",
+            "repeatedIndexTriangleCount",
+            "duplicateOrientedTriangleCount",
+            "duplicateUnorientedTriangleCount",
+            "zeroAreaTriangleCount",
+            "indexOutOfRangeCount",
+        )
+    )
+    return {
+        "schemaVersion": 1,
+        "auditVersion": "closy.glb.processor_geometry_audit.v1",
+        "minimumTriangleAreaMeters2": minimum_triangle_area,
+        **totals,
+        "status": "pass" if failure_count == 0 else "fail",
+        "witnesses": witnesses,
+    }
+
+
+def _triangle_area(
+    a: tuple[float, float, float], b: tuple[float, float, float], c: tuple[float, float, float]
+) -> float:
+    ab = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+    ac = (c[0] - a[0], c[1] - a[1], c[2] - a[2])
+    cross_value = (
+        ab[1] * ac[2] - ab[2] * ac[1],
+        ab[2] * ac[0] - ab[0] * ac[2],
+        ab[0] * ac[1] - ab[1] * ac[0],
+    )
+    return 0.5 * math.sqrt(sum(value * value for value in cross_value))
 
 
 def read_glb_meshset(path: Path) -> MeshSet:

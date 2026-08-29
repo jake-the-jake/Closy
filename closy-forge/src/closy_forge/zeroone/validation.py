@@ -23,6 +23,10 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
         return {"status": "not_present", "reason": "zeroone_derivative_absent"}
     target = root / "static-d0"
     if not target.is_dir():
+        if (root / "input-z1-v1").is_dir() and all(
+            child.name == "input-z1-v1" for child in root.iterdir()
+        ):
+            return {"status": "not_present", "reason": "zeroone_derivative_absent"}
         return {"status": "derivative_incompatible", "reason": "static_profile_directory_missing"}
     try:
         marker = read_managed_marker(target)

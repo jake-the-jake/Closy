@@ -146,7 +146,8 @@ def main() -> int:
                 allowed_root=optional_root,
                 purpose="zeroone-static-d0",
             )
-            optional_root.rmdir()
+            if not any(optional_root.iterdir()):
+                optional_root.rmdir()
             if inspect_zeroone_namespace(build.package_dir).get("status") != "not_present":
                 raise RuntimeError("ZeroOne namespace deletion did not preserve an absent state")
             rebuilt = integrate_zeroone_static(
@@ -436,7 +437,11 @@ def _failed_family_inventory(package: Path, report: dict[str, Any]) -> dict[str,
     panels = sorted(str(panel_id) for panel_id in semantics.get("panelMapping", {}))
     seams = sorted(str(item["id"]) for item in semantics.get("seams", []))
     openings = sorted(str(item["id"]) for item in semantics.get("openings", []))
-    materials = sorted(str(item["materialId"]) for item in canonical_materials.get("materials", []))
+    materials = sorted(
+        str(item.get("materialId", item.get("id")))
+        for item in canonical_materials.get("materials", [])
+        if isinstance(item, dict) and isinstance(item.get("materialId", item.get("id")), str)
+    )
     layers = sorted(
         {str(item.get("layerId", "layer.default")) for item in semantics.get("components", [])}
     )
