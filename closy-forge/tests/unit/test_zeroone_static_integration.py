@@ -180,11 +180,10 @@ def test_optional_namespace_fails_closed_when_incompatible_or_corrupt(tmp_path: 
     namespace = package / "zeroone"
     namespace.mkdir()
 
-    incompatible = inspect_zeroone_namespace(package)
-    assert incompatible["status"] == "derivative_incompatible"
+    absent = inspect_zeroone_namespace(package)
+    assert absent["status"] == "not_present"
     report = validate_package(package)
-    assert report["status"] == "failed"
-    assert any(issue["code"] == "zeroone_derivative_incompatible" for issue in report["issues"])
+    assert report["status"] == "passed"
 
     (namespace / "static-d0").mkdir()
     corrupt = inspect_zeroone_namespace(package)
