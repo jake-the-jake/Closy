@@ -226,11 +226,12 @@ def _source_tree_attestation(forge_root: Path) -> dict[str, Any]:
 
 
 def _compare(expected: Path, actual: Path) -> list[str]:
+    ignored_inventory = {".closy-forge-owned.json", "source_replay_map.json"}
     expected_names = sorted(
-        path.name for path in expected.glob("*.json") if path.name != "source_replay_map.json"
+        path.name for path in expected.glob("*.json") if path.name not in ignored_inventory
     )
     actual_names = sorted(
-        path.name for path in actual.glob("*.json") if path.name != "source_replay_map.json"
+        path.name for path in actual.glob("*.json") if path.name not in ignored_inventory
     )
     differences = []
     if expected_names != actual_names:
