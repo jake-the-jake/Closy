@@ -20,6 +20,9 @@ CURRENT_ZEROONE_MASTER_ANCHOR = "a17762bc1fc12fbd33f0488634635a5dcfdf8da3"
 REQUEST_SCHEMA_VERSION = "closy.zeroone.static-request.v1"
 REPORT_SCHEMA_VERSION = "zeroone.closy.static-report.v1"
 PROFILE = "closy-static-d0-cpu-v1"
+DYNAMIC_REQUEST_SCHEMA_VERSION = "closy.zeroone.dynamic-request.v1"
+DYNAMIC_REPORT_SCHEMA_VERSION = "zeroone.closy.dynamic-report.v1"
+DYNAMIC_PROFILE = "closy-dynamic-d0-single-lod-reference-v1"
 TOOL_ENV = "CLOSY_ZEROONE_PROCESS"
 TRUST_RECORD_ENV = "CLOSY_ZEROONE_TRUSTED_BUILD_RECORD"
 TRUST_RECORD_VERSION = "closy.zeroone.trusted-build-record.v1"
@@ -49,7 +52,10 @@ def resolve_zeroone_tool(
     trusted_build_record: Path | None = None,
     expected_executable_sha256: str | None = None,
     expected_source_sha: str = PINNED_ZEROONE_SOURCE_SHA,
+    capability: str = "static",
 ) -> ZeroOneToolResolution:
+    if capability not in {"static", "dynamic"}:
+        raise ValueError("zeroone_capability_invalid")
     configured = executable or _configured_path(TOOL_ENV)
     if configured is None:
         return ZeroOneToolResolution(False, "zeroone_tool_not_configured", None, None, None)
@@ -87,7 +93,7 @@ def resolve_zeroone_tool(
         return ZeroOneToolResolution(
             False, "zeroone_trusted_build_record_invalid", path, actual_hash, None
         )
-    record_issue = _validate_trusted_build_record(record, expected_source_sha)
+    record_issue = _validate_trusted_build_record(record, expected_source_sha, capability)
     if record_issue is not None:
         return ZeroOneToolResolution(False, record_issue, path, actual_hash, None, record)
     expected_hash = str(record["executableSha256"])
@@ -126,7 +132,7 @@ def resolve_zeroone_tool(
         return ZeroOneToolResolution(
             False, "zeroone_version_query_failed", path, actual_hash, version, record
         )
-    reason = _validate_version(version, actual_hash, record)
+    reason = _validate_version(version, actual_hash, record, capability)
     return ZeroOneToolResolution(
         reason is None,
         reason or "trusted_zeroone_tool_ready",
@@ -149,7 +155,9 @@ def _last_json_object(stdout: str) -> dict[str, Any]:
     return loads_strict_json_object(lines[-1])
 
 
-def _validate_trusted_build_record(record: dict[str, Any], expected_source_sha: str) -> str | None:
+def _validate_trusted_build_record(
+    record: dict[str, Any], expected_source_sha: str, capability: str
+) -> str | None:
     if record.get("schemaVersion") != 1 or record.get("recordVersion") != TRUST_RECORD_VERSION:
         return "zeroone_trusted_build_record_version_mismatch"
     if record.get("trustDomain") not in {
@@ -169,11 +177,18 @@ def _validate_trusted_build_record(record: dict[str, Any], expected_source_sha: 
     executable_name = str(record.get("executableRelativeName", ""))
     if Path(executable_name).name != executable_name:
         return "zeroone_trusted_build_executable_name_invalid"
-    if REQUEST_SCHEMA_VERSION not in record.get("requestSchemaVersions", []):
+    request_schema = (
+        DYNAMIC_REQUEST_SCHEMA_VERSION if capability == "dynamic" else REQUEST_SCHEMA_VERSION
+    )
+    report_schema = (
+        DYNAMIC_REPORT_SCHEMA_VERSION if capability == "dynamic" else REPORT_SCHEMA_VERSION
+    )
+    profile = DYNAMIC_PROFILE if capability == "dynamic" else PROFILE
+    if request_schema not in record.get("requestSchemaVersions", []):
         return "zeroone_trusted_build_request_schema_unsupported"
-    if REPORT_SCHEMA_VERSION not in record.get("reportSchemaVersions", []):
+    if report_schema not in record.get("reportSchemaVersions", []):
         return "zeroone_trusted_build_report_schema_unsupported"
-    if PROFILE not in record.get("supportedProfiles", []):
+    if profile not in record.get("supportedProfiles", []):
         return "zeroone_trusted_build_profile_unsupported"
     capture = record.get("capture")
     if not isinstance(capture, dict) or (
@@ -188,7 +203,10 @@ def _validate_trusted_build_record(record: dict[str, Any], expected_source_sha: 
 
 
 def _validate_version(
-    version: dict[str, Any], executable_hash: str, trusted_record: dict[str, Any]
+    version: dict[str, Any],
+    executable_hash: str,
+    trusted_record: dict[str, Any],
+    capability: str,
 ) -> str | None:
     if version.get("tool") != "ZeroOneProcess":
         return "zeroone_tool_identity_mismatch"
@@ -206,13 +224,29 @@ def _validate_version(
         return "zeroone_not_headless_cpu"
     if version.get("requiresGpu") is not False or version.get("requiresWindow") is not False:
         return "zeroone_has_interactive_runtime_dependency"
-    if version.get("requestSchemaVersion") != REQUEST_SCHEMA_VERSION:
+    request_key = (
+        "dynamicRequestSchemaVersion" if capability == "dynamic" else "requestSchemaVersion"
+    )
+    report_key = "dynamicReportSchemaVersion" if capability == "dynamic" else "reportSchemaVersion"
+    request_schema = (
+        DYNAMIC_REQUEST_SCHEMA_VERSION if capability == "dynamic" else REQUEST_SCHEMA_VERSION
+    )
+    report_schema = (
+        DYNAMIC_REPORT_SCHEMA_VERSION if capability == "dynamic" else REPORT_SCHEMA_VERSION
+    )
+    profile = DYNAMIC_PROFILE if capability == "dynamic" else PROFILE
+    required_commands = (
+        {"deform", "validate-dynamic", "inspect-dynamic", "resume-dynamic"}
+        if capability == "dynamic"
+        else {"inspect", "cook", "validate", "resume"}
+    )
+    if version.get(request_key) != request_schema:
         return "zeroone_request_schema_unsupported"
-    if version.get("reportSchemaVersion") != REPORT_SCHEMA_VERSION:
+    if version.get(report_key) != report_schema:
         return "zeroone_report_schema_unsupported"
-    if PROFILE not in version.get("profiles", []):
+    if profile not in version.get("profiles", []):
         return "zeroone_profile_unsupported"
     commands = set(version.get("commands", []))
-    if not {"inspect", "cook", "validate", "resume"}.issubset(commands):
+    if not required_commands.issubset(commands):
         return "zeroone_command_contract_incomplete"
     return None
