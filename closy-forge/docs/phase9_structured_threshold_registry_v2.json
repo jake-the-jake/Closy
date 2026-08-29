@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "registryVersion": "closy.phase9.structured_thresholds.synthetic_d0.v2",
+  "authority": "precommitted_before_corrective_e1_or_e2_heldout_execution",
+  "coordinateConvention": "metres_right_handed_y_up; raster_features_normalized_unitless",
+  "scope": "project_authored_synthetic_host_cpu_only",
+  "e1": {
+    "profileId": "E1-Raster-Unassisted-Synthetic-D0-v2",
+    "minimumFamilyTop1": 0.7,
+    "minimumAcceptedCoverage": 0.5,
+    "maximumSelectiveRisk": 0.2,
+    "maximumExpectedCalibrationError": 0.2,
+    "minimumOodCorrectActionRate": 0.8,
+    "maximumOodFalseAcceptRate": 0.2,
+    "minimumAcceptedThreeDimensionalExecutionRate": 1.0,
+    "baselineCriterion": {
+      "metric": "family_top1_accuracy",
+      "comparison": "learned_minus_strongest_equal_input_baseline",
+      "minimumPairedBootstrapLower95": -0.02
+    },
+    "aggregation": "all_numeric_thresholds_and_baseline_criterion_must_pass"
+  },
+  "e2": {
+    "profileId": "E2-Typed-Structured-Decoder-Synthetic-D0-v1",
+    "minimumUniqueTrainPrograms": 128,
+    "minimumUniqueValidationPrograms": 32,
+    "minimumUniqueTestPrograms": 48,
+    "minimumHeldoutCompositionGroups": 4,
+    "minimumProgramsPerHeldoutGroup": 8,
+    "minimumPanelCountRegimes": 3,
+    "minimumExactProgramValidity": 0.95,
+    "minimumParseTypeSemanticRate": 0.95,
+    "primaryStructuralHoldoutMetric": "macro_structure_token_f1",
+    "minimumPrimaryStructuralHoldoutMetric": 0.75,
+    "baselineCriterion": {
+      "metric": "macro_structure_token_f1",
+      "comparison": "learned_minus_strongest_equal_input_deterministic_baseline",
+      "minimumPairedBootstrapLower95": -0.02
+    },
+    "aggregation": "dataset_minima_and_all_quality_and_baseline_criteria_must_pass"
+  },
+  "oracleVersions": {
+    "rasterDecode": "closy.raster_normalization.v1",
+    "typedAst": "closy.typed_garment_ast.synthetic_d0.v1",
+    "threeDimensionalReference": "closy.pattern_reference_mesh_evaluation.synthetic_d0.v1"
+  },
+  "rationale": "Thresholds are bounded research-profile gates derived from existing eight-family synthetic evidence, numerical raster resolution, and fail-closed promotion policy. They do not establish real-photo, human, mobile, physical-cloth, or product readiness."
+}
