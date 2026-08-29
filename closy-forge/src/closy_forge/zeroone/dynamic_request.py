@@ -28,6 +28,11 @@ from closy_forge.zeroone.dynamic_oracle import (
     u64_section,
     vec3_section,
 )
+from closy_forge.zeroone.dynamic_processing_surface import (
+    DYNAMIC_PROCESSING_INFLUENCE_PATH,
+    DYNAMIC_PROCESSING_SURFACE_PATH,
+    inspect_dynamic_processing_surface,
+)
 from closy_forge.zeroone.request import build_zeroone_request
 
 DYNAMIC_REQUEST_SCHEMA_VERSION = "closy.zeroone.dynamic-request.v1"
@@ -76,18 +81,9 @@ def build_dynamic_request(
     simulation_manifest = _object(package_root / "simulation" / "mesh_manifest.json")
     binding_contract = _object(package_root / "binding" / "production_binding_contract.json")
     derivative = _object(static_root / "derivative.json")
-    render_meshset = read_glb_meshset(package_root / "render" / "fallback.glb")
-
-    simulation_ids = [_stable_id(0x2, index) for index in range(_vertex_count(simulation_manifest))]
-    render_ids = [_stable_id(0x1, index) for index in range(render_meshset.vertex_count)]
-    render_indices, render_texcoords, bindings = _expanded_render_contract(
-        render_manifest=render_manifest,
-        render_meshset=render_meshset,
-        binding_contract=binding_contract,
-        render_ids=render_ids,
-        simulation_ids=simulation_ids,
-    )
-    simulation_rest = _manifest_positions(simulation_manifest)
+    source = _object_value(derivative, "source")
+    source_relative = source.get("inputAssetRelativePath")
+    uses_dynamic_processing = source_relative == DYNAMIC_PROCESSING_SURFACE_PATH
     neutral_reference = _state_positions(
         package_root / "simulation" / "motion_states" / "neutral_settled.json",
         simulation_manifest,
@@ -96,7 +92,7 @@ def build_dynamic_request(
         package_root / "simulation" / "motion_states" / "torso_twist.json",
         simulation_manifest,
     )
-    motion_delta = [
+    canonical_motion_delta = [
         (
             target[0] - neutral[0],
             target[1] - neutral[1],
@@ -104,6 +100,43 @@ def build_dynamic_request(
         )
         for neutral, target in zip(neutral_reference, target_reference, strict=True)
     ]
+    processing_influence: dict[str, Any] = {}
+    if uses_dynamic_processing:
+        processing_audit = inspect_dynamic_processing_surface(package_root)
+        if processing_audit.get("status") != "valid":
+            raise ValueError(f"dynamic_processing_surface_invalid:{processing_audit.get('reason')}")
+        render_meshset = read_glb_meshset(package_root / DYNAMIC_PROCESSING_SURFACE_PATH)
+        processing_influence = _object(package_root / DYNAMIC_PROCESSING_INFLUENCE_PATH)
+        simulation_ids = [_stable_id(0x4, index) for index in range(render_meshset.vertex_count)]
+        render_ids = [_stable_id(0x1, index) for index in range(render_meshset.vertex_count)]
+        render_indices, render_texcoords, bindings = _processing_render_contract(
+            render_meshset=render_meshset,
+            render_ids=render_ids,
+            simulation_ids=simulation_ids,
+        )
+        simulation_rest = [position for mesh in render_meshset.meshes for position in mesh.vertices]
+        motion_delta = _processing_motion_delta(processing_influence, canonical_motion_delta)
+        influence_authority = "canonical_production_binding_composed_to_dynamic_processing_vertices"
+        maximum_canonical_influences = 3
+        maximum_processor_influences = 1
+    else:
+        render_meshset = read_glb_meshset(package_root / "render" / "fallback.glb")
+        simulation_ids = [
+            _stable_id(0x2, index) for index in range(_vertex_count(simulation_manifest))
+        ]
+        render_ids = [_stable_id(0x1, index) for index in range(render_meshset.vertex_count)]
+        render_indices, render_texcoords, bindings = _expanded_render_contract(
+            render_manifest=render_manifest,
+            render_meshset=render_meshset,
+            binding_contract=binding_contract,
+            render_ids=render_ids,
+            simulation_ids=simulation_ids,
+        )
+        simulation_rest = _manifest_positions(simulation_manifest)
+        motion_delta = canonical_motion_delta
+        influence_authority = "canonical_production_binding_contract"
+        maximum_canonical_influences = 3
+        maximum_processor_influences = 3
     timestamps, frames = _mechanical_frames(simulation_rest, motion_delta, clip_scale)
     binding_bytes = _binding_payload(bindings)
 
@@ -173,6 +206,7 @@ def build_dynamic_request(
             "sourceMotionState": "torso_twist",
             "sourceStateProvenance": "deterministic_public_fixture_reference_solver",
             "clipScale": clip_scale,
+            "dynamicProcessingSurface": uses_dynamic_processing,
             "bodyProxySpheres": [],
         },
     }
@@ -196,7 +230,11 @@ def build_dynamic_request(
             "classification": "mechanical_reference",
             "physicalTruth": False,
             "sourceState": "torso_twist",
-            "restAuthority": "canonical_simulation_mesh_manifest",
+            "restAuthority": (
+                "exact_validated_dynamic_processing_surface"
+                if uses_dynamic_processing
+                else "canonical_simulation_mesh_manifest"
+            ),
             "motionDeltaAuthority": "torso_twist_minus_neutral_settled_solver_states",
             "sourceStateHash": _object(
                 package_root / "simulation" / "motion_states" / "torso_twist.json"
@@ -212,19 +250,27 @@ def build_dynamic_request(
         },
         influence_inventory={
             "schemaVersion": "closy.zeroone.dynamic-influence-inventory.v1",
-            "authority": "canonical_production_binding_contract",
+            "authority": influence_authority,
             "canonicalBindingContractHash": binding_contract["integrity"][
                 "productionBindingContractHash"
             ],
             "destinationCount": len(bindings),
             "classifiedDestinationCount": len(bindings),
             "missingDestinationCount": 0,
-            "maximumInfluencesPerDestination": 3,
+            "maximumCanonicalInfluencesPerDestination": maximum_canonical_influences,
+            "maximumProcessorInfluencesPerDestination": maximum_processor_influences,
+            "dynamicProcessingSurface": uses_dynamic_processing,
+            "dynamicProcessingInfluenceHash": (
+                processing_influence.get("integrity", {}).get("influenceHash")
+                if uses_dynamic_processing
+                else None
+            ),
             "bindingContractSha256": digest_bytes(binding_bytes),
         },
         topology_inventory={
             "schemaVersion": "closy.zeroone.dynamic-topology-inventory.v1",
             "simulationVertexCount": len(simulation_ids),
+            "canonicalSimulationVertexCount": _vertex_count(simulation_manifest),
             "renderVertexCount": len(render_ids),
             "triangleCount": len(render_indices) // 3,
             "simulationTopologySha256": simulation_topology,
@@ -338,6 +384,75 @@ def _expanded_render_contract(
     if global_triangle_offset != render_manifest.get("triangleCount"):
         raise ValueError("dynamic_render_triangle_inventory_mismatch")
     return indices, texcoords, bindings
+
+
+def _processing_render_contract(
+    *,
+    render_meshset: Any,
+    render_ids: list[int],
+    simulation_ids: list[int],
+) -> tuple[list[int], list[Vec2], list[dict[str, Any]]]:
+    if len(render_ids) != len(simulation_ids) or len(render_ids) != render_meshset.vertex_count:
+        raise ValueError("dynamic_processing_vertex_inventory_mismatch")
+    indices: list[int] = []
+    texcoords: list[Vec2] = []
+    bindings: list[dict[str, Any]] = []
+    vertex_offset = 0
+    triangle_offset = 0
+    for mesh in render_meshset.meshes:
+        for triangle in mesh.triangles:
+            for local_vertex in triangle:
+                global_vertex = vertex_offset + int(local_vertex)
+                indices.append(global_vertex)
+        texcoords.extend(mesh.panel_uvs)
+        triangle_offset += len(mesh.triangles)
+        vertex_offset += len(mesh.vertices)
+    for index, (render_id, simulation_id) in enumerate(
+        zip(render_ids, simulation_ids, strict=True)
+    ):
+        bindings.append(
+            {
+                "destination": render_id,
+                "authority": 2,
+                "count": 1,
+                "sources": (simulation_id, 0, 0),
+                "weights": (1.0, 0.0, 0.0),
+                "triangle": _stable_id(0x5, index // 3),
+            }
+        )
+    if indices != list(range(len(render_ids))) or triangle_offset * 3 != len(indices):
+        raise ValueError("dynamic_processing_surface_not_expanded_triangle_order")
+    return indices, texcoords, bindings
+
+
+def _processing_motion_delta(influence: dict[str, Any], canonical_delta: list[Vec3]) -> list[Vec3]:
+    rows = influence.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError("dynamic_processing_influence_rows_missing")
+    result: list[Vec3] = []
+    for expected, row in enumerate(rows):
+        if not isinstance(row, dict) or row.get("processingVertex") != expected:
+            raise ValueError("dynamic_processing_influence_order_invalid")
+        sources = row.get("canonicalSimulationVertexIndices")
+        weights = row.get("weights")
+        if (
+            not isinstance(sources, list)
+            or not isinstance(weights, list)
+            or len(sources) != 3
+            or len(weights) != 3
+        ):
+            raise ValueError("dynamic_processing_influence_record_invalid")
+        value = [0.0, 0.0, 0.0]
+        for source, weight in zip(sources, weights, strict=True):
+            index = int(source)
+            if index < 0 or index >= len(canonical_delta):
+                raise ValueError("dynamic_processing_influence_source_out_of_range")
+            for axis in range(3):
+                value[axis] += canonical_delta[index][axis] * float(weight)
+        result.append((value[0], value[1], value[2]))
+    if len(result) != int(influence.get("processingVertexCount", -1)):
+        raise ValueError("dynamic_processing_influence_count_mismatch")
+    return result
 
 
 def _binding_payload(records: list[dict[str, Any]]) -> bytes:

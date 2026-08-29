@@ -8,6 +8,11 @@ from typing import Any
 
 from closy_forge.package_io.hashing import sha256_file
 from closy_forge.package_io.paths import validate_package_relpath
+from closy_forge.zeroone.dynamic_processing_surface import (
+    DYNAMIC_PROCESSING_MANIFEST_PATH,
+    DYNAMIC_PROCESSING_SURFACE_PATH,
+    inspect_dynamic_processing_surface,
+)
 from closy_forge.zeroone.tool import PROFILE, REQUEST_SCHEMA_VERSION
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -53,12 +58,20 @@ def build_zeroone_request(
         canonical.get("denseRender"),
         "render/fallback.glb",
     )
+    dynamic_processing = inspect_dynamic_processing_surface(package_root)
+    if dynamic_processing.get("status") == "invalid":
+        raise ValueError(
+            f"dynamic processing surface is invalid: {dynamic_processing.get('reason')}"
+        )
     processing_relative = canonical.get("zeroOneProcessingSurface")
-    input_relative = (
-        processing_relative
-        if isinstance(processing_relative, str) and processing_relative in inventory
-        else fallback_relative
-    )
+    if dynamic_processing.get("status") == "valid":
+        input_relative = DYNAMIC_PROCESSING_SURFACE_PATH
+    else:
+        input_relative = (
+            processing_relative
+            if isinstance(processing_relative, str) and processing_relative in inventory
+            else fallback_relative
+        )
     semantic_relative = _choose_existing(
         inventory,
         canonical.get("semanticGraph"),
@@ -66,18 +79,21 @@ def build_zeroone_request(
         "semantic/garment_graph.json",
     )
     processing_manifest = canonical.get("zeroOneProcessingSurfaceManifest")
-    topology_relative = (
-        processing_manifest
-        if input_relative != fallback_relative
-        and isinstance(processing_manifest, str)
-        and processing_manifest in inventory
-        else _choose_existing(
-            inventory,
-            canonical.get("renderMeshManifest"),
-            "render/mesh_manifest.json",
-            "manifest.json",
+    if input_relative == DYNAMIC_PROCESSING_SURFACE_PATH:
+        topology_relative = DYNAMIC_PROCESSING_MANIFEST_PATH
+    else:
+        topology_relative = (
+            processing_manifest
+            if input_relative != fallback_relative
+            and isinstance(processing_manifest, str)
+            and processing_manifest in inventory
+            else _choose_existing(
+                inventory,
+                canonical.get("renderMeshManifest"),
+                "render/mesh_manifest.json",
+                "manifest.json",
+            )
         )
-    )
     topology = _read_object(package_root / topology_relative)
     topology_hash = topology.get("topologyHash")
     if not isinstance(topology_hash, str):
@@ -163,9 +179,13 @@ def build_zeroone_request(
         "inputAssetPath": input_relative,
         "inputContentSha256": _inventory_hash(package_root, inventory, input_relative),
         "inputRole": (
-            "versioned_zeroone_processing_surface"
-            if input_relative != fallback_relative
-            else "canonical_conventional_fallback"
+            "versioned_zeroone_dynamic_processing_surface"
+            if input_relative == DYNAMIC_PROCESSING_SURFACE_PATH
+            else (
+                "versioned_zeroone_processing_surface"
+                if input_relative != fallback_relative
+                else "canonical_conventional_fallback"
+            )
         ),
         "garmentId": garment_id,
         "topologyHash": topology_hash,

@@ -31,6 +31,11 @@ from closy_forge.zeroone.dynamic_oracle import (
     decode_vectors,
     recompute_frames,
 )
+from closy_forge.zeroone.dynamic_processing_surface import (
+    DYNAMIC_PROCESSING_SURFACE_PATH,
+    inspect_dynamic_processing_surface,
+    prepare_dynamic_processing_surface,
+)
 from closy_forge.zeroone.dynamic_request import (
     DYNAMIC_PROFILE,
     build_dynamic_request,
@@ -43,7 +48,7 @@ CLOSY_SHA = "5" * 40
 ZEROONE_SHA = "4" * 40
 
 
-def _static_derivative(root: Path, package: Path) -> Path:
+def _static_derivative(root: Path, package: Path, source_path: str = "render/fallback.glb") -> Path:
     manifest = json.loads((package / "manifest.json").read_text(encoding="utf-8"))
     target = root / "static" / "current"
     write_canonical_json(
@@ -53,8 +58,8 @@ def _static_derivative(root: Path, package: Path) -> Path:
             "profile": "closy-static-d0-cpu-v1",
             "garmentId": manifest["garmentId"],
             "source": {
-                "inputAssetRelativePath": "render/fallback.glb",
-                "inputContentSha256": sha256_file(package / "render" / "fallback.glb"),
+                "inputAssetRelativePath": source_path,
+                "inputContentSha256": sha256_file(package / source_path),
                 "coordinateConventionId": "closy-rh-yup-plus-z-v1",
                 "unitScaleMetres": 1.0,
             },
@@ -129,6 +134,42 @@ def test_dynamic_container_rejects_checksum_corruption(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="section_checksum"):
         decode_document(bytes(corrupt), request=True)
+
+
+def test_dynamic_safe_processing_surface_has_exact_composed_rest_identity(
+    tmp_path: Path,
+) -> None:
+    package = build_demo(tmp_path)
+    fallback_before = sha256_file(package / "render" / "fallback.glb")
+    prepared = prepare_dynamic_processing_surface(package)
+    bundle = build_dynamic_request(
+        package=package,
+        invocation_root=tmp_path,
+        static_derivative=_static_derivative(tmp_path, package, DYNAMIC_PROCESSING_SURFACE_PATH),
+        output=tmp_path / "dynamic-processing-output",
+        closy_sha=CLOSY_SHA,
+    )
+    document = decode_document(bundle.encoded, request=True)
+    simulation_ids = decode_u64(document.sections[SIMULATION_IDS])
+    render_ids = decode_u64(document.sections[RENDER_IDS])
+    expected_frames = recompute_frames(document)[3]
+    processing_positions = [
+        position
+        for mesh in read_glb_meshset(package / DYNAMIC_PROCESSING_SURFACE_PATH).meshes
+        for position in mesh.vertices
+    ]
+
+    assert prepared["status"] == "valid"
+    assert inspect_dynamic_processing_surface(package)["status"] == "valid"
+    assert prepared["removedTriangleCount"] == 16
+    assert prepared["processingVertexCount"] == len(simulation_ids) == len(render_ids) == 2448
+    assert prepared["processingTriangleCount"] == 816
+    assert expected_frames[0] == processing_positions
+    assert expected_frames[-1] == processing_positions
+    assert bundle.influence_inventory["dynamicProcessingSurface"] is True
+    assert bundle.influence_inventory["maximumProcessorInfluencesPerDestination"] == 1
+    assert bundle.influence_inventory["maximumCanonicalInfluencesPerDestination"] == 3
+    assert sha256_file(package / "render" / "fallback.glb") == fallback_before
 
 
 def test_dynamic_namespace_exact_inventory_and_corruption(tmp_path: Path) -> None:

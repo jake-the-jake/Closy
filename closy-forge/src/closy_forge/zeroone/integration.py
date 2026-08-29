@@ -17,6 +17,7 @@ from closy_forge.package_io.managed_output import (
 from closy_forge.package_io.paths import assert_safe_child, posix_rel
 from closy_forge.security.strict_json import StrictJsonError, loads_strict_json_object
 from closy_forge.validation.validator import validate_package
+from closy_forge.zeroone.dynamic_processing_surface import prepare_dynamic_processing_surface
 from closy_forge.zeroone.namespace import (
     copy_verified_derivative,
     validate_namespace_manifest,
@@ -84,10 +85,14 @@ def integrate_zeroone_static(
     expected_zeroone_sha: str = PINNED_ZEROONE_SOURCE_SHA,
     publish: bool = True,
     replace_existing: bool = False,
+    dynamic_compatible_surface: bool = False,
 ) -> ZeroOneIntegrationResult:
     package_root = package.resolve(strict=True)
     root = invocation_root.resolve(strict=True)
     assert_safe_child(root, package_root)
+    dynamic_processing_audit: dict[str, Any] | None = None
+    if dynamic_compatible_surface:
+        dynamic_processing_audit = prepare_dynamic_processing_surface(package_root)
     before_files = _canonical_package_hashes(package_root)
     fallback_before = _fallback_hash(package_root)
     validation_before = validate_package(package_root)
@@ -300,6 +305,8 @@ def integrate_zeroone_static(
         "globalPhase10Complete": False,
         "remainingBlockers": cook_a.get("remainingPhase10Blockers", []),
     }
+    if dynamic_processing_audit is not None:
+        summary["dynamicCompatibleProcessingSurface"] = dynamic_processing_audit
     return ZeroOneIntegrationResult(
         "valid" if accepted else "derivative_corrupt",
         "scoped_d0_cpu_static_derivative_valid" if accepted else "post_package_validation_failed",

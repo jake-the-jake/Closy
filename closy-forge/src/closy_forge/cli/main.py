@@ -418,6 +418,11 @@ def _parser() -> argparse.ArgumentParser:
     zeroone_static.add_argument("--closy-sha", required=True)
     zeroone_static.add_argument("--no-publish", action="store_true")
     zeroone_static.add_argument("--replace-existing", action="store_true")
+    zeroone_static.add_argument(
+        "--dynamic-compatible-surface",
+        action="store_true",
+        help="Prepare and cook the declared Z2 dynamic-safe derivative input surface.",
+    )
     zeroone_static.add_argument("--json", action="store_true")
     zeroone_static.set_defaults(handler=_integrate_zeroone_static)
     zeroone_dynamic = zeroone_sub.add_parser(
@@ -842,6 +847,7 @@ def _integrate_zeroone_static(args: argparse.Namespace) -> int:
         expected_zeroone_sha=args.expected_zeroone_sha,
         publish=not args.no_publish,
         replace_existing=args.replace_existing,
+        dynamic_compatible_surface=args.dynamic_compatible_surface,
     )
     payload = result.to_json()
     if args.json:

@@ -12239,6 +12239,9 @@ def _issue(
 
 
 def _with_zeroone_validation(package_dir: Path, report: dict[str, Any]) -> dict[str, Any]:
+    from closy_forge.zeroone.dynamic_processing_surface import (
+        inspect_dynamic_processing_surface,
+    )
     from closy_forge.zeroone.processing_surface import inspect_processing_surface
 
     processing = inspect_processing_surface(package_dir)
@@ -12256,6 +12259,26 @@ def _with_zeroone_validation(package_dir: Path, report: dict[str, Any]) -> dict[
                 "fatal",
                 "zeroone/input-z1-v1",
                 str(processing.get("reason", "processing surface validation failed")),
+            ).to_json()
+        )
+        return result
+    dynamic_processing = inspect_dynamic_processing_surface(package_dir)
+    if dynamic_processing.get("status") == "invalid":
+        result = {
+            "schemaVersion": report.get("schemaVersion", 1),
+            "status": "failed",
+            "counts": dict(report.get("counts", {})),
+            "issues": list(report.get("issues", [])),
+        }
+        result["counts"]["fatal"] = int(result["counts"].get("fatal", 0)) + 1
+        result["issues"].append(
+            _issue(
+                "zeroone_dynamic_processing_surface_corrupt",
+                "fatal",
+                "zeroone/input-z2-v1",
+                str(
+                    dynamic_processing.get("reason", "dynamic processing surface validation failed")
+                ),
             ).to_json()
         )
         return result
