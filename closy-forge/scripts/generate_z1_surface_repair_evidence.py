@@ -60,8 +60,8 @@ def main() -> int:
     _require_clean_exact_head(repository_root, args.closy_sha)
     pre_fix = read_json(args.pre_fix_witnesses)
     expected_default_fallbacks = {
-        str(row["family"]): str(row["conventionalFallbackSha256"])
-        for row in pre_fix["failedFamilies"]
+        str(row["family"]): str(row["conventionalFallback"]["sha256"])
+        for row in pre_fix["rejectedFamilyWitnesses"]
     }
     requested_root = args.work_root.resolve(strict=False)
     root = create_managed_staging(
