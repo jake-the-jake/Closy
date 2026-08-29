@@ -11,7 +11,7 @@ EVIDENCE_ROOT = (
     / "evidence"
     / "phase9_structured_v2"
 )
-SOURCE_TREE_HASH = "6c6471f3244f2ef8ebf2ca6c82643e275471f6c4010a7c262be54b5a376baddb"
+SOURCE_TREE_HASH = "0af278346b603ab9d2987de2013231a1d1929ec21d1ad66323e153c4b0f2c002"
 
 
 def _load(name: str) -> dict[str, Any]:
