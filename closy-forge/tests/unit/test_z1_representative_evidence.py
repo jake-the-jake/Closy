@@ -3,9 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-EVIDENCE_ROOT = (
-    Path(__file__).resolve().parents[2] / "docs/evidence/phase10_zeroone_static"
-)
+EVIDENCE_ROOT = Path(__file__).resolve().parents[2] / "docs/evidence/phase10_zeroone_static"
 
 
 def test_representative_static_profile_is_frozen_and_passes() -> None:

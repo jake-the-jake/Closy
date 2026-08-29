@@ -143,8 +143,7 @@ def main() -> int:
 
         c3_pass = (
             c3["profile"]["capabilityId"] == "C3-Binding-D0"
-            and c3["readiness"]["gateC3Status"]
-            == "complete_for_d0_fixed_avatar_tshirt_profile"
+            and c3["readiness"]["gateC3Status"] == "complete_for_d0_fixed_avatar_tshirt_profile"
             and c3["readiness"]["acceptedForD0RuntimeBindingProfile"] is True
             and c3["persistedValidation"]["status"] == "pass"
         )
@@ -157,8 +156,7 @@ def main() -> int:
             and result.fallback_preserved
             and result.canonical_authority_preserved
             and result.deterministic_derivative
-            and resume.get("interruptionDiagnostic")
-            == "E_INJECTED_INTERRUPTION_BEFORE_PUBLICATION"
+            and resume.get("interruptionDiagnostic") == "E_INJECTED_INTERRUPTION_BEFORE_PUBLICATION"
             and resume.get("resumeState") == "matched"
             and resume.get("validatedNativeDerivative") is True
             and c3_pass

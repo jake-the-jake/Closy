@@ -571,7 +571,7 @@ def _canonical_package_hashes(package: Path) -> dict[str, str]:
         for path in sorted(package.rglob("*"))
         if path.is_file()
         and not path.is_symlink()
-        and not posix_rel(path, package).startswith("zeroone/static-d0/")
+        and not posix_rel(path, package).startswith("zeroone/")
     }
 
 
@@ -611,9 +611,7 @@ def _bounded_resume_report(value: dict[str, Any]) -> dict[str, Any]:
         {
             "interruptionDiagnostic": value["interrupted"].get("diagnostic"),
             "resumeState": value["resume"].get("resumeState"),
-            "validatedNativeDerivative": value["validate"].get(
-                "validatedNativeDerivative"
-            ),
+            "validatedNativeDerivative": value["validate"].get("validatedNativeDerivative"),
         }
     )
     return resumed

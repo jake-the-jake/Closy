@@ -17,7 +17,7 @@ EXCLUDED_FROM_CANONICAL_INVENTORY = {
     "reports/package_validation.json",
     "reports/summary.json",
     "reports/summary.md",
-    "zeroone/static-d0/",
+    "zeroone/",
     MARKER_NAME,
 }
 

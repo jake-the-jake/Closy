@@ -116,14 +116,11 @@ def main() -> int:
             "passedCaseCount": sum(row["status"] == "pass" for row in rows),
             "failedCaseCount": sum(row["status"] != "pass" for row in rows),
             "processingSurfacePassCount": sum(
-                row.get("processingSurfaceStatus")
-                in {"pass", "passed_before_package_validation"}
+                row.get("processingSurfaceStatus") in {"pass", "passed_before_package_validation"}
                 for row in rows
             ),
             "failureClassCounts": {
-                failure_class: sum(
-                    row.get("failureClass") == failure_class for row in rows
-                )
+                failure_class: sum(row.get("failureClass") == failure_class for row in rows)
                 for failure_class in sorted(
                     {
                         str(row["failureClass"])
@@ -138,12 +135,8 @@ def main() -> int:
             "canonicalAuthorityUnknownCount": sum(
                 row.get("canonicalAuthorityPreserved") is None for row in rows
             ),
-            "fallbackLossCount": sum(
-                row.get("fallbackPreserved") is False for row in rows
-            ),
-            "fallbackUnknownCount": sum(
-                row.get("fallbackPreserved") is None for row in rows
-            ),
+            "fallbackLossCount": sum(row.get("fallbackPreserved") is False for row in rows),
+            "fallbackUnknownCount": sum(row.get("fallbackPreserved") is None for row in rows),
             "priorCollapseReplayChecks": replay_checks,
             "cases": rows,
             "status": "pass" if passed else "partial",

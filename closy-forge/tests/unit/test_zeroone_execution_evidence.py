@@ -24,6 +24,8 @@ FAMILIES = {
     "jacket_outerwear",
     "layered_asymmetric",
 }
+
+
 def test_committed_zeroone_evidence_proves_all_family_execution_truth() -> None:
     evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
 
