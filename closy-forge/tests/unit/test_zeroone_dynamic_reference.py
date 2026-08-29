@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import math
 import subprocess
 from pathlib import Path
 
 import pytest
 
+from closy_forge.geometry.glb_io import read_glb_meshset
 from closy_forge.package_io.canonical_json import write_canonical_json
 from closy_forge.package_io.hashing import sha256_file
 from closy_forge.package_io.managed_output import create_managed_staging
@@ -27,6 +29,7 @@ from closy_forge.zeroone.dynamic_oracle import (
     decode_metadata,
     decode_u64,
     decode_vectors,
+    recompute_frames,
 )
 from closy_forge.zeroone.dynamic_request import (
     DYNAMIC_PROFILE,
@@ -87,6 +90,12 @@ def test_package_request_maps_every_expanded_render_vertex(tmp_path: Path) -> No
     timestamps = decode_u64(document.sections[TIMESTAMPS])
     frames = decode_vectors(document.sections[FRAME_SIMULATION_POSITIONS], 3, 3)
     bindings = decode_bindings(document.sections[BINDINGS])
+    expected_frames = recompute_frames(document)[3]
+    static_positions = [
+        position
+        for mesh in read_glb_meshset(package / "render" / "fallback.glb").meshes
+        for position in mesh.vertices
+    ]
 
     assert metadata["profile"] == DYNAMIC_PROFILE
     assert len(simulation_ids) == 218
@@ -97,6 +106,13 @@ def test_package_request_maps_every_expanded_render_vertex(tmp_path: Path) -> No
     assert frames[: len(simulation_ids)] == frames[-len(simulation_ids) :]
     assert bundle.influence_inventory["missingDestinationCount"] == 0
     assert bundle.topology_inventory["triangleCount"] == 832
+    assert (
+        max(
+            math.dist(expected, static)
+            for expected, static in zip(expected_frames[0], static_positions, strict=True)
+        )
+        <= 1.0e-6
+    )
 
 
 def test_dynamic_container_rejects_checksum_corruption(tmp_path: Path) -> None:

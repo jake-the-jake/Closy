@@ -89,9 +89,22 @@
       "laneId": "PAIRED-DYNAMIC-INTEGRATION",
       "maximumRevisionsPerStrategy": 3,
       "maximumStrategies": 2,
-      "outcome": "not_run",
+      "consumption": {
+        "activeStrategy": "PAIR-D2-AUTHENTICATED-WORKFLOW-ARTIFACT",
+        "revisionsConsumed": 1,
+        "revisionsRemainingForActiveStrategy": 2,
+        "trials": [
+          {
+            "diagnostic": "E_DYNAMIC_DEGENERATE_TRIANGLE",
+            "outcome": "failed_before_publication",
+            "requestSha256": "ebe141d8032503dc9fd8055d18de47c68b329bf142f60674d93a084beefd9f32",
+            "trialId": "R1-LOAD-AND-DEFORM"
+          }
+        ]
+      },
+      "outcome": "in_progress_after_r1_authority_mismatch",
       "predeclaredThresholdProfile": "closy.dynamic_reference.z2.v1",
-      "remainingBlocker": "compiled ZeroOne B",
+      "remainingBlocker": "R2 must prove canonical-rest plus solver-delta clip is nondegenerate and independently valid",
       "stopReason": null,
       "strategyIds": [
         "PAIR-D1-LOCAL-EXACT-BUILD",

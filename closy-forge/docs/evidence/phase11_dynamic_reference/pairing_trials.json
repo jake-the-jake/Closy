@@ -1,0 +1,21 @@
+{
+  "budgetProfile": "closy.execution_budget.v3/PAIRED-DYNAMIC-INTEGRATION",
+  "pairingStrategy": "PAIR-D2-AUTHENTICATED-WORKFLOW-ARTIFACT",
+  "schemaVersion": 1,
+  "thresholdProfile": "closy.dynamic_reference.z2.v1",
+  "trials": [
+    {
+      "closySourceSha": "a066333c5f8cb237856fa552c6a205c5a788bf40",
+      "command": "closy-forge zeroone dynamic <representative-package> --clip-scale 0.02 --expected-zeroone-sha 413aecd24434f90d89ad35c6a8f909de75df34c7",
+      "diagnostic": "E_DYNAMIC_DEGENERATE_TRIANGLE",
+      "executableSha256": "e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc",
+      "outcome": "failed_before_publication",
+      "reason": "request rest used neutral solver state rather than canonical simulation mesh authority",
+      "requestSha256": "ebe141d8032503dc9fd8055d18de47c68b329bf142f60674d93a084beefd9f32",
+      "revision": "R1-LOAD-AND-DEFORM",
+      "staticDerivativeIdentitySha256": "6875d1edfde93c66e200318c06cb7d6748237eee35f5b19469a63b881a47433a",
+      "thresholdChanged": false,
+      "zeroOneSourceSha": "413aecd24434f90d89ad35c6a8f909de75df34c7"
+    }
+  ]
+}

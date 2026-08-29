@@ -87,15 +87,24 @@ def build_dynamic_request(
         render_ids=render_ids,
         simulation_ids=simulation_ids,
     )
-    simulation_rest = _state_positions(
+    simulation_rest = _manifest_positions(simulation_manifest)
+    neutral_reference = _state_positions(
         package_root / "simulation" / "motion_states" / "neutral_settled.json",
         simulation_manifest,
     )
-    target_positions = _state_positions(
+    target_reference = _state_positions(
         package_root / "simulation" / "motion_states" / "torso_twist.json",
         simulation_manifest,
     )
-    timestamps, frames = _mechanical_frames(simulation_rest, target_positions, clip_scale)
+    motion_delta = [
+        (
+            target[0] - neutral[0],
+            target[1] - neutral[1],
+            target[2] - neutral[2],
+        )
+        for neutral, target in zip(neutral_reference, target_reference, strict=True)
+    ]
+    timestamps, frames = _mechanical_frames(simulation_rest, motion_delta, clip_scale)
     binding_bytes = _binding_payload(bindings)
 
     static_identity = static_derivative_identity_hash(derivative)
@@ -187,6 +196,8 @@ def build_dynamic_request(
             "classification": "mechanical_reference",
             "physicalTruth": False,
             "sourceState": "torso_twist",
+            "restAuthority": "canonical_simulation_mesh_manifest",
+            "motionDeltaAuthority": "torso_twist_minus_neutral_settled_solver_states",
             "sourceStateHash": _object(
                 package_root / "simulation" / "motion_states" / "torso_twist.json"
             )["integrity"]["stateHash"],
@@ -365,23 +376,31 @@ def _state_positions(path: Path, simulation_manifest: dict[str, Any]) -> list[Ve
 
 
 def _mechanical_frames(
-    rest: list[Vec3], target: list[Vec3], clip_scale: float
+    rest: list[Vec3], motion_delta: list[Vec3], clip_scale: float
 ) -> tuple[list[int], list[Vec3]]:
-    if len(rest) != len(target):
+    if len(rest) != len(motion_delta):
         raise ValueError("dynamic_motion_state_topology_mismatch")
     timestamps = [index * FRAME_STEP_MICROSECONDS for index in range(FRAME_COUNT)]
     frames: list[Vec3] = []
     for frame in range(FRAME_COUNT):
         phase = math.sin(math.pi * frame / (FRAME_COUNT - 1))
-        for source, destination in zip(rest, target, strict=True):
+        for source, delta in zip(rest, motion_delta, strict=True):
             frames.append(
                 (
-                    source[0] + (destination[0] - source[0]) * clip_scale * phase,
-                    source[1] + (destination[1] - source[1]) * clip_scale * phase,
-                    source[2] + (destination[2] - source[2]) * clip_scale * phase,
+                    source[0] + delta[0] * clip_scale * phase,
+                    source[1] + delta[1] * clip_scale * phase,
+                    source[2] + delta[2] * clip_scale * phase,
                 )
             )
     return timestamps, frames
+
+
+def _manifest_positions(simulation_manifest: dict[str, Any]) -> list[Vec3]:
+    return [
+        _vec3(position)
+        for mesh in _mesh_rows(simulation_manifest)
+        for position in mesh.get("vertices", [])
+    ]
 
 
 def _stable_id(namespace: int, index: int) -> int:
