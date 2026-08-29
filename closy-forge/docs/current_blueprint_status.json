@@ -198,13 +198,12 @@
       "allFamilyAttemptCount": 9,
       "avatarProfile": "not_applicable_static_cook",
       "blockers": [
-        "long_sleeved_top_degenerate_surface",
-        "button_shirt_degenerate_surface",
-        "jacket_outerwear_degenerate_surface",
+        "original_declared_parameter_range_partial",
         "candidate_static_not_merged_to_master",
-        "paired_closy_workflow_not_durable"
+        "paired_closy_workflow_not_durable",
+        "human_visual_review_not_performed"
       ],
-      "candidateAllFamilyStatus": "fail",
+      "candidateAllFamilyStatus": "pass",
       "computeProfile": "D0",
       "currentMasterRequalified": false,
       "currentMasterSha": null,
@@ -228,14 +227,16 @@
       "gateScope": "static ZeroOne",
       "globalStatus": "partial",
       "historicalProfileStatus": "pass",
+      "originalDeclaredParameterRangeStatus": "partial",
       "phase10Status": "partial",
       "platform": [
         "windows"
       ],
-      "rejectedFamilyCount": 3,
-      "scopedStatus": "candidate_all_family_failed",
+      "rejectedFamilyCount": 0,
+      "representativeStaticStatus": "pass",
+      "scopedStatus": "candidate_default_all_family_and_representative_pass",
       "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
-      "successfulFamilyCount": 6,
+      "successfulFamilyCount": 9,
       "toolchain": [
         "MSVC 19.36 Release"
       ],
@@ -246,12 +247,11 @@
         "dynamic",
         "human_review"
       ],
-      "workflowRun": "33203908161"
+      "workflowRun": "33187775880"
     },
     "Z2": {
       "avatarProfile": "none",
       "blockers": [
-        "exact_representative_family_candidate_static_z1_pairing",
         "compiled_dynamic_execution"
       ],
       "computeProfile": "D0",
@@ -465,18 +465,18 @@
     "actualZeroOneMobileRuntimeExecuted": false,
     "actualZeroOneStaticArtifactLoaded": true,
     "actualZeroOneStaticCookExecutedThisInvocation": true,
-    "cacheValidated": false,
+    "cacheValidated": true,
     "currentRasterPhase9SourceIntegrated": false,
     "currentRasterPhase9SourcePullRequest": 26,
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
     "phase12To14SourceBranchesIntegrated": false,
     "phase8EvidenceScope": "deterministic_fixture_family_verticals",
-    "phases10To14EvidenceScope": "candidate_all_family_phase10_partial_phase11_not_run_phase12_to14_external_sources",
+    "phases10To14EvidenceScope": "candidate_default_all_family_static_pass_parameter_range_partial_phase11_not_run_phase12_to14_external_sources",
     "physicalMobileEvidenceRun": false,
     "privateUserEvidenceRun": false,
     "zeroOneStaticFamilyAttemptCount": 9,
-    "zeroOneStaticRejectedFamilyCount": 3,
-    "zeroOneStaticSuccessfulFamilyCount": 6
+    "zeroOneStaticRejectedFamilyCount": 0,
+    "zeroOneStaticSuccessfulFamilyCount": 9
   }
 }

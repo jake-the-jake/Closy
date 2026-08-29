@@ -294,26 +294,29 @@ ROW_UPDATES = {
     "BP-17-PHASE-10": {
         "status": "partial",
         "summary": (
-            "Blueprint Phase 10 now attempts all nine declared families with a durable candidate "
-            "ZeroOne executable and records six valid derivatives plus three exact rejections."
+            "Blueprint Phase 10 now records nine valid default-family derivatives and a passing "
+            "fixed T-shirt representative on the exact candidate ZeroOne executable."
         ),
         "limitations": (
-            "Phase 10 and paired Z1 remain partial/failed until the three rejected surfaces pass; "
-            "human review, mobile execution, and dynamic profiles also remain open."
+            "The original affected-family parameter range remains partial; human review, current-"
+            "master requalification, mobile execution, and dynamic profiles also remain open."
         ),
         "nextAction": (
-            "Repair and reprocess the three rejected families; do not begin Phase 11 while the "
-            "refreshed paired scoped Z1 prerequisite remains failed."
+            "Preserve the scoped static pass and begin compiled ZeroOne B without promoting the "
+            "partial original parameter range."
         ),
     },
     "BP-18-GATE-Z1": {
         "status": "partial",
-        "summary": ("Gate Z1 retains a historical local scoped pass; global Z1 remains partial."),
+        "summary": (
+            "Candidate default-family breadth and the exact representative static profile pass; "
+            "global Z1 remains partial."
+        ),
         "limitations": (
             "Current ZeroOne master, durable workflow execution, mobile, dynamic deformation, "
             "provider breadth, and human review are not established."
         ),
-        "nextAction": "Requalify current master, then regenerate paired scoped Z1 evidence.",
+        "nextAction": "Build compiled ZeroOne B while retaining current-master and range limits.",
     },
     "BP-18-GATE-C3": {
         "status": "complete",
@@ -379,12 +382,10 @@ ANCESTRY_TRUTH_UPDATES = {
     "BP-17-PHASE-11": {
         "summary": "Phase 11 remains partial with no compiled dynamic ZeroOne execution.",
         "limitations": (
-            "C3-Binding-D0 is satisfied for the fixed T-shirt profile; the remaining reference "
-            "blockers are exact representative static Z1 pairing and compiled dynamic execution."
+            "C3-Binding-D0 and Z1-D0-representative-static pass for the exact fixed T-shirt; "
+            "compiled dynamic execution remains absent."
         ),
-        "nextAction": (
-            "Qualify Z1-D0-representative-static and pair that exact asset with compiled ZeroOne B."
-        ),
+        "nextAction": "Build compiled ZeroOne B and pair the exact representative asset.",
     },
     "BP-17-PHASE-12": {
         "summary": "Phase 12 runtime preparation is external-source partial on PR #29.",
@@ -412,25 +413,23 @@ ANCESTRY_TRUTH_UPDATES = {
     },
     "BP-18-GATE-Z1": {
         "summary": (
-            "Candidate all-family Z1 attempted nine families: six accepted and three were rejected "
-            "fail-closed for degenerate settled surfaces."
+            "Candidate-static default breadth accepts all nine families, and the exact fixed "
+            "T-shirt representative profile passes with paired C3-Binding-D0."
         ),
         "limitations": (
-            "The all-family breadth profile failed, the candidate-static ZeroOne source is "
-            "unmerged, and no current-master, dynamic, mobile, or human-review claim is supported."
+            "The original affected-family parameter range remains partial, the candidate-static "
+            "ZeroOne source is unmerged, and no current-master, dynamic, mobile, or human-review "
+            "claim is supported."
         ),
         "nextAction": (
-            "Repair derivative-local processing surfaces and separately qualify representative and "
-            "all-family candidate-static profiles."
+            "Preserve the scoped static evidence while building compiled ZeroOne B; do not promote "
+            "the partial original parameter range."
         ),
     },
     "BP-18-GATE-Z2": {
         "summary": "Gate Z2 is not run; C3-Binding-D0 is no longer an unsatisfied blocker.",
-        "limitations": (
-            "Exact representative-family candidate-static Z1 pairing and compiled dynamic "
-            "execution are not yet established."
-        ),
-        "nextAction": "Run the exact representative static prerequisite, then compiled paired Z2.",
+        "limitations": "Compiled dynamic execution is not yet established.",
+        "nextAction": "Build and execute compiled ZeroOne B against the frozen representative.",
     },
 }
 
@@ -540,16 +539,16 @@ NEXT_ACTIONS = {
         "provider, private, hardware, and human-review evidence."
     ),
     "BP-17-PHASE-10": (
-        "Repair the three rejected canonical family surfaces and rerun paired scoped Z1; keep "
-        "global Phase 10 partial pending broader provider, mobile, and human-review evidence."
+        "Retain the 9/9 default-family and representative static passes while keeping the original "
+        "parameter range and global Phase 10 partial."
     ),
     "BP-17-PHASE-11": (
-        "Keep dynamic deformation blocked until refreshed paired scoped Z1 passes; C3 already "
-        "passes and PHY1 remains separately required for solver-driven physical claims."
+        "Build compiled ZeroOne B against the exact passing representative; PHY1 remains "
+        "separately required for solver-driven physical claims."
     ),
     "BP-18-GATE-C3": (
-        "Preserve the scoped five-part C3-Binding-D0 pass while repairing paired Z1 and the "
-        "stricter PHY1-SingleLayer-D0 physical campaign independently."
+        "Preserve the scoped C3 and representative Z1 passes while running the stricter "
+        "PHY1-SingleLayer-D0 physical campaign independently."
     ),
     "BP-20-RESEARCH-PROTOTYPE": (
         "Integrate corrected topology, scoped C3, trained synthetic D0 inference, and real ZeroOne "

@@ -35,7 +35,7 @@ Authority: `closy.blueprint_status_model.v3` at evidence anchor `eb5becfa385ec4a
 - C3-Binding-D0: global `partial`, scoped `pass`
 - P1: global `discovery_pending`, scoped `not_run`
 - PHY1-SingleLayer-D0: global `partial`, scoped `failed`
-- Z1: global `partial`, scoped `candidate_all_family_failed`
+- Z1: global `partial`, scoped `candidate_default_all_family_and_representative_pass`
 - Z2: global `discovery_pending`, scoped `not_run`
 - Z3: global `discovery_pending`, scoped `not_run`
 - Z4: global `discovery_pending`, scoped `not_run`

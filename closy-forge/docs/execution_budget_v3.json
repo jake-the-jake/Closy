@@ -18,15 +18,26 @@
         "ZeroOneProcess cook --request {request}"
       ],
       "evidencePaths": [
-        "closy-forge/docs/evidence/z1_surface_repair"
+        "closy-forge/docs/evidence/phase10_zeroone_static/z1_surface_repair",
+        "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json",
+        "closy-forge/docs/evidence/phase10_zeroone_static/z1_representative_evidence.json"
       ],
       "laneId": "Z1-SURFACE-REPAIR",
       "maximumStrategiesPerFamily": 3,
       "maximumTrialsPerStrategy": 4,
-      "outcome": "not_run_on_v3",
+      "consumption": {
+        "defaultFamilyRepairStatus": "pass_three_of_three",
+        "originalDeclaredParameterRangeStatus": "partial",
+        "strategiesAttempted": [
+          "Z1-S2-SEAM-AWARE-LOCAL-VERTEX-SPLIT",
+          "Z1-S3-VERSIONED-PROCESSING-PATCH"
+        ],
+        "strategiesRemaining": 1
+      },
+      "outcome": "default_repairs_and_candidate_static_breadth_pass_original_parameter_range_partial",
       "predeclaredThresholdProfile": "closy.surface_equivalence.z1.v1",
-      "remainingBlocker": "pre-fix witness reproduction and derivative-local surface repair",
-      "stopReason": null,
+      "remainingBlocker": "original declared parameter range has ten generation rejections and nine downstream package-quality rejections",
+      "stopReason": "technical_budget_exhausted_for_original_parameter_profile_without_weakening_independent_fit_or_motion_gates",
       "strategyIds": [
         "Z1-S1-LOCAL-CONFORMING-RETRIANGULATION",
         "Z1-S2-SEAM-AWARE-LOCAL-VERTEX-SPLIT",
@@ -80,7 +91,7 @@
       "maximumStrategies": 2,
       "outcome": "not_run",
       "predeclaredThresholdProfile": "closy.dynamic_reference.z2.v1",
-      "remainingBlocker": "representative static Z1 and compiled ZeroOne B",
+      "remainingBlocker": "compiled ZeroOne B",
       "stopReason": null,
       "strategyIds": [
         "PAIR-D1-LOCAL-EXACT-BUILD",

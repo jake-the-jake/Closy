@@ -109,9 +109,11 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
     "Z1": {
         "gateId": "Z1",
         "globalStatus": "partial",
-        "scopedStatus": "candidate_all_family_failed",
+        "scopedStatus": "candidate_default_all_family_and_representative_pass",
         "historicalProfileStatus": "pass",
-        "candidateAllFamilyStatus": "fail",
+        "candidateAllFamilyStatus": "pass",
+        "representativeStaticStatus": "pass",
+        "originalDeclaredParameterRangeStatus": "partial",
         "currentMasterRequalified": False,
         "phase10Status": "partial",
         "evidenceTier": "durable_candidate_binary_plus_committed_all_family_reports",
@@ -137,17 +139,16 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "executionKind": "CPU/headless/static",
         "gateScope": "static ZeroOne",
         "evidenceDurability": "durable_zeroone_build_artifact_plus_local_paired_reports",
-        "workflowRun": "33203908161",
+        "workflowRun": "33187775880",
         "allFamilyAttemptCount": 9,
-        "successfulFamilyCount": 6,
-        "rejectedFamilyCount": 3,
+        "successfulFamilyCount": 9,
+        "rejectedFamilyCount": 0,
         "unsupportedTiers": ["current_master", "GPU", "mobile", "dynamic", "human_review"],
         "blockers": [
-            "long_sleeved_top_degenerate_surface",
-            "button_shirt_degenerate_surface",
-            "jacket_outerwear_degenerate_surface",
+            "original_declared_parameter_range_partial",
             "candidate_static_not_merged_to_master",
             "paired_closy_workflow_not_durable",
+            "human_visual_review_not_performed",
         ],
     },
     "Z2": {
@@ -169,7 +170,6 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "workflowRun": None,
         "unsupportedTiers": ["mechanical_reference", "solver_driven", "GPU", "mobile"],
         "blockers": [
-            "exact_representative_family_candidate_static_z1_pairing",
             "compiled_dynamic_execution",
         ],
     },
@@ -275,14 +275,15 @@ def build_status_model(
         "truth": {
             "phase8EvidenceScope": "deterministic_fixture_family_verticals",
             "phases10To14EvidenceScope": (
-                "candidate_all_family_phase10_partial_phase11_not_run_phase12_to14_external_sources"
+                "candidate_default_all_family_static_pass_parameter_range_partial_"
+                "phase11_not_run_phase12_to14_external_sources"
             ),
             "actualZeroOneStaticCookExecutedThisInvocation": True,
             "actualZeroOneStaticArtifactLoaded": True,
             "zeroOneStaticFamilyAttemptCount": 9,
-            "zeroOneStaticSuccessfulFamilyCount": 6,
-            "zeroOneStaticRejectedFamilyCount": 3,
-            "cacheValidated": False,
+            "zeroOneStaticSuccessfulFamilyCount": 9,
+            "zeroOneStaticRejectedFamilyCount": 0,
+            "cacheValidated": True,
             "historicalZeroOneStaticCookEvidencePresent": True,
             "actualZeroOneDynamicDeformationExecuted": False,
             "actualZeroOneGpuRuntimeExecuted": False,
@@ -315,7 +316,7 @@ def validate_status_model(
         issues.append("stack_exception_set_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (
-        "candidate_all_family_failed"
+        "candidate_default_all_family_and_representative_pass"
     ):
         issues.append("zeroone_z1_scope_inflated")
     truth = model.get("truth", {})

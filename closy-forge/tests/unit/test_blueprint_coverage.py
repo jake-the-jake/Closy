@@ -140,10 +140,12 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["gates"]["C3-Binding-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["PHY1-SingleLayer-D0"]["scopedStatus"] == "failed"
     assert status["gates"]["Z1"]["globalStatus"] == "partial"
-    assert status["gates"]["Z1"]["scopedStatus"] == "candidate_all_family_failed"
+    assert status["gates"]["Z1"]["scopedStatus"] == (
+        "candidate_default_all_family_and_representative_pass"
+    )
     assert status["gates"]["Z1"]["allFamilyAttemptCount"] == 9
-    assert status["gates"]["Z1"]["successfulFamilyCount"] == 6
-    assert status["gates"]["Z1"]["rejectedFamilyCount"] == 3
+    assert status["gates"]["Z1"]["successfulFamilyCount"] == 9
+    assert status["gates"]["Z1"]["rejectedFamilyCount"] == 0
     assert status["gates"]["Z1"]["currentMasterRequalified"] is False
     assert status["gates"]["P1"]["scopedStatus"] == "not_run"
     assert {status["gates"][f"Z{index}"]["scopedStatus"] for index in range(2, 9)} == {"not_run"}
@@ -161,9 +163,9 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "actualZeroOneStaticCookExecutedThisInvocation": True,
         "actualZeroOneStaticArtifactLoaded": True,
         "zeroOneStaticFamilyAttemptCount": 9,
-        "zeroOneStaticSuccessfulFamilyCount": 6,
-        "zeroOneStaticRejectedFamilyCount": 3,
-        "cacheValidated": False,
+        "zeroOneStaticSuccessfulFamilyCount": 9,
+        "zeroOneStaticRejectedFamilyCount": 0,
+        "cacheValidated": True,
         "historicalZeroOneStaticCookEvidencePresent": True,
         "actualZeroOneDynamicDeformationExecuted": False,
         "actualZeroOneGpuRuntimeExecuted": False,
@@ -171,7 +173,8 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "humanReviewRun": False,
         "phase8EvidenceScope": "deterministic_fixture_family_verticals",
         "phases10To14EvidenceScope": (
-            "candidate_all_family_phase10_partial_phase11_not_run_phase12_to14_external_sources"
+            "candidate_default_all_family_static_pass_parameter_range_partial_"
+            "phase11_not_run_phase12_to14_external_sources"
         ),
         "physicalMobileEvidenceRun": False,
         "privateUserEvidenceRun": False,
