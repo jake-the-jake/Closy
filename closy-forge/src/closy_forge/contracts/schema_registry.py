@@ -3952,8 +3952,8 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                 "canonicalInventoryDigest": _sha256(),
                 "files": {
                     "type": "array",
-                    "minItems": 12,
-                    "maxItems": 12,
+                    "minItems": 13,
+                    "maxItems": 13,
                     "items": {
                         "oneOf": [
                             _zeroone_namespace_entry(*entry)
@@ -3987,6 +3987,12 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                                     "provenance",
                                     "application/json",
                                     "closy_publication",
+                                ),
+                                (
+                                    "derivative/derivative.json",
+                                    "derivative_identity",
+                                    "application/json",
+                                    "zeroone_static_output",
                                 ),
                                 (
                                     "derivative/artifact.geomesh",

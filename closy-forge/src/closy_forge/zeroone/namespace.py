@@ -43,6 +43,12 @@ PAYLOAD_SPECS = (
     NamespaceFileSpec("compatibility.json", "compatibility", "application/json", "closy_contract"),
     NamespaceFileSpec("provenance.json", "provenance", "application/json", "closy_publication"),
     NamespaceFileSpec(
+        "derivative/derivative.json",
+        "derivative_identity",
+        "application/json",
+        "zeroone_static_output",
+    ),
+    NamespaceFileSpec(
         "derivative/artifact.geomesh",
         "geometry_artifact",
         "application/vnd.zeroone.geomesh",
