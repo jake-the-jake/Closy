@@ -119,7 +119,10 @@ from closy_forge.visual_understanding import (
     hash_multiview_fusion_record,
     hash_visual_observations,
 )
-from closy_forge.zeroone.validation import inspect_zeroone_namespace
+from closy_forge.zeroone.validation import (
+    inspect_zeroone_dynamic_namespace,
+    inspect_zeroone_namespace,
+)
 
 EXPECTED_FILES = [
     "manifest.json",
@@ -12236,6 +12239,9 @@ def _issue(
 
 
 def _with_zeroone_validation(package_dir: Path, report: dict[str, Any]) -> dict[str, Any]:
+    from closy_forge.zeroone.dynamic_processing_surface import (
+        inspect_dynamic_processing_surface,
+    )
     from closy_forge.zeroone.processing_surface import inspect_processing_surface
 
     processing = inspect_processing_surface(package_dir)
@@ -12256,10 +12262,52 @@ def _with_zeroone_validation(package_dir: Path, report: dict[str, Any]) -> dict[
             ).to_json()
         )
         return result
+    dynamic_processing = inspect_dynamic_processing_surface(package_dir)
+    if dynamic_processing.get("status") == "invalid":
+        result = {
+            "schemaVersion": report.get("schemaVersion", 1),
+            "status": "failed",
+            "counts": dict(report.get("counts", {})),
+            "issues": list(report.get("issues", [])),
+        }
+        result["counts"]["fatal"] = int(result["counts"].get("fatal", 0)) + 1
+        result["issues"].append(
+            _issue(
+                "zeroone_dynamic_processing_surface_corrupt",
+                "fatal",
+                "zeroone/input-z2-v1",
+                str(
+                    dynamic_processing.get("reason", "dynamic processing surface validation failed")
+                ),
+            ).to_json()
+        )
+        return result
     audit = inspect_zeroone_namespace(package_dir)
     status = audit.get("status")
-    if status in {"not_present", "derivative_valid"}:
+    if status not in {"not_present", "derivative_valid"}:
+        return _zeroone_validation_failure(
+            report,
+            status=status,
+            path="zeroone/static-d0",
+            reason=str(audit.get("reason", "optional ZeroOne derivative validation failed")),
+        )
+    dynamic_audit = inspect_zeroone_dynamic_namespace(package_dir)
+    dynamic_status = dynamic_audit.get("status")
+    if dynamic_status in {"not_present", "derivative_valid"}:
         return report
+    return _zeroone_validation_failure(
+        report,
+        status=dynamic_status,
+        path="zeroone/dynamic-d0-reference",
+        reason=str(
+            dynamic_audit.get("reason", "optional ZeroOne dynamic derivative validation failed")
+        ),
+    )
+
+
+def _zeroone_validation_failure(
+    report: dict[str, Any], *, status: Any, path: str, reason: str
+) -> dict[str, Any]:
     result = {
         "schemaVersion": report.get("schemaVersion", 1),
         "status": "failed",
@@ -12273,8 +12321,8 @@ def _with_zeroone_validation(package_dir: Path, report: dict[str, Any]) -> dict[
             if status == "derivative_incompatible"
             else "zeroone_derivative_corrupt",
             "fatal",
-            "zeroone/static-d0",
-            str(audit.get("reason", "optional ZeroOne derivative validation failed")),
+            path,
+            reason,
         ).to_json()
     )
     return result

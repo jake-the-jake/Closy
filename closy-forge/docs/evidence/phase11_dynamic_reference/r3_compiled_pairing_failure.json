@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "profile": "closy.dynamic_reference.z2.v1",
+  "revision": "R3-DYNAMIC-SAFE-PROCESSING-SURFACE",
+  "closySourceSha": "8d9b67d9a462534327ccd964712f70f0d8daa7a7",
+  "zeroOneSourceSha": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+  "executableSha256": "e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc",
+  "requestSha256": "926bb20398db795d2d9a66a39e80e2c9987e6782050b7a45436d4f69a571a33c",
+  "dynamicOutputSha256": "097f1f9c2621870dd460b0a5bc4374cf6212a59e5b282da00a207133864f5847",
+  "staticDerivative": {
+    "canonicalDerivativeHash": "6ab3479074f521ae782d04aff6a4cc97f8df40bafa85fffbc38c3c51a9104577",
+    "identitySha256": "36ef2183bcd367bbe19d7779ef20fb7bdf68a1050978e496c6bc64a6939a8328",
+    "processingVertexCount": 2448,
+    "processingTriangleCount": 816,
+    "removedSubthresholdSliverCount": 16,
+    "minimumProcessingTriangleAreaMeters2": 2.809010662410958e-05,
+    "canonicalPackageDigest": "c1ad76661ff0642a58343f8d9639c3aa0bb3d084f9bb38d6bff2a9dd429b807a",
+    "canonicalAuthorityPreserved": true,
+    "fallbackPreserved": true
+  },
+  "processor": {
+    "compiledDeformationExecuted": true,
+    "frameCount": 13,
+    "renderVertexCount": 2448,
+    "triangleCount": 816,
+    "singleLodOnly": true,
+    "maximumPositionErrorMeters": 0.0,
+    "restIdentityMaximumErrorMeters": 0.0,
+    "boundsPassed": true,
+    "cullingFalseNegativeCount": 0,
+    "deformationMedianMilliseconds": 0.145,
+    "deformationP95Milliseconds": 0.2229,
+    "frameThroughputPerSecond": 6553.4102938952465,
+    "peakMemoryBytes": 15175680
+  },
+  "independentOracle": {
+    "passed": false,
+    "inputSensitive": true,
+    "maximumPositionErrorMeters": 0.0,
+    "p95PositionErrorMeters": 0.0,
+    "restIdentityMaximumErrorMeters": 0.0,
+    "maximumNormalAngleDegrees": 0.0003648870162012147,
+    "maximumTangentAngleDegrees": 0.0002506328715490629,
+    "minimumSweptTriangleDoubleArea": 5.516801958569897e-05,
+    "trueTemporalInversionCount": 0,
+    "denseSelfIntersectionCountByFrame": [971, 931, 930, 931, 929, 933, 933, 933, 929, 931, 930, 931, 971],
+    "simulationSelfIntersectionCountByFrame": [971, 931, 930, 931, 929, 933, 933, 933, 929, 931, 930, 931, 971],
+    "canonicalAdjacencyDiagnostic": {
+      "restTotal": 971,
+      "restCanonicalAdjacent": 0,
+      "restNonAdjacent": 971,
+      "midClipTotal": 933,
+      "midClipCanonicalAdjacent": 0,
+      "midClipNonAdjacent": 933
+    }
+  },
+  "publication": {
+    "dynamicNamespacePublished": false,
+    "scopedZ2Passed": false,
+    "globalZ2Passed": false,
+    "phase11Complete": false
+  },
+  "thresholdChanged": false,
+  "oracleChanged": false,
+  "stopReason": "PAIR-D2 exhausted after three revisions; the representative canonical garment must be made non-self-intersecting before paired Z2 can be retried"
+}

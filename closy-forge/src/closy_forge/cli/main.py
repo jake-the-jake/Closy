@@ -53,7 +53,9 @@ from closy_forge.visual_understanding import (
     build_multiview_fusion_record,
     build_tshirt_visual_observations,
 )
+from closy_forge.zeroone.dynamic_integration import integrate_zeroone_dynamic
 from closy_forge.zeroone.integration import integrate_zeroone_static
+from closy_forge.zeroone.tool import PINNED_ZEROONE_SOURCE_SHA
 
 EXIT_SUCCESS = 0
 EXIT_ARGUMENT_ERROR = 2
@@ -412,11 +414,32 @@ def _parser() -> argparse.ArgumentParser:
     zeroone_static.add_argument("--executable", type=Path, default=None)
     zeroone_static.add_argument("--trusted-build-record", type=Path, default=None)
     zeroone_static.add_argument("--expected-executable-sha256", default=None)
+    zeroone_static.add_argument("--expected-zeroone-sha", default=PINNED_ZEROONE_SOURCE_SHA)
     zeroone_static.add_argument("--closy-sha", required=True)
     zeroone_static.add_argument("--no-publish", action="store_true")
     zeroone_static.add_argument("--replace-existing", action="store_true")
+    zeroone_static.add_argument(
+        "--dynamic-compatible-surface",
+        action="store_true",
+        help="Prepare and cook the declared Z2 dynamic-safe derivative input surface.",
+    )
     zeroone_static.add_argument("--json", action="store_true")
     zeroone_static.set_defaults(handler=_integrate_zeroone_static)
+    zeroone_dynamic = zeroone_sub.add_parser(
+        "dynamic", help="Run the paired compiled ZeroOne D0 dynamic reference profile."
+    )
+    zeroone_dynamic.add_argument("package", type=Path)
+    zeroone_dynamic.add_argument("--invocation-root", required=True, type=Path)
+    zeroone_dynamic.add_argument("--executable", type=Path, default=None)
+    zeroone_dynamic.add_argument("--trusted-build-record", type=Path, default=None)
+    zeroone_dynamic.add_argument("--expected-executable-sha256", default=None)
+    zeroone_dynamic.add_argument("--expected-zeroone-sha", required=True)
+    zeroone_dynamic.add_argument("--closy-sha", required=True)
+    zeroone_dynamic.add_argument("--clip-scale", type=float, default=0.02)
+    zeroone_dynamic.add_argument("--no-publish", action="store_true")
+    zeroone_dynamic.add_argument("--replace-existing", action="store_true")
+    zeroone_dynamic.add_argument("--json", action="store_true")
+    zeroone_dynamic.set_defaults(handler=_integrate_zeroone_dynamic)
 
     benchmark = subparsers.add_parser("benchmark", help="Write non-canonical host evidence.")
     benchmark_sub = benchmark.add_subparsers(dest="benchmark_command")
@@ -821,8 +844,10 @@ def _integrate_zeroone_static(args: argparse.Namespace) -> int:
         executable=args.executable,
         trusted_build_record=args.trusted_build_record,
         expected_executable_sha256=args.expected_executable_sha256,
+        expected_zeroone_sha=args.expected_zeroone_sha,
         publish=not args.no_publish,
         replace_existing=args.replace_existing,
+        dynamic_compatible_surface=args.dynamic_compatible_surface,
     )
     payload = result.to_json()
     if args.json:
@@ -830,6 +855,31 @@ def _integrate_zeroone_static(args: argparse.Namespace) -> int:
     else:
         print(json.dumps(payload, indent=2, sort_keys=True))
     if result.status == "valid":
+        return EXIT_SUCCESS
+    if result.status == "unavailable":
+        return EXIT_EXTERNAL_TOOL_UNAVAILABLE
+    return EXIT_VALIDATION_FAILURE
+
+
+def _integrate_zeroone_dynamic(args: argparse.Namespace) -> int:
+    result = integrate_zeroone_dynamic(
+        package=args.package,
+        invocation_root=args.invocation_root,
+        closy_sha=args.closy_sha,
+        executable=args.executable,
+        trusted_build_record=args.trusted_build_record,
+        expected_executable_sha256=args.expected_executable_sha256,
+        expected_zeroone_sha=args.expected_zeroone_sha,
+        publish=not args.no_publish,
+        replace_existing=args.replace_existing,
+        clip_scale=args.clip_scale,
+    )
+    payload = result.to_json()
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    if result.status == "executed":
         return EXIT_SUCCESS
     if result.status == "unavailable":
         return EXIT_EXTERNAL_TOOL_UNAVAILABLE

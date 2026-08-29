@@ -30,6 +30,13 @@ class NamespaceFileSpec:
     required: bool = True
 
 
+STATIC_IDENTITY_SPEC = NamespaceFileSpec(
+    "derivative/derivative.json",
+    "derivative_identity",
+    "application/json",
+    "zeroone_static_output",
+)
+
 PAYLOAD_SPECS = (
     NamespaceFileSpec(
         "request.json", "request", "application/json", "closy_canonical_authority_request"
@@ -42,6 +49,7 @@ PAYLOAD_SPECS = (
     ),
     NamespaceFileSpec("compatibility.json", "compatibility", "application/json", "closy_contract"),
     NamespaceFileSpec("provenance.json", "provenance", "application/json", "closy_publication"),
+    STATIC_IDENTITY_SPEC,
     NamespaceFileSpec(
         "derivative/artifact.geomesh",
         "geometry_artifact",
@@ -82,7 +90,8 @@ PAYLOAD_SPECS = (
         "zeroone_static_output",
     ),
 )
-DERIVATIVE_SPECS = PAYLOAD_SPECS[5:]
+DERIVATIVE_SPECS = PAYLOAD_SPECS[6:]
+COPIED_DERIVATIVE_SPECS = (STATIC_IDENTITY_SPEC, *DERIVATIVE_SPECS)
 EXPECTED_PATHS = frozenset(spec.path for spec in PAYLOAD_SPECS)
 EXPECTED_ROLES = frozenset(spec.role for spec in PAYLOAD_SPECS)
 FORBIDDEN_SUFFIXES = frozenset(
@@ -197,7 +206,7 @@ def validate_namespace_manifest(root: Path) -> dict[str, Any]:
 
 
 def copy_verified_derivative(source: Path, destination: Path) -> None:
-    for spec in DERIVATIVE_SPECS:
+    for spec in COPIED_DERIVATIVE_SPECS:
         source_relative = spec.path.removeprefix("derivative/")
         data = read_verified_regular_file(source, source_relative, maximum_bytes=MAX_FILE_BYTES)
         target = destination / spec.path

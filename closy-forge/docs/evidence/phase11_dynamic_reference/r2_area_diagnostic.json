@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "profile": "closy.dynamic_reference.z2.v1",
+  "revision": "R2-CANONICAL-REST-AND-SOLVER-DELTA",
+  "processorTriangleAreaFloorMeters2": 5e-09,
+  "staticProcessingSurface": {
+    "triangleCount": 832,
+    "subFloorTriangleCount": 16,
+    "minimumDoubleAreaMeters2": 2.5984282449302196e-10
+  },
+  "canonicalBindingReconstruction": {
+    "frameCount": 13,
+    "subFloorTriangleCountPerFrame": 208,
+    "maximumRestPositionErrorMeters": 9.065936150877146e-08,
+    "minimumDoubleAreaMeters2AtClipScale0": 8.364307271769351e-10,
+    "minimumDoubleAreaMeters2AtClipScale0_02": 3.367595017704226e-10
+  },
+  "conclusion": "frame zero is already below the compiled processor floor; clip-scale reduction cannot change the outcome",
+  "thresholdChanged": false,
+  "oracleChanged": false
+}

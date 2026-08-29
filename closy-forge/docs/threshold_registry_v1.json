@@ -23,7 +23,7 @@
         "p95PositionErrorMeters": 0.0000005,
         "requiredRestFrameCount": 1
       },
-      "oracleVersionHash": "30fa757a28a5343bbfabd173fd98bdeba3fdb9490766c1b42d6af17c598aa764",
+      "oracleVersionHash": "97ebe08e54688a02c31373a4ea0419c0f779ae9730c478809516ab620f91f273",
       "rationale": "caps are above float canonicalisation noise but below the fixed D0 render/binding inspection sensitivity",
       "units": "meters_degrees_counts"
     },

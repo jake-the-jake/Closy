@@ -32,6 +32,17 @@ def _valid_staging(tmp_path: Path) -> Path:
     return staging
 
 
+def test_static_namespace_carries_dynamic_identity_document(tmp_path: Path) -> None:
+    staging = _valid_staging(tmp_path)
+    manifest = validate_namespace_manifest(staging)
+
+    assert (staging / "derivative" / "derivative.json").is_file()
+    assert any(
+        row["path"] == "derivative/derivative.json" and row["role"] == "derivative_identity"
+        for row in manifest["files"]
+    )
+
+
 @pytest.mark.parametrize(
     "relative",
     ("unexpected.json", "derivative/tool.exe", "derivative/source.jpg", "derivative/raw.log"),

@@ -3952,8 +3952,8 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                 "canonicalInventoryDigest": _sha256(),
                 "files": {
                     "type": "array",
-                    "minItems": 12,
-                    "maxItems": 12,
+                    "minItems": 13,
+                    "maxItems": 13,
                     "items": {
                         "oneOf": [
                             _zeroone_namespace_entry(*entry)
@@ -3987,6 +3987,12 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                                     "provenance",
                                     "application/json",
                                     "closy_publication",
+                                ),
+                                (
+                                    "derivative/derivative.json",
+                                    "derivative_identity",
+                                    "application/json",
+                                    "zeroone_static_output",
                                 ),
                                 (
                                     "derivative/artifact.geomesh",
@@ -4042,6 +4048,106 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                 "canonicalInventoryDigest",
                 "files",
             ],
+        ),
+        "zeroone-dynamic-namespace-manifest.schema.json": _schema(
+            "Closy ZeroOne dynamic namespace manifest v1",
+            {
+                "schemaVersion": {"const": 1},
+                "manifestVersion": {"const": "closy.zeroone.dynamic-namespace-manifest.v1"},
+                "profile": {"const": "closy-dynamic-d0-single-lod-reference-v1"},
+                "inventoryDigest": _sha256(),
+                "files": {
+                    "type": "array",
+                    "minItems": 13,
+                    "maxItems": 13,
+                    "items": {
+                        "oneOf": [
+                            _zeroone_dynamic_namespace_entry(*entry)
+                            for entry in (
+                                (
+                                    "capability.json",
+                                    "capability",
+                                    "application/json",
+                                    "closy_scoped_acceptance",
+                                ),
+                                (
+                                    "request_summary.json",
+                                    "request_summary",
+                                    "application/json",
+                                    "sanitized_zeroone_request",
+                                ),
+                                (
+                                    "dynamic_report.json",
+                                    "dynamic_report",
+                                    "application/json",
+                                    "zeroone_process",
+                                ),
+                                (
+                                    "clip_inventory.json",
+                                    "clip_inventory",
+                                    "application/json",
+                                    "closy_mechanical_clip",
+                                ),
+                                (
+                                    "influence_lineage.json",
+                                    "influence_lineage",
+                                    "application/json",
+                                    "canonical_binding_projection",
+                                ),
+                                (
+                                    "bounds.json",
+                                    "bounds_audit",
+                                    "application/json",
+                                    "forge_independent_oracle",
+                                ),
+                                (
+                                    "normal_tangent.json",
+                                    "normal_tangent_audit",
+                                    "application/json",
+                                    "forge_independent_oracle",
+                                ),
+                                (
+                                    "oracle_report.json",
+                                    "oracle_report",
+                                    "application/json",
+                                    "forge_independent_oracle",
+                                ),
+                                (
+                                    "execution.json",
+                                    "execution",
+                                    "application/json",
+                                    "closy_paired_execution",
+                                ),
+                                (
+                                    "derivative/derivative.z1dyn",
+                                    "dynamic_derivative",
+                                    "application/vnd.zeroone.dynamic-derivative",
+                                    "zeroone_dynamic_output",
+                                ),
+                                (
+                                    "output_hashes.json",
+                                    "output_hashes",
+                                    "application/json",
+                                    "closy_integrity",
+                                ),
+                                (
+                                    "provenance.json",
+                                    "provenance",
+                                    "application/json",
+                                    "closy_publication",
+                                ),
+                                (
+                                    "limitations.json",
+                                    "limitations",
+                                    "application/json",
+                                    "closy_claim_boundary",
+                                ),
+                            )
+                        ]
+                    },
+                },
+            },
+            ["schemaVersion", "manifestVersion", "profile", "inventoryDigest", "files"],
         ),
         "zeroone-trusted-build-record.schema.json": _schema(
             "Closy ZeroOne trusted build record v1",
@@ -4174,6 +4280,41 @@ def _zeroone_integration_schemas() -> dict[str, dict[str, Any]]:
                 "report",
             ],
         ),
+        "zeroone-dynamic-integration-result.schema.json": _schema(
+            "Closy ZeroOne dynamic integration result v1",
+            {
+                "schemaVersion": {"const": 1},
+                "contractVersion": {"const": "closy.zeroone.dynamic-integration-result.v1"},
+                "status": {
+                    "enum": ["unavailable", "request_invalid", "process_failed", "executed"]
+                },
+                "reason": {"type": "string", "minLength": 1},
+                "actualZeroOneDynamicDeformationExecuted": {"type": "boolean"},
+                "deterministicDeleteRebuild": {"type": "boolean"},
+                "inputSensitivityRun": {"type": "boolean"},
+                "independentForgeOraclePassed": {"type": "boolean"},
+                "fallbackPreserved": {"type": "boolean"},
+                "canonicalAuthorityPreserved": {"type": "boolean"},
+                "packagedDerivative": {"type": ["string", "null"]},
+                "tool": {"type": "object"},
+                "report": {"type": "object"},
+            },
+            [
+                "schemaVersion",
+                "contractVersion",
+                "status",
+                "reason",
+                "actualZeroOneDynamicDeformationExecuted",
+                "deterministicDeleteRebuild",
+                "inputSensitivityRun",
+                "independentForgeOraclePassed",
+                "fallbackPreserved",
+                "canonicalAuthorityPreserved",
+                "packagedDerivative",
+                "tool",
+                "report",
+            ],
+        ),
     }
 
 
@@ -4200,6 +4341,14 @@ def _zeroone_namespace_entry(
             "required",
         ],
     )
+
+
+def _zeroone_dynamic_namespace_entry(
+    path: str, role: str, media_type: str, source_relationship: str
+) -> dict[str, Any]:
+    entry = _zeroone_namespace_entry(path, role, media_type, source_relationship)
+    entry["properties"]["size"]["maximum"] = 536_870_912
+    return entry
 
 
 def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
