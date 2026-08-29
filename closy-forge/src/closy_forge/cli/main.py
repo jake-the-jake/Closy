@@ -55,6 +55,7 @@ from closy_forge.visual_understanding import (
 )
 from closy_forge.zeroone.dynamic_integration import integrate_zeroone_dynamic
 from closy_forge.zeroone.integration import integrate_zeroone_static
+from closy_forge.zeroone.tool import PINNED_ZEROONE_SOURCE_SHA
 
 EXIT_SUCCESS = 0
 EXIT_ARGUMENT_ERROR = 2
@@ -413,6 +414,7 @@ def _parser() -> argparse.ArgumentParser:
     zeroone_static.add_argument("--executable", type=Path, default=None)
     zeroone_static.add_argument("--trusted-build-record", type=Path, default=None)
     zeroone_static.add_argument("--expected-executable-sha256", default=None)
+    zeroone_static.add_argument("--expected-zeroone-sha", default=PINNED_ZEROONE_SOURCE_SHA)
     zeroone_static.add_argument("--closy-sha", required=True)
     zeroone_static.add_argument("--no-publish", action="store_true")
     zeroone_static.add_argument("--replace-existing", action="store_true")
@@ -837,6 +839,7 @@ def _integrate_zeroone_static(args: argparse.Namespace) -> int:
         executable=args.executable,
         trusted_build_record=args.trusted_build_record,
         expected_executable_sha256=args.expected_executable_sha256,
+        expected_zeroone_sha=args.expected_zeroone_sha,
         publish=not args.no_publish,
         replace_existing=args.replace_existing,
     )
