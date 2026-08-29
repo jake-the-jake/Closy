@@ -1,0 +1,45 @@
+name: Closy Forge Phase 9 Raster Canonical
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/closy-forge-phase9-raster.yml"
+      - "closy-forge/src/closy_forge/pattern_inference/**"
+      - "closy-forge/src/closy_forge/bounded_models/**"
+      - "closy-forge/scripts/generate_phase9_structured_v2_evidence.py"
+      - "closy-forge/docs/phase9_structured_threshold_registry_v2.json"
+      - "closy-forge/docs/evidence/phase9_structured_v2/**"
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 3"
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-raster-evidence:
+    name: Canonical raster-derived synthetic D0 CPU
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      # actions/checkout v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      # actions/setup-python v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install version-constrained Forge dev environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Regenerate and compare structured Phase 9 and advisory Phase 14 evidence
+        run: |
+          python scripts/generate_phase9_structured_v2_evidence.py \
+            --output docs/evidence/phase9_structured_v2 \
+            --check
