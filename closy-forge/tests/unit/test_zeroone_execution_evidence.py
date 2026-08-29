@@ -24,9 +24,6 @@ FAMILIES = {
     "jacket_outerwear",
     "layered_asymmetric",
 }
-REJECTED_FAMILIES = {"long_sleeved_top", "button_shirt", "jacket_outerwear"}
-
-
 def test_committed_zeroone_evidence_proves_all_family_execution_truth() -> None:
     evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
 
@@ -38,7 +35,7 @@ def test_committed_zeroone_evidence_proves_all_family_execution_truth() -> None:
         "executionProfile": "CPU",
         "gateScope": "static ZeroOne",
     }
-    assert evidence["closy"]["gitSha"] == "16a23d7244a3c0e920056eaf60d21d35d77a427c"
+    assert evidence["closy"]["gitSha"] == "9d7026b7b98c0122c36f8a1c5aa48a1b4a196dd5"
     assert evidence["closy"]["contentDirty"] is False
     assert evidence["zeroOne"]["gitSha"] == "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
     assert evidence["zeroOne"]["sourceClassification"] == ("unmerged_candidate_static_pr_head")
@@ -55,7 +52,7 @@ def test_committed_zeroone_evidence_proves_all_family_execution_truth() -> None:
 
     rows = {row["family"]: row for row in evidence["garments"]}
     assert set(rows) == FAMILIES
-    for family, row in rows.items():
+    for row in rows.values():
         integration = row["integration"]
         assert SHA256_RE.fullmatch(row["canonicalPackageDigest"])
         assert integration["contractVersion"] == "closy.zeroone.integration-result.v2"
@@ -66,26 +63,23 @@ def test_committed_zeroone_evidence_proves_all_family_execution_truth() -> None:
         assert integration["actualZeroOneMobileRuntimeExecuted"] is False
         assert row["familyInventory"]["semanticBoundaryPreservation"] is True
         assert SHA256_RE.fullmatch(row["familyInventory"]["topologyHash"])
-        if family in REJECTED_FAMILIES:
-            _assert_rejected_family(row)
-        else:
-            _assert_valid_family(row)
+        _assert_valid_family(row)
 
     acceptance = evidence["acceptance"]
     assert acceptance["allPredeclaredFamiliesExecuted"] is True
     assert acceptance["allCanonicalAuthoritiesPreserved"] is True
     assert acceptance["allFallbacksPreserved"] is True
-    assert acceptance["actualZeroOneStaticCookExecutedThisInvocation"] is False
-    assert acceptance["actualZeroOneStaticArtifactLoaded"] is False
-    assert acceptance["cacheValidated"] is False
-    assert acceptance["allDerivativesDeterministic"] is False
-    assert acceptance["allNamespacesValid"] is False
-    assert acceptance["allIndependentDerivativeInspectionsPassed"] is False
-    assert acceptance["allDeleteAndRebuildProofsPassed"] is False
-    assert acceptance["scopedCandidateBranchGateZ1Passed"] is False
+    assert acceptance["actualZeroOneStaticCookExecutedThisInvocation"] is True
+    assert acceptance["actualZeroOneStaticArtifactLoaded"] is True
+    assert acceptance["cacheValidated"] is True
+    assert acceptance["allDerivativesDeterministic"] is True
+    assert acceptance["allNamespacesValid"] is True
+    assert acceptance["allIndependentDerivativeInspectionsPassed"] is True
+    assert acceptance["allDeleteAndRebuildProofsPassed"] is True
+    assert acceptance["scopedCandidateBranchGateZ1Passed"] is True
     assert acceptance["currentMasterGateZ1Passed"] is False
     assert acceptance["globalPhase10Complete"] is False
-    assert evidence["evidenceClassification"]["scopedCandidateStaticPass"] is False
+    assert evidence["evidenceClassification"]["scopedCandidateStaticPass"] is True
 
 
 def _assert_valid_family(row: dict[str, Any]) -> None:
@@ -99,6 +93,12 @@ def _assert_valid_family(row: dict[str, Any]) -> None:
     assert report["canonicalPackageBytesUnchanged"] is True
     assert report["cleanRunA"]["cacheState"] == "miss"
     assert report["cacheHitRun"]["cacheState"] == "hit"
+    assert report["resumeRun"]["interruptionDiagnostic"] == (
+        "E_INJECTED_INTERRUPTION_BEFORE_PUBLICATION"
+    )
+    assert report["resumeRun"]["resumeState"] == "matched"
+    assert report["resumeRun"]["validatedNativeDerivative"] is True
+    assert report["resumeRun"]["canonicalDerivativeHash"] == report["canonicalDerivativeHash"]
     assert report["cleanRunB"]["cacheState"] == "miss"
     assert row["namespaceAudit"]["status"] == "derivative_valid"
     assert row["independentDerivativeInspection"]["status"] == "pass"
@@ -106,25 +106,3 @@ def _assert_valid_family(row: dict[str, Any]) -> None:
     assert rebuild["executed"] is True
     assert rebuild["passed"] is True
     assert rebuild["canonicalDerivativeHashBefore"] == rebuild["canonicalDerivativeHashAfter"]
-
-
-def _assert_rejected_family(row: dict[str, Any]) -> None:
-    integration = row["integration"]
-    report = integration["report"]
-    process_report = report["report"]
-    assert integration["status"] == "process_failed"
-    assert integration["reason"] == "process_failed"
-    assert integration["actualZeroOneStaticCookExecutedThisInvocation"] is False
-    assert integration["actualZeroOneStaticArtifactLoaded"] is False
-    assert integration["deterministicDerivative"] is False
-    assert report["stage"] == "cook"
-    assert process_report["diagnostic"] == (
-        "E_SURFACE_BUILD:invalid_surface_topology:surface triangle is degenerate"
-    )
-    assert row["namespaceAudit"]["status"] == "not_present"
-    assert row["independentDerivativeInspection"]["status"] == "not_run"
-    assert row["deleteAndRebuild"] == {
-        "executed": False,
-        "passed": False,
-        "reason": "zeroone_static_derivative_not_produced",
-    }
