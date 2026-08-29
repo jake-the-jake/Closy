@@ -3,14 +3,14 @@
     "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
     "counts": {
       "complete": 21,
-      "discovery_pending": 13,
+      "discovery_pending": 11,
       "not_started": 8,
-      "partial": 59
+      "partial": 61
     },
-    "coverageVersion": "closy.blueprint_coverage.z1_z2_structured_ai.v4",
+    "coverageVersion": "closy.blueprint_coverage.z1_z2_structured_ai.v5",
     "total": 101
   },
-  "evidenceAnchorSha": "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
+  "evidenceAnchorSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -109,7 +109,7 @@
         "windows"
       ],
       "scopedStatus": "pass",
-      "sourceSha": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+      "sourceSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
       "toolchain": [
         "CPython 3.11"
       ],
@@ -121,7 +121,7 @@
         "mobile",
         "private_user"
       ],
-      "workflowRun": null
+      "workflowRun": "33264403890"
     },
     "P1": {
       "avatarProfile": "none",
@@ -156,12 +156,16 @@
     "PHY1-SingleLayer-D0": {
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
-        "timestamped_states_passed_0_of_11",
+        "qualified_timestamped_states_passed_0_of_11",
         "unresolved_contacts_9",
         "residual_depth_0.001878992_exceeds_0.000160000",
-        "minimum_body_clearance_negative_0.009084014",
+        "simulation_surface_clearance_not_run",
+        "stitched_surface_clearance_negative_0.009084014",
         "maximum_seam_crack_0.109609688",
-        "rest_referenced_inversions_or_degeneracies_68"
+        "maximum_tangential_seam_slip_0.028009643",
+        "qualified_temporal_degenerate_frame_triangles_198",
+        "qualified_swept_degenerate_transitions_191",
+        "qualified_true_inversions_15"
       ],
       "computeProfile": "D0",
       "dataProvenance": "project-authored synthetic",
@@ -179,7 +183,7 @@
         "windows"
       ],
       "scopedStatus": "failed",
-      "sourceSha": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+      "sourceSha": "d393b7185d14fe414a1eb3c4ef040c6c1ad8f780",
       "toolchain": [
         "CPython 3.11"
       ],
@@ -204,6 +208,7 @@
         "human_visual_review_not_performed"
       ],
       "candidateAllFamilyStatus": "pass",
+      "closySourceSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
       "computeProfile": "D0",
       "currentMasterRequalified": false,
       "currentMasterSha": null,
@@ -247,34 +252,65 @@
         "dynamic",
         "human_review"
       ],
-      "workflowRun": "33187775880"
+      "workflowRun": "33264403890"
     },
     "Z2": {
-      "avatarProfile": "none",
+      "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
-        "compiled_dynamic_execution"
+        "compiled_output_fails_nonadjacent_dense_self_intersection_oracle",
+        "pairing_revision_budget_exhausted"
       ],
       "computeProfile": "D0",
+      "cullingFalseNegativeCount": 0,
       "dataProvenance": "project-authored synthetic",
-      "evidenceDurability": "none",
-      "evidenceTier": "none",
-      "executableSha": null,
-      "executionKind": "not_run",
-      "garmentFamilies": [],
+      "evidenceDurability": "committed_pairing_reports_plus_exact_head_ci",
+      "evidenceTier": "committed_compiled_failure_witnesses_plus_exact_head_ci",
+      "executableSha": "e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc",
+      "executionKind": "compiled CPU/headless/dynamic/single-LOD reference",
+      "frameCount": 13,
+      "garmentFamilies": [
+        "tshirt"
+      ],
       "gateId": "Z2",
       "gateScope": "dynamic ZeroOne",
-      "globalStatus": "discovery_pending",
-      "platform": [],
-      "scopedStatus": "not_run",
-      "sourceSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
-      "toolchain": [],
+      "globalStatus": "partial",
+      "maximumPositionErrorMeters": 0.0,
+      "maximumRestErrorMeters": 0.0,
+      "minimumSweptTriangleDoubleArea": 5.516801958569897e-05,
+      "nonAdjacentSelfIntersectionsByFrame": [
+        971,
+        931,
+        930,
+        931,
+        929,
+        933,
+        933,
+        933,
+        929,
+        931,
+        930,
+        931,
+        971
+      ],
+      "platform": [
+        "windows"
+      ],
+      "scopedStatus": "failed_compiled_single_lod_reference_pairing",
+      "sourceSha": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "toolchain": [
+        "MSVC Release",
+        "CPython 3.11"
+      ],
       "unsupportedTiers": [
-        "mechanical_reference",
+        "accepted_dynamic_namespace",
+        "multi_LOD",
         "solver_driven",
         "GPU",
         "mobile"
       ],
-      "workflowRun": null
+      "workflowRun": "33270987449",
+      "zeroOneSourceSha": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+      "zeroOneWorkflowRun": "33262736792"
     },
     "Z3": {
       "avatarProfile": "none",
@@ -448,31 +484,36 @@
   "stack": {
     "acyclic": true,
     "businessPatchMappingsComplete": true,
-    "crossRepositoryNodeCount": 33,
+    "crossRepositoryNodeCount": 37,
     "exactHeadForgeExceptions": [
       10
     ],
     "exactMergeBases": true,
-    "latestPullRequest": 32,
-    "pullRequestCount": 32,
+    "latestPullRequest": 35,
+    "pullRequestCount": 35,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v3",
+  "statusModelVersion": "closy.blueprint_status_model.v4",
   "truth": {
     "actualPhase9TrainingExecuted": true,
-    "actualZeroOneDynamicDeformationExecuted": false,
+    "actualZeroOneDynamicDeformationExecuted": true,
+    "actualZeroOneDynamicPairingAccepted": false,
     "actualZeroOneGpuRuntimeExecuted": false,
     "actualZeroOneMobileRuntimeExecuted": false,
     "actualZeroOneStaticArtifactLoaded": true,
     "actualZeroOneStaticCookExecutedThisInvocation": true,
     "cacheValidated": true,
-    "currentRasterPhase9SourceIntegrated": false,
+    "currentRasterPhase9SourceIntegrated": true,
     "currentRasterPhase9SourcePullRequest": 26,
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
-    "phase12To14SourceBranchesIntegrated": false,
+    "phase12SourceIntegrated": false,
+    "phase13SourceIntegrated": false,
+    "phase14SourceIntegrated": true,
     "phase8EvidenceScope": "deterministic_fixture_family_verticals",
-    "phases10To14EvidenceScope": "candidate_default_all_family_static_pass_parameter_range_partial_phase11_not_run_phase12_to14_external_sources",
+    "phase9E1Status": "partial_experimental",
+    "phase9E2Status": "executed_feasibility_partial",
+    "phases10To14EvidenceScope": "default_all_family_static_pass_parameter_range_partial_compiled_phase11_pairing_failed_phase12_13_external_phase14_integrated_advisory",
     "physicalMobileEvidenceRun": false,
     "privateUserEvidenceRun": false,
     "zeroOneStaticFamilyAttemptCount": 9,

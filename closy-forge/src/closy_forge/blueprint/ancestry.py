@@ -10,19 +10,17 @@ ANCESTRY_CLASSES = {
     "not_present",
 }
 CURRENT_REPOSITORY = "jake-the-jake/Closy"
-CURRENT_AUTHORITY_PR = 28
-CURRENT_AUTHORITY_SHA = "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72"
+CURRENT_AUTHORITY_PR = 35
+CURRENT_AUTHORITY_SHA = "461436c22f8c5cd1948e0f6906961d0c512dcc34"
 
 _EXTERNAL_ROW_SOURCES: dict[str, tuple[int, str, str]] = {
-    "BP-08-H-PATTERN-INFERENCE": (
-        26,
-        "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
-        "current raster-trained Phase 9 implementation is a sibling source PR and is not in PR #28",
-    ),
-    "BP-17-PHASE-09": (
-        26,
-        "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
-        "53/64 held-out top-1 source experiment is external until replayed on Closy E",
+    "BP-09-Z2": (
+        34,
+        "960662d237e187cd8ecbcc9ebe9192367f194317",
+        (
+            "compiled pairing executed on PR #34 but failed the independent dense "
+            "self-intersection oracle"
+        ),
     ),
     "BP-17-PHASE-12": (
         29,
@@ -34,16 +32,16 @@ _EXTERNAL_ROW_SOURCES: dict[str, tuple[int, str, str]] = {
         "1cf7ecff18bd0bbd37820638c0af2029d7a928ac",
         "synthetic avatar fit is a source-only sibling until replayed on Closy D",
     ),
-    "BP-17-PHASE-14": (
-        31,
-        "f0a3e3c9b7b1486ebbe736cfb16084299880ce2d",
-        "bounded advisory models are a source-only sibling until replayed on Closy E",
-    ),
     "BP-08-S-LAYERING-ANIMATION": (
         32,
         "386effb254d4ba15499399dfd7fd94c70a0e0fc5",
         "LayerCollision-D0 is an external radial-shell source and is not canonical "
         "garment-surface layering",
+    ),
+    "BP-18-GATE-Z2": (
+        34,
+        "960662d237e187cd8ecbcc9ebe9192367f194317",
+        "Z2 is an external executed failure source and was not integrated into Closy E",
     ),
 }
 
@@ -151,7 +149,7 @@ def validate_ancestry_metadata(coverage: dict[str, Any]) -> list[str]:
                 issues.append(f"coverage_in_tree_not_incorporated:{row_id}")
         elif row["incorporated"] is True:
             issues.append(f"coverage_external_marked_incorporated:{row_id}")
-        if ancestry_class == "external_source_pr" and row["sourcePr"] not in {26, 29, 30, 31, 32}:
+        if ancestry_class == "external_source_pr" and row["sourcePr"] not in {29, 30, 32, 34}:
             issues.append(f"coverage_external_source_unrecognised:{row_id}")
         if ancestry_class == "not_present" and row["sourceSha"] is not None:
             issues.append(f"coverage_absent_has_source_sha:{row_id}")

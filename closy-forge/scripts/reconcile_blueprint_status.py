@@ -11,9 +11,9 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42"
-VERSION = "closy.blueprint_coverage.z1_z2_structured_ai.v4"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.z1_z2.v1"
+EVIDENCE_ANCHOR = "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+VERSION = "closy.blueprint_coverage.z1_z2_structured_ai.v5"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.z1_z2.v2"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -43,6 +43,11 @@ PR23_FINAL_JOB_IDS = {
     "Tests shard-3 ubuntu-latest Python 3.11": "98781061564",
     "Cross-platform and cross-minor digest consistency": "98782039797",
     "Forge required": "98784926669",
+}
+
+FAILED_RUN_JOB_COUNTS = {
+    "33203903630": {"successfulJobCount": 21, "failedJobCount": 3, "cancelledJobCount": 2},
+    "33275306155": {"successfulJobCount": 24, "failedJobCount": 2, "cancelledJobCount": 0},
 }
 
 PR_SNAPSHOTS = [
@@ -163,6 +168,45 @@ PR_SNAPSHOTS = [
         "SUCCESS",
         "external_source",
     ),
+    (
+        33,
+        "Repair Z1 garment processing surfaces",
+        "codex/closy-forge-z1-surface-topology-repair-v3",
+        "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+        "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+        "531689b1d542dd9aeeec29a975e7136ee986c582",
+        12,
+        43,
+        "33264403890",
+        "SUCCESS",
+        "frozen_integration_base",
+    ),
+    (
+        34,
+        "Integrate and audit compiled ZeroOne deformation",
+        "codex/closy-forge-phase11-zeroone-dynamic-reference-v1",
+        "codex/closy-forge-z1-surface-topology-repair-v3",
+        "531689b1d542dd9aeeec29a975e7136ee986c582",
+        "960662d237e187cd8ecbcc9ebe9192367f194317",
+        11,
+        26,
+        "33270987449",
+        "SUCCESS",
+        "failed_dynamic_pairing_source",
+    ),
+    (
+        35,
+        "Evaluate bounded structured garment models",
+        "codex/closy-forge-learned-structured-garment-v2",
+        "codex/closy-forge-z1-surface-topology-repair-v3",
+        "531689b1d542dd9aeeec29a975e7136ee986c582",
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        14,
+        66,
+        "33275306155",
+        "FAILURE",
+        "candidate_structured_integration",
+    ),
 ]
 
 PR25_REPLAY_MAPPINGS = [
@@ -185,6 +229,9 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/execution_budget_v3.json",
     "closy-forge/docs/threshold_registry_v1.json",
     "closy-forge/docs/evidence/phase11_prerequisite_reconciliation_v2.json",
+    "closy-forge/docs/evidence/phase9_structured_v2/execution_summary.json",
+    "closy-forge/docs/evidence/phase9_structured_v2/source_replay_map.json",
+    "closy-forge/docs/evidence/phy1_progression_v3/sanitised_failure_witness.json",
 ]
 
 PHASE10_PATHS = [
@@ -433,6 +480,219 @@ ANCESTRY_TRUTH_UPDATES = {
     },
 }
 
+CURRENT_PROGRESSION_UPDATES = {
+    "BP-08-H-PATTERN-INFERENCE": {
+        "status": "partial",
+        "summary": (
+            "Phase 9 E1 is integrated and evaluated without hidden labels; the learned route "
+            "remains experimental because the equal-input nearest-centroid baseline wins."
+        ),
+        "limitations": (
+            "Held-out top-1 is 0.5625, calibration error is 0.211536831, accepted 3D execution "
+            "is 0.8, and the learned-minus-baseline lower confidence bound is -0.46875."
+        ),
+        "nextAction": (
+            "Keep the deterministic baseline selected and collect independent authorised "
+            "evidence before considering a different learned configuration."
+        ),
+    },
+    "BP-08-Q-MATERIAL-INFERENCE": {
+        "status": "partial",
+        "summary": (
+            "Phase 14 material ranking is integrated and reevaluated as a validator-subordinate "
+            "bounded advisory model on the current source tree."
+        ),
+        "limitations": (
+            "The 18-case project-authored fixture evaluation is not real-fabric, provider, "
+            "private-user, GPU, mobile, or production evidence."
+        ),
+    },
+    "BP-09-Z2": {
+        "status": "partial",
+        "summary": (
+            "Compiled ZeroOne deformation executed for 13 frames on the fixed T-shirt, but the "
+            "pairing failed and no dynamic namespace was admitted."
+        ),
+        "limitations": (
+            "The independent oracle found 929 to 971 nonadjacent dense self-intersections per "
+            "frame; multi-LOD, GPU, mobile, and solver-driven physical profiles were not run."
+        ),
+        "nextAction": (
+            "Repair the processing/reference surface correspondence before another bounded "
+            "pairing strategy; do not promote the compiled-output hash alone."
+        ),
+    },
+    "BP-17-PHASE-09": {
+        "status": "partial",
+        "summary": (
+            "Phase 9 source is replayed once on PR #35; E1 is partial and E2 is an executed "
+            "typed-program feasibility partial."
+        ),
+        "limitations": (
+            "Neither learned route beats its strongest equal-input deterministic baseline, and "
+            "no private-user, human-review, or global generalisation claim is supported."
+        ),
+        "nextAction": (
+            "Retain both learned routes as experimental and broaden only with authorised, "
+            "identity-disjoint evidence and precommitted comparisons."
+        ),
+    },
+    "BP-17-PHASE-11": {
+        "status": "partial",
+        "summary": (
+            "Phase 11 now has real compiled ZeroOne dynamic execution and an authentic paired "
+            "failure witness, but Z2 did not pass."
+        ),
+        "limitations": (
+            "The 13-frame single-LOD output passes position, frame, culling, and swept-area "
+            "checks but fails the nonadjacent dense self-intersection oracle."
+        ),
+        "nextAction": (
+            "Start a new pairing strategy only after the processing/reference surface mismatch "
+            "is repaired; preserve the failed namespace admission."
+        ),
+    },
+    "BP-17-PHASE-14": {
+        "status": "partial",
+        "summary": (
+            "Phase 14 business source is replayed once and its bounded advisory models are "
+            "reevaluated on PR #35's current source tree."
+        ),
+        "limitations": (
+            "Material top-1 is 10/18 and the advisory models remain deterministic-validator "
+            "subordinates; no authorised large-model, real-fabric, or production run occurred."
+        ),
+        "nextAction": (
+            "Obtain authorised data, checkpoint, licence, hardware, privacy, and deployment "
+            "governance before any larger model experiment."
+        ),
+    },
+    "BP-18-GATE-Z2": {
+        "status": "partial",
+        "summary": (
+            "Gate Z2 was executed with compiled ZeroOne B for a single-LOD mechanical reference "
+            "profile and failed the independent self-intersection criterion."
+        ),
+        "limitations": (
+            "A valid dynamic namespace was not produced; solver-driven physics, multi-LOD, GPU, "
+            "mobile, private-user, and production claims remain unsupported."
+        ),
+        "nextAction": "Repair the pairing surface before attempting the remaining strategy.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "The research prototype now includes frozen 9/9 default-family static evidence, "
+            "compiled dynamic failure evidence, integrated Phase 9 E1/E2, and Phase 14 advisory "
+            "reevaluation."
+        ),
+        "limitations": (
+            "Z2 and PHY1 fail, Phase 12/13 remain external, and Alpha, Beta, Production, human, "
+            "private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven."
+        ),
+    },
+}
+
+CURRENT_EVIDENCE_ADDITIONS = {
+    "BP-08-H-PATTERN-INFERENCE": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/pattern_inference/raster_evaluation_v4.py",
+            "closy-forge/src/closy_forge/pattern_inference/reference_3d_v1.py",
+            "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v1.py",
+        ],
+        "executableEvidence": [
+            (
+                "E1 executes hidden-label-safe accepted predictions through independent 3D "
+                "assembly, binding, and rendering"
+            ),
+            (
+                "E2 trains a bounded typed structural decoder over 128/32/48 "
+                "identity-disjoint programs"
+            ),
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_raster_phase9_corrective_v4.py",
+            "closy-forge/tests/unit/test_structured_decoder_v1.py",
+        ],
+    },
+    "BP-08-Q-MATERIAL-INFERENCE": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v2.py"
+        ],
+        "executableEvidence": [
+            "current-tree Phase 14 evaluation records 10/18 material top-1 and 32/32 OOD decisions"
+        ],
+        "tests": ["closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py"],
+    },
+    "BP-09-Z2": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/zeroone/dynamic_integration.py",
+            "closy-forge/src/closy_forge/zeroone/dynamic_oracle.py",
+        ],
+        "executableEvidence": [
+            "compiled output hash 097f1f9c2621870dd460b0a5bc4374cf6212a59e5b282da00a207133864f5847",
+            (
+                "independent dense oracle rejects every frame with 929 to 971 nonadjacent "
+                "self-intersections"
+            ),
+        ],
+        "tests": ["closy-forge/tests/unit/test_zeroone_dynamic_reference.py"],
+    },
+    "BP-17-PHASE-09": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/pattern_inference/raster_execution_v4.py",
+            "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v1.py",
+            "closy-forge/docs/evidence/phase9_structured_v2/execution_summary.json",
+        ],
+        "executableEvidence": [
+            "E1 learned route remains experimental after equal-input baseline comparison",
+            "E2 accepts and compiles 24/48 held-out typed programs without repair",
+        ],
+        "tests": ["closy-forge/tests/unit/test_phase9_structured_v2_evidence.py"],
+    },
+    "BP-17-PHASE-11": {
+        "implementationPaths": [
+            "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json"
+        ],
+        "executableEvidence": [
+            (
+                "13 compiled frames have zero position/rest error and zero culling false "
+                "negatives but fail dense self-intersection"
+            )
+        ],
+        "tests": ["closy-forge/tests/unit/test_zeroone_dynamic_reference.py"],
+    },
+    "BP-17-PHASE-14": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v2.py",
+            "closy-forge/docs/evidence/phase9_structured_v2/phase14_integrated_evaluation.json",
+        ],
+        "executableEvidence": [
+            (
+                "Phase 14 reevaluation reports material regret 0.002497041219 and failure "
+                "macro-F1 0.704125286478"
+            )
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_phase14_bounded_models.py",
+            "closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py",
+        ],
+    },
+    "BP-18-GATE-Z2": {
+        "implementationPaths": [
+            "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json"
+        ],
+        "executableEvidence": [
+            (
+                "authenticated ZeroOne workflow artifact "
+                "e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc "
+                "executed and failed admission"
+            )
+        ],
+        "tests": ["closy-forge/tests/unit/test_zeroone_dynamic_reference.py"],
+    },
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -580,6 +840,9 @@ def main() -> int:
         ancestry_update = ANCESTRY_TRUTH_UPDATES.get(row_id)
         if ancestry_update:
             row.update(ancestry_update)
+        current_update = CURRENT_PROGRESSION_UPDATES.get(row_id)
+        if current_update:
+            row.update(current_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -589,9 +852,14 @@ def main() -> int:
             )
             row["tests"] = _append_unique(row.get("tests"), PHASE10_TESTS)
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
-        if row_id in NEXT_ACTIONS:
+        current_evidence = CURRENT_EVIDENCE_ADDITIONS.get(row_id)
+        if current_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), current_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        if row_id in NEXT_ACTIONS and row_id not in CURRENT_PROGRESSION_UPDATES:
             row["nextAction"] = NEXT_ACTIONS[row_id]
-        if row_id.startswith("BP-09-Z") and row_id != "BP-09-Z1":
+        if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
             stage = row_id.removeprefix("BP-09-")
             row["status"] = "discovery_pending"
             row["summary"] = f"ZeroOne stage {stage} is not implemented or executed."
@@ -716,6 +984,32 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
             _workflow("Viewport UI Corrective CPU Validation", "33187776003", "SUCCESS", 1),
         ],
     }
+    zeroone_dynamic_row: dict[str, object] = {
+        "repository": "jake-the-jake/ZeroOne",
+        "number": 3,
+        "url": "https://github.com/jake-the-jake/ZeroOne/pull/3",
+        "title": "Add compiled Closy dynamic reference processor",
+        "branch": "codex/closy-zeroone-dynamic-reference-v1",
+        "baseBranch": "master",
+        "baseSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+        "sourceParentSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
+        "headSha": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+        "mergeBase": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+        "layerAhead": 12,
+        "layerBehind": 0,
+        "layerCommitCount": 12,
+        "changedFileCount": 23,
+        "draft": True,
+        "state": "OPEN",
+        "mergeability": "MERGEABLE",
+        "directParentMergeBaseVerified": True,
+        "knownException": None,
+        "role": "compiled_dynamic_source",
+        "latestExactHeadWorkflows": [
+            _workflow("Closy Static Processor", "33262736792", "SUCCESS", 2),
+            _workflow("Viewport UI Corrective CPU Validation", "33262736795", "SUCCESS", 1),
+        ],
+    }
     rows.sort(key=lambda row: _as_int(row["number"]))
     parent_by_pr = {
         **{number: number - 1 for number in range(2, 25)},
@@ -727,6 +1021,9 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         30: 28,
         31: 28,
         32: 28,
+        33: 28,
+        34: 33,
+        35: 33,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
@@ -747,9 +1044,18 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
                     "github:jake-the-jake/ZeroOne:pr/2",
                 ]
             )
+        if pr_number == 34:
+            dependency_ids.append("github:jake-the-jake/ZeroOne:pr/3")
+        if pr_number == 35:
+            dependency_ids.extend(
+                [
+                    "github:jake-the-jake/Closy:pr/26",
+                    "github:jake-the-jake/Closy:pr/31",
+                ]
+            )
         for dependency_id in dependency_ids:
             edges.append({"from": dependency_id, "to": node_id, "kind": "dependency"})
-        source_only = pr_number in {25, 26, 29, 30, 31, 32}
+        source_only = pr_number in {25, 26, 29, 30, 31, 32, 34}
         superseded = pr_number == 25
         workflows = _normalise_workflows(row.get("latestExactHeadForgeRun"))
         mappings = []
@@ -763,6 +1069,45 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
                 }
                 for source, destination in PR25_REPLAY_MAPPINGS
             ]
+        if pr_number == 35:
+            mappings = [
+                {
+                    "sourceNode": "github:jake-the-jake/Closy:pr/26",
+                    "sourceCommit": source,
+                    "destinationCommit": destination,
+                    "disposition": "replayed",
+                }
+                for source, destination in (
+                    (
+                        "12cdfd60e841bf33903f6e75b102d9d48f69501c",
+                        "b90d795125671778ed27075492bad0cd57cdafaf",
+                    ),
+                    (
+                        "644da7468d890a2a8600f7fa141ee3298f00bad8",
+                        "b2621ea7e5644d743e5a8a5717e40b8f8ba3bd7d",
+                    ),
+                    (
+                        "fdcdfb22c02c796b97ee6406bbd76025a645822f",
+                        "7b2176a6a8fb22ef8a1b960656b36061f1356aa9",
+                    ),
+                    (
+                        "86f8175769191ef6231cbafd04b72c4a23bd4720",
+                        "5c9abbbf953407810a3efccebebcef7cf3b2bb5c",
+                    ),
+                    (
+                        "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
+                        "dba7f57e2484780a4de9a2d13617d2c368be433e",
+                    ),
+                )
+            ]
+            mappings.append(
+                {
+                    "sourceNode": "github:jake-the-jake/Closy:pr/31",
+                    "sourceCommit": "f99ab295677556a0df37af25c7a1b8541a648ad3",
+                    "destinationCommit": "0f7e10c98a75e15a061aa00e538e8b0a4526c68d",
+                    "disposition": "replayed",
+                }
+            )
         nodes.append(
             {
                 "id": node_id,
@@ -818,11 +1163,42 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
             "latestExactHeadWorkflows": zeroone_row["latestExactHeadWorkflows"],
         }
     )
+    zeroone_dynamic_id = "github:jake-the-jake/ZeroOne:pr/3"
+    edges.append({"from": zeroone_id, "to": zeroone_dynamic_id, "kind": "dependency"})
+    nodes.append(
+        {
+            "id": zeroone_dynamic_id,
+            "repository": zeroone_dynamic_row["repository"],
+            "pullRequest": zeroone_dynamic_row["number"],
+            "capabilityRole": "compiled_dynamic_source",
+            "branch": zeroone_dynamic_row["branch"],
+            "baseRef": zeroone_dynamic_row["baseBranch"],
+            "baseSha": zeroone_dynamic_row["baseSha"],
+            "mergeBase": zeroone_dynamic_row["mergeBase"],
+            "ahead": zeroone_dynamic_row["layerAhead"],
+            "behind": zeroone_dynamic_row["layerBehind"],
+            "changedFileCount": zeroone_dynamic_row["changedFileCount"],
+            "state": zeroone_dynamic_row["state"],
+            "role": zeroone_dynamic_row["role"],
+            "headSha": zeroone_dynamic_row["headSha"],
+            "parentIds": [],
+            "dependencyIds": [zeroone_id],
+            "uniqueCommitRange": (
+                f"{zeroone_dynamic_row['baseSha']}..{zeroone_dynamic_row['headSha']}"
+            ),
+            "integrationMappings": [],
+            "sourceOnly": False,
+            "superseded": False,
+            "mergeEligible": True,
+            "neverMergeWith": [],
+            "latestExactHeadWorkflows": zeroone_dynamic_row["latestExactHeadWorkflows"],
+        }
+    )
     stack["schemaVersion"] = 3
     stack["graphVersion"] = "closy.cross_repository_pr_dag.v3"
     stack["topology"] = "explicit_dag"
     stack["pullRequests"] = rows
-    stack["externalPullRequests"] = [zeroone_row]
+    stack["externalPullRequests"] = [zeroone_row, zeroone_dynamic_row]
     stack["nodes"] = nodes
     stack["edges"] = edges
     stack.pop("sequentialMergeOrder", None)
@@ -896,7 +1272,7 @@ def _closy_run(run_id: str, conclusion: str) -> dict[str, object]:
     if conclusion == "SUCCESS":
         result["successfulJobCount"] = 26
     else:
-        result.update({"successfulJobCount": 21, "failedJobCount": 3, "cancelledJobCount": 2})
+        result.update(FAILED_RUN_JOB_COUNTS[run_id])
     return result
 
 

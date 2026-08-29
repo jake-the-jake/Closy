@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.z1_z2_structured_ai.v4"
+    assert coverage["version"] == "closy.blueprint_coverage.z1_z2_structured_ai.v5"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -73,7 +73,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     assert coverage["integratedImplementationRowCount"] == sum(
         row["ancestryClass"] == "in_tree" for row in rows
     )
-    assert coverage["externalSourceRowCount"] == 6
+    assert coverage["externalSourceRowCount"] == 5
 
 
 def test_coverage_in_tree_ancestry_is_real_and_external_sources_are_not_counted() -> None:
@@ -92,13 +92,16 @@ def test_coverage_in_tree_ancestry_is_real_and_external_sources_are_not_counted(
             assert row["incorporated"] is False
             assert row["incorporationCommit"] is None
     phase9 = next(row for row in coverage["rows"] if row["id"] == "BP-17-PHASE-09")
-    assert phase9["sourcePr"] == 26
-    assert phase9["ancestryClass"] == "external_source_pr"
-    assert "53/64" in phase9["summary"]
-    for phase, source_pr in (("12", 29), ("13", 30), ("14", 31)):
+    assert phase9["sourcePr"] == 35
+    assert phase9["ancestryClass"] == "in_tree"
+    assert "E2" in phase9["summary"]
+    for phase, source_pr in (("12", 29), ("13", 30)):
         row = next(row for row in coverage["rows"] if row["id"] == f"BP-17-PHASE-{phase}")
         assert row["sourcePr"] == source_pr
         assert row["incorporated"] is False
+    phase14 = next(row for row in coverage["rows"] if row["id"] == "BP-17-PHASE-14")
+    assert phase14["sourcePr"] == 35
+    assert phase14["incorporated"] is True
 
 
 def test_coverage_commit_references_resolve_without_asserting_specific_shas() -> None:
@@ -147,8 +150,9 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["gates"]["Z1"]["successfulFamilyCount"] == 9
     assert status["gates"]["Z1"]["rejectedFamilyCount"] == 0
     assert status["gates"]["Z1"]["currentMasterRequalified"] is False
+    assert status["gates"]["Z2"]["scopedStatus"] == ("failed_compiled_single_lod_reference_pairing")
     assert status["gates"]["P1"]["scopedStatus"] == "not_run"
-    assert {status["gates"][f"Z{index}"]["scopedStatus"] for index in range(2, 9)} == {"not_run"}
+    assert {status["gates"][f"Z{index}"]["scopedStatus"] for index in range(3, 9)} == {"not_run"}
     assert status["maturity"] == {
         "ALPHA": "not_started",
         "BETA": "not_started",
@@ -157,9 +161,13 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     }
     assert status["truth"] == {
         "actualPhase9TrainingExecuted": True,
-        "currentRasterPhase9SourceIntegrated": False,
+        "currentRasterPhase9SourceIntegrated": True,
         "currentRasterPhase9SourcePullRequest": 26,
-        "phase12To14SourceBranchesIntegrated": False,
+        "phase12SourceIntegrated": False,
+        "phase13SourceIntegrated": False,
+        "phase14SourceIntegrated": True,
+        "phase9E1Status": "partial_experimental",
+        "phase9E2Status": "executed_feasibility_partial",
         "actualZeroOneStaticCookExecutedThisInvocation": True,
         "actualZeroOneStaticArtifactLoaded": True,
         "zeroOneStaticFamilyAttemptCount": 9,
@@ -167,14 +175,15 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "zeroOneStaticRejectedFamilyCount": 0,
         "cacheValidated": True,
         "historicalZeroOneStaticCookEvidencePresent": True,
-        "actualZeroOneDynamicDeformationExecuted": False,
+        "actualZeroOneDynamicDeformationExecuted": True,
+        "actualZeroOneDynamicPairingAccepted": False,
         "actualZeroOneGpuRuntimeExecuted": False,
         "actualZeroOneMobileRuntimeExecuted": False,
         "humanReviewRun": False,
         "phase8EvidenceScope": "deterministic_fixture_family_verticals",
         "phases10To14EvidenceScope": (
-            "candidate_default_all_family_static_pass_parameter_range_partial_"
-            "phase11_not_run_phase12_to14_external_sources"
+            "default_all_family_static_pass_parameter_range_partial_compiled_phase11_"
+            "pairing_failed_phase12_13_external_phase14_integrated_advisory"
         ),
         "physicalMobileEvidenceRun": False,
         "privateUserEvidenceRun": False,
@@ -189,10 +198,11 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 33))
-    assert len(nodes) == 33
+    assert numbers == list(range(1, 36))
+    assert len(nodes) == 37
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
+    assert stack["externalPullRequests"][1]["number"] == 3
     assert "sequentialMergeOrder" not in stack
     topological_position = {
         node_id: index for index, node_id in enumerate(stack["topologicalOrder"])
@@ -224,7 +234,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             run = row["latestExactHeadForgeRun"]
             assert run["exactHead"] is True
             assert run["runId"]
-            if row["number"] == 25:
+            if row["number"] in {25, 35}:
                 assert run["conclusion"] == "FAILURE"
             elif "conclusion" in run:
                 assert run["conclusion"] == "SUCCESS"
@@ -248,13 +258,18 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     )
     assert len(by_id["github:jake-the-jake/Closy:pr/28"]["integrationMappings"]) == 8
     assert by_id["github:jake-the-jake/Closy:pr/25"]["superseded"] is True
-    for number in (26, 29, 30, 31, 32):
+    for number in (26, 29, 30, 31, 32, 34):
         node = by_id[f"github:jake-the-jake/Closy:pr/{number}"]
         assert node["sourceOnly"] is True
         assert node["mergeEligible"] is False
     assert by_id["github:jake-the-jake/ZeroOne:pr/2"]["headSha"] == (
         "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
     )
+    assert by_id["github:jake-the-jake/ZeroOne:pr/3"]["headSha"] == (
+        "413aecd24434f90d89ad35c6a8f909de75df34c7"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/34"]["sourceOnly"] is True
+    assert len(by_id["github:jake-the-jake/Closy:pr/35"]["integrationMappings"]) == 6
 
 
 def test_execution_budgets_and_precommitted_thresholds_are_complete() -> None:
@@ -269,11 +284,30 @@ def test_execution_budgets_and_precommitted_thresholds_are_complete() -> None:
     )
 
 
+def test_phy1_sanitised_failure_witness_is_exact_and_not_promoted() -> None:
+    witness = _json("evidence/phy1_progression_v3/sanitised_failure_witness.json")
+
+    assert witness["source"]["headSha"] == "d393b7185d14fe414a1eb3c4ef040c6c1ad8f780"
+    assert witness["source"]["fullTemporalOracleSha256"] == (
+        "f86f819a32a41213a78050d7d81eda6af3b4c1ffb3bd3fa9541796082422f80c"
+    )
+    assert witness["measured"]["physicalStatePassCount"] == 0
+    assert witness["measured"]["qualifiedTemporalCounts"] == {
+        "degenerateFrameTriangles": 198,
+        "nonfiniteFrameTriangles": 0,
+        "sweptDegenerateTransitions": 191,
+        "trueInversions": 15,
+    }
+    assert witness["acceptance"]["status"] == "failed"
+    assert witness["acceptance"]["globalPhy1Complete"] is False
+    assert witness["source"]["dedicatedPullRequestPublished"] is False
+
+
 def test_generated_reports_use_source_tree_hash_not_self_referential_commit() -> None:
     coverage = _json("blueprint_coverage.json")
     provenance = coverage["generatedBy"]
 
-    assert provenance["generatorVersion"] == "closy.blueprint_reconciliation.z1_z2.v1"
+    assert provenance["generatorVersion"] == "closy.blueprint_reconciliation.z1_z2.v2"
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
     assert provenance["finalHeadAttestationLocation"] == (
@@ -287,7 +321,7 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
 
     assert summary == render_status_summary(status)
     assert "C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile" in summary
-    assert "No dynamic, GPU, mobile, private-user, or human-review execution" in summary
+    assert "Compiled dynamic ZeroOne execution ran" in summary
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "evidenceVersion": "closy.phy1.sanitised_failure_witness.v1",
+  "source": {
+    "repository": "jake-the-jake/Closy",
+    "branch": "codex/closy-forge-phy1-material-oracle-v1",
+    "baseSha": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+    "headSha": "d393b7185d14fe414a1eb3c4ef040c6c1ad8f780",
+    "fullTemporalOracleSha256": "f86f819a32a41213a78050d7d81eda6af3b4c1ffb3bd3fa9541796082422f80c",
+    "dedicatedPullRequestPublished": false,
+    "publicationReason": "no_reproducible_acceptance_improvement"
+  },
+  "oracle": {
+    "version": "closy.deformation_quality.temporal_swept_area.v1",
+    "rigidRotationInvariant": true,
+    "validFoldAccepted": true,
+    "trueOrientationReversalThroughZeroAreaRejected": true,
+    "qualifiedActualTrajectoryFrameCountPerState": 8,
+    "fixedWorldRestNormalUsed": false
+  },
+  "strategyBudget": {
+    "maximumStrategies": 3,
+    "maximumTrialsPerStrategy": 4,
+    "consumed": {
+      "PHY1-S1-REST-ORACLE-AND-ASSET-CLASSIFICATION": [
+        "T1-REFERENCE"
+      ],
+      "PHY1-S2-XPBD-CONTACT-ORDERING": [
+        "T1-REFERENCE"
+      ]
+    },
+    "notExecuted": {
+      "PHY1-S3-CONSERVATIVE-CCD": "not_dependency_ready_invalid_boundary_fan_physical_topology"
+    }
+  },
+  "thresholds": {
+    "maximumResidualSelfCollisionDepthMeters": 0.00016,
+    "minimumQualifiedSurfaceBodyClearanceMeters": 0.000005,
+    "maximumSeamCrackMeters": 0.002,
+    "maximumTangentialSeamSlipMeters": 0.005,
+    "maximumDegenerateFrameTriangles": 0,
+    "maximumSweptDegenerateTransitions": 0,
+    "maximumTrueInversions": 0,
+    "requiredPhysicalStatePassCount": 11
+  },
+  "measured": {
+    "contactsBefore": 33,
+    "contactsAfter": 9,
+    "unresolvedContactCount": 9,
+    "maximumResidualSelfCollisionDepthMeters": 0.001878992,
+    "residualViolationsAboveBudget": 4,
+    "simulationSurfaceMinimumBodyClearanceMeters": null,
+    "stitchedRenderSurfaceMinimumBodyClearanceMeters": -0.009084014,
+    "maximumSeamCrackMeters": 0.109609688,
+    "maximumTangentialSeamSlipMeters": 0.028009643,
+    "physicalStateCount": 11,
+    "physicalStatePassCount": 0,
+    "qualifiedTemporalCounts": {
+      "nonfiniteFrameTriangles": 0,
+      "degenerateFrameTriangles": 198,
+      "sweptDegenerateTransitions": 191,
+      "trueInversions": 15
+    }
+  },
+  "stateWitnesses": [
+    {"stateId":"left_arm_raise","degenerateFrameTriangles":20,"sweptDegenerateTransitions":20,"trueInversions":2},
+    {"stateId":"right_arm_raise","degenerateFrameTriangles":20,"sweptDegenerateTransitions":20,"trueInversions":1},
+    {"stateId":"forward_bend","degenerateFrameTriangles":20,"sweptDegenerateTransitions":19,"trueInversions":0},
+    {"stateId":"side_bend","degenerateFrameTriangles":20,"sweptDegenerateTransitions":19,"trueInversions":1},
+    {"stateId":"torso_twist","degenerateFrameTriangles":20,"sweptDegenerateTransitions":19,"trueInversions":2},
+    {"stateId":"moderate_gust","degenerateFrameTriangles":20,"sweptDegenerateTransitions":20,"trueInversions":2},
+    {"stateId":"lightweight_material_extreme","degenerateFrameTriangles":20,"sweptDegenerateTransitions":19,"trueInversions":3},
+    {"stateId":"stiff_material_extreme","degenerateFrameTriangles":18,"sweptDegenerateTransitions":16,"trueInversions":2},
+    {"stateId":"opening_stress","degenerateFrameTriangles":20,"sweptDegenerateTransitions":20,"trueInversions":1},
+    {"stateId":"seam_stress","degenerateFrameTriangles":20,"sweptDegenerateTransitions":19,"trueInversions":1}
+  ],
+  "representativeCollapse": {
+    "triangleId": "panel.sleeve.left:triangle.4",
+    "vertexIndices": [20, 4, 5],
+    "settledDoubleAreaMeters2": 0.000000001,
+    "motionSeedDoubleAreaMeters2": 0.000000001,
+    "zeroAreaSolverSteps": [1, 2, 3, 4, 5],
+    "recoveredAtSolverStep": 6,
+    "classification": "constraint_driven_boundary_fan_collapse"
+  },
+  "acceptance": {
+    "status": "failed",
+    "globalPhy1Complete": false,
+    "failedChecks": [
+      "residualSelfCollisionDepth",
+      "simulationSurfaceClearance",
+      "stitchedRenderSurfaceClearance",
+      "seamCrack",
+      "tangentialSeamSlip",
+      "degenerateFrames",
+      "sweptDegeneracy",
+      "trueInversion",
+      "allPhysicalStates"
+    ]
+  },
+  "recoveryPrerequisite": "versioned interior-tessellated physical topology and coupled constraint convergence before integrated CCD"
+}

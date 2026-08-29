@@ -4,13 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-
-EVIDENCE_ROOT = (
-    Path(__file__).resolve().parents[2]
-    / "docs"
-    / "evidence"
-    / "phase9_structured_v2"
-)
+EVIDENCE_ROOT = Path(__file__).resolve().parents[2] / "docs" / "evidence" / "phase9_structured_v2"
 SOURCE_TREE_HASH = "0af278346b603ab9d2987de2013231a1d1929ec21d1ad66323e153c4b0f2c002"
 
 
