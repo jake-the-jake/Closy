@@ -52,7 +52,10 @@ def geometry_content_hash(meshset: MeshSet) -> str:
 def package_digest(inventory: list[dict[str, object]]) -> str:
     digest = hashlib.sha256()
     digest.update(b"CLOSY_PACKAGE_DIGEST_V1")
-    for entry in sorted(inventory, key=lambda item: str(item["path"])):
+    canonical_entries = [
+        entry for entry in inventory if not str(entry.get("path", "")).startswith("zeroone/")
+    ]
+    for entry in sorted(canonical_entries, key=lambda item: str(item["path"])):
         digest.update(str(entry["path"]).encode("utf-8"))
         digest.update(str(entry["sha256"]).encode("ascii"))
         digest.update(str(entry["role"]).encode("utf-8"))

@@ -92,7 +92,9 @@ def integrate_zeroone_static(
     assert_safe_child(root, package_root)
     dynamic_processing_audit: dict[str, Any] | None = None
     if dynamic_compatible_surface:
-        dynamic_processing_audit = prepare_dynamic_processing_surface(package_root)
+        dynamic_processing_audit = prepare_dynamic_processing_surface(
+            package_root, replace_existing=replace_existing
+        )
     before_files = _canonical_package_hashes(package_root)
     fallback_before = _fallback_hash(package_root)
     validation_before = validate_package(package_root)

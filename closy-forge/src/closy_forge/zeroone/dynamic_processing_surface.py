@@ -9,6 +9,7 @@ from closy_forge.geometry.mesh_model import Mesh, MeshSet, Vec3, cross, sub
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json, write_canonical_json
 from closy_forge.package_io.hashing import (
     geometry_content_hash,
+    package_digest,
     sha256_bytes,
     sha256_file,
     topology_hash,
@@ -43,6 +44,8 @@ def prepare_dynamic_processing_surface(
             raise ValueError(f"dynamic_processing_surface_exists_invalid:{audit.get('reason')}")
         return audit
 
+    package_manifest = _object(package / "manifest.json")
+    canonical_digest_before = package_manifest.get("canonicalPackageDigest")
     source_path = package / "render" / "fallback.glb"
     source = read_glb_meshset(source_path)
     render_manifest = _object(package / "render" / "mesh_manifest.json")
@@ -81,6 +84,13 @@ def prepare_dynamic_processing_surface(
     )
     if glb_audit.get("status") != "pass":
         raise ValueError("dynamic_processing_surface_glb_invalid")
+    _declare_optional_processor_input(package, surface_path)
+    package_manifest = _object(package / "manifest.json")
+    if (
+        package_manifest.get("canonicalPackageDigest") != canonical_digest_before
+        or package_digest(package_manifest.get("inventory", [])) != canonical_digest_before
+    ):
+        raise ValueError("dynamic_processing_surface_changed_canonical_package_digest")
 
     write_canonical_json(package / DYNAMIC_PROCESSING_REMAP_PATH, remap)
     write_canonical_json(package / DYNAMIC_PROCESSING_INFLUENCE_PATH, influence)
@@ -89,6 +99,8 @@ def prepare_dynamic_processing_surface(
         "hashesBefore": authority_before,
         "hashesAfter": _canonical_authority_hashes(package),
         "allCanonicalFilesPreserved": authority_before == _canonical_authority_hashes(package),
+        "canonicalPackageDigestBefore": canonical_digest_before,
+        "canonicalPackageDigestAfter": package_manifest.get("canonicalPackageDigest"),
     }
     if not report["canonicalAuthority"]["allCanonicalFilesPreserved"]:
         raise ValueError("dynamic_processing_surface_canonical_authority_mutated")
@@ -154,6 +166,23 @@ def inspect_dynamic_processing_surface(package_dir: Path) -> dict[str, Any]:
         processing = read_glb_meshset(package / DYNAMIC_PROCESSING_SURFACE_PATH)
         if sha256_file(package / "render" / "fallback.glb") != manifest.get("sourceDenseSha256"):
             raise ValueError("dynamic_processing_surface_source_hash_stale")
+        package_manifest = _object(package / "manifest.json")
+        inventory = {
+            str(row.get("path")): row
+            for row in package_manifest.get("inventory", [])
+            if isinstance(row, dict)
+        }
+        declared_surface = inventory.get(DYNAMIC_PROCESSING_SURFACE_PATH)
+        if (
+            not isinstance(declared_surface, dict)
+            or declared_surface.get("sha256")
+            != sha256_file(package / DYNAMIC_PROCESSING_SURFACE_PATH)
+            or declared_surface.get("canonical") is not False
+            or declared_surface.get("role") != "optional_zeroone_processor_input"
+            or package_digest(package_manifest.get("inventory", []))
+            != package_manifest.get("canonicalPackageDigest")
+        ):
+            raise ValueError("dynamic_processing_surface_optional_inventory_invalid")
         if topology_hash(source) != manifest.get(
             "sourceDenseTopologyHash"
         ) or geometry_content_hash(source) != manifest.get("sourceDenseContentHash"):
@@ -179,6 +208,10 @@ def inspect_dynamic_processing_surface(package_dir: Path) -> dict[str, Any]:
             authority.get("allCanonicalFilesPreserved") is not True
             or authority.get("hashesBefore") != authority.get("hashesAfter")
             or authority.get("hashesAfter") != _canonical_authority_hashes(package)
+            or authority.get("canonicalPackageDigestBefore")
+            != package_manifest.get("canonicalPackageDigest")
+            or authority.get("canonicalPackageDigestAfter")
+            != package_manifest.get("canonicalPackageDigest")
         ):
             raise ValueError("dynamic_processing_surface_canonical_authority_stale")
         return {
@@ -460,7 +493,30 @@ def _canonical_authority_hashes(package: Path) -> dict[str, str]:
         if path.is_file()
         and not path.is_symlink()
         and not path.relative_to(package).as_posix().startswith("zeroone/")
+        and path.name != "manifest.json"
     }
+
+
+def _declare_optional_processor_input(package: Path, surface_path: Path) -> None:
+    manifest_path = package / "manifest.json"
+    manifest = _object(manifest_path)
+    rows = manifest.get("inventory")
+    if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
+        raise ValueError("dynamic_processing_surface_package_inventory_invalid")
+    filtered = [dict(row) for row in rows if row.get("path") != DYNAMIC_PROCESSING_SURFACE_PATH]
+    filtered.append(
+        {
+            "path": DYNAMIC_PROCESSING_SURFACE_PATH,
+            "role": "optional_zeroone_processor_input",
+            "canonical": False,
+            "required": True,
+            "mediaType": "model/gltf-binary",
+            "byteSize": surface_path.stat().st_size,
+            "sha256": sha256_file(surface_path),
+        }
+    )
+    manifest["inventory"] = sorted(filtered, key=lambda row: str(row["path"]))
+    write_canonical_json(manifest_path, manifest)
 
 
 def _minimum_area(meshset: MeshSet) -> float:

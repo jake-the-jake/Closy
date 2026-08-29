@@ -141,6 +141,7 @@ def test_dynamic_safe_processing_surface_has_exact_composed_rest_identity(
 ) -> None:
     package = build_demo(tmp_path)
     fallback_before = sha256_file(package / "render" / "fallback.glb")
+    manifest_before = json.loads((package / "manifest.json").read_text(encoding="utf-8"))
     prepared = prepare_dynamic_processing_surface(package)
     bundle = build_dynamic_request(
         package=package,
@@ -170,6 +171,14 @@ def test_dynamic_safe_processing_surface_has_exact_composed_rest_identity(
     assert bundle.influence_inventory["maximumProcessorInfluencesPerDestination"] == 1
     assert bundle.influence_inventory["maximumCanonicalInfluencesPerDestination"] == 3
     assert sha256_file(package / "render" / "fallback.glb") == fallback_before
+    manifest_after = json.loads((package / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest_after["canonicalPackageDigest"] == manifest_before["canonicalPackageDigest"]
+    optional = {
+        row["path"]: row
+        for row in manifest_after["inventory"]
+        if row["path"].startswith("zeroone/")
+    }
+    assert optional[DYNAMIC_PROCESSING_SURFACE_PATH]["canonical"] is False
 
 
 def test_dynamic_namespace_exact_inventory_and_corruption(tmp_path: Path) -> None:
