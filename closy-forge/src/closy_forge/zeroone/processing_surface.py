@@ -351,8 +351,6 @@ def _repair_surface(source: MeshSet) -> tuple[MeshSet, list[dict[str, Any]]]:
         global_vertex_offset += len(mesh.vertices)
         global_triangle_offset += len(mesh.triangles)
     candidate = MeshSet(meshes)
-    if not repair_rows:
-        raise ValueError("processing_surface_has_no_repair_regions")
     if _invalid_triangle_count(candidate) != 0:
         raise ValueError("processing_surface_still_contains_invalid_triangles")
     return candidate, repair_rows
@@ -578,7 +576,6 @@ def _equivalence_report(
     exact_outside = _exact_outside_repair(source, candidate, repair_rows)
     failure_reasons: list[str] = []
     checks = {
-        "sourceHadProcessorInvalidTriangles": source_invalid > 0,
         "processingHasNoInvalidTriangles": candidate_invalid == 0,
         "processingHasNoRepeatedIndexFaces": _repeated_index_count(candidate) == 0,
         "processingHasNoDuplicateFaces": candidate_duplicate_faces == 0,
@@ -612,6 +609,7 @@ def _equivalence_report(
             "topologyHash": topology_hash(source),
             "contentHash": geometry_content_hash(source),
             "invalidTriangleCount": source_invalid,
+            "requiredRepair": source_invalid > 0,
             "duplicateFaceCount": source_duplicate_faces,
             "nonManifoldEdgeCount": source_nonmanifold,
             "bounds": source_bounds,

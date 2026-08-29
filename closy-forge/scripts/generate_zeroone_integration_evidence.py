@@ -146,7 +146,8 @@ def main() -> int:
                 allowed_root=optional_root,
                 purpose="zeroone-static-d0",
             )
-            optional_root.rmdir()
+            if not any(optional_root.iterdir()):
+                optional_root.rmdir()
             if inspect_zeroone_namespace(build.package_dir).get("status") != "not_present":
                 raise RuntimeError("ZeroOne namespace deletion did not preserve an absent state")
             rebuilt = integrate_zeroone_static(

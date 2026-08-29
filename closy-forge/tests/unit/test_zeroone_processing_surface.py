@@ -21,6 +21,7 @@ from closy_forge.zeroone.processing_surface import (
     PROCESSING_REPORT_PATH,
     PROCESSING_SURFACE_PATH,
     _integrity_hash,
+    _repair_surface,
     inspect_processing_surface,
     write_processing_surface_bundle,
 )
@@ -40,6 +41,17 @@ def test_processing_surface_repairs_float32_degenerate_parent(tmp_path: Path) ->
     assert remap["complete"] is True
     assert len(remap["vertexRows"]) == source.vertex_count
     assert len(remap["triangleRows"]) == source.triangle_count
+
+
+def test_processing_surface_emits_identity_when_source_is_already_valid(tmp_path: Path) -> None:
+    valid_source, _ = _repair_surface(_source_mesh())
+    package = _fixture(tmp_path, source=valid_source)
+    assert inspect_processing_surface(package)["status"] == "valid"
+    report = read_json(package / PROCESSING_REPORT_PATH)
+    assert report["source"]["invalidTriangleCount"] == 0
+    assert report["source"]["requiredRepair"] is False
+    assert report["repairRegions"] == []
+    assert report["checks"]["exactOutsideRepairNeighbourhood"] is True
 
 
 @pytest.mark.parametrize("family", ["long_sleeved_top", "button_shirt", "jacket_outerwear"])
@@ -144,9 +156,9 @@ def test_processing_surface_corruption_fails_closed(tmp_path: Path, corruption: 
     assert inspect_processing_surface(package)["status"] == "invalid"
 
 
-def _fixture(tmp_path: Path) -> Path:
+def _fixture(tmp_path: Path, *, source: MeshSet | None = None) -> Path:
     package = tmp_path / "fixture.closygarment"
-    source = _source_mesh()
+    source = source or _source_mesh()
     (package / "render").mkdir(parents=True)
     write_indexed_glb(
         package / "render/fallback.glb", source, "fixture.material", (0.2, 0.3, 0.4, 1.0)

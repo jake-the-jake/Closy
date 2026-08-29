@@ -9,7 +9,7 @@ from closy_forge.pipeline.build_jacket_outerwear_demo import build_demo_jacket_o
 from closy_forge.validation.validator import validate_package
 from tests.helpers import build_jacket_outerwear, read_json
 
-GOLDEN_DIGEST = "94fd2ea13a3865abb77bda79a8e0ceda01fd12e79a65d997e0af89535959bc97"
+GOLDEN_DIGEST = "0edfe20111a5e543c8fde754dcbe2c00a10675dc97d06fc0191ae8c48fab40a0"
 
 
 def test_jacket_outerwear_package_is_complete_conventional_and_valid(tmp_path) -> None:

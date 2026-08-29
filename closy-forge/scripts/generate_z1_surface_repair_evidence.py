@@ -74,13 +74,23 @@ def main() -> int:
     try:
         for family in FAMILIES:
             for case in parameter_regression_cases(family):
-                rows.append(
-                    _execute_case(
-                        root=root,
-                        family=family,
-                        case=case,
-                        expected_default_fallback=expected_default_fallbacks[family],
-                    )
+                row = _execute_case(
+                    root=root,
+                    family=family,
+                    case=case,
+                    expected_default_fallback=expected_default_fallbacks[family],
+                )
+                rows.append(row)
+                print(
+                    json.dumps(
+                        {
+                            "caseId": case.case_id,
+                            "family": family,
+                            "status": row["status"],
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
                 )
         replay_checks = _replay_checks(rows)
         passed = all(row["status"] == "pass" for row in rows) and all(
@@ -184,6 +194,7 @@ def _execute_case(
             surface_report["canonicalAuthority"]["allNonZeroOnePackageHashesPreserved"]
         )
         expected_matches = case.case_id != "default" or fallback_hash == expected_default_fallback
+        fallback_preserved = (package / "render/fallback.glb").is_file() and canonical_preserved
         passed = (
             result.validation["status"] == "passed"
             and validation["status"] == "passed"
@@ -201,7 +212,10 @@ def _execute_case(
             "expectedDefaultFallbackSha256": (
                 expected_default_fallback if case.case_id == "default" else None
             ),
-            "fallbackPreserved": expected_matches,
+            "fallbackPreserved": fallback_preserved,
+            "defaultFallbackMatchesPreFix": (
+                expected_matches if case.case_id == "default" else None
+            ),
             "canonicalAuthorityPreserved": canonical_preserved,
             "packageValidation": validation,
             "processingAudit": processing,
