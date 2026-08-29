@@ -1,0 +1,126 @@
+{
+  "coordinateConvention": {
+    "distanceUnit": "meter",
+    "handedness": "right_handed",
+    "upAxis": "+Y",
+    "uvOrigin": "gltf_lower_left_convention_after_decode"
+  },
+  "profiles": {
+    "closy.dynamic_reference.z2.v1": {
+      "aggregationRule": "every frame and every mandatory metric must pass; any nonfinite, missing, uncertain, or culling false-negative witness fails",
+      "assetProfileHash": "7c27f56d135ee72842e4fc6501fd45278f89ebb62fefc5dad5312a6b9bcdf6bb",
+      "comparisonDirection": "errors and cracks at_or_below maxima; containment margins at_or_above minima; counts exact",
+      "datasetSplitHash": "7c27f56d135ee72842e4fc6501fd45278f89ebb62fefc5dad5312a6b9bcdf6bb",
+      "metrics": {
+        "boundsGuardBandMeters": 0.00001,
+        "cullingFalseNegativeCount": 0,
+        "maximumBoundaryCrackMeters": 0.00005,
+        "maximumNormalAngleDegrees": 0.25,
+        "maximumOpeningLoopDistanceMeters": 0.00005,
+        "maximumPositionErrorMeters": 0.000002,
+        "maximumTangentAngleDegrees": 0.5,
+        "minimumFrameCount": 13,
+        "p95PositionErrorMeters": 0.0000005,
+        "requiredRestFrameCount": 1
+      },
+      "oracleVersionHash": "30fa757a28a5343bbfabd173fd98bdeba3fdb9490766c1b42d6af17c598aa764",
+      "rationale": "caps are above float canonicalisation noise but below the fixed D0 render/binding inspection sensitivity",
+      "units": "meters_degrees_counts"
+    },
+    "closy.outfit_surface.d0.v1": {
+      "aggregationRule": "all static and timestamped cases pass; oracle-uncertain witnesses fail closed",
+      "assetProfileHash": "53f2460029f791ec888f8e57471fdf74b0045d71f29c97b0218f11d7dff5d07f",
+      "comparisonDirection": "clearance and retained ratios at_or_above minima; penetration, order, strain, runtime, and memory at_or_below maxima",
+      "datasetSplitHash": "53f2460029f791ec888f8e57471fdf74b0045d71f29c97b0218f11d7dff5d07f",
+      "metrics": {
+        "maximumBodyPenetrationMeters": 0.00016,
+        "maximumInterLayerPenetrationMeters": 0.00016,
+        "maximumInvertedTriangleCount": 0,
+        "maximumOrderViolationCount": 0,
+        "maximumPeakMemoryBytes": 536870912,
+        "maximumP95EdgeStretchRatio": 1.08,
+        "maximumPenetrationPersistenceFrames": 0,
+        "maximumRuntimeMillisecondsPerFrame": 50,
+        "minimumBodyClearanceMeters": -0.00016,
+        "minimumOpeningLengthRetentionRatio": 0.995,
+        "minimumSeamLengthRetentionRatio": 0.995
+      },
+      "oracleVersionHash": "22f9c847c9a14c25da7f01e3fe69bc7b6729d72ae7eed92bf513efe03416fab7",
+      "rationale": "provisional D0 functional-reference limits preserve existing penetration budget and require exact layer order",
+      "units": "meters_ratios_milliseconds_bytes_counts"
+    },
+    "closy.phase9_e1.selective.v1": {
+      "aggregationRule": "all absolute bars pass and the learned model must meet or exceed every equal-input baseline criterion without hidden-label fallback",
+      "assetProfileHash": "09380289f1eb8895054c118143facf3b9f58345274254e4b41c24a53924f8d32",
+      "comparisonDirection": "accuracy, coverage, OOD correct action at_or_above minima; ECE and selective risk at_or_below maxima",
+      "datasetSplitHash": "09380289f1eb8895054c118143facf3b9f58345274254e4b41c24a53924f8d32",
+      "metrics": {
+        "maximumExpectedCalibrationError": 0.1,
+        "maximumSelectiveRiskAtCoverage": 0.15,
+        "minimumAcceptedCoverage": 0.5,
+        "minimumBaselineTop1Delta": 0,
+        "minimumOodCorrectActionAccuracy": 0.8,
+        "minimumTop1Accuracy": 0.85,
+        "selectiveRiskCoveragePoint": 0.5
+      },
+      "oracleVersionHash": "fee9fb012e8d1ea8baeca1185bf296d66f883116b8095bd8ecf2ae1f05668298",
+      "rationale": "requires useful selective coverage, improved calibration over PR #26, robust OOD action, and no worse equal-input baseline",
+      "units": "unit_interval"
+    },
+    "closy.phase9_e2.typed_program.v1": {
+      "aggregationRule": "all structural and 3D bars pass on group-disjoint holdout and learned output meets or exceeds equal-input baselines",
+      "assetProfileHash": "75348804f87d8236c8767d23daa8fc8103e7d10e95ca132e5ff63fe4be5aae44",
+      "comparisonDirection": "validity, exact structure, holdout quality, and baseline delta at_or_above minima; geometric errors at_or_below maxima",
+      "datasetSplitHash": "75348804f87d8236c8767d23daa8fc8103e7d10e95ca132e5ff63fe4be5aae44",
+      "metrics": {
+        "maximumHeldout3dP95SurfaceDistanceMeters": 0.015,
+        "minimumEqualInputBaselineDelta": 0,
+        "minimumGroupDisjointHoldoutCount": 64,
+        "minimumStructuralExactMatch": 0.7,
+        "minimumTypedProgramValidity": 0.98,
+        "minimumUniqueProgramCount": 256
+      },
+      "oracleVersionHash": "ab9c4cd17cbef41ad1b76d331faa7bf6fe78e18851f2dd900b00223f148bc8a3",
+      "rationale": "bounded first E2 profile requires genuine typed-program diversity, group holdout, and settled 3D quality",
+      "units": "counts_unit_interval_meters"
+    },
+    "closy.surface_equivalence.z1.v1": {
+      "aggregationRule": "every repaired family, parameter case, local region, and whole surface must pass; exact-equality fields are conjunctive",
+      "assetProfileHash": "074d845af2dd67fc3b7d7e4397bf2db6f433ca40a1234f60561cdd4ff5de80b9",
+      "comparisonDirection": "deviations at_or_below maxima; silhouette IoU at_or_above minimum; inventory counts exact",
+      "datasetSplitHash": "074d845af2dd67fc3b7d7e4397bf2db6f433ca40a1234f60561cdd4ff5de80b9",
+      "metrics": {
+        "exactOutsideRepairNeighbourhood": true,
+        "maximumBidirectionalSurfaceDistanceMeters": 0.0000002,
+        "maximumBoundaryDeviationMeters": 0.0000002,
+        "maximumBoundaryLengthRelativeDelta": 0.000001,
+        "maximumBoundsDeltaMeters": 0.0000002,
+        "maximumDepthImageDeviationMeters": 0.000002,
+        "maximumDuplicateFaceCount": 0,
+        "maximumNewSelfIntersectionCount": 0,
+        "maximumNonManifoldCount": 0,
+        "maximumOpeningDeviationMeters": 0.0000002,
+        "maximumP95BidirectionalSurfaceDistanceMeters": 0.00000005,
+        "maximumPanelAreaRelativeDelta": 0.000001,
+        "maximumRepeatedIndexFaceCount": 0,
+        "maximumSeamCurveDeviationMeters": 0.0000002,
+        "maximumTJunctionCount": 0,
+        "maximumTangentAngleDegrees": 0.1,
+        "maximumTextureSampleDisplacementTexels": 0.01,
+        "maximumUvDisplacement": 0.000001,
+        "minimumSilhouetteIoU": 0.9999,
+        "minimumTriangleAreaMeters2": 0.000000000001,
+        "requiredBoundaryOpeningComponentCountDelta": 0,
+        "requiredConnectedComponentCountDelta": 0,
+        "requiredHoleCountDelta": 0,
+        "requiredMaterialRegionMismatchCount": 0
+      },
+      "oracleVersionHash": "4d02d78764e4e6e255b520591685973bb4e57f448633bea76d5098ea73eb93e3",
+      "rationale": "local conforming retriangulation should preserve the represented settled surface to numerical sampling precision while removing processor-invalid topology",
+      "units": "meters_square_meters_uv_texels_degrees_counts"
+    }
+  },
+  "registryVersion": "closy.threshold_registry.v1",
+  "schemaVersion": 1,
+  "thresholdMutationPolicy": "immutable_after_heldout_execution_version_new_profile_instead"
+}

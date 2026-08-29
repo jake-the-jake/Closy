@@ -7,7 +7,7 @@
       "not_started": 8,
       "partial": 59
     },
-    "coverageVersion": "closy.blueprint_coverage.c3_durable_z1_phase11.v3",
+    "coverageVersion": "closy.blueprint_coverage.z1_z2_structured_ai.v4",
     "total": 101
   },
   "evidenceAnchorSha": "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
@@ -95,7 +95,7 @@
       ],
       "computeProfile": "D0",
       "dataProvenance": "project-authored synthetic",
-      "evidenceDurability": "committed_candidate_report_plus_exact_head_ci_pending",
+      "evidenceDurability": "committed_report_plus_external_exact_head_check_attestation",
       "evidenceTier": "committed_executed_candidate_profile",
       "executableSha": null,
       "executionKind": "CPU",
@@ -109,7 +109,7 @@
         "windows"
       ],
       "scopedStatus": "pass",
-      "sourceSha": "1a500b1720edeae4a3f28b88a31f7cd14125854b",
+      "sourceSha": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
       "toolchain": [
         "CPython 3.11"
       ],
@@ -121,7 +121,7 @@
         "mobile",
         "private_user"
       ],
-      "workflowRun": "33203903630"
+      "workflowRun": null
     },
     "P1": {
       "avatarProfile": "none",
@@ -179,7 +179,7 @@
         "windows"
       ],
       "scopedStatus": "failed",
-      "sourceSha": "1a500b1720edeae4a3f28b88a31f7cd14125854b",
+      "sourceSha": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
       "toolchain": [
         "CPython 3.11"
       ],
@@ -192,7 +192,7 @@
         "private_user",
         "multilayer"
       ],
-      "workflowRun": "33203903630"
+      "workflowRun": null
     },
     "Z1": {
       "allFamilyAttemptCount": 9,
@@ -251,8 +251,7 @@
     "Z2": {
       "avatarProfile": "none",
       "blockers": [
-        "C3-Binding-D0",
-        "refreshed_paired_Z1",
+        "exact_representative_family_candidate_static_z1_pairing",
         "compiled_dynamic_execution"
       ],
       "computeProfile": "D0",
@@ -445,19 +444,20 @@
     "13": "partial",
     "14": "partial"
   },
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "stack": {
     "acyclic": true,
+    "businessPatchMappingsComplete": true,
+    "crossRepositoryNodeCount": 33,
     "exactHeadForgeExceptions": [
       10
     ],
     "exactMergeBases": true,
-    "latestPullRequest": 23,
-    "pullRequestCount": 23,
-    "replayedCommonAncestryAbsent": true,
+    "latestPullRequest": 32,
+    "pullRequestCount": 32,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v2",
+  "statusModelVersion": "closy.blueprint_status_model.v3",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": false,
@@ -466,10 +466,13 @@
     "actualZeroOneStaticArtifactLoaded": true,
     "actualZeroOneStaticCookExecutedThisInvocation": true,
     "cacheValidated": false,
+    "currentRasterPhase9SourceIntegrated": false,
+    "currentRasterPhase9SourcePullRequest": 26,
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
+    "phase12To14SourceBranchesIntegrated": false,
     "phase8EvidenceScope": "deterministic_fixture_family_verticals",
-    "phases10To14EvidenceScope": "candidate_all_family_phase10_partial_plus_phase11_to14_contract_fixtures",
+    "phases10To14EvidenceScope": "candidate_all_family_phase10_partial_phase11_not_run_phase12_to14_external_sources",
     "physicalMobileEvidenceRun": false,
     "privateUserEvidenceRun": false,
     "zeroOneStaticFamilyAttemptCount": 9,

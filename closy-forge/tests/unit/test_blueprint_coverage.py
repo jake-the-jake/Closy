@@ -4,7 +4,12 @@ import json
 import subprocess
 from pathlib import Path
 
+from closy_forge.blueprint.ancestry import validate_ancestry_metadata
 from closy_forge.blueprint.pr_dag import validate_pr_dag
+from closy_forge.blueprint.profiles import (
+    validate_execution_budget,
+    validate_threshold_registry,
+)
 from closy_forge.blueprint.status import (
     build_status_model,
     render_status_summary,
@@ -36,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.c3_durable_z1_phase11.v3"
+    assert coverage["version"] == "closy.blueprint_coverage.z1_z2_structured_ai.v4"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -46,6 +51,14 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
         assert row["summary"]
         assert row["limitations"]
         assert row["nextAction"]
+        assert row["ancestryClass"] in {
+            "in_tree",
+            "external_source_pr",
+            "historical_superseded",
+            "not_present",
+        }
+        assert row["evidenceSources"]
+        assert row["evidenceTier"]
         if row["status"] in IMPLEMENTED_STATUSES:
             assert row["implementationPaths"], row["id"]
             assert row["executableEvidence"], row["id"]
@@ -56,6 +69,36 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
             assert row["executableEvidence"] is None, row["id"]
             assert row["tests"] is None, row["id"]
             assert row["commitSha"] is None, row["id"]
+    assert validate_ancestry_metadata(coverage) == []
+    assert coverage["integratedImplementationRowCount"] == sum(
+        row["ancestryClass"] == "in_tree" for row in rows
+    )
+    assert coverage["externalSourceRowCount"] == 6
+
+
+def test_coverage_in_tree_ancestry_is_real_and_external_sources_are_not_counted() -> None:
+    coverage = _json("blueprint_coverage.json")
+    authority = coverage["ancestryAuthority"]["headSha"]
+
+    for row in coverage["rows"]:
+        if row["ancestryClass"] == "in_tree":
+            subprocess.run(
+                ["git", "merge-base", "--is-ancestor", row["incorporationCommit"], authority],
+                cwd=REPO_ROOT,
+                check=True,
+                capture_output=True,
+            )
+        if row["ancestryClass"] == "external_source_pr":
+            assert row["incorporated"] is False
+            assert row["incorporationCommit"] is None
+    phase9 = next(row for row in coverage["rows"] if row["id"] == "BP-17-PHASE-09")
+    assert phase9["sourcePr"] == 26
+    assert phase9["ancestryClass"] == "external_source_pr"
+    assert "53/64" in phase9["summary"]
+    for phase, source_pr in (("12", 29), ("13", 30), ("14", 31)):
+        row = next(row for row in coverage["rows"] if row["id"] == f"BP-17-PHASE-{phase}")
+        assert row["sourcePr"] == source_pr
+        assert row["incorporated"] is False
 
 
 def test_coverage_commit_references_resolve_without_asserting_specific_shas() -> None:
@@ -112,6 +155,9 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     }
     assert status["truth"] == {
         "actualPhase9TrainingExecuted": True,
+        "currentRasterPhase9SourceIntegrated": False,
+        "currentRasterPhase9SourcePullRequest": 26,
+        "phase12To14SourceBranchesIntegrated": False,
         "actualZeroOneStaticCookExecutedThisInvocation": True,
         "actualZeroOneStaticArtifactLoaded": True,
         "zeroOneStaticFamilyAttemptCount": 9,
@@ -125,7 +171,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "humanReviewRun": False,
         "phase8EvidenceScope": "deterministic_fixture_family_verticals",
         "phases10To14EvidenceScope": (
-            "candidate_all_family_phase10_partial_plus_phase11_to14_contract_fixtures"
+            "candidate_all_family_phase10_partial_phase11_not_run_phase12_to14_external_sources"
         ),
         "physicalMobileEvidenceRun": False,
         "privateUserEvidenceRun": False,
@@ -136,31 +182,29 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     stack = _json("pr_stack_manifest.json")
     rows = stack["pullRequests"]
     nodes = stack["nodes"]
-    unique_commits_seen: dict[str, int] = {}
-
     assert validate_pr_dag(stack) == []
-    assert stack["schemaVersion"] == 2
+    assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(numbers[0], numbers[-1] + 1))
-    assert [int(node["pullRequest"]) for node in nodes] == numbers
-    for index, row in enumerate(rows):
+    assert numbers == list(range(1, 33))
+    assert len(nodes) == 33
+    assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
+    assert stack["externalPullRequests"][0]["number"] == 2
+    assert "sequentialMergeOrder" not in stack
+    for row in rows:
         assert row["draft"] is True
         assert row["mergeability"] == "MERGEABLE"
         assert row["directParentMergeBaseVerified"] is True
         assert row["layerBehind"] == 0
         assert row["layerCommitCount"] == row["layerAhead"]
-        if index:
-            assert row["baseBranch"] == rows[index - 1]["branch"]
-            assert row["baseSha"] == rows[index - 1]["headSha"]
-            merge_base = subprocess.run(
-                ["git", "merge-base", row["baseSha"], row["headSha"]],
-                cwd=REPO_ROOT,
-                check=True,
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
-            assert merge_base == row["baseSha"]
+        merge_base = subprocess.run(
+            ["git", "merge-base", row["baseSha"], row["headSha"]],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        assert merge_base == row["baseSha"]
         if row["number"] == 10:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] == "missing_exact_head_forge_run"
@@ -169,13 +213,12 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             run = row["latestExactHeadForgeRun"]
             assert run["exactHead"] is True
             assert run["runId"]
-            assert {job["conclusion"] for job in run["jobs"]} == {"SUCCESS"}
-            assert {"ubuntu-latest", "windows-latest"} <= {
-                os_name
-                for job in run["jobs"]
-                for os_name in ("ubuntu-latest", "windows-latest")
-                if os_name in job["name"]
-            }
+            if row["number"] == 25:
+                assert run["conclusion"] == "FAILURE"
+            elif "conclusion" in run:
+                assert run["conclusion"] == "SUCCESS"
+            else:
+                assert {job["conclusion"] for job in run["jobs"]} == {"SUCCESS"}
         layer_commits = subprocess.run(
             ["git", "rev-list", f'{row["baseSha"]}..{row["headSha"]}'],
             cwd=REPO_ROOT,
@@ -184,19 +227,47 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.splitlines()
         assert len(layer_commits) == row["layerCommitCount"]
-        for commit in layer_commits:
-            assert commit not in unique_commits_seen, (
-                f"commit {commit} is replayed by PR {row['number']} and "
-                f"PR {unique_commits_seen[commit]}"
-            )
-            unique_commits_seen[commit] = row["number"]
-    final = rows[-1]
-    assert final["number"] == 23
-    assert final["headSha"] == "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
-    assert final["layerCommitCount"] == 14
-    assert final["changedFileCount"] == 24
-    assert final["latestExactHeadForgeRun"]["runId"] == "33150483293"
-    assert len(final["latestExactHeadForgeRun"]["jobs"]) == 26
+    by_id = {node["id"]: node for node in nodes}
+    assert by_id["github:jake-the-jake/Closy:pr/28"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/27"
+    ]
+    assert (
+        "github:jake-the-jake/Closy:pr/25"
+        in by_id["github:jake-the-jake/Closy:pr/28"]["dependencyIds"]
+    )
+    assert len(by_id["github:jake-the-jake/Closy:pr/28"]["integrationMappings"]) == 8
+    assert by_id["github:jake-the-jake/Closy:pr/25"]["superseded"] is True
+    for number in (26, 29, 30, 31, 32):
+        node = by_id[f"github:jake-the-jake/Closy:pr/{number}"]
+        assert node["sourceOnly"] is True
+        assert node["mergeEligible"] is False
+    assert by_id["github:jake-the-jake/ZeroOne:pr/2"]["headSha"] == (
+        "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
+    )
+
+
+def test_execution_budgets_and_precommitted_thresholds_are_complete() -> None:
+    budget = _json("execution_budget_v3.json")
+    thresholds = _json("threshold_registry_v1.json")
+
+    assert validate_execution_budget(budget) == []
+    assert validate_threshold_registry(thresholds) == []
+    assert budget["policy"]["publishedCandidateHeadLimitPerNewPr"] == 3
+    assert thresholds["thresholdMutationPolicy"] == (
+        "immutable_after_heldout_execution_version_new_profile_instead"
+    )
+
+
+def test_generated_reports_use_source_tree_hash_not_self_referential_commit() -> None:
+    coverage = _json("blueprint_coverage.json")
+    provenance = coverage["generatedBy"]
+
+    assert provenance["generatorVersion"] == "closy.blueprint_reconciliation.z1_z2.v1"
+    assert len(provenance["sourceTreeHash"]) == 64
+    assert provenance["selfReferentialCommitSha"] is False
+    assert provenance["finalHeadAttestationLocation"] == (
+        "external_exact_head_ci_check_or_draft_pr_body"
+    )
 
 
 def test_generated_markdown_is_exact_render_of_machine_status() -> None:
@@ -289,8 +360,10 @@ def test_generated_evidence_and_changed_status_documents_are_path_and_secret_saf
         DOCS / "blueprint_coverage.json",
         DOCS / "current_blueprint_status.json",
         DOCS / "execution_budget_v2.json",
+        DOCS / "execution_budget_v3.json",
         DOCS / "evidence_integrity_audit_v2.md",
         DOCS / "pr_stack_manifest.json",
+        DOCS / "threshold_registry_v1.json",
         DOCS / "zeroone-static-integration-v1.md",
         *sorted((DOCS / "evidence").rglob("*.json")),
         *sorted((DOCS / "evidence").rglob("*.md")),

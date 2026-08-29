@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v2"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v3"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -13,7 +13,7 @@ MATURITY_IDS = (
     "BP-20-PRODUCTION",
 )
 A1_HEAD = "5d080caad354bcecff94a7eadf16d080d68a606c"
-C3_EVIDENCE_SHA = "1a500b1720edeae4a3f28b88a31f7cd14125854b"
+C3_EVIDENCE_SHA = "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72"
 ZEROONE_CANDIDATE_SHA = "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
 ZEROONE_EXECUTABLE_SHA256 = "59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065"
 
@@ -74,8 +74,8 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "dataProvenance": "project-authored synthetic",
         "executionKind": "CPU",
         "gateScope": "binding",
-        "evidenceDurability": "committed_candidate_report_plus_exact_head_ci_pending",
-        "workflowRun": "33203903630",
+        "evidenceDurability": "committed_report_plus_external_exact_head_check_attestation",
+        "workflowRun": None,
         "unsupportedTiers": _COMMON_UNSUPPORTED,
         "blockers": ["broader_avatar_garment_platform_and_private_user_profiles"],
     },
@@ -95,7 +95,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "executionKind": "CPU",
         "gateScope": "physical",
         "evidenceDurability": "committed_failure_reports",
-        "workflowRun": "33203903630",
+        "workflowRun": None,
         "unsupportedTiers": _COMMON_UNSUPPORTED + ["multilayer"],
         "blockers": [
             "timestamped_states_passed_0_of_11",
@@ -168,7 +168,10 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "evidenceDurability": "none",
         "workflowRun": None,
         "unsupportedTiers": ["mechanical_reference", "solver_driven", "GPU", "mobile"],
-        "blockers": ["C3-Binding-D0", "refreshed_paired_Z1", "compiled_dynamic_execution"],
+        "blockers": [
+            "exact_representative_family_candidate_static_z1_pairing",
+            "compiled_dynamic_execution",
+        ],
     },
     "P1": {
         "gateId": "P1",
@@ -230,7 +233,7 @@ def build_status_model(
     gates = {name: deepcopy(record) for name, record in GATE_RECORDS.items() if name != "Z2"}
     gates.update(stages)
     return {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "statusModelVersion": STATUS_MODEL_VERSION,
         "evidenceAnchorSha": evidence_anchor_sha,
         "coverage": {
@@ -249,24 +252,30 @@ def build_status_model(
             for maturity_id in MATURITY_IDS
         },
         "stack": {
-            "pullRequestCount": len(stack["nodes"]),
-            "latestPullRequest": max(int(row["pullRequest"]) for row in stack["nodes"]),
+            "pullRequestCount": len(stack["pullRequests"]),
+            "crossRepositoryNodeCount": len(stack["nodes"]),
+            "latestPullRequest": max(
+                int(row["pullRequest"])
+                for row in stack["nodes"]
+                if row["repository"] == "jake-the-jake/Closy"
+            ),
             "topology": "explicit_dag",
             "acyclic": bool(stack["validation"]["acyclic"]),
             "exactMergeBases": bool(stack["validation"]["exactMergeBases"]),
-            "replayedCommonAncestryAbsent": bool(
-                stack["validation"]["replayedCommonAncestryAbsent"]
+            "businessPatchMappingsComplete": bool(
+                stack["validation"]["businessPatchMappingsComplete"]
             ),
             "exactHeadForgeExceptions": [
                 int(row["pullRequest"])
                 for row in stack["nodes"]
-                if row["latestExactHeadForgeRun"] is None
+                if row["repository"] == "jake-the-jake/Closy"
+                and not row["latestExactHeadWorkflows"]
             ],
         },
         "truth": {
             "phase8EvidenceScope": "deterministic_fixture_family_verticals",
             "phases10To14EvidenceScope": (
-                "candidate_all_family_phase10_partial_plus_phase11_to14_contract_fixtures"
+                "candidate_all_family_phase10_partial_phase11_not_run_phase12_to14_external_sources"
             ),
             "actualZeroOneStaticCookExecutedThisInvocation": True,
             "actualZeroOneStaticArtifactLoaded": True,
@@ -279,6 +288,9 @@ def build_status_model(
             "actualZeroOneGpuRuntimeExecuted": False,
             "actualZeroOneMobileRuntimeExecuted": False,
             "actualPhase9TrainingExecuted": True,
+            "currentRasterPhase9SourceIntegrated": False,
+            "currentRasterPhase9SourcePullRequest": 26,
+            "phase12To14SourceBranchesIntegrated": False,
             "privateUserEvidenceRun": False,
             "physicalMobileEvidenceRun": False,
             "humanReviewRun": False,

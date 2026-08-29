@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from typing import cast
 
+from closy_forge.blueprint.ancestry import apply_ancestry_metadata
 from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_ANCHOR = "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42"
-VERSION = "closy.blueprint_coverage.c3_durable_z1_phase11.v3"
-GENERATED_BY = "C3, PHY1, paired Z1, and Phase 11 prerequisite reconciliation at " + EVIDENCE_ANCHOR
+VERSION = "closy.blueprint_coverage.z1_z2_structured_ai.v4"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.z1_z2.v1"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -41,6 +44,148 @@ PR23_FINAL_JOB_IDS = {
     "Cross-platform and cross-minor digest consistency": "98782039797",
     "Forge required": "98784926669",
 }
+
+PR_SNAPSHOTS = [
+    (
+        24,
+        "Forge evidence security and integrity hardening",
+        "codex/closy-forge-evidence-security-integrity-v2",
+        "codex/closy-forge-phase-10-zeroone-static-integration",
+        "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
+        "5d080caad354bcecff94a7eadf16d080d68a606c",
+        1,
+        41,
+        "33183367784",
+        "SUCCESS",
+        "integrated_parent",
+    ),
+    (
+        25,
+        "Forge: close scoped C3 binding and harden PHY1 evidence",
+        "codex/closy-forge-c3-physical-convergence-v2",
+        "codex/closy-forge-evidence-security-integrity-v2",
+        "5d080caad354bcecff94a7eadf16d080d68a606c",
+        "f9f1ff86089f6b43157431bdd3ccdc83cbc8b974",
+        8,
+        20,
+        "33203903630",
+        "FAILURE",
+        "superseded_source",
+    ),
+    (
+        26,
+        "Forge: add raster-derived synthetic Phase 9 evidence",
+        "codex/closy-forge-phase-9-raster-trained-synthetic-d0",
+        "codex/closy-forge-evidence-security-integrity-v2",
+        "5d080caad354bcecff94a7eadf16d080d68a606c",
+        "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
+        5,
+        27,
+        "33201911956",
+        "SUCCESS",
+        "external_source",
+    ),
+    (
+        27,
+        "Forge: refresh all-family candidate ZeroOne evidence",
+        "codex/closy-forge-phase-10-zeroone-static-integration-v2",
+        "codex/closy-forge-evidence-security-integrity-v2",
+        "5d080caad354bcecff94a7eadf16d080d68a606c",
+        "2a4fcd8146d95d2fab9a3d39751ffdafd5196387",
+        11,
+        16,
+        "33203908161",
+        "SUCCESS",
+        "integrated_parent",
+    ),
+    (
+        28,
+        "Forge: reconcile C3 and Phase 10 prerequisites",
+        "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+        "codex/closy-forge-phase-10-zeroone-static-integration-v2",
+        "2a4fcd8146d95d2fab9a3d39751ffdafd5196387",
+        "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+        10,
+        35,
+        "33212147981",
+        "SUCCESS",
+        "candidate_integration",
+    ),
+    (
+        29,
+        "Phase 12 static runtime delivery prep",
+        "codex/closy-forge-phase-12-static-runtime-prep",
+        "codex/closy-forge-phase-10-zeroone-static-integration-v2",
+        "2a4fcd8146d95d2fab9a3d39751ffdafd5196387",
+        "62464db2a91e4b24b808cfcd99ee95578fc95f32",
+        2,
+        12,
+        "33216284248",
+        "SUCCESS",
+        "external_source",
+    ),
+    (
+        30,
+        "Phase 13 synthetic avatar fit evidence",
+        "codex/closy-forge-phase-13-synthetic-avatar-fit-v2",
+        "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+        "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+        "1cf7ecff18bd0bbd37820638c0af2029d7a928ac",
+        4,
+        11,
+        "33222010381",
+        "SUCCESS",
+        "external_source",
+    ),
+    (
+        31,
+        "Forge: add bounded Phase 14 advisory models",
+        "codex/closy-forge-phase-14-bounded-models-v2",
+        "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+        "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+        "f0a3e3c9b7b1486ebbe736cfb16084299880ce2d",
+        2,
+        16,
+        "33222016267",
+        "SUCCESS",
+        "external_source",
+    ),
+    (
+        32,
+        "Forge: implement LayerCollision-D0 core",
+        "codex/closy-forge-layer-collision-d0-v2",
+        "codex/closy-forge-phase11-prerequisite-reconciliation-v2",
+        "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+        "386effb254d4ba15499399dfd7fd94c70a0e0fc5",
+        2,
+        10,
+        "33222023390",
+        "SUCCESS",
+        "external_source",
+    ),
+]
+
+PR25_REPLAY_MAPPINGS = [
+    ("47e6724df1f2480138645132b489d82332a85d2a", "6f3900d64a8d64db5b92c963f3c74f6405a78525"),
+    ("c304f23376ab8d4a18e56eb7bf7380b9a48d8ad0", "5c5c12cf77a228954a660c9d2fcd0048148d5b95"),
+    ("aea95a3a15c6e23ab56090a3239842bcd430754a", "5869a137af87dc52fc398180b7dbba15872fd6da"),
+    ("9f16cf69e0e8b8fa31ee6ed7940643e1cd70aa2c", "5107b435c1f5440c3adebc1d268cdf5933e2a183"),
+    ("67f50c4c590543a40275de33e48fd3412cbcff92", "dee96fe86192e3fee6b63be39456dd383d72825e"),
+    ("1a500b1720edeae4a3f28b88a31f7cd14125854b", "816626992bf6bc451521ec5b9f2fdbc68e9ef012"),
+    ("37fc2d8e6f4d658bf2b9dd61dae0f43dfbe21362", "0b2b9b729c559785ebd0abc921bb6e6f079a7d9f"),
+    ("f9f1ff86089f6b43157431bdd3ccdc83cbc8b974", "f64c4ff2225141aa3fa04405e77fef0af360e050"),
+]
+
+PROVENANCE_INPUTS = [
+    "closy-forge/scripts/reconcile_blueprint_status.py",
+    "closy-forge/src/closy_forge/blueprint/ancestry.py",
+    "closy-forge/src/closy_forge/blueprint/pr_dag.py",
+    "closy-forge/src/closy_forge/blueprint/profiles.py",
+    "closy-forge/src/closy_forge/blueprint/status.py",
+    "closy-forge/docs/execution_budget_v3.json",
+    "closy-forge/docs/threshold_registry_v1.json",
+    "closy-forge/docs/evidence/phase11_prerequisite_reconciliation_v2.json",
+]
 
 PHASE10_PATHS = [
     "closy-forge/src/closy_forge/zeroone/integration.py",
@@ -207,6 +352,88 @@ ROW_EVIDENCE_ADDITIONS = {
     "BP-20-RESEARCH-PROTOTYPE": True,
 }
 
+ANCESTRY_TRUTH_UPDATES = {
+    "BP-08-H-PATTERN-INFERENCE": {
+        "summary": (
+            "Current raster-trained Phase 9 evidence exists on independent source PR #26; its "
+            "53/64 held-out top-1 result is not integrated into PR #28."
+        ),
+        "limitations": (
+            "The source experiment trails its equal-input centroid baseline, has 0/14 correct OOD "
+            "actions, uses template builders, and is external until replayed and repaired."
+        ),
+    },
+    "BP-17-PHASE-09": {
+        "summary": (
+            "Phase 9 is external-source partial at PR #26 with 53/64 held-out top-1 and 37/64 "
+            "accepted predictions; it is not present in the PR #28 source tree."
+        ),
+        "limitations": (
+            "E1 remains partial, E2 is not run, OOD action accuracy is 0/14, and no learned "
+            "superiority or integrated Phase 9 claim is supported."
+        ),
+        "nextAction": (
+            "Replay PR #26 on Closy E, remove oracle fallback, and rerun frozen E1/E2 profiles."
+        ),
+    },
+    "BP-17-PHASE-11": {
+        "summary": "Phase 11 remains partial with no compiled dynamic ZeroOne execution.",
+        "limitations": (
+            "C3-Binding-D0 is satisfied for the fixed T-shirt profile; the remaining reference "
+            "blockers are exact representative static Z1 pairing and compiled dynamic execution."
+        ),
+        "nextAction": (
+            "Qualify Z1-D0-representative-static and pair that exact asset with compiled ZeroOne B."
+        ),
+    },
+    "BP-17-PHASE-12": {
+        "summary": "Phase 12 runtime preparation is external-source partial on PR #29.",
+        "limitations": (
+            "PR #29 is not in PR #28 ancestry and has no Z2, device, battery, thermal, cellular, "
+            "driver, or production evidence."
+        ),
+    },
+    "BP-17-PHASE-13": {
+        "summary": (
+            "Phase 13 synthetic avatar-fit work is external-source partial on PR #30; the radial "
+            "LayerCollision-D0 source on PR #32 is also external and not garment-surface proof."
+        ),
+        "limitations": (
+            "No integrated dynamic lineage, canonical garment-surface outfit, licensed body, "
+            "private user, P1, or human correction evidence exists."
+        ),
+    },
+    "BP-17-PHASE-14": {
+        "summary": "Phase 14 bounded advisory models are external-source partial on PR #31.",
+        "limitations": (
+            "The advisory source is not integrated, remains validator-subordinate, and includes no "
+            "structured generator, private data, real fabric, or production claim."
+        ),
+    },
+    "BP-18-GATE-Z1": {
+        "summary": (
+            "Candidate all-family Z1 attempted nine families: six accepted and three were rejected "
+            "fail-closed for degenerate settled surfaces."
+        ),
+        "limitations": (
+            "The all-family breadth profile failed, the candidate-static ZeroOne source is "
+            "unmerged, and no current-master, dynamic, mobile, or human-review claim is supported."
+        ),
+        "nextAction": (
+            "Repair derivative-local processing surfaces and separately qualify representative and "
+            "all-family candidate-static profiles."
+        ),
+    },
+    "BP-18-GATE-Z2": {
+        "summary": "Gate Z2 is not run; C3-Binding-D0 is no longer an unsatisfied blocker.",
+        "limitations": (
+            "Exact representative-family candidate-static Z1 pairing and compiled dynamic "
+            "execution are not yet established."
+        ),
+        "nextAction": "Run the exact representative static prerequisite, then compiled paired Z2.",
+    },
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -346,12 +573,14 @@ def main() -> int:
         raise ValueError("coverage authority root must be an object")
     coverage = coverage_value
     coverage["version"] = VERSION
-    coverage["generatedBy"] = GENERATED_BY
     for row in coverage["rows"]:
         row_id = str(row["id"])
         update = ROW_UPDATES.get(row_id)
         if update:
             row.update(update)
+        ancestry_update = ANCESTRY_TRUTH_UPDATES.get(row_id)
+        if ancestry_update:
+            row.update(ancestry_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -374,6 +603,14 @@ def main() -> int:
             row["nextAction"] = (
                 f"Implement and execute {stage} only after its explicit prerequisites pass."
             )
+    coverage = apply_ancestry_metadata(coverage)
+    coverage["generatedBy"] = {
+        "generatorVersion": GENERATOR_VERSION,
+        "declaredInputPaths": PROVENANCE_INPUTS,
+        "sourceTreeHash": _source_tree_hash(PROVENANCE_INPUTS),
+        "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
+        "selfReferentialCommitSha": False,
+    }
     coverage_path.write_text(
         json.dumps(coverage, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
@@ -397,7 +634,11 @@ def _append_unique(current: object, additions: list[str]) -> list[str]:
 
 
 def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
-    rows = list(cast(list[dict[str, object]], stack["pullRequests"]))
+    rows = [
+        row
+        for row in cast(list[dict[str, object]], stack["pullRequests"])
+        if _as_int(row["number"]) <= 23
+    ]
     for row in rows:
         if row.get("number") != 23:
             continue
@@ -413,20 +654,116 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
                 for name, job_id in PR23_FINAL_JOB_IDS.items()
             ],
         }
+    for snapshot in PR_SNAPSHOTS:
+        (
+            number,
+            title,
+            branch,
+            base_branch,
+            base_sha,
+            head_sha,
+            commit_count,
+            changed_files,
+            run_id,
+            conclusion,
+            role,
+        ) = snapshot
+        rows.append(
+            {
+                "repository": "jake-the-jake/Closy",
+                "number": number,
+                "url": f"https://github.com/jake-the-jake/Closy/pull/{number}",
+                "title": title,
+                "branch": branch,
+                "baseBranch": base_branch,
+                "baseSha": base_sha,
+                "headSha": head_sha,
+                "mergeBase": base_sha,
+                "layerAhead": commit_count,
+                "layerBehind": 0,
+                "layerCommitCount": commit_count,
+                "changedFileCount": changed_files,
+                "draft": True,
+                "state": "OPEN",
+                "mergeability": "MERGEABLE",
+                "directParentMergeBaseVerified": True,
+                "knownException": None,
+                "role": role,
+                "latestExactHeadForgeRun": _closy_run(run_id, conclusion),
+            }
+        )
+    zeroone_row: dict[str, object] = {
+        "repository": "jake-the-jake/ZeroOne",
+        "number": 2,
+        "url": "https://github.com/jake-the-jake/ZeroOne/pull/2",
+        "title": "Requalify the headless Closy static processor",
+        "branch": "codex/closy-zeroone-static-source-requalification",
+        "baseBranch": "master",
+        "baseSha": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+        "headSha": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
+        "mergeBase": "a17762bc1fc12fbd33f0488634635a5dcfdf8da3",
+        "layerAhead": 3,
+        "layerBehind": 0,
+        "layerCommitCount": 3,
+        "changedFileCount": 11,
+        "draft": True,
+        "state": "OPEN",
+        "mergeability": "MERGEABLE",
+        "directParentMergeBaseVerified": True,
+        "knownException": None,
+        "role": "candidate_static_source",
+        "latestExactHeadWorkflows": [
+            _workflow("Closy Static Processor", "33187775880", "SUCCESS", 2),
+            _workflow("Viewport UI Corrective CPU Validation", "33187776003", "SUCCESS", 1),
+        ],
+    }
+    rows.sort(key=lambda row: _as_int(row["number"]))
+    parent_by_pr = {
+        **{number: number - 1 for number in range(2, 25)},
+        25: 24,
+        26: 24,
+        27: 24,
+        28: 27,
+        29: 27,
+        30: 28,
+        31: 28,
+        32: 28,
+    }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
-    for index, row in enumerate(rows):
+    for row in rows:
+        pr_number = _as_int(row["number"])
         node_id = f"github:jake-the-jake/Closy:pr/{row['number']}"
         parent_ids: list[str] = []
-        if index:
-            parent_id = f"github:jake-the-jake/Closy:pr/{rows[index - 1]['number']}"
+        parent_number = parent_by_pr.get(pr_number)
+        if parent_number is not None:
+            parent_id = f"github:jake-the-jake/Closy:pr/{parent_number}"
             parent_ids.append(parent_id)
-            edges.extend(
-                (
-                    {"from": parent_id, "to": node_id, "kind": "parent"},
-                    {"from": parent_id, "to": node_id, "kind": "dependency"},
-                )
+            edges.append({"from": parent_id, "to": node_id, "kind": "parent"})
+        dependency_ids = list(parent_ids)
+        if pr_number == 28:
+            dependency_ids.extend(
+                [
+                    "github:jake-the-jake/Closy:pr/25",
+                    "github:jake-the-jake/ZeroOne:pr/2",
+                ]
             )
+        for dependency_id in dependency_ids:
+            edges.append({"from": dependency_id, "to": node_id, "kind": "dependency"})
+        source_only = pr_number in {25, 26, 29, 30, 31, 32}
+        superseded = pr_number == 25
+        workflows = _normalise_workflows(row.get("latestExactHeadForgeRun"))
+        mappings = []
+        if pr_number == 28:
+            mappings = [
+                {
+                    "sourceNode": "github:jake-the-jake/Closy:pr/25",
+                    "sourceCommit": source,
+                    "destinationCommit": destination,
+                    "disposition": "replayed",
+                }
+                for source, destination in PR25_REPLAY_MAPPINGS
+            ]
         nodes.append(
             {
                 "id": node_id,
@@ -436,27 +773,68 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
                 "branch": row["branch"],
                 "baseRef": row["baseBranch"],
                 "baseSha": row["baseSha"],
+                "mergeBase": row.get("mergeBase", row["baseSha"]),
+                "ahead": row["layerAhead"],
+                "behind": row["layerBehind"],
+                "changedFileCount": row["changedFileCount"],
+                "state": "OPEN" if row.get("state") is None else row["state"],
+                "role": row.get("role", "integrated_stack"),
                 "headSha": row["headSha"],
                 "parentIds": parent_ids,
-                "dependencyIds": list(parent_ids),
+                "dependencyIds": dependency_ids,
                 "uniqueCommitRange": f"{row['baseSha']}..{row['headSha']}",
-                "integrationMappings": [],
-                "sourceOnly": False,
-                "superseded": False,
-                "mergeEligible": True,
-                "neverMergeWith": [],
-                "latestExactHeadForgeRun": row["latestExactHeadForgeRun"],
+                "integrationMappings": mappings,
+                "sourceOnly": source_only,
+                "superseded": superseded,
+                "mergeEligible": not source_only,
+                "neverMergeWith": (["github:jake-the-jake/Closy:pr/28"] if pr_number == 25 else []),
+                "latestExactHeadWorkflows": workflows,
             }
         )
-    stack["schemaVersion"] = 2
-    stack["graphVersion"] = "closy.pr_stack.dag.v2"
+    zeroone_id = "github:jake-the-jake/ZeroOne:pr/2"
+    nodes.append(
+        {
+            "id": zeroone_id,
+            "repository": zeroone_row["repository"],
+            "pullRequest": zeroone_row["number"],
+            "capabilityRole": "candidate_static_source",
+            "branch": zeroone_row["branch"],
+            "baseRef": zeroone_row["baseBranch"],
+            "baseSha": zeroone_row["baseSha"],
+            "mergeBase": zeroone_row["mergeBase"],
+            "ahead": zeroone_row["layerAhead"],
+            "behind": zeroone_row["layerBehind"],
+            "changedFileCount": zeroone_row["changedFileCount"],
+            "state": zeroone_row["state"],
+            "role": zeroone_row["role"],
+            "headSha": zeroone_row["headSha"],
+            "parentIds": [],
+            "dependencyIds": [],
+            "uniqueCommitRange": f"{zeroone_row['baseSha']}..{zeroone_row['headSha']}",
+            "integrationMappings": [],
+            "sourceOnly": False,
+            "superseded": False,
+            "mergeEligible": True,
+            "neverMergeWith": [],
+            "latestExactHeadWorkflows": zeroone_row["latestExactHeadWorkflows"],
+        }
+    )
+    stack["schemaVersion"] = 3
+    stack["graphVersion"] = "closy.cross_repository_pr_dag.v3"
     stack["topology"] = "explicit_dag"
+    stack["pullRequests"] = rows
+    stack["externalPullRequests"] = [zeroone_row]
     stack["nodes"] = nodes
     stack["edges"] = edges
+    stack.pop("sequentialMergeOrder", None)
+    stack.pop("sequentialMergeRehearsal", None)
+    stack["topologicalOrder"] = [node["id"] for node in nodes]
     stack["validation"] = {
         "acyclic": True,
         "exactMergeBases": True,
-        "replayedCommonAncestryAbsent": True,
+        "allDeclaredParentsZeroBehind": True,
+        "businessPatchMappingsComplete": True,
+        "publishedParentsUnmoved": True,
         "mode": "read_only_git_graph_verification",
     }
     issues = validate_pr_dag(stack)
@@ -481,6 +859,66 @@ def _replace_legacy_truth_terms(value: object) -> object:
     if isinstance(value, dict):
         return {key: _replace_legacy_truth_terms(item) for key, item in value.items()}
     return value
+
+
+def _closy_run(run_id: str, conclusion: str) -> dict[str, object]:
+    result: dict[str, object] = {
+        "exactHead": True,
+        "runId": run_id,
+        "workflow": "Closy Forge",
+        "conclusion": conclusion,
+        "jobCount": 26,
+    }
+    if conclusion == "SUCCESS":
+        result["successfulJobCount"] = 26
+    else:
+        result.update({"successfulJobCount": 21, "failedJobCount": 3, "cancelledJobCount": 2})
+    return result
+
+
+def _as_int(value: object) -> int:
+    if not isinstance(value, int | str):
+        raise TypeError("expected integer-compatible manifest value")
+    return int(value)
+
+
+def _workflow(name: str, run_id: str, conclusion: str, job_count: int) -> dict[str, object]:
+    return {
+        "workflow": name,
+        "runId": run_id,
+        "exactHead": True,
+        "conclusion": conclusion,
+        "jobCount": job_count,
+    }
+
+
+def _normalise_workflows(run: object) -> list[dict[str, object]]:
+    if not isinstance(run, dict):
+        return []
+    jobs = run.get("jobs")
+    if isinstance(jobs, list):
+        conclusions = {str(job.get("conclusion")) for job in jobs if isinstance(job, dict)}
+        conclusion = "SUCCESS" if conclusions == {"SUCCESS"} else "FAILURE"
+        return [_workflow("Closy Forge", str(run["runId"]), conclusion, len(jobs))]
+    return [
+        _workflow(
+            str(run.get("workflow", "Closy Forge")),
+            str(run["runId"]),
+            str(run.get("conclusion", "UNKNOWN")),
+            int(run.get("jobCount", 0)),
+        )
+    ]
+
+
+def _source_tree_hash(paths: list[str]) -> str:
+    digest = hashlib.sha256()
+    for relative in sorted(paths):
+        path = REPO_ROOT / relative
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 if __name__ == "__main__":

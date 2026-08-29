@@ -43,13 +43,23 @@ def validate_pr_dag(stack: dict[str, Any]) -> list[str]:
             "superseded",
             "mergeEligible",
             "neverMergeWith",
-            "latestExactHeadForgeRun",
+            "latestExactHeadWorkflows",
+            "state",
+            "role",
+            "mergeBase",
+            "ahead",
+            "behind",
+            "changedFileCount",
         }
         if not required.issubset(node):
             issues.append(f"pr_dag_node_fields_missing:{node_id}")
             continue
         if node["uniqueCommitRange"] != f"{node['baseSha']}..{node['headSha']}":
             issues.append(f"pr_dag_unique_range_invalid:{node_id}")
+        if node["mergeBase"] != node["baseSha"]:
+            issues.append(f"pr_dag_merge_base_invalid:{node_id}")
+        if int(node["behind"]) != 0:
+            issues.append(f"pr_dag_declared_parent_behind:{node_id}")
         if node["sourceOnly"] and node["mergeEligible"]:
             issues.append(f"pr_dag_source_only_merge_eligible:{node_id}")
         for relationship in (*node["parentIds"], *node["dependencyIds"], *node["neverMergeWith"]):
@@ -63,12 +73,16 @@ def validate_pr_dag(stack: dict[str, Any]) -> list[str]:
         if set(node["parentIds"]) != expected_parents:
             issues.append(f"pr_dag_parent_edges_mismatch:{node_id}")
     validation = stack.get("validation", {})
-    if validation != {
+    required_validation = {
         "acyclic": True,
         "exactMergeBases": True,
-        "replayedCommonAncestryAbsent": True,
+        "allDeclaredParentsZeroBehind": True,
+        "businessPatchMappingsComplete": True,
         "mode": "read_only_git_graph_verification",
-    }:
+    }
+    if not isinstance(validation, dict) or any(
+        validation.get(key) != value for key, value in required_validation.items()
+    ):
         issues.append("pr_dag_validation_record_invalid")
     return sorted(set(issues))
 

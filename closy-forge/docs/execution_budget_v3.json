@@ -1,0 +1,226 @@
+{
+  "budgetVersion": "closy.execution_budget.v3",
+  "crossRepositoryAuthority": {
+    "closy": {
+      "baseHead": "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72",
+      "branch": "codex/closy-forge-z1-surface-topology-repair-v3",
+      "repository": "jake-the-jake/Closy"
+    },
+    "zeroOneBudgetPath": "docs/closy_execution_budget_v1.json",
+    "zeroOneRepository": "jake-the-jake/ZeroOne"
+  },
+  "lanes": [
+    {
+      "blocker": "three settled sleeve regions collapse and candidate-static ZeroOne rejects them",
+      "commands": [
+        "python -m closy_forge.cli.main build-family --family {family} --output {task_output}",
+        "ZeroOneProcess inspect --request {request}",
+        "ZeroOneProcess cook --request {request}"
+      ],
+      "evidencePaths": [
+        "closy-forge/docs/evidence/z1_surface_repair"
+      ],
+      "laneId": "Z1-SURFACE-REPAIR",
+      "maximumStrategiesPerFamily": 3,
+      "maximumTrialsPerStrategy": 4,
+      "outcome": "not_run_on_v3",
+      "predeclaredThresholdProfile": "closy.surface_equivalence.z1.v1",
+      "remainingBlocker": "pre-fix witness reproduction and derivative-local surface repair",
+      "stopReason": null,
+      "strategyIds": [
+        "Z1-S1-LOCAL-CONFORMING-RETRIANGULATION",
+        "Z1-S2-SEAM-AWARE-LOCAL-VERTEX-SPLIT",
+        "Z1-S3-VERSIONED-PROCESSING-PATCH"
+      ],
+      "trialIds": [
+        "T1-DEFAULT",
+        "T2-MINIMUM",
+        "T3-MAXIMUM",
+        "T4-BOUNDARY-COMBINATION"
+      ]
+    },
+    {
+      "blocker": "compiled dynamic commands and cross-language payload do not exist",
+      "commands": [
+        "cmake --build build/Release --config Release --target ZeroOneProcess",
+        "ZeroOneProcess deform --request {request}",
+        "ZeroOneProcess validate-dynamic --request {request}"
+      ],
+      "evidencePaths": [
+        "docs/closy_dynamic_reference"
+      ],
+      "laneId": "ZEROONE-DYNAMIC-ARCHITECTURE",
+      "maximumRevisionsPerStrategy": 3,
+      "maximumStrategies": 2,
+      "outcome": "not_run",
+      "predeclaredThresholdProfile": "closy.dynamic_reference.z2.v1",
+      "remainingBlocker": "create ZeroOne B from exact candidate-static source",
+      "stopReason": null,
+      "strategyIds": [
+        "Z2-A1-CLUSTER-VERTEX-PAYLOAD",
+        "Z2-A2-RESIDENT-RENDER-VERTEX-PAYLOAD"
+      ],
+      "trialIds": [
+        "R1-CONTRACT-AND-REST",
+        "R2-MULTIFRAME-AND-BOUNDS",
+        "R3-FAILURE-AND-DETERMINISM"
+      ]
+    },
+    {
+      "blocker": "exact ZeroOne B binary and representative dynamic namespace are not paired",
+      "commands": [
+        "python -m closy_forge.cli.main build-dynamic-reference --output {task_output}",
+        "python -m pytest closy-forge/tests/integration -k dynamic_reference"
+      ],
+      "evidencePaths": [
+        "closy-forge/docs/evidence/phase11_dynamic_reference"
+      ],
+      "laneId": "PAIRED-DYNAMIC-INTEGRATION",
+      "maximumRevisionsPerStrategy": 3,
+      "maximumStrategies": 2,
+      "outcome": "not_run",
+      "predeclaredThresholdProfile": "closy.dynamic_reference.z2.v1",
+      "remainingBlocker": "representative static Z1 and compiled ZeroOne B",
+      "stopReason": null,
+      "strategyIds": [
+        "PAIR-D1-LOCAL-EXACT-BUILD",
+        "PAIR-D2-AUTHENTICATED-WORKFLOW-ARTIFACT"
+      ],
+      "trialIds": [
+        "R1-LOAD-AND-DEFORM",
+        "R2-DELETE-REBUILD",
+        "R3-CROSS-PLATFORM"
+      ]
+    },
+    {
+      "blocker": "runtime, avatar-fit, and LayerCollision sources are siblings without Z2 lineage",
+      "commands": [
+        "python -m pytest closy-forge/tests -k runtime_delivery",
+        "python -m pytest closy-forge/tests -k outfit_surface"
+      ],
+      "evidencePaths": [
+        "closy-forge/docs/evidence/post_z2_runtime_outfit"
+      ],
+      "laneId": "RUNTIME-OUTFIT-INTEGRATION",
+      "maximumRevisionsPerStrategy": 3,
+      "maximumStrategies": 2,
+      "outcome": "not_run",
+      "predeclaredThresholdProfile": "closy.outfit_surface.d0.v1",
+      "remainingBlocker": "accepted Closy C head",
+      "stopReason": null,
+      "strategyIds": [
+        "OUTFIT-I1-CANONICAL-SURFACE-PAIR",
+        "OUTFIT-I2-CONSERVATIVE-COLLISION-PROXIES"
+      ],
+      "trialIds": [
+        "R1-STATIC-ORDER",
+        "R2-MULTIFRAME",
+        "R3-PACKAGE-RESUME"
+      ]
+    },
+    {
+      "blocker": "current E1 trails an equal-input baseline and has invalid OOD/oracle accounting",
+      "commands": [
+        "python -m closy_forge.pattern_inference.execute_v3 --profile e1",
+        "python -m pytest closy-forge/tests -k pattern_inference"
+      ],
+      "evidencePaths": [
+        "closy-forge/docs/evidence/phase9_structured_v2/e1"
+      ],
+      "laneId": "PHASE9-E1",
+      "maximumModelFamiliesAfterBaselines": 3,
+      "outcome": "not_run_on_integrated_tree",
+      "predeclaredThresholdProfile": "closy.phase9_e1.selective.v1",
+      "remainingBlocker": "replay PR #26 and remove hidden-label fallback",
+      "stopReason": null,
+      "strategyIds": [
+        "E1-M1-LINEAR-MULTITASK-RECALIBRATED",
+        "E1-M2-SHALLOW-MLP-MULTITASK",
+        "E1-M3-HISTOGRAM-GRADIENT-ENSEMBLE"
+      ],
+      "trialIds": [
+        "C1-BASELINE-EQUAL-BUDGET",
+        "C2-CALIBRATED-SELECTIVE",
+        "C3-SHIFT-ROBUST"
+      ]
+    },
+    {
+      "blocker": "no learned typed structured-program decoder exists",
+      "commands": [
+        "python -m closy_forge.pattern_inference.execute_v3 --profile e2",
+        "python -m pytest closy-forge/tests -k typed_program_decoder"
+      ],
+      "evidencePaths": [
+        "closy-forge/docs/evidence/phase9_structured_v2/e2"
+      ],
+      "laneId": "PHASE9-E2",
+      "maximumConfigurations": 3,
+      "maximumDecoderFamilies": 1,
+      "outcome": "not_run",
+      "predeclaredThresholdProfile": "closy.phase9_e2.typed_program.v1",
+      "remainingBlocker": "implement bounded grammar-constrained typed decoder",
+      "stopReason": null,
+      "strategyIds": [
+        "E2-D1-AUTOREGRESSIVE-TYPED-AST"
+      ],
+      "trialIds": [
+        "CFG1-SMALL",
+        "CFG2-REGULARISED",
+        "CFG3-SELECTIVE"
+      ]
+    },
+    {
+      "blocker": "PHY1 fails clearance, contact, seam, and rest-quality criteria",
+      "commands": [
+        "python -m pytest closy-forge/tests -k self_collision",
+        "python -m closy_forge.cli.main validate-phy1 --profile single-layer-d0"
+      ],
+      "evidencePaths": [
+        "closy-forge/docs/evidence/phy1_progression_v3"
+      ],
+      "laneId": "PHY1",
+      "maximumStrategies": 3,
+      "maximumTrialsPerStrategy": 4,
+      "outcome": "not_run_on_v3",
+      "predeclaredThresholdProfile": "closy.phy1.single_layer.d0.v2",
+      "remainingBlocker": "classify rest defects before solver tuning",
+      "stopReason": null,
+      "strategyIds": [
+        "PHY1-S1-REST-ORACLE-AND-ASSET-CLASSIFICATION",
+        "PHY1-S2-XPBD-CONTACT-ORDERING",
+        "PHY1-S3-CONSERVATIVE-CCD"
+      ],
+      "trialIds": [
+        "T1-REFERENCE",
+        "T2-TIMESTEP-REFINEMENT",
+        "T3-SUBSTEP-REFINEMENT",
+        "T4-BOUNDARY-MOTION"
+      ]
+    },
+    {
+      "blocker": "only demonstrated transient infrastructure failures may consume this lane",
+      "commands": [
+        "gh run rerun {run_id} --failed"
+      ],
+      "evidencePaths": [],
+      "laneId": "CI-INFRASTRUCTURE-RETRY",
+      "maximumRetries": 1,
+      "outcome": "unused",
+      "predeclaredThresholdProfile": "terminal_exact_head_required_workflows",
+      "remainingBlocker": null,
+      "stopReason": null,
+      "strategyIds": [
+        "CI-R1-FAILED-JOBS-ONLY"
+      ],
+      "trialIds": [
+        "RETRY-1"
+      ]
+    }
+  ],
+  "policy": {
+    "noUnchangedFailingRerun": true,
+    "publishedCandidateHeadLimitPerNewPr": 3,
+    "thresholdsMayNotBeLoosenedAfterOutcome": true
+  },
+  "schemaVersion": 1
+}
