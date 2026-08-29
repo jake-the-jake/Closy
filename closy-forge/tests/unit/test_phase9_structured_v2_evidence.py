@@ -68,4 +68,5 @@ def test_phase14_and_correction_evidence_keep_authority_bounded() -> None:
     assert correction["containsRawImagePath"] is False
     assert replay["duplicateBusinessPatches"] == 0
     assert replay["phase14Replay"]["disposition"] == "replayed"
+    assert replay["phase14Replay"]["source"] == ("f99ab295677556a0df37af25c7a1b8541a648ad3")
     assert replay["sharedWorkflowPatch"]["disposition"] == "skipped_with_reason"
