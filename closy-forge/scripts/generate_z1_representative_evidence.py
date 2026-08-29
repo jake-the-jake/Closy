@@ -142,7 +142,7 @@ def main() -> int:
             }
 
         c3_pass = (
-            c3["profile"]["id"] == "C3-Binding-D0"
+            c3["profile"]["capabilityId"] == "C3-Binding-D0"
             and c3["readiness"]["gateC3Status"]
             == "complete_for_d0_fixed_avatar_tshirt_profile"
             and c3["readiness"]["acceptedForD0RuntimeBindingProfile"] is True
@@ -271,7 +271,8 @@ def _frozen_manifest(
             "sourceClassification": "unmerged_candidate_static_pr_head",
         },
         "pairedC3Binding": {
-            "profileId": c3["profile"]["id"],
+            "capabilityId": c3["profile"]["capabilityId"],
+            "reportProfileId": c3["profile"]["id"],
             "capabilityProfileHash": c3["profile"]["capabilityProfileHash"],
             "reportSha256": c3_hash,
             "reportIntegrityHash": c3["integrity"]["productionBindingC3ReportHash"],
