@@ -91,20 +91,26 @@
       "maximumStrategies": 2,
       "consumption": {
         "activeStrategy": "PAIR-D2-AUTHENTICATED-WORKFLOW-ARTIFACT",
-        "revisionsConsumed": 1,
-        "revisionsRemainingForActiveStrategy": 2,
+        "revisionsConsumed": 2,
+        "revisionsRemainingForActiveStrategy": 1,
         "trials": [
           {
             "diagnostic": "E_DYNAMIC_DEGENERATE_TRIANGLE",
             "outcome": "failed_before_publication",
             "requestSha256": "ebe141d8032503dc9fd8055d18de47c68b329bf142f60674d93a084beefd9f32",
             "trialId": "R1-LOAD-AND-DEFORM"
+          },
+          {
+            "diagnostic": "E_DYNAMIC_DEGENERATE_TRIANGLE",
+            "outcome": "failed_before_publication",
+            "requestSha256": "fade92d4579976b5c192f8399feeccb97aa6d776fd154db6a107a3855624ec91",
+            "trialId": "R2-CANONICAL-REST-AND-SOLVER-DELTA"
           }
         ]
       },
-      "outcome": "in_progress_after_r1_authority_mismatch",
+      "outcome": "in_progress_after_r2_static_dynamic_area_contract_mismatch",
       "predeclaredThresholdProfile": "closy.dynamic_reference.z2.v1",
-      "remainingBlocker": "R2 must prove canonical-rest plus solver-delta clip is nondegenerate and independently valid",
+      "remainingBlocker": "R3 must prove the declared derivative-local dynamic-safe processing surface, composed canonical influence lineage, and exact-rest single-LOD execution",
       "stopReason": null,
       "strategyIds": [
         "PAIR-D1-LOCAL-EXACT-BUILD",
