@@ -147,6 +147,23 @@ def integrate_zeroone_static(
                 "cache_hit_validation_failed",
                 run_a_hit,
             )
+        resume_run = _execute_resume_run(
+            tool.executable,
+            root,
+            package_root,
+            work / "resume",
+            work / "resume.json",
+            closy_sha,
+        )
+        if not resume_run["success"]:
+            return _failed(
+                tool,
+                package_root,
+                fallback_before,
+                before_files,
+                "resume_validation_failed",
+                resume_run,
+            )
         run_b = _execute_clean_run(
             tool.executable,
             root,
@@ -165,10 +182,14 @@ def integrate_zeroone_static(
         cook_b = run_b["cook"]
         hashes_a = _declared_hashes(cook_a)
         hashes_b = _declared_hashes(cook_b)
+        hashes_resumed = _declared_hashes(resume_run["resume"])
         deterministic = (
             bool(hashes_a)
             and hashes_a == hashes_b
+            and hashes_a == hashes_resumed
             and cook_a.get("canonicalDerivativeHash") == cook_b.get("canonicalDerivativeHash")
+            and cook_a.get("canonicalDerivativeHash")
+            == resume_run["resume"].get("canonicalDerivativeHash")
             and cook_a.get("canonicalDerivativeHash") == run_a_hit.get("canonicalDerivativeHash")
         )
         authority_before = authority_hashes(run_a["request"])
@@ -176,11 +197,20 @@ def integrate_zeroone_static(
             report.get("canonicalAuthorityHashesBefore") == authority_before
             and report.get("canonicalAuthorityHashesAfter") == authority_before
             and report.get("canonicalAuthorityPreserved") is True
-            for report in (cook_a, run_a_hit, cook_b, run_a["validate"], run_b["validate"])
+            for report in (
+                cook_a,
+                run_a_hit,
+                cook_b,
+                resume_run["resume"],
+                run_a["validate"],
+                run_b["validate"],
+                resume_run["validate"],
+            )
         )
         actual_static_cook = all(_static_cook_executed(report) for report in (cook_a, cook_b))
         actual_static_artifact_loaded = all(
-            _static_artifact_loaded(report) for report in (cook_a, run_a_hit, cook_b)
+            _static_artifact_loaded(report)
+            for report in (cook_a, run_a_hit, cook_b, resume_run["resume"])
         )
         cache_validated = (
             run_a_hit.get("cacheState") == "hit"
@@ -217,6 +247,7 @@ def integrate_zeroone_static(
                 run_a["request"],
                 run_a,
                 run_a_hit,
+                resume_run,
                 tool,
                 replace_existing=replace_existing,
             )
@@ -261,6 +292,7 @@ def integrate_zeroone_static(
         },
         "cleanRunA": _bounded_report(run_a),
         "cacheHitRun": _bounded_report(run_a_hit),
+        "resumeRun": _bounded_resume_report(resume_run),
         "cleanRunB": _bounded_report(run_b),
         "canonicalPackageBytesUnchanged": package_preserved,
         "validationBefore": validation_before,
@@ -320,9 +352,73 @@ def _execute_clean_run(
     }
 
 
-def _invoke(executable: Path, command: str, root: Path, request: Path) -> dict[str, Any]:
+def _execute_resume_run(
+    executable: Path,
+    invocation_root: Path,
+    package: Path,
+    output: Path,
+    request_path: Path,
+    closy_sha: str,
+) -> dict[str, Any]:
+    request = build_zeroone_request(
+        invocation_root=invocation_root,
+        package=package,
+        output=output,
+        closy_sha=closy_sha,
+        request_label="closy-phase10-interrupted-resume",
+    )
+    write_canonical_json(request_path, request)
+    inspect = _invoke(executable, "inspect", invocation_root, request_path)
+    if inspect.get("success") is not True:
+        return {"success": False, "stage": "inspect", "report": inspect}
+    interrupted = _invoke(
+        executable,
+        "cook",
+        invocation_root,
+        request_path,
+        extra_args=("--fault-test", "before-publication"),
+    )
+    if (
+        interrupted.get("success") is not False
+        or interrupted.get("diagnostic") != "E_INJECTED_INTERRUPTION_BEFORE_PUBLICATION"
+    ):
+        return {"success": False, "stage": "interruption", "report": interrupted}
+    resumed = _invoke(executable, "resume", invocation_root, request_path)
+    if not _successful_compute_report(resumed) or resumed.get("resumeState") != "matched":
+        return {"success": False, "stage": "resume", "report": resumed}
+    validate = _invoke(executable, "validate", invocation_root, request_path)
+    if validate.get("success") is not True or validate.get("validatedNativeDerivative") is not True:
+        return {"success": False, "stage": "validate", "report": validate}
+    return {
+        "success": True,
+        "request": request,
+        "requestPath": request_path,
+        "output": output,
+        "inspect": inspect,
+        "interrupted": interrupted,
+        "resume": resumed,
+        "validate": validate,
+    }
+
+
+def _invoke(
+    executable: Path,
+    command: str,
+    root: Path,
+    request: Path,
+    *,
+    extra_args: tuple[str, ...] = (),
+) -> dict[str, Any]:
     completed = subprocess.run(
-        [str(executable), command, "--root", str(root), "--request", str(request)],
+        [
+            str(executable),
+            command,
+            "--root",
+            str(root),
+            "--request",
+            str(request),
+            *extra_args,
+        ],
         check=False,
         capture_output=True,
         text=True,
@@ -395,6 +491,7 @@ def _publish_derivative(
     request: dict[str, Any],
     clean_run: dict[str, Any],
     cache_hit: dict[str, Any],
+    resume_run: dict[str, Any],
     tool: ZeroOneToolResolution,
     *,
     replace_existing: bool,
@@ -437,6 +534,7 @@ def _publish_derivative(
                 "actualZeroOneStaticCookExecutedThisInvocation": True,
                 "actualZeroOneStaticArtifactLoaded": True,
                 "cacheValidated": True,
+                "resumeValidated": resume_run["resume"].get("resumeState") == "matched",
                 "actualZeroOneDynamicDeformationExecuted": False,
                 "actualZeroOneGpuRuntimeExecuted": False,
                 "actualZeroOneMobileRuntimeExecuted": False,
@@ -505,6 +603,20 @@ def _bounded_report(value: dict[str, Any]) -> dict[str, Any]:
     bounded["actualZeroOneStaticCookExecutedThisInvocation"] = _static_cook_executed(report)
     bounded["actualZeroOneStaticArtifactLoaded"] = _static_artifact_loaded(report)
     return bounded
+
+
+def _bounded_resume_report(value: dict[str, Any]) -> dict[str, Any]:
+    resumed = _bounded_report(value["resume"])
+    resumed.update(
+        {
+            "interruptionDiagnostic": value["interrupted"].get("diagnostic"),
+            "resumeState": value["resume"].get("resumeState"),
+            "validatedNativeDerivative": value["validate"].get(
+                "validatedNativeDerivative"
+            ),
+        }
+    )
+    return resumed
 
 
 def _unexecuted(
