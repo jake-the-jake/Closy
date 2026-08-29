@@ -30,6 +30,22 @@
       "staticDerivativeIdentitySha256": "6875d1edfde93c66e200318c06cb7d6748237eee35f5b19469a63b881a47433a",
       "thresholdChanged": false,
       "zeroOneSourceSha": "413aecd24434f90d89ad35c6a8f909de75df34c7"
+    },
+    {
+      "closySourceSha": "8d9b67d9a462534327ccd964712f70f0d8daa7a7",
+      "command": "closy-forge zeroone dynamic <representative-package> --clip-scale 0.02 --expected-zeroone-sha 413aecd24434f90d89ad35c6a8f909de75df34c7",
+      "compiledDeformationExecuted": true,
+      "diagnostic": "dynamic_independent_oracle_failed",
+      "diagnosticEvidence": "r3_compiled_pairing_failure.json",
+      "dynamicOutputSha256": "097f1f9c2621870dd460b0a5bc4374cf6212a59e5b282da00a207133864f5847",
+      "executableSha256": "e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc",
+      "outcome": "failed_independent_oracle_before_publication",
+      "reason": "the dynamic-safe static surface and compiled deformation passed, but the canonical representative garment retained 971 nonadjacent rest intersections and 933 mid-clip intersections; no dynamic namespace was published",
+      "requestSha256": "926bb20398db795d2d9a66a39e80e2c9987e6782050b7a45436d4f69a571a33c",
+      "revision": "R3-DYNAMIC-SAFE-PROCESSING-SURFACE",
+      "staticDerivativeIdentitySha256": "36ef2183bcd367bbe19d7779ef20fb7bdf68a1050978e496c6bc64a6939a8328",
+      "thresholdChanged": false,
+      "zeroOneSourceSha": "413aecd24434f90d89ad35c6a8f909de75df34c7"
     }
   ]
 }

@@ -179,6 +179,11 @@ def test_dynamic_safe_processing_surface_has_exact_composed_rest_identity(
         if row["path"].startswith("zeroone/")
     }
     assert optional[DYNAMIC_PROCESSING_SURFACE_PATH]["canonical"] is False
+    for row in manifest_after["inventory"]:
+        if row["path"] == DYNAMIC_PROCESSING_SURFACE_PATH:
+            row["sha256"] = "0" * 64
+    write_canonical_json(package / "manifest.json", manifest_after)
+    assert inspect_dynamic_processing_surface(package)["status"] == "invalid"
 
 
 def test_dynamic_namespace_exact_inventory_and_corruption(tmp_path: Path) -> None:
