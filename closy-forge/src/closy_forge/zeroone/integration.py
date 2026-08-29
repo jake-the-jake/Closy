@@ -473,7 +473,7 @@ def _canonical_package_hashes(package: Path) -> dict[str, str]:
         for path in sorted(package.rglob("*"))
         if path.is_file()
         and not path.is_symlink()
-        and "zeroone" not in path.relative_to(package).parts
+        and not posix_rel(path, package).startswith("zeroone/static-d0/")
     }
 
 

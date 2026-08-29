@@ -12236,6 +12236,26 @@ def _issue(
 
 
 def _with_zeroone_validation(package_dir: Path, report: dict[str, Any]) -> dict[str, Any]:
+    from closy_forge.zeroone.processing_surface import inspect_processing_surface
+
+    processing = inspect_processing_surface(package_dir)
+    if processing.get("status") == "invalid":
+        result = {
+            "schemaVersion": report.get("schemaVersion", 1),
+            "status": "failed",
+            "counts": dict(report.get("counts", {})),
+            "issues": list(report.get("issues", [])),
+        }
+        result["counts"]["fatal"] = int(result["counts"].get("fatal", 0)) + 1
+        result["issues"].append(
+            _issue(
+                "zeroone_processing_surface_corrupt",
+                "fatal",
+                "zeroone/input-z1-v1",
+                str(processing.get("reason", "processing surface validation failed")),
+            ).to_json()
+        )
+        return result
     audit = inspect_zeroone_namespace(package_dir)
     status = audit.get("status")
     if status in {"not_present", "derivative_valid"}:

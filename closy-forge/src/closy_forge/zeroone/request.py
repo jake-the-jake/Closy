@@ -47,11 +47,17 @@ def build_zeroone_request(
     if not isinstance(canonical, dict):
         canonical = {}
 
-    input_relative = _choose_existing(
+    fallback_relative = _choose_existing(
         inventory,
         canonical.get("renderFallback"),
         canonical.get("denseRender"),
         "render/fallback.glb",
+    )
+    processing_relative = canonical.get("zeroOneProcessingSurface")
+    input_relative = (
+        processing_relative
+        if isinstance(processing_relative, str) and processing_relative in inventory
+        else fallback_relative
     )
     semantic_relative = _choose_existing(
         inventory,
@@ -59,11 +65,18 @@ def build_zeroone_request(
         canonical.get("semantic"),
         "semantic/garment_graph.json",
     )
-    topology_relative = _choose_existing(
-        inventory,
-        canonical.get("renderMeshManifest"),
-        "render/mesh_manifest.json",
-        "manifest.json",
+    processing_manifest = canonical.get("zeroOneProcessingSurfaceManifest")
+    topology_relative = (
+        processing_manifest
+        if input_relative != fallback_relative
+        and isinstance(processing_manifest, str)
+        and processing_manifest in inventory
+        else _choose_existing(
+            inventory,
+            canonical.get("renderMeshManifest"),
+            "render/mesh_manifest.json",
+            "manifest.json",
+        )
     )
     topology = _read_object(package_root / topology_relative)
     topology_hash = topology.get("topologyHash")
@@ -114,7 +127,7 @@ def build_zeroone_request(
             "textures/layered_asymmetric_pbr_report.json",
             "textures/atlas/base_color.png",
         ),
-        "conventional_fallback": input_relative,
+        "conventional_fallback": fallback_relative,
     }
     if len(set(authority_paths.values())) != len(authority_paths):
         raise ValueError("canonical authority roles must resolve to distinct package assets")
@@ -149,6 +162,11 @@ def build_zeroone_request(
         "manifestSha256": sha256_file(manifest_path),
         "inputAssetPath": input_relative,
         "inputContentSha256": _inventory_hash(package_root, inventory, input_relative),
+        "inputRole": (
+            "versioned_zeroone_processing_surface"
+            if input_relative != fallback_relative
+            else "canonical_conventional_fallback"
+        ),
         "garmentId": garment_id,
         "topologyHash": topology_hash,
         "topologyMetadataPath": topology_relative,

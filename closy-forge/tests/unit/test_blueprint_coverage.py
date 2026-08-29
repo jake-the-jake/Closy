@@ -191,6 +191,14 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert "sequentialMergeOrder" not in stack
+    topological_position = {
+        node_id: index for index, node_id in enumerate(stack["topologicalOrder"])
+    }
+    assert set(topological_position) == {node["id"] for node in nodes}
+    assert all(
+        topological_position[edge["from"]] < topological_position[edge["to"]]
+        for edge in stack["edges"]
+    )
     for row in rows:
         assert row["draft"] is True
         assert row["mergeability"] == "MERGEABLE"

@@ -19,6 +19,7 @@ class CpuRasterResult:
     rendered_triangle_count: int
     projected_vertex_count: int
     camera: dict[str, object]
+    depth: tuple[float | None, ...]
 
 
 def rasterize_settled_garment(
@@ -100,6 +101,7 @@ def rasterize_settled_garment(
             "runtimeBoundsFramed": True,
             "frameOffsetPixels": [round(frame_offset[0], 6), round(frame_offset[1], 6)],
         },
+        depth=tuple(None if math.isinf(value) else value for value in depth),
     )
 
 

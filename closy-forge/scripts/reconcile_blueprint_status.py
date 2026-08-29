@@ -828,7 +828,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
     stack["edges"] = edges
     stack.pop("sequentialMergeOrder", None)
     stack.pop("sequentialMergeRehearsal", None)
-    stack["topologicalOrder"] = [node["id"] for node in nodes]
+    stack["topologicalOrder"] = _topological_order(nodes, edges)
     stack["validation"] = {
         "acyclic": True,
         "exactMergeBases": True,
@@ -841,6 +841,31 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
     if issues:
         raise ValueError(";".join(issues))
     return stack
+
+
+def _topological_order(nodes: list[dict[str, object]], edges: list[dict[str, str]]) -> list[str]:
+    declared = [str(node["id"]) for node in nodes]
+    position = {node_id: index for index, node_id in enumerate(declared)}
+    incoming: dict[str, set[str]] = {node_id: set() for node_id in declared}
+    outgoing: dict[str, set[str]] = {node_id: set() for node_id in declared}
+    for edge in edges:
+        source = edge["from"]
+        target = edge["to"]
+        incoming[target].add(source)
+        outgoing[source].add(target)
+    ready = [node_id for node_id in declared if not incoming[node_id]]
+    result: list[str] = []
+    while ready:
+        ready.sort(key=position.__getitem__)
+        node_id = ready.pop(0)
+        result.append(node_id)
+        for target in sorted(outgoing[node_id], key=position.__getitem__):
+            incoming[target].discard(node_id)
+            if not incoming[target] and target not in result and target not in ready:
+                ready.append(target)
+    if len(result) != len(declared):
+        raise ValueError("pull-request dependency graph contains a cycle")
+    return result
 
 
 def _capability_role(title: str) -> str:

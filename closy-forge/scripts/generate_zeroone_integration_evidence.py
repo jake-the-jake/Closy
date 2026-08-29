@@ -436,7 +436,11 @@ def _failed_family_inventory(package: Path, report: dict[str, Any]) -> dict[str,
     panels = sorted(str(panel_id) for panel_id in semantics.get("panelMapping", {}))
     seams = sorted(str(item["id"]) for item in semantics.get("seams", []))
     openings = sorted(str(item["id"]) for item in semantics.get("openings", []))
-    materials = sorted(str(item["materialId"]) for item in canonical_materials.get("materials", []))
+    materials = sorted(
+        str(item.get("materialId", item.get("id")))
+        for item in canonical_materials.get("materials", [])
+        if isinstance(item, dict) and isinstance(item.get("materialId", item.get("id")), str)
+    )
     layers = sorted(
         {str(item.get("layerId", "layer.default")) for item in semantics.get("components", [])}
     )

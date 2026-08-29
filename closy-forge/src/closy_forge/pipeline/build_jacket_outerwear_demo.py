@@ -61,6 +61,11 @@ from closy_forge.simulation.material_physics import (
 )
 from closy_forge.simulation.reference_cloth_solver import flatten_mesh, replace_mesh_positions
 from closy_forge.validation.validator import validate_package
+from closy_forge.zeroone.processing_surface import (
+    PROCESSING_MANIFEST_PATH,
+    PROCESSING_SURFACE_PATH,
+    write_processing_surface_bundle,
+)
 
 PACKAGE_VERSION = "closy.jacket_outerwear.package.d0.v1"
 SELECTED_PRESET_ID = "material.heavy_jersey_d0_v1"
@@ -209,6 +214,14 @@ def _write_package_contents(
         quality=quality,
         seed=seed,
     )
+    write_processing_surface_bundle(
+        package_dir=package_dir,
+        source_mesh=render_mesh,
+        binding=binding,
+        semantic_graph=semantic,
+        material_name=CONTRACT_WRITE_SPEC.dense_render_node_name,
+        material_color=(0.18, 0.37, 0.69, 1.0),
+    )
     inventory = collect_inventory(package_dir, exclude=EXCLUDED_FROM_CANONICAL_INVENTORY)
     digest = canonical_package_digest(inventory)
     manifest = _manifest(
@@ -268,6 +281,8 @@ def _manifest(
             "semantic": "semantic/garment_graph.json",
             "simulation": "simulation/simulation_mesh.glb",
             "denseRender": "render/fallback.glb",
+            "zeroOneProcessingSurface": PROCESSING_SURFACE_PATH,
+            "zeroOneProcessingSurfaceManifest": PROCESSING_MANIFEST_PATH,
             "independentFallback": "render/simulation_fallback.glb",
             "binding": "binding/sim_to_render.bin",
             "material": "simulation/material_physics.json",
