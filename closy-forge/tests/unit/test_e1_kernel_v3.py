@@ -11,6 +11,7 @@ from closy_forge.pattern_inference.e1_kernel_v3 import (
     e1_model_hash,
     predict_e1_kernel_v3,
     rbf_score_and_gradient,
+    reload_e1_model_v3,
     train_e1_kernel_v3,
     validate_e1_model_v3,
 )
@@ -33,7 +34,7 @@ def test_kernel_model_serializes_reloads_and_predicts_without_targets(
     dataset, _split, model = smoke_bundle
     assert validate_e1_model_v3(model) == []
 
-    reloaded = json.loads(canonical_dumps(model))
+    reloaded = reload_e1_model_v3(json.loads(canonical_dumps(model)))
     assert validate_e1_model_v3(reloaded) == []
     assert reloaded["integrity"]["modelHash"] == e1_model_hash(reloaded)
     observation = dataset["captures"][0]["input"]

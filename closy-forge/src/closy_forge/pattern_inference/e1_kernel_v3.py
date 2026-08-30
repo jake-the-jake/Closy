@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 import random
 import time
@@ -152,6 +153,14 @@ def e1_model_hash(model: dict[str, Any]) -> str:
     payload = deepcopy(model)
     payload.setdefault("integrity", {})["modelHash"] = ""
     return sha256_bytes(canonical_dumps(payload).encode("utf-8"))
+
+
+def reload_e1_model_v3(model: dict[str, Any]) -> dict[str, Any]:
+    reloaded: dict[str, Any] = json.loads(canonical_dumps(model))
+    issues = validate_e1_model_v3(reloaded)
+    if issues:
+        raise ValueError("e1_model_reload_invalid:" + ";".join(issues))
+    return reloaded
 
 
 def rbf_score_and_gradient(
