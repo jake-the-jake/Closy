@@ -9,6 +9,7 @@ from closy_forge.package_io.managed_output import ManagedOutputError, read_manag
 from closy_forge.package_io.paths import validate_package_relpath
 from closy_forge.security.strict_json import StrictJsonError, load_strict_json_object
 from closy_forge.zeroone.dynamic_namespace import (
+    DYNAMIC_DIRECTORY,
     DYNAMIC_PURPOSE,
     validate_dynamic_namespace_manifest,
 )
@@ -16,6 +17,7 @@ from closy_forge.zeroone.dynamic_oracle import decode_document, decode_metadata
 from closy_forge.zeroone.dynamic_request import (
     DYNAMIC_PROFILE,
     DYNAMIC_REPORT_SCHEMA_VERSION,
+    SCOPED_ACCEPTANCE_PROFILE,
     static_derivative_identity_hash,
 )
 from closy_forge.zeroone.namespace import (
@@ -34,7 +36,13 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
     target = root / "static-d0"
     if not target.is_dir():
         children = {child.name for child in root.iterdir()}
-        if children <= {"input-z1-v1", "input-z2-v1", "dynamic-d0-reference"}:
+        if children <= {
+            "input-z1-v1",
+            "input-z2-v1",
+            "input-mt1-v2",
+            "dynamic-d0-reference",
+            "mechanical-reference-v2",
+        }:
             return {"status": "not_present", "reason": "zeroone_derivative_absent"}
         return {"status": "derivative_incompatible", "reason": "static_profile_directory_missing"}
     try:
@@ -108,7 +116,7 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
 
 
 def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
-    target = package / "zeroone" / "dynamic-d0-reference"
+    target = package / "zeroone" / DYNAMIC_DIRECTORY
     if not target.exists():
         return {"status": "not_present", "reason": "zeroone_dynamic_derivative_absent"}
     if not target.is_dir():
@@ -162,10 +170,10 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
     if (
         capability.get("schemaVersion") != "closy.zeroone.dynamic-capability.v1"
         or capability.get("profile") != DYNAMIC_PROFILE
-        or capability.get("scopedAcceptance") != "Z2-D0-single-LOD-reference"
-        or capability.get("status") != "scoped_pass"
+        or capability.get("scopedAcceptance") != SCOPED_ACCEPTANCE_PROFILE
+        or capability.get("status") != "clean_reference_pass"
         or capability.get("actualCompiledDeformationExecuted") is not True
-        or capability.get("pairingAuthority") != "local_candidate"
+        or capability.get("pairingAuthority") != "authenticated_exact_head_workflow_artifact"
         or capability.get("durablePairedZ2Proven") is not False
         or capability.get("physicalQualityClaim") is not False
         or capability.get("productionClaim") is not False
@@ -187,8 +195,11 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         or "deform" not in report.get("actualCommandsExecuted", [])
         or report.get("dynamicOutputSha256") != derivative_sha
         or report.get("staticDerivativeIdentitySha256") != static_identity
-        or report.get("scopedAcceptance", {}).get("compiledDeformationExecuted") is not True
-        or report.get("scopedAcceptance", {}).get("physicalQualityClaim") is not False
+        or report.get("processorMechanicalValidation", {}).get("compiledDeformationExecuted")
+        is not True
+        or report.get("processorMechanicalValidation", {}).get("passed") is not True
+        or report.get("scopedMt1", {}).get("status") != "not_evaluated_by_processor"
+        or report.get("blueprintZ2", {}).get("status") != "not_run"
     ):
         return {"status": "derivative_corrupt", "reason": "dynamic_process_report_invalid"}
     if (
@@ -200,7 +211,7 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
     ):
         return {"status": "derivative_corrupt", "reason": "dynamic_binary_linkage_invalid"}
     if (
-        oracle.get("schemaVersion") != "closy.zeroone.dynamic-forge-oracle.v1"
+        oracle.get("schemaVersion") != "closy.zeroone.mt1-independent-oracle.v2"
         or oracle.get("passed") is not True
         or oracle.get("requestSha256") != request.get("requestSha256")
         or oracle.get("outputSha256") != derivative_sha
@@ -222,6 +233,7 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         or execution.get("outputSha256") != derivative_sha
         or execution.get("deterministicDeleteRebuild") is not True
         or execution.get("inputSensitivityRun") is not True
+        or execution.get("crossRepositoryWorkflowAuthorityAvailable") is not True
         or execution.get("fallbackPreserved") is not True
         or execution.get("canonicalAuthorityPreserved") is not True
     ):
@@ -233,6 +245,7 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         or provenance.get("actualZeroOneMobileRuntimeExecuted") is not False
         or provenance.get("physicalTruth") is not False
         or provenance.get("durablePairedZ2Proven") is not False
+        or provenance.get("pairingAuthority") != "authenticated_exact_head_workflow_artifact"
         or provenance.get("dynamicOutputSha256") != derivative_sha
         or limitations.get("schemaVersion") != "closy.zeroone.dynamic-limitations.v1"
         or limitations.get("production") is not False
@@ -240,7 +253,7 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         return {"status": "derivative_corrupt", "reason": "dynamic_provenance_invalid"}
     return {
         "status": "derivative_valid",
-        "reason": "scoped_dynamic_d0_reference_valid",
+        "reason": "scoped_mt1_clean_reference_motion_valid",
         "profile": DYNAMIC_PROFILE,
         "requestSha256": request.get("requestSha256"),
         "dynamicOutputSha256": derivative_sha,
@@ -248,7 +261,7 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         "renderVertexCount": oracle.get("renderVertexCount"),
         "triangleCount": oracle.get("triangleCount"),
         "inventoryDigest": namespace_manifest.get("inventoryDigest"),
-        "pairingAuthority": "local_candidate",
+        "pairingAuthority": "authenticated_exact_head_workflow_artifact",
         "durablePairedZ2Proven": False,
     }
 

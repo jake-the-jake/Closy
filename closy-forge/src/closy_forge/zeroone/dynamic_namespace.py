@@ -14,10 +14,10 @@ from closy_forge.security.strict_json import StrictJsonError, load_strict_json_o
 from closy_forge.zeroone.dynamic_request import DYNAMIC_PROFILE
 from closy_forge.zeroone.namespace import NamespaceIntegrityError, read_verified_regular_file
 
-DYNAMIC_DIRECTORY = "dynamic-d0-reference"
-DYNAMIC_PURPOSE = "zeroone-dynamic-d0-reference"
+DYNAMIC_DIRECTORY = "mechanical-reference-v2"
+DYNAMIC_PURPOSE = "zeroone-mechanical-reference-v2"
 DYNAMIC_MANIFEST_NAME = "namespace_manifest.json"
-DYNAMIC_MANIFEST_VERSION = "closy.zeroone.dynamic-namespace-manifest.v1"
+DYNAMIC_MANIFEST_VERSION = "closy.zeroone.mechanical-reference-namespace-manifest.v2"
 MANAGED_MARKER = ".closy-forge-owned.json"
 MAX_FILE_COUNT = 24
 MAX_FILE_BYTES = 536_870_912

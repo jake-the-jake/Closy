@@ -55,6 +55,10 @@ from closy_forge.visual_understanding import (
 )
 from closy_forge.zeroone.dynamic_integration import integrate_zeroone_dynamic
 from closy_forge.zeroone.integration import integrate_zeroone_static
+from closy_forge.zeroone.mechanical_reference_surface import (
+    prepare_mechanical_reference_surface,
+)
+from closy_forge.zeroone.representation_audit import audit_historical_representations
 from closy_forge.zeroone.tool import PINNED_ZEROONE_SOURCE_SHA
 
 EXIT_SUCCESS = 0
@@ -406,6 +410,20 @@ def _parser() -> argparse.ArgumentParser:
         "zeroone", help="Build optional derivatives with a pinned ZeroOne processor."
     )
     zeroone_sub = zeroone.add_subparsers(dest="zeroone_command")
+    zeroone_prepare_mt1 = zeroone_sub.add_parser(
+        "prepare-mt1", help="Prepare the derivative-only clean MT1 rest-reference surface."
+    )
+    zeroone_prepare_mt1.add_argument("package", type=Path)
+    zeroone_prepare_mt1.add_argument("--replace-existing", action="store_true")
+    zeroone_prepare_mt1.add_argument("--json", action="store_true")
+    zeroone_prepare_mt1.set_defaults(handler=_prepare_zeroone_mt1)
+    zeroone_audit_representations = zeroone_sub.add_parser(
+        "audit-representations", help="Localize historical surface intersections."
+    )
+    zeroone_audit_representations.add_argument("package", type=Path)
+    zeroone_audit_representations.add_argument("--output", required=True, type=Path)
+    zeroone_audit_representations.add_argument("--json", action="store_true")
+    zeroone_audit_representations.set_defaults(handler=_audit_zeroone_representations)
     zeroone_static = zeroone_sub.add_parser(
         "static", help="Run and validate the real headless ZeroOne D0 static profile."
     )
@@ -859,6 +877,32 @@ def _integrate_zeroone_static(args: argparse.Namespace) -> int:
     if result.status == "unavailable":
         return EXIT_EXTERNAL_TOOL_UNAVAILABLE
     return EXIT_VALIDATION_FAILURE
+
+
+def _prepare_zeroone_mt1(args: argparse.Namespace) -> int:
+    result = prepare_mechanical_reference_surface(
+        args.package, replace_existing=args.replace_existing
+    )
+    if args.json:
+        print(canonical_dumps(result), end="")
+    else:
+        print(json.dumps(result, indent=2, sort_keys=True))
+    return EXIT_SUCCESS if result.get("status") == "valid" else EXIT_VALIDATION_FAILURE
+
+
+def _audit_zeroone_representations(args: argparse.Namespace) -> int:
+    result = audit_historical_representations(args.package)
+    write_canonical_json(args.output, result)
+    payload = {
+        "status": "audited",
+        "output": str(args.output),
+        "localization": result["localization"],
+    }
+    if args.json:
+        print(canonical_dumps(payload), end="")
+    else:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    return EXIT_SUCCESS
 
 
 def _integrate_zeroone_dynamic(args: argparse.Namespace) -> int:

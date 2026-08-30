@@ -13,6 +13,11 @@ from closy_forge.zeroone.dynamic_processing_surface import (
     DYNAMIC_PROCESSING_SURFACE_PATH,
     inspect_dynamic_processing_surface,
 )
+from closy_forge.zeroone.mechanical_reference_surface import (
+    MECHANICAL_REFERENCE_MANIFEST_PATH,
+    MECHANICAL_REFERENCE_SURFACE_PATH,
+    inspect_mechanical_reference_surface,
+)
 from closy_forge.zeroone.tool import PROFILE, REQUEST_SCHEMA_VERSION
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -58,13 +63,20 @@ def build_zeroone_request(
         canonical.get("denseRender"),
         "render/fallback.glb",
     )
+    mechanical_reference = inspect_mechanical_reference_surface(package_root)
+    if mechanical_reference.get("status") == "invalid":
+        raise ValueError(
+            f"mechanical reference surface is invalid: {mechanical_reference.get('reason')}"
+        )
     dynamic_processing = inspect_dynamic_processing_surface(package_root)
     if dynamic_processing.get("status") == "invalid":
         raise ValueError(
             f"dynamic processing surface is invalid: {dynamic_processing.get('reason')}"
         )
     processing_relative = canonical.get("zeroOneProcessingSurface")
-    if dynamic_processing.get("status") == "valid":
+    if mechanical_reference.get("status") == "valid":
+        input_relative = MECHANICAL_REFERENCE_SURFACE_PATH
+    elif dynamic_processing.get("status") == "valid":
         input_relative = DYNAMIC_PROCESSING_SURFACE_PATH
     else:
         input_relative = (
@@ -79,7 +91,9 @@ def build_zeroone_request(
         "semantic/garment_graph.json",
     )
     processing_manifest = canonical.get("zeroOneProcessingSurfaceManifest")
-    if input_relative == DYNAMIC_PROCESSING_SURFACE_PATH:
+    if input_relative == MECHANICAL_REFERENCE_SURFACE_PATH:
+        topology_relative = MECHANICAL_REFERENCE_MANIFEST_PATH
+    elif input_relative == DYNAMIC_PROCESSING_SURFACE_PATH:
         topology_relative = DYNAMIC_PROCESSING_MANIFEST_PATH
     else:
         topology_relative = (
@@ -179,12 +193,16 @@ def build_zeroone_request(
         "inputAssetPath": input_relative,
         "inputContentSha256": _inventory_hash(package_root, inventory, input_relative),
         "inputRole": (
-            "versioned_zeroone_dynamic_processing_surface"
-            if input_relative == DYNAMIC_PROCESSING_SURFACE_PATH
+            "versioned_zeroone_mechanical_reference_surface"
+            if input_relative == MECHANICAL_REFERENCE_SURFACE_PATH
             else (
-                "versioned_zeroone_processing_surface"
-                if input_relative != fallback_relative
-                else "canonical_conventional_fallback"
+                "versioned_zeroone_dynamic_processing_surface"
+                if input_relative == DYNAMIC_PROCESSING_SURFACE_PATH
+                else (
+                    "versioned_zeroone_processing_surface"
+                    if input_relative != fallback_relative
+                    else "canonical_conventional_fallback"
+                )
             )
         ),
         "garmentId": garment_id,

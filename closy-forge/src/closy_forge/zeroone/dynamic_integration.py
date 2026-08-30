@@ -26,7 +26,6 @@ from closy_forge.zeroone.dynamic_namespace import (
     validate_dynamic_namespace_manifest,
     write_dynamic_namespace_manifest,
 )
-from closy_forge.zeroone.dynamic_oracle import audit_files
 from closy_forge.zeroone.dynamic_request import (
     DEFAULT_CLIP_SCALE,
     DYNAMIC_PROFILE,
@@ -35,6 +34,7 @@ from closy_forge.zeroone.dynamic_request import (
     build_dynamic_request,
     write_dynamic_request,
 )
+from closy_forge.zeroone.mechanical_reference_oracle import audit_mechanical_reference_files
 from closy_forge.zeroone.namespace import read_verified_regular_file
 from closy_forge.zeroone.tool import (
     ZeroOneToolResolution,
@@ -150,12 +150,12 @@ def integrate_zeroone_dynamic(
 
     threshold_path = Path(__file__).resolve().parents[3] / "docs" / "threshold_registry_v1.json"
     threshold_registry = _object(threshold_path)
-    threshold_profile = threshold_registry["profiles"]["closy.dynamic_reference.z2.v1"]
-    oracle_source_sha = sha256_file(Path(__file__).with_name("dynamic_oracle.py"))
+    threshold_profile = threshold_registry["profiles"]["closy.mechanical_reference.mt1.v2"]
+    oracle_source_sha = sha256_file(Path(__file__).with_name("mechanical_reference_oracle.py"))
     if threshold_profile.get("oracleVersionHash") != oracle_source_sha:
         return _unexecuted(
             "request_invalid",
-            "dynamic_oracle_source_hash_mismatch",
+            "mechanical_reference_oracle_source_hash_mismatch",
             tool,
             _fallback_hash(package_root) == fallback_before and fallback_before is not None,
             {
@@ -243,8 +243,12 @@ def integrate_zeroone_dynamic(
                 {"first": first, "cached": cached, "rebuilt": rebuilt},
             )
 
-        raw_oracle = audit_files(request_path, current / "derivative.z1dyn")
-        oracle = _evaluate_thresholds(raw_oracle, thresholds, threshold_sha)
+        oracle = audit_mechanical_reference_files(
+            request_path, current / "derivative.z1dyn", package_root
+        )
+        oracle["thresholdProfile"] = "closy.mechanical_reference.mt1.v2"
+        oracle["thresholdRegistrySha256"] = threshold_sha
+        oracle["thresholdRegistryMetrics"] = thresholds
         if oracle.get("passed") is not True:
             return _failed(
                 tool,
@@ -340,7 +344,7 @@ def integrate_zeroone_dynamic(
                 )
         return ZeroOneDynamicIntegrationResult(
             status="executed",
-            reason="scoped_dynamic_d0_reference_executed",
+            reason="scoped_mt1_clean_reference_motion_executed",
             actual_dynamic_deformation_executed=True,
             deterministic_delete_rebuild=deterministic,
             input_sensitivity_run=input_sensitive,
@@ -361,7 +365,7 @@ def integrate_zeroone_dynamic(
                 "validate": _bounded_report(validate),
                 "inputSensitivity": _bounded_report(sensitivity),
                 "oracle": oracle,
-                "pairingAuthority": "local_candidate",
+                "pairingAuthority": "authenticated_exact_head_workflow_artifact",
                 "durablePairedZ2Proven": False,
             },
         )
@@ -426,14 +430,14 @@ def _publish_dynamic(
             "schemaVersion": "closy.zeroone.dynamic-capability.v1",
             "profile": DYNAMIC_PROFILE,
             "scopedAcceptance": SCOPED_ACCEPTANCE_PROFILE,
-            "status": "scoped_pass",
+            "status": "clean_reference_pass",
             "actualCompiledDeformationExecuted": True,
             "independentForgeOraclePassed": True,
             "deterministicDeleteRebuild": deterministic,
             "inputSensitivityPassed": input_sensitive,
             "fallbackPreserved": fallback_preserved,
             "canonicalAuthorityPreserved": canonical_preserved,
-            "pairingAuthority": "local_candidate",
+            "pairingAuthority": "authenticated_exact_head_workflow_artifact",
             "durablePairedZ2Proven": False,
             "globalZ2": "partial",
             "phase11": "partial",
@@ -462,8 +466,10 @@ def _publish_dynamic(
             "inputSensitivityRun": input_sensitive,
             "fallbackPreserved": fallback_preserved,
             "canonicalAuthorityPreserved": canonical_preserved,
-            "environmentProfile": "windows-msvc-release-headless-cpu-local-candidate",
-            "crossRepositoryWorkflowAuthorityAvailable": False,
+            "environmentProfile": (
+                "windows-msvc-release-headless-cpu-authenticated-workflow-artifact"
+            ),
+            "crossRepositoryWorkflowAuthorityAvailable": True,
         }
         provenance = {
             "schemaVersion": "closy.zeroone.dynamic-provenance.v1",
@@ -478,7 +484,7 @@ def _publish_dynamic(
             "actualZeroOneGpuRuntimeExecuted": False,
             "actualZeroOneMobileRuntimeExecuted": False,
             "physicalTruth": False,
-            "pairingAuthority": "local_candidate",
+            "pairingAuthority": "authenticated_exact_head_workflow_artifact",
             "durablePairedZ2Proven": False,
             "canonicalAuthorityMutated": False,
         }
@@ -496,7 +502,7 @@ def _publish_dynamic(
             "durableCrossRepositoryPairing": False,
             "notes": [
                 "mechanical_reference_clip_not_physical_motion_truth",
-                "local_candidate_pairing_not_cross_repository_ci_authority",
+                "authenticated_zeroone_exact_head_artifact_paired_to_closy_candidate",
                 "representative_tshirt_d0_only",
             ],
         }
@@ -666,7 +672,9 @@ def _dynamic_success(report: dict[str, Any]) -> bool:
         report.get("schemaVersion") == DYNAMIC_REPORT_SCHEMA_VERSION
         and report.get("success") is True
         and report.get("profile") == DYNAMIC_PROFILE
-        and report.get("scopedAcceptance", {}).get("compiledDeformationExecuted") is True
+        and report.get("processorMechanicalValidation", {}).get("compiledDeformationExecuted")
+        is True
+        and report.get("processorMechanicalValidation", {}).get("passed") is True
     )
 
 

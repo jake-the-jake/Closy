@@ -227,7 +227,7 @@ def test_dynamic_tool_resolution_requires_dynamic_contract(
         ],
         "reportSchemaVersions": [
             "zeroone.closy.static-report.v1",
-            "zeroone.closy.dynamic-report.v1",
+            "zeroone.closy.dynamic-report.v2",
         ],
         "supportedProfiles": ["closy-static-d0-cpu-v1", DYNAMIC_PROFILE],
         "attestation": {"available": False, "kind": "unit"},
@@ -255,7 +255,7 @@ def test_dynamic_tool_resolution_requires_dynamic_contract(
             "requestSchemaVersion": "closy.zeroone.static-request.v1",
             "reportSchemaVersion": "zeroone.closy.static-report.v1",
             "dynamicRequestSchemaVersion": "closy.zeroone.dynamic-request.v1",
-            "dynamicReportSchemaVersion": "zeroone.closy.dynamic-report.v1",
+            "dynamicReportSchemaVersion": "zeroone.closy.dynamic-report.v2",
             "profiles": ["closy-static-d0-cpu-v1", DYNAMIC_PROFILE],
             "commands": [
                 "inspect",

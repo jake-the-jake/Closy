@@ -33,16 +33,29 @@ from closy_forge.zeroone.dynamic_processing_surface import (
     DYNAMIC_PROCESSING_SURFACE_PATH,
     inspect_dynamic_processing_surface,
 )
+from closy_forge.zeroone.mechanical_reference_surface import (
+    MECHANICAL_REFERENCE_CORNER_MAP_PATH,
+    MECHANICAL_REFERENCE_PROFILE,
+    MECHANICAL_REFERENCE_SURFACE_PATH,
+    inspect_mechanical_reference_surface,
+)
 from closy_forge.zeroone.request import build_zeroone_request
 
 DYNAMIC_REQUEST_SCHEMA_VERSION = "closy.zeroone.dynamic-request.v1"
-DYNAMIC_REPORT_SCHEMA_VERSION = "zeroone.closy.dynamic-report.v1"
+DYNAMIC_REPORT_SCHEMA_VERSION = "zeroone.closy.dynamic-report.v2"
 DYNAMIC_PROFILE = "closy-dynamic-d0-single-lod-reference-v1"
-SCOPED_ACCEPTANCE_PROFILE = "Z2-D0-single-LOD-reference"
+SCOPED_ACCEPTANCE_PROFILE = "MT1-CleanReferenceMotion-D0-v2"
 CLIP_PROFILE = "closy.dynamic.mechanical-reference.torso-twist.v1"
+MECHANICAL_CLIP_PROFILE = "closy.dynamic.clean-analytic-reference.v2"
 FRAME_COUNT = 13
 FRAME_STEP_MICROSECONDS = 16_667
 DEFAULT_CLIP_SCALE = 0.02
+MINIMUM_NORMALIZED_DISPLACEMENT = 0.01
+MAXIMUM_NORMALIZED_DISPLACEMENT = 0.05
+MINIMUM_MOVING_DESTINATION_FRACTION = 0.70
+MINIMUM_NONRIGID_DESTINATION_FRACTION = 0.20
+MOVEMENT_THRESHOLD_DIAGONAL_FRACTION = 0.001
+MINIMUM_BEND_ANGLE_DEGREES = 5.0
 
 Vec2 = tuple[float, float]
 Vec3 = tuple[float, float, float]
@@ -83,6 +96,7 @@ def build_dynamic_request(
     derivative = _object(static_root / "derivative.json")
     source = _object_value(derivative, "source")
     source_relative = source.get("inputAssetRelativePath")
+    uses_mechanical_reference = source_relative == MECHANICAL_REFERENCE_SURFACE_PATH
     uses_dynamic_processing = source_relative == DYNAMIC_PROCESSING_SURFACE_PATH
     neutral_reference = _state_positions(
         package_root / "simulation" / "motion_states" / "neutral_settled.json",
@@ -101,7 +115,42 @@ def build_dynamic_request(
         for neutral, target in zip(neutral_reference, target_reference, strict=True)
     ]
     processing_influence: dict[str, Any] = {}
-    if uses_dynamic_processing:
+    motion_audit: dict[str, Any] = {}
+    if uses_mechanical_reference:
+        reference_audit = inspect_mechanical_reference_surface(package_root)
+        if reference_audit.get("status") != "valid":
+            raise ValueError(f"mechanical_reference_invalid:{reference_audit.get('reason')}")
+        render_meshset = read_glb_meshset(package_root / MECHANICAL_REFERENCE_SURFACE_PATH)
+        simulation_ids = [
+            _stable_id(0x2, index) for index in range(_vertex_count(simulation_manifest))
+        ]
+        render_ids = [_stable_id(0x1, index) for index in range(render_meshset.vertex_count)]
+        render_indices, render_texcoords, bindings = _mechanical_reference_render_contract(
+            package=package_root,
+            render_manifest=render_manifest,
+            render_meshset=render_meshset,
+            binding_contract=binding_contract,
+            render_ids=render_ids,
+            simulation_ids=simulation_ids,
+        )
+        simulation_rest = _state_positions(
+            package_root / "simulation" / "rest_state.json", simulation_manifest
+        )
+        analytic_scale = clip_scale / DEFAULT_CLIP_SCALE
+        timestamps, frames = _analytic_reference_frames(
+            simulation_rest, scale_factor=analytic_scale
+        )
+        motion_audit = _audit_reference_motion(
+            simulation_rest=simulation_rest,
+            frames=frames,
+            bindings=bindings,
+            binding_contract=binding_contract,
+            scale_factor=analytic_scale,
+        )
+        influence_authority = "canonical_production_binding_contract_inside_zeroone"
+        maximum_canonical_influences = max(record["count"] for record in bindings)
+        maximum_processor_influences = maximum_canonical_influences
+    elif uses_dynamic_processing:
         processing_audit = inspect_dynamic_processing_surface(package_root)
         if processing_audit.get("status") != "valid":
             raise ValueError(f"dynamic_processing_surface_invalid:{processing_audit.get('reason')}")
@@ -137,7 +186,8 @@ def build_dynamic_request(
         influence_authority = "canonical_production_binding_contract"
         maximum_canonical_influences = 3
         maximum_processor_influences = 3
-    timestamps, frames = _mechanical_frames(simulation_rest, motion_delta, clip_scale)
+    if not uses_mechanical_reference:
+        timestamps, frames = _mechanical_frames(simulation_rest, motion_delta, clip_scale)
     binding_bytes = _binding_payload(bindings)
 
     static_identity = static_derivative_identity_hash(derivative)
@@ -202,10 +252,21 @@ def build_dynamic_request(
         "provenance": {
             "classification": "manually_authored_mechanical_reference",
             "physicalTruth": False,
-            "generator": CLIP_PROFILE,
-            "sourceMotionState": "torso_twist",
-            "sourceStateProvenance": "deterministic_public_fixture_reference_solver",
-            "clipScale": clip_scale,
+            "generator": MECHANICAL_CLIP_PROFILE if uses_mechanical_reference else CLIP_PROFILE,
+            "sourceMotionState": (
+                "independently_authored_analytic_reference"
+                if uses_mechanical_reference
+                else "torso_twist"
+            ),
+            "sourceStateProvenance": (
+                "deterministic_project_authored_analytic_reference"
+                if uses_mechanical_reference
+                else "deterministic_public_fixture_reference_solver"
+            ),
+            "clipScale": None if uses_mechanical_reference else clip_scale,
+            "mechanicalReferenceProfile": (
+                MECHANICAL_REFERENCE_PROFILE if uses_mechanical_reference else None
+            ),
             "dynamicProcessingSurface": uses_dynamic_processing,
             "bodyProxySpheres": [],
         },
@@ -226,27 +287,48 @@ def build_dynamic_request(
         request_sha256=digest_bytes(encoded),
         clip_inventory={
             "schemaVersion": "closy.zeroone.dynamic-clip-inventory.v1",
-            "profile": CLIP_PROFILE,
+            "profile": MECHANICAL_CLIP_PROFILE if uses_mechanical_reference else CLIP_PROFILE,
             "classification": "mechanical_reference",
             "physicalTruth": False,
-            "sourceState": "torso_twist",
-            "restAuthority": (
-                "exact_validated_dynamic_processing_surface"
-                if uses_dynamic_processing
-                else "canonical_simulation_mesh_manifest"
+            "sourceState": (
+                "independently_authored_analytic_reference"
+                if uses_mechanical_reference
+                else "torso_twist"
             ),
-            "motionDeltaAuthority": "torso_twist_minus_neutral_settled_solver_states",
-            "sourceStateHash": _object(
-                package_root / "simulation" / "motion_states" / "torso_twist.json"
-            )["integrity"]["stateHash"],
-            "neutralStateHash": _object(
-                package_root / "simulation" / "motion_states" / "neutral_settled.json"
-            )["integrity"]["stateHash"],
-            "clipScale": clip_scale,
+            "restAuthority": (
+                "canonical_simulation_rest_state"
+                if uses_mechanical_reference
+                else (
+                    "exact_validated_dynamic_processing_surface"
+                    if uses_dynamic_processing
+                    else "canonical_simulation_mesh_manifest"
+                )
+            ),
+            "motionDeltaAuthority": (
+                "independent_analytic_spatial_deformation_v2"
+                if uses_mechanical_reference
+                else "torso_twist_minus_neutral_settled_solver_states"
+            ),
+            "sourceStateHash": (
+                None
+                if uses_mechanical_reference
+                else _object(package_root / "simulation" / "motion_states" / "torso_twist.json")[
+                    "integrity"
+                ]["stateHash"]
+            ),
+            "neutralStateHash": (
+                None
+                if uses_mechanical_reference
+                else _object(
+                    package_root / "simulation" / "motion_states" / "neutral_settled.json"
+                )["integrity"]["stateHash"]
+            ),
+            "clipScale": None if uses_mechanical_reference else clip_scale,
             "frameCount": len(timestamps),
             "timestampsMicroseconds": timestamps,
             "firstAndLastFrameRestIdentity": True,
             "clipPayloadSha256": clip_sha256,
+            "motionAudit": motion_audit,
         },
         influence_inventory={
             "schemaVersion": "closy.zeroone.dynamic-influence-inventory.v1",
@@ -260,6 +342,7 @@ def build_dynamic_request(
             "maximumCanonicalInfluencesPerDestination": maximum_canonical_influences,
             "maximumProcessorInfluencesPerDestination": maximum_processor_influences,
             "dynamicProcessingSurface": uses_dynamic_processing,
+            "mechanicalReferenceSurface": uses_mechanical_reference,
             "dynamicProcessingInfluenceHash": (
                 processing_influence.get("integrity", {}).get("influenceHash")
                 if uses_dynamic_processing
@@ -384,6 +467,289 @@ def _expanded_render_contract(
     if global_triangle_offset != render_manifest.get("triangleCount"):
         raise ValueError("dynamic_render_triangle_inventory_mismatch")
     return indices, texcoords, bindings
+
+
+def _mechanical_reference_render_contract(
+    *,
+    package: Path,
+    render_manifest: dict[str, Any],
+    render_meshset: Any,
+    binding_contract: dict[str, Any],
+    render_ids: list[int],
+    simulation_ids: list[int],
+) -> tuple[list[int], list[Vec2], list[dict[str, Any]]]:
+    corner_map = _object(package / MECHANICAL_REFERENCE_CORNER_MAP_PATH)
+    corner_rows = corner_map.get("rows")
+    if not isinstance(corner_rows, list) or len(corner_rows) != render_meshset.vertex_count:
+        raise ValueError("mechanical_reference_corner_map_inventory_mismatch")
+    contract_records = {
+        int(record["globalRenderVertexIndex"]): record
+        for record in binding_contract.get("records", [])
+    }
+    indices: list[int] = []
+    texcoords: list[Vec2] = []
+    bindings: list[dict[str, Any]] = []
+    vertex_offset = 0
+    for mesh in render_meshset.meshes:
+        for triangle in mesh.triangles:
+            indices.extend(vertex_offset + int(index) for index in triangle)
+        texcoords.extend(mesh.panel_uvs)
+        vertex_offset += len(mesh.vertices)
+    if indices != list(range(len(render_ids))):
+        raise ValueError("mechanical_reference_surface_not_expanded_triangle_order")
+    for dense_index, row in enumerate(corner_rows):
+        if not isinstance(row, dict) or int(row.get("denseCornerIndex", -1)) != dense_index:
+            raise ValueError("mechanical_reference_corner_map_order_invalid")
+        logical = int(row.get("logicalDestinationIndex", -1))
+        record = contract_records.get(logical)
+        if record is None:
+            raise ValueError("mechanical_reference_binding_record_missing")
+        source = record.get("sourceTriangle", {})
+        source_indices = [int(value) for value in source.get("globalVertexIndices", [])]
+        raw_weights = [float(value) for value in record.get("binding", {}).get("weights", [])]
+        if len(source_indices) != 3 or len(raw_weights) != 3:
+            raise ValueError("mechanical_reference_binding_influence_invalid")
+        if any(index < 0 or index >= len(simulation_ids) for index in source_indices):
+            raise ValueError("mechanical_reference_binding_source_out_of_range")
+        active = [
+            (source_index, weight)
+            for source_index, weight in zip(source_indices, raw_weights, strict=True)
+            if abs(weight) > 1.0e-9
+        ]
+        count = len(active)
+        if count not in (1, 2, 3):
+            raise ValueError("mechanical_reference_binding_active_influence_order_invalid")
+        packed_sources = [item[0] for item in active] + [0] * (3 - count)
+        packed_weights = [item[1] for item in active] + [0.0] * (3 - count)
+        bindings.append(
+            {
+                "destination": render_ids[dense_index],
+                "authority": 1,
+                "count": count,
+                "sources": tuple(
+                    simulation_ids[index] if item < count else 0
+                    for item, index in enumerate(packed_sources)
+                ),
+                "sourceIndices": tuple(packed_sources),
+                "weights": tuple(packed_weights),
+                "triangle": _stable_id(0x3, int(source["globalTriangleIndex"])),
+                "logicalDestination": logical,
+                "panelId": str(record.get("ownership", {}).get("panelId", "unknown")),
+            }
+        )
+    return indices, texcoords, bindings
+
+
+def _analytic_reference_frames(
+    rest: list[Vec3], *, scale_factor: float
+) -> tuple[list[int], list[Vec3]]:
+    minimum = [min(position[axis] for position in rest) for axis in range(3)]
+    maximum = [max(position[axis] for position in rest) for axis in range(3)]
+    center = tuple((minimum[axis] + maximum[axis]) * 0.5 for axis in range(3))
+    diagonal = math.dist(tuple(minimum), tuple(maximum))
+    height = max(maximum[1] - minimum[1], 1.0e-12)
+    timestamps = [index * FRAME_STEP_MICROSECONDS for index in range(FRAME_COUNT)]
+    frames: list[Vec3] = []
+    maximum_angle = math.radians(5.5)
+    for frame in range(FRAME_COUNT):
+        if frame in (0, FRAME_COUNT - 1):
+            frames.extend(rest)
+            continue
+        time = frame / (FRAME_COUNT - 1)
+        envelope = math.sin(math.pi * time)
+        sway = math.sin(2.0 * math.pi * time)
+        for position in rest:
+            normalized_y = (position[1] - minimum[1]) / height
+            angle = maximum_angle * scale_factor * envelope * (0.25 + 0.75 * normalized_y)
+            local_x = position[0] - center[0]
+            local_z = position[2] - center[2]
+            rotated_x = math.cos(angle) * local_x + math.sin(angle) * local_z
+            rotated_z = -math.sin(angle) * local_x + math.cos(angle) * local_z
+            bend = 0.004 * diagonal * scale_factor * envelope * normalized_y * normalized_y
+            frames.append(
+                (
+                    center[0]
+                    + rotated_x
+                    + bend
+                    + 0.005 * diagonal * scale_factor * envelope
+                    + 0.0015 * diagonal * scale_factor * sway,
+                    position[1] + 0.0015 * diagonal * scale_factor * sway * normalized_y,
+                    center[2]
+                    + rotated_z
+                    + 0.003 * diagonal * scale_factor * envelope * math.sin(math.pi * normalized_y),
+                )
+            )
+    return timestamps, frames
+
+
+def _audit_reference_motion(
+    *,
+    simulation_rest: list[Vec3],
+    frames: list[Vec3],
+    bindings: list[dict[str, Any]],
+    binding_contract: dict[str, Any],
+    scale_factor: float,
+) -> dict[str, Any]:
+    frame_rows = [
+        frames[index * len(simulation_rest) : (index + 1) * len(simulation_rest)]
+        for index in range(FRAME_COUNT)
+    ]
+    minimum = [min(position[axis] for position in simulation_rest) for axis in range(3)]
+    maximum = [max(position[axis] for position in simulation_rest) for axis in range(3)]
+    diagonal = math.dist(tuple(minimum), tuple(maximum))
+    destination_frames: list[list[Vec3]] = []
+    for frame in frame_rows:
+        destination_frames.append(
+            [
+                (
+                    sum(
+                        frame[record["sourceIndices"][item]][0] * record["weights"][item]
+                        for item in range(record["count"])
+                    ),
+                    sum(
+                        frame[record["sourceIndices"][item]][1] * record["weights"][item]
+                        for item in range(record["count"])
+                    ),
+                    sum(
+                        frame[record["sourceIndices"][item]][2] * record["weights"][item]
+                        for item in range(record["count"])
+                    ),
+                )
+                for record in bindings
+            ]
+        )
+    destination_rest = destination_frames[0]
+    maximum_displacement = max(
+        math.dist(position, destination_rest[index])
+        for frame in destination_frames[1:-1]
+        for index, position in enumerate(frame)
+    )
+    movement_threshold = diagonal * MOVEMENT_THRESHOLD_DIAGONAL_FRACTION
+    moving = [
+        index
+        for index in range(len(destination_rest))
+        if max(
+            math.dist(frame[index], destination_rest[index]) for frame in destination_frames[1:-1]
+        )
+        > movement_threshold
+    ]
+    peak_frame = max(
+        destination_frames[1:-1],
+        key=lambda frame: max(
+            math.dist(frame[index], destination_rest[index])
+            for index in range(len(destination_rest))
+        ),
+    )
+    residuals = _best_rigid_residuals(destination_rest, peak_frame)
+    nonrigid = sum(residual > movement_threshold for residual in residuals)
+    moving_regions = sorted({bindings[index]["panelId"] for index in moving})
+    frame_hashes = [
+        digest_bytes(b"".join(struct.pack("<3f", *position) for position in frame))
+        for frame in frame_rows
+    ]
+    normalized = maximum_displacement / diagonal
+    audit = {
+        "schemaVersion": "closy.zeroone.analytic-motion-audit.v2",
+        "precommittedThresholds": {
+            "minimumMaximumDisplacementD": MINIMUM_NORMALIZED_DISPLACEMENT,
+            "maximumMaximumDisplacementD": MAXIMUM_NORMALIZED_DISPLACEMENT,
+            "minimumMovingDestinationFraction": MINIMUM_MOVING_DESTINATION_FRACTION,
+            "minimumNonrigidDestinationFraction": MINIMUM_NONRIGID_DESTINATION_FRACTION,
+            "movementThresholdD": MOVEMENT_THRESHOLD_DIAGONAL_FRACTION,
+            "minimumBendAngleDegrees": MINIMUM_BEND_ANGLE_DEGREES,
+        },
+        "boundingBoxDiagonalMeters": diagonal,
+        "maximumDestinationDisplacementMeters": maximum_displacement,
+        "maximumDestinationDisplacementD": normalized,
+        "movingDestinationCount": len(moving),
+        "destinationCount": len(destination_rest),
+        "movingDestinationFraction": len(moving) / len(destination_rest),
+        "movingSemanticRegions": moving_regions,
+        "nonrigidResidualDestinationCount": nonrigid,
+        "nonrigidResidualDestinationFraction": nonrigid / len(destination_rest),
+        "bestRigidFitMethod": "horn_quaternion_least_squares",
+        "maximumBendAngleDegrees": 5.5 * scale_factor,
+        "restFrameExact": frame_rows[0] == simulation_rest,
+        "returnFrameExact": frame_rows[-1] == simulation_rest,
+        "consecutiveNonRestFramesUnique": all(
+            frame_hashes[index] != frame_hashes[index + 1] for index in range(1, FRAME_COUNT - 2)
+        ),
+        "frameHashes": frame_hashes,
+        "bindingInfluenceDistribution": {
+            str(count): sum(record["count"] == count for record in bindings) for count in (1, 2, 3)
+        },
+        "canonicalBindingAuthorityHash": binding_contract.get("integrity", {}).get(
+            "productionBindingContractHash"
+        ),
+    }
+    checks = {
+        "maximumDisplacementLowerBound": normalized >= MINIMUM_NORMALIZED_DISPLACEMENT,
+        "maximumDisplacementUpperBound": normalized <= MAXIMUM_NORMALIZED_DISPLACEMENT,
+        "movingDestinationCoverage": audit["movingDestinationFraction"]
+        >= MINIMUM_MOVING_DESTINATION_FRACTION,
+        "semanticRegionCoverage": len(moving_regions) >= 3,
+        "nonrigidCoverage": audit["nonrigidResidualDestinationFraction"]
+        >= MINIMUM_NONRIGID_DESTINATION_FRACTION,
+        "bendAngle": audit["maximumBendAngleDegrees"] > MINIMUM_BEND_ANGLE_DEGREES,
+        "restReturnIdentity": audit["restFrameExact"] and audit["returnFrameExact"],
+        "temporalUniqueness": audit["consecutiveNonRestFramesUnique"],
+    }
+    audit["checks"] = checks
+    audit["passed"] = all(checks.values())
+    audit["qualificationCandidate"] = abs(scale_factor - 1.0) <= 1.0e-12
+    if audit["qualificationCandidate"] and not audit["passed"]:
+        raise ValueError(f"mechanical_reference_motion_threshold_failed:{checks}")
+    return audit
+
+
+def _best_rigid_residuals(source: list[Vec3], target: list[Vec3]) -> list[float]:
+    source_center = tuple(sum(point[axis] for point in source) / len(source) for axis in range(3))
+    target_center = tuple(sum(point[axis] for point in target) / len(target) for axis in range(3))
+    covariance = [[0.0] * 3 for _ in range(3)]
+    for left, right in zip(source, target, strict=True):
+        a = tuple(left[axis] - source_center[axis] for axis in range(3))
+        b = tuple(right[axis] - target_center[axis] for axis in range(3))
+        for row in range(3):
+            for column in range(3):
+                covariance[row][column] += a[row] * b[column]
+    sxx, sxy, sxz = covariance[0]
+    syx, syy, syz = covariance[1]
+    szx, szy, szz = covariance[2]
+    matrix = [
+        [sxx + syy + szz, syz - szy, szx - sxz, sxy - syx],
+        [syz - szy, sxx - syy - szz, sxy + syx, szx + sxz],
+        [szx - sxz, sxy + syx, -sxx + syy - szz, syz + szy],
+        [sxy - syx, szx + sxz, syz + szy, -sxx - syy + szz],
+    ]
+    quaternion = [1.0, 0.0, 0.0, 0.0]
+    for _ in range(64):
+        candidate = [
+            sum(matrix[row][column] * quaternion[column] for column in range(4)) for row in range(4)
+        ]
+        norm = math.sqrt(sum(value * value for value in candidate))
+        if norm <= 1.0e-30:
+            break
+        quaternion = [value / norm for value in candidate]
+    rotation = _quaternion_rotation(quaternion)
+    residuals = []
+    for left, right in zip(source, target, strict=True):
+        centered = tuple(left[axis] - source_center[axis] for axis in range(3))
+        rotated = tuple(
+            sum(rotation[row][column] * centered[column] for column in range(3))
+            + target_center[row]
+            for row in range(3)
+        )
+        residuals.append(math.dist(rotated, right))
+    return residuals
+
+
+def _quaternion_rotation(quaternion: list[float]) -> list[list[float]]:
+    w, x, y, z = quaternion
+    return [
+        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+        [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+        [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+    ]
 
 
 def _processing_render_contract(
