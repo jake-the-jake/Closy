@@ -1,0 +1,41 @@
+{
+  "activeLane": "PHY1 topology-v2 bounded progression",
+  "branch": "codex/closy-forge-phy1-topology-v2",
+  "evidenceHead": "a6134df2fb67a8cbcb572e344caf828b926df273",
+  "exactNextAction": "After external exact-head PR 39 attestation, start a new progression from that exact head and execute the fixed-avatar T-shirt decoded front/rear raster source-identity row.",
+  "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
+  "gates": {
+    "C3-Binding-D0-v1": "pass_scoped_unchanged",
+    "LayerCollision-D0": "pass_geometric_only",
+    "MT1-MechanicalReference-D0": "pass_scoped_not_Z2",
+    "P1": "not_run",
+    "PHY1-SingleLayer-D0-v1": "failed_preserved",
+    "PHY1-SingleLayer-D0-v2": "failed_0_of_11",
+    "ResearchPrototype-D0-matrix": "partial_8_pass_6_not_run",
+    "Z1": "candidate_default_family_scoped_pass_global_partial",
+    "Z2": "failed_not_admitted"
+  },
+  "localHeadAtResumeSource": "a6134df2fb67a8cbcb572e344caf828b926df273",
+  "machineResumeVersion": "closy.active_blueprint_resume.phy1_topology_v2.v1",
+  "mergeAuthorised": false,
+  "parent": {
+    "branch": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
+    "pullRequest": 38,
+    "sha": "921ef05b61f39e6020ad12126ffac24c4728f7e0"
+  },
+  "pendingCIAtEvidenceHead": true,
+  "pullRequest": 39,
+  "remainingBudgets": {
+    "seamModels": 1,
+    "topologyStrategies": 2
+  },
+  "remoteHeadAtResumeSource": null,
+  "replayState": {
+    "dRuntimeIdentityChanges": [],
+    "dRuntimePinnedToTopologyV1": true,
+    "topologyV2RuntimeExposed": false
+  },
+  "schemaVersion": 1,
+  "sourceAnchorIsSelfReferential": false,
+  "stopReason": "smallest_truthful_failure_after_first_v2_strategy"
+}

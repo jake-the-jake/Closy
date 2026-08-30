@@ -417,6 +417,16 @@
       "to": "github:jake-the-jake/Closy:pr/38"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/38",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/39"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/38",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/39"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -1959,13 +1969,13 @@
       "uniqueCommitRange": "9d39d55e9d1cdae502808f73c4e14653e92d26d7..7430131d5ecab0df77d3933709aed0d86138e03e"
     },
     {
-      "ahead": 44,
+      "ahead": 45,
       "baseRef": "codex/closy-forge-zeroone-reference-motion-v2",
       "baseSha": "4c5dcd284a1221a7820184e640fb92b67b880787",
       "behind": 0,
       "branch": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
       "capabilityRole": "forge_integrate_fail_closed_avatar_outfit_runtime_d0",
-      "changedFileCount": 152,
+      "changedFileCount": 158,
       "dependencyIds": [
         "github:jake-the-jake/Closy:pr/36",
         "github:jake-the-jake/Closy:pr/37",
@@ -1973,10 +1983,25 @@
         "github:jake-the-jake/Closy:pr/30",
         "github:jake-the-jake/Closy:pr/32"
       ],
-      "headSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "headSha": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
       "id": "github:jake-the-jake/Closy:pr/38",
       "integrationMappings": [],
-      "latestExactHeadWorkflows": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 29,
+          "runId": "33329481046",
+          "workflow": "Closy Forge"
+        },
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 1,
+          "runId": "33329481042",
+          "workflow": "Closy Forge Phase 9 Structured v3"
+        }
+      ],
       "mergeBase": "4c5dcd284a1221a7820184e640fb92b67b880787",
       "mergeEligible": true,
       "neverMergeWith": [],
@@ -1989,7 +2014,36 @@
       "sourceOnly": false,
       "state": "OPEN",
       "superseded": false,
-      "uniqueCommitRange": "4c5dcd284a1221a7820184e640fb92b67b880787..dd916913ac14119bc2e127989703f1c51f91e00a"
+      "uniqueCommitRange": "4c5dcd284a1221a7820184e640fb92b67b880787..921ef05b61f39e6020ad12126ffac24c4728f7e0"
+    },
+    {
+      "ahead": 7,
+      "baseRef": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
+      "baseSha": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
+      "behind": 0,
+      "branch": "codex/closy-forge-phy1-topology-v2",
+      "capabilityRole": "forge_progress_bounded_phy1_topology_v2",
+      "changedFileCount": 22,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/38"
+      ],
+      "headSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
+      "id": "github:jake-the-jake/Closy:pr/39",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/38"
+      ],
+      "pullRequest": 39,
+      "repository": "jake-the-jake/Closy",
+      "role": "phy1_topology_v2_experiment_only",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "921ef05b61f39e6020ad12126ffac24c4728f7e0..a6134df2fb67a8cbcb572e344caf828b926df273"
     },
     {
       "ahead": 3,
@@ -3741,19 +3795,22 @@
       "baseBranch": "codex/closy-forge-zeroone-reference-motion-v2",
       "baseSha": "4c5dcd284a1221a7820184e640fb92b67b880787",
       "branch": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
-      "changedFileCount": 152,
+      "changedFileCount": 158,
       "directParentMergeBaseVerified": true,
       "draft": true,
-      "headSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "knownException": {
-        "code": "exact_head_ci_recorded_outside_generated_evidence",
-        "descendantEvidenceIsExactHead": false,
-        "reason": "PR #38 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      "headSha": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 29,
+        "runId": "33329481046",
+        "successfulJobCount": 29,
+        "workflow": "Closy Forge"
       },
-      "latestExactHeadForgeRun": null,
-      "layerAhead": 44,
+      "layerAhead": 45,
       "layerBehind": 0,
-      "layerCommitCount": 44,
+      "layerCommitCount": 45,
       "mergeBase": "4c5dcd284a1221a7820184e640fb92b67b880787",
       "mergeability": "MERGEABLE",
       "number": 38,
@@ -3762,6 +3819,32 @@
       "state": "OPEN",
       "title": "Forge: integrate fail-closed avatar outfit runtime D0",
       "url": "https://github.com/jake-the-jake/Closy/pull/38"
+    },
+    {
+      "baseBranch": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
+      "baseSha": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
+      "branch": "codex/closy-forge-phy1-topology-v2",
+      "changedFileCount": 22,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #39 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 7,
+      "layerBehind": 0,
+      "layerCommitCount": 7,
+      "mergeBase": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
+      "mergeability": "MERGEABLE",
+      "number": 39,
+      "repository": "jake-the-jake/Closy",
+      "role": "phy1_topology_v2_experiment_only",
+      "state": "OPEN",
+      "title": "Forge: progress bounded PHY1 topology v2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/39"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -3806,7 +3889,8 @@
     "github:jake-the-jake/ZeroOne:pr/3",
     "github:jake-the-jake/Closy:pr/34",
     "github:jake-the-jake/Closy:pr/36",
-    "github:jake-the-jake/Closy:pr/38"
+    "github:jake-the-jake/Closy:pr/38",
+    "github:jake-the-jake/Closy:pr/39"
   ],
   "topology": "explicit_dag",
   "validation": {

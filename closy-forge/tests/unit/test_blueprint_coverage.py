@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.integrated_runtime_d0.v7"
+    assert coverage["version"] == "closy.blueprint_coverage.phy1_topology_v2.v8"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -145,6 +145,10 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["gates"]["C2"]["scopedStatus"] == "pass"
     assert status["gates"]["C3-Binding-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["PHY1-SingleLayer-D0"]["scopedStatus"] == "failed"
+    assert status["gates"]["PHY1-SingleLayer-D0-v2"]["scopedStatus"] == "failed"
+    assert status["gates"]["PHY1-SingleLayer-D0-v2"]["statePassCount"] == 0
+    assert status["gates"]["PHY1-SingleLayer-D0-v2"]["runtimeCapabilityExposed"] is False
+    assert status["gates"]["PHY1-SingleLayer-D0-v2"]["dRuntimePinnedToV1"] is True
     assert status["gates"]["MT1-MechanicalReference-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["LayerCollision-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["Z1"]["globalStatus"] == "partial"
@@ -173,6 +177,11 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "phase14SourceIntegrated": True,
         "layerCollisionSurfaceIntegrated": True,
         "mt1ReferenceMotionD0Available": True,
+        "phy1TopologyV2ExperimentExecuted": True,
+        "phy1TopologyV2Passed": False,
+        "phy1TopologyV2RuntimeExposed": False,
+        "integratedRuntimePinnedToTopologyV1": True,
+        "finalD0ResearchMatrixStatus": "partial",
         "packageValidityDependsOnZeroOne": False,
         "phase9E1Status": "partial_experimental",
         "phase9E2Status": "executed_feasibility_partial",
@@ -207,8 +216,8 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 39))
-    assert len(nodes) == 40
+    assert numbers == list(range(1, 40))
+    assert len(nodes) == 41
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert stack["externalPullRequests"][1]["number"] == 3
@@ -235,7 +244,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 38}:
+        if row["number"] in {10, 39}:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -285,6 +294,9 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert by_id["github:jake-the-jake/Closy:pr/38"]["parentIds"] == [
         "github:jake-the-jake/Closy:pr/36"
     ]
+    assert by_id["github:jake-the-jake/Closy:pr/39"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/38"
+    ]
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -292,6 +304,13 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert {
         workflow["workflow"]
         for workflow in by_id["github:jake-the-jake/Closy:pr/37"]["latestExactHeadWorkflows"]
+    } == {
+        "Closy Forge",
+        "Closy Forge Phase 9 Structured v3",
+    }
+    assert {
+        workflow["workflow"]
+        for workflow in by_id["github:jake-the-jake/Closy:pr/38"]["latestExactHeadWorkflows"]
     } == {
         "Closy Forge",
         "Closy Forge Phase 9 Structured v3",
@@ -333,9 +352,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     coverage = _json("blueprint_coverage.json")
     provenance = coverage["generatedBy"]
 
-    assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.integrated_runtime_d0.v4"
-    )
+    assert provenance["generatorVersion"] == ("closy.blueprint_reconciliation.phy1_topology_v2.v5")
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
     assert provenance["finalHeadAttestationLocation"] == (
@@ -349,7 +366,22 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
 
     assert summary == render_status_summary(status)
     assert "C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile" in summary
-    assert "Historical compiled dynamic ZeroOne pairing failed" in summary
+    assert "Historical compiled dynamic ZeroOne pairing" in summary
+    assert "topology-v2 experiment both fail" in summary
+
+
+def test_active_machine_and_markdown_resumes_agree_on_phy1_v2_boundary() -> None:
+    resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
+    markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
+
+    assert resume["branch"] == "codex/closy-forge-phy1-topology-v2"
+    assert resume["evidenceHead"] in markdown
+    assert str(resume["parent"]["sha"]) in markdown
+    assert resume["gates"]["PHY1-SingleLayer-D0-v2"] == "failed_0_of_11"
+    assert resume["replayState"]["dRuntimePinnedToTopologyV1"] is True
+    assert resume["replayState"]["topologyV2RuntimeExposed"] is False
+    assert "0/11 states" in markdown
+    assert "No topology-v2 package" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:
@@ -427,6 +459,7 @@ def test_human_ledgers_are_not_machine_readiness_authorities() -> None:
 
 def test_generated_evidence_and_changed_status_documents_are_path_and_secret_safe() -> None:
     paths = [
+        DOCS / "ACTIVE_BLUEPRINT_RESUME.json",
         DOCS / "ACTIVE_BLUEPRINT_RESUME.md",
         DOCS / "BLUEPRINT_STATUS_SUMMARY.md",
         DOCS / "MASTER_BLUEPRINT_PROGRESS.md",

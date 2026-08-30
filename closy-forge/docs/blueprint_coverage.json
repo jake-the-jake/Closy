@@ -26,12 +26,18 @@
       "closy-forge/docs/evidence/integrated_replay_manifest_d0_v1.json",
       "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json",
       "closy-forge/docs/evidence/integrated_runtime_invalidation_ledger_d0_v1.json",
-      "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json"
+      "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json",
+      "closy-forge/docs/capability-profiles/phy1-single-layer-d0-v2.json",
+      "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+      "closy-forge/docs/evidence/phy1_topology_v2/invalidation_ledger.json",
+      "closy-forge/docs/evidence/phy1_topology_v2/final_d0_research_prototype_matrix.json",
+      "closy-forge/src/closy_forge/simulation_topology_v2/evidence.py",
+      "closy-forge/scripts/generate_phy1_topology_v2_evidence.py"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.integrated_runtime_d0.v4",
+    "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_v2.v5",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "cf55be707f3e1f579ca77107624d54510bbe2512ffab251158643d4d3aadb97f"
+    "sourceTreeHash": "db7d4a0314345b764f692bdcb4e6dede220f0229d6f9c6abd07f45a51412b035"
   },
   "integratedImplementationRowCount": 83,
   "rows": [
@@ -204,7 +210,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1362,7 +1369,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1462,7 +1470,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1761,7 +1770,8 @@
     {
       "ancestryClass": "in_tree",
       "commitSha": [
-        "f100fd5"
+        "f100fd5",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1770,7 +1780,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No semantic learned retopology.",
+          "limitations": "The topology is physical-experiment-only. It is not selected by packages, runtime capabilities, ZeroOne derivatives, C3, or MT1.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -1778,24 +1788,37 @@
       ],
       "evidenceTier": "in_tree_committed_evidence",
       "executableEvidence": [
-        "runtime preview retopology from canonical panels"
+        "runtime preview retopology from canonical panels",
+        "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
       ],
       "id": "BP-08-N-GARMENT-RETOPOLOGY",
       "implementationPaths": [
-        "closy-forge/src/closy_forge/geometry/subdivision.py"
+        "closy-forge/src/closy_forge/geometry/subdivision.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/triangulator.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_junctions.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No semantic learned retopology.",
-      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
+      "limitations": "The topology is physical-experiment-only. It is not selected by packages, runtime capabilities, ZeroOne derivatives, C3, or MT1.",
+      "nextAction": "Keep v2 isolated until a later bounded coupled-convergence strategy passes all frozen PHY1 requirements.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Stage N: Garment Retopology.",
+      "summary": "An opt-in deterministic interior-constrained topology v2 preserves exact panel boundaries and semantics while adding quality-bounded interior vertices.",
       "tests": [
-        "tests/unit/test_geometry_proposal.py"
+        "tests/unit/test_geometry_proposal.py",
+        "closy-forge/tests/unit/test_simulation_topology_v2.py",
+        "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
+        "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
       ]
     },
     {
@@ -1899,7 +1922,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2014,7 +2038,8 @@
     {
       "ancestryClass": "in_tree",
       "commitSha": [
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2204,7 +2229,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2265,7 +2291,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2535,7 +2562,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2691,7 +2719,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2816,7 +2845,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2825,7 +2855,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "PHY1 and paired Z1 fail; independent real/public, provider, mobile, private-user, licence, and human-review evidence remains incomplete.",
+          "limitations": "PHY1-v2 passes temporal integrity but fails contact, clearance, seam, strain, support, energy, and convergence; six research-matrix rows remain not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -2847,7 +2877,9 @@
         "the durable candidate ZeroOneProcess Release executable attempted all nine declared canonical D0 garment families headlessly",
         "six families produced validated mesh, cluster, hierarchy, page-pack, material, and garment semantic derivatives",
         "long-sleeved top, button shirt, and jacket were rejected fail-closed for exact degenerate-surface diagnostics",
-        "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, canonical-authority preservation, and conventional-fallback preservation"
+        "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, canonical-authority preservation, and conventional-fallback preservation",
+        "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -2859,24 +2891,35 @@
         "closy-forge/src/closy_forge/zeroone/tool.py",
         "closy-forge/src/closy_forge/zeroone/validation.py",
         "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json",
-        "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
+        "closy-forge/src/closy_forge/zeroone/derivative_inspection.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/triangulator.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_junctions.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "PHY1 and paired Z1 fail; independent real/public, provider, mobile, private-user, licence, and human-review evidence remains incomplete.",
-      "nextAction": "Use authoritative independent C3, fidelity, learned-model, and ZeroOne reports rather than stale prose.",
+      "limitations": "PHY1-v2 passes temporal integrity but fails contact, clearance, seam, strain, support, energy, and convergence; six research-matrix rows remain not run.",
+      "nextAction": "Close exact decoded-raster lineage first, independently of the failed physical lane.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Evaluation now consumes a scoped C3 binding pass, a separate PHY1 failure, trained synthetic D0 evidence, and an all-family paired ZeroOne failure.",
+      "summary": "Evaluation now includes a deterministic 11-state topology-v2 replay, separate simulation/render clearance, and the final fixed-row D0 research matrix.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
         "tests/integration/test_cli_and_package.py",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
-        "closy-forge/tests/unit/test_zeroone_execution_evidence.py"
+        "closy-forge/tests/unit/test_zeroone_execution_evidence.py",
+        "closy-forge/tests/unit/test_simulation_topology_v2.py",
+        "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
+        "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
       ]
     },
     {
@@ -3474,7 +3517,8 @@
         "8790567cc8b8a9d8db2214ec7133bbe1281f6dca",
         "62443b685604bc4afe9a8fac9f926db78814d5a9",
         "13604d169ecbc0fddf475cdf177e743790c836a2",
-        "628738e5e8bc2da89be2ae1c349d9a2a220d8839"
+        "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3483,7 +3527,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Phase 6 remains partial globally and for the repaired D0 C3 profile: stitched-shell body clearance/source correspondence and collision residual-depth budget fail; provider, private-user, human-review, production GPU/mobile and motion-solver CCD tiers are not run. Host CPU performance is noncanonical evidence only.",
+          "limitations": "Zero of 11 physical states pass; maximum residual depth is 0.002399077 m, simulation clearance is -0.014360829 m, and render clearance is -0.064466621 m.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3511,7 +3555,9 @@
         "D0 self-collision is authoritative at 271 contacts before correction and 137 unresolved after, with 0.002327721 m depth against the 0.000160000 m budget",
         "bounded CCD fixtures pass while reference-motion-solver CCD integration remains false",
         "two identical 138-file clean packages pass with digest c8e3fee54cb6625664f131eb605a42759a1b5c283ef4da6dc717c2ea6f6c8faf",
-        "PR #7 implementation run 32912124815 passed Ubuntu job 98008234902 and Windows job 98008235112 with matching digest"
+        "PR #7 implementation run 32912124815 passed Ubuntu job 98008234902 and Windows job 98008235112 with matching digest",
+        "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
@@ -3522,23 +3568,34 @@
         "closy-forge/src/closy_forge/binding/stitched_deformation.py",
         "closy-forge/src/closy_forge/simulation/self_collision.py",
         "closy-forge/src/closy_forge/rendering/frame_pose_suite.py",
-        "closy-forge/src/closy_forge/validation/validator.py"
+        "closy-forge/src/closy_forge/validation/validator.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/triangulator.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_junctions.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Phase 6 remains partial globally and for the repaired D0 C3 profile: stitched-shell body clearance/source correspondence and collision residual-depth budget fail; provider, private-user, human-review, production GPU/mobile and motion-solver CCD tiers are not run. Host CPU performance is noncanonical evidence only.",
-      "nextAction": "Resolve stitched-shell body clearance/source correspondence and bring recomputed self-collision residual depth within the declared D0 budget.",
+      "limitations": "Zero of 11 physical states pass; maximum residual depth is 0.002399077 m, simulation clearance is -0.014360829 m, and render clearance is -0.064466621 m.",
+      "nextAction": "Attempt one later versioned coupled-convergence strategy with joint residual traces; CCD remains ineligible.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Blueprint phase 6.",
+      "summary": "Topology v2 removes all qualified temporal degeneracy in the frozen 11-state replay without changing v1 runtime identities.",
       "tests": [
         "Forge local tests",
         "tests/unit/test_render_frame_pose_suite.py",
         "tests/unit/test_production_binding_c3.py",
-        "tests/unit/test_self_collision.py"
+        "tests/unit/test_self_collision.py",
+        "closy-forge/tests/unit/test_simulation_topology_v2.py",
+        "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
+        "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
       ]
     },
     {
@@ -3785,7 +3842,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3887,7 +3945,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3953,7 +4012,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3962,7 +4022,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "MT1 is lab mechanical transport, not solver-driven cloth. Blueprint Z2 remains unaccepted, PHY1 remains failed, and no mobile or product claim follows.",
+          "limitations": "No Z2-ClothDriven namespace, integrated CCD, or physical runtime capability is created.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3974,7 +4034,9 @@
         "crack/culling fixtures and a three-level dynamic LOD harness execute",
         "actual ZeroOne deformation compute remains false",
         "13 compiled frames have zero position/rest error and zero culling false negatives but fail dense self-intersection",
-        "clean analytic MT1 passes its bounded mechanical-reference transport profile"
+        "clean analytic MT1 passes its bounded mechanical-reference transport profile",
+        "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
       ],
       "id": "BP-17-PHASE-11",
       "implementationPaths": [
@@ -3982,30 +4044,42 @@
         "closy-forge/schemas/v1/zeroone-deformation-foundation.schema.json",
         "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json",
         "closy-forge/docs/evidence/phase11_reference_motion_v2/execution_evidence.json",
-        "closy-forge/src/closy_forge/integrated_runtime/decision.py"
+        "closy-forge/src/closy_forge/integrated_runtime/decision.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/triangulator.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_junctions.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "MT1 is lab mechanical transport, not solver-driven cloth. Blueprint Z2 remains unaccepted, PHY1 remains failed, and no mobile or product claim follows.",
-      "nextAction": "Use topology-v2 to attempt PHY1 independently; create a cloth-driven Z2 profile only if a solver-driven clip later passes PHY1 and the independent dynamic oracle.",
+      "limitations": "No Z2-ClothDriven namespace, integrated CCD, or physical runtime capability is created.",
+      "nextAction": "Do not revisit solver-driven Z2 until a future PHY1 profile passes every frozen gate.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Phase 11 retains the authentic historical Z2 pairing failure and now adds a clean, compiled, exact-identity MT1 analytic mechanical-reference capability.",
+      "summary": "The clean analytic MT1 mechanical-reference pass remains available; topology-v2 produces no solver-driven cloth clip because PHY1-v2 fails.",
       "tests": [
         "closy-forge/tests/unit/test_future_foundations.py",
         "closy-forge/tests/unit/test_zeroone_dynamic_reference.py",
         "closy-forge/tests/unit/test_zeroone_reference_motion_evidence_v2.py",
-        "closy-forge/tests/unit/test_integrated_runtime_d0.py"
+        "closy-forge/tests/unit/test_integrated_runtime_d0.py",
+        "closy-forge/tests/unit/test_simulation_topology_v2.py",
+        "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
+        "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
       ]
     },
     {
       "ancestryClass": "in_tree",
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4067,7 +4141,8 @@
       "ancestryClass": "in_tree",
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4133,7 +4208,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4305,7 +4381,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4393,7 +4470,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4452,7 +4530,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4461,7 +4540,7 @@
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No accepted solver-driven cloth namespace exists. Multi-LOD cloth, PHY1, GPU, mobile, private-user, and production claims remain unsupported.",
+          "limitations": "PHY1-v2 fails 0/11 states, so integrated CCD and a solver-driven Z2 profile are ineligible.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4479,24 +4558,37 @@
       ],
       "evidenceTier": "external_source_exact_head",
       "executableEvidence": [
-        "authenticated ZeroOne workflow artifact e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc executed and failed admission"
+        "authenticated ZeroOne workflow artifact e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc executed and failed admission",
+        "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
       ],
       "id": "BP-18-GATE-Z2",
       "implementationPaths": [
-        "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json"
+        "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json",
+        "closy-forge/src/closy_forge/simulation_topology_v2/triangulator.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_junctions.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No accepted solver-driven cloth namespace exists. Multi-LOD cloth, PHY1, GPU, mobile, private-user, and production claims remain unsupported.",
-      "nextAction": "Run topology-v2 PHY1 first; only a valid solver-driven clip may enter a new, versioned Z2-ClothDriven profile.",
+      "limitations": "PHY1-v2 fails 0/11 states, so integrated CCD and a solver-driven Z2 profile are ineligible.",
+      "nextAction": "Preserve the failed gate until a valid solver-driven cloth clip exists.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Historical Gate Z2 v1 remains failed; the newer MT1 analytic mechanical-reference profile passes its separate scoped transport gate and is not relabelled Z2.",
+      "summary": "Historical Z2 remains failed and topology-v2 does not create a replacement; MT1 continues as a separate clean mechanical-reference capability.",
       "tests": [
-        "closy-forge/tests/unit/test_zeroone_dynamic_reference.py"
+        "closy-forge/tests/unit/test_zeroone_dynamic_reference.py",
+        "closy-forge/tests/unit/test_simulation_topology_v2.py",
+        "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
+        "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
       ]
     },
     {
@@ -5267,7 +5359,8 @@
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
-        "dd916913ac14119bc2e127989703f1c51f91e00a"
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        "a6134df2fb67a8cbcb572e344caf828b926df273"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5276,7 +5369,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Z2 and PHY1 remain failed, and Alpha, Beta, Production, human, private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven.",
+          "limitations": "The first unmet requirement is exact-row decoded front/rear raster ingestion and source identity; no human, private, device, or physical claim is promoted.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5304,7 +5397,9 @@
         "the durable candidate ZeroOneProcess Release executable attempted all nine declared canonical D0 garment families headlessly",
         "six families produced validated mesh, cluster, hierarchy, page-pack, material, and garment semantic derivatives",
         "long-sleeved top, button shirt, and jacket were rejected fail-closed for exact degenerate-surface diagnostics",
-        "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, canonical-authority preservation, and conventional-fallback preservation"
+        "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, canonical-authority preservation, and conventional-fallback preservation",
+        "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -5314,22 +5409,33 @@
         "closy-forge/src/closy_forge/zeroone/tool.py",
         "closy-forge/src/closy_forge/zeroone/validation.py",
         "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json",
-        "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
+        "closy-forge/src/closy_forge/zeroone/derivative_inspection.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/triangulator.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_junctions.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Z2 and PHY1 remain failed, and Alpha, Beta, Production, human, private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven.",
-      "nextAction": "Integrate corrected topology, scoped C3, trained synthetic D0 inference, and real ZeroOne static execution while retaining unsupported tiers.",
+      "limitations": "The first unmet requirement is exact-row decoded front/rear raster ingestion and source identity; no human, private, device, or physical claim is promoted.",
+      "nextAction": "Close the exact D0 decoded-raster and independent rerender rows before widening scope.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The research prototype now includes 9/9 default-family static evidence, a scoped MT1 mechanical pass, integrated fail-closed headless runtime and synthetic-avatar outfit surfaces, plus the bounded Phase 9/14 experiments.",
+      "summary": "The final fixed-avatar T-shirt D0 matrix records 8 passing and 6 not-run components with exact package, executable, C3, Z1, MT1, and fallback identities.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
-        "closy-forge/tests/unit/test_zeroone_execution_evidence.py"
+        "closy-forge/tests/unit/test_zeroone_execution_evidence.py",
+        "closy-forge/tests/unit/test_simulation_topology_v2.py",
+        "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
+        "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
       ]
     },
     {
@@ -5578,5 +5684,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.integrated_runtime_d0.v7"
+  "version": "closy.blueprint_coverage.phy1_topology_v2.v8"
 }

@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "dd916913ac14119bc2e127989703f1c51f91e00a"
+EVIDENCE_ANCHOR = "a6134df2fb67a8cbcb572e344caf828b926df273"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.integrated_runtime_d0.v7"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.integrated_runtime_d0.v4"
+VERSION = "closy.blueprint_coverage.phy1_topology_v2.v8"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_v2.v5"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -242,12 +242,25 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
         "codex/closy-forge-zeroone-reference-motion-v2",
         "4c5dcd284a1221a7820184e640fb92b67b880787",
-        "dd916913ac14119bc2e127989703f1c51f91e00a",
-        44,
-        152,
+        "921ef05b61f39e6020ad12126ffac24c4728f7e0",
+        45,
+        158,
+        "33329481046",
+        "SUCCESS",
+        "integrated_runtime_avatar_outfit_d0",
+    ),
+    (
+        39,
+        "Forge: progress bounded PHY1 topology v2",
+        "codex/closy-forge-phy1-topology-v2",
+        "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
+        "921ef05b61f39e6020ad12126ffac24c4728f7e0",
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        7,
+        22,
         "",
         "NOT_RUN_AT_EVIDENCE_ANCHOR",
-        "integrated_runtime_avatar_outfit_d0",
+        "phy1_topology_v2_experiment_only",
     ),
 ]
 
@@ -280,6 +293,12 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json",
     "closy-forge/docs/evidence/integrated_runtime_invalidation_ledger_d0_v1.json",
     "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json",
+    "closy-forge/docs/capability-profiles/phy1-single-layer-d0-v2.json",
+    "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+    "closy-forge/docs/evidence/phy1_topology_v2/invalidation_ledger.json",
+    "closy-forge/docs/evidence/phy1_topology_v2/final_d0_research_prototype_matrix.json",
+    "closy-forge/src/closy_forge/simulation_topology_v2/evidence.py",
+    "closy-forge/scripts/generate_phy1_topology_v2_evidence.py",
 ]
 
 PHASE10_PATHS = [
@@ -863,6 +882,124 @@ CURRENT_EVIDENCE_ADDITIONS = {
     },
 }
 
+PHY1_V2_PROGRESSION_UPDATES = {
+    "BP-08-N-GARMENT-RETOPOLOGY": {
+        "status": "partial",
+        "summary": (
+            "An opt-in deterministic interior-constrained topology v2 preserves exact panel "
+            "boundaries and semantics while adding quality-bounded interior vertices."
+        ),
+        "limitations": (
+            "The topology is physical-experiment-only. It is not selected by packages, runtime "
+            "capabilities, ZeroOne derivatives, C3, or MT1."
+        ),
+        "nextAction": (
+            "Keep v2 isolated until a later bounded coupled-convergence strategy passes all "
+            "frozen PHY1 requirements."
+        ),
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Evaluation now includes a deterministic 11-state topology-v2 replay, separate "
+            "simulation/render clearance, and the final fixed-row D0 research matrix."
+        ),
+        "limitations": (
+            "PHY1-v2 passes temporal integrity but fails contact, clearance, seam, strain, "
+            "support, energy, and convergence; six research-matrix rows remain not run."
+        ),
+        "nextAction": (
+            "Close exact decoded-raster lineage first, independently of the failed physical lane."
+        ),
+    },
+    "BP-17-PHASE-06": {
+        "status": "partial",
+        "summary": (
+            "Topology v2 removes all qualified temporal degeneracy in the frozen 11-state replay "
+            "without changing v1 runtime identities."
+        ),
+        "limitations": (
+            "Zero of 11 physical states pass; maximum residual depth is 0.002399077 m, simulation "
+            "clearance is -0.014360829 m, and render clearance is -0.064466621 m."
+        ),
+        "nextAction": (
+            "Attempt one later versioned coupled-convergence strategy with joint residual traces; "
+            "CCD remains ineligible."
+        ),
+    },
+    "BP-17-PHASE-11": {
+        "status": "partial",
+        "summary": (
+            "The clean analytic MT1 mechanical-reference pass remains available; topology-v2 "
+            "produces no solver-driven cloth clip because PHY1-v2 fails."
+        ),
+        "limitations": (
+            "No Z2-ClothDriven namespace, integrated CCD, or physical runtime capability is "
+            "created."
+        ),
+        "nextAction": (
+            "Do not revisit solver-driven Z2 until a future PHY1 profile passes every frozen gate."
+        ),
+    },
+    "BP-18-GATE-Z2": {
+        "status": "partial",
+        "summary": (
+            "Historical Z2 remains failed and topology-v2 does not create a replacement; MT1 "
+            "continues as a separate clean mechanical-reference capability."
+        ),
+        "limitations": (
+            "PHY1-v2 fails 0/11 states, so integrated CCD and a solver-driven Z2 profile are "
+            "ineligible."
+        ),
+        "nextAction": "Preserve the failed gate until a valid solver-driven cloth clip exists.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "The final fixed-avatar T-shirt D0 matrix records 8 passing and 6 not-run components "
+            "with exact package, executable, C3, Z1, MT1, and fallback identities."
+        ),
+        "limitations": (
+            "The first unmet requirement is exact-row decoded front/rear raster ingestion and "
+            "source identity; no human, private, device, or physical claim is promoted."
+        ),
+        "nextAction": (
+            "Close the exact D0 decoded-raster and independent rerender rows before widening scope."
+        ),
+    },
+}
+
+PHY1_V2_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/simulation_topology_v2/triangulator.py",
+            "closy-forge/src/closy_forge/simulation_topology_v2/seam_junctions.py",
+            "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
+            "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
+            "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
+            "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+        ],
+        "executableEvidence": [
+            (
+                "all 11 frozen states execute with zero temporal degenerates, swept collapses, "
+                "and true inversions but zero states pass the complete physical profile"
+            ),
+            (
+                "the invalidation ledger proves all integrated D runtime capabilities remain "
+                "pinned to unchanged topology-v1 identities"
+            ),
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_simulation_topology_v2.py",
+            "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
+            "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
+            "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
+            "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py",
+        ],
+    }
+    for row_id in PHY1_V2_PROGRESSION_UPDATES
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -1017,6 +1154,9 @@ def main() -> int:
         current_update = CURRENT_PROGRESSION_UPDATES.get(row_id)
         if current_update:
             row.update(current_update)
+        phy1_v2_update = PHY1_V2_PROGRESSION_UPDATES.get(row_id)
+        if phy1_v2_update:
+            row.update(phy1_v2_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1031,7 +1171,16 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), current_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
-        if row_id in NEXT_ACTIONS and row_id not in CURRENT_PROGRESSION_UPDATES:
+        phy1_v2_evidence = PHY1_V2_EVIDENCE_ADDITIONS.get(row_id)
+        if phy1_v2_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), phy1_v2_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        if (
+            row_id in NEXT_ACTIONS
+            and row_id not in CURRENT_PROGRESSION_UPDATES
+            and row_id not in PHY1_V2_PROGRESSION_UPDATES
+        ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
             stage = row_id.removeprefix("BP-09-")
@@ -1135,7 +1284,8 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
                         "code": "exact_head_ci_recorded_outside_generated_evidence",
                         "descendantEvidenceIsExactHead": False,
                         "reason": (
-                            "PR #38 exact-head CI is recorded in the draft PR body because this "
+                            f"PR #{number} exact-head CI is recorded in the draft PR body "
+                            "because this "
                             "generated report is anchored to its immutable implementation source"
                         ),
                     }
@@ -1212,6 +1362,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         36: 34,
         37: 35,
         38: 36,
+        39: 38,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
@@ -1258,6 +1409,10 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         if pr_number == 37:
             workflows.append(
                 _workflow("Closy Forge Phase 9 Structured v3", "33321665610", "SUCCESS", 1)
+            )
+        if pr_number == 38:
+            workflows.append(
+                _workflow("Closy Forge Phase 9 Structured v3", "33329481042", "SUCCESS", 1)
             )
         mappings = []
         if pr_number == 28:
@@ -1465,15 +1620,16 @@ def _replace_legacy_truth_terms(value: object) -> object:
 def _closy_run(run_id: str, conclusion: str) -> dict[str, object] | None:
     if not run_id:
         return None
+    job_count = 29 if run_id == "33329481046" else 26
     result: dict[str, object] = {
         "exactHead": True,
         "runId": run_id,
         "workflow": "Closy Forge",
         "conclusion": conclusion,
-        "jobCount": 26,
+        "jobCount": job_count,
     }
     if conclusion == "SUCCESS":
-        result["successfulJobCount"] = 26
+        result["successfulJobCount"] = job_count
     else:
         result.update(FAILED_RUN_JOB_COUNTS[run_id])
     return result
