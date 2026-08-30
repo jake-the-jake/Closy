@@ -191,9 +191,7 @@ def audit_panel_topology_v2(
     scale = _panel_scale(boundary_points)
     boundary_indices = set(range(len(boundary_points)))
     edge_counts = Counter(
-        _edge_key(left, right)
-        for tri in mesh.triangles
-        for left, right in _triangle_edges(tri)
+        _edge_key(left, right) for tri in mesh.triangles for left, right in _triangle_edges(tri)
     )
     boundary_edges = {
         _edge_key(index, (index + 1) % len(boundary_points))
@@ -415,9 +413,7 @@ def _edge_incidence(triangles: list[Tri]) -> dict[tuple[int, int], list[tuple[in
 
 def _mesh_edge_counts(triangles: list[Tri]) -> Counter[tuple[int, int]]:
     return Counter(
-        _edge_key(left, right)
-        for tri in triangles
-        for left, right in _triangle_edges(tri)
+        _edge_key(left, right) for tri in triangles for left, right in _triangle_edges(tri)
     )
 
 

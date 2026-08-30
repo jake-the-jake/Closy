@@ -17,13 +17,9 @@ def test_phy1_v2_inputs_are_rebuilt_and_remain_experiment_only() -> None:
 
     assert PHY1_TOPOLOGY_V2_PROFILE_VERSION.endswith("topology_v2.v1")
     assert len(PHY1_STATE_IDS) == 11
-    assert topology_hash(inputs.rest_mesh) != v1["canonicalAuthority"][
-        "simulationTopologyHash"
-    ]
+    assert topology_hash(inputs.rest_mesh) != v1["canonicalAuthority"]["simulationTopologyHash"]
     assert inputs.binding_manifest["runtimeExposure"] is False
-    assert inputs.binding_manifest["simulationTopologyVersion"] == (
-        "closy.simulation_topology.v2"
-    )
+    assert inputs.binding_manifest["simulationTopologyVersion"] == ("closy.simulation_topology.v2")
     assert inputs.binding.simulation_topology_hash == topology_hash(inputs.rest_mesh)
     assert inputs.seam_audit["status"] == "pass"
     assert inputs.binding_audit["status"] == "pass"

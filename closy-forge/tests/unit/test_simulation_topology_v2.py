@@ -38,8 +38,8 @@ def test_topology_v2_does_not_mutate_v1_or_accept_invalid_boundary() -> None:
     assert pattern == snapshot
 
     broken = deepcopy(pattern)
-    broken["panels"][0]["boundary"][1]["curve"]["points"][1] = broken["panels"][0][
-        "boundary"
-    ][0]["curve"]["points"][0]
+    broken["panels"][0]["boundary"][1]["curve"]["points"][1] = broken["panels"][0]["boundary"][0][
+        "curve"
+    ]["points"][0]
     with pytest.raises(ValueError, match="invalid panel"):
         build_panel_meshes_v2(broken, TRANSFORMS)

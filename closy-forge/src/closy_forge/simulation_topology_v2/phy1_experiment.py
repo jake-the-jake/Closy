@@ -87,8 +87,8 @@ def build_phy1_topology_v2_inputs() -> Phy1TopologyV2Inputs:
     pattern = build_tshirt_pattern(TShirtParameters())
     rest_mesh, edge_maps, topology_manifest = build_panel_meshes_v2(pattern, TRANSFORMS)
     constraints, seam_audit = build_seam_constraints_v2(pattern, edge_maps, rest_mesh)
-    render_mesh, seeds, binding, binding_manifest, binding_audit = (
-        build_topology_v2_render_binding(rest_mesh)
+    render_mesh, seeds, binding, binding_manifest, binding_audit = build_topology_v2_render_binding(
+        rest_mesh
     )
     avatar_mesh = build_reference_avatar_mesh()
     collision_mesh = build_collision_mesh()
@@ -278,9 +278,7 @@ def run_phy1_topology_v2_experiment(*, source_anchor_sha: str) -> dict[str, Any]
             "integratedCcd": {
                 "executed": False,
                 "eligible": False,
-                "reason": (
-                    "requires_zero_temporal_degeneracy_and_coupled_convergence_before_ccd"
-                ),
+                "reason": ("requires_zero_temporal_degeneracy_and_coupled_convergence_before_ccd"),
             },
             "stopReason": "smallest_truthful_failure_after_first_v2_strategy",
             "remainingTopologyStrategies": 2,
@@ -292,14 +290,10 @@ def run_phy1_topology_v2_experiment(*, source_anchor_sha: str) -> dict[str, Any]
             "runtimeCeilingSeconds": profile["solverProfile"]["runtimeCeilingSeconds"],
             "operationBounds": {
                 "settleSteps": profile["solverProfile"]["settleStepCount"],
-                "settleIterationsPerStep": profile["solverProfile"][
-                    "settleIterationsPerStep"
-                ],
+                "settleIterationsPerStep": profile["solverProfile"]["settleIterationsPerStep"],
                 "motionStateCount": 10,
                 "motionStepsPerState": profile["solverProfile"]["motionStepCount"],
-                "motionIterationsPerStep": profile["solverProfile"][
-                    "motionIterationsPerStep"
-                ],
+                "motionIterationsPerStep": profile["solverProfile"]["motionIterationsPerStep"],
             },
         },
         "claims": {
@@ -364,8 +358,7 @@ def _state_evidence(
         "residualViolations": residual_violations == 0,
         "simulationClearance": float(simulation_clearance["minimumBodySignedClearanceMeters"])
         >= 0.000005,
-        "renderClearance": float(render_clearance["minimumBodySignedClearanceMeters"])
-        >= 0.000005,
+        "renderClearance": float(render_clearance["minimumBodySignedClearanceMeters"]) >= 0.000005,
         "seamCrack": seam["maximumSeamCrackMeters"] <= 0.002,
         "seamSlip": seam["maximumTangentialSlipMeters"] <= 0.005,
         "degeneracy": temporal["counts"]["degenerateFrameTriangles"] == 0,
@@ -432,9 +425,7 @@ def _state_evidence(
     }
 
 
-def _aggregate(
-    states: list[dict[str, Any]], settle: SettleResult
-) -> dict[str, Any]:
+def _aggregate(states: list[dict[str, Any]], settle: SettleResult) -> dict[str, Any]:
     return {
         "stateCount": len(states),
         "statePassCount": sum(state["status"] == "pass" for state in states),
@@ -501,8 +492,7 @@ def _aggregate_checks(
         >= thresholds["minimumQualifiedSurfaceBodyClearanceMeters"],
         "renderSurfaceClearance": aggregate["renderSurfaceMinimumBodyClearanceMeters"]
         >= thresholds["minimumQualifiedSurfaceBodyClearanceMeters"],
-        "seamCrack": aggregate["maximumSeamCrackMeters"]
-        <= thresholds["maximumSeamCrackMeters"],
+        "seamCrack": aggregate["maximumSeamCrackMeters"] <= thresholds["maximumSeamCrackMeters"],
         "seamSlip": aggregate["maximumTangentialSeamSlipMeters"]
         <= thresholds["maximumTangentialSeamSlipMeters"],
         "degenerateFrames": temporal["degenerateFrameTriangles"] == 0,
