@@ -3003,6 +3003,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
         **_future_foundation_schemas(),
         **_runtime_delivery_schemas(),
         **_avatar_variation_schemas(),
+        **_integrated_runtime_schemas(),
         **_zeroone_integration_schemas(),
         "validation-report.schema.json": _schema(
             "Closy package validation issues and report",
@@ -4170,6 +4171,98 @@ def _avatar_variation_schemas() -> dict[str, dict[str, Any]]:
                 "truth",
             ],
         )
+    }
+
+
+def _integrated_runtime_schemas() -> dict[str, dict[str, Any]]:
+    identity_map = {
+        "type": "object",
+        "additionalProperties": _sha256(),
+        "minProperties": 15,
+        "maxProperties": 15,
+    }
+    return {
+        "integrated-runtime-avatar-outfit-evidence.schema.json": _schema(
+            "Closy integrated runtime, avatar and outfit D0 evidence v1",
+            {
+                "schemaVersion": {"const": 1},
+                "evidenceVersion": {
+                    "const": "closy.integrated_runtime_avatar_outfit.evidence.d0.v1"
+                },
+                "capabilityVersion": {"const": "closy.integrated_runtime.capabilities_d0.v1"},
+                "classification": {
+                    "const": "headless_CPU_D0_integration_not_product_or_physical_acceptance"
+                },
+                "generationSourceSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                "historicalAuthorities": {"type": "object"},
+                "packageExecution": {"type": "object"},
+                "runtimeDecision": {"type": "object"},
+                "failClosedRejections": {"type": "object"},
+                "avatarFit": {"type": "object"},
+                "outfit": {"type": "object"},
+                "performance": {"type": "object"},
+                "invalidationLedger": {"type": "object"},
+                "topologyMutationProbe": {"type": "object"},
+                "diagnosticPrivacy": {"type": "object"},
+                "truth": {"type": "object"},
+                "integrity": _object({"evidenceHash": _sha256()}, ["evidenceHash"]),
+            },
+            [
+                "schemaVersion",
+                "evidenceVersion",
+                "capabilityVersion",
+                "classification",
+                "generationSourceSha",
+                "historicalAuthorities",
+                "packageExecution",
+                "runtimeDecision",
+                "failClosedRejections",
+                "avatarFit",
+                "outfit",
+                "performance",
+                "invalidationLedger",
+                "topologyMutationProbe",
+                "diagnosticPrivacy",
+                "truth",
+                "integrity",
+            ],
+        ),
+        "integrated-runtime-invalidation-ledger.schema.json": _schema(
+            "Closy integrated representation invalidation ledger D0 v1",
+            {
+                "schemaVersion": {"const": 1},
+                "ledgerVersion": {
+                    "const": "closy.integrated-representation-invalidation-ledger.d0.v1"
+                },
+                "baselineIdentities": identity_map,
+                "currentIdentities": identity_map,
+                "dependencyRules": {"type": "object"},
+                "calculatedInvalidation": _object(
+                    {
+                        "changedIdentityClasses": {"type": "array", "items": {"type": "string"}},
+                        "invalidatedCapabilities": {"type": "array", "items": {"type": "string"}},
+                        "retainedByExactIdentity": {"type": "array", "items": {"type": "string"}},
+                        "mandatoryReruns": {"type": "array", "items": {"type": "string"}},
+                        "failClosed": {"const": True},
+                    },
+                    [
+                        "changedIdentityClasses",
+                        "invalidatedCapabilities",
+                        "retainedByExactIdentity",
+                        "mandatoryReruns",
+                        "failClosed",
+                    ],
+                ),
+            },
+            [
+                "schemaVersion",
+                "ledgerVersion",
+                "baselineIdentities",
+                "currentIdentities",
+                "dependencyRules",
+                "calculatedInvalidation",
+            ],
+        ),
     }
 
 

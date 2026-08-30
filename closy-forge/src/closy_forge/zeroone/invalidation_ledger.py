@@ -9,6 +9,66 @@ from closy_forge.zeroone.mechanical_reference_surface import (
     MECHANICAL_REFERENCE_MANIFEST_PATH,
 )
 
+INTEGRATED_IDENTITY_KEYS = (
+    "canonicalPackageDigest",
+    "patternHash",
+    "simulationTopologyHash",
+    "renderTopologyHash",
+    "bindingHash",
+    "conventionalFallbackHash",
+    "mechanicalReferenceSurfaceHash",
+    "staticDerivativeIdentity",
+    "dynamicRequestIdentity",
+    "dynamicOutputIdentity",
+    "zeroOneBinaryIdentity",
+    "avatarAuthorityHash",
+    "avatarFitDigest",
+    "layerProfileIdentity",
+    "outfitSurfaceIdentity",
+)
+
+_CAPABILITY_DEPENDENCIES = {
+    "conventional_static_fallback": {
+        "canonicalPackageDigest",
+        "conventionalFallbackHash",
+    },
+    "candidate_static_zeroone": {
+        "canonicalPackageDigest",
+        "conventionalFallbackHash",
+        "mechanicalReferenceSurfaceHash",
+        "staticDerivativeIdentity",
+        "zeroOneBinaryIdentity",
+    },
+    "mt1_reference_motion_d0": {
+        "simulationTopologyHash",
+        "renderTopologyHash",
+        "bindingHash",
+        "mechanicalReferenceSurfaceHash",
+        "staticDerivativeIdentity",
+        "dynamicRequestIdentity",
+        "dynamicOutputIdentity",
+        "zeroOneBinaryIdentity",
+    },
+    "conventional_c3_deformation": {
+        "canonicalPackageDigest",
+        "simulationTopologyHash",
+        "renderTopologyHash",
+        "bindingHash",
+    },
+    "synthetic_avatar_fit_d0": {
+        "avatarAuthorityHash",
+        "avatarFitDigest",
+    },
+    "geometric_layer_collision_d0": {
+        "simulationTopologyHash",
+        "renderTopologyHash",
+        "avatarAuthorityHash",
+        "avatarFitDigest",
+        "layerProfileIdentity",
+        "outfitSurfaceIdentity",
+    },
+}
+
 
 def build_reference_motion_invalidation_ledger(
     package_dir: Path,
@@ -120,6 +180,85 @@ def build_reference_motion_invalidation_ledger(
             "inputAssetRelativePath"
         ),
     }
+
+
+def build_integrated_runtime_invalidation_ledger(
+    baseline: dict[str, str], current: dict[str, str]
+) -> dict[str, Any]:
+    """Calculate capability invalidation from exact representation identity changes."""
+
+    _validate_integrated_identities(baseline)
+    _validate_integrated_identities(current)
+    changed = sorted(key for key in INTEGRATED_IDENTITY_KEYS if baseline[key] != current[key])
+    changed_set = set(changed)
+    invalidated = sorted(
+        capability
+        for capability, dependencies in _CAPABILITY_DEPENDENCIES.items()
+        if dependencies & changed_set
+    )
+    retained = sorted(set(_CAPABILITY_DEPENDENCIES) - set(invalidated))
+    mandatory_reruns = sorted(
+        {rerun for capability in invalidated for rerun in _reruns_for(capability)}
+    )
+    return {
+        "schemaVersion": 1,
+        "ledgerVersion": "closy.integrated-representation-invalidation-ledger.d0.v1",
+        "baselineIdentities": dict(sorted(baseline.items())),
+        "currentIdentities": dict(sorted(current.items())),
+        "dependencyRules": {
+            capability: sorted(dependencies)
+            for capability, dependencies in sorted(_CAPABILITY_DEPENDENCIES.items())
+        },
+        "calculatedInvalidation": {
+            "changedIdentityClasses": changed,
+            "invalidatedCapabilities": invalidated,
+            "retainedByExactIdentity": retained,
+            "mandatoryReruns": mandatory_reruns,
+            "failClosed": True,
+        },
+    }
+
+
+def validate_integrated_runtime_invalidation_ledger(
+    ledger: dict[str, Any], expected_current: dict[str, str]
+) -> list[str]:
+    issues: list[str] = []
+    baseline = ledger.get("baselineIdentities")
+    current = ledger.get("currentIdentities")
+    if not isinstance(baseline, dict) or not isinstance(current, dict):
+        return ["integrated_invalidation_identity_maps_missing"]
+    try:
+        rebuilt = build_integrated_runtime_invalidation_ledger(baseline, expected_current)
+    except ValueError as error:
+        return [str(error)]
+    if current != dict(sorted(expected_current.items())):
+        issues.append("integrated_invalidation_current_identity_stale")
+    if ledger != rebuilt:
+        issues.append("integrated_invalidation_not_recalculated")
+    return sorted(issues)
+
+
+def _validate_integrated_identities(values: dict[str, str]) -> None:
+    if set(values) != set(INTEGRATED_IDENTITY_KEYS):
+        raise ValueError("integrated_invalidation_identity_inventory_invalid")
+    for key, value in values.items():
+        if (
+            not isinstance(value, str)
+            or len(value) != 64
+            or any(character not in "0123456789abcdef" for character in value)
+        ):
+            raise ValueError(f"integrated_invalidation_identity_invalid:{key}")
+
+
+def _reruns_for(capability: str) -> tuple[str, ...]:
+    return {
+        "conventional_static_fallback": ("runtime_package_validation",),
+        "candidate_static_zeroone": ("zeroone_static_exact_identity_qualification",),
+        "mt1_reference_motion_d0": ("mt1_dynamic_request_and_independent_oracle",),
+        "conventional_c3_deformation": ("c3_binding_pose_suite",),
+        "synthetic_avatar_fit_d0": ("synthetic_avatar_authority_fit_suite",),
+        "geometric_layer_collision_d0": ("canonical_surface_outfit_clearance_suite",),
+    }[capability]
 
 
 def _inventory_sha(
