@@ -27,6 +27,30 @@
       "rationale": "caps are above float canonicalisation noise but below the fixed D0 render/binding inspection sensitivity",
       "units": "meters_degrees_counts"
     },
+    "closy.mechanical_reference.mt1.v2": {
+      "aggregationRule": "every clean-reference frame and every mandatory transport metric must pass; missing or nonfinite evidence fails closed",
+      "assetProfileHash": "cf393918d68f7765d1f2954a44893de96a4a5b6bcd6ea158ecb20c531df7538f",
+      "comparisonDirection": "errors and cracks at_or_below maxima; triangle area strictly above minimum; counts exact",
+      "datasetSplitHash": "cf393918d68f7765d1f2954a44893de96a4a5b6bcd6ea158ecb20c531df7538f",
+      "metrics": {
+        "boundsGuardBandMeters": 0.00001,
+        "cullingFalseNegativeCount": 0,
+        "maximumBoundaryCrackMeters": 0.00005,
+        "maximumNormalAngleDegrees": 0.25,
+        "maximumOpeningLoopDistanceMeters": 0.00005,
+        "maximumPositionErrorMeters": 0.000002,
+        "maximumTangentAngleDegrees": 0.5,
+        "minimumFrameCount": 13,
+        "minimumProcessingTriangleDoubleAreaMeters2Exclusive": 0.000000005,
+        "p95PositionErrorMeters": 0.0000005,
+        "requiredBindingCoverage": 1.0,
+        "requiredRestAndReturnFrameCount": 2,
+        "requiredTransportPairDelta": 0
+      },
+      "oracleVersionHash": "211f2d61854fff7002b3ac7c1d1e952debe62ac01e559512c102e1d22b87d1e1",
+      "rationale": "analytic clean-reference motion qualifies compiled mechanical transport only and does not imply solver-driven Z2 or PHY1",
+      "units": "meters_square_meters_degrees_counts"
+    },
     "closy.outfit_surface.d0.v1": {
       "aggregationRule": "all static and timestamped cases pass; oracle-uncertain witnesses fail closed",
       "assetProfileHash": "53f2460029f791ec888f8e57471fdf74b0045d71f29c97b0218f11d7dff5d07f",
