@@ -29,6 +29,10 @@ def build_reference_motion_invalidation_ledger(
     dynamic_root = package / "zeroone" / DYNAMIC_DIRECTORY
     request_summary = _object(dynamic_root / "request_summary.json")
     execution = _object(dynamic_root / "execution.json")
+    simulation_provenance = simulation.get("provenance")
+    provenance_record = (
+        simulation_provenance if isinstance(simulation_provenance, dict) else {}
+    )
     inventory = {
         str(row["path"]): row
         for row in package_manifest.get("inventory", [])
@@ -39,8 +43,13 @@ def build_reference_motion_invalidation_ledger(
         "panelBoundarySamplingHash": _inventory_sha(
             inventory, "pattern/panels.svg"
         ),
-        "triangulator": simulation.get("provenance", {}).get("triangulator"),
-        "triangulatorVersion": simulation.get("provenance", {}).get("triangulatorVersion"),
+        "simulationProvenance": simulation_provenance,
+        "triangulator": provenance_record.get("triangulator"),
+        "triangulatorVersion": provenance_record.get("triangulatorVersion"),
+        "triangulatorIdentityAvailable": bool(
+            provenance_record.get("triangulator")
+            and provenance_record.get("triangulatorVersion")
+        ),
         "seamOpeningGraphHash": _inventory_sha(inventory, "semantic/garment_graph.json"),
         "restTopologyHash": simulation.get("topologyHash"),
         "restContentHash": _object(package / "simulation" / "rest_state.json").get(
