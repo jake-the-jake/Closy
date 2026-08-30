@@ -48,6 +48,7 @@ TOKEN_VALUES: dict[str, tuple[str, ...]] = {
     "material": ("jersey", "woven"),
 }
 CONTINUOUS_AXES = ("length", "width", "ease", "sleeveLength", "flare")
+DATASET_PANEL_COUNTS = frozenset(range(2, 12))
 HOLDOUT_GROUPS = {
     "short_v_neck": {"sleeve": "short", "neckline": "v"},
     "princess_placket": {"torso": "princess", "closure": "front_placket"},
@@ -306,8 +307,11 @@ def validate_typed_dataset_v2(dataset: dict[str, Any]) -> list[str]:
     panel_counts = {
         int(record["target"]["compilation"]["audit"]["panelCount"]) for record in records
     }
-    if len(panel_counts) < 5:
+    if panel_counts != DATASET_PANEL_COUNTS:
         issues.append("typed_panel_count_literal_breadth_invalid")
+    garment_regimes = {str(record["target"]["tokens"]["base"]) for record in records}
+    if garment_regimes != set(TOKEN_VALUES["base"]):
+        issues.append("typed_garment_regime_breadth_invalid")
     if any(tuple(record.get("observation", {})) != FEATURE_NAMES for record in records):
         issues.append("typed_observable_contract_invalid")
     if any(validate_typed_program_v2(record["target"]["program"]) for record in records):

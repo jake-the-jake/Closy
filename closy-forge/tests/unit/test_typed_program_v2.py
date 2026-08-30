@@ -9,6 +9,7 @@ from closy_forge.pattern_inference.typed_program_v2 import (
     GRAMMAR_VERSION,
     PROGRAM_VERSION,
     TOKEN_AXES,
+    TOKEN_VALUES,
     build_typed_dataset_v2,
     compact_typed_dataset_manifest_v2,
     compile_typed_program_v2,
@@ -86,7 +87,10 @@ def test_typed_dataset_has_exact_compositional_split_and_compact_manifest() -> N
     assert dataset["split"]["counts"] == {"train": 256, "validation": 64, "test": 96}
     assert {
         record["target"]["compilation"]["audit"]["panelCount"] for record in dataset["records"]
-    } == {7, 8, 9, 10, 11}
+    } == set(range(2, 12))
+    assert {record["target"]["tokens"]["base"] for record in dataset["records"]} == set(
+        TOKEN_VALUES["base"]
+    )
     assert all(
         item["testCount"] == 24
         and item["exactCombinationPresentInTraining"] is False
