@@ -11,7 +11,7 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+EVIDENCE_ANCHOR = "f3e96de0f9eaf308159655cb38654f18e4603f9e"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }

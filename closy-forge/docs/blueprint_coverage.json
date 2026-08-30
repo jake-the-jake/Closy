@@ -26,7 +26,7 @@
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
     "generatorVersion": "closy.blueprint_reconciliation.z1_z2_structured_ai.v3",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "28d8e9189e9b51f0e216df1c473866cf68cd1fdd85ddbaf994cfd49b2e0a4d23"
+    "sourceTreeHash": "4fcff5193047388972a4c8b50abc1a3b271b8554f0b79cc0306a67053fa866c6"
   },
   "integratedImplementationRowCount": 78,
   "rows": [
@@ -195,7 +195,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1349,7 +1350,8 @@
         "e90a38e",
         "e23820e",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1435,7 +1437,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1868,7 +1871,8 @@
         "91b9ececae3097a42cba45cad90fa81b1ef31d6a",
         "0dbf362a444441d65b10e16d3b30f000294d2b04",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2148,7 +2152,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2205,7 +2210,8 @@
       "ancestryClass": "external_source_pr",
       "commitSha": [
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2460,7 +2466,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2612,7 +2619,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2733,7 +2741,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3698,7 +3707,8 @@
         "b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b",
         "de1177268cd09e6988689fa175638492757a9bed",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3786,7 +3796,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3848,7 +3859,8 @@
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3982,7 +3994,8 @@
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4140,7 +4153,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4224,7 +4238,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4279,7 +4294,8 @@
       "ancestryClass": "external_source_pr",
       "commitSha": [
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5080,7 +5096,8 @@
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        "076cb9390a1ac98f7fa477f4ba101425c5906d0c"
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e"
       ],
       "dependencies": [],
       "evidenceSources": [
