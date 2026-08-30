@@ -72,7 +72,7 @@ def audit_historical_representations(package_dir: Path) -> dict[str, Any]:
     )
 
     static_results = [
-        _compact_audit(audit_surface(surface), surface.triangle_lineage)
+        _compact_audit(audit_surface(surface), surface.triangle_lineage, include_lineage=True)
         for surface in (canonical, logical, expanded, processing)
     ]
     reconstructed_frames = _historical_processing_frames(
@@ -87,7 +87,9 @@ def audit_historical_representations(package_dir: Path) -> dict[str, Any]:
             processing_ids,
             processing_lineage,
         )
-        result = _compact_audit(audit_surface(surface), processing_lineage)
+        result = _compact_audit(
+            audit_surface(surface), processing_lineage, include_lineage=False
+        )
         result["frameIndex"] = frame
         result["phase"] = math.sin(math.pi * frame / (FRAME_COUNT - 1))
         frame_results.append(result)
@@ -147,6 +149,7 @@ def audit_historical_representations(package_dir: Path) -> dict[str, Any]:
         "identities": identity,
         "representations": static_results,
         "independentZeroOneReconstructionFrames": frame_results,
+        "independentZeroOneTriangleLineage": processing_lineage,
         "robustV2IntersectionCountByFrame": counts,
         "historicalV1IntersectionCountByFrame": [
             971,
@@ -194,18 +197,31 @@ def audit_historical_representations(package_dir: Path) -> dict[str, Any]:
     return result
 
 
-def _compact_audit(audit: dict[str, Any], lineage: list[dict[str, Any]]) -> dict[str, Any]:
+def _compact_audit(
+    audit: dict[str, Any],
+    lineage: list[dict[str, Any]],
+    *,
+    include_lineage: bool,
+) -> dict[str, Any]:
     result = dict(audit)
     pairs = []
     for row in audit["intersectingPairs"]:
-        compact = dict(row)
-        compact.pop("leftLineage", None)
-        compact.pop("rightLineage", None)
-        compact["leftLineageIndex"] = int(row["leftTriangle"])
-        compact["rightLineageIndex"] = int(row["rightTriangle"])
+        witness = row["witness"]
+        compact = {
+            "pairId": row["pairId"],
+            "triangles": [row["leftTriangle"], row["rightTriangle"]],
+            "expectedTopologicalAdjacency": row["expectedTopologicalAdjacency"],
+            "sharedLogicalVertexIds": row["sharedLogicalVertexIds"],
+            "classification": row["classification"],
+            "witnessPoint": witness["point"],
+            "leftBarycentric": witness["leftBarycentric"],
+            "rightBarycentric": witness["rightBarycentric"],
+            "lineageIndices": [row["leftTriangle"], row["rightTriangle"]],
+        }
         pairs.append(compact)
     result["intersectingPairs"] = pairs
-    result["triangleLineage"] = lineage
+    if include_lineage:
+        result["triangleLineage"] = lineage
     return result
 
 
