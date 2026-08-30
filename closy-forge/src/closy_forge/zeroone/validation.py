@@ -34,7 +34,13 @@ def inspect_zeroone_namespace(package: Path) -> dict[str, Any]:
     target = root / "static-d0"
     if not target.is_dir():
         children = {child.name for child in root.iterdir()}
-        if children <= {"input-z1-v1", "input-z2-v1", "dynamic-d0-reference"}:
+        if children <= {
+            "input-z1-v1",
+            "input-z2-v1",
+            "input-mt1-v2",
+            "dynamic-d0-reference",
+            "mechanical-reference-v2",
+        }:
             return {"status": "not_present", "reason": "zeroone_derivative_absent"}
         return {"status": "derivative_incompatible", "reason": "static_profile_directory_missing"}
     try:
