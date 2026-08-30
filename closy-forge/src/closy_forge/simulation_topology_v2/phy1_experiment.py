@@ -17,7 +17,6 @@ from closy_forge.garments.tshirt.assembly import TRANSFORMS
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.garments.tshirt.pattern_generator import build_tshirt_pattern
 from closy_forge.geometry.mesh_model import Mesh, MeshSet, Vec3
-from closy_forge.geometry.signed_distance import audit_body_signed_clearance
 from closy_forge.geometry.subdivision import RenderBindingSeed
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json
 from closy_forge.package_io.hashing import (
@@ -342,10 +341,10 @@ def _state_evidence(
     temporal = audit_temporal_deformation_quality(trajectory)
     deformation = audit_rest_referenced_deformation(settle.settled_mesh, mesh)
     rendered_positions = reconstruct_vertices(mesh, inputs.binding)
-    simulation_clearance = _clearance(flat.positions, inputs.collision_mesh, calibration, "sv")
+    simulation_clearance = _clearance(flat.positions, inputs.avatar, calibration, "sv")
     render_clearance = _clearance(
         rendered_positions,
-        inputs.collision_mesh,
+        inputs.avatar,
         calibration,
         "rv",
     )
@@ -408,6 +407,7 @@ def _state_evidence(
             "broadPhaseMatchesOracle": collision.broad_phase_matches_oracle,
         },
         "clearance": {
+            "authority": "frozen_solver_collision_primitives_conservative_signed_proxy",
             "simulationSurfaceMinimumMeters": simulation_clearance[
                 "minimumBodySignedClearanceMeters"
             ],
@@ -552,16 +552,60 @@ def _thresholds(profile: dict[str, Any], calibration: dict[str, Any]) -> dict[st
 
 
 def _clearance(
-    positions: list[Vec3], body: MeshSet, calibration: dict[str, Any], prefix: str
+    positions: list[Vec3], avatar: dict[str, Any], calibration: dict[str, Any], prefix: str
 ) -> dict[str, Any]:
-    return audit_body_signed_clearance(
-        positions,
-        body,
-        point_ids=[f"{prefix}.{index}" for index in range(len(positions))],
-        cloth_half_thickness_meters=float(calibration["clothHalfThicknessMeters"]),
-        skin_margin_meters=float(calibration["skinMarginMeters"]),
-        oracle_uncertainty_meters=float(calibration["numericalOracleUncertaintyMeters"]),
-        promotion_guard_band_meters=float(calibration["promotionGuardBandMeters"]),
+    half_thickness = float(calibration["clothHalfThicknessMeters"])
+    witnesses = [
+        {
+            "pointId": f"{prefix}.{index}",
+            "signedClearanceMeters": min(
+                _primitive_signed_distance(point, primitive)
+                for primitive in avatar["collisionPrimitives"]
+            )
+            - half_thickness,
+        }
+        for index, point in enumerate(positions)
+    ]
+    worst = min(witnesses, key=lambda item: (item["signedClearanceMeters"], item["pointId"]))
+    return {
+        "auditVersion": "closy.phy1.solver_primitive_signed_clearance.v1",
+        "authority": "same_frozen_collision_primitives_consumed_by_reference_solver",
+        "conservativeProxy": True,
+        "glbSignedSurfaceOracleRun": False,
+        "pointCount": len(witnesses),
+        "oracleUncertainCount": 0,
+        "minimumBodySignedClearanceMeters": worst["signedClearanceMeters"],
+        "worstWitness": worst,
+    }
+
+
+def _primitive_signed_distance(point: Vec3, primitive: dict[str, Any]) -> float:
+    if primitive["type"] == "ellipsoid":
+        center: Vec3 = tuple(float(value) for value in primitive["center"])  # type: ignore[assignment]
+        radii: Vec3 = tuple(float(value) for value in primitive["radii"])  # type: ignore[assignment]
+        normalized = math.sqrt(
+            sum(((point[index] - center[index]) / radii[index]) ** 2 for index in range(3))
+        )
+        return (normalized - 1.0) * min(radii)
+    if primitive["type"] == "capsule":
+        start: Vec3 = tuple(float(value) for value in primitive["a"])  # type: ignore[assignment]
+        end: Vec3 = tuple(float(value) for value in primitive["b"])  # type: ignore[assignment]
+        nearest = _closest_point_on_segment(point, start, end)
+        return math.dist(point, nearest) - float(primitive["radius"])
+    raise ValueError(f"unsupported_phy1_collision_primitive:{primitive['type']}")
+
+
+def _closest_point_on_segment(point: Vec3, start: Vec3, end: Vec3) -> Vec3:
+    axis = _sub(end, start)
+    denominator = sum(value * value for value in axis)
+    if denominator <= 1e-18:
+        return start
+    parameter = sum((point[index] - start[index]) * axis[index] for index in range(3))
+    parameter = max(0.0, min(1.0, parameter / denominator))
+    return (
+        start[0] + axis[0] * parameter,
+        start[1] + axis[1] * parameter,
+        start[2] + axis[2] * parameter,
     )
 
 
