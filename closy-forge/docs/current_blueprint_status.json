@@ -10,7 +10,7 @@
     "coverageVersion": "closy.blueprint_coverage.z1_z2_structured_ai.v6",
     "total": 101
   },
-  "evidenceAnchorSha": "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+  "evidenceAnchorSha": "f3e96de0f9eaf308159655cb38654f18e4603f9e",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
