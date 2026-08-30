@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v5"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v6"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -25,6 +25,8 @@ CLOSY_DYNAMIC_EVIDENCE_SHA = "960662d237e187cd8ecbcc9ebe9192367f194317"
 MT1_EVIDENCE_SHA = "6b2e64566e1484e70992ba4e10150c27591f0512"
 MT1_EXECUTABLE_SHA256 = "b29345b062691cfa7d7e6873c7c9b9bca2cd5a46e670b866d8e69153c0ad8476"
 INTEGRATED_RUNTIME_EVIDENCE_SHA = "dd916913ac14119bc2e127989703f1c51f91e00a"
+PHY1_V2_SOURCE_SHA = "477c1fd881c7e55c352ca89732e5772d9d6bbeeb"
+PHY1_V2_PUBLICATION_SHA = "a6134df2fb67a8cbcb572e344caf828b926df273"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -117,6 +119,46 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
             "qualified_temporal_degenerate_frame_triangles_198",
             "qualified_swept_degenerate_transitions_191",
             "qualified_true_inversions_15",
+        ],
+    },
+    "PHY1-SingleLayer-D0-v2": {
+        "gateId": "PHY1-SingleLayer-D0-v2",
+        "globalStatus": "partial",
+        "scopedStatus": "failed",
+        "evidenceTier": "committed_deterministic_topology_v2_failure_witnesses",
+        "platform": ["windows"],
+        "toolchain": ["CPython 3.11"],
+        "sourceSha": PHY1_V2_SOURCE_SHA,
+        "evidencePublicationSha": PHY1_V2_PUBLICATION_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored synthetic",
+        "executionKind": "CPU/source/opt-in topology-v2 physical experiment",
+        "gateScope": "physical topology-v2 experiment only",
+        "evidenceDurability": "committed_report_with_byte_identical_double_replay",
+        "workflowRun": None,
+        "stateCount": 11,
+        "statePassCount": 0,
+        "qualifiedTemporalDegenerateFrameTriangles": 0,
+        "qualifiedSweptDegenerateTransitions": 0,
+        "qualifiedTrueInversions": 0,
+        "runtimeCapabilityExposed": False,
+        "dRuntimePinnedToV1": True,
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["multilayer", "integrated_CCD", "solver_driven_Z2"],
+        "blockers": [
+            "qualified_physical_states_passed_0_of_11",
+            "maximum_unresolved_contacts_867",
+            "residual_depth_0.002399077_exceeds_0.000160000",
+            "residual_violations_4143",
+            "simulation_surface_clearance_negative_0.014360829",
+            "render_surface_clearance_negative_0.064466621",
+            "maximum_seam_crack_0.417546910",
+            "maximum_tangential_seam_slip_0.417546910",
+            "strain_opening_support_energy_failed",
+            "coupled_convergence_failed",
         ],
     },
     "MT1-MechanicalReference-D0": {
@@ -396,6 +438,11 @@ def build_status_model(
             "phase14SourceIntegrated": True,
             "layerCollisionSurfaceIntegrated": True,
             "mt1ReferenceMotionD0Available": True,
+            "phy1TopologyV2ExperimentExecuted": True,
+            "phy1TopologyV2Passed": False,
+            "phy1TopologyV2RuntimeExposed": False,
+            "integratedRuntimePinnedToTopologyV1": True,
+            "finalD0ResearchMatrixStatus": "partial",
             "packageValidityDependsOnZeroOne": False,
             "phase9E1Status": "partial_experimental",
             "phase9E2Status": "executed_feasibility_partial",
@@ -435,6 +482,14 @@ def validate_status_model(
         issues.append("dynamic_pairing_acceptance_overclaimed")
     if truth.get("mt1ReferenceMotionD0Available") is not True:
         issues.append("mt1_reference_motion_missing")
+    if truth.get("phy1TopologyV2ExperimentExecuted") is not True:
+        issues.append("phy1_topology_v2_experiment_missing")
+    if truth.get("phy1TopologyV2Passed") is not False:
+        issues.append("phy1_topology_v2_overclaimed")
+    if truth.get("phy1TopologyV2RuntimeExposed") is not False:
+        issues.append("phy1_topology_v2_runtime_exposure_overclaimed")
+    if truth.get("integratedRuntimePinnedToTopologyV1") is not True:
+        issues.append("integrated_runtime_topology_identity_drift")
     if truth.get("packageValidityDependsOnZeroOne") is not False:
         issues.append("zeroone_made_package_authoritative")
     if truth.get("actualZeroOneGpuRuntimeExecuted") is not False:
@@ -469,7 +524,9 @@ def render_status_summary(model: dict[str, Any]) -> str:
         f"{gate_lines}\n\n"
         "Compute profile, data provenance, execution profile, and gate scope are independent "
         "axes. C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile; "
-        "PHY1-SingleLayer-D0 fails its declared scope. Historical compiled dynamic ZeroOne "
+        "PHY1-SingleLayer-D0 and its opt-in topology-v2 experiment both fail their declared "
+        "scopes. Topology v2 removes qualified temporal degeneracy but is not runtime-exposed. "
+        "Historical compiled dynamic ZeroOne "
         "pairing failed, while the separate clean analytic MT1 mechanical-reference profile passes "
         "without implying Z2 or physical cloth. Geometric LayerCollision-D0 passes only for the "
         "indexed synthetic two-garment surface profile and does not imply PHY1. "

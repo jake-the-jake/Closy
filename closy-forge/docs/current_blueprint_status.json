@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 62
     },
-    "coverageVersion": "closy.blueprint_coverage.integrated_runtime_d0.v7",
+    "coverageVersion": "closy.blueprint_coverage.phy1_topology_v2.v8",
     "total": 101
   },
-  "evidenceAnchorSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
+  "evidenceAnchorSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -271,6 +271,61 @@
         "mobile",
         "private_user",
         "multilayer"
+      ],
+      "workflowRun": null
+    },
+    "PHY1-SingleLayer-D0-v2": {
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "qualified_physical_states_passed_0_of_11",
+        "maximum_unresolved_contacts_867",
+        "residual_depth_0.002399077_exceeds_0.000160000",
+        "residual_violations_4143",
+        "simulation_surface_clearance_negative_0.014360829",
+        "render_surface_clearance_negative_0.064466621",
+        "maximum_seam_crack_0.417546910",
+        "maximum_tangential_seam_slip_0.417546910",
+        "strain_opening_support_energy_failed",
+        "coupled_convergence_failed"
+      ],
+      "computeProfile": "D0",
+      "dRuntimePinnedToV1": true,
+      "dataProvenance": "project-authored synthetic",
+      "evidenceDurability": "committed_report_with_byte_identical_double_replay",
+      "evidencePublicationSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
+      "evidenceTier": "committed_deterministic_topology_v2_failure_witnesses",
+      "executableSha": null,
+      "executionKind": "CPU/source/opt-in topology-v2 physical experiment",
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "PHY1-SingleLayer-D0-v2",
+      "gateScope": "physical topology-v2 experiment only",
+      "globalStatus": "partial",
+      "platform": [
+        "windows"
+      ],
+      "qualifiedSweptDegenerateTransitions": 0,
+      "qualifiedTemporalDegenerateFrameTriangles": 0,
+      "qualifiedTrueInversions": 0,
+      "runtimeCapabilityExposed": false,
+      "scopedStatus": "failed",
+      "sourceSha": "477c1fd881c7e55c352ca89732e5772d9d6bbeeb",
+      "stateCount": 11,
+      "statePassCount": 0,
+      "toolchain": [
+        "CPython 3.11"
+      ],
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "multilayer",
+        "integrated_CCD",
+        "solver_driven_Z2"
       ],
       "workflowRun": null
     },
@@ -560,17 +615,17 @@
   "stack": {
     "acyclic": true,
     "businessPatchMappingsComplete": true,
-    "crossRepositoryNodeCount": 40,
+    "crossRepositoryNodeCount": 41,
     "exactHeadForgeExceptions": [
       10,
-      38
+      39
     ],
     "exactMergeBases": true,
-    "latestPullRequest": 38,
-    "pullRequestCount": 38,
+    "latestPullRequest": 39,
+    "pullRequestCount": 39,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v5",
+  "statusModelVersion": "closy.blueprint_status_model.v6",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -582,8 +637,10 @@
     "cacheValidated": true,
     "currentRasterPhase9SourceIntegrated": true,
     "currentRasterPhase9SourcePullRequest": 26,
+    "finalD0ResearchMatrixStatus": "partial",
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
+    "integratedRuntimePinnedToTopologyV1": true,
     "layerCollisionSurfaceIntegrated": true,
     "mt1ReferenceMotionD0Available": true,
     "packageValidityDependsOnZeroOne": false,
@@ -594,6 +651,9 @@
     "phase9E1Status": "partial_experimental",
     "phase9E2Status": "executed_feasibility_partial",
     "phases10To14EvidenceScope": "default_all_family_static_pass_parameter_range_partial_compiled_phase11_pairing_failed_mt1_mechanical_pass_phase12_13_integrated_headless_phase14_integrated_advisory",
+    "phy1TopologyV2ExperimentExecuted": true,
+    "phy1TopologyV2Passed": false,
+    "phy1TopologyV2RuntimeExposed": false,
     "physicalMobileEvidenceRun": false,
     "privateUserEvidenceRun": false,
     "zeroOneStaticFamilyAttemptCount": 9,
