@@ -183,15 +183,24 @@ def build_typed_dataset_v2(*, seed: int = 72_119) -> dict[str, Any]:
     ordinary = [tokens for tokens in combinations if not _matching_holdout_groups(tokens)]
     if len(ordinary) < 320 or any(len(rows) < 24 for rows in heldout.values()):
         raise RuntimeError("typed_composition_inventory_insufficient")
+    train_tokens = _balanced_select(ordinary, 256, seed=seed)
+    train_keys = {_token_key(tokens) for tokens in train_tokens}
+    validation_tokens = _balanced_select(
+        [tokens for tokens in ordinary if _token_key(tokens) not in train_keys],
+        64,
+        seed=seed + 1,
+    )
     selections: list[tuple[str, str | None, dict[str, str], int]] = []
-    selections.extend(("train", None, tokens, index) for index, tokens in enumerate(ordinary[:256]))
+    selections.extend(("train", None, tokens, index) for index, tokens in enumerate(train_tokens))
     selections.extend(
-        ("validation", None, tokens, index + 256) for index, tokens in enumerate(ordinary[256:320])
+        ("validation", None, tokens, index + 256) for index, tokens in enumerate(validation_tokens)
     )
     for group_index, (group, rows) in enumerate(sorted(heldout.items())):
         selections.extend(
             ("test", group, tokens, 400 + group_index * 100 + index)
-            for index, tokens in enumerate(rows[:24])
+            for index, tokens in enumerate(
+                _balanced_select(rows, 24, seed=seed + 100 + group_index)
+            )
         )
     records = []
     split_groups: dict[str, list[str]] = {"train": [], "validation": [], "test": []}
@@ -209,7 +218,7 @@ def build_typed_dataset_v2(*, seed: int = 72_119) -> dict[str, Any]:
         compilation = compile_typed_program_v2(program)
         identity = sha256_bytes(canonical_dumps(program).encode("utf-8"))
         split_groups[split_name].append(identity)
-        observation, render_audit = _render_observation(compilation, record_index)
+        observation, render_audit = render_typed_compilation_v2(compilation, record_index)
         records.append(
             {
                 "programIdentity": identity,
@@ -305,6 +314,12 @@ def validate_typed_dataset_v2(dataset: dict[str, Any]) -> list[str]:
         issues.append("typed_target_program_invalid")
     if _training_contains_heldout_combinations(records):
         issues.append("typed_heldout_combination_leakage")
+    train_records = [record for record in records if record["split"] == "train"]
+    for axis in TOKEN_AXES:
+        observed = {str(record["target"]["tokens"][axis]) for record in train_records}
+        evaluation = {str(record["target"]["tokens"][axis]) for record in records}
+        if not evaluation <= observed:
+            issues.append(f"typed_training_atomic_token_coverage_invalid:{axis}")
     return sorted(set(issues))
 
 
@@ -364,6 +379,34 @@ def _legal_combinations() -> list[dict[str, str]]:
             if not validate_typed_program_v2(probe):
                 result.append(tokens)
     return sorted(result, key=lambda row: tuple(row[axis] for axis in TOKEN_AXES))
+
+
+def _balanced_select(
+    combinations: list[dict[str, str]], count: int, *, seed: int
+) -> list[dict[str, str]]:
+    if len(combinations) < count:
+        raise ValueError("typed_balanced_selection_inventory_insufficient")
+    remaining = list(combinations)
+    selected: list[dict[str, str]] = []
+    counts = {(axis, value): 0 for axis in TOKEN_AXES for value in TOKEN_VALUES[axis]}
+    for _ in range(count):
+        candidate = max(
+            remaining,
+            key=lambda tokens: (
+                sum(counts[(axis, tokens[axis])] == 0 for axis in TOKEN_AXES),
+                sum(1.0 / (1.0 + counts[(axis, tokens[axis])]) for axis in TOKEN_AXES),
+                sha256_bytes(canonical_dumps({"seed": seed, "tokens": tokens}).encode("utf-8")),
+            ),
+        )
+        selected.append(candidate)
+        remaining.remove(candidate)
+        for axis in TOKEN_AXES:
+            counts[(axis, candidate[axis])] += 1
+    return selected
+
+
+def _token_key(tokens: dict[str, str]) -> tuple[str, ...]:
+    return tuple(tokens[axis] for axis in TOKEN_AXES)
 
 
 def _heldout_combinations(
@@ -698,9 +741,11 @@ def _boundary_length(boundaries: list[dict[str, Any]], boundary_id: str) -> floa
     return next(float(row["length"]) for row in boundaries if row["id"] == boundary_id)
 
 
-def _render_observation(
+def render_typed_compilation_v2(
     compilation: dict[str, Any], record_index: int
 ) -> tuple[dict[str, float], dict[str, Any]]:
+    """Render and decode one compiled proposal through the reference CPU path."""
+
     meshset: MeshSet = compilation["meshset"]
     material = _MATERIALS[str(compilation["program"]["tokens"]["material"])]
     allowed = {mesh.panel_id for mesh in meshset.meshes}
