@@ -48,7 +48,8 @@ TOKEN_VALUES: dict[str, tuple[str, ...]] = {
     "material": ("jersey", "woven"),
 }
 CONTINUOUS_AXES = ("length", "width", "ease", "sleeveLength", "flare")
-DATASET_PANEL_COUNTS = frozenset(range(2, 12))
+LEGAL_PANEL_COUNTS = frozenset(range(2, 13))
+MINIMUM_DATASET_PANEL_COUNT_VALUES = 5
 HOLDOUT_GROUPS = {
     "short_v_neck": {"sleeve": "short", "neckline": "v"},
     "princess_placket": {"torso": "princess", "closure": "front_placket"},
@@ -307,7 +308,10 @@ def validate_typed_dataset_v2(dataset: dict[str, Any]) -> list[str]:
     panel_counts = {
         int(record["target"]["compilation"]["audit"]["panelCount"]) for record in records
     }
-    if panel_counts != DATASET_PANEL_COUNTS:
+    if (
+        len(panel_counts) < MINIMUM_DATASET_PANEL_COUNT_VALUES
+        or not panel_counts <= LEGAL_PANEL_COUNTS
+    ):
         issues.append("typed_panel_count_literal_breadth_invalid")
     garment_regimes = {str(record["target"]["tokens"]["base"]) for record in records}
     if garment_regimes != set(TOKEN_VALUES["base"]):
