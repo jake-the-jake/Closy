@@ -87,9 +87,7 @@ def audit_historical_representations(package_dir: Path) -> dict[str, Any]:
             processing_ids,
             processing_lineage,
         )
-        result = _compact_audit(
-            audit_surface(surface), processing_lineage, include_lineage=False
-        )
+        result = _compact_audit(audit_surface(surface), processing_lineage, include_lineage=False)
         result["frameIndex"] = frame
         result["phase"] = math.sin(math.pi * frame / (FRAME_COUNT - 1))
         frame_results.append(result)
@@ -248,27 +246,35 @@ def _historical_processing_frames(
         sources = row["canonicalSimulationVertexIndices"]
         weights = row["weights"]
         deltas.append(
-            tuple(
+            (
                 sum(
-                    canonical_delta[int(sources[item])][axis] * float(weights[item])
+                    canonical_delta[int(sources[item])][0] * float(weights[item])
                     for item in range(3)
-                )
-                for axis in range(3)
-            )  # type: ignore[arg-type]
-        )
-    return [
-        [
-            tuple(
-                rest[index][axis]
-                + deltas[index][axis]
-                * HISTORICAL_CLIP_SCALE
-                * math.sin(math.pi * frame / (FRAME_COUNT - 1))
-                for axis in range(3)
+                ),
+                sum(
+                    canonical_delta[int(sources[item])][1] * float(weights[item])
+                    for item in range(3)
+                ),
+                sum(
+                    canonical_delta[int(sources[item])][2] * float(weights[item])
+                    for item in range(3)
+                ),
             )
-            for index in range(len(rest))
-        ]
-        for frame in range(FRAME_COUNT)
-    ]  # type: ignore[return-value]
+        )
+    frames: list[list[Vec3]] = []
+    for frame in range(FRAME_COUNT):
+        amplitude = HISTORICAL_CLIP_SCALE * math.sin(math.pi * frame / (FRAME_COUNT - 1))
+        frames.append(
+            [
+                (
+                    rest[index][0] + deltas[index][0] * amplitude,
+                    rest[index][1] + deltas[index][1] * amplitude,
+                    rest[index][2] + deltas[index][2] * amplitude,
+                )
+                for index in range(len(rest))
+            ]
+        )
+    return frames
 
 
 def _processing_lineage(
@@ -285,9 +291,7 @@ def _processing_lineage(
             processing_ids[int(processing)] = dense_logical_ids[source]
     if any(value < 0 for value in processing_ids):
         raise ValueError("representation_processing_vertex_remap_incomplete")
-    triangle_lineage: list[dict[str, Any] | None] = [None] * int(
-        remap["processingTriangleCount"]
-    )
+    triangle_lineage: list[dict[str, Any] | None] = [None] * int(remap["processingTriangleCount"])
     for row in _rows(remap, "sourceTriangleRows"):
         source = int(row["sourceTriangle"])
         for processing in row["processingTriangles"]:
@@ -308,7 +312,13 @@ def _manifest_triangles(
     offset = 0
     for mesh_index, mesh in enumerate(_rows(manifest, "meshes")):
         for local_index, triangle in enumerate(mesh.get("triangles", [])):
-            triangles.append(tuple(offset + int(index) for index in triangle))
+            triangles.append(
+                (
+                    offset + int(triangle[0]),
+                    offset + int(triangle[1]),
+                    offset + int(triangle[2]),
+                )
+            )
             lineage.append(
                 {
                     "meshIndex": mesh_index,
@@ -330,7 +340,10 @@ def _meshset_surface(meshset: MeshSet) -> tuple[list[Vec3], list[tuple[int, int,
     offset = 0
     for mesh in meshset.meshes:
         positions.extend(mesh.vertices)
-        triangles.extend(tuple(offset + index for index in triangle) for triangle in mesh.triangles)
+        triangles.extend(
+            (offset + triangle[0], offset + triangle[1], offset + triangle[2])
+            for triangle in mesh.triangles
+        )
         offset += len(mesh.vertices)
     return positions, triangles
 
@@ -345,9 +358,7 @@ def _manifest_positions(manifest: dict[str, Any]) -> list[Vec3]:
 
 def _state_positions(state: dict[str, Any]) -> list[Vec3]:
     return [
-        _vec3(position)
-        for mesh in _rows(state, "meshes")
-        for position in mesh.get("positions", [])
+        _vec3(position) for mesh in _rows(state, "meshes") for position in mesh.get("positions", [])
     ]
 
 

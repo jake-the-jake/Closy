@@ -148,7 +148,7 @@ def prepare_mechanical_reference_surface(
         or package_digest(package_manifest_after.get("inventory", [])) != canonical_digest
     ):
         raise ValueError("mechanical_reference_changed_canonical_package_digest")
-    manifest = {
+    manifest: dict[str, Any] = {
         "schemaVersion": 1,
         "profile": MECHANICAL_REFERENCE_PROFILE,
         "surfaceVersion": MECHANICAL_REFERENCE_VERSION,
@@ -171,9 +171,7 @@ def prepare_mechanical_reference_surface(
             "canonicalSimulationRestSha256": lineage_record["canonicalSimulationRestSha256"],
             "sourceFallbackSha256": lineage_record["sourceFallbackSha256"],
             "sourceRenderManifestSha256": lineage_record["sourceRenderManifestSha256"],
-            "productionBindingContractSha256": lineage_record[
-                "productionBindingContractSha256"
-            ],
+            "productionBindingContractSha256": lineage_record["productionBindingContractSha256"],
         },
         "files": {},
     }
@@ -366,7 +364,9 @@ def _surface_meshset(surface: SurfaceRepresentation, render_manifest: dict[str, 
         uvs: list[tuple[float, float]] = []
         panel_uvs = mesh.get("panelUvs", [])
         for triangle in mesh.get("triangles", []):
-            uvs.extend(tuple(float(value) for value in panel_uvs[int(index)]) for index in triangle)
+            for index in triangle:
+                uv = panel_uvs[int(index)]
+                uvs.append((float(uv[0]), float(uv[1])))
         meshes.append(
             Mesh(
                 name=f"{mesh.get('name')}.mt1.v2",
@@ -390,7 +390,10 @@ def _flatten_meshset(meshset: MeshSet) -> tuple[list[Vec3], list[tuple[int, int,
     offset = 0
     for mesh in meshset.meshes:
         positions.extend(mesh.vertices)
-        triangles.extend(tuple(offset + index for index in triangle) for triangle in mesh.triangles)
+        triangles.extend(
+            (offset + triangle[0], offset + triangle[1], offset + triangle[2])
+            for triangle in mesh.triangles
+        )
         offset += len(mesh.vertices)
     return positions, triangles
 

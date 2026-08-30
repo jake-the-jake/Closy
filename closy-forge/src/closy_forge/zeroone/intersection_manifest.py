@@ -35,9 +35,7 @@ def audit_surface(
     diagonal = math.dist(tuple(bounds["minimum"]), tuple(bounds["maximum"]))
     epsilon = max(GEOMETRIC_EPSILON_METERS, diagonal * 1.0e-10)
     topology = (
-        topology_override
-        if topology_override is not None
-        else _topology_audit(surface, epsilon)
+        topology_override if topology_override is not None else _topology_audit(surface, epsilon)
     )
     candidates = _broad_phase(surface, epsilon)
     pairs: list[dict[str, Any]] = []
@@ -49,8 +47,16 @@ def audit_surface(
         right_ids = {surface.logical_vertex_ids[index] for index in right_triangle}
         shared = sorted(left_ids & right_ids)
         expected_adjacency = len(shared) >= 2
-        a = tuple(surface.positions[index] for index in left_triangle)
-        b = tuple(surface.positions[index] for index in right_triangle)
+        a = (
+            surface.positions[left_triangle[0]],
+            surface.positions[left_triangle[1]],
+            surface.positions[left_triangle[2]],
+        )
+        b = (
+            surface.positions[right_triangle[0]],
+            surface.positions[right_triangle[1]],
+            surface.positions[right_triangle[2]],
+        )
         if shared:
             intersects = _crosses_beyond_shared_simplex(a, b, shared, surface, epsilon)
         else:
@@ -132,10 +138,16 @@ def _topology_audit(surface: SurfaceRepresentation, epsilon: float) -> dict[str,
     edge_faces: dict[tuple[int, int], list[int]] = {}
     degenerate: list[int] = []
     for triangle_index, triangle in enumerate(surface.triangles):
-        ids = tuple(surface.logical_vertex_ids[index] for index in triangle)
-        face_keys.setdefault(tuple(sorted(ids)), []).append(triangle_index)
+        ids = (
+            surface.logical_vertex_ids[triangle[0]],
+            surface.logical_vertex_ids[triangle[1]],
+            surface.logical_vertex_ids[triangle[2]],
+        )
+        sorted_ids = sorted(ids)
+        face_key = (sorted_ids[0], sorted_ids[1], sorted_ids[2])
+        face_keys.setdefault(face_key, []).append(triangle_index)
         for left, right in ((ids[0], ids[1]), (ids[1], ids[2]), (ids[2], ids[0])):
-            edge_faces.setdefault(tuple(sorted((left, right))), []).append(triangle_index)
+            edge_faces.setdefault((min(left, right), max(left, right)), []).append(triangle_index)
         a, b, c = (surface.positions[index] for index in triangle)
         if _double_area(a, b, c) <= epsilon * epsilon:
             degenerate.append(triangle_index)
@@ -209,8 +221,16 @@ def _broad_phase(surface: SurfaceRepresentation, epsilon: float) -> list[tuple[i
     boxes = []
     for index, triangle in enumerate(surface.triangles):
         points = [surface.positions[value] for value in triangle]
-        minimum = tuple(min(point[axis] for point in points) - epsilon for axis in range(3))
-        maximum = tuple(max(point[axis] for point in points) + epsilon for axis in range(3))
+        minimum: Vec3 = (
+            min(point[0] for point in points) - epsilon,
+            min(point[1] for point in points) - epsilon,
+            min(point[2] for point in points) - epsilon,
+        )
+        maximum: Vec3 = (
+            max(point[0] for point in points) + epsilon,
+            max(point[1] for point in points) + epsilon,
+            max(point[2] for point in points) + epsilon,
+        )
         boxes.append((minimum, maximum, index))
     boxes.sort(key=lambda row: (row[0][0], row[2]))
     active: list[tuple[Vec3, Vec3, int]] = []
@@ -219,11 +239,10 @@ def _broad_phase(surface: SurfaceRepresentation, epsilon: float) -> list[tuple[i
         active = [row for row in active if row[1][0] >= minimum[0]]
         for other_minimum, other_maximum, other_index in active:
             if all(
-                minimum[axis] <= other_maximum[axis]
-                and maximum[axis] >= other_minimum[axis]
+                minimum[axis] <= other_maximum[axis] and maximum[axis] >= other_minimum[axis]
                 for axis in (1, 2)
             ):
-                result.append(tuple(sorted((other_index, index))))
+                result.append((min(other_index, index), max(other_index, index)))
         active.append((minimum, maximum, index))
     return sorted(set(result))
 
@@ -238,8 +257,7 @@ def _crosses_beyond_shared_simplex(
     if not triangles_intersect(left, right):
         return False
     shared_points = [
-        surface.positions[surface.logical_vertex_ids.index(logical_id)]
-        for logical_id in shared_ids
+        surface.positions[surface.logical_vertex_ids.index(logical_id)] for logical_id in shared_ids
     ]
     for point in (*left, *right):
         if any(math.dist(point, shared) <= epsilon for shared in shared_points):
@@ -248,8 +266,8 @@ def _crosses_beyond_shared_simplex(
             return True
     for a, b in _triangle_edges(left):
         for c, d in _triangle_edges(right):
-            point = _closest_segment_contact(a, b, c, d, epsilon)
-            if point is not None and not _on_expected_simplex(point, shared_points, epsilon):
+            contact = _closest_segment_contact(a, b, c, d, epsilon)
+            if contact is not None and not _on_expected_simplex(contact, shared_points, epsilon):
                 return True
     return False
 
@@ -330,7 +348,11 @@ def _intersection_witness(
         min(max(point[axis] for point in left), max(point[axis] for point in right))
         for axis in range(3)
     ]
-    point = tuple((minimum[axis] + maximum[axis]) * 0.5 for axis in range(3))
+    point = (
+        (minimum[0] + maximum[0]) * 0.5,
+        (minimum[1] + maximum[1]) * 0.5,
+        (minimum[2] + maximum[2]) * 0.5,
+    )
     return {
         "kind": "narrow_phase_overlap_aabb_midpoint",
         "point": list(point),

@@ -59,9 +59,7 @@ def audit_mechanical_reference_files(
         for index in range(frame_count)
     ]
     corner_map = _object(package / MECHANICAL_REFERENCE_CORNER_MAP_PATH)
-    corner_to_logical = [
-        int(row["logicalDestinationIndex"]) for row in _rows(corner_map, "rows")
-    ]
+    corner_to_logical = [int(row["logicalDestinationIndex"]) for row in _rows(corner_map, "rows")]
     if len(corner_to_logical) != dense_count:
         raise ValueError("mt1_corner_map_dense_inventory_mismatch")
     logical_count = int(corner_map["logicalDestinationCount"])
@@ -183,8 +181,7 @@ def audit_mechanical_reference_files(
         <= _vector_error_from_angle(MAXIMUM_TANGENT_ERROR_DEGREES),
         "tangentHandedness": base["tangentHandednessMismatchCount"] == 0,
         "boundaryCrack": maximum_boundary_crack <= MAXIMUM_BOUNDARY_CRACK_METERS,
-        "openingLoopDistance": maximum_opening_distance
-        <= MAXIMUM_OPENING_LOOP_DISTANCE_METERS,
+        "openingLoopDistance": maximum_opening_distance <= MAXIMUM_OPENING_LOOP_DISTANCE_METERS,
         "boundsGuardBand": base["culling"]["falseNegativeCount"] == 0,
         "culling": base["culling"]["falseNegativeCount"] == 0,
         "temporalOrientation": base["trueTemporalInversionCount"] == 0,
@@ -197,8 +194,7 @@ def audit_mechanical_reference_files(
     maximum_normal_angle = _vector_error_angle(base["maximumNormalError"])
     maximum_tangent_angle = _vector_error_angle(base["maximumTangentError"])
     bounds_passed = (
-        base["clusterBoundContainmentFailures"] == 0
-        and base["parentBoundContainmentFailures"] == 0
+        base["clusterBoundContainmentFailures"] == 0 and base["parentBoundContainmentFailures"] == 0
     )
     normal_tangent_passed = (
         checks["normalError"] and checks["tangentError"] and checks["tangentHandedness"]
@@ -219,11 +215,7 @@ def audit_mechanical_reference_files(
         "outputIntersectionFrames": output_intersections,
         "independentReconstructionIntersectionFrames": expected_intersections,
         "inheritedInputPairIds": sorted(
-            {
-                pair
-                for frame in expected_intersections
-                for pair in frame["intersectionPairIds"]
-            }
+            {pair for frame in expected_intersections for pair in frame["intersectionPairIds"]}
         ),
         "introducedOrWorsenedPairIds": introduced_pairs,
         "maximumPositionErrorMetres": max(position_errors),
@@ -236,9 +228,7 @@ def audit_mechanical_reference_files(
             "falseNegativeCount": base["culling"]["falseNegativeCount"],
         },
         "thresholds": {
-            "minimumProcessingTriangleDoubleAreaMeters2Exclusive": (
-                MINIMUM_DOUBLE_AREA_METERS2
-            ),
+            "minimumProcessingTriangleDoubleAreaMeters2Exclusive": (MINIMUM_DOUBLE_AREA_METERS2),
             "maximumPositionErrorMeters": MAXIMUM_POSITION_ERROR_METERS,
             "p95PositionErrorMeters": P95_POSITION_ERROR_METERS,
             "maximumNormalAngleDegrees": MAXIMUM_NORMAL_ERROR_DEGREES,
@@ -264,9 +254,7 @@ def _bounded_intersection_frame(frame: int, audit: dict[str, Any]) -> dict[str, 
     }
 
 
-def _introduced_pairs(
-    expected: list[dict[str, Any]], output: list[dict[str, Any]]
-) -> list[str]:
+def _introduced_pairs(expected: list[dict[str, Any]], output: list[dict[str, Any]]) -> list[str]:
     introduced = set()
     for expected_frame, output_frame in zip(expected, output, strict=True):
         inherited = set(expected_frame["intersectionPairIds"])
@@ -283,7 +271,13 @@ def _logical_topology(
     offset = 0
     for mesh_index, mesh in enumerate(_rows(manifest, "meshes")):
         for local_index, triangle in enumerate(mesh.get("triangles", [])):
-            triangles.append(tuple(offset + int(value) for value in triangle))
+            triangles.append(
+                (
+                    offset + int(triangle[0]),
+                    offset + int(triangle[1]),
+                    offset + int(triangle[2]),
+                )
+            )
             lineage.append(
                 {
                     "meshIndex": mesh_index,

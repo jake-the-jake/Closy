@@ -312,9 +312,9 @@ def build_dynamic_request(
             "sourceStateHash": (
                 None
                 if uses_mechanical_reference
-                else _object(
-                    package_root / "simulation" / "motion_states" / "torso_twist.json"
-                )["integrity"]["stateHash"]
+                else _object(package_root / "simulation" / "motion_states" / "torso_twist.json")[
+                    "integrity"
+                ]["stateHash"]
             ),
             "neutralStateHash": (
                 None
@@ -573,15 +573,10 @@ def _analytic_reference_frames(
                     + bend
                     + 0.005 * diagonal * scale_factor * envelope
                     + 0.0015 * diagonal * scale_factor * sway,
-                    position[1]
-                    + 0.0015 * diagonal * scale_factor * sway * normalized_y,
+                    position[1] + 0.0015 * diagonal * scale_factor * sway * normalized_y,
                     center[2]
                     + rotated_z
-                    + 0.003
-                    * diagonal
-                    * scale_factor
-                    * envelope
-                    * math.sin(math.pi * normalized_y),
+                    + 0.003 * diagonal * scale_factor * envelope * math.sin(math.pi * normalized_y),
                 )
             )
     return timestamps, frames
@@ -606,16 +601,22 @@ def _audit_reference_motion(
     for frame in frame_rows:
         destination_frames.append(
             [
-                tuple(
+                (
                     sum(
-                        frame[record["sourceIndices"][item]][axis]
-                        * record["weights"][item]
+                        frame[record["sourceIndices"][item]][0] * record["weights"][item]
                         for item in range(record["count"])
-                    )
-                    for axis in range(3)
+                    ),
+                    sum(
+                        frame[record["sourceIndices"][item]][1] * record["weights"][item]
+                        for item in range(record["count"])
+                    ),
+                    sum(
+                        frame[record["sourceIndices"][item]][2] * record["weights"][item]
+                        for item in range(record["count"])
+                    ),
                 )
                 for record in bindings
-            ]  # type: ignore[list-item]
+            ]
         )
     destination_rest = destination_frames[0]
     maximum_displacement = max(
@@ -628,8 +629,7 @@ def _audit_reference_motion(
         index
         for index in range(len(destination_rest))
         if max(
-            math.dist(frame[index], destination_rest[index])
-            for frame in destination_frames[1:-1]
+            math.dist(frame[index], destination_rest[index]) for frame in destination_frames[1:-1]
         )
         > movement_threshold
     ]
@@ -672,13 +672,11 @@ def _audit_reference_motion(
         "restFrameExact": frame_rows[0] == simulation_rest,
         "returnFrameExact": frame_rows[-1] == simulation_rest,
         "consecutiveNonRestFramesUnique": all(
-            frame_hashes[index] != frame_hashes[index + 1]
-            for index in range(1, FRAME_COUNT - 2)
+            frame_hashes[index] != frame_hashes[index + 1] for index in range(1, FRAME_COUNT - 2)
         ),
         "frameHashes": frame_hashes,
         "bindingInfluenceDistribution": {
-            str(count): sum(record["count"] == count for record in bindings)
-            for count in (1, 2, 3)
+            str(count): sum(record["count"] == count for record in bindings) for count in (1, 2, 3)
         },
         "canonicalBindingAuthorityHash": binding_contract.get("integrity", {}).get(
             "productionBindingContractHash"
@@ -726,8 +724,7 @@ def _best_rigid_residuals(source: list[Vec3], target: list[Vec3]) -> list[float]
     quaternion = [1.0, 0.0, 0.0, 0.0]
     for _ in range(64):
         candidate = [
-            sum(matrix[row][column] * quaternion[column] for column in range(4))
-            for row in range(4)
+            sum(matrix[row][column] * quaternion[column] for column in range(4)) for row in range(4)
         ]
         norm = math.sqrt(sum(value * value for value in candidate))
         if norm <= 1.0e-30:

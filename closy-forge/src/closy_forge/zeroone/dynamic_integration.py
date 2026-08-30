@@ -672,9 +672,7 @@ def _dynamic_success(report: dict[str, Any]) -> bool:
         report.get("schemaVersion") == DYNAMIC_REPORT_SCHEMA_VERSION
         and report.get("success") is True
         and report.get("profile") == DYNAMIC_PROFILE
-        and report.get("processorMechanicalValidation", {}).get(
-            "compiledDeformationExecuted"
-        )
+        and report.get("processorMechanicalValidation", {}).get("compiledDeformationExecuted")
         is True
         and report.get("processorMechanicalValidation", {}).get("passed") is True
     )

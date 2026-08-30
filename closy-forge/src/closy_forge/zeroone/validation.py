@@ -173,8 +173,7 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         or capability.get("scopedAcceptance") != SCOPED_ACCEPTANCE_PROFILE
         or capability.get("status") != "clean_reference_pass"
         or capability.get("actualCompiledDeformationExecuted") is not True
-        or capability.get("pairingAuthority")
-        != "authenticated_exact_head_workflow_artifact"
+        or capability.get("pairingAuthority") != "authenticated_exact_head_workflow_artifact"
         or capability.get("durablePairedZ2Proven") is not False
         or capability.get("physicalQualityClaim") is not False
         or capability.get("productionClaim") is not False
@@ -196,13 +195,10 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         or "deform" not in report.get("actualCommandsExecuted", [])
         or report.get("dynamicOutputSha256") != derivative_sha
         or report.get("staticDerivativeIdentitySha256") != static_identity
-        or report.get("processorMechanicalValidation", {}).get(
-            "compiledDeformationExecuted"
-        )
+        or report.get("processorMechanicalValidation", {}).get("compiledDeformationExecuted")
         is not True
         or report.get("processorMechanicalValidation", {}).get("passed") is not True
-        or report.get("scopedMt1", {}).get("status")
-        != "not_evaluated_by_processor"
+        or report.get("scopedMt1", {}).get("status") != "not_evaluated_by_processor"
         or report.get("blueprintZ2", {}).get("status") != "not_run"
     ):
         return {"status": "derivative_corrupt", "reason": "dynamic_process_report_invalid"}
@@ -249,8 +245,7 @@ def inspect_zeroone_dynamic_namespace(package: Path) -> dict[str, Any]:
         or provenance.get("actualZeroOneMobileRuntimeExecuted") is not False
         or provenance.get("physicalTruth") is not False
         or provenance.get("durablePairedZ2Proven") is not False
-        or provenance.get("pairingAuthority")
-        != "authenticated_exact_head_workflow_artifact"
+        or provenance.get("pairingAuthority") != "authenticated_exact_head_workflow_artifact"
         or provenance.get("dynamicOutputSha256") != derivative_sha
         or limitations.get("schemaVersion") != "closy.zeroone.dynamic-limitations.v1"
         or limitations.get("production") is not False
