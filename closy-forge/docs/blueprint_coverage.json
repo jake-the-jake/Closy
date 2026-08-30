@@ -18,14 +18,15 @@
       "closy-forge/docs/execution_budget_v3.json",
       "closy-forge/docs/threshold_registry_v1.json",
       "closy-forge/docs/evidence/phase11_prerequisite_reconciliation_v2.json",
-      "closy-forge/docs/evidence/phase9_structured_v2/execution_summary.json",
-      "closy-forge/docs/evidence/phase9_structured_v2/source_replay_map.json",
+      "closy-forge/docs/evidence/phase9_structured_v3/execution_summary.json",
+      "closy-forge/docs/evidence/phase9_structured_v3/attestation.json",
+      "closy-forge/docs/evidence/phase9_structured_v3/source_replay_map.json",
       "closy-forge/docs/evidence/phy1_progression_v3/sanitised_failure_witness.json"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.z1_z2.v2",
+    "generatorVersion": "closy.blueprint_reconciliation.z1_z2_structured_ai.v3",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "3c67b013b8ba60752290c2c37379bdc0df1c709afbdb73e4963966c2c3c4f919"
+    "sourceTreeHash": "996793822b901736f288afa1f4cd958418e0784ba8d606c3c01ae29db6929880"
   },
   "integratedImplementationRowCount": 78,
   "rows": [
@@ -193,7 +194,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1346,7 +1351,11 @@
         "310833b",
         "e90a38e",
         "e23820e",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1355,7 +1364,7 @@
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
           "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-          "limitations": "Held-out top-1 is 0.5625, calibration error is 0.211536831, accepted 3D execution is 0.8, and the learned-minus-baseline lower confidence bound is -0.46875.",
+          "limitations": "E1 raw macro top-1 is 0.171875 versus 0.9765625 for nearest-neighbour retrieval and accepts 0/128 tests. E2 true token macro-F1 is 0.535520366, compiles and renders 96/96 proposals, but its baseline lower 95% is -0.028125 and the gate fails 10 checks.",
           "sourcePr": 35,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
@@ -1367,31 +1376,42 @@
         "BP52 package fitting consumes BP51 fused multiview masks, landmarks, openings and confidence",
         "bounded T-shirt parameter space, priors separated from observed evidence, alternatives and nonzero multiview losses recorded",
         "E1 executes hidden-label-safe accepted predictions through independent 3D assembly, binding, and rendering",
-        "E2 trains a bounded typed structural decoder over 128/32/48 identity-disjoint programs"
+        "E2 trains a bounded typed structural decoder over 128/32/48 identity-disjoint programs",
+        "E1 full run covers 512 programs, 2,048 capture sets and 8,192 decoded reference-assembly images; its losing 0.171875 macro top-1 remains non-default",
+        "E2 trains atomic grammar heads over 256/64/96 programs and executes all 96 held-out proposals through compile, topology and reference-3D"
       ],
       "id": "BP-08-H-PATTERN-INFERENCE",
       "implementationPaths": [
         "closy-forge/src/closy_forge/fitting/tshirt_fit.py",
         "closy-forge/src/closy_forge/pattern_inference/raster_evaluation_v4.py",
         "closy-forge/src/closy_forge/pattern_inference/reference_3d_v1.py",
-        "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v1.py"
+        "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v1.py",
+        "closy-forge/src/closy_forge/pattern_inference/multiview_corpus_v5.py",
+        "closy-forge/src/closy_forge/pattern_inference/e1_kernel_v3.py",
+        "closy-forge/src/closy_forge/pattern_inference/e1_evaluation_v5.py",
+        "closy-forge/src/closy_forge/pattern_inference/typed_program_v2.py",
+        "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v2.py"
       ],
       "incorporated": true,
       "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-      "limitations": "Held-out top-1 is 0.5625, calibration error is 0.211536831, accepted 3D execution is 0.8, and the learned-minus-baseline lower confidence bound is -0.46875.",
-      "nextAction": "Keep the deterministic baseline selected and collect independent authorised evidence before considering a different learned configuration.",
+      "limitations": "E1 raw macro top-1 is 0.171875 versus 0.9765625 for nearest-neighbour retrieval and accepts 0/128 tests. E2 true token macro-F1 is 0.535520366, compiles and renders 96/96 proposals, but its baseline lower 95% is -0.028125 and the gate fails 10 checks.",
+      "nextAction": "Keep deterministic retrieval selected; obtain broader lawful identity-disjoint data before another bounded learned configuration.",
       "sourcePr": 35,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
       "status": "partial",
-      "summary": "Phase 9 E1 is integrated and evaluated without hidden labels; the learned route remains experimental because the equal-input nearest-centroid baseline wins.",
+      "summary": "Phase 9 v3 executes a 512-program, 8,192-image reference-assembly corpus, a nonlinear E1 route, and a genuine factorized compositional E2 decoder without oracle fallback.",
       "tests": [
         "tests/unit/test_tshirt_fit.py",
         "tests/integration/test_cli_and_package.py",
         "tests/corruption/test_corrupted_packages.py",
         "closy-forge/tests/unit/test_raster_phase9_corrective_v4.py",
-        "closy-forge/tests/unit/test_structured_decoder_v1.py"
+        "closy-forge/tests/unit/test_structured_decoder_v1.py",
+        "closy-forge/tests/unit/test_multiview_corpus_v5.py",
+        "closy-forge/tests/unit/test_e1_kernel_v3.py",
+        "closy-forge/tests/unit/test_typed_program_v2.py",
+        "closy-forge/tests/unit/test_structured_decoder_v2.py"
       ]
     },
     {
@@ -1420,7 +1440,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1852,7 +1876,11 @@
         "bf1ae29",
         "91b9ececae3097a42cba45cad90fa81b1ef31d6a",
         "0dbf362a444441d65b10e16d3b30f000294d2b04",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1861,7 +1889,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-          "limitations": "The 18-case project-authored fixture evaluation is not real-fabric, provider, private-user, GPU, mobile, or production evidence.",
+          "limitations": "Material top-1 is 10/18, normalized regret mean/P95/worst is 0.100424120738/1.0/1.0, and excessive-strain and seam-risk F1 are both 0.4. The authored scalar corpus is not solver-backed, real-fabric, private-user or production evidence.",
           "sourcePr": 35,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
@@ -1877,7 +1905,8 @@
         "local full pytest passes all 246 collected Forge tests with Ruff, strict mypy across 103 source files and 59 fresh schemas",
         "two independent local package trees are byte-identical with 137 physical files, 133 canonical inventory entries and digest 79c5a65deb347bbed23f41c30a926ae00aead7b641fe714d75cb403be8ed07a8",
         "substantive run 32947979333 passed Ubuntu job 98112789377 and Windows job 98112789618 with 246 tests per OS, 130 format-checked files, 103 mypy source files, 59 fresh schemas and deterministic package evidence",
-        "current-tree Phase 14 evaluation records 10/18 material top-1 and 32/32 OOD decisions"
+        "current-tree Phase 14 evaluation records 10/18 material top-1 and 32/32 OOD decisions",
+        "Phase 14 v3 records 10/18 material top-1, scenario-cluster bootstrap, and two non-null ablations"
       ],
       "id": "BP-08-Q-MATERIAL-INFERENCE",
       "implementationPaths": [
@@ -1886,22 +1915,24 @@
         "closy-forge/src/closy_forge/simulation/material_motion_suite.py",
         "closy-forge/src/closy_forge/simulation/reference_cloth_solver.py",
         "closy-forge/src/closy_forge/validation/validator.py",
-        "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v2.py"
+        "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v2.py",
+        "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-      "limitations": "The 18-case project-authored fixture evaluation is not real-fabric, provider, private-user, GPU, mobile, or production evidence.",
+      "limitations": "Material top-1 is 10/18, normalized regret mean/P95/worst is 0.100424120738/1.0/1.0, and excessive-strain and seam-risk F1 are both 0.4. The authored scalar corpus is not solver-backed, real-fabric, private-user or production evidence.",
       "nextAction": "Complete per-family applicability and calibrated physical evidence beyond authored D0 presets.",
       "sourcePr": 35,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
       "status": "partial",
-      "summary": "Phase 14 material ranking is integrated and reevaluated as a validator-subordinate bounded advisory model on the current source tree.",
+      "summary": "Phase 14 v3 fixes the ablation status filter, scenario-cluster bootstrap and normalized selection-regret reporting while keeping model authority advisory.",
       "tests": [
         "tests/unit/test_material_physics.py",
         "tests/unit/test_reference_cloth_solver.py",
-        "closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py"
+        "closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py",
+        "closy-forge/tests/unit/test_phase14_integrated_evaluation_v3.py"
       ]
     },
     {
@@ -2128,7 +2159,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2184,7 +2219,11 @@
     {
       "ancestryClass": "external_source_pr",
       "commitSha": [
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2438,7 +2477,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2589,7 +2632,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2709,7 +2756,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3673,7 +3724,11 @@
       "commitSha": [
         "b05f1e4fe4c5ad89175104f68a0a8b0d524cd24b",
         "de1177268cd09e6988689fa175638492757a9bed",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3682,7 +3737,7 @@
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
           "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-          "limitations": "Neither learned route beats its strongest equal-input deterministic baseline, and no private-user, human-review, or global generalisation claim is supported.",
+          "limitations": "E1 is a losing experiment; E2 fails 10/17 frozen checks and its bootstrap lower 95% misses the -0.02 floor. No learned route is default and no private, human or real-photo claim exists.",
           "sourcePr": 35,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
@@ -3704,7 +3759,9 @@
         "host execution at de11772 records 48,508.0558 ms two-run training/evaluation wall time, 44,036,096-byte peak working set, 0.3777 ms median inference and 0.5066 ms p95",
         "118 schemas are generated; strict typing, finite-difference gradients, corruption, deterministic training, correction replay and focused package evidence pass",
         "E1 learned route remains experimental after equal-input baseline comparison",
-        "E2 accepts and compiles 24/48 held-out typed programs without repair"
+        "E2 accepts and compiles 24/48 held-out typed programs without repair",
+        "E1 is a policy-correct losing experiment with no oracle fallback",
+        "E2 parses, compiles, validates topology and renders 96/96 held-out typed proposals"
       ],
       "id": "BP-17-PHASE-09",
       "implementationPaths": [
@@ -3725,23 +3782,27 @@
         "closy-forge/schemas/v1/pattern-inference-foundation.schema.json",
         "closy-forge/src/closy_forge/pattern_inference/raster_execution_v4.py",
         "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v1.py",
-        "closy-forge/docs/evidence/phase9_structured_v2/execution_summary.json"
+        "closy-forge/docs/evidence/phase9_structured_v2/execution_summary.json",
+        "closy-forge/src/closy_forge/pattern_inference/e1_evaluation_v5.py",
+        "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v2.py",
+        "closy-forge/docs/evidence/phase9_structured_v3/execution_summary.json"
       ],
       "incorporated": true,
       "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-      "limitations": "Neither learned route beats its strongest equal-input deterministic baseline, and no private-user, human-review, or global generalisation claim is supported.",
+      "limitations": "E1 is a losing experiment; E2 fails 10/17 frozen checks and its bootstrap lower 95% misses the -0.02 floor. No learned route is default and no private, human or real-photo claim exists.",
       "nextAction": "Retain both learned routes as experimental and broaden only with authorised, identity-disjoint evidence and precommitted comparisons.",
       "sourcePr": 35,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
       "status": "partial",
-      "summary": "Phase 9 source is replayed once on PR #35; E1 is partial and E2 is an executed typed-program feasibility partial.",
+      "summary": "Phase 9 v3 has corrected policy-matched E1 and a 256/64/96 compositional E2 attempt whose every test proposal executes compile, topology and reference-3D evaluation.",
       "tests": [
         "closy-forge/tests/unit/test_pattern_inference_foundation.py",
         "closy-forge/tests/unit/test_learned_pattern_inference_v2.py",
         "closy-forge/tests/unit/test_schema_freshness.py",
-        "closy-forge/tests/unit/test_phase9_structured_v2_evidence.py"
+        "closy-forge/tests/unit/test_phase9_structured_v2_evidence.py",
+        "closy-forge/tests/unit/test_phase9_structured_v3_evidence.py"
       ]
     },
     {
@@ -3754,7 +3815,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3815,7 +3880,11 @@
       "ancestryClass": "in_tree",
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3948,7 +4017,11 @@
       "ancestryClass": "in_tree",
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3957,7 +4030,7 @@
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
           "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-          "limitations": "Material top-1 is 10/18 and the advisory models remain deterministic-validator subordinates; no authorised large-model, real-fabric, or production run occurred.",
+          "limitations": "Only 4/10 frozen checks pass; low per-target F1 remains visible, the solver-backed replacement corpus is dependency-blocked, and no large-model, real-fabric or production run occurred.",
           "sourcePr": 35,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
@@ -3968,29 +4041,33 @@
         "synthetic dataset/version/split and model-card/licence contracts validate",
         "reproducible training command fields exist while actualTrainingRun remains false",
         "baseline, rollback and three failure-model fixtures execute without superiority claims",
-        "Phase 14 reevaluation reports material regret 0.002497041219 and failure macro-F1 0.704125286478"
+        "Phase 14 reevaluation reports material regret 0.002497041219 and failure macro-F1 0.704125286478",
+        "Phase 14 v3 reports normalized regret mean/P95/worst 0.100424120738/1.0/1.0 and failure macro-F1 0.704125286478"
       ],
       "id": "BP-17-PHASE-14",
       "implementationPaths": [
         "closy-forge/src/closy_forge/future_foundations/contracts.py",
         "closy-forge/schemas/v1/native-model-foundation.schema.json",
         "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v2.py",
-        "closy-forge/docs/evidence/phase9_structured_v2/phase14_integrated_evaluation.json"
+        "closy-forge/docs/evidence/phase9_structured_v2/phase14_integrated_evaluation.json",
+        "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v3.py",
+        "closy-forge/docs/evidence/phase9_structured_v3/phase14_integrated_evaluation.json"
       ],
       "incorporated": true,
       "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-      "limitations": "Material top-1 is 10/18 and the advisory models remain deterministic-validator subordinates; no authorised large-model, real-fabric, or production run occurred.",
+      "limitations": "Only 4/10 frozen checks pass; low per-target F1 remains visible, the solver-backed replacement corpus is dependency-blocked, and no large-model, real-fabric or production run occurred.",
       "nextAction": "Obtain authorised data, checkpoint, licence, hardware, privacy, and deployment governance before any larger model experiment.",
       "sourcePr": 35,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
       "status": "partial",
-      "summary": "Phase 14 business source is replayed once and its bounded advisory models are reevaluated on PR #35's current source tree.",
+      "summary": "Phase 14 v3 reevaluates the bounded advisory model with non-null scenario/material ablations and scenario-cluster confidence intervals.",
       "tests": [
         "closy-forge/tests/unit/test_future_foundations.py",
         "closy-forge/tests/unit/test_phase14_bounded_models.py",
-        "closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py"
+        "closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py",
+        "closy-forge/tests/unit/test_phase14_integrated_evaluation_v3.py"
       ]
     },
     {
@@ -4101,7 +4178,11 @@
         "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4184,7 +4265,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4238,7 +4323,11 @@
     {
       "ancestryClass": "external_source_pr",
       "commitSha": [
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5038,7 +5127,11 @@
         "a481ba26a424bd91607b8c1d41b6173a2c9579d9",
         "f64c4ff2225141aa3fa04405e77fef0af360e050",
         "eb5becfa385ec4a5c6ef95b2c15b753dffbcea42",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+        "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
+        "f3e96de0f9eaf308159655cb38654f18e4603f9e",
+        "a82a5f986e2e8021151d0154775e424075043c76",
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5096,7 +5189,7 @@
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
       "status": "partial",
-      "summary": "The research prototype now includes frozen 9/9 default-family static evidence, compiled dynamic failure evidence, integrated Phase 9 E1/E2, and Phase 14 advisory reevaluation.",
+      "summary": "The research prototype now includes frozen 9/9 default-family static evidence, compiled dynamic failure evidence, a full synthetic multiview Phase 9 v3 run, a compositional E2 attempt, and corrected Phase 14 advisory reevaluation.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -5349,5 +5442,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.z1_z2_structured_ai.v5"
+  "version": "closy.blueprint_coverage.z1_z2_structured_ai.v6"
 }

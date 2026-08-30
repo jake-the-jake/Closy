@@ -58,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [shard-0, shard-1, shard-2, shard-3]
+        group: [shard-0, shard-1, shard-2, shard-3, shard-4]
         runtime:
           - os: ubuntu-latest
             python-version: "3.11"

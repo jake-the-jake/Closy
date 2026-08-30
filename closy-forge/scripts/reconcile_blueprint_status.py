@@ -11,9 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "461436c22f8c5cd1948e0f6906961d0c512dcc34"
-VERSION = "closy.blueprint_coverage.z1_z2_structured_ai.v5"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.z1_z2.v2"
+EVIDENCE_ANCHOR = "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+STALE_INVALID_EVIDENCE_ANCHORS = {
+    "076cb93c95e0d98052332e52622a15d06c6b6a4e",
+}
+VERSION = "closy.blueprint_coverage.z1_z2_structured_ai.v6"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.z1_z2_structured_ai.v3"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -229,8 +232,9 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/execution_budget_v3.json",
     "closy-forge/docs/threshold_registry_v1.json",
     "closy-forge/docs/evidence/phase11_prerequisite_reconciliation_v2.json",
-    "closy-forge/docs/evidence/phase9_structured_v2/execution_summary.json",
-    "closy-forge/docs/evidence/phase9_structured_v2/source_replay_map.json",
+    "closy-forge/docs/evidence/phase9_structured_v3/execution_summary.json",
+    "closy-forge/docs/evidence/phase9_structured_v3/attestation.json",
+    "closy-forge/docs/evidence/phase9_structured_v3/source_replay_map.json",
     "closy-forge/docs/evidence/phy1_progression_v3/sanitised_failure_witness.json",
 ]
 
@@ -484,27 +488,30 @@ CURRENT_PROGRESSION_UPDATES = {
     "BP-08-H-PATTERN-INFERENCE": {
         "status": "partial",
         "summary": (
-            "Phase 9 E1 is integrated and evaluated without hidden labels; the learned route "
-            "remains experimental because the equal-input nearest-centroid baseline wins."
+            "Phase 9 v3 executes a 512-program, 8,192-image reference-assembly corpus, a nonlinear "
+            "E1 route, and a genuine factorized compositional E2 decoder without oracle fallback."
         ),
         "limitations": (
-            "Held-out top-1 is 0.5625, calibration error is 0.211536831, accepted 3D execution "
-            "is 0.8, and the learned-minus-baseline lower confidence bound is -0.46875."
+            "E1 raw macro top-1 is 0.171875 versus 0.9765625 for nearest-neighbour retrieval and "
+            "accepts 0/128 tests. E2 true token macro-F1 is 0.535520366, compiles and renders "
+            "96/96 proposals, but its baseline lower 95% is -0.028125 and the gate fails 10 checks."
         ),
         "nextAction": (
-            "Keep the deterministic baseline selected and collect independent authorised "
-            "evidence before considering a different learned configuration."
+            "Keep deterministic retrieval selected; obtain broader lawful identity-disjoint data "
+            "before another bounded learned configuration."
         ),
     },
     "BP-08-Q-MATERIAL-INFERENCE": {
         "status": "partial",
         "summary": (
-            "Phase 14 material ranking is integrated and reevaluated as a validator-subordinate "
-            "bounded advisory model on the current source tree."
+            "Phase 14 v3 fixes the ablation status filter, scenario-cluster bootstrap and "
+            "normalized selection-regret reporting while keeping model authority advisory."
         ),
         "limitations": (
-            "The 18-case project-authored fixture evaluation is not real-fabric, provider, "
-            "private-user, GPU, mobile, or production evidence."
+            "Material top-1 is 10/18, normalized regret mean/P95/worst is "
+            "0.100424120738/1.0/1.0, and excessive-strain and seam-risk F1 are both 0.4. The "
+            "authored scalar corpus is not solver-backed, real-fabric, private-user or production "
+            "evidence."
         ),
     },
     "BP-09-Z2": {
@@ -525,12 +532,13 @@ CURRENT_PROGRESSION_UPDATES = {
     "BP-17-PHASE-09": {
         "status": "partial",
         "summary": (
-            "Phase 9 source is replayed once on PR #35; E1 is partial and E2 is an executed "
-            "typed-program feasibility partial."
+            "Phase 9 v3 has corrected policy-matched E1 and a 256/64/96 compositional E2 attempt "
+            "whose every test proposal executes compile, topology and reference-3D evaluation."
         ),
         "limitations": (
-            "Neither learned route beats its strongest equal-input deterministic baseline, and "
-            "no private-user, human-review, or global generalisation claim is supported."
+            "E1 is a losing experiment; E2 fails 10/17 frozen checks and its bootstrap lower 95% "
+            "misses the -0.02 floor. No learned route is default and no private, human or "
+            "real-photo claim exists."
         ),
         "nextAction": (
             "Retain both learned routes as experimental and broaden only with authorised, "
@@ -555,12 +563,13 @@ CURRENT_PROGRESSION_UPDATES = {
     "BP-17-PHASE-14": {
         "status": "partial",
         "summary": (
-            "Phase 14 business source is replayed once and its bounded advisory models are "
-            "reevaluated on PR #35's current source tree."
+            "Phase 14 v3 reevaluates the bounded advisory model with non-null scenario/material "
+            "ablations and scenario-cluster confidence intervals."
         ),
         "limitations": (
-            "Material top-1 is 10/18 and the advisory models remain deterministic-validator "
-            "subordinates; no authorised large-model, real-fabric, or production run occurred."
+            "Only 4/10 frozen checks pass; low per-target F1 remains visible, the solver-backed "
+            "replacement corpus is dependency-blocked, and no large-model, real-fabric or "
+            "production run occurred."
         ),
         "nextAction": (
             "Obtain authorised data, checkpoint, licence, hardware, privacy, and deployment "
@@ -583,8 +592,8 @@ CURRENT_PROGRESSION_UPDATES = {
         "status": "partial",
         "summary": (
             "The research prototype now includes frozen 9/9 default-family static evidence, "
-            "compiled dynamic failure evidence, integrated Phase 9 E1/E2, and Phase 14 advisory "
-            "reevaluation."
+            "compiled dynamic failure evidence, a full synthetic multiview Phase 9 v3 run, a "
+            "compositional E2 attempt, and corrected Phase 14 advisory reevaluation."
         ),
         "limitations": (
             "Z2 and PHY1 fail, Phase 12/13 remain external, and Alpha, Beta, Production, human, "
@@ -596,33 +605,39 @@ CURRENT_PROGRESSION_UPDATES = {
 CURRENT_EVIDENCE_ADDITIONS = {
     "BP-08-H-PATTERN-INFERENCE": {
         "implementationPaths": [
-            "closy-forge/src/closy_forge/pattern_inference/raster_evaluation_v4.py",
+            "closy-forge/src/closy_forge/pattern_inference/multiview_corpus_v5.py",
+            "closy-forge/src/closy_forge/pattern_inference/e1_kernel_v3.py",
+            "closy-forge/src/closy_forge/pattern_inference/e1_evaluation_v5.py",
             "closy-forge/src/closy_forge/pattern_inference/reference_3d_v1.py",
-            "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v1.py",
+            "closy-forge/src/closy_forge/pattern_inference/typed_program_v2.py",
+            "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v2.py",
         ],
         "executableEvidence": [
             (
-                "E1 executes hidden-label-safe accepted predictions through independent 3D "
-                "assembly, binding, and rendering"
+                "E1 full run covers 512 programs, 2,048 capture sets and 8,192 decoded "
+                "reference-assembly images; its losing 0.171875 macro top-1 remains non-default"
             ),
             (
-                "E2 trains a bounded typed structural decoder over 128/32/48 "
-                "identity-disjoint programs"
+                "E2 trains atomic grammar heads over 256/64/96 programs and executes all 96 "
+                "held-out proposals through compile, topology and reference-3D"
             ),
         ],
         "tests": [
-            "closy-forge/tests/unit/test_raster_phase9_corrective_v4.py",
-            "closy-forge/tests/unit/test_structured_decoder_v1.py",
+            "closy-forge/tests/unit/test_multiview_corpus_v5.py",
+            "closy-forge/tests/unit/test_e1_kernel_v3.py",
+            "closy-forge/tests/unit/test_typed_program_v2.py",
+            "closy-forge/tests/unit/test_structured_decoder_v2.py",
         ],
     },
     "BP-08-Q-MATERIAL-INFERENCE": {
         "implementationPaths": [
-            "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v2.py"
+            "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v3.py"
         ],
         "executableEvidence": [
-            "current-tree Phase 14 evaluation records 10/18 material top-1 and 32/32 OOD decisions"
+            "Phase 14 v3 records 10/18 material top-1, scenario-cluster bootstrap, and two "
+            "non-null ablations"
         ],
-        "tests": ["closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py"],
+        "tests": ["closy-forge/tests/unit/test_phase14_integrated_evaluation_v3.py"],
     },
     "BP-09-Z2": {
         "implementationPaths": [
@@ -640,15 +655,15 @@ CURRENT_EVIDENCE_ADDITIONS = {
     },
     "BP-17-PHASE-09": {
         "implementationPaths": [
-            "closy-forge/src/closy_forge/pattern_inference/raster_execution_v4.py",
-            "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v1.py",
-            "closy-forge/docs/evidence/phase9_structured_v2/execution_summary.json",
+            "closy-forge/src/closy_forge/pattern_inference/e1_evaluation_v5.py",
+            "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v2.py",
+            "closy-forge/docs/evidence/phase9_structured_v3/execution_summary.json",
         ],
         "executableEvidence": [
-            "E1 learned route remains experimental after equal-input baseline comparison",
-            "E2 accepts and compiles 24/48 held-out typed programs without repair",
+            "E1 is a policy-correct losing experiment with no oracle fallback",
+            "E2 parses, compiles, validates topology and renders 96/96 held-out typed proposals",
         ],
-        "tests": ["closy-forge/tests/unit/test_phase9_structured_v2_evidence.py"],
+        "tests": ["closy-forge/tests/unit/test_phase9_structured_v3_evidence.py"],
     },
     "BP-17-PHASE-11": {
         "implementationPaths": [
@@ -664,18 +679,18 @@ CURRENT_EVIDENCE_ADDITIONS = {
     },
     "BP-17-PHASE-14": {
         "implementationPaths": [
-            "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v2.py",
-            "closy-forge/docs/evidence/phase9_structured_v2/phase14_integrated_evaluation.json",
+            "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v3.py",
+            "closy-forge/docs/evidence/phase9_structured_v3/phase14_integrated_evaluation.json",
         ],
         "executableEvidence": [
             (
-                "Phase 14 reevaluation reports material regret 0.002497041219 and failure "
-                "macro-F1 0.704125286478"
+                "Phase 14 v3 reports normalized regret mean/P95/worst "
+                "0.100424120738/1.0/1.0 and failure macro-F1 0.704125286478"
             )
         ],
         "tests": [
             "closy-forge/tests/unit/test_phase14_bounded_models.py",
-            "closy-forge/tests/unit/test_phase14_integrated_evaluation_v2.py",
+            "closy-forge/tests/unit/test_phase14_integrated_evaluation_v3.py",
         ],
     },
     "BP-18-GATE-Z2": {
@@ -833,6 +848,10 @@ def main() -> int:
     coverage = coverage_value
     coverage["version"] = VERSION
     for row in coverage["rows"]:
+        valid_commit_shas = [
+            sha for sha in (row.get("commitSha") or []) if sha not in STALE_INVALID_EVIDENCE_ANCHORS
+        ]
+        row["commitSha"] = valid_commit_shas or None
         row_id = str(row["id"])
         update = ROW_UPDATES.get(row_id)
         if update:

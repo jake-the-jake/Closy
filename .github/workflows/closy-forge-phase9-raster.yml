@@ -1,4 +1,4 @@
-name: Closy Forge Phase 9 Raster Canonical
+name: Closy Forge Phase 9 Structured v3
 
 on:
   pull_request:
@@ -6,6 +6,9 @@ on:
       - ".github/workflows/closy-forge-phase9-raster.yml"
       - "closy-forge/src/closy_forge/pattern_inference/**"
       - "closy-forge/src/closy_forge/bounded_models/**"
+      - "closy-forge/scripts/generate_phase9_structured_v3_evidence.py"
+      - "closy-forge/docs/phase9_structured_threshold_registry_v3.json"
+      - "closy-forge/docs/evidence/phase9_structured_v3/**"
       - "closy-forge/scripts/generate_phase9_structured_v2_evidence.py"
       - "closy-forge/docs/phase9_structured_threshold_registry_v2.json"
       - "closy-forge/docs/evidence/phase9_structured_v2/**"
@@ -17,10 +20,10 @@ permissions:
   contents: read
 
 jobs:
-  canonical-raster-evidence:
-    name: Canonical raster-derived synthetic D0 CPU
+  structured-v3-evidence:
+    name: Structured v3 synthetic D0 CPU smoke and evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 15
     defaults:
       run:
         shell: bash
@@ -38,8 +41,11 @@ jobs:
           cache-dependency-path: closy-forge/requirements-dev.lock
       - name: Install version-constrained Forge dev environment
         run: python -m pip install -e ".[dev]" -c requirements-dev.lock
-      - name: Regenerate and compare structured Phase 9 and advisory Phase 14 evidence
+      - name: Regenerate bounded structured v3 smoke profile
         run: |
-          python scripts/generate_phase9_structured_v2_evidence.py \
-            --output docs/evidence/phase9_structured_v2 \
-            --check
+          python scripts/generate_phase9_structured_v3_evidence.py --smoke
+      - name: Validate committed full-run evidence and exact source attestation
+        run: |
+          python scripts/generate_phase9_structured_v3_evidence.py \
+            --output docs/evidence/phase9_structured_v3 \
+            --validate-committed
