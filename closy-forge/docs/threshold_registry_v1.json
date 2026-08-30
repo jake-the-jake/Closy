@@ -47,7 +47,7 @@
         "requiredRestAndReturnFrameCount": 2,
         "requiredTransportPairDelta": 0
       },
-      "oracleVersionHash": "211f2d61854fff7002b3ac7c1d1e952debe62ac01e559512c102e1d22b87d1e1",
+      "oracleVersionHash": "65c8895c9d3a8b9d0e14dc29d54855becb26251e2ae669d9a16ab1b222cf0b7e",
       "rationale": "analytic clean-reference motion qualifies compiled mechanical transport only and does not imply solver-driven Z2 or PHY1",
       "units": "meters_square_meters_degrees_counts"
     },

@@ -194,6 +194,15 @@ def audit_mechanical_reference_files(
         "bindingCoverage": len(corner_to_logical) == dense_count
         and len({row for row in range(dense_count)}) == dense_count,
     }
+    maximum_normal_angle = _vector_error_angle(base["maximumNormalError"])
+    maximum_tangent_angle = _vector_error_angle(base["maximumTangentError"])
+    bounds_passed = (
+        base["clusterBoundContainmentFailures"] == 0
+        and base["parentBoundContainmentFailures"] == 0
+    )
+    normal_tangent_passed = (
+        checks["normalError"] and checks["tangentError"] and checks["tangentHandedness"]
+    )
     return {
         **base,
         "schemaVersion": "closy.zeroone.mt1-independent-oracle.v2",
@@ -202,6 +211,10 @@ def audit_mechanical_reference_files(
         "logicalDestinationCount": logical_count,
         "denseCornerCount": dense_count,
         "minimumProcessingTriangleDoubleAreaMeters2": minimum_double_area,
+        "maximumNormalAngleDegrees": maximum_normal_angle,
+        "maximumTangentAngleDegrees": maximum_tangent_angle,
+        "boundsPassed": bounds_passed,
+        "normalTangentPassed": normal_tangent_passed,
         "topology": topology,
         "outputIntersectionFrames": output_intersections,
         "independentReconstructionIntersectionFrames": expected_intersections,
@@ -296,6 +309,10 @@ def _double_area(a: Vec3, b: Vec3, c: Vec3) -> float:
 
 def _vector_error_from_angle(degrees: float) -> float:
     return 2.0 * math.sin(math.radians(degrees) * 0.5)
+
+
+def _vector_error_angle(error: float) -> float:
+    return math.degrees(2.0 * math.asin(min(1.0, max(0.0, error) * 0.5)))
 
 
 def _percentile(values: list[float], fraction: float) -> float:
