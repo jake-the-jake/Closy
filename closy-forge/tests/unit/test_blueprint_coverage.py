@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.z1_z2_structured_ai.v5"
+    assert coverage["version"] == "closy.blueprint_coverage.z1_z2_structured_ai.v6"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -307,7 +307,9 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     coverage = _json("blueprint_coverage.json")
     provenance = coverage["generatedBy"]
 
-    assert provenance["generatorVersion"] == "closy.blueprint_reconciliation.z1_z2.v2"
+    assert provenance["generatorVersion"] == (
+        "closy.blueprint_reconciliation.z1_z2_structured_ai.v3"
+    )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
     assert provenance["finalHeadAttestationLocation"] == (
