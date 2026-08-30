@@ -29,6 +29,7 @@ from closy_forge.pattern_inference.model_v2 import (
     canonical_model_bytes,
     classification_sample_loss_gradient,
     deterministic_template_fallback,
+    multitask_sample_loss_gradient,
     predict_v2,
     regression_sample_loss_gradient,
 )
@@ -165,6 +166,56 @@ def test_optimizer_gradients_match_finite_differences() -> None:
         minus_loss, _ = regression_sample_loss_gradient(minus, row, 0.8, l2=0.02)
         numeric = (plus_loss - minus_loss) / (2 * epsilon)
         assert regression_gradient[feature_index] == pytest.approx(numeric, abs=1e-7)
+
+
+def test_complete_multitask_objective_matches_finite_differences() -> None:
+    class_weights = [[0.1, -0.2, 0.3], [-0.3, 0.2, -0.1]]
+    regression_weights = [
+        [0.2, -0.1, 0.4],
+        [-0.1, 0.3, 0.2],
+        [0.05, -0.2, 0.1],
+    ]
+    row = [1.0, 0.4, -0.7]
+    targets = [0.8, -0.2, 0.3]
+    _, class_gradient, regression_gradient = multitask_sample_loss_gradient(
+        class_weights,
+        regression_weights,
+        row,
+        1,
+        targets,
+        l2=0.02,
+    )
+    epsilon = 1e-6
+    for class_index in range(len(class_weights)):
+        for feature_index in range(len(row)):
+            plus = deepcopy(class_weights)
+            minus = deepcopy(class_weights)
+            plus[class_index][feature_index] += epsilon
+            minus[class_index][feature_index] -= epsilon
+            plus_loss, _, _ = multitask_sample_loss_gradient(
+                plus, regression_weights, row, 1, targets, l2=0.02
+            )
+            minus_loss, _, _ = multitask_sample_loss_gradient(
+                minus, regression_weights, row, 1, targets, l2=0.02
+            )
+            assert class_gradient[class_index][feature_index] == pytest.approx(
+                (plus_loss - minus_loss) / (2 * epsilon), abs=1e-7
+            )
+    for target_index in range(len(regression_weights)):
+        for feature_index in range(len(row)):
+            plus = deepcopy(regression_weights)
+            minus = deepcopy(regression_weights)
+            plus[target_index][feature_index] += epsilon
+            minus[target_index][feature_index] -= epsilon
+            plus_loss, _, _ = multitask_sample_loss_gradient(
+                class_weights, plus, row, 1, targets, l2=0.02
+            )
+            minus_loss, _, _ = multitask_sample_loss_gradient(
+                class_weights, minus, row, 1, targets, l2=0.02
+            )
+            assert regression_gradient[target_index][feature_index] == pytest.approx(
+                (plus_loss - minus_loss) / (2 * epsilon), abs=1e-7
+            )
 
 
 def test_actual_training_is_reproducible_evaluated_and_honest(

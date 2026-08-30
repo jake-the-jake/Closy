@@ -21,6 +21,7 @@ def test_test_shards_cover_every_unit_and_corruption_file_once() -> None:
     assert validate_test_shards(FORGE_ROOT) == []
     assert len(assigned) == len(set(assigned))
     assert set(assigned) == set(discover_sharded_tests(FORGE_ROOT))
+    assert shards["shard-4"] == ("tests/corruption/test_corrupted_packages.py",)
 
 
 def test_integration_shards_cover_every_integration_and_golden_file_once() -> None:

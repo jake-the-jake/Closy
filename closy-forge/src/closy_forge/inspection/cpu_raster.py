@@ -31,6 +31,7 @@ def rasterize_settled_garment(
     camera: Mapping[str, object] | None = None,
     texture_sampler: TextureSampler | None = None,
     background: RGBA = (246, 244, 239, 0),
+    visible_panel_ids: set[str] | None = None,
 ) -> CpuRasterResult:
     """Rasterize a settled garment with a deterministic, dependency-free CPU path.
 
@@ -49,7 +50,7 @@ def rasterize_settled_garment(
     rendered_triangles = 0
     projected_vertices = 0
     sampler = texture_sampler or _default_sampler
-    allowed = _visible_panels(label)
+    allowed = visible_panel_ids if visible_panel_ids is not None else _visible_panels(label)
     visible_meshes = [
         mesh
         for mesh in sorted(meshset.meshes, key=lambda item: (item.panel_id, item.name))

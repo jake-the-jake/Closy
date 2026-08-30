@@ -1,13 +1,13 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v3` at evidence anchor `eb5becfa385ec4a5c6ef95b2c15b753dffbcea42`.
+Authority: `closy.blueprint_status_model.v5` at evidence anchor `dd916913ac14119bc2e127989703f1c51f91e00a`.
 
 ## Requirement Rows
 
 - complete: 21
-- partial: 59
-- not started: 8
-- discovery pending: 13
+- partial: 62
+- not started: 7
+- discovery pending: 11
 - total: 101
 
 ## Phases
@@ -33,10 +33,12 @@ Authority: `closy.blueprint_status_model.v3` at evidence anchor `eb5becfa385ec4a
 - C1: global `partial`, scoped `pass`
 - C2: global `partial`, scoped `pass`
 - C3-Binding-D0: global `partial`, scoped `pass`
+- LayerCollision-D0: global `partial`, scoped `pass`
+- MT1-MechanicalReference-D0: global `partial`, scoped `pass`
 - P1: global `discovery_pending`, scoped `not_run`
 - PHY1-SingleLayer-D0: global `partial`, scoped `failed`
 - Z1: global `partial`, scoped `candidate_default_all_family_and_representative_pass`
-- Z2: global `discovery_pending`, scoped `not_run`
+- Z2: global `partial`, scoped `failed_compiled_single_lod_reference_pairing`
 - Z3: global `discovery_pending`, scoped `not_run`
 - Z4: global `discovery_pending`, scoped `not_run`
 - Z5: global `discovery_pending`, scoped `not_run`
@@ -44,4 +46,4 @@ Authority: `closy.blueprint_status_model.v3` at evidence anchor `eb5becfa385ec4a
 - Z7: global `discovery_pending`, scoped `not_run`
 - Z8: global `discovery_pending`, scoped `not_run`
 
-Compute profile, data provenance, execution profile, and gate scope are independent axes. C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile; PHY1-SingleLayer-D0 and refreshed paired Z1 fail their declared scopes. No dynamic, GPU, mobile, private-user, or human-review execution is claimed.
+Compute profile, data provenance, execution profile, and gate scope are independent axes. C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile; PHY1-SingleLayer-D0 fails its declared scope. Historical compiled dynamic ZeroOne pairing failed, while the separate clean analytic MT1 mechanical-reference profile passes without implying Z2 or physical cloth. Geometric LayerCollision-D0 passes only for the indexed synthetic two-garment surface profile and does not imply PHY1. No GPU, mobile, private-user, or human-review execution is claimed.

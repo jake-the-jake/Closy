@@ -10,40 +10,55 @@ ANCESTRY_CLASSES = {
     "not_present",
 }
 CURRENT_REPOSITORY = "jake-the-jake/Closy"
-CURRENT_AUTHORITY_PR = 28
-CURRENT_AUTHORITY_SHA = "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72"
+CURRENT_AUTHORITY_PR = 38
+CURRENT_AUTHORITY_SHA = "dd916913ac14119bc2e127989703f1c51f91e00a"
 
-_EXTERNAL_ROW_SOURCES: dict[str, tuple[int, str, str]] = {
+_EXTERNAL_ROW_SOURCES: dict[str, tuple[int, str, str]] = {}
+
+_REPLAYED_SOURCE_ROWS: dict[str, tuple[int, str, str]] = {
     "BP-08-H-PATTERN-INFERENCE": (
-        26,
-        "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
-        "current raster-trained Phase 9 implementation is a sibling source PR and is not in PR #28",
+        37,
+        "7430131d5ecab0df77d3933709aed0d86138e03e",
+        "corrected structured-learning v3 source was replayed into PR #38",
     ),
-    "BP-17-PHASE-09": (
-        26,
-        "ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53",
-        "53/64 held-out top-1 source experiment is external until replayed on Closy E",
+    "BP-09-Z2": (
+        34,
+        "960662d237e187cd8ecbcc9ebe9192367f194317",
+        (
+            "compiled pairing executed on PR #34 but failed the independent dense "
+            "self-intersection oracle"
+        ),
     ),
     "BP-17-PHASE-12": (
         29,
         "62464db2a91e4b24b808cfcd99ee95578fc95f32",
-        "Phase 12 runtime preparation is a source-only sibling until replayed on Closy D",
+        "Phase 12 source was replayed into PR #38 and adapted to current package identities",
+    ),
+    "BP-17-PHASE-09": (
+        37,
+        "7430131d5ecab0df77d3933709aed0d86138e03e",
+        "corrected Phase 9 v3 source was replayed into PR #38",
     ),
     "BP-17-PHASE-13": (
         30,
         "1cf7ecff18bd0bbd37820638c0af2029d7a928ac",
-        "synthetic avatar fit is a source-only sibling until replayed on Closy D",
+        "synthetic avatar fit source was replayed into PR #38 and adapted to current authority",
     ),
     "BP-17-PHASE-14": (
-        31,
-        "f0a3e3c9b7b1486ebbe736cfb16084299880ce2d",
-        "bounded advisory models are a source-only sibling until replayed on Closy E",
+        37,
+        "7430131d5ecab0df77d3933709aed0d86138e03e",
+        "corrected bounded Phase 14 source was replayed into PR #38",
     ),
     "BP-08-S-LAYERING-ANIMATION": (
         32,
         "386effb254d4ba15499399dfd7fd94c70a0e0fc5",
-        "LayerCollision-D0 is an external radial-shell source and is not canonical "
-        "garment-surface layering",
+        "the radial-shell source was replayed into PR #38, then superseded by indexed canonical "
+        "garment-surface geometric evidence",
+    ),
+    "BP-18-GATE-Z2": (
+        34,
+        "960662d237e187cd8ecbcc9ebe9192367f194317",
+        "the historical Z2 v1 failure was replayed into PR #38 without promotion",
     ),
 }
 
@@ -108,6 +123,20 @@ def apply_ancestry_metadata(coverage: dict[str, Any]) -> dict[str, Any]:
                     ),
                 )
             )
+        replayed = _REPLAYED_SOURCE_ROWS.get(row_id)
+        if replayed is not None:
+            source_pr, source_sha, limitation = replayed
+            supplemental.append(
+                _source(
+                    ancestry_class="historical_superseded",
+                    source_pr=source_pr,
+                    source_sha=source_sha,
+                    incorporated=True,
+                    incorporation_commit=CURRENT_AUTHORITY_SHA,
+                    evidence_tier="source_replayed_into_pr38",
+                    limitations=limitation,
+                )
+            )
         row.update(primary)
         row["evidenceSources"] = [primary, *supplemental]
         row["evidenceTier"] = primary["evidenceTier"]
@@ -151,7 +180,7 @@ def validate_ancestry_metadata(coverage: dict[str, Any]) -> list[str]:
                 issues.append(f"coverage_in_tree_not_incorporated:{row_id}")
         elif row["incorporated"] is True:
             issues.append(f"coverage_external_marked_incorporated:{row_id}")
-        if ancestry_class == "external_source_pr" and row["sourcePr"] not in {26, 29, 30, 31, 32}:
+        if ancestry_class == "external_source_pr" and row["sourcePr"] not in {29, 30, 32, 34}:
             issues.append(f"coverage_external_source_unrecognised:{row_id}")
         if ancestry_class == "not_present" and row["sourceSha"] is not None:
             issues.append(f"coverage_absent_has_source_sha:{row_id}")

@@ -7,13 +7,16 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-UNIT_TEST_SHARD_COUNT = 4
+UNIT_TEST_SHARD_COUNT = 5
 INTEGRATION_TEST_SHARD_COUNT = 2
 SHARD_COUNTS = {
     "unit": UNIT_TEST_SHARD_COUNT,
     "integration": INTEGRATION_TEST_SHARD_COUNT,
 }
 TEST_SHARD_NAMES = tuple(f"shard-{index}" for index in range(UNIT_TEST_SHARD_COUNT))
+PINNED_UNIT_TEST_SHARDS = {
+    "tests/corruption/test_corrupted_packages.py": "shard-4",
+}
 
 
 def discover_sharded_tests(forge_root: Path, suite: str = "unit") -> tuple[str, ...]:
@@ -39,6 +42,17 @@ def test_inventory_digest(forge_root: Path, suite: str = "unit") -> str:
 def assign_test_shards(forge_root: Path, suite: str = "unit") -> dict[str, tuple[str, ...]]:
     discovered = discover_sharded_tests(forge_root, suite)
     shard_count = SHARD_COUNTS[suite]
+    if suite == "unit":
+        regular_shard_count = shard_count - 1
+        unpinned = tuple(path for path in discovered if path not in PINNED_UNIT_TEST_SHARDS)
+        shards = {
+            f"shard-{index}": unpinned[index::regular_shard_count]
+            for index in range(regular_shard_count)
+        }
+        shards["shard-4"] = tuple(
+            path for path in discovered if PINNED_UNIT_TEST_SHARDS.get(path) == "shard-4"
+        )
+        return shards
     return {f"shard-{index}": discovered[index::shard_count] for index in range(shard_count)}
 
 

@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v3"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v5"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -13,9 +13,18 @@ MATURITY_IDS = (
     "BP-20-PRODUCTION",
 )
 A1_HEAD = "5d080caad354bcecff94a7eadf16d080d68a606c"
-C3_EVIDENCE_SHA = "5538d8ca41ad86412d2a2ef5f0a0daa9984c0b72"
+C3_EVIDENCE_SHA = "531689b1d542dd9aeeec29a975e7136ee986c582"
+PHY1_EVIDENCE_SHA = "d393b7185d14fe414a1eb3c4ef040c6c1ad8f780"
 ZEROONE_CANDIDATE_SHA = "13a844d240f4bbb2cafde105c4a0bdca8d89a06b"
 ZEROONE_EXECUTABLE_SHA256 = "59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065"
+ZEROONE_DYNAMIC_SHA = "413aecd24434f90d89ad35c6a8f909de75df34c7"
+ZEROONE_DYNAMIC_EXECUTABLE_SHA256 = (
+    "e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc"
+)
+CLOSY_DYNAMIC_EVIDENCE_SHA = "960662d237e187cd8ecbcc9ebe9192367f194317"
+MT1_EVIDENCE_SHA = "6b2e64566e1484e70992ba4e10150c27591f0512"
+MT1_EXECUTABLE_SHA256 = "b29345b062691cfa7d7e6873c7c9b9bca2cd5a46e670b866d8e69153c0ad8476"
+INTEGRATED_RUNTIME_EVIDENCE_SHA = "dd916913ac14119bc2e127989703f1c51f91e00a"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -75,7 +84,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "executionKind": "CPU",
         "gateScope": "binding",
         "evidenceDurability": "committed_report_plus_external_exact_head_check_attestation",
-        "workflowRun": None,
+        "workflowRun": "33264403890",
         "unsupportedTiers": _COMMON_UNSUPPORTED,
         "blockers": ["broader_avatar_garment_platform_and_private_user_profiles"],
     },
@@ -86,7 +95,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "evidenceTier": "committed_failure_witnesses",
         "platform": ["windows"],
         "toolchain": ["CPython 3.11"],
-        "sourceSha": C3_EVIDENCE_SHA,
+        "sourceSha": PHY1_EVIDENCE_SHA,
         "executableSha": None,
         "garmentFamilies": ["tshirt"],
         "avatarProfile": "fixed_reference_avatar_v1",
@@ -98,12 +107,71 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "workflowRun": None,
         "unsupportedTiers": _COMMON_UNSUPPORTED + ["multilayer"],
         "blockers": [
-            "timestamped_states_passed_0_of_11",
+            "qualified_timestamped_states_passed_0_of_11",
             "unresolved_contacts_9",
             "residual_depth_0.001878992_exceeds_0.000160000",
-            "minimum_body_clearance_negative_0.009084014",
+            "simulation_surface_clearance_not_run",
+            "stitched_surface_clearance_negative_0.009084014",
             "maximum_seam_crack_0.109609688",
-            "rest_referenced_inversions_or_degeneracies_68",
+            "maximum_tangential_seam_slip_0.028009643",
+            "qualified_temporal_degenerate_frame_triangles_198",
+            "qualified_swept_degenerate_transitions_191",
+            "qualified_true_inversions_15",
+        ],
+    },
+    "MT1-MechanicalReference-D0": {
+        "gateId": "MT1-MechanicalReference-D0",
+        "globalStatus": "partial",
+        "scopedStatus": "pass",
+        "evidenceTier": "committed_clean_reference_mechanical_transport_evidence",
+        "platform": ["ubuntu", "windows"],
+        "toolchain": ["CPython 3.11", "MSVC Release"],
+        "sourceSha": MT1_EVIDENCE_SHA,
+        "executableSha": MT1_EXECUTABLE_SHA256,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored synthetic",
+        "executionKind": "compiled CPU/headless/analytic mechanical reference",
+        "gateScope": "mechanical transport only",
+        "evidenceDurability": "committed_report_plus_exact_head_cross_platform_ci",
+        "workflowRun": "33302649199",
+        "requestIdentity": "38fadbc2b08bddb83a6dff0d2c086070ebf22c715767b847d08bff1d2431e3ca",
+        "outputIdentity": "996b50ed90946f1c01afe9bf450060008547b5db4fd2ba66902bf9ddf6e80217",
+        "unsupportedTiers": [
+            "blueprint_Z2",
+            "solver_driven",
+            "PHY1",
+            "GPU",
+            "mobile",
+            "private_user",
+        ],
+        "blockers": [
+            "analytic_clip_is_not_solver_driven_cloth",
+            "no_phy1_or_blueprint_z2_implication",
+        ],
+    },
+    "LayerCollision-D0": {
+        "gateId": "LayerCollision-D0",
+        "globalStatus": "partial",
+        "scopedStatus": "pass",
+        "evidenceTier": "committed_canonical_surface_geometric_projection",
+        "platform": ["windows"],
+        "toolchain": ["CPython 3.12"],
+        "sourceSha": INTEGRATED_RUNTIME_EVIDENCE_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["inner_top", "outer_overshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored synthetic",
+        "executionKind": "CPU/headless/geometric simultaneous surface projection",
+        "gateScope": "geometric two-layer outfit clearance",
+        "evidenceDurability": "committed_indexed_surface_report",
+        "workflowRun": None,
+        "unsupportedTiers": ["physical_cloth", "PHY1", "GPU", "mobile", "private_user"],
+        "blockers": [
+            "geometric_projection_is_not_physical_simulation",
+            "no_solver_driven_outfit_motion",
         ],
     },
     "Z1": {
@@ -120,6 +188,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "platform": ["windows"],
         "toolchain": ["MSVC 19.36 Release"],
         "sourceSha": ZEROONE_CANDIDATE_SHA,
+        "closySourceSha": C3_EVIDENCE_SHA,
         "currentMasterSha": None,
         "executableSha": ZEROONE_EXECUTABLE_SHA256,
         "garmentFamilies": [
@@ -139,7 +208,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "executionKind": "CPU/headless/static",
         "gateScope": "static ZeroOne",
         "evidenceDurability": "durable_zeroone_build_artifact_plus_local_paired_reports",
-        "workflowRun": "33187775880",
+        "workflowRun": "33264403890",
         "allFamilyAttemptCount": 9,
         "successfulFamilyCount": 9,
         "rejectedFamilyCount": 0,
@@ -153,24 +222,53 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
     },
     "Z2": {
         "gateId": "Z2",
-        "globalStatus": "discovery_pending",
-        "scopedStatus": "not_run",
-        "evidenceTier": "none",
-        "platform": [],
-        "toolchain": [],
-        "sourceSha": ZEROONE_CANDIDATE_SHA,
-        "executableSha": None,
-        "garmentFamilies": [],
-        "avatarProfile": "none",
+        "globalStatus": "partial",
+        "scopedStatus": "failed_compiled_single_lod_reference_pairing",
+        "evidenceTier": "committed_compiled_failure_witnesses_plus_exact_head_ci",
+        "platform": ["windows"],
+        "toolchain": ["MSVC Release", "CPython 3.11"],
+        "sourceSha": CLOSY_DYNAMIC_EVIDENCE_SHA,
+        "zeroOneSourceSha": ZEROONE_DYNAMIC_SHA,
+        "executableSha": ZEROONE_DYNAMIC_EXECUTABLE_SHA256,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
         "computeProfile": "D0",
         "dataProvenance": "project-authored synthetic",
-        "executionKind": "not_run",
+        "executionKind": "compiled CPU/headless/dynamic/single-LOD reference",
         "gateScope": "dynamic ZeroOne",
-        "evidenceDurability": "none",
-        "workflowRun": None,
-        "unsupportedTiers": ["mechanical_reference", "solver_driven", "GPU", "mobile"],
+        "evidenceDurability": "committed_pairing_reports_plus_exact_head_ci",
+        "workflowRun": "33270987449",
+        "zeroOneWorkflowRun": "33262736792",
+        "frameCount": 13,
+        "maximumPositionErrorMeters": 0.0,
+        "maximumRestErrorMeters": 0.0,
+        "cullingFalseNegativeCount": 0,
+        "minimumSweptTriangleDoubleArea": 0.00005516801958569897,
+        "nonAdjacentSelfIntersectionsByFrame": [
+            971,
+            931,
+            930,
+            931,
+            929,
+            933,
+            933,
+            933,
+            929,
+            931,
+            930,
+            931,
+            971,
+        ],
+        "unsupportedTiers": [
+            "accepted_dynamic_namespace",
+            "multi_LOD",
+            "solver_driven",
+            "GPU",
+            "mobile",
+        ],
         "blockers": [
-            "compiled_dynamic_execution",
+            "compiled_output_fails_nonadjacent_dense_self_intersection_oracle",
+            "pairing_revision_budget_exhausted",
         ],
     },
     "P1": {
@@ -275,8 +373,9 @@ def build_status_model(
         "truth": {
             "phase8EvidenceScope": "deterministic_fixture_family_verticals",
             "phases10To14EvidenceScope": (
-                "candidate_default_all_family_static_pass_parameter_range_partial_"
-                "phase11_not_run_phase12_to14_external_sources"
+                "default_all_family_static_pass_parameter_range_partial_compiled_phase11_"
+                "pairing_failed_mt1_mechanical_pass_phase12_13_integrated_headless_"
+                "phase14_integrated_advisory"
             ),
             "actualZeroOneStaticCookExecutedThisInvocation": True,
             "actualZeroOneStaticArtifactLoaded": True,
@@ -285,13 +384,21 @@ def build_status_model(
             "zeroOneStaticRejectedFamilyCount": 0,
             "cacheValidated": True,
             "historicalZeroOneStaticCookEvidencePresent": True,
-            "actualZeroOneDynamicDeformationExecuted": False,
+            "actualZeroOneDynamicDeformationExecuted": True,
+            "actualZeroOneDynamicPairingAccepted": False,
             "actualZeroOneGpuRuntimeExecuted": False,
             "actualZeroOneMobileRuntimeExecuted": False,
             "actualPhase9TrainingExecuted": True,
-            "currentRasterPhase9SourceIntegrated": False,
+            "currentRasterPhase9SourceIntegrated": True,
             "currentRasterPhase9SourcePullRequest": 26,
-            "phase12To14SourceBranchesIntegrated": False,
+            "phase12SourceIntegrated": True,
+            "phase13SourceIntegrated": True,
+            "phase14SourceIntegrated": True,
+            "layerCollisionSurfaceIntegrated": True,
+            "mt1ReferenceMotionD0Available": True,
+            "packageValidityDependsOnZeroOne": False,
+            "phase9E1Status": "partial_experimental",
+            "phase9E2Status": "executed_feasibility_partial",
             "privateUserEvidenceRun": False,
             "physicalMobileEvidenceRun": False,
             "humanReviewRun": False,
@@ -322,8 +429,14 @@ def validate_status_model(
     truth = model.get("truth", {})
     if truth.get("actualZeroOneStaticCookExecutedThisInvocation") is not True:
         issues.append("status_reconciliation_missing_candidate_static_cook")
-    if truth.get("actualZeroOneDynamicDeformationExecuted") is not False:
-        issues.append("dynamic_execution_overclaimed")
+    if truth.get("actualZeroOneDynamicDeformationExecuted") is not True:
+        issues.append("dynamic_execution_missing")
+    if truth.get("actualZeroOneDynamicPairingAccepted") is not False:
+        issues.append("dynamic_pairing_acceptance_overclaimed")
+    if truth.get("mt1ReferenceMotionD0Available") is not True:
+        issues.append("mt1_reference_motion_missing")
+    if truth.get("packageValidityDependsOnZeroOne") is not False:
+        issues.append("zeroone_made_package_authoritative")
     if truth.get("actualZeroOneGpuRuntimeExecuted") is not False:
         issues.append("gpu_execution_overclaimed")
     if truth.get("actualZeroOneMobileRuntimeExecuted") is not False:
@@ -356,6 +469,9 @@ def render_status_summary(model: dict[str, Any]) -> str:
         f"{gate_lines}\n\n"
         "Compute profile, data provenance, execution profile, and gate scope are independent "
         "axes. C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile; "
-        "PHY1-SingleLayer-D0 and refreshed paired Z1 fail their declared scopes. No dynamic, "
-        "GPU, mobile, private-user, or human-review execution is claimed.\n"
+        "PHY1-SingleLayer-D0 fails its declared scope. Historical compiled dynamic ZeroOne "
+        "pairing failed, while the separate clean analytic MT1 mechanical-reference profile passes "
+        "without implying Z2 or physical cloth. Geometric LayerCollision-D0 passes only for the "
+        "indexed synthetic two-garment surface profile and does not imply PHY1. "
+        "No GPU, mobile, private-user, or human-review execution is claimed.\n"
     )
