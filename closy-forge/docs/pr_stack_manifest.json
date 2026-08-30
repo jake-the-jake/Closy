@@ -367,6 +367,56 @@
       "to": "github:jake-the-jake/Closy:pr/35"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/34",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/36"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/34",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/36"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/35",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/37"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/35",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/37"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/36",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/38"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/36",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/38"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/37",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/38"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/29",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/38"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/30",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/38"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/32",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/38"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -1752,19 +1802,19 @@
       "uniqueCommitRange": "531689b1d542dd9aeeec29a975e7136ee986c582..960662d237e187cd8ecbcc9ebe9192367f194317"
     },
     {
-      "ahead": 14,
+      "ahead": 16,
       "baseRef": "codex/closy-forge-z1-surface-topology-repair-v3",
       "baseSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
       "behind": 0,
       "branch": "codex/closy-forge-learned-structured-garment-v2",
       "capabilityRole": "evaluate_bounded_structured_garment_models",
-      "changedFileCount": 66,
+      "changedFileCount": 76,
       "dependencyIds": [
         "github:jake-the-jake/Closy:pr/33",
         "github:jake-the-jake/Closy:pr/26",
         "github:jake-the-jake/Closy:pr/31"
       ],
-      "headSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "headSha": "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
       "id": "github:jake-the-jake/Closy:pr/35",
       "integrationMappings": [
         {
@@ -1806,10 +1856,10 @@
       ],
       "latestExactHeadWorkflows": [
         {
-          "conclusion": "FAILURE",
+          "conclusion": "SUCCESS",
           "exactHead": true,
           "jobCount": 26,
-          "runId": "33275306155",
+          "runId": "33280862559",
           "workflow": "Closy Forge"
         }
       ],
@@ -1821,11 +1871,125 @@
       ],
       "pullRequest": 35,
       "repository": "jake-the-jake/Closy",
-      "role": "candidate_structured_integration",
+      "role": "accepted_structured_integration_base",
       "sourceOnly": false,
       "state": "OPEN",
       "superseded": false,
-      "uniqueCommitRange": "531689b1d542dd9aeeec29a975e7136ee986c582..461436c22f8c5cd1948e0f6906961d0c512dcc34"
+      "uniqueCommitRange": "531689b1d542dd9aeeec29a975e7136ee986c582..9d39d55e9d1cdae502808f73c4e14653e92d26d7"
+    },
+    {
+      "ahead": 9,
+      "baseRef": "codex/closy-forge-phase11-zeroone-dynamic-reference-v1",
+      "baseSha": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "behind": 0,
+      "branch": "codex/closy-forge-zeroone-reference-motion-v2",
+      "capabilityRole": "forge_qualify_clean_zeroone_mechanical_reference_motion_v2",
+      "changedFileCount": 27,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/34"
+      ],
+      "headSha": "4c5dcd284a1221a7820184e640fb92b67b880787",
+      "id": "github:jake-the-jake/Closy:pr/36",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33302649199",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/34"
+      ],
+      "pullRequest": 36,
+      "repository": "jake-the-jake/Closy",
+      "role": "accepted_mt1_mechanical_reference_base",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "960662d237e187cd8ecbcc9ebe9192367f194317..4c5dcd284a1221a7820184e640fb92b67b880787"
+    },
+    {
+      "ahead": 19,
+      "baseRef": "codex/closy-forge-learned-structured-garment-v2",
+      "baseSha": "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
+      "behind": 0,
+      "branch": "codex/closy-forge-learned-structured-garment-v3",
+      "capabilityRole": "forge_execute_corrected_structured_learning_v3",
+      "changedFileCount": 41,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/35"
+      ],
+      "headSha": "7430131d5ecab0df77d3933709aed0d86138e03e",
+      "id": "github:jake-the-jake/Closy:pr/37",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33321665632",
+          "workflow": "Closy Forge"
+        },
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 1,
+          "runId": "33321665610",
+          "workflow": "Closy Forge Phase 9 Structured v3"
+        }
+      ],
+      "mergeBase": "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/35"
+      ],
+      "pullRequest": 37,
+      "repository": "jake-the-jake/Closy",
+      "role": "accepted_structured_learning_v3_source",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "9d39d55e9d1cdae502808f73c4e14653e92d26d7..7430131d5ecab0df77d3933709aed0d86138e03e"
+    },
+    {
+      "ahead": 44,
+      "baseRef": "codex/closy-forge-zeroone-reference-motion-v2",
+      "baseSha": "4c5dcd284a1221a7820184e640fb92b67b880787",
+      "behind": 0,
+      "branch": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
+      "capabilityRole": "forge_integrate_fail_closed_avatar_outfit_runtime_d0",
+      "changedFileCount": 152,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/36",
+        "github:jake-the-jake/Closy:pr/37",
+        "github:jake-the-jake/Closy:pr/29",
+        "github:jake-the-jake/Closy:pr/30",
+        "github:jake-the-jake/Closy:pr/32"
+      ],
+      "headSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "id": "github:jake-the-jake/Closy:pr/38",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "4c5dcd284a1221a7820184e640fb92b67b880787",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/36"
+      ],
+      "pullRequest": 38,
+      "repository": "jake-the-jake/Closy",
+      "role": "integrated_runtime_avatar_outfit_d0",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "4c5dcd284a1221a7820184e640fb92b67b880787..dd916913ac14119bc2e127989703f1c51f91e00a"
     },
     {
       "ahead": 3,
@@ -3490,32 +3654,114 @@
       "baseBranch": "codex/closy-forge-z1-surface-topology-repair-v3",
       "baseSha": "531689b1d542dd9aeeec29a975e7136ee986c582",
       "branch": "codex/closy-forge-learned-structured-garment-v2",
-      "changedFileCount": 66,
+      "changedFileCount": 76,
       "directParentMergeBaseVerified": true,
       "draft": true,
-      "headSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "headSha": "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
       "knownException": null,
       "latestExactHeadForgeRun": {
-        "cancelledJobCount": 0,
-        "conclusion": "FAILURE",
+        "conclusion": "SUCCESS",
         "exactHead": true,
-        "failedJobCount": 2,
         "jobCount": 26,
-        "runId": "33275306155",
-        "successfulJobCount": 24,
+        "runId": "33280862559",
+        "successfulJobCount": 26,
         "workflow": "Closy Forge"
       },
-      "layerAhead": 14,
+      "layerAhead": 16,
       "layerBehind": 0,
-      "layerCommitCount": 14,
+      "layerCommitCount": 16,
       "mergeBase": "531689b1d542dd9aeeec29a975e7136ee986c582",
       "mergeability": "MERGEABLE",
       "number": 35,
       "repository": "jake-the-jake/Closy",
-      "role": "candidate_structured_integration",
+      "role": "accepted_structured_integration_base",
       "state": "OPEN",
       "title": "Evaluate bounded structured garment models",
       "url": "https://github.com/jake-the-jake/Closy/pull/35"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phase11-zeroone-dynamic-reference-v1",
+      "baseSha": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "branch": "codex/closy-forge-zeroone-reference-motion-v2",
+      "changedFileCount": 27,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "4c5dcd284a1221a7820184e640fb92b67b880787",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33302649199",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 9,
+      "layerBehind": 0,
+      "layerCommitCount": 9,
+      "mergeBase": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "mergeability": "MERGEABLE",
+      "number": 36,
+      "repository": "jake-the-jake/Closy",
+      "role": "accepted_mt1_mechanical_reference_base",
+      "state": "OPEN",
+      "title": "Forge: qualify clean ZeroOne mechanical reference motion v2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/36"
+    },
+    {
+      "baseBranch": "codex/closy-forge-learned-structured-garment-v2",
+      "baseSha": "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
+      "branch": "codex/closy-forge-learned-structured-garment-v3",
+      "changedFileCount": 41,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "7430131d5ecab0df77d3933709aed0d86138e03e",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33321665632",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 19,
+      "layerBehind": 0,
+      "layerCommitCount": 19,
+      "mergeBase": "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
+      "mergeability": "MERGEABLE",
+      "number": 37,
+      "repository": "jake-the-jake/Closy",
+      "role": "accepted_structured_learning_v3_source",
+      "state": "OPEN",
+      "title": "Forge: execute corrected structured learning v3",
+      "url": "https://github.com/jake-the-jake/Closy/pull/37"
+    },
+    {
+      "baseBranch": "codex/closy-forge-zeroone-reference-motion-v2",
+      "baseSha": "4c5dcd284a1221a7820184e640fb92b67b880787",
+      "branch": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
+      "changedFileCount": 152,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #38 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 44,
+      "layerBehind": 0,
+      "layerCommitCount": 44,
+      "mergeBase": "4c5dcd284a1221a7820184e640fb92b67b880787",
+      "mergeability": "MERGEABLE",
+      "number": 38,
+      "repository": "jake-the-jake/Closy",
+      "role": "integrated_runtime_avatar_outfit_d0",
+      "state": "OPEN",
+      "title": "Forge: integrate fail-closed avatar outfit runtime D0",
+      "url": "https://github.com/jake-the-jake/Closy/pull/38"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -3556,8 +3802,11 @@
     "github:jake-the-jake/Closy:pr/32",
     "github:jake-the-jake/Closy:pr/33",
     "github:jake-the-jake/Closy:pr/35",
+    "github:jake-the-jake/Closy:pr/37",
     "github:jake-the-jake/ZeroOne:pr/3",
-    "github:jake-the-jake/Closy:pr/34"
+    "github:jake-the-jake/Closy:pr/34",
+    "github:jake-the-jake/Closy:pr/36",
+    "github:jake-the-jake/Closy:pr/38"
   ],
   "topology": "explicit_dag",
   "validation": {

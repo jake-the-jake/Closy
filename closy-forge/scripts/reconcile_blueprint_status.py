@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+EVIDENCE_ANCHOR = "dd916913ac14119bc2e127989703f1c51f91e00a"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.z1_z2_structured_ai.v6"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.z1_z2_structured_ai.v3"
+VERSION = "closy.blueprint_coverage.integrated_runtime_d0.v7"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.integrated_runtime_d0.v4"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -203,12 +203,51 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-learned-structured-garment-v2",
         "codex/closy-forge-z1-surface-topology-repair-v3",
         "531689b1d542dd9aeeec29a975e7136ee986c582",
-        "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-        14,
-        66,
-        "33275306155",
-        "FAILURE",
-        "candidate_structured_integration",
+        "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
+        16,
+        76,
+        "33280862559",
+        "SUCCESS",
+        "accepted_structured_integration_base",
+    ),
+    (
+        36,
+        "Forge: qualify clean ZeroOne mechanical reference motion v2",
+        "codex/closy-forge-zeroone-reference-motion-v2",
+        "codex/closy-forge-phase11-zeroone-dynamic-reference-v1",
+        "960662d237e187cd8ecbcc9ebe9192367f194317",
+        "4c5dcd284a1221a7820184e640fb92b67b880787",
+        9,
+        27,
+        "33302649199",
+        "SUCCESS",
+        "accepted_mt1_mechanical_reference_base",
+    ),
+    (
+        37,
+        "Forge: execute corrected structured learning v3",
+        "codex/closy-forge-learned-structured-garment-v3",
+        "codex/closy-forge-learned-structured-garment-v2",
+        "9d39d55e9d1cdae502808f73c4e14653e92d26d7",
+        "7430131d5ecab0df77d3933709aed0d86138e03e",
+        19,
+        41,
+        "33321665632",
+        "SUCCESS",
+        "accepted_structured_learning_v3_source",
+    ),
+    (
+        38,
+        "Forge: integrate fail-closed avatar outfit runtime D0",
+        "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
+        "codex/closy-forge-zeroone-reference-motion-v2",
+        "4c5dcd284a1221a7820184e640fb92b67b880787",
+        "dd916913ac14119bc2e127989703f1c51f91e00a",
+        44,
+        152,
+        "",
+        "NOT_RUN_AT_EVIDENCE_ANCHOR",
+        "integrated_runtime_avatar_outfit_d0",
     ),
 ]
 
@@ -236,6 +275,11 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/evidence/phase9_structured_v3/attestation.json",
     "closy-forge/docs/evidence/phase9_structured_v3/source_replay_map.json",
     "closy-forge/docs/evidence/phy1_progression_v3/sanitised_failure_witness.json",
+    "closy-forge/docs/evidence/phase11_reference_motion_v2/execution_evidence.json",
+    "closy-forge/docs/evidence/integrated_replay_manifest_d0_v1.json",
+    "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json",
+    "closy-forge/docs/evidence/integrated_runtime_invalidation_ledger_d0_v1.json",
+    "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json",
 ]
 
 PHASE10_PATHS = [
@@ -485,6 +529,21 @@ ANCESTRY_TRUTH_UPDATES = {
 }
 
 CURRENT_PROGRESSION_UPDATES = {
+    "BP-08-S-LAYERING-ANIMATION": {
+        "status": "partial",
+        "summary": (
+            "PR #38 executes simultaneous geometric projection on indexed inner-top and outer-"
+            "overshirt surfaces fitted to the exact synthetic avatar authority."
+        ),
+        "limitations": (
+            "The D0 result is geometric LayerCollision evidence only; it is not solver-driven "
+            "cloth, PHY1, mobile, private-user, or production evidence."
+        ),
+        "nextAction": (
+            "Keep the surface profile identity-bound and consume topology-v2 only after its "
+            "seams, openings, bindings, and physical profile are independently requalified."
+        ),
+    },
     "BP-08-H-PATTERN-INFERENCE": {
         "status": "partial",
         "summary": (
@@ -517,12 +576,14 @@ CURRENT_PROGRESSION_UPDATES = {
     "BP-09-Z2": {
         "status": "partial",
         "summary": (
-            "Compiled ZeroOne deformation executed for 13 frames on the fixed T-shirt, but the "
-            "pairing failed and no dynamic namespace was admitted."
+            "The historical solver-derived Z2 v1 pairing remains failed. A separate clean "
+            "analytic MT1 mechanical-reference profile now passes and is available only in its "
+            "identity-matched lab namespace."
         ),
         "limitations": (
-            "The independent oracle found 929 to 971 nonadjacent dense self-intersections per "
-            "frame; multi-LOD, GPU, mobile, and solver-driven physical profiles were not run."
+            "MT1 is not blueprint Gate Z2 and supplies no PHY1 or solver-driven cloth claim. The "
+            "historical Z2 oracle still records 929 to 971 nonadjacent intersections per frame; "
+            "multi-LOD, GPU, and mobile profiles were not run."
         ),
         "nextAction": (
             "Repair the processing/reference surface correspondence before another bounded "
@@ -548,16 +609,47 @@ CURRENT_PROGRESSION_UPDATES = {
     "BP-17-PHASE-11": {
         "status": "partial",
         "summary": (
-            "Phase 11 now has real compiled ZeroOne dynamic execution and an authentic paired "
-            "failure witness, but Z2 did not pass."
+            "Phase 11 retains the authentic historical Z2 pairing failure and now adds a clean, "
+            "compiled, exact-identity MT1 analytic mechanical-reference capability."
         ),
         "limitations": (
-            "The 13-frame single-LOD output passes position, frame, culling, and swept-area "
-            "checks but fails the nonadjacent dense self-intersection oracle."
+            "MT1 is lab mechanical transport, not solver-driven cloth. Blueprint Z2 remains "
+            "unaccepted, PHY1 remains failed, and no mobile or product claim follows."
         ),
         "nextAction": (
-            "Start a new pairing strategy only after the processing/reference surface mismatch "
-            "is repaired; preserve the failed namespace admission."
+            "Use topology-v2 to attempt PHY1 independently; create a cloth-driven Z2 profile only "
+            "if a solver-driven clip later passes PHY1 and the independent dynamic oracle."
+        ),
+    },
+    "BP-17-PHASE-12": {
+        "status": "partial",
+        "summary": (
+            "Phase 12 source work is integrated in PR #38 as a deterministic headless runtime "
+            "package with schema negotiation, conventional fallback, and fail-closed optional "
+            "ZeroOne capability selection."
+        ),
+        "limitations": (
+            "Execution is host CPU reference evidence only; device, GPU, battery, thermal, "
+            "cellular, driver, and production deployment evidence are not run."
+        ),
+        "nextAction": (
+            "Preserve package validity independent of ZeroOne and obtain real mobile runtime "
+            "measurements only after the canonical capability set is stable."
+        ),
+    },
+    "BP-17-PHASE-13": {
+        "status": "partial",
+        "summary": (
+            "Phase 13 synthetic-avatar fitting and a canonical indexed two-garment outfit surface "
+            "are integrated in PR #38 with exact authority and fit identities."
+        ),
+        "limitations": (
+            "The avatar is project-authored synthetic and the outfit correction is geometric; no "
+            "licensed body, private user, human correction, physical cloth, or P1 evidence exists."
+        ),
+        "nextAction": (
+            "Retain synthetic authority separation while evaluating topology-v2 physical behavior "
+            "and later lawful licensed/private cohorts under explicit consent."
         ),
     },
     "BP-17-PHASE-14": {
@@ -579,30 +671,48 @@ CURRENT_PROGRESSION_UPDATES = {
     "BP-18-GATE-Z2": {
         "status": "partial",
         "summary": (
-            "Gate Z2 was executed with compiled ZeroOne B for a single-LOD mechanical reference "
-            "profile and failed the independent self-intersection criterion."
+            "Historical Gate Z2 v1 remains failed; the newer MT1 analytic mechanical-reference "
+            "profile passes its separate scoped transport gate and is not relabelled Z2."
         ),
         "limitations": (
-            "A valid dynamic namespace was not produced; solver-driven physics, multi-LOD, GPU, "
-            "mobile, private-user, and production claims remain unsupported."
+            "No accepted solver-driven cloth namespace exists. Multi-LOD cloth, PHY1, GPU, mobile, "
+            "private-user, and production claims remain unsupported."
         ),
-        "nextAction": "Repair the pairing surface before attempting the remaining strategy.",
+        "nextAction": (
+            "Run topology-v2 PHY1 first; only a valid solver-driven clip may enter a new, "
+            "versioned Z2-ClothDriven profile."
+        ),
     },
     "BP-20-RESEARCH-PROTOTYPE": {
         "status": "partial",
         "summary": (
-            "The research prototype now includes frozen 9/9 default-family static evidence, "
-            "compiled dynamic failure evidence, a full synthetic multiview Phase 9 v3 run, a "
-            "compositional E2 attempt, and corrected Phase 14 advisory reevaluation."
+            "The research prototype now includes 9/9 default-family static evidence, a scoped MT1 "
+            "mechanical pass, integrated fail-closed headless runtime and synthetic-avatar outfit "
+            "surfaces, plus the bounded Phase 9/14 experiments."
         ),
         "limitations": (
-            "Z2 and PHY1 fail, Phase 12/13 remain external, and Alpha, Beta, Production, human, "
+            "Z2 and PHY1 remain failed, and Alpha, Beta, Production, human, "
             "private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven."
         ),
     },
 }
 
 CURRENT_EVIDENCE_ADDITIONS = {
+    "BP-08-S-LAYERING-ANIMATION": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/integrated_runtime/outfit_surface.py",
+            "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json",
+        ],
+        "executableEvidence": [
+            "indexed 128-vertex/192-triangle garment surfaces progress from 256 to zero exact "
+            "triangle intersections while preserving seams and openings",
+            "final semantic clearance is 0.002 m with zero contacts and ordering inversions",
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_integrated_runtime_d0.py",
+            "closy-forge/tests/unit/test_integrated_runtime_evidence_v2.py",
+        ],
+    },
     "BP-08-H-PATTERN-INFERENCE": {
         "implementationPaths": [
             "closy-forge/src/closy_forge/pattern_inference/multiview_corpus_v5.py",
@@ -650,6 +760,10 @@ CURRENT_EVIDENCE_ADDITIONS = {
                 "independent dense oracle rejects every frame with 929 to 971 nonadjacent "
                 "self-intersections"
             ),
+            (
+                "separate MT1 request 38fadbc2... and output 996b50ed... pass clean analytic "
+                "mechanical transport without claiming Z2 or PHY1"
+            ),
         ],
         "tests": ["closy-forge/tests/unit/test_zeroone_dynamic_reference.py"],
     },
@@ -667,15 +781,56 @@ CURRENT_EVIDENCE_ADDITIONS = {
     },
     "BP-17-PHASE-11": {
         "implementationPaths": [
-            "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json"
+            "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json",
+            "closy-forge/docs/evidence/phase11_reference_motion_v2/execution_evidence.json",
+            "closy-forge/src/closy_forge/integrated_runtime/decision.py",
         ],
         "executableEvidence": [
             (
                 "13 compiled frames have zero position/rest error and zero culling false "
                 "negatives but fail dense self-intersection"
-            )
+            ),
+            "clean analytic MT1 passes its bounded mechanical-reference transport profile",
         ],
-        "tests": ["closy-forge/tests/unit/test_zeroone_dynamic_reference.py"],
+        "tests": [
+            "closy-forge/tests/unit/test_zeroone_dynamic_reference.py",
+            "closy-forge/tests/unit/test_zeroone_reference_motion_evidence_v2.py",
+            "closy-forge/tests/unit/test_integrated_runtime_d0.py",
+        ],
+    },
+    "BP-17-PHASE-12": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/integrated_runtime/contracts.py",
+            "closy-forge/src/closy_forge/integrated_runtime/decision.py",
+            "closy-forge/src/closy_forge/runtime_delivery/package.py",
+            "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json",
+        ],
+        "executableEvidence": [
+            "conventional package loads without ZeroOne and stale, corrupt, unsupported optional "
+            "capabilities fail closed",
+            "host CPU latency and memory observations are explicitly advisory and not mobile "
+            "evidence",
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_integrated_runtime_d0.py",
+            "closy-forge/tests/unit/test_integrated_runtime_evidence_v2.py",
+        ],
+    },
+    "BP-17-PHASE-13": {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/avatar_variation/synthetic_suite.py",
+            "closy-forge/src/closy_forge/integrated_runtime/outfit_surface.py",
+            "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json",
+        ],
+        "executableEvidence": [
+            "exact project-authored synthetic avatar authority and fit identities are enforced",
+            "canonical two-garment indexed surfaces finish with zero geometric contacts, "
+            "intersections, and ordering inversions",
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_avatar_variation_fit.py",
+            "closy-forge/tests/unit/test_integrated_runtime_d0.py",
+        ],
     },
     "BP-17-PHASE-14": {
         "implementationPaths": [
@@ -973,7 +1128,18 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
                 "state": "OPEN",
                 "mergeability": "MERGEABLE",
                 "directParentMergeBaseVerified": True,
-                "knownException": None,
+                "knownException": (
+                    None
+                    if run_id
+                    else {
+                        "code": "exact_head_ci_recorded_outside_generated_evidence",
+                        "descendantEvidenceIsExactHead": False,
+                        "reason": (
+                            "PR #38 exact-head CI is recorded in the draft PR body because this "
+                            "generated report is anchored to its immutable implementation source"
+                        ),
+                    }
+                ),
                 "role": role,
                 "latestExactHeadForgeRun": _closy_run(run_id, conclusion),
             }
@@ -1043,6 +1209,9 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         33: 28,
         34: 33,
         35: 33,
+        36: 34,
+        37: 35,
+        38: 36,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
@@ -1072,11 +1241,24 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
                     "github:jake-the-jake/Closy:pr/31",
                 ]
             )
+        if pr_number == 38:
+            dependency_ids.extend(
+                [
+                    "github:jake-the-jake/Closy:pr/37",
+                    "github:jake-the-jake/Closy:pr/29",
+                    "github:jake-the-jake/Closy:pr/30",
+                    "github:jake-the-jake/Closy:pr/32",
+                ]
+            )
         for dependency_id in dependency_ids:
             edges.append({"from": dependency_id, "to": node_id, "kind": "dependency"})
         source_only = pr_number in {25, 26, 29, 30, 31, 32, 34}
         superseded = pr_number == 25
         workflows = _normalise_workflows(row.get("latestExactHeadForgeRun"))
+        if pr_number == 37:
+            workflows.append(
+                _workflow("Closy Forge Phase 9 Structured v3", "33321665610", "SUCCESS", 1)
+            )
         mappings = []
         if pr_number == 28:
             mappings = [
@@ -1280,7 +1462,9 @@ def _replace_legacy_truth_terms(value: object) -> object:
     return value
 
 
-def _closy_run(run_id: str, conclusion: str) -> dict[str, object]:
+def _closy_run(run_id: str, conclusion: str) -> dict[str, object] | None:
+    if not run_id:
+        return None
     result: dict[str, object] = {
         "exactHead": True,
         "runId": run_id,

@@ -10,10 +10,17 @@ ANCESTRY_CLASSES = {
     "not_present",
 }
 CURRENT_REPOSITORY = "jake-the-jake/Closy"
-CURRENT_AUTHORITY_PR = 35
-CURRENT_AUTHORITY_SHA = "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+CURRENT_AUTHORITY_PR = 38
+CURRENT_AUTHORITY_SHA = "dd916913ac14119bc2e127989703f1c51f91e00a"
 
-_EXTERNAL_ROW_SOURCES: dict[str, tuple[int, str, str]] = {
+_EXTERNAL_ROW_SOURCES: dict[str, tuple[int, str, str]] = {}
+
+_REPLAYED_SOURCE_ROWS: dict[str, tuple[int, str, str]] = {
+    "BP-08-H-PATTERN-INFERENCE": (
+        37,
+        "7430131d5ecab0df77d3933709aed0d86138e03e",
+        "corrected structured-learning v3 source was replayed into PR #38",
+    ),
     "BP-09-Z2": (
         34,
         "960662d237e187cd8ecbcc9ebe9192367f194317",
@@ -25,23 +32,33 @@ _EXTERNAL_ROW_SOURCES: dict[str, tuple[int, str, str]] = {
     "BP-17-PHASE-12": (
         29,
         "62464db2a91e4b24b808cfcd99ee95578fc95f32",
-        "Phase 12 runtime preparation is a source-only sibling until replayed on Closy D",
+        "Phase 12 source was replayed into PR #38 and adapted to current package identities",
+    ),
+    "BP-17-PHASE-09": (
+        37,
+        "7430131d5ecab0df77d3933709aed0d86138e03e",
+        "corrected Phase 9 v3 source was replayed into PR #38",
     ),
     "BP-17-PHASE-13": (
         30,
         "1cf7ecff18bd0bbd37820638c0af2029d7a928ac",
-        "synthetic avatar fit is a source-only sibling until replayed on Closy D",
+        "synthetic avatar fit source was replayed into PR #38 and adapted to current authority",
+    ),
+    "BP-17-PHASE-14": (
+        37,
+        "7430131d5ecab0df77d3933709aed0d86138e03e",
+        "corrected bounded Phase 14 source was replayed into PR #38",
     ),
     "BP-08-S-LAYERING-ANIMATION": (
         32,
         "386effb254d4ba15499399dfd7fd94c70a0e0fc5",
-        "LayerCollision-D0 is an external radial-shell source and is not canonical "
-        "garment-surface layering",
+        "the radial-shell source was replayed into PR #38, then superseded by indexed canonical "
+        "garment-surface geometric evidence",
     ),
     "BP-18-GATE-Z2": (
         34,
         "960662d237e187cd8ecbcc9ebe9192367f194317",
-        "Z2 is an external executed failure source and was not integrated into Closy E",
+        "the historical Z2 v1 failure was replayed into PR #38 without promotion",
     ),
 }
 
@@ -104,6 +121,20 @@ def apply_ancestry_metadata(coverage: dict[str, Any]) -> dict[str, Any]:
                         "PR #25 exact-head CI was red; only mapped business commits were replayed "
                         "into PR #28"
                     ),
+                )
+            )
+        replayed = _REPLAYED_SOURCE_ROWS.get(row_id)
+        if replayed is not None:
+            source_pr, source_sha, limitation = replayed
+            supplemental.append(
+                _source(
+                    ancestry_class="historical_superseded",
+                    source_pr=source_pr,
+                    source_sha=source_sha,
+                    incorporated=True,
+                    incorporation_commit=CURRENT_AUTHORITY_SHA,
+                    evidence_tier="source_replayed_into_pr38",
+                    limitations=limitation,
                 )
             )
         row.update(primary)

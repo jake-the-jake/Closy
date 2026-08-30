@@ -1,13 +1,13 @@
 {
   "ancestryAuthority": {
     "classificationVersion": "closy.coverage_ancestry.v1",
-    "headSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-    "pullRequest": 35,
+    "headSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
+    "pullRequest": 38,
     "repository": "jake-the-jake/Closy"
   },
   "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
   "blueprintSource": "closy-forge/docs/Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md",
-  "externalSourceRowCount": 5,
+  "externalSourceRowCount": 0,
   "generatedBy": {
     "declaredInputPaths": [
       "closy-forge/scripts/reconcile_blueprint_status.py",
@@ -21,14 +21,19 @@
       "closy-forge/docs/evidence/phase9_structured_v3/execution_summary.json",
       "closy-forge/docs/evidence/phase9_structured_v3/attestation.json",
       "closy-forge/docs/evidence/phase9_structured_v3/source_replay_map.json",
-      "closy-forge/docs/evidence/phy1_progression_v3/sanitised_failure_witness.json"
+      "closy-forge/docs/evidence/phy1_progression_v3/sanitised_failure_witness.json",
+      "closy-forge/docs/evidence/phase11_reference_motion_v2/execution_evidence.json",
+      "closy-forge/docs/evidence/integrated_replay_manifest_d0_v1.json",
+      "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json",
+      "closy-forge/docs/evidence/integrated_runtime_invalidation_ledger_d0_v1.json",
+      "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.z1_z2_structured_ai.v3",
+    "generatorVersion": "closy.blueprint_reconciliation.integrated_runtime_d0.v4",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "996793822b901736f288afa1f4cd958418e0784ba8d606c3c01ae29db6929880"
+    "sourceTreeHash": "cf55be707f3e1f579ca77107624d54510bbe2512ffab251158643d4d3aadb97f"
   },
-  "integratedImplementationRowCount": 78,
+  "integratedImplementationRowCount": 83,
   "rows": [
     {
       "ancestryClass": "in_tree",
@@ -43,11 +48,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "T-shirt fixture only.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -62,13 +67,13 @@
         "closy-forge/src/closy_forge/validation"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "T-shirt fixture only.",
       "nextAction": "Extend per family after capture/fitting slices.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Core principles",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Pattern, seams and simulation topology remain canonical garment truth.",
       "tests": [
@@ -89,11 +94,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No dense provider-derived accepted shell.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -107,13 +112,13 @@
         "closy-forge/src/closy_forge/geometry/subdivision.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No dense provider-derived accepted shell.",
       "nextAction": "Preserve separation through provider work.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Core principles",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Keep pattern, simulation mesh, render shell and binding as separate representations.",
       "tests": [
@@ -148,11 +153,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No accepted clean provider mesh exists; Phase 5 provider contract evidence does not grant canonical authority.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -168,13 +173,13 @@
         "closy-forge/src/closy_forge/validation/validator.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No accepted clean provider mesh exists; Phase 5 provider contract evidence does not grant canonical authority.",
       "nextAction": "Keep provider outputs proposal-only until clean/provider acceptance gates have literal evidence.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Core principles",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Provider output can only be proposal/derivative evidence, never canonical truth.",
       "tests": [
@@ -198,7 +203,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -206,11 +212,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "All nine families were attempted, but three structured families were rejected for degenerate surfaces; every conventional GLB fallback remains mandatory.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -237,13 +243,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "All nine families were attempted, but three structured families were rejected for degenerate surfaces; every conventional GLB fallback remains mandatory.",
       "nextAction": "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and human-review evidence.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Core principles",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "ZeroOne remains optional, derived, regenerable, and validated without changing canonical package authority.",
       "tests": [
@@ -277,11 +283,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Actual source/provider visual review remains absent; BP-46 material stitched-shell proof now passes, but this does not promote source/provider appearance acceptance, human review, clean/canonical acceptance or production runtime binding evidence.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -298,13 +304,13 @@
         "closy-forge/src/closy_forge/proposals/geometry_clean_acceptance_gate.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Actual source/provider visual review remains absent; BP-46 material stitched-shell proof now passes, but this does not promote source/provider appearance acceptance, human review, clean/canonical acceptance or production runtime binding evidence.",
       "nextAction": "Keep stitched-shell proof, source/provider visual fidelity, provider-output authority and clean/canonical gates separate during the Phase 5 provider branch and later Phase 6 binding work.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Core principles",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Representation consistency, source/provider visual fidelity and mesh stitch/weld proof are separate evidence tiers.",
       "tests": [
@@ -342,11 +348,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Partial checkpoint only: BP-46 topology/opening proof now passes for the deterministic stitched analysis shell, including conforming topology, source-backed semantic opening loops, winding/normal/self-intersection, surface topology, logical source binding and material stitched-shell proof; clean/canonical acceptance remains false because production stitched-shell sim-to-render binding, crack/sliding proof, runtime performance evidence, source/provider visual-fidelity comparison, human review and continuity closeout remain incomplete.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -413,13 +419,13 @@
         "closy-forge/schemas/v1/geometry-stitched-shell.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Partial checkpoint only: BP-46 topology/opening proof now passes for the deterministic stitched analysis shell, including conforming topology, source-backed semantic opening loops, winding/normal/self-intersection, surface topology, logical source binding and material stitched-shell proof; clean/canonical acceptance remains false because production stitched-shell sim-to-render binding, crack/sliding proof, runtime performance evidence, source/provider visual-fidelity comparison, human review and continuity closeout remain incomplete.",
       "nextAction": "Use the reconciled Phase 6 authoritative source/render route in BP52/BP53/BP47 fidelity closeout; retain BP46 topology proof as evidence rather than a competing runtime authority.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Execution checkpoints mapped to Phase 1, Phase 5, Phase 6 and Gate C3",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "BP-46 material stitched-shell topology and provenance-backed semantic opening proof now pass, while clean/canonical and production binding gates remain rejected.",
       "tests": [
@@ -444,11 +450,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Partial public-fixture D0 proof only: the independent renderer is a bounded deterministic CPU raster reference over project-authored pixels, not private-user evidence, provider appearance acceptance, signed human review, calibrated product thresholding or canonical clean-geometry acceptance.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -474,13 +480,13 @@
         "closy-forge/tests/unit/test_source_render_fidelity.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Partial public-fixture D0 proof only: the independent renderer is a bounded deterministic CPU raster reference over project-authored pixels, not private-user evidence, provider appearance acceptance, signed human review, calibrated product thresholding or canonical clean-geometry acceptance.",
       "nextAction": "Add validation-time rerendering and independent hidden synthetic targets before broader fidelity acceptance.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 9 deterministic inspection renders and evidence tiers",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Independent decoded public-fixture source-versus-settled-render fidelity evidence now complements the retained topology/representation inspection artifacts without promoting canonical acceptance.",
       "tests": [
@@ -509,11 +515,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 synthetic-raster fixture fusion only; no private-user Gate P1 authority, learned registration, learned/provider segmentation, source-image export, provider upload or training use.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -538,13 +544,13 @@
         "closy-forge/schemas/v1/multiview-fusion.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 synthetic-raster fixture fusion only; no private-user Gate P1 authority, learned registration, learned/provider segmentation, source-image export, provider upload or training use.",
       "nextAction": "Add independent public/provider capture evidence without exposing target program identity.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 12 BP-51 multiview capture fusion",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Add deterministic D0 multiview capture fusion over project-authored raster fixture observations with view pairing, identity checks, semantic tracks, fused evidence, fused correction replay, quality-gate rejection and resume/cache metadata.",
       "tests": [
@@ -572,11 +578,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 project-authored raster fixture only; the bounded optimiser and independent CPU raster are not a learned predictor, differentiable renderer, private-user fit, depth estimator, calibrated production acceptance model or real cloth/photo inverse solver.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -602,13 +608,13 @@
         "closy-forge/tests/corruption/test_corrupted_packages.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 project-authored raster fixture only; the bounded optimiser and independent CPU raster are not a learned predictor, differentiable renderer, private-user fit, depth estimator, calibrated production acceptance model or real cloth/photo inverse solver.",
       "nextAction": "Evaluate the trained synthetic D0 grammar model on identity-disjoint hidden targets and retain deterministic fitting fallback.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 13",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Actual bounded iterative D0 T-shirt fitting now converges against decoded multiview evidence and verifies its winner through the full solver and independent CPU raster.",
       "tests": [
@@ -637,11 +643,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 project-authored public fixture only; packaged pixels are not private-user imagery, the normal/roughness/occlusion maps are deterministic derived approximations rather than measured material capture, hidden regions use controlled fill, and no learned completion or production colour calibration is claimed.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -668,13 +674,13 @@
         "closy-forge/tests/unit/test_texture_identity.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 project-authored public fixture only; packaged pixels are not private-user imagery, the normal/roughness/occlusion maps are deterministic derived approximations rather than measured material capture, hidden regions use controlled fill, and no learned completion or production colour calibration is claimed.",
       "nextAction": "Validate appearance against independently authored target rasters and authorised source tiers without treating generated fill as source evidence.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Deterministic decoded bitmap atlas and mobile-safe PBR evidence now preserve source/generated provenance and visible logo detail.",
       "tests": [
@@ -698,11 +704,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Partial BP48 checkpoint: fallback GLB frames and a bounded four-pose suite are available for runtime preview, but stitched-shell binding, crack/sliding proof, performance/memory evidence, full cloth motion and clean/canonical acceptance remain incomplete.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -727,13 +733,13 @@
         "closy-forge/schemas/v1/render-frame-pose-suite.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Partial BP48 checkpoint: fallback GLB frames and a bounded four-pose suite are available for runtime preview, but stitched-shell binding, crack/sliding proof, performance/memory evidence, full cloth motion and clean/canonical acceptance remain incomplete.",
       "nextAction": "Validate independently reconstructed dense and fallback frames over real stitched-shell deformation states.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 10 persisted render normals/tangents and pose-suite evidence",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Persist fallback GLB normal/tangent frames and validate bounded pose-suite binding evidence without promoting clean/canonical acceptance.",
       "tests": [
@@ -759,11 +765,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 project-authored synthetic raster fixtures only; no real-user capture, no provider upload, no training use, no portable source hashes, and JPEG pixel metrics remain structural-only until a pinned decoder dependency is added.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -789,13 +795,13 @@
         "closy-forge/schemas/v1/raster-deletion-tombstone.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 project-authored synthetic raster fixtures only; no real-user capture, no provider upload, no training use, no portable source hashes, and JPEG pixel metrics remain structural-only until a pinned decoder dependency is added.",
       "nextAction": "Retain fixture-only capture authority while completing bounded JPEG decode and deletion safety; private-user Gate P1 remains not run.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 10 BP-49 privacy-safe local PNG/JPEG ingestion",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Add a fail-closed local raster fixture ingest path with private source records, normalization evidence, pixel-derived PNG quality, privacy reports, schemas, CLI commands, deletion tombstones and cross-OS symlink/hardlink/traversal guard evidence.",
       "tests": [
@@ -820,11 +826,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 synthetic fixture parser only: no learned/provider segmentation, no private-user imagery, no exported source pixels, no multiview fusion/registration and no Phase-2 completion claim.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -848,13 +854,13 @@
         "closy-forge/schemas/v1/correction-record.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 synthetic fixture parser only: no learned/provider segmentation, no private-user imagery, no exported source pixels, no multiview fusion/registration and no Phase-2 completion claim.",
       "nextAction": "Evaluate parsing and correction contracts on identity-disjoint hidden targets; automated fixtures remain simulated corrections.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 11 BP-50 pixel-derived garment parsing and applied corrections",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Derive T-shirt masks, parts, openings, landmarks and metrics from decoded D0 raster fixture pixels, then apply ordered structured visual-evidence corrections.",
       "tests": [
@@ -940,11 +946,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Synthetic metadata only; no real camera flow.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -956,13 +962,13 @@
         "closy-forge/src/closy_forge/capture/source_records.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Synthetic metadata only; no real camera flow.",
       "nextAction": "Implement real local raster ingestion before user imagery.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Capture modes A-E",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Capture Mode C coverage.",
       "tests": [
@@ -1046,11 +1052,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Only the D0 project-authored raster fixture profile is enabled; real-user capture, provider upload and portable source fingerprints remain disabled.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1066,13 +1072,13 @@
         "closy-forge/docs/raster-ingestion-v1.md"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Only the D0 project-authored raster fixture profile is enabled; real-user capture, provider upload and portable source fingerprints remain disabled.",
       "nextAction": "Complete bounded JPEG pixel decode and preserve fixture/private evidence separation.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage A: Ingestion.",
       "tests": [
@@ -1093,11 +1099,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Raster normalization is bounded to stdlib project fixtures; JPEG pixel metrics are structural-only until a pinned decoder dependency is accepted.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1112,13 +1118,13 @@
         "closy-forge/src/closy_forge/capture/raster_sources.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Raster normalization is bounded to stdlib project fixtures; JPEG pixel metrics are structural-only until a pinned decoder dependency is accepted.",
       "nextAction": "Use normalized raster evidence for BP-51 view orientation, scale and fusion checks.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage B: Normalisation Qc.",
       "tests": [
@@ -1140,11 +1146,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 project-authored color-keyed fixture algorithm only; no learned/provider segmentation, private-user imagery, real capture processing or multiview fusion.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1160,13 +1166,13 @@
         "closy-forge/src/closy_forge/visual_understanding/tshirt_observations.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 project-authored color-keyed fixture algorithm only; no learned/provider segmentation, private-user imagery, real capture processing or multiview fusion.",
       "nextAction": "Evaluate masks on identity-disjoint hidden targets and later authorised capture tiers.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage C: Segmentation.",
       "tests": [
@@ -1185,11 +1191,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No camera/body estimation.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1201,13 +1207,13 @@
         "closy-forge/src/closy_forge/avatar/reference_avatar.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No camera/body estimation.",
       "nextAction": "Advance the next dependency-ready slice in blueprint order.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage D: Camera Body.",
       "tests": [
@@ -1227,11 +1233,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 synthetic fixture registration only; no learned geometric/depth fusion, private-user capture or provider evidence.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1248,13 +1254,13 @@
         "closy-forge/schemas/v1/multiview-fusion.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 synthetic fixture registration only; no learned geometric/depth fusion, private-user capture or provider evidence.",
       "nextAction": "Evaluate fusion on identity-disjoint hidden synthetic targets and later authorised captures.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage E: Multiview Fusion.",
       "tests": [
@@ -1275,11 +1281,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "T-shirt ontology only.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1291,13 +1297,13 @@
         "closy-forge/src/closy_forge/garments/tshirt/semantic_graph.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "T-shirt ontology only.",
       "nextAction": "Advance the next dependency-ready slice in blueprint order.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Stage F: Semantic Graph.",
       "tests": [
@@ -1316,11 +1322,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No imported pattern migration.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1332,13 +1338,13 @@
         "closy-forge/src/closy_forge/garments/tshirt/pattern_generator.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No imported pattern migration.",
       "nextAction": "Advance the next dependency-ready slice in blueprint order.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Stage G: Pattern Representation.",
       "tests": [
@@ -1355,7 +1361,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1363,11 +1370,21 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "E1 raw macro top-1 is 0.171875 versus 0.9765625 for nearest-neighbour retrieval and accepts 0/128 tests. E2 true token macro-F1 is 0.535520366, compiles and renders 96/96 proposals, but its baseline lower 95% is -0.028125 and the gate fails 10 checks.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "corrected structured-learning v3 source was replayed into PR #38",
+          "sourcePr": 37,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "7430131d5ecab0df77d3933709aed0d86138e03e"
         }
       ],
       "evidenceTier": "external_source_exact_head",
@@ -1393,13 +1410,13 @@
         "closy-forge/src/closy_forge/pattern_inference/structured_decoder_v2.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "E1 raw macro top-1 is 0.171875 versus 0.9765625 for nearest-neighbour retrieval and accepts 0/128 tests. E2 true token macro-F1 is 0.535520366, compiles and renders 96/96 proposals, but its baseline lower 95% is -0.028125 and the gate fails 10 checks.",
       "nextAction": "Keep deterministic retrieval selected; obtain broader lawful identity-disjoint data before another bounded learned configuration.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Phase 9 v3 executes a 512-program, 8,192-image reference-assembly corpus, a nonlinear E1 route, and a genuine factorized compositional E2 decoder without oracle fallback.",
       "tests": [
@@ -1444,7 +1461,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1452,11 +1470,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Six of nine D0 families passed on one Windows CPU/static toolchain; three structured families, visual review, mobile, and dynamic tiers remain open.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1490,13 +1508,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Six of nine D0 families passed on one Windows CPU/static toolchain; three structured families, visual review, mobile, and dynamic tiers remain open.",
       "nextAction": "Keep the validated ZeroOne static derivative non-authoritative while adding broader garment/provider and human-review evidence.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "The pinned task-owned ZeroOne provider now produces validated optional static derivatives from canonical packages.",
       "tests": [
@@ -1520,11 +1538,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Coarse fan triangulation.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1536,13 +1554,13 @@
         "closy-forge/src/closy_forge/garments/tshirt/assembly.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Coarse fan triangulation.",
       "nextAction": "Advance the next dependency-ready slice in blueprint order.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Stage J: Sim Mesh Construction.",
       "tests": [
@@ -1563,11 +1581,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 reference-only self-collision retains 137 unresolved contacts and exceeds its residual-depth budget. Bounded CCD fixtures pass, but CCD response is not integrated into the reference motion solver and production GPU collision remains unsupported.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         },
         {
           "ancestryClass": "historical_superseded",
@@ -1600,13 +1618,13 @@
         "closy-forge/reports/self_collision_report.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 reference-only self-collision retains 137 unresolved contacts and exceeds its residual-depth budget. Bounded CCD fixtures pass, but CCD response is not integrated into the reference motion solver and production GPU collision remains unsupported.",
       "nextAction": "Close the scoped XPBD collision gate without filtering contacts, then gather broader provider, motion, and hardware evidence.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage K runs deterministic D0 reference self-collision and bounded swept fixtures while preserving unresolved depth and solver-integration limitations.",
       "tests": [
@@ -1627,11 +1645,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 project-authored fixture optimiser only; no differentiable renderer, learned predictor, depth loss, private-user evidence or product-calibrated fit acceptance.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1649,13 +1667,13 @@
         "closy-forge/src/closy_forge/inspection/cpu_raster.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 project-authored fixture optimiser only; no differentiable renderer, learned predictor, depth loss, private-user evidence or product-calibrated fit acceptance.",
       "nextAction": "Evaluate learned and deterministic fit routes on identity-disjoint hidden synthetic targets.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage L: Fit Refinement now includes actual bounded optimisation plus full-solver and independent-render verification.",
       "tests": [
@@ -1701,11 +1719,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Material stitched-shell topology/opening proof now passes for BP46, but production stitched-shell sim-to-render binding, crack/sliding proof, runtime performance evidence and clean/provider visual-fidelity acceptance remain incomplete.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1727,13 +1745,13 @@
         "closy-forge/src/closy_forge/proposals"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Material stitched-shell topology/opening proof now passes for BP46, but production stitched-shell sim-to-render binding, crack/sliding proof, runtime performance evidence and clean/provider visual-fidelity acceptance remain incomplete.",
       "nextAction": "Apply concave-safe topology validation to every family and validate real ZeroOne derivatives.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage M: Mesh Analysis.",
       "tests": [
@@ -1751,11 +1769,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No semantic learned retopology.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1767,13 +1785,13 @@
         "closy-forge/src/closy_forge/geometry/subdivision.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No semantic learned retopology.",
       "nextAction": "Advance the next dependency-ready slice in blueprint order.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage N: Garment Retopology.",
       "tests": [
@@ -1792,11 +1810,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Generated atlas/source projection is D0 synthetic fixture evidence only; no private-user atlas export or provider visual acceptance.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1809,13 +1827,13 @@
         "closy-forge/src/closy_forge/proposals/geometry_material_uv_transfer.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Generated atlas/source projection is D0 synthetic fixture evidence only; no private-user atlas export or provider visual acceptance.",
       "nextAction": "Use source-projected UV/material evidence in the proof-closeout visual-fidelity tier without promoting clean geometry.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage O: Uv Strategy.",
       "tests": [
@@ -1835,11 +1853,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 project-authored public-fixture evidence only; derived material maps are not calibrated physical measurements, private-user pixels and learned completion are absent, and hidden regions remain controlled generated fill.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1857,13 +1875,13 @@
         "closy-forge/src/closy_forge/raster/png_codec.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 project-authored public-fixture evidence only; derived material maps are not calibrated physical measurements, private-user pixels and learned completion are absent, and hidden regions remain controlled generated fill.",
       "nextAction": "Add independent source-tier fidelity and mobile runtime evidence without overclaiming generated fixture appearance.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage P: Texture PBR now persists decoded bitmap maps with explicit source/generated provenance.",
       "tests": [
@@ -1880,7 +1898,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1888,11 +1907,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Material top-1 is 10/18, normalized regret mean/P95/worst is 0.100424120738/1.0/1.0, and excessive-strain and seam-risk F1 are both 0.4. The authored scalar corpus is not solver-backed, real-fabric, private-user or production evidence.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1919,13 +1938,13 @@
         "closy-forge/src/closy_forge/bounded_models/integrated_evaluation_v3.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Material top-1 is 10/18, normalized regret mean/P95/worst is 0.100424120738/1.0/1.0, and excessive-strain and seam-risk F1 are both 0.4. The authored scalar corpus is not solver-backed, real-fabric, private-user or production evidence.",
       "nextAction": "Complete per-family applicability and calibrated physical evidence beyond authored D0 presets.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Phase 14 v3 fixes the ablation status filter, scenario-cluster bootstrap and normalized selection-regret reporting while keeping model authority advisory.",
       "tests": [
@@ -1950,11 +1969,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "The repaired D0 profile remains partial because independent fallback landmark agreement and tangential sliding exceed provisional scale-derived thresholds. Clean/canonical geometry, provider-derived topology, mobile/GPU runtime profiling and high-velocity collision remain not run.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -1977,13 +1996,13 @@
         "closy-forge/src/closy_forge/validation/validator.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "The repaired D0 profile remains partial because independent fallback landmark agreement and tangential sliding exceed provisional scale-derived thresholds. Clean/canonical geometry, provider-derived topology, mobile/GPU runtime profiling and high-velocity collision remain not run.",
       "nextAction": "Consume the repaired authoritative route in BP52/BP53/BP47, while improving fallback correspondence and seam sliding without widening thresholds.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage R has one authoritative persisted solver-state binding route and independent fallback evidence, with literal threshold failures keeping the D0 C3 profile partial.",
       "tests": [
@@ -1993,36 +2012,57 @@
       ]
     },
     {
-      "ancestryClass": "external_source_pr",
-      "commitSha": null,
+      "ancestryClass": "in_tree",
+      "commitSha": [
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
+      ],
       "dependencies": [],
       "evidenceSources": [
         {
-          "ancestryClass": "external_source_pr",
+          "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
-          "incorporated": false,
-          "incorporationCommit": null,
-          "limitations": "LayerCollision-D0 is an external radial-shell source and is not canonical garment-surface layering",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "The D0 result is geometric LayerCollision evidence only; it is not solver-driven cloth, PHY1, mobile, private-user, or production evidence.",
+          "sourcePr": 38,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "the radial-shell source was replayed into PR #38, then superseded by indexed canonical garment-surface geometric evidence",
           "sourcePr": 32,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "386effb254d4ba15499399dfd7fd94c70a0e0fc5"
         }
       ],
       "evidenceTier": "external_source_exact_head",
-      "executableEvidence": null,
+      "executableEvidence": [
+        "indexed 128-vertex/192-triangle garment surfaces progress from 256 to zero exact triangle intersections while preserving seams and openings",
+        "final semantic clearance is 0.002 m with zero contacts and ordering inversions"
+      ],
       "id": "BP-08-S-LAYERING-ANIMATION",
-      "implementationPaths": null,
-      "incorporated": false,
-      "incorporationCommit": null,
-      "limitations": "LayerCollision-D0 is an external radial-shell source and is not canonical garment-surface layering",
-      "nextAction": "Advance the next dependency-ready slice in blueprint order.",
-      "sourcePr": 32,
+      "implementationPaths": [
+        "closy-forge/src/closy_forge/integrated_runtime/outfit_surface.py",
+        "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json"
+      ],
+      "incorporated": true,
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "limitations": "The D0 result is geometric LayerCollision evidence only; it is not solver-driven cloth, PHY1, mobile, private-user, or production evidence.",
+      "nextAction": "Keep the surface profile identity-bound and consume topology-v2 only after its seams, openings, bindings, and physical profile are independently requalified.",
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "386effb254d4ba15499399dfd7fd94c70a0e0fc5",
-      "status": "not_started",
-      "summary": "Stage S: Layering Animation.",
-      "tests": null
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "status": "partial",
+      "summary": "PR #38 executes simultaneous geometric projection on indexed inner-top and outer-overshirt surfaces fitted to the exact synthetic avatar authority.",
+      "tests": [
+        "closy-forge/tests/unit/test_integrated_runtime_d0.py",
+        "closy-forge/tests/unit/test_integrated_runtime_evidence_v2.py"
+      ]
     },
     {
       "ancestryClass": "in_tree",
@@ -2038,11 +2078,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No product UI, private-user correction session, mesh sculpting or learned correction model; current applied and fused examples are D0 fixture-only structured evidence.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2057,13 +2097,13 @@
         "closy-forge/src/closy_forge/visual_understanding/multiview_fusion.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No product UI, private-user correction session, mesh sculpting or learned correction model; current applied and fused examples are D0 fixture-only structured evidence.",
       "nextAction": "Consume fused correction replay in BP-52 fitting while keeping private-user correction flows blocked.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage T: Human Correction.",
       "tests": [
@@ -2109,11 +2149,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No source/provider visual-fidelity acceptance, human signed review, authorised provider execution, accepted clean/canonical proposal or mobile GPU production runtime proof yet.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2134,13 +2174,13 @@
         "closy-forge/schemas/v1/self-collision-report.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No source/provider visual-fidelity acceptance, human signed review, authorised provider execution, accepted clean/canonical proposal or mobile GPU production runtime proof yet.",
       "nextAction": "Regenerate evidence from corrected topology, XPBD, independent fidelity, and real ZeroOne runs.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Stage U now reports scoped production C3 evidence and D0 reference self-collision evidence in package summaries, manifest hashes and validator diagnostics.",
       "tests": [
@@ -2163,7 +2203,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2173,11 +2214,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "The durable ZeroOne candidate is unmerged, the paired Closy run is local, and long-sleeved top, button shirt, and jacket contain rejected degenerate surfaces.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2202,13 +2243,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "The durable ZeroOne candidate is unmerged, the paired Closy run is local, and long-sleeved top, button shirt, and jacket contain rejected degenerate surfaces.",
       "nextAction": "Repair the three canonical surfaces without changing authority, rebuild ZeroOne, and rerun the paired all-family profile.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "ZeroOne Z1-Z8",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "The refreshed candidate ZeroOne pairing attempted all nine families; six passed and three were rejected, so the candidate all-family scoped Z1 result is failed.",
       "tests": [
@@ -2217,23 +2258,34 @@
       ]
     },
     {
-      "ancestryClass": "external_source_pr",
+      "ancestryClass": "in_tree",
       "commitSha": [
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
       ],
       "evidenceSources": [
         {
-          "ancestryClass": "external_source_pr",
+          "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
-          "incorporated": false,
-          "incorporationCommit": null,
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "MT1 is not blueprint Gate Z2 and supplies no PHY1 or solver-driven cloth claim. The historical Z2 oracle still records 929 to 971 nonadjacent intersections per frame; multi-LOD, GPU, and mobile profiles were not run.",
+          "sourcePr": 38,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "compiled pairing executed on PR #34 but failed the independent dense self-intersection oracle",
           "sourcePr": 34,
           "sourceRepository": "jake-the-jake/Closy",
@@ -2243,23 +2295,24 @@
       "evidenceTier": "external_source_exact_head",
       "executableEvidence": [
         "compiled output hash 097f1f9c2621870dd460b0a5bc4374cf6212a59e5b282da00a207133864f5847",
-        "independent dense oracle rejects every frame with 929 to 971 nonadjacent self-intersections"
+        "independent dense oracle rejects every frame with 929 to 971 nonadjacent self-intersections",
+        "separate MT1 request 38fadbc2... and output 996b50ed... pass clean analytic mechanical transport without claiming Z2 or PHY1"
       ],
       "id": "BP-09-Z2",
       "implementationPaths": [
         "closy-forge/src/closy_forge/zeroone/dynamic_integration.py",
         "closy-forge/src/closy_forge/zeroone/dynamic_oracle.py"
       ],
-      "incorporated": false,
-      "incorporationCommit": null,
-      "limitations": "compiled pairing executed on PR #34 but failed the independent dense self-intersection oracle",
+      "incorporated": true,
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "limitations": "MT1 is not blueprint Gate Z2 and supplies no PHY1 or solver-driven cloth claim. The historical Z2 oracle still records 929 to 971 nonadjacent intersections per frame; multi-LOD, GPU, and mobile profiles were not run.",
       "nextAction": "Repair the processing/reference surface correspondence before another bounded pairing strategy; do not promote the compiled-output hash alone.",
-      "sourcePr": 34,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "ZeroOne Z1-Z8",
-      "sourceSha": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Compiled ZeroOne deformation executed for 13 frames on the fixed T-shirt, but the pairing failed and no dynamic namespace was admitted.",
+      "summary": "The historical solver-derived Z2 v1 pairing remains failed. A separate clean analytic MT1 mechanical-reference profile now passes and is available only in its identity-matched lab namespace.",
       "tests": [
         "closy-forge/tests/unit/test_zeroone_dynamic_reference.py"
       ]
@@ -2481,7 +2534,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2491,11 +2545,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Three structured surfaces are rejected; dynamic deformation, mobile execution, and human review are not established.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2520,13 +2574,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Three structured surfaces are rejected; dynamic deformation, mobile execution, and human review are not established.",
       "nextAction": "Preserve the validated pinned static derivative path while closing C3 and gathering broader garment, mobile, and human-review evidence before dynamic work.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "ZeroOne GeomoTree",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "A real bounded GeomoTree/Nanite CPU static route publishes validated optional derivatives for six of nine declared garment families.",
       "tests": [
@@ -2547,11 +2601,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "One synthetic package profile.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2563,13 +2617,13 @@
         "closy-forge/src/closy_forge/package_io"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "One synthetic package profile.",
       "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Inspectable .closygarment package with canonical assets.",
       "tests": [
@@ -2588,11 +2642,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No HTTP worker API; raster commands are fixture-only and not a real-user capture service.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2606,13 +2660,13 @@
         "closy-forge/src/closy_forge/cli"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No HTTP worker API; raster commands are fixture-only and not a real-user capture service.",
       "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Python sidecar remains CLI-first and isolated from Expo.",
       "tests": [
@@ -2636,7 +2690,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2644,11 +2699,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No authorised real/public capture evaluation, learned superiority, mobile provider execution, or dynamic ZeroOne profile exists.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2681,13 +2736,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No authorised real/public capture evaluation, learned superiority, mobile provider execution, or dynamic ZeroOne profile exists.",
       "nextAction": "Evaluate the project-owned trained synthetic grammar model and real ZeroOne static processor; retain licence and evidence-tier boundaries.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "The model strategy now includes an actually trained synthetic D0 grammar model and a pinned real ZeroOne static processor with deterministic rollback paths.",
       "tests": [
@@ -2711,11 +2766,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No dataset cards, splits, real samples or committed source image bytes; test fixtures are generated locally.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2731,13 +2786,13 @@
         "closy-forge/docs/raster-ingestion-v1.md"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No dataset cards, splits, real samples or committed source image bytes; test fixtures are generated locally.",
       "nextAction": "Continue into BP-50 raster masks/landmarks without crossing Gate P1.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Licensed dataset and split strategy.",
       "tests": [
@@ -2760,7 +2815,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2768,11 +2824,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "PHY1 and paired Z1 fail; independent real/public, provider, mobile, private-user, licence, and human-review evidence remains incomplete.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2806,13 +2862,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "PHY1 and paired Z1 fail; independent real/public, provider, mobile, private-user, licence, and human-review evidence remains incomplete.",
       "nextAction": "Use authoritative independent C3, fidelity, learned-model, and ZeroOne reports rather than stale prose.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Evaluation now consumes a scoped C3 binding pass, a separate PHY1 failure, trained synthetic D0 evidence, and an all-family paired ZeroOne failure.",
       "tests": [
@@ -2836,11 +2892,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No real-user deletion propagation service, encryption, provider upload or P1 authority; this is local fixture privacy plumbing only.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2858,13 +2914,13 @@
         "closy-forge/docs/raster-ingestion-v1.md"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No real-user deletion propagation service, encryption, provider upload or P1 authority; this is local fixture privacy plumbing only.",
       "nextAction": "Continue into BP-50 while keeping real-user capture disabled.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Privacy flags, consent placeholders and no real user data.",
       "tests": [
@@ -2886,11 +2942,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No authorised model weights, license/SBOM evidence, external provider terms, commercial-safety proof or real dataset/model registry.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2907,13 +2963,13 @@
         "closy-forge/src/closy_forge/proposals/provider_bakeoff.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No authorised model weights, license/SBOM evidence, external provider terms, commercial-safety proof or real dataset/model registry.",
       "nextAction": "Add license/SBOM and authorised weight provenance before any real local/open-model execution.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Dependency and asset license discipline.",
       "tests": [
@@ -2932,11 +2988,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Python support intentionally >=3.11,<3.12.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -2949,13 +3005,13 @@
         ".github/workflows/closy-forge.yml"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Python support intentionally >=3.11,<3.12.",
       "nextAction": "Continue only with dependency-ready local work or record exact blockers.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "CPU deterministic profile.",
       "tests": [
@@ -3070,11 +3126,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3086,13 +3142,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See detailed ledger row; phase is not complete unless status is complete.",
       "nextAction": "Advance dependency-ready prerequisites.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Blueprint phase 0.",
       "tests": [
@@ -3115,11 +3171,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Phase 1 remains partial: BP46 stitched-shell topology/opening proof now passes, but production cloth backend abstraction, self-collision and richer motion evidence are still incomplete.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3131,13 +3187,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Phase 1 remains partial: BP46 stitched-shell topology/opening proof now passes, but production cloth backend abstraction, self-collision and richer motion evidence are still incomplete.",
       "nextAction": "Continue self-collision and richer motion evidence on the later dependency-ready branch; do not reopen BP46 topology/opening blockers unless regression evidence appears.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 1.",
       "tests": [
@@ -3164,11 +3220,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Phase 2 remains partial: no real-user Gate P1 authority, provider upload, learned segmentation, source-image package export or learned/geometric registration.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3184,13 +3240,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Phase 2 remains partial: no real-user Gate P1 authority, provider upload, learned segmentation, source-image package export or learned/geometric registration.",
       "nextAction": "Keep Phase 2 partial while adding independent and authorised capture tiers beyond D0 fixtures.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 2.",
       "tests": [
@@ -3215,11 +3271,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Phase 3 remains partial: public D0 fixture only; no private-user fitting, learned predictor, differentiable inverse renderer, depth estimator or product-calibrated acceptance.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3240,13 +3296,13 @@
         "closy-forge/schemas/v1/tshirt-fit-report.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Phase 3 remains partial: public D0 fixture only; no private-user fitting, learned predictor, differentiable inverse renderer, depth estimator or product-calibrated acceptance.",
       "nextAction": "Evaluate fitting on identity-disjoint hidden targets and authorised capture tiers.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 3 now has bounded iterative fitting with independent settled-render verification for the public D0 fixture.",
       "tests": [
@@ -3271,11 +3327,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Phase 4 remains partial: public project-authored D0 pixels and deterministic derived material maps only; no private-user imagery, learned completion, provider comparison, signed human review or calibrated production acceptance.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3295,13 +3351,13 @@
         "closy-forge/src/closy_forge/validation/validator.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Phase 4 remains partial: public project-authored D0 pixels and deterministic derived material maps only; no private-user imagery, learned completion, provider comparison, signed human review or calibrated production acceptance.",
       "nextAction": "Validate texture/PBR fidelity against independent targets and authorised source tiers.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 4 now has decoded bitmap texture evidence and bounded source-versus-render public-fixture comparison.",
       "tests": [
@@ -3349,11 +3405,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Phase 5 remains partial: no authorised local/open-model execution, no external provider execution, no source/provider appearance comparison, no accepted clean/canonical proposal, no provider license/SBOM proof and no production runtime binding.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3379,13 +3435,13 @@
         "closy-forge/schemas/v1/provider-bakeoff.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Phase 5 remains partial: no authorised local/open-model execution, no external provider execution, no source/provider appearance comparison, no accepted clean/canonical proposal, no provider license/SBOM proof and no production runtime binding.",
       "nextAction": "Keep PR #6 frozen as the green provider-contract parent; provider model execution and visual fidelity remain future authorised work.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 5.",
       "tests": [
@@ -3426,11 +3482,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Phase 6 remains partial globally and for the repaired D0 C3 profile: stitched-shell body clearance/source correspondence and collision residual-depth budget fail; provider, private-user, human-review, production GPU/mobile and motion-solver CCD tiers are not run. Host CPU performance is noncanonical evidence only.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         },
         {
           "ancestryClass": "historical_superseded",
@@ -3469,13 +3525,13 @@
         "closy-forge/src/closy_forge/validation/validator.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Phase 6 remains partial globally and for the repaired D0 C3 profile: stitched-shell body clearance/source correspondence and collision residual-depth budget fail; provider, private-user, human-review, production GPU/mobile and motion-solver CCD tiers are not run. Host CPU performance is noncanonical evidence only.",
       "nextAction": "Resolve stitched-shell body clearance/source correspondence and bring recomputed self-collision residual depth within the declared D0 budget.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 6.",
       "tests": [
@@ -3498,11 +3554,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Phase 7 is partial: D0 descriptor, selector, fixtures and CPU execution exist, but real-fabric calibration, learned inference, private-user estimation, production GPU motion and accepted collision/opening quality do not.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3527,13 +3583,13 @@
         "closy-forge/schemas/v1/material-motion-suite.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Phase 7 is partial: D0 descriptor, selector, fixtures and CPU execution exist, but real-fabric calibration, learned inference, private-user estimation, production GPU motion and accepted collision/opening quality do not.",
       "nextAction": "Reuse the executed material contract across Phase 8 families while keeping Stage Q, real-fabric calibration and production motion partial.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 7 has an executed public-fixture material-physics D0 slice while production and measured tiers remain incomplete.",
       "tests": [
@@ -3566,11 +3622,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "The listed eight-family D0 ladder is literal, but Phase 8 remains globally partial: button mechanics, private-user fit, production GPU/multilayer cloth, continuous collision and product-calibrated visual acceptance are not implemented.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3683,13 +3739,13 @@
         "closy-forge/schemas/v1/layered-asymmetric-package-manifest.schema.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "The listed eight-family D0 ladder is literal, but Phase 8 remains globally partial: button mechanics, private-user fit, production GPU/multilayer cloth, continuous collision and product-calibrated visual acceptance are not implemented.",
       "nextAction": "Retain package-contract-complete D0 fixture verticals while adding continuous collision, provider, private, hardware, and human-review evidence.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint phase 8 now has literal bounded D0 vertical slices for sleeveless, long-sleeved, skirt, trousers, dress, button-shirt, jacket/outerwear and layered/asymmetric families; global production/private acceptance remains partial.",
       "tests": [
@@ -3728,7 +3784,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3736,11 +3793,21 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "E1 is a losing experiment; E2 fails 10/17 frozen checks and its bootstrap lower 95% misses the -0.02 floor. No learned route is default and no private, human or real-photo claim exists.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "corrected Phase 9 v3 source was replayed into PR #38",
+          "sourcePr": 37,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "7430131d5ecab0df77d3933709aed0d86138e03e"
         }
       ],
       "evidenceTier": "external_source_exact_head",
@@ -3788,13 +3855,13 @@
         "closy-forge/docs/evidence/phase9_structured_v3/execution_summary.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "E1 is a losing experiment; E2 fails 10/17 frozen checks and its bootstrap lower 95% misses the -0.02 floor. No learned route is default and no private, human or real-photo claim exists.",
       "nextAction": "Retain both learned routes as experimental and broaden only with authorised, identity-disjoint evidence and precommitted comparisons.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Phase 9 v3 has corrected policy-matched E1 and a 256/64/96 compositional E2 attempt whose every test proposal executes compile, topology and reference-3D evaluation.",
       "tests": [
@@ -3819,7 +3886,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3827,11 +3895,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "The original affected-family parameter range remains partial; human review, current-master requalification, mobile execution, and dynamic profiles also remain open.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3861,13 +3929,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "The original affected-family parameter range remains partial; human review, current-master requalification, mobile execution, and dynamic profiles also remain open.",
       "nextAction": "Retain the 9/9 default-family and representative static passes while keeping the original parameter range and global Phase 10 partial.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Blueprint Phase 10 now records nine valid default-family derivatives and a passing fixed T-shirt representative on the exact candidate ZeroOne executable.",
       "tests": [
@@ -3884,7 +3952,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3892,11 +3961,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-          "limitations": "The 13-frame single-LOD output passes position, frame, culling, and swept-area checks but fails the nonadjacent dense self-intersection oracle.",
-          "sourcePr": 35,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "MT1 is lab mechanical transport, not solver-driven cloth. Blueprint Z2 remains unaccepted, PHY1 remains failed, and no mobile or product claim follows.",
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -3904,42 +3973,58 @@
         "three normalised influence clusters, deformed bounds and frame-update contracts validate",
         "crack/culling fixtures and a three-level dynamic LOD harness execute",
         "actual ZeroOne deformation compute remains false",
-        "13 compiled frames have zero position/rest error and zero culling false negatives but fail dense self-intersection"
+        "13 compiled frames have zero position/rest error and zero culling false negatives but fail dense self-intersection",
+        "clean analytic MT1 passes its bounded mechanical-reference transport profile"
       ],
       "id": "BP-17-PHASE-11",
       "implementationPaths": [
         "closy-forge/src/closy_forge/future_foundations/contracts.py",
         "closy-forge/schemas/v1/zeroone-deformation-foundation.schema.json",
-        "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json"
+        "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json",
+        "closy-forge/docs/evidence/phase11_reference_motion_v2/execution_evidence.json",
+        "closy-forge/src/closy_forge/integrated_runtime/decision.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-      "limitations": "The 13-frame single-LOD output passes position, frame, culling, and swept-area checks but fails the nonadjacent dense self-intersection oracle.",
-      "nextAction": "Start a new pairing strategy only after the processing/reference surface mismatch is repaired; preserve the failed namespace admission.",
-      "sourcePr": 35,
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "limitations": "MT1 is lab mechanical transport, not solver-driven cloth. Blueprint Z2 remains unaccepted, PHY1 remains failed, and no mobile or product claim follows.",
+      "nextAction": "Use topology-v2 to attempt PHY1 independently; create a cloth-driven Z2 profile only if a solver-driven clip later passes PHY1 and the independent dynamic oracle.",
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Phase 11 now has real compiled ZeroOne dynamic execution and an authentic paired failure witness, but Z2 did not pass.",
+      "summary": "Phase 11 retains the authentic historical Z2 pairing failure and now adds a clean, compiled, exact-identity MT1 analytic mechanical-reference capability.",
       "tests": [
         "closy-forge/tests/unit/test_future_foundations.py",
-        "closy-forge/tests/unit/test_zeroone_dynamic_reference.py"
+        "closy-forge/tests/unit/test_zeroone_dynamic_reference.py",
+        "closy-forge/tests/unit/test_zeroone_reference_motion_evidence_v2.py",
+        "closy-forge/tests/unit/test_integrated_runtime_d0.py"
       ]
     },
     {
-      "ancestryClass": "external_source_pr",
+      "ancestryClass": "in_tree",
       "commitSha": [
-        "30ea629639cb34894511d49b1b965fc344adb4c3"
+        "30ea629639cb34894511d49b1b965fc344adb4c3",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
         {
-          "ancestryClass": "external_source_pr",
+          "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
-          "incorporated": false,
-          "incorporationCommit": null,
-          "limitations": "Phase 12 runtime preparation is a source-only sibling until replayed on Closy D",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "Execution is host CPU reference evidence only; device, GPU, battery, thermal, cellular, driver, and production deployment evidence are not run.",
+          "sourcePr": 38,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "Phase 12 source was replayed into PR #38 and adapted to current package identities",
           "sourcePr": 29,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "62464db2a91e4b24b808cfcd99ee95578fc95f32"
@@ -3949,40 +4034,59 @@
       "executableEvidence": [
         "two mobile profiles and deterministic profile negotiation validate",
         "reference compression/decode round trip preserves the source hash",
-        "stream resume offset and fallback-until-decode state validate"
+        "stream resume offset and fallback-until-decode state validate",
+        "conventional package loads without ZeroOne and stale, corrupt, unsupported optional capabilities fail closed",
+        "host CPU latency and memory observations are explicitly advisory and not mobile evidence"
       ],
       "id": "BP-17-PHASE-12",
       "implementationPaths": [
         "closy-forge/src/closy_forge/future_foundations/contracts.py",
-        "closy-forge/schemas/v1/mobile-runtime-foundation.schema.json"
+        "closy-forge/schemas/v1/mobile-runtime-foundation.schema.json",
+        "closy-forge/src/closy_forge/integrated_runtime/contracts.py",
+        "closy-forge/src/closy_forge/integrated_runtime/decision.py",
+        "closy-forge/src/closy_forge/runtime_delivery/package.py",
+        "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json"
       ],
-      "incorporated": false,
-      "incorporationCommit": null,
-      "limitations": "Phase 12 runtime preparation is a source-only sibling until replayed on Closy D",
-      "nextAction": "Integrate a production codec and record authorised physical-device performance evidence.",
-      "sourcePr": 29,
+      "incorporated": true,
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "limitations": "Execution is host CPU reference evidence only; device, GPU, battery, thermal, cellular, driver, and production deployment evidence are not run.",
+      "nextAction": "Preserve package validity independent of ZeroOne and obtain real mobile runtime measurements only after the canonical capability set is stable.",
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "62464db2a91e4b24b808cfcd99ee95578fc95f32",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Phase 12 runtime preparation is external-source partial on PR #29.",
+      "summary": "Phase 12 source work is integrated in PR #38 as a deterministic headless runtime package with schema negotiation, conventional fallback, and fail-closed optional ZeroOne capability selection.",
       "tests": [
-        "closy-forge/tests/unit/test_future_foundations.py"
+        "closy-forge/tests/unit/test_future_foundations.py",
+        "closy-forge/tests/unit/test_integrated_runtime_d0.py",
+        "closy-forge/tests/unit/test_integrated_runtime_evidence_v2.py"
       ]
     },
     {
-      "ancestryClass": "external_source_pr",
+      "ancestryClass": "in_tree",
       "commitSha": [
-        "30ea629639cb34894511d49b1b965fc344adb4c3"
+        "30ea629639cb34894511d49b1b965fc344adb4c3",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
         {
-          "ancestryClass": "external_source_pr",
+          "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
-          "incorporated": false,
-          "incorporationCommit": null,
-          "limitations": "synthetic avatar fit is a source-only sibling until replayed on Closy D",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "The avatar is project-authored synthetic and the outfit correction is geometric; no licensed body, private user, human correction, physical cloth, or P1 evidence exists.",
+          "sourcePr": 38,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "synthetic avatar fit source was replayed into PR #38 and adapted to current authority",
           "sourcePr": 30,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "1cf7ecff18bd0bbd37820638c0af2029d7a928ac"
@@ -3992,25 +4096,32 @@
       "executableEvidence": [
         "synthetic measurement values include units, confidence, source and bounded correction",
         "ease/resizing controls and two-garment collision ordering 10/20 validate",
-        "authored public fixture records zero unresolved layer contacts"
+        "authored public fixture records zero unresolved layer contacts",
+        "exact project-authored synthetic avatar authority and fit identities are enforced",
+        "canonical two-garment indexed surfaces finish with zero geometric contacts, intersections, and ordering inversions"
       ],
       "id": "BP-17-PHASE-13",
       "implementationPaths": [
         "closy-forge/src/closy_forge/future_foundations/contracts.py",
-        "closy-forge/schemas/v1/avatar-layering-foundation.schema.json"
+        "closy-forge/schemas/v1/avatar-layering-foundation.schema.json",
+        "closy-forge/src/closy_forge/avatar_variation/synthetic_suite.py",
+        "closy-forge/src/closy_forge/integrated_runtime/outfit_surface.py",
+        "closy-forge/docs/evidence/canonical_outfit_surface_d0_v1.json"
       ],
-      "incorporated": false,
-      "incorporationCommit": null,
-      "limitations": "synthetic avatar fit is a source-only sibling until replayed on Closy D",
-      "nextAction": "Validate licensed public avatar variation before any private-user Gate P1 work.",
-      "sourcePr": 30,
+      "incorporated": true,
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "limitations": "The avatar is project-authored synthetic and the outfit correction is geometric; no licensed body, private user, human correction, physical cloth, or P1 evidence exists.",
+      "nextAction": "Retain synthetic authority separation while evaluating topology-v2 physical behavior and later lawful licensed/private cohorts under explicit consent.",
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "1cf7ecff18bd0bbd37820638c0af2029d7a928ac",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Phase 13 synthetic avatar-fit work is external-source partial on PR #30; the radial LayerCollision-D0 source on PR #32 is also external and not garment-surface proof.",
+      "summary": "Phase 13 synthetic-avatar fitting and a canonical indexed two-garment outfit surface are integrated in PR #38 with exact authority and fit identities.",
       "tests": [
-        "closy-forge/tests/unit/test_future_foundations.py"
+        "closy-forge/tests/unit/test_future_foundations.py",
+        "closy-forge/tests/unit/test_avatar_variation_fit.py",
+        "closy-forge/tests/unit/test_integrated_runtime_d0.py"
       ]
     },
     {
@@ -4021,7 +4132,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4029,11 +4141,21 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Only 4/10 frozen checks pass; low per-target F1 remains visible, the solver-backed replacement corpus is dependency-blocked, and no large-model, real-fabric or production run occurred.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "corrected bounded Phase 14 source was replayed into PR #38",
+          "sourcePr": 37,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "7430131d5ecab0df77d3933709aed0d86138e03e"
         }
       ],
       "evidenceTier": "external_source_exact_head",
@@ -4054,13 +4176,13 @@
         "closy-forge/docs/evidence/phase9_structured_v3/phase14_integrated_evaluation.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Only 4/10 frozen checks pass; low per-target F1 remains visible, the solver-backed replacement corpus is dependency-blocked, and no large-model, real-fabric or production run occurred.",
       "nextAction": "Obtain authorised data, checkpoint, licence, hardware, privacy, and deployment governance before any larger model experiment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Phase 14 v3 reevaluates the bounded advisory model with non-null scenario/material ablations and scenario-cluster confidence intervals.",
       "tests": [
@@ -4082,11 +4204,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "T-shirt/fixed avatar profile only.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4098,13 +4220,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "T-shirt/fixed avatar profile only.",
       "nextAction": "Do not mark gate passed without prerequisites.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "BP-18-GATE-C1",
       "tests": [
@@ -4137,11 +4259,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "No accepted clean generated mesh.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4153,13 +4275,13 @@
         "closy-forge/src/closy_forge/proposals"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "No accepted clean generated mesh.",
       "nextAction": "Do not mark gate passed without prerequisites.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "BP-18-GATE-C2",
       "tests": [
@@ -4182,7 +4304,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4190,11 +4313,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "This is a scoped binding pass only. PHY1 fails and broader avatars, garments, mobile, private-user, and production profiles remain unproven.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         },
         {
           "ancestryClass": "historical_superseded",
@@ -4240,13 +4363,13 @@
         "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "This is a scoped binding pass only. PHY1 fails and broader avatars, garments, mobile, private-user, and production profiles remain unproven.",
       "nextAction": "Preserve the scoped C3 and representative Z1 passes while running the stricter PHY1-SingleLayer-D0 physical campaign independently.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "C3-Binding-D0 passes its literal five-part fixed-avatar D0 T-shirt profile across all 11 binding states with exact persisted lineage and frame validation.",
       "tests": [
@@ -4269,7 +4392,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4277,11 +4401,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "The original affected-family parameter range remains partial, the candidate-static ZeroOne source is unmerged, and no current-master, dynamic, mobile, or human-review claim is supported.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4306,13 +4430,13 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "The original affected-family parameter range remains partial, the candidate-static ZeroOne source is unmerged, and no current-master, dynamic, mobile, or human-review claim is supported.",
       "nextAction": "Preserve the scoped static evidence while building compiled ZeroOne B; do not promote the partial original parameter range.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Candidate-static default breadth accepts all nine families, and the exact fixed T-shirt representative profile passes with paired C3-Binding-D0.",
       "tests": [
@@ -4321,22 +4445,33 @@
       ]
     },
     {
-      "ancestryClass": "external_source_pr",
+      "ancestryClass": "in_tree",
       "commitSha": [
         "461436c22f8c5cd1948e0f6906961d0c512dcc34",
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
         {
-          "ancestryClass": "external_source_pr",
+          "ancestryClass": "in_tree",
           "evidenceTier": "external_source_exact_head",
-          "incorporated": false,
-          "incorporationCommit": null,
-          "limitations": "Z2 is an external executed failure source and was not integrated into Closy E",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "No accepted solver-driven cloth namespace exists. Multi-LOD cloth, PHY1, GPU, mobile, private-user, and production claims remain unsupported.",
+          "sourcePr": 38,
+          "sourceRepository": "jake-the-jake/Closy",
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
+        },
+        {
+          "ancestryClass": "historical_superseded",
+          "evidenceTier": "source_replayed_into_pr38",
+          "incorporated": true,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "the historical Z2 v1 failure was replayed into PR #38 without promotion",
           "sourcePr": 34,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "960662d237e187cd8ecbcc9ebe9192367f194317"
@@ -4350,16 +4485,16 @@
       "implementationPaths": [
         "closy-forge/docs/evidence/phase11_dynamic_reference/r3_compiled_pairing_failure.json"
       ],
-      "incorporated": false,
-      "incorporationCommit": null,
-      "limitations": "Z2 is an external executed failure source and was not integrated into Closy E",
-      "nextAction": "Repair the pairing surface before attempting the remaining strategy.",
-      "sourcePr": 34,
+      "incorporated": true,
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "limitations": "No accepted solver-driven cloth namespace exists. Multi-LOD cloth, PHY1, GPU, mobile, private-user, and production claims remain unsupported.",
+      "nextAction": "Run topology-v2 PHY1 first; only a valid solver-driven clip may enter a new, versioned Z2-ClothDriven profile.",
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
-      "sourceSha": "960662d237e187cd8ecbcc9ebe9192367f194317",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Gate Z2 was executed with compiled ZeroOne B for a single-LOD mechanical reference profile and failed the independent self-intersection criterion.",
+      "summary": "Historical Gate Z2 v1 remains failed; the newer MT1 analytic mechanical-reference profile passes its separate scoped transport gate and is not relabelled Z2.",
       "tests": [
         "closy-forge/tests/unit/test_zeroone_dynamic_reference.py"
       ]
@@ -4422,11 +4557,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 fixture source-backed texture recovery exists, but no private-user texture recovery, learned generation or human/provider appearance acceptance exists.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4439,13 +4574,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 fixture source-backed texture recovery exists, but no private-user texture recovery, learned generation or human/provider appearance acceptance exists.",
       "nextAction": "Keep hidden/generated texture guards active during source-view comparison and future learned texture work.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 1.",
       "tests": [
@@ -4478,11 +4613,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4494,13 +4629,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 2.",
       "tests": [
@@ -4519,11 +4654,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4535,13 +4670,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Risk mitigation 3.",
       "tests": [
@@ -4575,11 +4710,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "D0 fixture source-backed texture recovery exists, but no private-user texture recovery, learned generation or human/provider appearance acceptance exists.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4592,13 +4727,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "D0 fixture source-backed texture recovery exists, but no private-user texture recovery, learned generation or human/provider appearance acceptance exists.",
       "nextAction": "Keep hidden/generated texture guards active during source-view comparison and future learned texture work.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 4.",
       "tests": [
@@ -4617,11 +4752,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4633,13 +4768,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Risk mitigation 5.",
       "tests": [
@@ -4672,11 +4807,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4688,13 +4823,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 6.",
       "tests": [
@@ -4727,11 +4862,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4743,13 +4878,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 7.",
       "tests": [
@@ -4768,11 +4903,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4784,13 +4919,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Risk mitigation 8.",
       "tests": [
@@ -4855,11 +4990,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4871,13 +5006,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 10.",
       "tests": [
@@ -4910,11 +5045,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4926,13 +5061,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 11.",
       "tests": [
@@ -4965,11 +5100,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -4981,13 +5116,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 12.",
       "tests": [
@@ -5020,11 +5155,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -5036,13 +5171,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
       "summary": "Risk mitigation 13.",
       "tests": [
@@ -5061,11 +5196,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "See ledger for specific remaining risk.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -5077,13 +5212,13 @@
         "closy-forge"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "See ledger for specific remaining risk.",
       "nextAction": "Keep risk evidence current with each increment.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Risks and mitigations",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Risk mitigation 14.",
       "tests": [
@@ -5131,7 +5266,8 @@
         "076cb9390a1ac98f7fa477f4ba101425c5906d0c",
         "f3e96de0f9eaf308159655cb38654f18e4603f9e",
         "a82a5f986e2e8021151d0154775e424075043c76",
-        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d"
+        "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
+        "dd916913ac14119bc2e127989703f1c51f91e00a"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5139,11 +5275,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-          "limitations": "Z2 and PHY1 fail, Phase 12/13 remain external, and Alpha, Beta, Production, human, private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven.",
-          "sourcePr": 35,
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+          "limitations": "Z2 and PHY1 remain failed, and Alpha, Beta, Production, human, private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven.",
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -5181,15 +5317,15 @@
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
-      "limitations": "Z2 and PHY1 fail, Phase 12/13 remain external, and Alpha, Beta, Production, human, private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven.",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
+      "limitations": "Z2 and PHY1 remain failed, and Alpha, Beta, Production, human, private, licensed-body, real-fabric, GPU, and mobile evidence remain unproven.",
       "nextAction": "Integrate corrected topology, scoped C3, trained synthetic D0 inference, and real ZeroOne static execution while retaining unsupported tiers.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The research prototype now includes frozen 9/9 default-family static evidence, compiled dynamic failure evidence, a full synthetic multiview Phase 9 v3 run, a compositional E2 attempt, and corrected Phase 14 advisory reevaluation.",
+      "summary": "The research prototype now includes 9/9 default-family static evidence, a scoped MT1 mechanical pass, integrated fail-closed headless runtime and synthetic-avatar outfit surfaces, plus the bounded Phase 9/14 experiments.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -5305,11 +5441,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Broad historical engine/build generated files remain tracked and were not deleted as a side effect; remote checkout evidence is clean for the malformed generated gitlinks in run 32669470115.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -5326,13 +5462,13 @@
         "closy-forge/tests/unit/test_repository_hygiene.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Broad historical engine/build generated files remain tracked and were not deleted as a side effect; remote checkout evidence is clean for the malformed generated gitlinks in run 32669470115.",
       "nextAction": "Replace unsafe broad Forge failure-artifact upload with strict sanitized diagnostics.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 8.1 repository hygiene",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Remove malformed generated engine dependency gitlinks while preserving CMake FetchContent as the dependency source of truth.",
       "tests": [
@@ -5352,11 +5488,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Green runs skip failure-only upload by design; failed run 32668079403 remotely exercised the sanitized path, and green run 32669470115 confirmed normal success skips the failure artifact path.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -5374,13 +5510,13 @@
         "closy-forge/tests/unit/test_ci_sanitized_diagnostics.py"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Green runs skip failure-only upload by design; failed run 32668079403 remotely exercised the sanitized path, and green run 32669470115 confirmed normal success skips the failure artifact path.",
       "nextAction": "Continue BP-50 raster masks/corrections using the sanitized diagnostics guardrails.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 8.2 CI diagnostics hygiene",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Replace broad Forge failure-artifact upload with privacy-safe generated diagnostics.",
       "tests": [
@@ -5400,11 +5536,11 @@
           "ancestryClass": "in_tree",
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
-          "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+          "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
           "limitations": "Must be rechecked every increment.",
-          "sourcePr": 35,
+          "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
-          "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34"
+          "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
         }
       ],
       "evidenceTier": "in_tree_committed_evidence",
@@ -5418,13 +5554,13 @@
         "closy-forge/src/closy_forge/validation"
       ],
       "incorporated": true,
-      "incorporationCommit": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "limitations": "Must be rechecked every increment.",
       "nextAction": "Keep decisions locked unless explicit evidence changes.",
-      "sourcePr": 35,
+      "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Locked decisions",
-      "sourceSha": "461436c22f8c5cd1948e0f6906961d0c512dcc34",
+      "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "complete",
       "summary": "Preserve garment/avatar-only product boundary, provider-derivative policy and optional ZeroOne.",
       "tests": [
@@ -5442,5 +5578,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.z1_z2_structured_ai.v6"
+  "version": "closy.blueprint_coverage.integrated_runtime_d0.v7"
 }
