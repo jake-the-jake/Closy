@@ -53,11 +53,8 @@ def build_reference_geometry(family: str, pattern: dict[str, Any]) -> dict[str, 
     This is a deterministic reference-deformation path, not a PHY1 cloth-settle claim.
     """
 
-    try:
-        assembler = _ASSEMBLERS[family]
-    except KeyError as error:
-        raise ValueError(f"reference_3d_family_unsupported:{family}") from error
-    simulation, _edge_maps = assembler(pattern)
+    assembly = build_reference_assembly(family, pattern)
+    simulation: MeshSet = assembly["simulation"]
     render, seeds = subdivide_for_render(simulation)
     binding, binding_manifest = build_binding(simulation, render, seeds)
     if not finite_mesh(simulation) or not finite_mesh(render):
@@ -82,6 +79,32 @@ def build_reference_geometry(family: str, pattern: dict[str, Any]) -> dict[str, 
             "bindingRecordCount": len(binding.records),
             "maximumReconstructionError": binding_manifest["maximumReconstructionError"],
             "referencePath": "canonical_pattern_to_3d_assembly_to_dense_binding",
+            "physicalSettleClaimed": False,
+        },
+    }
+
+
+def build_reference_assembly(family: str, pattern: dict[str, Any]) -> dict[str, Any]:
+    """Build the canonical 3D reference assembly without dense derivative work."""
+
+    try:
+        assembler = _ASSEMBLERS[family]
+    except KeyError as error:
+        raise ValueError(f"reference_3d_family_unsupported:{family}") from error
+    simulation, _edge_maps = assembler(pattern)
+    if not finite_mesh(simulation):
+        raise ValueError("reference_3d_nonfinite_assembly")
+    return {
+        "version": REFERENCE_3D_VERSION,
+        "family": family,
+        "simulation": simulation,
+        "audit": {
+            "simulationVertexCount": simulation.vertex_count,
+            "simulationTriangleCount": simulation.triangle_count,
+            "simulationTopologyHash": topology_hash(simulation),
+            "simulationContentHash": geometry_content_hash(simulation),
+            "bounds": mesh_bounds(simulation),
+            "referencePath": "canonical_pattern_to_3d_reference_assembly",
             "physicalSettleClaimed": False,
         },
     }
