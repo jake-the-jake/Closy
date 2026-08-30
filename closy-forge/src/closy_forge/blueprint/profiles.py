@@ -7,6 +7,7 @@ _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _REQUIRED_THRESHOLD_PROFILES = {
     "closy.surface_equivalence.z1.v1",
     "closy.dynamic_reference.z2.v1",
+    "closy.mechanical_reference.mt1.v2",
     "closy.outfit_surface.d0.v1",
     "closy.phase9_e1.selective.v1",
     "closy.phase9_e2.typed_program.v1",
