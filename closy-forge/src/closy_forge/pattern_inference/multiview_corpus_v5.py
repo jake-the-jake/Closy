@@ -746,8 +746,11 @@ def _peak_rss_bytes() -> int:
     if os.name == "nt":
         counters = _WindowsProcessMemoryCounters()
         counters.cb = ctypes.sizeof(counters)
-        kernel32 = ctypes.WinDLL("kernel32.dll")
-        psapi = ctypes.WinDLL("psapi.dll")
+        win_dll = getattr(ctypes, "WinDLL", None)
+        if win_dll is None:
+            raise OSError("multiview_windows_dll_loader_unavailable")
+        kernel32 = win_dll("kernel32.dll")
+        psapi = win_dll("psapi.dll")
         get_current_process = kernel32.GetCurrentProcess
         get_current_process.restype = ctypes.c_void_p
         get_memory_info = psapi.GetProcessMemoryInfo
