@@ -849,9 +849,7 @@ def main() -> int:
     coverage["version"] = VERSION
     for row in coverage["rows"]:
         valid_commit_shas = [
-            sha
-            for sha in (row.get("commitSha") or [])
-            if sha not in STALE_INVALID_EVIDENCE_ANCHORS
+            sha for sha in (row.get("commitSha") or []) if sha not in STALE_INVALID_EVIDENCE_ANCHORS
         ]
         row["commitSha"] = valid_commit_shas or None
         row_id = str(row["id"])
