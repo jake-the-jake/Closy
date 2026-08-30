@@ -4263,6 +4263,47 @@ def _integrated_runtime_schemas() -> dict[str, dict[str, Any]]:
                 "calculatedInvalidation",
             ],
         ),
+        "canonical-outfit-surface-evidence.schema.json": _schema(
+            "Closy canonical outfit surface LayerCollision-D0 evidence v1",
+            {
+                "schemaVersion": {"const": 1},
+                "profile": {"const": "closy.layer_collision.canonical_surface_outfit.d0.v1"},
+                "solverVersion": {
+                    "const": "closy.layer_collision.simultaneous_surface_projection.d0.v1"
+                },
+                "classification": {"const": "geometric_LayerCollision-D0_not_physical_cloth"},
+                "caseId": {"type": "string", "minLength": 1},
+                "identities": {"type": "object"},
+                "layers": {"type": "array", "minItems": 2},
+                "surfaceExecution": {"type": "object"},
+                "initial": {"type": "object"},
+                "final": {"type": "object"},
+                "intersectionAudit": {"type": "object"},
+                "semanticRegions": {"type": "array", "minItems": 4},
+                "openingAccessibility": {"type": "object"},
+                "seamOpeningPreservation": {"type": "object"},
+                "truth": {"type": "object"},
+                "integrity": _object({"reportHash": _sha256()}, ["reportHash"]),
+            },
+            [
+                "schemaVersion",
+                "profile",
+                "solverVersion",
+                "classification",
+                "caseId",
+                "identities",
+                "layers",
+                "surfaceExecution",
+                "initial",
+                "final",
+                "intersectionAudit",
+                "semanticRegions",
+                "openingAccessibility",
+                "seamOpeningPreservation",
+                "truth",
+                "integrity",
+            ],
+        ),
     }
 
 
