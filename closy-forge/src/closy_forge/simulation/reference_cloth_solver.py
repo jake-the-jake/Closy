@@ -321,6 +321,7 @@ def simulate_reference_motion_state(
     state_id: str,
     *,
     canonical_position_digits: int | None = None,
+    trajectory_sink: list[MeshSet] | None = None,
 ) -> MotionStateResult:
     """Generate a bounded solver-produced state without touching a render mesh."""
 
@@ -347,6 +348,13 @@ def simulate_reference_motion_state(
         for index, position in enumerate(flat.positions)
     ]
     positions = _canonicalize_positions(positions, canonical_position_digits)
+    if trajectory_sink is not None:
+        trajectory_sink.extend(
+            (
+                settled_mesh,
+                replace_mesh_positions(settled_mesh, positions, flat.mesh_offsets),
+            )
+        )
     previous = list(flat.positions)
     constraints = _build_distance_constraints(
         settled_mesh, seam_constraints, flat.mesh_offsets, settings
@@ -413,6 +421,10 @@ def simulate_reference_motion_state(
             for position, old in zip(positions, previous, strict=True)
         ]
         energy_history.append(_energy_proxy(positions, velocities))
+        if trajectory_sink is not None:
+            trajectory_sink.append(
+                replace_mesh_positions(settled_mesh, positions, flat.mesh_offsets)
+            )
 
     mesh = replace_mesh_positions(settled_mesh, positions, flat.mesh_offsets)
     diagnostics = {
