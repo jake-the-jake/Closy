@@ -297,6 +297,14 @@ def compact_corpus_manifest_v5(dataset: dict[str, Any], split: dict[str, Any]) -
     return payload
 
 
+def extract_view_observables_v2(
+    width: int, height: int, rgba: bytes, camera: dict[str, object]
+) -> dict[str, float]:
+    """Extract the frozen RGB-only per-view schema used by E1 and E2."""
+
+    return _view_observables(width, height, rgba, camera)
+
+
 def _render_capture(
     meshset: MeshSet,
     *,
