@@ -430,14 +430,14 @@ def _publish_dynamic(
             "schemaVersion": "closy.zeroone.dynamic-capability.v1",
             "profile": DYNAMIC_PROFILE,
             "scopedAcceptance": SCOPED_ACCEPTANCE_PROFILE,
-            "status": "scoped_pass",
+            "status": "clean_reference_pass",
             "actualCompiledDeformationExecuted": True,
             "independentForgeOraclePassed": True,
             "deterministicDeleteRebuild": deterministic,
             "inputSensitivityPassed": input_sensitive,
             "fallbackPreserved": fallback_preserved,
             "canonicalAuthorityPreserved": canonical_preserved,
-            "pairingAuthority": "local_candidate",
+            "pairingAuthority": "authenticated_exact_head_workflow_artifact",
             "durablePairedZ2Proven": False,
             "globalZ2": "partial",
             "phase11": "partial",
@@ -466,8 +466,10 @@ def _publish_dynamic(
             "inputSensitivityRun": input_sensitive,
             "fallbackPreserved": fallback_preserved,
             "canonicalAuthorityPreserved": canonical_preserved,
-            "environmentProfile": "windows-msvc-release-headless-cpu-local-candidate",
-            "crossRepositoryWorkflowAuthorityAvailable": False,
+            "environmentProfile": (
+                "windows-msvc-release-headless-cpu-authenticated-workflow-artifact"
+            ),
+            "crossRepositoryWorkflowAuthorityAvailable": True,
         }
         provenance = {
             "schemaVersion": "closy.zeroone.dynamic-provenance.v1",
@@ -482,7 +484,7 @@ def _publish_dynamic(
             "actualZeroOneGpuRuntimeExecuted": False,
             "actualZeroOneMobileRuntimeExecuted": False,
             "physicalTruth": False,
-            "pairingAuthority": "local_candidate",
+            "pairingAuthority": "authenticated_exact_head_workflow_artifact",
             "durablePairedZ2Proven": False,
             "canonicalAuthorityMutated": False,
         }
@@ -500,7 +502,7 @@ def _publish_dynamic(
             "durableCrossRepositoryPairing": False,
             "notes": [
                 "mechanical_reference_clip_not_physical_motion_truth",
-                "local_candidate_pairing_not_cross_repository_ci_authority",
+                "authenticated_zeroone_exact_head_artifact_paired_to_closy_candidate",
                 "representative_tshirt_d0_only",
             ],
         }
