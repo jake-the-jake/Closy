@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -82,13 +83,14 @@ def generate_exact_raster_identity_evidence(
     exact_observation_acceptance = _exact_observation_acceptance(
         result, corrections, causal_controls, firewall, selected_identity
     )
+    portable_privacy_report = _portable_privacy_report(ingest.privacy_report)
     payloads: dict[Path, dict[str, Any]] = {
         private_root / "private_ingest_record.json": ingest.private_record,
         private_root / "lifecycle_journal.json": ingest.lifecycle_journal,
         private_root / "normalization_record.json": ingest.normalization_record,
         private_root / "legacy_raster_quality.json": ingest.quality_report,
         portable_root / "source_summary.json": ingest.portable_source_summary,
-        portable_root / "privacy_report.json": ingest.privacy_report,
+        portable_root / "privacy_report.json": portable_privacy_report,
         report_root / "exact_raster_quality.json": result["quality"],
         report_root / "visual_observations.json": result["observations"],
         report_root / "evaluator_only_validation.json": result["evaluatorOnly"],
@@ -248,6 +250,17 @@ def _selected_package_identity(package_root: Path) -> dict[str, str]:
         "avatarContractHash": str(identity["avatarContractHash"]),
         "packageDigest": str(identity["packageDigest"]),
     }
+
+
+def _portable_privacy_report(value: dict[str, Any]) -> dict[str, Any]:
+    portable = deepcopy(value)
+    threat_model = portable.get("threatModel")
+    if isinstance(threat_model, dict):
+        threat_model["deletionPropagation"] = "restricted_source_registry_tombstone_flow"
+        threat_model["duplicateSourceCorrelation"] = (
+            "restricted_source_registry_only_duplicate_detection"
+        )
+    return portable
 
 
 def _exact_raster_acceptance(

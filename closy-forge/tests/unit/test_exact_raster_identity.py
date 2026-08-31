@@ -17,6 +17,7 @@ from closy_forge.package_io.canonical_json import canonical_dumps, read_json, wr
 from closy_forge.pattern_inference.information_firewall import (
     execute_information_firewall_controls,
 )
+from closy_forge.security.evidence_hygiene import scan_evidence_files
 from closy_forge.visual_understanding.exact_raster_controls import (
     execute_exact_raster_causal_controls,
 )
@@ -309,6 +310,7 @@ def test_evidence_generation_is_deterministic_and_keeps_portable_scope_clean(
     assert isinstance(observation_acceptance, dict)
     assert observation_acceptance["claims"]["correctionSelectedBeforeFit"] is True
     assert observation_acceptance["claims"]["fitOrEvaluationExecuted"] is False
+    assert scan_evidence_files(sorted(second["root"].rglob("*.json"))) == {}
 
 
 def _build() -> dict[str, Any]:
