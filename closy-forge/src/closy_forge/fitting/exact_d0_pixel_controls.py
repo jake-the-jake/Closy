@@ -261,9 +261,7 @@ def _rebound_correction_operations(
     return rebound
 
 
-def _hydrate_camera_metadata(
-    visual: dict[str, Any], capture_record: Mapping[str, Any]
-) -> None:
+def _hydrate_camera_metadata(visual: dict[str, Any], capture_record: Mapping[str, Any]) -> None:
     capture_views = capture_record.get("views")
     if not isinstance(capture_views, list):
         raise ValueError("exact_d0_control_capture_views_missing")
