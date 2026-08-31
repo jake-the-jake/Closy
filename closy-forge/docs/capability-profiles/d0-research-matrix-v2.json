@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "registryId": "closy.d0_research_matrix.thresholds.v2",
+  "rows": [
+    {"rowId":"D0-RP-01","requirement":"decoded front/rear raster ingestion and source identity","thresholdRef":"blueprint.research.front_rear_source.v1","requiredEvidenceIds":["exact_raster_lineage"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-02","requirement":"pixel-derived masks, landmarks, and correction provenance","thresholdRef":"blueprint.research.observation_lineage.v1","requiredEvidenceIds":["exact_observation_lineage"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-03","requirement":"image-conditioned template ranking and continuous parameter fit","thresholdRef":"blueprint.research.image_conditioned_fit.v1","requiredEvidenceIds":["exact_fit_evaluation"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-04","requirement":"permissioned baselines and deterministic fitting controls","thresholdRef":"blueprint.research.permissioned_baselines.v2","requiredEvidenceIds":["exact_baseline_evaluation"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-05","requirement":"persisted pattern, seams, openings, simulation/render topology, and binding","thresholdRef":"blueprint.research.canonical_garment.v1","requiredEvidenceIds":["integrated_runtime_v1"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-06","requirement":"source-conditioned silhouette and landmark error after reference-3D compilation","thresholdRef":"blueprint.research.reference_3d_fidelity.v1","requiredEvidenceIds":["exact_reference_3d_evaluation"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-07","requirement":"decoded bitmap projection and independent rerender comparison","thresholdRef":"blueprint.research.visible_texture_fidelity.v2","requiredEvidenceIds":["exact_texture_rerender_evaluation"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-08","requirement":"dense shell follows the simulation mesh","thresholdRef":"C3-Binding-D0-v1","requiredEvidenceIds":["c3_binding_v1"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-09","requirement":"conventional fallback load without ZeroOne","thresholdRef":"runtime.offline_fallback.v1","requiredEvidenceIds":["integrated_runtime_v1"],"decisionGroup":"runtime_supplemental","requiredForResearchPrototype":false},
+    {"rowId":"D0-RP-10","requirement":"candidate static ZeroOne capability","thresholdRef":"Z1-candidate-static-v1","requiredEvidenceIds":["z1_candidate_v1"],"decisionGroup":"zeroone_supplemental","requiredForResearchPrototype":false},
+    {"rowId":"D0-RP-11","requirement":"MT1 mechanical reference separately from solver-driven Z2","thresholdRef":"MT1-D0-v2","requiredEvidenceIds":["mt1_reference_v2"],"decisionGroup":"zeroone_supplemental","requiredForResearchPrototype":false},
+    {"rowId":"D0-RP-12","requirement":"fresh build, cache, and delete/rebuild determinism","thresholdRef":"blueprint.research.reproducibility.v1","requiredEvidenceIds":["z1_candidate_v1","mt1_reference_v2"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-13","requirement":"exact evidence, package, and executable hashes","thresholdRef":"blueprint.research.reporting_integrity.v1","requiredEvidenceIds":["integrated_runtime_v1","phy1_v2"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true},
+    {"rowId":"D0-RP-14","requirement":"unsupported evidence classes remain false","thresholdRef":"blueprint.unsupported_claims.v1","requiredEvidenceIds":["integrated_runtime_v1","phy1_v2"],"decisionGroup":"unsupported_claim_controls","requiredForResearchPrototype":false},
+    {"rowId":"D0-RP-15","requirement":"deterministic fixed-avatar neutral pattern and simulation execution","thresholdRef":"blueprint.research.neutral_simulation.v1","requiredEvidenceIds":["exact_neutral_simulation"],"decisionGroup":"research_prototype_core","requiredForResearchPrototype":true}
+  ],
+  "traceability": [
+    {"clauseId":"deterministic_pattern_and_neutral_simulation","requiredRowIds":["D0-RP-05","D0-RP-15"]},
+    {"clauseId":"front_rear_image_driven_fit","requiredRowIds":["D0-RP-01","D0-RP-02","D0-RP-03","D0-RP-04","D0-RP-06"]},
+    {"clauseId":"visible_texture_recovery","requiredRowIds":["D0-RP-07"]},
+    {"clauseId":"dense_shell_following_simulation_mesh","requiredRowIds":["D0-RP-08"]},
+    {"clauseId":"reproducibility_and_reporting","requiredRowIds":["D0-RP-12","D0-RP-13"]}
+  ]
+}
