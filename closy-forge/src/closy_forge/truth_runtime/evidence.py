@@ -170,7 +170,7 @@ def _dependency_graph(
 
     simulation = _object(garment / str(paths["simulationMeshManifest"]))
     render = _object(garment / str(paths["renderMeshManifest"]))
-    identities = {
+    identities: dict[str, dict[str, Any]] = {
         "source": {
             "availability": "not_available_for_selected_candidate",
             "reason": "exact_decoded_raster_not_run",
@@ -207,6 +207,37 @@ def _dependency_graph(
         },
         "runtime": {"runtimePackageDigest": runtime_digest},
     }
+    exact_root = root / "docs/evidence/d0_exact_raster_identity_v2/qualification"
+    exact_raster_path = exact_root / "exact_raster_acceptance.json"
+    exact_observation_path = exact_root / "exact_observation_acceptance.json"
+    if exact_raster_path.is_file() and exact_observation_path.is_file():
+        exact_raster = _object(exact_raster_path)
+        exact_observation = _object(exact_observation_path)
+        identities["source"] = {
+            "availability": "exact_public_raster_lineage_available",
+            "opaqueSourceLineageHash": exact_raster["sourceLineageHash"],
+            "acceptanceHash": exact_raster["integrity"]["acceptanceHash"],
+            "privateByteHashesPortable": "false",
+        }
+        identities["capture"] = {
+            **identities["capture"],
+            "exactRasterAcceptanceHash": exact_raster["integrity"]["acceptanceHash"],
+            "selectedFixedAvatarContractId": exact_raster["fixedAvatarContractId"],
+        }
+        identities["observations"] = {
+            **exact_observation["observationIdentity"],
+            "acceptanceHash": exact_observation["integrity"]["acceptanceHash"],
+        }
+        identities["fit"] = {
+            **identities["fit"],
+            "exactFitStatus": "not_run",
+            "requiredCorrectedVisualRecordHash": exact_observation["observationIdentity"][
+                "correctedVisualRecordHash"
+            ],
+            "requiredDownstreamCacheKey": exact_observation["observationIdentity"][
+                "downstreamCacheKey"
+            ],
+        }
     stages = [
         ("source", "decoded_source_records"),
         ("capture", "capture_normalisation"),
@@ -360,6 +391,59 @@ def _matrix_bindings(root: Path, target: Path, selected_identity: dict[str, str]
             ],
         ),
     }
+    exact_root = root / "docs/evidence/d0_exact_raster_identity_v2/qualification"
+    exact_raster = exact_root / "exact_raster_acceptance.json"
+    exact_observation = exact_root / "exact_observation_acceptance.json"
+    if exact_raster.is_file():
+        bindings["exact_raster_lineage"] = binding(
+            exact_raster,
+            [
+                _identity_predicate(
+                    "exact_raster_package", "/selectedIdentity/packageDigest", "packageDigest"
+                ),
+                _identity_predicate(
+                    "exact_raster_avatar",
+                    "/selectedIdentity/avatarContractHash",
+                    "avatarContractHash",
+                ),
+                _identity_predicate(
+                    "exact_raster_garment", "/selectedIdentity/garmentId", "garmentId"
+                ),
+                _equals("front_joined", "/claims/frontDecodedAndJoined", True),
+                _equals("rear_joined", "/claims/rearDecodedAndJoined", True),
+                _equals("quality_passed", "/claims/exactQualityPassed", True),
+                _equals("evaluator_withheld", "/claims/evaluatorOnlyWithheldFromFit", True),
+                _equals("renderer_not_called", "/claims/fixtureRendererCalled", False),
+            ],
+        )
+    if exact_observation.is_file():
+        bindings["exact_observation_lineage"] = binding(
+            exact_observation,
+            [
+                _identity_predicate(
+                    "exact_observation_package",
+                    "/selectedIdentity/packageDigest",
+                    "packageDigest",
+                ),
+                _identity_predicate(
+                    "exact_observation_avatar",
+                    "/selectedIdentity/avatarContractHash",
+                    "avatarContractHash",
+                ),
+                _identity_predicate(
+                    "exact_observation_garment",
+                    "/selectedIdentity/garmentId",
+                    "garmentId",
+                ),
+                _equals("pixel_derived", "/claims/masksLandmarksPixelDerived", True),
+                _equals("correction_linked", "/claims/correctionReplayedAndLinked", True),
+                _equals("correction_selected", "/claims/correctionSelectedBeforeFit", True),
+                _equals("stale_rejected", "/claims/staleCorrectionRejected", True),
+                _equals("causal_controls", "/claims/causalControlsPassed", True),
+                _equals("firewalls_executed", "/claims/informationFirewallsExecuted", True),
+                _equals("fit_not_executed", "/claims/fitOrEvaluationExecuted", False),
+            ],
+        )
     return {
         "schemaVersion": 1,
         "bindingVersion": "closy.d0_research_matrix.evidence_bindings.v2",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from closy_forge.dependency_identity import calculate_invalidation, validate_dependency_graph
 from closy_forge.package_io.canonical_json import read_json
@@ -11,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE = ROOT / "docs/evidence/d0_truth_runtime_authority_v3"
 
 
-def _object(path: Path) -> dict[str, object]:
+def _object(path: Path) -> dict[str, Any]:
     value = read_json(path)
     assert isinstance(value, dict)
     return value
@@ -24,15 +25,22 @@ def test_committed_matrix_recomputes_from_opened_exact_identity_evidence() -> No
     recomputed = evaluate_research_matrix(
         ROOT,
         registry=registry,
-        evidence_bindings=bindings["evidenceBindings"],  # type: ignore[arg-type]
-        selected_identity=bindings["selectedIdentity"],  # type: ignore[arg-type]
-        source_anchor_sha="01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        evidence_bindings=bindings["evidenceBindings"],
+        selected_identity=bindings["selectedIdentity"],
+        source_anchor_sha=str(committed["sourceAnchorSha"]),
     )
 
     assert recomputed == committed
-    assert committed["statusCounts"] == {"pass": 8, "fail": 0, "not_run": 7}
-    rows = {row["rowId"]: row for row in committed["rows"]}  # type: ignore[index]
+    assert committed["statusCounts"] == {"pass": 10, "fail": 0, "not_run": 5}
+    rows = {row["rowId"]: row for row in committed["rows"]}
+    assert rows["D0-RP-01"]["status"] == "pass"
+    assert rows["D0-RP-02"]["status"] == "pass"
+    assert rows["D0-RP-03"]["status"] == "not_run"
     assert rows["D0-RP-15"]["status"] == "not_run"
+    assert committed["firstUnmetRequirement"] == {
+        "rowId": "D0-RP-03",
+        "reasonCode": "required_evidence_not_supplied:exact_fit_evaluation",
+    }
     assert committed["researchPrototypeStatus"] == "partial"
 
 
@@ -54,7 +62,7 @@ def test_candidate_v2_uses_garment_fallback_without_payload_overclaim() -> None:
 def test_dependency_graph_is_coherent_and_tracks_all_required_identity_stages() -> None:
     graph = _object(EVIDENCE / "dependency_identity_graph.json")
     validate_dependency_graph(graph)
-    stages = {node["stage"] for node in graph["nodes"]}  # type: ignore[index]
+    stages = {node["stage"] for node in graph["nodes"]}
     assert stages == {
         "decoded_source_records",
         "capture_normalisation",

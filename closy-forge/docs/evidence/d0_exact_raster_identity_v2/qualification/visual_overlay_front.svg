@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160">
+<rect width="100%" height="100%" fill="#f6f4ef"/>
+<polygon points="28.000,32.000 100.000,32.000 100.000,125.000 28.000,125.000" fill="none" stroke="#2f62ce" stroke-width="1.25"/>
+<polygon points="41.000,9.000 87.000,9.000 87.000,150.000 41.000,150.000" fill="none" stroke="#d8a77d" stroke-width="1.25"/>
+<polygon points="0.000,0.000 0.128,0.000 0.000,0.160" fill="none" stroke="#e45b5b" stroke-width="1.25"/>
+<circle cx="64.000" cy="32.800" r="1.4" fill="#17243f"/>
+<circle cx="44.816" cy="40.800" r="1.4" fill="#17243f"/>
+<circle cx="83.184" cy="40.800" r="1.4" fill="#17243f"/>
+<circle cx="38.416" cy="56.800" r="1.4" fill="#17243f"/>
+<circle cx="89.584" cy="56.800" r="1.4" fill="#17243f"/>
+<circle cx="28.000" cy="69.720" r="1.4" fill="#17243f"/>
+<circle cx="100.000" cy="69.720" r="1.4" fill="#17243f"/>
+<circle cx="43.536" cy="125.000" r="1.4" fill="#17243f"/>
+<circle cx="84.464" cy="125.000" r="1.4" fill="#17243f"/>
+<circle cx="64.000" cy="125.600" r="1.4" fill="#17243f"/>
+<text x="4" y="12" font-size="7" fill="#17243f">front pixel-derived overlay</text>
+</svg>

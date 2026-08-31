@@ -75,7 +75,7 @@ def build_project_authored_tshirt_pixel_views(
         )
         decoded = decode_png_rgba(encode_png_rgba(width, height, authored_rgba))
         rgba = decoded.rgba
-        normalized_hash = _pixel_hash(width, height, rgba)
+        normalized_hash = normalized_raster_pixel_hash(width, height, rgba)
         views.append(
             RasterFixtureView(
                 view_id=str(capture_view.get("viewId", f"view.{label}")),
@@ -755,7 +755,7 @@ def _color_evidence(
     }
 
 
-def _pixel_hash(width: int, height: int, rgba: bytes) -> str:
+def normalized_raster_pixel_hash(width: int, height: int, rgba: bytes) -> str:
     return sha256_bytes(
         b"CLOSY_D0_TSHIRT_NORMALIZED_RGBA_V1"
         + canonical_dumps({"width": width, "height": height}).encode("utf-8")
