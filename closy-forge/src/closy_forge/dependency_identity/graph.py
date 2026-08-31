@@ -99,9 +99,7 @@ def validate_dependency_graph(graph: dict[str, Any]) -> None:
     _reject_cycles(adjacency)
 
 
-def calculate_invalidation(
-    graph: dict[str, Any], changed_node_ids: set[str]
-) -> InvalidationResult:
+def calculate_invalidation(graph: dict[str, Any], changed_node_ids: set[str]) -> InvalidationResult:
     """Propagate declared consequences and stop at byte-identical edges."""
 
     validate_dependency_graph(graph)

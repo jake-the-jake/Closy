@@ -3048,9 +3048,7 @@ def _truth_authority_schemas() -> dict[str, dict[str, Any]]:
             {
                 "schemaVersion": {"const": 2},
                 "matrixVersion": {"const": "closy.final_d0_research_prototype_matrix.v2"},
-                "evaluatorVersion": {
-                    "const": "closy.d0_research_matrix.predicate_evaluator.v2"
-                },
+                "evaluatorVersion": {"const": "closy.d0_research_matrix.predicate_evaluator.v2"},
                 "thresholdRegistryId": {"type": "string"},
                 "thresholdRegistryHash": _sha256(),
                 "sourceAnchorSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
@@ -3110,9 +3108,7 @@ def _truth_authority_schemas() -> dict[str, dict[str, Any]]:
             {
                 "schemaVersion": {"const": 2},
                 "packageVersion": {"const": "closy.runtime_package.research_candidate.v2"},
-                "capabilityVersion": {
-                    "const": "closy.runtime_capabilities.research_candidate.v2"
-                },
+                "capabilityVersion": {"const": "closy.runtime_capabilities.research_candidate.v2"},
                 "classification": {"const": "research_candidate_not_product_selected"},
                 "sourceLink": {"type": "object"},
                 "garment": {"type": "object"},
