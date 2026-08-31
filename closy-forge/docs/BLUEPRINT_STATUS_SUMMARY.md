@@ -1,6 +1,6 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v9` at evidence anchor `fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0`.
+Authority: `closy.blueprint_status_model.v10` at evidence anchor `64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd`.
 
 ## Requirement Rows
 
@@ -39,7 +39,9 @@ Authority: `closy.blueprint_status_model.v9` at evidence anchor `fe8f6d8a6d08e4c
 - PHY1-Neutral-SeamSupport-D0-v3: global `partial`, scoped `failed`
 - PHY1-SingleLayer-D0: global `partial`, scoped `failed`
 - PHY1-SingleLayer-D0-v2: global `partial`, scoped `failed`
-- ResearchPrototype-D0-matrix-v2: global `partial`, scoped `partial_9_pass_3_fail_3_not_run`
+- ResearchPrototype-D0-matrix-v2: global `partial`, scoped `historical_superseded_9_pass_3_fail_3_not_run`
+- ResearchPrototype-D0-matrix-v3-core: global `partial`, scoped `partial_6_pass_5_fail_0_not_run`
+- ResearchPrototype-D0-matrix-v3-supplemental: global `partial`, scoped `2_pass_0_fail_2_not_run`
 - Z1: global `partial`, scoped `candidate_default_all_family_and_representative_pass`
 - Z2: global `partial`, scoped `failed_compiled_single_lod_reference_pairing`
 - Z3: global `discovery_pending`, scoped `not_run`

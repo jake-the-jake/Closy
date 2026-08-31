@@ -45,9 +45,9 @@
       "closy-forge/scripts/generate_phy1_seam_support_v3_evidence.py"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.exact_d0_phy1_seam_support_v3.v7",
+    "generatorVersion": "closy.blueprint_reconciliation.d0_evidence_integrity_v4.v8",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "e75fad252b949830a4f8c229506b361dfaa3a481f1caabda2d41988705b5f39a"
+    "sourceTreeHash": "0a44a4db594702d6c89b2d50ff932af19fef3cafbf44381af1d99cbe2e6aed29"
   },
   "integratedImplementationRowCount": 83,
   "rows": [
@@ -223,7 +223,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -586,7 +587,8 @@
         "c6c94f7",
         "bb49668",
         "242c5c79e4bcfaffa6028e621990a7a68ce156a4",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -663,7 +665,8 @@
         "9fc004d429d9187bfd427586ca43af65e54ec2f5",
         "93f2e6587cc4f5f3237aba669870648a01118a09",
         "242c5c79e4bcfaffa6028e621990a7a68ce156a4",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -799,7 +802,8 @@
       "commitSha": [
         "0db14ee",
         "fcf64dce8a2117c78df7d1a01f3cefad118b5093",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [
         "BP-08-A-INGESTION",
@@ -873,7 +877,8 @@
       "commitSha": [
         "e90a38e",
         "0da8cea",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -1436,7 +1441,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1539,7 +1545,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1841,7 +1848,8 @@
         "f100fd5",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1995,7 +2003,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2113,7 +2122,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2306,7 +2316,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2370,7 +2381,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2643,7 +2655,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2802,7 +2815,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2930,7 +2944,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2939,7 +2954,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0-RP-07 texture rerender, D0-RP-08 strict C3, and D0-RP-15 neutral simulation fail; the first unmet required predicate is D0-RP-07.",
+          "limitations": "D0-RP-03 is attempted-fail, D0-RP-04 is attempted-integrity-error, D0-RP-07, D0-RP-08, and D0-RP-15 fail; broader identity-disjoint reconstruction remains never attempted.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -2969,7 +2984,11 @@
         "bounded raster/runtime decompression rejects truncation and trailing streams",
         "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
         "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
-        "runtime v1 remains selected and topology v2 remains opt-in"
+        "runtime v1 remains selected and topology v2 remains opt-in",
+        "matrix v3 opens evidence and recomputes byte, payload, identity, and predicate truth",
+        "exact-fixture core 6 pass/5 fail/0 not-run and supplemental 2 pass/0 fail/2 not-run",
+        "append-only hash-chained attempts preserve failures and fail closed on missing bytes",
+        "PR #43 diagnostic PHY rescore changes definitions without rerunning physics or outcome"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -2998,18 +3017,22 @@
         "closy-forge/docs/evidence/phy1_seam_support_v3",
         "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
-        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
+        "closy-forge/src/closy_forge/evidence_integrity_v4",
+        "closy-forge/docs/capability-profiles/d0-research-matrix-v3.json",
+        "closy-forge/docs/evidence/d0_evidence_integrity_v4",
+        "closy-forge/scripts/generate_d0_evidence_integrity_v4.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0-RP-07 texture rerender, D0-RP-08 strict C3, and D0-RP-15 neutral simulation fail; the first unmet required predicate is D0-RP-07.",
-      "nextAction": "Repair exact source-conditioned appearance before another physical trial.",
+      "limitations": "D0-RP-03 is attempted-fail, D0-RP-04 is attempted-integrity-error, D0-RP-07, D0-RP-08, and D0-RP-15 fail; broader identity-disjoint reconstruction remains never attempted.",
+      "nextAction": "Run the one frozen known-target appearance diagnostic, then the separately scoped identity-disjoint benchmark without donating identities across matrices.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The final exact-candidate matrix records 9 pass, 3 fail, and 3 not-run rows after persisted PHY1-v3 neutral scoring.",
+      "summary": "Research Prototype matrix v3 independently reports core 6 pass, 5 fail, 0 not-run and supplemental 2 pass, 0 fail, 2 not-run on the exact-fixture authority.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -3027,7 +3050,8 @@
         "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py",
         "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
-        "closy-forge/tests/unit/test_exact_raster_identity.py"
+        "closy-forge/tests/unit/test_exact_raster_identity.py",
+        "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py"
       ]
     },
     {
@@ -3037,7 +3061,8 @@
         "ba4d358",
         "0db14ee",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3485,7 +3510,8 @@
         "ba4d358",
         "9fc004d429d9187bfd427586ca43af65e54ec2f5",
         "242c5c79e4bcfaffa6028e621990a7a68ce156a4",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3655,7 +3681,8 @@
         "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3994,7 +4021,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4099,7 +4127,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4168,7 +4197,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4248,7 +4278,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4325,7 +4356,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4394,7 +4426,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4569,7 +4602,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4578,7 +4612,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No cross-identity evidence is used to repair the exact-candidate result.",
+          "limitations": "No summary flag, supplemental execution, or cross-candidate package may repair the failed exact-candidate result.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4614,7 +4648,11 @@
         "exact execution records clean Closy and ZeroOne SHAs, executable hash, commands, wall/CPU timings, peak memory, input/output hashes, and remaining blockers",
         "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
         "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
-        "runtime v1 remains selected and topology v2 remains opt-in"
+        "runtime v1 remains selected and topology v2 remains opt-in",
+        "matrix v3 opens evidence and recomputes byte, payload, identity, and predicate truth",
+        "exact-fixture core 6 pass/5 fail/0 not-run and supplemental 2 pass/0 fail/2 not-run",
+        "append-only hash-chained attempts preserve failures and fail closed on missing bytes",
+        "PR #43 diagnostic PHY rescore changes definitions without rerunning physics or outcome"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -4633,18 +4671,22 @@
         "closy-forge/docs/evidence/phy1_seam_support_v3",
         "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
-        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
+        "closy-forge/src/closy_forge/evidence_integrity_v4",
+        "closy-forge/docs/capability-profiles/d0-research-matrix-v3.json",
+        "closy-forge/docs/evidence/d0_evidence_integrity_v4",
+        "closy-forge/scripts/generate_d0_evidence_integrity_v4.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No cross-identity evidence is used to repair the exact-candidate result.",
-      "nextAction": "Regenerate strict binding only from a future exact candidate identity.",
+      "limitations": "No summary flag, supplemental execution, or cross-candidate package may repair the failed exact-candidate result.",
+      "nextAction": "Run strict C3 only on a newly frozen exact candidate lineage.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Historical scoped C3 remains preserved, while strict C3 on exact candidate 060e8d4aaaa7e82eddb75880 fails and is not promoted.",
+      "summary": "Historical scoped C3 is preserved, while matrix v3 keeps strict exact-candidate C3 failed and independently identity-bound.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/golden/test_golden_demo.py",
@@ -4652,7 +4694,8 @@
         "closy-forge/tests/unit/test_zeroone_execution_evidence.py",
         "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
-        "closy-forge/tests/unit/test_exact_raster_identity.py"
+        "closy-forge/tests/unit/test_exact_raster_identity.py",
+        "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py"
       ]
     },
     {
@@ -4672,7 +4715,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4734,7 +4778,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5577,7 +5622,8 @@
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
         "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5586,7 +5632,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The first unmet row is D0-RP-07; strict C3 and neutral physics also fail, and human, private, device, GPU, mobile, and real-fabric evidence remain not run.",
+          "limitations": "The image-conditioned comparison and execution-isolation claims were demoted; texture fidelity, strict C3, and neutral simulation also fail. No identity-disjoint, private, human, GPU, mobile, or production qualification follows.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5622,7 +5668,11 @@
         "bounded raster/runtime decompression rejects truncation and trailing streams",
         "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
         "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
-        "runtime v1 remains selected and topology v2 remains opt-in"
+        "runtime v1 remains selected and topology v2 remains opt-in",
+        "matrix v3 opens evidence and recomputes byte, payload, identity, and predicate truth",
+        "exact-fixture core 6 pass/5 fail/0 not-run and supplemental 2 pass/0 fail/2 not-run",
+        "append-only hash-chained attempts preserve failures and fail closed on missing bytes",
+        "PR #43 diagnostic PHY rescore changes definitions without rerunning physics or outcome"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -5649,18 +5699,22 @@
         "closy-forge/docs/evidence/phy1_seam_support_v3",
         "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
-        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
+        "closy-forge/src/closy_forge/evidence_integrity_v4",
+        "closy-forge/docs/capability-profiles/d0-research-matrix-v3.json",
+        "closy-forge/docs/evidence/d0_evidence_integrity_v4",
+        "closy-forge/scripts/generate_d0_evidence_integrity_v4.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The first unmet row is D0-RP-07; strict C3 and neutral physics also fail, and human, private, device, GPU, mobile, and real-fabric evidence remain not run.",
-      "nextAction": "Open one appearance-correction branch gated by the frozen D0-RP-07 limit.",
+      "limitations": "The image-conditioned comparison and execution-isolation claims were demoted; texture fidelity, strict C3, and neutral simulation also fail. No identity-disjoint, private, human, GPU, mobile, or production qualification follows.",
+      "nextAction": "Preserve the failed attempt chain and execute Unit F then the untouched Unit G identity-disjoint cohort.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The exact public-fixture D0 matrix records 9 pass, 3 fail, and 3 not-run rows on candidate 060e8d4aaaa7e82eddb75880.",
+      "summary": "Matrix v3 recomputes exact-fixture core status as 6 pass and 5 fail, with a separate supplemental summary of 2 pass and 2 not-run.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -5676,7 +5730,8 @@
         "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py",
         "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
-        "closy-forge/tests/unit/test_exact_raster_identity.py"
+        "closy-forge/tests/unit/test_exact_raster_identity.py",
+        "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py"
       ]
     },
     {
@@ -5925,5 +5980,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10"
+  "version": "closy.blueprint_coverage.d0_evidence_integrity_v4.v11"
 }

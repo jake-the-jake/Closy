@@ -283,3 +283,27 @@ selected; topology v2 remains opt-in. Both seam-model trials are consumed and tw
 remain. Research Prototype stays partial, first blocked by `D0-RP-07`; no private, human, real-photo,
 real-fabric, GPU, mobile or product claim is made. See `docs/phy1-seam-support-v3-closeout.md` and
 `docs/evidence/phy1_seam_support_v3` for the exact identities, thresholds, metrics and inventory.
+
+## D0 Evidence Integrity v4 Truth Reset
+
+Review Unit E preserves matrix v2 and all failed attempts while replacing it as current authority
+with artifact-derived matrix v3. The exact-fixture core summary is 6 pass, 5 fail and 0 not-run;
+the independent supplemental summary is 2 pass, 0 fail and 2 not-run. `D0-RP-03` is now an
+attempted comparative failure, `D0-RP-04` is an attempted integrity error, and `D0-RP-06` passes
+only for exact-fixture replay while identity-disjoint reconstruction remains separately not run.
+
+The v4 authority reopens candidate package bytes, recomputes package and payload identities,
+validates semantic garment fallback and conditionally validates externally pinned execution fields.
+Raster evidence separates raw sharpness from normalized focus, marks unavailable scale confidence,
+and scores source fidelity only where source-contribution masks prove observation. The v4 physical
+diagnostic consumes the frozen PR #43 trajectory with corrected mass, arclength, seam-exclusion and
+rotation-invariant definitions; unavailable post-projection support/work fields remain unavailable.
+No physics was rerun, no budget changed, and outcome `A_neutral_preflight_failed_v3` is unchanged.
+
+PR #43 final head `6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e` is externally attested by
+workflow `33423822705` with 29 of 29 Forge jobs. Unit E uses immutable source anchor
+`64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd`; its own final head and exact workflow remain external
+to avoid recursive self-reference. Runtime v1 remains selected, topology v2 remains opt-in, and no
+private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta or Production claim is
+made. The next unit is exactly one known-target source-only appearance diagnostic, followed by the
+separate untouched identity-disjoint benchmark.

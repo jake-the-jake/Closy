@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v9"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v10"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -34,6 +34,7 @@ D0_RASTER_IDENTITY_PUBLICATION_SHA = "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8"
 D0_FITTING_PBR_PUBLICATION_SHA = "7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
 PHY1_V3_EVIDENCE_SHA = "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
 PHY1_V3_EVIDENCE_DIGEST = "280df4684724d2dae73eb20a09008aec824c2c6476ed21325c754c9c05ef1b4c"
+D0_EVIDENCE_INTEGRITY_V4_SHA = "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -216,7 +217,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
     "ResearchPrototype-D0-matrix-v2": {
         "gateId": "ResearchPrototype-D0-matrix-v2",
         "globalStatus": "partial",
-        "scopedStatus": "partial_9_pass_3_fail_3_not_run",
+        "scopedStatus": "historical_superseded_9_pass_3_fail_3_not_run",
         "evidenceTier": "exact_selected_identity_predicate_matrix",
         "platform": ["windows", "ubuntu"],
         "toolchain": ["CPython 3.11", "CPython 3.12"],
@@ -232,7 +233,51 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "workflowRun": None,
         "firstUnmetRequiredPredicate": "D0-RP-07",
         "unsupportedTiers": _COMMON_UNSUPPORTED + ["real_fabric", "human_review"],
-        "blockers": ["D0-RP-07", "D0-RP-08", "D0-RP-15"],
+        "blockers": ["superseded_by_matrix_v3_integrity_reset"],
+    },
+    "ResearchPrototype-D0-matrix-v3-core": {
+        "gateId": "ResearchPrototype-D0-matrix-v3-core",
+        "globalStatus": "partial",
+        "scopedStatus": "partial_6_pass_5_fail_0_not_run",
+        "evidenceTier": "artifact_reopened_selected_identity_predicate_matrix",
+        "platform": ["windows", "ubuntu"],
+        "toolchain": ["CPython 3.11", "CPython 3.12"],
+        "sourceSha": D0_EVIDENCE_INTEGRITY_V4_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public fixture",
+        "executionKind": "predicate evaluation over opened exact evidence",
+        "gateScope": "research prototype core exact fixture",
+        "evidenceDurability": "committed_hash_chained_matrix_and_exact_head_stacked_ci",
+        "workflowRun": None,
+        "firstUnmetRequiredPredicate": "D0-RP-03",
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["real_fabric", "human_review", "identity_disjoint_cohort"],
+        "blockers": ["D0-RP-03", "D0-RP-04", "D0-RP-07", "D0-RP-08", "D0-RP-15"],
+    },
+    "ResearchPrototype-D0-matrix-v3-supplemental": {
+        "gateId": "ResearchPrototype-D0-matrix-v3-supplemental",
+        "globalStatus": "partial",
+        "scopedStatus": "2_pass_0_fail_2_not_run",
+        "evidenceTier": "artifact_reopened_supplemental_predicate_matrix",
+        "platform": ["windows", "ubuntu"],
+        "toolchain": ["CPython 3.11", "CPython 3.12"],
+        "sourceSha": D0_EVIDENCE_INTEGRITY_V4_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public fixture",
+        "executionKind": "predicate evaluation over opened supplemental evidence",
+        "gateScope": "supplemental runtime and governance",
+        "evidenceDurability": "committed_hash_chained_matrix_and_exact_head_stacked_ci",
+        "workflowRun": None,
+        "firstUnmetRequiredPredicate": "D0-RP-10",
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["real_fabric", "human_review", "identity_disjoint_cohort"],
+        "blockers": ["D0-RP-10", "D0-RP-14"],
     },
     "MT1-MechanicalReference-D0": {
         "gateId": "MT1-MechanicalReference-D0",

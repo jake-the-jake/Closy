@@ -2074,7 +2074,7 @@
         {
           "conclusion": "SUCCESS",
           "exactHead": true,
-          "jobCount": 26,
+          "jobCount": 29,
           "runId": "33342673147",
           "workflow": "Closy Forge"
         }
@@ -2111,7 +2111,7 @@
         {
           "conclusion": "SUCCESS",
           "exactHead": true,
-          "jobCount": 26,
+          "jobCount": 29,
           "runId": "33380042123",
           "workflow": "Closy Forge"
         }
@@ -2148,7 +2148,7 @@
         {
           "conclusion": "SUCCESS",
           "exactHead": true,
-          "jobCount": 26,
+          "jobCount": 29,
           "runId": "33393781144",
           "workflow": "Closy Forge"
         }
@@ -2185,7 +2185,7 @@
         {
           "conclusion": "SUCCESS",
           "exactHead": true,
-          "jobCount": 26,
+          "jobCount": 29,
           "runId": "33409665461",
           "workflow": "Closy Forge"
         }
@@ -2205,20 +2205,28 @@
       "uniqueCommitRange": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8..7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
     },
     {
-      "ahead": 7,
+      "ahead": 8,
       "baseRef": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
       "baseSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
       "behind": 0,
       "branch": "codex/closy-forge-phy1-seam-support-v3",
       "capabilityRole": "forge_execute_preregistered_phy1_seam_support_v3",
-      "changedFileCount": 68,
+      "changedFileCount": 82,
       "dependencyIds": [
         "github:jake-the-jake/Closy:pr/42"
       ],
-      "headSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+      "headSha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
       "id": "github:jake-the-jake/Closy:pr/43",
       "integrationMappings": [],
-      "latestExactHeadWorkflows": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 29,
+          "runId": "33423822705",
+          "workflow": "Closy Forge"
+        }
+      ],
       "mergeBase": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
       "mergeEligible": true,
       "neverMergeWith": [],
@@ -2231,7 +2239,7 @@
       "sourceOnly": false,
       "state": "OPEN",
       "superseded": false,
-      "uniqueCommitRange": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4..fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+      "uniqueCommitRange": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4..6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e"
     },
     {
       "ahead": 3,
@@ -3583,9 +3591,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33183367784",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 1,
@@ -3614,7 +3623,8 @@
         "conclusion": "FAILURE",
         "exactHead": true,
         "failedJobCount": 3,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33203903630",
         "successfulJobCount": 21,
         "workflow": "Closy Forge"
@@ -3643,9 +3653,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33201911956",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 5,
@@ -3672,9 +3683,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33203908161",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 11,
@@ -3701,9 +3713,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33212147981",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 10,
@@ -3730,9 +3743,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33216284248",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 2,
@@ -3759,9 +3773,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33222010381",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 4,
@@ -3788,9 +3803,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33222016267",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 2,
@@ -3817,9 +3833,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33222023390",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 2,
@@ -3846,9 +3863,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33264403890",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 12,
@@ -3875,9 +3893,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33270987449",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 11,
@@ -3904,9 +3923,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33280862559",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 16,
@@ -3933,9 +3953,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33302649199",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 9,
@@ -3962,9 +3983,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33321665632",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
       "layerAhead": 19,
@@ -3991,9 +4013,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 29,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33329481046",
-        "successfulJobCount": 29,
+        "successfulForgeJobCount": 29,
         "workflow": "Closy Forge"
       },
       "layerAhead": 45,
@@ -4020,9 +4043,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33342673147",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 29,
         "workflow": "Closy Forge"
       },
       "layerAhead": 9,
@@ -4049,9 +4073,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33380042123",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 29,
         "workflow": "Closy Forge"
       },
       "layerAhead": 9,
@@ -4078,9 +4103,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33393781144",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 29,
         "workflow": "Closy Forge"
       },
       "layerAhead": 10,
@@ -4107,9 +4133,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "jobCount": 26,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33409665461",
-        "successfulJobCount": 26,
+        "successfulForgeJobCount": 29,
         "workflow": "Closy Forge"
       },
       "layerAhead": 9,
@@ -4128,19 +4155,23 @@
       "baseBranch": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
       "baseSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
       "branch": "codex/closy-forge-phy1-seam-support-v3",
-      "changedFileCount": 68,
+      "changedFileCount": 82,
       "directParentMergeBaseVerified": true,
       "draft": true,
-      "headSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
-      "knownException": {
-        "code": "exact_head_ci_recorded_outside_generated_evidence",
-        "descendantEvidenceIsExactHead": false,
-        "reason": "PR #43 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      "headSha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
+        "runId": "33423822705",
+        "successfulForgeJobCount": 29,
+        "workflow": "Closy Forge"
       },
-      "latestExactHeadForgeRun": null,
-      "layerAhead": 7,
+      "layerAhead": 8,
       "layerBehind": 0,
-      "layerCommitCount": 7,
+      "layerCommitCount": 8,
       "mergeBase": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
       "mergeability": "MERGEABLE",
       "number": 43,
