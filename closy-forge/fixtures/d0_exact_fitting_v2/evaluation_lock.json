@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 1,
+  "lockId": "closy.d0_exact_fitting_pbr_evaluation_lock.v2",
+  "classification": "project_authored_public_synthetic_d0",
+  "selectedIdentity": {
+    "garmentId": "garment.demo_tshirt.reference_v1",
+    "avatarContractHash": "9beb183c1547efb03c091c0108cad9d924241d50d44edffc837cdc03fde6f4ed",
+    "sourcePackageDigest": "c1ad76661ff0642a58343f8d9639c3aa0bb3d084f9bb38d6bff2a9dd429b807a",
+    "fixtureSetHash": "5e668396a7bee2f87a47a13a7276ddf16d5f0c1929f8cc852b498a2af4d4ebb3",
+    "correctedVisualRecordHash": "fa33ac63938401e9ea157d65fc3c6e5ffd705b5e757929b2b85518193e2545d6",
+    "selectedCorrectionRecordHash": "f34d7cd8559b7dab4b744032f9ee2cc694e2a6e342feb934c3bcef2c60434011",
+    "multiviewFusionRecordHash": "d9536c9490c3ab7ce70352f21927ae231f705b825ad8a603de1a47f6f85fc918",
+    "downstreamCacheKey": "266fe4d39cf735a7d5fb0cc5f3f71b5360cc344ea225bd2ca46e48ab12c91dae"
+  },
+  "calibrationPolicy": {
+    "selectedIdentityUsedForCalibration": false,
+    "basis": "reuse_versioned_bp52_bp53_project_fixture_thresholds",
+    "postLockThresholdTuningAllowed": false,
+    "productAcceptanceThresholds": false
+  },
+  "codeIdentities": {
+    "fitter": {
+      "version": "closy.tshirt_image_conditioned_fit.d0_iterative_v2",
+      "path": "src/closy_forge/fitting/tshirt_fit.py",
+      "sha256": "5b8ea40519b54fc906c4aff1d4596c4a9cff12080b5f470e285a9643e74f84a4"
+    },
+    "optimizer": {
+      "version": "closy.tshirt_fit.bounded_coordinate_search.d0_v2",
+      "path": "src/closy_forge/fitting/d0_optimizer.py",
+      "sha256": "70c4d7f27b511406b1ae203647a335c633a3a8deb9b0a9bac5e8b3a46992c8dd"
+    },
+    "bitmapAtlas": {
+      "version": "closy.texture_atlas.decoded_bitmap_pbr.d0_v2",
+      "path": "src/closy_forge/appearance/bitmap_atlas.py",
+      "sha256": "1db9f3efbb2c67955aae7b5e3fb2a1935a444328b7dbe6045ba6b7faf5639f98"
+    },
+    "cpuRaster": {
+      "version": "closy.cpu_triangle_raster.v1",
+      "path": "src/closy_forge/inspection/cpu_raster.py",
+      "sha256": "c1888e3cd800098f85d58bcdad16b11213c1f28a13482cc3443d1e4f4135e426"
+    },
+    "fidelityEvaluator": {
+      "version": "closy.source_render_fidelity.independent_rerender.d0_v2",
+      "path": "src/closy_forge/inspection/source_render_fidelity.py",
+      "sha256": "9653036081ef2c3975ebeaf0d8440a1b90f3fd204c8e1fa389dcbdab42003492"
+    },
+    "topologyV2": {
+      "version": "closy.simulation_topology.boundary_preserving.v2",
+      "path": "src/closy_forge/simulation_topology_v2/triangulator.py",
+      "sha256": "d3f72bba68bb49483f25852f4c1264d7e7c5320b52f84c464fd65f60c32e7897"
+    },
+    "researchMatrixEvaluator": "closy.d0_research_matrix.predicate_evaluator.v2"
+  },
+  "candidateRepresentation": {
+    "algorithm": "closy.simulation_topology.boundary_preserving.v2",
+    "buildMode": "fresh_from_selected_fitted_pattern",
+    "historicalPr39CoordinatesReusable": false,
+    "topologyV1FallbackAfterMetricsAllowed": false,
+    "runtimeV1SelectionUnchanged": true
+  },
+  "parameterBounds": {
+    "garment_body_length": [0.52, 0.82],
+    "half_chest_width": [0.22, 0.38],
+    "body_ease": [0.0, 0.12],
+    "shoulder_width": [0.52, 0.84],
+    "shoulder_slope": [0.0, 0.08],
+    "neckline_width": [0.12, 0.28],
+    "front_neckline_depth": [0.035, 0.16],
+    "back_neckline_depth": [0.01, 0.08],
+    "armhole_depth": [0.14, 0.30],
+    "sleeve_length": [0.14, 0.38],
+    "sleeve_opening_width": [0.12, 0.28],
+    "sleeve_cap_height": [0.06, 0.17],
+    "hem_allowance": [0.018, 0.04],
+    "neckband_width": [0.018, 0.055],
+    "neckband_length_ease_ratio": [0.75, 1.05],
+    "target_panel_edge_length": [0.025, 0.075]
+  },
+  "templateSet": [
+    {
+      "templateId": "tshirt.regular.v2",
+      "label": "regular",
+      "prior": {
+        "garment_body_length": 0.68,
+        "half_chest_width": 0.285,
+        "body_ease": 0.045,
+        "shoulder_width": 0.70,
+        "shoulder_slope": 0.035,
+        "neckline_width": 0.19,
+        "front_neckline_depth": 0.085,
+        "back_neckline_depth": 0.035,
+        "armhole_depth": 0.205,
+        "sleeve_length": 0.255,
+        "sleeve_opening_width": 0.18,
+        "sleeve_cap_height": 0.105,
+        "hem_allowance": 0.025,
+        "neckband_width": 0.035,
+        "neckband_length_ease_ratio": 0.92,
+        "target_panel_edge_length": 0.045
+      }
+    },
+    {
+      "templateId": "tshirt.slim.v2",
+      "label": "slim",
+      "prior": {
+        "garment_body_length": 0.72,
+        "half_chest_width": 0.25,
+        "body_ease": 0.025,
+        "shoulder_width": 0.66,
+        "shoulder_slope": 0.035,
+        "neckline_width": 0.18,
+        "front_neckline_depth": 0.09,
+        "back_neckline_depth": 0.035,
+        "armhole_depth": 0.19,
+        "sleeve_length": 0.27,
+        "sleeve_opening_width": 0.16,
+        "sleeve_cap_height": 0.10,
+        "hem_allowance": 0.025,
+        "neckband_width": 0.032,
+        "neckband_length_ease_ratio": 0.90,
+        "target_panel_edge_length": 0.045
+      }
+    },
+    {
+      "templateId": "tshirt.boxy.v2",
+      "label": "boxy",
+      "prior": {
+        "garment_body_length": 0.62,
+        "half_chest_width": 0.33,
+        "body_ease": 0.06,
+        "shoulder_width": 0.76,
+        "shoulder_slope": 0.025,
+        "neckline_width": 0.20,
+        "front_neckline_depth": 0.08,
+        "back_neckline_depth": 0.03,
+        "armhole_depth": 0.23,
+        "sleeve_length": 0.22,
+        "sleeve_opening_width": 0.21,
+        "sleeve_cap_height": 0.11,
+        "hem_allowance": 0.03,
+        "neckband_width": 0.038,
+        "neckband_length_ease_ratio": 0.94,
+        "target_panel_edge_length": 0.05
+      }
+    }
+  ],
+  "contenders": [
+    {
+      "contenderId": "metadata_category_prior",
+      "kind": "baseline",
+      "rawPixels": false,
+      "derivedEvidence": false,
+      "hiddenFixtureParameters": false
+    },
+    {
+      "contenderId": "no_pixel_template",
+      "kind": "baseline",
+      "rawPixels": false,
+      "derivedEvidence": false,
+      "hiddenFixtureParameters": false
+    },
+    {
+      "contenderId": "deterministic_mask_landmark",
+      "kind": "strongest_baseline",
+      "rawPixels": false,
+      "derivedEvidence": true,
+      "hiddenFixtureParameters": false
+    },
+    {
+      "contenderId": "image_conditioned",
+      "kind": "candidate",
+      "rawPixels": true,
+      "derivedEvidence": true,
+      "hiddenFixtureParameters": false
+    }
+  ],
+  "computeBudgets": {
+    "templateCount": 3,
+    "maximumCoordinateSweepsPerTemplate": 5,
+    "maximumPredictionEvaluationsPerTemplate": 96,
+    "maximumCanonicalFinalistsPerContender": 3,
+    "maximumCanonicalCompilerExecutions": 12,
+    "maximumNeutralSolverIterations": 64,
+    "randomSeed": 1701,
+    "networkAllowed": false
+  },
+  "sourceCameras": [
+    {
+      "viewId": "view.front",
+      "role": "fit_front",
+      "azimuthDegrees": 0.0,
+      "elevationDegrees": 4.0,
+      "projection": "orthographic"
+    },
+    {
+      "viewId": "view.rear",
+      "role": "fit_rear",
+      "azimuthDegrees": 180.0,
+      "elevationDegrees": 4.0,
+      "projection": "orthographic"
+    },
+    {
+      "viewId": "view.evaluator_left_three_quarter",
+      "role": "evaluator_only_after_prediction_and_atlas_freeze",
+      "azimuthDegrees": 62.0,
+      "elevationDegrees": 5.0,
+      "projection": "orthographic"
+    }
+  ],
+  "heldOutPolicy": {
+    "frontAndRearAreInSample": true,
+    "rearCalledHeldOut": false,
+    "evaluatorOnlyViewMountedBeforeFreeze": false,
+    "evaluatorOnlyViewCanInfluenceFitTextureOrFill": false,
+    "humanReviewStatus": "not_run"
+  },
+  "thresholds": {
+    "fit": {
+      "minimumMultiviewSilhouetteMeanIoU": 0.93,
+      "maximumBoundaryErrorNormalised": 0.025,
+      "maximumLandmarkErrorNormalised": 0.02,
+      "maximumOpeningAlignmentErrorNormalised": 0.015,
+      "maximumCameraBodyAlignmentErrorNormalised": 0.01,
+      "maximumSeamLengthEasePenalty": 0.005,
+      "maximumParameterErrorMeters": 0.035,
+      "maximumConfidenceWeightedLoss": 0.03,
+      "minimumCausalParameterDeltaMeters": 0.002,
+      "maximumLogoOnlyGeometryDeltaMeters": 0.000001
+    },
+    "independentRerender": {
+      "minimumSilhouetteIoU": 0.30,
+      "maximumBoundaryChamferNormalised": 0.095,
+      "maximumLandmarkReprojectionNormalised": 0.14,
+      "maximumForegroundLinearSrgbMae": 0.24,
+      "minimumLogoIoU": 0.02,
+      "maximumLogoDisplacementNormalised": 0.14,
+      "maximumRenderedSeamDiscontinuityLinear": 0.22,
+      "minimumVisibleCoverage": 0.30,
+      "maximumGeneratedRegionShare": 0.55,
+      "maximumFrontRearSilhouetteDelta": 0.12
+    },
+    "reference3d": {
+      "maximumPanelMeasurementRelativeError": 0.12,
+      "maximumAreaRelativeError": 0.18,
+      "maximumBoundaryCurveErrorMeters": 0.035,
+      "maximumSurfaceChamferMeters": 0.12,
+      "minimumNormalConsistency": 0.70,
+      "maximumVisibleDepthErrorMeters": 0.18,
+      "maximumBodyPenetrationMeters": 0.04,
+      "maximumSeamResidualMeters": 0.03,
+      "minimumPoseSuitePassRate": 1.0
+    },
+    "bitmapPbr": {
+      "minimumSourceObservedFraction": 0.50,
+      "minimumGeneratedFillFraction": 0.000001,
+      "maximumMetallicFactor": 0.10,
+      "minimumRoughnessFactor": 0.65,
+      "physicalPbrAccuracyStatus": "not_measured"
+    }
+  },
+  "metricApplicability": [
+    {"metricId": "capture.source_identity", "status": "applicable"},
+    {"metricId": "segmentation.mask_iou", "status": "applicable"},
+    {"metricId": "segmentation.boundary_f_score", "status": "applicable"},
+    {"metricId": "segmentation.part_iou", "status": "applicable"},
+    {"metricId": "landmark.reprojection_error", "status": "applicable"},
+    {"metricId": "opening.precision_recall", "status": "applicable"},
+    {"metricId": "camera.azimuth_error", "status": "applicable"},
+    {"metricId": "scale.error", "status": "applicable"},
+    {"metricId": "pattern.panel_accuracy", "status": "applicable"},
+    {"metricId": "pattern.semantic_accuracy", "status": "applicable"},
+    {"metricId": "pattern.seam_graph_accuracy", "status": "applicable"},
+    {"metricId": "pattern.boundary_curve_error", "status": "applicable"},
+    {"metricId": "pattern.area_measurement_error", "status": "applicable"},
+    {"metricId": "pattern.seam_compatibility", "status": "applicable"},
+    {"metricId": "topology.validity", "status": "applicable"},
+    {"metricId": "simulation.without_manual_repair", "status": "applicable"},
+    {"metricId": "surface.chamfer_distance", "status": "applicable"},
+    {"metricId": "surface.normal_consistency", "status": "applicable"},
+    {"metricId": "surface.visible_depth", "status": "applicable"},
+    {"metricId": "appearance.base_colour_visible_fidelity", "status": "applicable"},
+    {"metricId": "appearance.logo_iou_displacement", "status": "applicable"},
+    {"metricId": "pbr.physical_roughness_normal_ao_accuracy", "status": "not_run"},
+    {"metricId": "human_visual_review", "status": "not_run"},
+    {"metricId": "private_user_capture", "status": "not_applicable"}
+  ],
+  "corruptionExpectations": [
+    {"controlId": "blank_pixels", "expected": "candidate_rejects_or_changes"},
+    {"controlId": "front_rear_swap", "expected": "detected_or_material_metric_change"},
+    {"controlId": "widened_silhouette", "expected": "chest_width_increases"},
+    {"controlId": "narrowed_silhouette", "expected": "chest_width_decreases"},
+    {"controlId": "changed_sleeve_reach", "expected": "sleeve_length_changes"},
+    {"controlId": "shifted_hem", "expected": "body_length_changes"},
+    {"controlId": "logo_colour_only", "expected": "appearance_changes_geometry_invariant"},
+    {"controlId": "render_bytes", "expected": "independent_recompute_rejects"},
+    {"controlId": "atlas_bytes", "expected": "independent_recompute_rejects"},
+    {"controlId": "camera", "expected": "independent_recompute_rejects"},
+    {"controlId": "logo", "expected": "identity_metric_rejects"},
+    {"controlId": "source_contribution", "expected": "provenance_validator_rejects"},
+    {"controlId": "source_hash", "expected": "identity_validator_rejects"}
+  ],
+  "claims": {
+    "realPhotoEvidence": false,
+    "privateUserEvidence": false,
+    "humanReviewExecuted": false,
+    "physicalFabricPbrAccuracyMeasured": false,
+    "canonicalProductAcceptance": false
+  }
+}

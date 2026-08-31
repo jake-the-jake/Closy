@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "groundTruthId": "closy.d0_exact_tshirt_evaluator_ground_truth.v2",
+  "classification": "project_authored_public_synthetic_d0_evaluator_only",
+  "availability": {
+    "predictionCheckpointRequired": "0d54b7e32664eb873e1662c6ca21e46e65e5557f",
+    "mountedAfterPredictionFreeze": true,
+    "allowedUses": [
+      "post_freeze_parameter_evaluation",
+      "post_freeze_reference_3d_evaluation",
+      "post_freeze_left_three_quarter_rerender_evaluation"
+    ],
+    "forbiddenUses": [
+      "template_ranking",
+      "parameter_fitting",
+      "atlas_projection",
+      "controlled_fill"
+    ]
+  },
+  "targetParameters": {
+    "garment_body_length": 0.68,
+    "half_chest_width": 0.285,
+    "body_ease": 0.045,
+    "shoulder_width": 0.7,
+    "shoulder_slope": 0.035,
+    "neckline_width": 0.19,
+    "front_neckline_depth": 0.085,
+    "back_neckline_depth": 0.035,
+    "armhole_depth": 0.205,
+    "sleeve_length": 0.255,
+    "sleeve_opening_width": 0.18,
+    "sleeve_cap_height": 0.105,
+    "hem_allowance": 0.025,
+    "neckband_width": 0.035,
+    "neckband_length_ease_ratio": 0.92,
+    "target_panel_edge_length": 0.045
+  },
+  "reference3d": {
+    "compiler": "closy.exact_d0.canonical_candidate.topology_v2.v1",
+    "targetMode": "canonical_pattern_and_fixed_avatar_reference_settle",
+    "sourceRasterGeneratedFromFittedCandidate": false,
+    "topologyV1FallbackAllowed": false
+  },
+  "evaluatorView": {
+    "fixtureId": "d0_tshirt_exact_evaluator_three_quarter_v2",
+    "viewId": "view.evaluator_left_three_quarter",
+    "label": "left_three_quarter",
+    "expectedSha256": "0ff08a2080d8bbdba58b7563f373c6d4c0512e7a4580cf3030e7c1005f562e3e",
+    "decodedPixelHash": "12cfa4b9dc80bf86def8fd9a0dfb8449d4a8f29d4183fa63ef1e2d29f0d7e96d",
+    "expectedDecodedContentHash": "9249768dd099d799258e7771e5437d572d1744e95e66569f595fd34843df94bb"
+  },
+  "claims": {
+    "realPhotoEvidence": false,
+    "privateUserEvidence": false,
+    "humanReview": "not_run",
+    "physicalFabricPbrAccuracy": "not_measured"
+  },
+  "integrity": {
+    "groundTruthHash": "8901907c5e9808edcc2e9b76fb692aae0dc7b3df3c1bcd3ecb555ff85f5b5554"
+  }
+}
