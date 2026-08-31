@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -95,8 +96,22 @@ def _validate_lock(root: Path, lock: Mapping[str, Any]) -> None:
             continue
         path = record.get("path")
         digest = record.get("sha256")
-        if isinstance(path, str) and isinstance(digest, str) and sha256_file(root / path) != digest:
+        if (
+            isinstance(path, str)
+            and isinstance(digest, str)
+            and not _matches_locked_source_hash(root / path, digest)
+        ):
             raise ValueError(f"exact_d0_locked_code_hash_mismatch:{path}")
+
+
+def _matches_locked_source_hash(path: Path, expected: str) -> bool:
+    raw = path.read_bytes()
+    if sha256(raw).hexdigest() == expected:
+        return True
+    # The frozen Windows lock predates the repository-wide LF checkout policy. Accept only the
+    # byte-equivalent CRLF form; arbitrary source changes still fail closed.
+    canonical_crlf = raw.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+    return sha256(canonical_crlf).hexdigest() == expected
 
 
 def _mapping(value: object) -> Mapping[str, Any]:
