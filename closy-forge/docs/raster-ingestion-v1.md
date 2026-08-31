@@ -48,7 +48,9 @@ content hashes and durable public source fingerprints.
 
 ## Decoder Profile
 
-The D0 decoder uses Python stdlib only.
+The D0 decoder uses bounded project code for PNG structural validation and the
+pinned `Pillow==11.1.0` dependency for deterministic pixel decoding. PNG and
+JPEG are both reopened and decoded to normalized RGBA pixels.
 
 Supported:
 
@@ -57,7 +59,7 @@ Supported:
 - extension/MIME agreement;
 - PNG 8-bit grayscale, RGB, grayscale-alpha and RGBA;
 - PNG filter reconstruction with CRC checks;
-- deterministic JPEG EXIF orientation dimensions;
+- deterministic JPEG EXIF orientation application and normalized dimensions;
 - metadata stripping policy records;
 - bounded file, dimension, pixel-count and decompression limits.
 
@@ -72,10 +74,10 @@ Rejected:
 - decompression payload mismatch;
 - path traversal, symlink and hardlink inputs.
 
-PNG fixtures produce pixel-derived metrics. JPEG fixtures are accepted for
-header/orientation coverage in this stdlib-only slice, but JPEG pixel quality is
-marked as structural-only until a pinned decoder dependency is introduced and
-licensed.
+PNG and JPEG fixtures produce pixel-derived metrics. JPEG decode, EXIF
+orientation and RGBA conversion are performed by the pinned Pillow dependency;
+malformed or undecodable JPEG inputs fail closed rather than receiving a
+structural-only quality result.
 
 ## Outputs
 
@@ -104,6 +106,7 @@ original outside the Forge-managed registry. Repeated deletion is idempotent.
 - No provider upload exists.
 - No training use is permitted.
 - No raw source image is copied into a `.closygarment` package.
-- JPEG pixel decoding is intentionally absent in this dependency-free slice.
-- BP-50 masks and garment visibility confidence remain the next dependency-ready
-  visual-understanding step.
+- The decoder contract is pinned to Pillow 11.1.0 and must be requalified when
+  that dependency changes.
+- Real-user capture remains disabled even though project-authored fixture pixels
+  are decoded and observed locally.
