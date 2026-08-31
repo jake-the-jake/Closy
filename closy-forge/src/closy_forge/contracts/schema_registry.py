@@ -3062,6 +3062,8 @@ def _truth_authority_schemas() -> dict[str, dict[str, Any]]:
                 "researchPrototypeStatus": {"enum": ["pass", "partial"]},
                 "firstUnmetRequirement": {"type": ["object", "null"]},
                 "claims": {"type": "object"},
+                "corruptionControls": {"type": "object"},
+                "privacyPolicy": {"type": "object"},
                 "integrity": {"type": "object"},
             },
             [
@@ -3079,6 +3081,8 @@ def _truth_authority_schemas() -> dict[str, dict[str, Any]]:
                 "researchPrototypeStatus",
                 "firstUnmetRequirement",
                 "claims",
+                "corruptionControls",
+                "privacyPolicy",
                 "integrity",
             ],
         ),

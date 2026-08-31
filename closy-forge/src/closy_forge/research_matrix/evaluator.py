@@ -69,6 +69,18 @@ def evaluate_research_matrix(
             "deviceEvidence": False,
             "physicalClothEvidence": False,
         },
+        "corruptionControls": {
+            "storedSummaryPassTrusted": False,
+            "artifactHashesRecomputed": True,
+            "payloadHashesRecomputed": True,
+            "selectedIdentityJoinsEnforced": True,
+            "staleSwappedAndCrossPackageEvidenceFailClosed": True,
+        },
+        "privacyPolicy": {
+            "publicFixtureHashesRequireExplicitClassification": True,
+            "privateSourcesUseRestrictedHandlesAndLocalQualification": True,
+            "privateSourcePathsOrFingerprintsPortable": False,
+        },
         "integrity": {"matrixHash": ""},
     }
     matrix["integrity"]["matrixHash"] = _document_hash(matrix, omitted_key="matrixHash")
@@ -113,6 +125,9 @@ def _open_and_evaluate(
     binding: dict[str, Any],
     selected_identity: dict[str, str],
 ) -> dict[str, Any]:
+    classification = binding.get("classification")
+    if classification not in {"public_fixture", "portable_exported_authority"}:
+        raise MatrixEvaluationError(f"portable_evidence_classification_invalid:{evidence_id}")
     relative = binding.get("path")
     if not isinstance(relative, str):
         raise MatrixEvaluationError(f"evidence_path_invalid:{evidence_id}")
@@ -139,6 +154,7 @@ def _open_and_evaluate(
     ]
     return {
         "evidenceId": evidence_id,
+        "classification": classification,
         "path": relative,
         "sha256": actual_hash,
         "payloadHash": _document_hash(value),
@@ -206,6 +222,12 @@ def _row_result(
         "status": status,
         "reasonCode": reason_code,
         "openedEvidence": evidence,
+        "failClosedControls": {
+            "storedSummaryPassTrusted": False,
+            "artifactHashRecomputedWhenSupplied": bool(evidence),
+            "payloadHashRecomputedWhenOpened": bool(evidence),
+            "selectedIdentityContextRequired": True,
+        },
     }
 
 

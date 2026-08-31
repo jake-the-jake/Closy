@@ -12,6 +12,7 @@ from closy_forge.integrated_runtime.contracts import (
     RuntimeCapabilities,
     RuntimeDecision,
     RuntimeRequest,
+    package_authority_record,
 )
 from closy_forge.integrated_runtime.decision import (
     negotiate_candidate_runtime,
@@ -41,5 +42,6 @@ __all__ = [
     "build_canonical_outfit_case",
     "negotiate_runtime",
     "negotiate_candidate_runtime",
+    "package_authority_record",
     "run_canonical_outfit_surface_solve",
 ]

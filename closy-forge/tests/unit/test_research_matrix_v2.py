@@ -48,6 +48,7 @@ def _identity() -> dict[str, str]:
 
 def _binding(path: Path, *, expected: bool = True) -> dict[str, object]:
     return {
+        "classification": "public_fixture",
         "path": path.name,
         "sha256": sha256_file(path),
         "predicates": [
@@ -162,3 +163,20 @@ def test_mutation_with_preserved_hash_declaration_still_fails_payload_predicate(
     )
 
     assert matrix["rows"][0]["status"] == "fail"
+
+
+def test_portable_matrix_rejects_private_evidence_binding(tmp_path: Path) -> None:
+    evidence = tmp_path / "private.json"
+    write_canonical_json(evidence, {"executed": True, "packageDigest": _digest("package")})
+    binding = _binding(evidence)
+    binding["classification"] = "private_restricted"
+    matrix = evaluate_research_matrix(
+        tmp_path,
+        registry=_registry(),
+        evidence_bindings={"fixture": binding},
+        selected_identity=_identity(),
+        source_anchor_sha="f" * 40,
+    )
+
+    assert matrix["rows"][0]["status"] == "fail"
+    assert "portable_evidence_classification_invalid" in matrix["rows"][0]["reasonCode"]
