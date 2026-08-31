@@ -95,11 +95,7 @@ def _validate_lock(root: Path, lock: Mapping[str, Any]) -> None:
             continue
         path = record.get("path")
         digest = record.get("sha256")
-        if (
-            isinstance(path, str)
-            and isinstance(digest, str)
-            and sha256_file(root / path) != digest
-        ):
+        if isinstance(path, str) and isinstance(digest, str) and sha256_file(root / path) != digest:
             raise ValueError(f"exact_d0_locked_code_hash_mismatch:{path}")
 
 
