@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "lockId": "closy.phy1.seam_support_v3.experiment_lock.v1",
+  "parentHead": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+  "selectionPolicy": {
+    "chosenBeforePhysics": true,
+    "eligibilityBasis": "unit_c_exact_finite_deterministic_canonical_candidate",
+    "opportunisticCandidateComparisonAllowed": false,
+    "pr39EvidenceMayBeMixedWithUnitC": false
+  },
+  "candidate": {
+    "candidateId": "candidate.d0_exact_fitted_topology_v2.060e8d4aaaa7e82eddb75880",
+    "candidateManifestPath": "docs/evidence/d0_fitting_pbr_fidelity_v2/predictions/candidate_package/candidate_manifest.json",
+    "candidatePackageDigest": "aa3b6345d6fab56a59d9b0acbd05a8526ffdb473e8174f90f88fd255d8514ca2",
+    "patternHash": "e476864cbd1434831e66008f151585f3feebbd7299b209bdb8accc308e6fd207",
+    "seamConstraintHash": "3026459bcde9762070862644e1740cfb57d6241406aae9927010a8513e617c6a",
+    "simulationTopologyHash": "c6e80ed085302172d06296d276404d1441b3463e166b8058ab999b7bd62016ee",
+    "simulationRestContentHash": "4ba20df17623aff11d7884e5cfd6947e2198b5410ca638481469ba9612c72405",
+    "unitCSettledContentHash": "4124cd381a0da462fc8e3b8bd0e9b01db25f658c6edf56d9706a2bef419e8e55",
+    "renderTopologyHash": "8915681d7cd6123fee0f38f802f1fa5d11821b04d174ab116962800e08a4d226",
+    "renderContentHash": "0b45bab04b49eb04df1daa9c8cf7bc8e1bcd9a56e64081041a0ca78038dafdfc",
+    "bindingSha256": "d5842cc1c9f7907c50d8b3ded440d2346951f3d13a55a4e63769f2270b8a7b6d"
+  },
+  "fixedInputs": {
+    "avatarContractHash": "9beb183c1547efb03c091c0108cad9d924241d50d44edffc837cdc03fde6f4ed",
+    "avatarTopologyHash": "38a1f9a51bab405ac218a41cb11e0268670546a07ea2093ae42ae6173ef4ab7a",
+    "avatarContentHash": "4ccb87ac940039c40aa2cd01d72bec0fd3a31151f85a7190168639e8ad31b7cc",
+    "collisionTopologyHash": "ac4ca0b9f13ed5176e1e435955a8e2c3bd5600d6665f6d73c485cc2d8ebb739e",
+    "collisionContentHash": "26adcf081022ab1b3308524bf11173f709b035afc97f2f4c0928d4516e5b2701",
+    "materialPresetId": "material.cotton_jersey_d0_v1",
+    "materialPayloadHash": "7d19322e82aaec5d4332855b19de526676975aac2e62d3f9bff5afcbc9c22137",
+    "canonicalPositionDigits": 9,
+    "seed": 20250308
+  },
+  "budget": {
+    "identityComparedWithPr39": true,
+    "patternByteIdentical": true,
+    "seamConstraintByteIdentical": true,
+    "simulationTopologyByteIdentical": true,
+    "topologyStrategiesBeforeV3": 1,
+    "topologyStrategiesMaximum": 3,
+    "topologyStrategiesConsumedByV3": 0,
+    "topologyStrategiesRemainingAfterV3": 2,
+    "seamModelsBeforeV3": 1,
+    "seamModelsMaximum": 2,
+    "seamModelsConsumedByV3": 1,
+    "seamModelsRemainingAfterV3": 0
+  },
+  "expectedJunctionInventory": {
+    "authority": "authored_panel_edge_endpoint_equivalence_not_boundary_path_spelling",
+    "requiredMultiwayClassCount": 6,
+    "classIds": [
+      "junction.05d83807186c50f8",
+      "junction.0cd2f1f7b4f318ab",
+      "junction.771bb5936cf69b1c",
+      "junction.c19613591b71ac71",
+      "junction.e7c3bdec09c1d951",
+      "junction.ecaef0b75aa3eb20"
+    ],
+    "rankPolicy": "deterministic_spanning_tree_n_minus_1",
+    "openingEndpointsExcludedUnlessExplicitlySewn": true,
+    "emptyExpectedSetMayPass": false,
+    "maximumValence": 8
+  },
+  "configuration": {
+    "configurationId": "closy.phy1.seam_support_collision.v3.frozen_1",
+    "solver": {
+      "method": "deterministic_cpu_xpbd_with_compliance_and_lagrange_updates",
+      "version": "closy.reference_xpbd_seam_support_cpu.v3.0",
+      "timeStepSeconds": 0.016666667,
+      "minimumSubsteps": 24,
+      "maximumSubsteps": 48,
+      "iterationsPerSubstep": 12,
+      "runtimeCeilingSeconds": 180,
+      "gravityMetersPerSecondSquared": -9.81,
+      "velocityDampingRatio": 0.25,
+      "velocityClampMetersPerSecond": 8.0,
+      "requiredConsecutiveConvergedFrames": 6,
+      "tailWindowFrames": 8
+    },
+    "seams": {
+      "restNormalGapMeters": 0.0,
+      "restBinormalGapMeters": 0.0,
+      "complianceMetersPerNewton": 1e-9,
+      "easeEncoding": "normalised_arclength_correspondence_and_participant_sampling",
+      "crackMetric": "absolute_normal_plus_binormal_separation_at_corresponding_surface_samples",
+      "slipMetric": "signed_tangent_component_after_eased_arclength_correspondence",
+      "euclideanGapReportedSeparately": true,
+      "authoredSeamAllowanceIsNotSimulatedGap": true,
+      "junctionConstraintModel": "rank_aware_deterministic_spanning_tree"
+    },
+    "supports": {
+      "policy": "temporary_pose_driven_shoulder_startup_stabilisers",
+      "bodyRegions": [
+        "left_shoulder",
+        "right_shoulder"
+      ],
+      "maximumVertexCount": 8,
+      "complianceMetersPerNewton": 5e-7,
+      "fullStrengthThroughSubstep": 7,
+      "releaseStartsAtSubstep": 8,
+      "fullyReleasedAtSubstep": 16,
+      "scoredMotionStartsAfterSubstep": 16,
+      "staleSettledSpaceTargetsAllowed": false,
+      "wholeNeckBandPinsAllowed": false,
+      "blanketHighYPinsAllowed": false
+    },
+    "collision": {
+      "bodyClearanceMeters": 0.006,
+      "selfClearanceMeters": 0.0008,
+      "clothThicknessMeters": 0.0016,
+      "bodyCadenceIterations": 1,
+      "selfCollisionCadenceIterations": 2,
+      "stitchedNeighbourhoodExclusionRings": 1,
+      "broadPairLabelExclusionsAllowed": false,
+      "triangleBodyOracle": "closy.phy1.independent_triangle_body_surface_oracle.v3",
+      "triangleTriangleOracle": "closy.phy1.independent_triangle_triangle_distance_oracle.v3",
+      "denseRenderClearanceRequired": true
+    },
+    "constraintOrder": [
+      "integrate",
+      "structural_xpbd",
+      "zero_gap_seam_xpbd",
+      "rank_aware_junction_xpbd",
+      "temporary_pose_support_xpbd",
+      "body_collision_projection",
+      "self_collision_projection",
+      "velocity_and_energy_recompute"
+    ]
+  },
+  "thresholds": {
+    "maximumNonFiniteValues": 0,
+    "maximumTrueInversions": 0,
+    "maximumCollapsedOpenings": 0,
+    "maximumUnresolvedContacts": 0,
+    "maximumResidualViolations": 0,
+    "maximumResidualDepthMeters": 0.00016,
+    "minimumSimulationClearanceMeters": 0.000005,
+    "minimumRenderClearanceMeters": 0.000005,
+    "maximumSeamCrackMeters": 0.002,
+    "maximumTangentialSlipMeters": 0.005,
+    "maximumSupportResidualMetersWhileActive": 0.002,
+    "maximumTerminalVelocityMetersPerSecond": 0.02,
+    "maximumTerminalKineticEnergyJoules": 0.001,
+    "maximumEdgeStretchRatio": 1.35,
+    "p95EdgeStretchRatio": 1.15,
+    "minimumEdgeCompressionRatio": 0.75,
+    "p05EdgeCompressionRatio": 0.88,
+    "maximumShearRatio": 0.35,
+    "triangleAreaRatioRange": [
+      0.65,
+      1.5
+    ],
+    "maximumCenterOfMassDisplacementMeters": 0.25,
+    "minimumTrajectoryFrameCount": 25,
+    "minimumDistinctTrajectoryContentHashes": 3
+  },
+  "analyticMicrofixtures": {
+    "executedBeforeLock": false,
+    "thresholdCalibrationUsesCandidate": false,
+    "cases": [
+      {
+        "caseId": "seam.normal_only",
+        "normalGapMeters": 0.003,
+        "tangentialOffsetMeters": 0.0,
+        "expectedCrackMeters": 0.003,
+        "expectedSlipMeters": 0.0,
+        "expectedEuclideanGapMeters": 0.003
+      },
+      {
+        "caseId": "seam.tangent_only",
+        "normalGapMeters": 0.0,
+        "tangentialOffsetMeters": 0.004,
+        "expectedCrackMeters": 0.0,
+        "expectedSlipMeters": 0.004,
+        "expectedEuclideanGapMeters": 0.004
+      },
+      {
+        "caseId": "seam.combined_3_4_5",
+        "normalGapMeters": 0.003,
+        "tangentialOffsetMeters": 0.004,
+        "expectedCrackMeters": 0.003,
+        "expectedSlipMeters": 0.004,
+        "expectedEuclideanGapMeters": 0.005
+      },
+      {
+        "caseId": "junction.valence_4_rank",
+        "participantCount": 4,
+        "expectedIndependentConstraintCount": 3,
+        "expectedDuplicateConstraintCount": 0
+      },
+      {
+        "caseId": "support.overconstrained_v2_rejected",
+        "expectedStatus": "fail",
+        "requiredFailure": "blanket_high_y_or_whole_neck_band_support"
+      },
+      {
+        "caseId": "collision.intersecting_and_separated_triangles",
+        "expectedIntersectingContactCountMinimum": 1,
+        "expectedSeparatedContactCount": 0
+      }
+    ]
+  },
+  "corruptionControls": [
+    "junction_missing",
+    "junction_duplicate",
+    "junction_split",
+    "junction_cross_opening",
+    "seam_normal_slip_alias",
+    "seam_nonzero_spatial_rest_gap",
+    "support_overconstrained",
+    "support_stale_target",
+    "collision_oracle_disabled",
+    "trajectory_static_copy",
+    "candidate_identity_mismatch"
+  ],
+  "conditionalPhy1": {
+    "executeOnlyIfNeutralPasses": true,
+    "scenarioIds": [
+      "neutral_settled",
+      "left_arm_raise",
+      "right_arm_raise",
+      "forward_bend",
+      "side_bend",
+      "torso_twist",
+      "moderate_gust",
+      "lightweight_material_extreme",
+      "stiff_material_extreme",
+      "opening_stress",
+      "seam_stress"
+    ],
+    "ccdExecuteOnlyAfterNeutralCoupledConvergence": true,
+    "z2ExecuteOnlyAfterExactCandidateC3Phy1AndStaticZ1Pass": true
+  },
+  "postResultPolicy": {
+    "trajectoryAffectingChangeAllowedInUnit": false,
+    "thresholdChangeAllowedInUnit": false,
+    "reportingOracleFixRequiresIndependentMicrofixtureAndUnchangedTrajectory": true,
+    "neutralFailureStopsPhy1CcdAndZ2": true,
+    "runtimeV1RemainsSelected": true,
+    "topologyV2RemainsOptIn": true
+  },
+  "unsupportedClaims": {
+    "productionPhysicalAnimation": false,
+    "gpuEvidence": false,
+    "mobileEvidence": false,
+    "privateUserEvidence": false,
+    "realFabricEvidence": false,
+    "humanReview": false
+  },
+  "integrity": {
+    "configurationHash": "faf828dc4c95fa20235b8a6077e73fc466a943371f39db28b41ddb0c104a5401",
+    "thresholdHash": "84f4a3bb43c10fc0880713bba04eaf56e694ee722c52619f5b3194a56b4f9ca9",
+    "junctionInventoryHash": "0382d8e05776cebabf125cc54ceb3ff9fafb28db590044938e6e39ac7590a22b",
+    "physicalCandidateId": "physical.candidate.phy1_seam_support_v3.1152728eaf2588b4f674339f",
+    "lockHash": "e31df21e651ce10166af959136d9d3406d89c6bec1c3ed2f0d0d3db95bd5c74c"
+  }
+}
