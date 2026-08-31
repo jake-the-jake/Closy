@@ -1,0 +1,4 @@
+closy-forge/docs/**/*.json text eol=lf
+closy-forge/fixtures/**/*.json text eol=lf
+closy-forge/schemas/**/*.json text eol=lf
+

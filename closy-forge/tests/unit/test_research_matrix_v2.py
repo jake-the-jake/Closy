@@ -4,8 +4,8 @@ from copy import deepcopy
 from pathlib import Path
 
 from closy_forge.package_io.canonical_json import read_json, write_canonical_json
-from closy_forge.package_io.hashing import sha256_bytes, sha256_file
-from closy_forge.research_matrix import evaluate_research_matrix
+from closy_forge.package_io.hashing import sha256_bytes
+from closy_forge.research_matrix import canonical_artifact_sha256, evaluate_research_matrix
 
 
 def _digest(label: str) -> str:
@@ -50,7 +50,7 @@ def _binding(path: Path, *, expected: bool = True) -> dict[str, object]:
     return {
         "classification": "public_fixture",
         "path": path.name,
-        "sha256": sha256_file(path),
+        "sha256": canonical_artifact_sha256(path),
         "predicates": [
             {
                 "predicateId": "executed",
@@ -153,7 +153,7 @@ def test_mutation_with_preserved_hash_declaration_still_fails_payload_predicate(
     assert isinstance(mutated, dict)
     mutated["executed"] = False
     write_canonical_json(evidence, mutated)
-    binding["sha256"] = sha256_file(evidence)
+    binding["sha256"] = canonical_artifact_sha256(evidence)
     matrix = evaluate_research_matrix(
         tmp_path,
         registry=_registry(),
@@ -163,6 +163,15 @@ def test_mutation_with_preserved_hash_declaration_still_fails_payload_predicate(
     )
 
     assert matrix["rows"][0]["status"] == "fail"
+
+
+def test_artifact_hash_is_identical_for_lf_and_crlf_checkout_bytes(tmp_path: Path) -> None:
+    lf = tmp_path / "lf.json"
+    crlf = tmp_path / "crlf.json"
+    lf.write_bytes(b'{"executed":true}\n')
+    crlf.write_bytes(b'{"executed":true}\r\n')
+
+    assert canonical_artifact_sha256(lf) == canonical_artifact_sha256(crlf)
 
 
 def test_portable_matrix_rejects_private_evidence_binding(tmp_path: Path) -> None:

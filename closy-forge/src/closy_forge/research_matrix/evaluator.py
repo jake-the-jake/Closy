@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json
-from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.package_io.hashing import sha256_bytes
 from closy_forge.package_io.paths import validate_package_relpath
 
 MATRIX_EVALUATOR_VERSION = "closy.d0_research_matrix.predicate_evaluator.v2"
@@ -13,6 +13,16 @@ MatrixStatus = Literal["pass", "fail", "not_run"]
 
 class MatrixEvaluationError(ValueError):
     pass
+
+
+def canonical_artifact_sha256(path: Path) -> str:
+    """Hash exact evidence bytes under the repository's canonical LF policy."""
+
+    raw = path.read_bytes()
+    normalized = raw.replace(b"\r\n", b"\n")
+    if b"\r" in normalized:
+        raise MatrixEvaluationError("evidence_artifact_noncanonical_newline")
+    return sha256_bytes(normalized)
 
 
 def evaluate_research_matrix(
@@ -138,7 +148,7 @@ def _open_and_evaluate(
     path = root / relative
     if not path.is_file():
         raise MatrixEvaluationError(f"evidence_artifact_missing:{evidence_id}")
-    actual_hash = sha256_file(path)
+    actual_hash = canonical_artifact_sha256(path)
     expected_hash = binding.get("sha256")
     if not isinstance(expected_hash, str) or actual_hash != expected_hash:
         raise MatrixEvaluationError(f"evidence_artifact_hash_mismatch:{evidence_id}")

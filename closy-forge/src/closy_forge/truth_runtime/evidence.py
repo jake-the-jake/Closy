@@ -13,7 +13,7 @@ from closy_forge.integrated_runtime import package_authority_record
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json, write_canonical_json
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
-from closy_forge.research_matrix import evaluate_research_matrix
+from closy_forge.research_matrix import canonical_artifact_sha256, evaluate_research_matrix
 from closy_forge.runtime_delivery import (
     RUNTIME_CANDIDATE_CAPABILITY_VERSION,
     RUNTIME_CANDIDATE_PACKAGE_VERSION,
@@ -279,7 +279,7 @@ def _matrix_bindings(root: Path, target: Path, selected_identity: dict[str, str]
         return {
             "classification": "public_fixture",
             "path": path.relative_to(root).as_posix(),
-            "sha256": sha256_file(path),
+            "sha256": canonical_artifact_sha256(path),
             "predicates": predicates,
         }
 
