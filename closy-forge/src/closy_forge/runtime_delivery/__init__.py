@@ -1,3 +1,11 @@
+from closy_forge.runtime_delivery.candidate_v2 import (
+    RUNTIME_CANDIDATE_CAPABILITY_VERSION,
+    RUNTIME_CANDIDATE_PACKAGE_VERSION,
+    LoadedRuntimeCandidate,
+    RuntimeCandidateInputs,
+    build_runtime_candidate_v2,
+    load_runtime_candidate_v2,
+)
 from closy_forge.runtime_delivery.package import (
     RUNTIME_CAPABILITY_VERSION,
     RUNTIME_PACKAGE_VERSION,
@@ -26,11 +34,15 @@ from closy_forge.runtime_delivery.streaming import (
 
 __all__ = [
     "RUNTIME_CAPABILITY_VERSION",
+    "RUNTIME_CANDIDATE_CAPABILITY_VERSION",
+    "RUNTIME_CANDIDATE_PACKAGE_VERSION",
     "RUNTIME_PACKAGE_VERSION",
     "LoadedRuntimePackage",
+    "LoadedRuntimeCandidate",
     "RuntimeLimits",
     "RuntimePackageError",
     "RuntimePackageInputs",
+    "RuntimeCandidateInputs",
     "PrivateDerivative",
     "PrivateRegistryError",
     "STREAM_SCHEMA_VERSION",
@@ -39,9 +51,11 @@ __all__ = [
     "TransferReceiver",
     "build_chunk_inventory",
     "build_runtime_package",
+    "build_runtime_candidate_v2",
     "create_portable_source_link",
     "evict_transfer_state",
     "load_runtime_package",
+    "load_runtime_candidate_v2",
     "register_private_source",
     "withdraw_private_source",
 ]

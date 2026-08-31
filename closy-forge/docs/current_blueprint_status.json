@@ -615,17 +615,27 @@
   "stack": {
     "acyclic": true,
     "businessPatchMappingsComplete": true,
-    "crossRepositoryNodeCount": 41,
-    "exactHeadForgeExceptions": [
-      10,
-      39
+    "committedSourceAnchorExceptions": [
+      10
     ],
+    "crossRepositoryNodeCount": 41,
     "exactMergeBases": true,
+    "externalExactHeadAttestations": [
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "publishedHeadSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
+        "pullRequest": 39,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33342673147"
+      }
+    ],
+    "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
     "latestPullRequest": 39,
     "pullRequestCount": 39,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v6",
+  "statusModelVersion": "closy.blueprint_status_model.v7",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,

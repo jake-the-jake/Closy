@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v6"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v7"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -27,6 +27,8 @@ MT1_EXECUTABLE_SHA256 = "b29345b062691cfa7d7e6873c7c9b9bca2cd5a46e670b866d8e6915
 INTEGRATED_RUNTIME_EVIDENCE_SHA = "dd916913ac14119bc2e127989703f1c51f91e00a"
 PHY1_V2_SOURCE_SHA = "477c1fd881c7e55c352ca89732e5772d9d6bbeeb"
 PHY1_V2_PUBLICATION_SHA = "a6134df2fb67a8cbcb572e344caf828b926df273"
+PHY1_V2_PUBLISHED_EXACT_HEAD = "f732df267642cd55960205764e699c7fa2bb2d0f"
+PHY1_V2_EXACT_HEAD_WORKFLOW = "https://github.com/jake-the-jake/Closy/actions/runs/33342673147"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -405,12 +407,27 @@ def build_status_model(
             "businessPatchMappingsComplete": bool(
                 stack["validation"]["businessPatchMappingsComplete"]
             ),
-            "exactHeadForgeExceptions": [
+            "committedSourceAnchorExceptions": [
                 int(row["pullRequest"])
                 for row in stack["nodes"]
                 if row["repository"] == "jake-the-jake/Closy"
                 and not row["latestExactHeadWorkflows"]
+                and int(row["pullRequest"]) != 39
             ],
+            "externalExactHeadAttestations": [
+                {
+                    "pullRequest": 39,
+                    "committedSourceAnchorSha": PHY1_V2_PUBLICATION_SHA,
+                    "publishedHeadSha": PHY1_V2_PUBLISHED_EXACT_HEAD,
+                    "workflowRunUrl": PHY1_V2_EXACT_HEAD_WORKFLOW,
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                }
+            ],
+            "headAuthorityPolicy": (
+                "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_"
+                "draft_pr_body_attest_final_published_head"
+            ),
         },
         "truth": {
             "phase8EvidenceScope": "deterministic_fixture_family_verticals",
@@ -466,8 +483,21 @@ def validate_status_model(
         issues.append("phase_zero_not_complete")
     if any(model.get("phases", {}).get(f"{index:02d}") != "partial" for index in range(1, 15)):
         issues.append("phase_completion_overclaimed")
-    if 10 not in model.get("stack", {}).get("exactHeadForgeExceptions", []):
+    status_stack = model.get("stack", {})
+    if status_stack.get("committedSourceAnchorExceptions") != [10]:
         issues.append("stack_exception_set_invalid")
+    attestations = status_stack.get("externalExactHeadAttestations", [])
+    if attestations != [
+        {
+            "pullRequest": 39,
+            "committedSourceAnchorSha": PHY1_V2_PUBLICATION_SHA,
+            "publishedHeadSha": PHY1_V2_PUBLISHED_EXACT_HEAD,
+            "workflowRunUrl": PHY1_V2_EXACT_HEAD_WORKFLOW,
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        }
+    ]:
+        issues.append("external_exact_head_attestation_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (
         "candidate_default_all_family_and_representative_pass"
