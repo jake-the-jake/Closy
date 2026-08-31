@@ -8,6 +8,7 @@ from PIL import Image, ImageFilter
 
 from closy_forge.package_io.canonical_json import read_json
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.raster import encode_png_rgba
 
 
 def audit_raster_semantics_v4(
@@ -154,7 +155,8 @@ def _contribution_records(
         if output is not None:
             output.mkdir(parents=True, exist_ok=True)
             path = output / f"{label}_contribution.png"
-            view.save(path, format="PNG", optimize=False, compress_level=9)
+            rgba = b"".join(bytes((value, value, value, 255)) for value in payload)
+            path.write_bytes(encode_png_rgba(view.width, view.height, rgba))
             outputs.append(
                 {
                     "viewId": record["viewId"],

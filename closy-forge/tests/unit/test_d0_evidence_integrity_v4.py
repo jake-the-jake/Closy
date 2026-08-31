@@ -36,6 +36,7 @@ from closy_forge.package_io.hashing import (
     sha256_file,
     topology_hash,
 )
+from closy_forge.raster import decode_png_rgba, encode_png_rgba
 from scripts.generate_d0_evidence_integrity_v4 import generate
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -438,6 +439,10 @@ def test_raster_semantics_keep_raw_focus_distinct_and_generated_fill_score_neutr
     assert report["sourceFidelityColor"]["generatedFillCannotImproveScore"] is True
     assert len(report["contributionProvenance"]["perView"]) == 2
     assert report["physicalPbrAccuracy"] == "not_measured"
+    for output in report["contributionProvenance"]["generatedOutputs"]:
+        payload = (EVIDENCE / "contribution" / output["path"]).read_bytes()
+        decoded = decode_png_rgba(payload)
+        assert encode_png_rgba(decoded.width, decoded.height, decoded.rgba) == payload
     for view in report["sourceViewQuality"]:
         assert view["rawLaplacianVariance8BitSquared"] != view["normalizedFocus"]
 
