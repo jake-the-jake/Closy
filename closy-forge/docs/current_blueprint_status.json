@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 62
     },
-    "coverageVersion": "closy.blueprint_coverage.phy1_topology_v2.v8",
+    "coverageVersion": "closy.blueprint_coverage.d0_truth_runtime_authority_v3.v9",
     "total": 101
   },
-  "evidenceAnchorSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
+  "evidenceAnchorSha": "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -615,17 +615,37 @@
   "stack": {
     "acyclic": true,
     "businessPatchMappingsComplete": true,
-    "crossRepositoryNodeCount": 41,
-    "exactHeadForgeExceptions": [
-      10,
-      39
+    "committedSourceAnchorExceptions": [
+      10
     ],
+    "crossRepositoryNodeCount": 42,
     "exactMergeBases": true,
-    "latestPullRequest": 39,
-    "pullRequestCount": 39,
+    "externalExactHeadAttestations": [
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "publishedHeadSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
+        "pullRequest": 39,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33342673147"
+      }
+    ],
+    "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
+    "latestPullRequest": 40,
+    "pendingExternalExactHeadAttestations": [
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
+        "publishedHeadSha": null,
+        "pullRequest": 40,
+        "result": "pending_publication_exact_head_ci",
+        "workflowRunUrl": null
+      }
+    ],
+    "pullRequestCount": 40,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v6",
+  "statusModelVersion": "closy.blueprint_status_model.v8",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -634,10 +654,18 @@
     "actualZeroOneMobileRuntimeExecuted": false,
     "actualZeroOneStaticArtifactLoaded": true,
     "actualZeroOneStaticCookExecutedThisInvocation": true,
+    "boundedRuntimeAndRasterDecompression": true,
     "cacheValidated": true,
     "currentRasterPhase9SourceIntegrated": true,
     "currentRasterPhase9SourcePullRequest": 26,
+    "dependencyIdentityGraphAvailable": true,
     "finalD0ResearchMatrixStatus": "partial",
+    "finalD0ResearchMatrixStatusCounts": {
+      "fail": 0,
+      "not_run": 7,
+      "pass": 8
+    },
+    "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
     "integratedRuntimePinnedToTopologyV1": true,
@@ -656,6 +684,10 @@
     "phy1TopologyV2RuntimeExposed": false,
     "physicalMobileEvidenceRun": false,
     "privateUserEvidenceRun": false,
+    "runtimeCandidateV2Available": true,
+    "runtimeCandidateV2DescriptorPayloadCapability": false,
+    "runtimeCandidateV2FallbackIsCanonicalGarment": true,
+    "runtimeCandidateV2ProductSelected": false,
     "zeroOneStaticFamilyAttemptCount": 9,
     "zeroOneStaticRejectedFamilyCount": 0,
     "zeroOneStaticSuccessfulFamilyCount": 9

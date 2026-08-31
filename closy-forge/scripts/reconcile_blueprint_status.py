@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "a6134df2fb67a8cbcb572e344caf828b926df273"
+EVIDENCE_ANCHOR = "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.phy1_topology_v2.v8"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_v2.v5"
+VERSION = "closy.blueprint_coverage.d0_truth_runtime_authority_v3.v9"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_truth_runtime_authority_v3.v6"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -261,6 +261,19 @@ PR_SNAPSHOTS = [
         "",
         "NOT_RUN_AT_EVIDENCE_ANCHOR",
         "phy1_topology_v2_experiment_only",
+    ),
+    (
+        40,
+        "Forge: add executable D0 truth and runtime authority",
+        "codex/closy-forge-d0-truth-runtime-authority-v3",
+        "codex/closy-forge-phy1-topology-v2",
+        "f732df267642cd55960205764e699c7fa2bb2d0f",
+        "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
+        6,
+        42,
+        "",
+        "NOT_RUN_AT_EVIDENCE_ANCHOR",
+        "d0_truth_runtime_authority_v3",
     ),
 ]
 
@@ -1000,6 +1013,90 @@ PHY1_V2_EVIDENCE_ADDITIONS = {
     for row_id in PHY1_V2_PROGRESSION_UPDATES
 }
 
+TRUTH_RUNTIME_PROGRESSION_UPDATES = {
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "The versioned D0 matrix now derives every result from opened, hashed evidence and "
+            "exact selected-identity predicates; it records 8 pass and 7 not-run rows."
+        ),
+        "limitations": (
+            "Exact decoded raster, observation, fit, baseline, reference-3D, independent "
+            "texture-rerender, and neutral-simulation evidence remain not run."
+        ),
+        "nextAction": "Execute the exact public front/rear raster lineage as the next child unit.",
+    },
+    "BP-15-SECURITY-PRIVACY": {
+        "status": "partial",
+        "summary": (
+            "Portable dependency and matrix authorities now reject private paths/fingerprints; "
+            "public-fixture hashes require explicit classification."
+        ),
+        "limitations": (
+            "Private-user qualification remains local/restricted and Gate P1 remains not run."
+        ),
+        "nextAction": (
+            "Keep private source bytes and durable identifiers outside portable raster evidence."
+        ),
+    },
+    "BP-17-PHASE-12": {
+        "status": "partial",
+        "summary": (
+            "A versioned research runtime candidate parses package authority from selected "
+            "canonical bytes and loads the canonical garment fallback after source withdrawal."
+        ),
+        "limitations": (
+            "ZeroOne entries remain descriptors, product runtime v1 is unchanged, and no mobile "
+            "or actual ZeroOne payload runtime execution is claimed."
+        ),
+        "nextAction": (
+            "Carry candidate-v2 authority forward while keeping conventional garment fallback "
+            "available and product selection unchanged."
+        ),
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "The executable v2 Research Prototype matrix records 8 passing and 7 not-run rows "
+            "from exact selected public-fixture/package identities."
+        ),
+        "limitations": (
+            "The first unmet row is decoded front/rear raster source identity; the new neutral "
+            "simulation row is also not run, and no unsupported tier is promoted."
+        ),
+        "nextAction": (
+            "Execute exact raster lineage, fitting, fidelity, and neutral simulation predicates "
+            "without replaying historical summary booleans."
+        ),
+    },
+}
+
+TRUTH_RUNTIME_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/research_matrix/evaluator.py",
+            "closy-forge/src/closy_forge/dependency_identity/graph.py",
+            "closy-forge/src/closy_forge/runtime_delivery/candidate_v2.py",
+            "closy-forge/src/closy_forge/truth_runtime/evidence.py",
+            "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/"
+            "final_d0_research_prototype_matrix_v2.json",
+        ],
+        "executableEvidence": [
+            "predicate-derived 15-row matrix rejects stale, swapped, and cross-package evidence",
+            "candidate-v2 selects the canonical garment fallback and remains offline after source "
+            "withdrawal",
+            "bounded raster/runtime decompression rejects truncation and trailing streams",
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_research_matrix_v2.py",
+            "closy-forge/tests/unit/test_dependency_identity_graph.py",
+            "closy-forge/tests/unit/test_runtime_candidate_v2.py",
+            "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py",
+        ],
+    }
+    for row_id in TRUTH_RUNTIME_PROGRESSION_UPDATES
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -1157,6 +1254,9 @@ def main() -> int:
         phy1_v2_update = PHY1_V2_PROGRESSION_UPDATES.get(row_id)
         if phy1_v2_update:
             row.update(phy1_v2_update)
+        truth_runtime_update = TRUTH_RUNTIME_PROGRESSION_UPDATES.get(row_id)
+        if truth_runtime_update:
+            row.update(truth_runtime_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1176,10 +1276,16 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), phy1_v2_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        truth_runtime_evidence = TRUTH_RUNTIME_EVIDENCE_ADDITIONS.get(row_id)
+        if truth_runtime_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), truth_runtime_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
             and row_id not in PHY1_V2_PROGRESSION_UPDATES
+            and row_id not in TRUTH_RUNTIME_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -1363,6 +1469,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         37: 35,
         38: 36,
         39: 38,
+        40: 39,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []

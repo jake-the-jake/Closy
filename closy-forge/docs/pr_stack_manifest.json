@@ -427,6 +427,16 @@
       "to": "github:jake-the-jake/Closy:pr/39"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/39",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/40"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/39",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/40"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -2044,6 +2054,35 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "921ef05b61f39e6020ad12126ffac24c4728f7e0..a6134df2fb67a8cbcb572e344caf828b926df273"
+    },
+    {
+      "ahead": 6,
+      "baseRef": "codex/closy-forge-phy1-topology-v2",
+      "baseSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-truth-runtime-authority-v3",
+      "capabilityRole": "forge_add_executable_d0_truth_and_runtime_authority",
+      "changedFileCount": 42,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/39"
+      ],
+      "headSha": "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
+      "id": "github:jake-the-jake/Closy:pr/40",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "f732df267642cd55960205764e699c7fa2bb2d0f",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/39"
+      ],
+      "pullRequest": 40,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_truth_runtime_authority_v3",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "f732df267642cd55960205764e699c7fa2bb2d0f..7579f5e7dced1a19cea5df47a4a482bead57f4b4"
     },
     {
       "ahead": 3,
@@ -3845,6 +3884,32 @@
       "state": "OPEN",
       "title": "Forge: progress bounded PHY1 topology v2",
       "url": "https://github.com/jake-the-jake/Closy/pull/39"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phy1-topology-v2",
+      "baseSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
+      "branch": "codex/closy-forge-d0-truth-runtime-authority-v3",
+      "changedFileCount": 42,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #40 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 6,
+      "layerBehind": 0,
+      "layerCommitCount": 6,
+      "mergeBase": "f732df267642cd55960205764e699c7fa2bb2d0f",
+      "mergeability": "MERGEABLE",
+      "number": 40,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_truth_runtime_authority_v3",
+      "state": "OPEN",
+      "title": "Forge: add executable D0 truth and runtime authority",
+      "url": "https://github.com/jake-the-jake/Closy/pull/40"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -3890,7 +3955,8 @@
     "github:jake-the-jake/Closy:pr/34",
     "github:jake-the-jake/Closy:pr/36",
     "github:jake-the-jake/Closy:pr/38",
-    "github:jake-the-jake/Closy:pr/39"
+    "github:jake-the-jake/Closy:pr/39",
+    "github:jake-the-jake/Closy:pr/40"
   ],
   "topology": "explicit_dag",
   "validation": {

@@ -689,9 +689,10 @@ def _decode_png_rgba(
         raise RasterIngestError("png_missing_idat")
     decompressor = zlib.decompressobj()
     raw = decompressor.decompress(compressed, expected_length + 1)
-    raw += decompressor.flush()
-    if len(raw) != expected_length:
+    if len(raw) != expected_length or not decompressor.eof:
         raise RasterIngestError("decompression_limit_exceeded")
+    if decompressor.unused_data or decompressor.unconsumed_tail:
+        raise RasterIngestError("decompression_trailing_data")
     output = bytearray(width * height * 4)
     previous = bytearray(row_length)
     offset = 0

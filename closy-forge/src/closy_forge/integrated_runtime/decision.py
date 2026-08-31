@@ -3,14 +3,97 @@ from __future__ import annotations
 from typing import Literal
 
 from closy_forge.integrated_runtime.contracts import (
+    INTEGRATED_CANDIDATE_CAPABILITY_VERSION,
     INTEGRATED_CAPABILITY_VERSION,
+    INTEGRATED_RUNTIME_CANDIDATE_VERSION,
     INTEGRATED_RUNTIME_VERSION,
+    CandidateRuntimeDecision,
+    CandidateRuntimeRequest,
     CapabilityState,
+    ExecutionAuthority,
+    PackageAuthority,
     RuntimeAuthority,
     RuntimeCapabilities,
     RuntimeDecision,
     RuntimeRequest,
 )
+
+
+def negotiate_candidate_runtime(
+    package_authority: PackageAuthority,
+    request: CandidateRuntimeRequest,
+    execution_authority: ExecutionAuthority | None = None,
+) -> CandidateRuntimeDecision:
+    """Join validated package bytes to actual execution without descriptor self-admission."""
+
+    package_authority.validate()
+    reasons: list[str] = []
+    admitted: list[str] = []
+    version_matches = request.capability_version == INTEGRATED_CANDIDATE_CAPABILITY_VERSION
+    if not version_matches:
+        reasons.append("unsupported_candidate_capability_version")
+
+    execution_matches = False
+    if execution_authority is not None:
+        execution_authority.validate()
+        execution_matches = _execution_matches(package_authority, execution_authority)
+        if not execution_matches:
+            reasons.append("execution_authority_stale_or_cross_package")
+
+    static_admitted = (
+        version_matches
+        and request.supports_zeroone_static_payload
+        and execution_authority is not None
+        and execution_matches
+        and execution_authority.static_payload_opened
+    )
+    dynamic_admitted = (
+        version_matches
+        and request.supports_zeroone_dynamic_payload
+        and static_admitted
+        and execution_authority is not None
+        and execution_authority.dynamic_payload_opened
+    )
+    if static_admitted:
+        admitted.append("candidate_static_zeroone_payload")
+    else:
+        reasons.append("zeroone_static_descriptor_not_payload")
+    if dynamic_admitted:
+        admitted.append("candidate_dynamic_zeroone_payload")
+    else:
+        reasons.append("zeroone_dynamic_descriptor_not_payload")
+
+    return CandidateRuntimeDecision(
+        runtime_version=INTEGRATED_RUNTIME_CANDIDATE_VERSION,
+        package_valid=True,
+        render_source=(
+            "external_zeroone_static_payload" if static_admitted else "conventional_garment_glb"
+        ),
+        motion_source=(
+            "external_zeroone_dynamic_payload" if dynamic_admitted else "prebaked_static_pose"
+        ),
+        descriptor_only=not static_admitted and not dynamic_admitted,
+        optional_capabilities_admitted=tuple(admitted),
+        fallback_reasons=tuple(dict.fromkeys(reasons)),
+        package_authority=package_authority,
+        execution_authority_joined=execution_matches,
+    )
+
+
+def _execution_matches(package: PackageAuthority, execution: ExecutionAuthority) -> bool:
+    return (
+        execution.candidate_runtime_package_digest == package.runtime_package_digest
+        and execution.static_descriptor_identity == package.zeroone_static_descriptor_identity
+        and execution.executable_sha256 == package.expected_zeroone_binary_identity
+        and execution.static_input_surface_identity == package.static_input_surface_identity
+        and execution.mechanical_reference_surface_identity
+        == package.mechanical_reference_surface_identity
+        and execution.simulation_topology_hash == package.simulation_topology_hash
+        and execution.render_topology_hash == package.render_topology_hash
+        and execution.binding_hash == package.binding_hash
+        and execution.dynamic_request_identity != execution.dynamic_output_inventory_identity
+        and execution.static_request_identity != execution.static_output_inventory_identity
+    )
 
 
 def negotiate_runtime(

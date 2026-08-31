@@ -2,6 +2,26 @@
 
 This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`. It is not a roadmap substitute: entries marked complete require code, fixtures, reports, tests or explicit validation evidence. Current status and stack topology are generated from and cross-checked against `current_blueprint_status.json`, `blueprint_coverage.json`, and `pr_stack_manifest.json`; historical run details below are append-only evidence, not readiness authority.
 
+## Current D0 Truth And Runtime Authority Checkpoint
+
+- Review unit A is based exactly on draft PR #39 head
+  `f732df267642cd55960205764e699c7fa2bb2d0f`; its evidence generator source anchor is
+  `01699163ed4470992f0e33ff9d9b6b4c65a67f7f`.
+- `closy.final_d0_research_prototype_matrix.v2` evaluates 15 stable rows from opened artifact and
+  payload bytes, selected package/avatar/garment joins, and immutable threshold-registry references.
+  Current result: 8 pass, 0 fail, 7 not run; the first unmet row is exact decoded front/rear raster
+  source identity. The new neutral-simulation row is also not run.
+- The explicit dependency graph covers source through runtime authority and rejects cycles, unknown
+  nodes, duplicate authorities, cross-candidate joins, and private identifiers in portable evidence.
+- `closy.runtime_package.research_candidate.v2` packages the canonical T-shirt fallback GLB, derives
+  authority from selected validated bytes, and loads offline after source withdrawal. ZeroOne JSON
+  remains descriptor-only; product runtime v1 and product selection are unchanged.
+- Runtime/raster decompression is bounded while streaming and rejects ratio abuse, truncation,
+  trailing streams, and declared-size mismatch. No human, private-user, real-photo, device, GPU,
+  mobile, realistic-cloth, production, PHY1, or Z2 promotion is claimed.
+- The next dependency-ready review unit is exact public front/rear raster identity and observation
+  lineage. It must branch only after review unit A has externally attested exact-head Forge CI.
+
 ## Dashboard
 
 - Branch: `codex/closy-forge-phase11-prerequisite-reconciliation-v2`

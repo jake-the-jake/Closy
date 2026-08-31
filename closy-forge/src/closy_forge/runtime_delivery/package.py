@@ -342,11 +342,11 @@ def _decode_pages(
         source_length = int(record["sourceLength"])
         try:
             decoded = decompressor.decompress(compressed, source_length + 1)
-            decoded += decompressor.flush()
         except zlib.error as error:
             raise RuntimePackageError("runtime_chunk_decode_failed") from error
         if (
             len(decoded) != source_length
+            or not decompressor.eof
             or decompressor.unused_data
             or decompressor.unconsumed_tail
             or sha256_bytes(decoded) != record["decodedSha256"]
