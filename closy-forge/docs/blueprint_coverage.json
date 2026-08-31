@@ -35,9 +35,9 @@
       "closy-forge/scripts/generate_phy1_topology_v2_evidence.py"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_v2.v5",
+    "generatorVersion": "closy.blueprint_reconciliation.d0_truth_runtime_authority_v3.v6",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "db7d4a0314345b764f692bdcb4e6dede220f0229d6f9c6abd07f45a51412b035"
+    "sourceTreeHash": "777ebc9fe4e8e04d4fa5b31be37bb0f0d1ff72e17adbb655e62ba86f05bd5f0f"
   },
   "integratedImplementationRowCount": 83,
   "rows": [
@@ -211,7 +211,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1370,7 +1371,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1471,7 +1473,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1771,7 +1774,8 @@
       "ancestryClass": "in_tree",
       "commitSha": [
         "f100fd5",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1923,7 +1927,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2039,7 +2044,8 @@
       "ancestryClass": "in_tree",
       "commitSha": [
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2230,7 +2236,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2292,7 +2299,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2563,7 +2571,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2720,7 +2729,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2846,7 +2856,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2855,7 +2866,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "PHY1-v2 passes temporal integrity but fails contact, clearance, seam, strain, support, energy, and convergence; six research-matrix rows remain not run.",
+          "limitations": "Exact decoded raster, observation, fit, baseline, reference-3D, independent texture-rerender, and neutral-simulation evidence remain not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -2879,7 +2890,10 @@
         "long-sleeved top, button shirt, and jacket were rejected fail-closed for exact degenerate-surface diagnostics",
         "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, canonical-authority preservation, and conventional-fallback preservation",
         "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
-        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
+        "predicate-derived 15-row matrix rejects stale, swapped, and cross-package evidence",
+        "candidate-v2 selects the canonical garment fallback and remains offline after source withdrawal",
+        "bounded raster/runtime decompression rejects truncation and trailing streams"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -2897,18 +2911,23 @@
         "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
-        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+        "closy-forge/src/closy_forge/research_matrix/evaluator.py",
+        "closy-forge/src/closy_forge/dependency_identity/graph.py",
+        "closy-forge/src/closy_forge/runtime_delivery/candidate_v2.py",
+        "closy-forge/src/closy_forge/truth_runtime/evidence.py",
+        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "PHY1-v2 passes temporal integrity but fails contact, clearance, seam, strain, support, energy, and convergence; six research-matrix rows remain not run.",
-      "nextAction": "Close exact decoded-raster lineage first, independently of the failed physical lane.",
+      "limitations": "Exact decoded raster, observation, fit, baseline, reference-3D, independent texture-rerender, and neutral-simulation evidence remain not run.",
+      "nextAction": "Execute the exact public front/rear raster lineage as the next child unit.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Evaluation now includes a deterministic 11-state topology-v2 replay, separate simulation/render clearance, and the final fixed-row D0 research matrix.",
+      "summary": "The versioned D0 matrix now derives every result from opened, hashed evidence and exact selected-identity predicates; it records 8 pass and 7 not-run rows.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -2919,7 +2938,11 @@
         "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
         "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
         "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
-        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py",
+        "closy-forge/tests/unit/test_research_matrix_v2.py",
+        "closy-forge/tests/unit/test_dependency_identity_graph.py",
+        "closy-forge/tests/unit/test_runtime_candidate_v2.py",
+        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py"
       ]
     },
     {
@@ -2927,7 +2950,8 @@
       "commitSha": [
         "07b801c",
         "ba4d358",
-        "0db14ee"
+        "0db14ee",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2936,7 +2960,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No real-user deletion propagation service, encryption, provider upload or P1 authority; this is local fixture privacy plumbing only.",
+          "limitations": "Private-user qualification remains local/restricted and Gate P1 remains not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -2947,29 +2971,41 @@
         "external processing/training flags are false",
         "raster fixture policy rejects training/external APIs/network/user imagery",
         "portable raster summary excludes paths, filenames and source hashes",
-        "local deletion tombstone flow is idempotent"
+        "local deletion tombstone flow is idempotent",
+        "predicate-derived 15-row matrix rejects stale, swapped, and cross-package evidence",
+        "candidate-v2 selects the canonical garment fallback and remains offline after source withdrawal",
+        "bounded raster/runtime decompression rejects truncation and trailing streams"
       ],
       "id": "BP-15-SECURITY-PRIVACY",
       "implementationPaths": [
         "closy-forge/src/closy_forge/capture/source_records.py",
         "closy-forge/src/closy_forge/capture/raster_sources.py",
         "closy-forge/src/closy_forge/ci/sanitized_diagnostics.py",
-        "closy-forge/docs/raster-ingestion-v1.md"
+        "closy-forge/docs/raster-ingestion-v1.md",
+        "closy-forge/src/closy_forge/research_matrix/evaluator.py",
+        "closy-forge/src/closy_forge/dependency_identity/graph.py",
+        "closy-forge/src/closy_forge/runtime_delivery/candidate_v2.py",
+        "closy-forge/src/closy_forge/truth_runtime/evidence.py",
+        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No real-user deletion propagation service, encryption, provider upload or P1 authority; this is local fixture privacy plumbing only.",
-      "nextAction": "Continue into BP-50 while keeping real-user capture disabled.",
+      "limitations": "Private-user qualification remains local/restricted and Gate P1 remains not run.",
+      "nextAction": "Keep private source bytes and durable identifiers outside portable raster evidence.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Privacy flags, consent placeholders and no real user data.",
+      "summary": "Portable dependency and matrix authorities now reject private paths/fingerprints; public-fixture hashes require explicit classification.",
       "tests": [
         "tests/unit/test_capture_quality.py",
         "tests/unit/test_raster_sources.py",
-        "tests/unit/test_ci_sanitized_diagnostics.py"
+        "tests/unit/test_ci_sanitized_diagnostics.py",
+        "closy-forge/tests/unit/test_research_matrix_v2.py",
+        "closy-forge/tests/unit/test_dependency_identity_graph.py",
+        "closy-forge/tests/unit/test_runtime_candidate_v2.py",
+        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py"
       ]
     },
     {
@@ -3518,7 +3554,8 @@
         "62443b685604bc4afe9a8fac9f926db78814d5a9",
         "13604d169ecbc0fddf475cdf177e743790c836a2",
         "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3843,7 +3880,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3946,7 +3984,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4013,7 +4052,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4079,7 +4119,8 @@
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4088,7 +4129,7 @@
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Execution is host CPU reference evidence only; device, GPU, battery, thermal, cellular, driver, and production deployment evidence are not run.",
+          "limitations": "ZeroOne entries remain descriptors, product runtime v1 is unchanged, and no mobile or actual ZeroOne payload runtime execution is claimed.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4110,7 +4151,10 @@
         "reference compression/decode round trip preserves the source hash",
         "stream resume offset and fallback-until-decode state validate",
         "conventional package loads without ZeroOne and stale, corrupt, unsupported optional capabilities fail closed",
-        "host CPU latency and memory observations are explicitly advisory and not mobile evidence"
+        "host CPU latency and memory observations are explicitly advisory and not mobile evidence",
+        "predicate-derived 15-row matrix rejects stale, swapped, and cross-package evidence",
+        "candidate-v2 selects the canonical garment fallback and remains offline after source withdrawal",
+        "bounded raster/runtime decompression rejects truncation and trailing streams"
       ],
       "id": "BP-17-PHASE-12",
       "implementationPaths": [
@@ -4119,22 +4163,31 @@
         "closy-forge/src/closy_forge/integrated_runtime/contracts.py",
         "closy-forge/src/closy_forge/integrated_runtime/decision.py",
         "closy-forge/src/closy_forge/runtime_delivery/package.py",
-        "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json"
+        "closy-forge/docs/evidence/integrated_runtime_avatar_outfit_v2.json",
+        "closy-forge/src/closy_forge/research_matrix/evaluator.py",
+        "closy-forge/src/closy_forge/dependency_identity/graph.py",
+        "closy-forge/src/closy_forge/runtime_delivery/candidate_v2.py",
+        "closy-forge/src/closy_forge/truth_runtime/evidence.py",
+        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Execution is host CPU reference evidence only; device, GPU, battery, thermal, cellular, driver, and production deployment evidence are not run.",
-      "nextAction": "Preserve package validity independent of ZeroOne and obtain real mobile runtime measurements only after the canonical capability set is stable.",
+      "limitations": "ZeroOne entries remain descriptors, product runtime v1 is unchanged, and no mobile or actual ZeroOne payload runtime execution is claimed.",
+      "nextAction": "Carry candidate-v2 authority forward while keeping conventional garment fallback available and product selection unchanged.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Phase 12 source work is integrated in PR #38 as a deterministic headless runtime package with schema negotiation, conventional fallback, and fail-closed optional ZeroOne capability selection.",
+      "summary": "A versioned research runtime candidate parses package authority from selected canonical bytes and loads the canonical garment fallback after source withdrawal.",
       "tests": [
         "closy-forge/tests/unit/test_future_foundations.py",
         "closy-forge/tests/unit/test_integrated_runtime_d0.py",
-        "closy-forge/tests/unit/test_integrated_runtime_evidence_v2.py"
+        "closy-forge/tests/unit/test_integrated_runtime_evidence_v2.py",
+        "closy-forge/tests/unit/test_research_matrix_v2.py",
+        "closy-forge/tests/unit/test_dependency_identity_graph.py",
+        "closy-forge/tests/unit/test_runtime_candidate_v2.py",
+        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py"
       ]
     },
     {
@@ -4142,7 +4195,8 @@
       "commitSha": [
         "30ea629639cb34894511d49b1b965fc344adb4c3",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4209,7 +4263,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4382,7 +4437,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4471,7 +4527,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4531,7 +4588,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5360,7 +5418,8 @@
         "a82a5f986e2e8021151d0154775e424075043c76",
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
-        "a6134df2fb67a8cbcb572e344caf828b926df273"
+        "a6134df2fb67a8cbcb572e344caf828b926df273",
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5369,7 +5428,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The first unmet requirement is exact-row decoded front/rear raster ingestion and source identity; no human, private, device, or physical claim is promoted.",
+          "limitations": "The first unmet row is decoded front/rear raster source identity; the new neutral simulation row is also not run, and no unsupported tier is promoted.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5399,7 +5458,10 @@
         "long-sleeved top, button shirt, and jacket were rejected fail-closed for exact degenerate-surface diagnostics",
         "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, canonical-authority preservation, and conventional-fallback preservation",
         "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
-        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
+        "predicate-derived 15-row matrix rejects stale, swapped, and cross-package evidence",
+        "candidate-v2 selects the canonical garment fallback and remains offline after source withdrawal",
+        "bounded raster/runtime decompression rejects truncation and trailing streams"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -5415,18 +5477,23 @@
         "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
-        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+        "closy-forge/src/closy_forge/research_matrix/evaluator.py",
+        "closy-forge/src/closy_forge/dependency_identity/graph.py",
+        "closy-forge/src/closy_forge/runtime_delivery/candidate_v2.py",
+        "closy-forge/src/closy_forge/truth_runtime/evidence.py",
+        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The first unmet requirement is exact-row decoded front/rear raster ingestion and source identity; no human, private, device, or physical claim is promoted.",
-      "nextAction": "Close the exact D0 decoded-raster and independent rerender rows before widening scope.",
+      "limitations": "The first unmet row is decoded front/rear raster source identity; the new neutral simulation row is also not run, and no unsupported tier is promoted.",
+      "nextAction": "Execute exact raster lineage, fitting, fidelity, and neutral simulation predicates without replaying historical summary booleans.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The final fixed-avatar T-shirt D0 matrix records 8 passing and 6 not-run components with exact package, executable, C3, Z1, MT1, and fallback identities.",
+      "summary": "The executable v2 Research Prototype matrix records 8 passing and 7 not-run rows from exact selected public-fixture/package identities.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -5435,7 +5502,11 @@
         "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
         "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
         "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
-        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py",
+        "closy-forge/tests/unit/test_research_matrix_v2.py",
+        "closy-forge/tests/unit/test_dependency_identity_graph.py",
+        "closy-forge/tests/unit/test_runtime_candidate_v2.py",
+        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py"
       ]
     },
     {
@@ -5684,5 +5755,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.phy1_topology_v2.v8"
+  "version": "closy.blueprint_coverage.d0_truth_runtime_authority_v3.v9"
 }

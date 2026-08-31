@@ -460,6 +460,14 @@ def build_status_model(
             "phy1TopologyV2RuntimeExposed": False,
             "integratedRuntimePinnedToTopologyV1": True,
             "finalD0ResearchMatrixStatus": "partial",
+            "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
+            "finalD0ResearchMatrixStatusCounts": {"pass": 8, "fail": 0, "not_run": 7},
+            "dependencyIdentityGraphAvailable": True,
+            "runtimeCandidateV2Available": True,
+            "runtimeCandidateV2ProductSelected": False,
+            "runtimeCandidateV2FallbackIsCanonicalGarment": True,
+            "runtimeCandidateV2DescriptorPayloadCapability": False,
+            "boundedRuntimeAndRasterDecompression": True,
             "packageValidityDependsOnZeroOne": False,
             "phase9E1Status": "partial_experimental",
             "phase9E2Status": "executed_feasibility_partial",
@@ -522,6 +530,12 @@ def validate_status_model(
         issues.append("integrated_runtime_topology_identity_drift")
     if truth.get("packageValidityDependsOnZeroOne") is not False:
         issues.append("zeroone_made_package_authoritative")
+    if truth.get("runtimeCandidateV2ProductSelected") is not False:
+        issues.append("runtime_candidate_v2_product_selection_overclaimed")
+    if truth.get("runtimeCandidateV2FallbackIsCanonicalGarment") is not True:
+        issues.append("runtime_candidate_v2_garment_fallback_missing")
+    if truth.get("runtimeCandidateV2DescriptorPayloadCapability") is not False:
+        issues.append("runtime_candidate_descriptor_payload_overclaimed")
     if truth.get("actualZeroOneGpuRuntimeExecuted") is not False:
         issues.append("gpu_execution_overclaimed")
     if truth.get("actualZeroOneMobileRuntimeExecuted") is not False:
