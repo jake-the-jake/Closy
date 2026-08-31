@@ -14,6 +14,15 @@ from closy_forge.capture.exact_raster_identity import (
     load_exact_raster_manifest,
 )
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json, write_canonical_json
+from closy_forge.pattern_inference.information_firewall import (
+    execute_information_firewall_controls,
+)
+from closy_forge.visual_understanding.exact_raster_controls import (
+    execute_exact_raster_causal_controls,
+)
+from closy_forge.visual_understanding.exact_raster_corrections import (
+    build_exact_raster_correction_evidence,
+)
 from closy_forge.visual_understanding.raster_parser import RasterVisualParseError
 from closy_forge.visual_understanding.tshirt_observations import (
     build_tshirt_visual_observations_from_ingested_rasters,
@@ -184,6 +193,69 @@ def test_frozen_manifest_rejects_unsafe_policy_and_identity(tmp_path: Path) -> N
     assert str(error.value) == "exact_manifest_policy_unsafe"
 
 
+def test_exact_correction_is_selected_linked_and_stale_safe() -> None:
+    evidence = build_exact_raster_correction_evidence(_build())
+
+    assert evidence["approvalRecord"]["state"] == "project_authored_no_op_approval"
+    assert evidence["selectedCorrectionRecord"]["selectionStatus"] == "selected_before_fit"
+    assert evidence["claims"]["correctionChangesVisualHash"] is True
+    assert evidence["claims"]["correctionChangesDownstreamCacheKey"] is True
+    assert evidence["claims"]["staleCorrectionRejected"] is True
+    assert evidence["claims"]["interactiveCorrectionUiBuilt"] is False
+    assert evidence["staleCorrectionControl"]["reasonCode"] == "stale_visual_record_hash"
+    selection = evidence["selectionContract"]
+    assert selection["unitCFitMustConsumeAllRequiredIdentities"] is True
+    assert selection["requiredCorrectedVisualRecordHash"] != evidence[
+        "originalObservation"
+    ]["visualRecordHash"]
+    assert len(selection["requiredDownstreamCacheKey"]) == 64
+    assert len(evidence["integrity"]["correctionEvidenceHash"]) == 64
+
+
+def test_exact_causal_controls_recompute_pixels_without_target_parameters() -> None:
+    result = _build()
+    controls = execute_exact_raster_causal_controls(
+        manifest=result["manifest"],
+        input_root=FIXTURE_ROOT,
+        source_record=result["ingest"].private_record,
+    )
+
+    assert controls["fixtureRendererCalled"] is False
+    assert controls["targetParametersRead"] is False
+    assert controls["controls"]["blankedPixels"]["rejected"] is True
+    assert controls["controls"]["frontRearPixelSwap"]["evidenceMateriallyChanged"] is True
+    assert controls["controls"]["shiftedLogo"]["appearanceEvidenceChanged"] is True
+    assert controls["controls"]["shiftedLogo"]["geometryEvidenceInvariant"] is True
+    assert controls["controls"]["missingLeftSleeve"]["maskEvidenceChanged"] is True
+    assert controls["deferredUntilUnitC"]["directionalParameterResponse"] is True
+
+
+def test_contender_firewall_denies_baselines_and_holds_evaluator_until_freeze() -> None:
+    result = _build()
+    firewall = execute_information_firewall_controls(
+        manifest=result["manifest"],
+        fixture_root=FIXTURE_ROOT,
+        derived_evidence=result["observations"],
+    )
+
+    assert firewall["claims"]["allPermissionProbesPassed"] is True
+    assert firewall["claims"]["baselinesCannotReadSourceThroughHelper"] is True
+    assert firewall["claims"]["evaluatorGroundTruthDeniedBeforeFreeze"] is True
+    assert firewall["claims"]["evaluatorGroundTruthMountedAfterFreeze"] is True
+    assert firewall["claims"]["noFitOrEvaluationExecuted"] is True
+    assert firewall["enforcement"]["operatingSystemSandboxClaimed"] is False
+    permissions = {
+        item["contenderId"]: item
+        for item in firewall["permissionManifest"]["contenders"]
+    }
+    assert permissions["metadata_category_prior"]["mayReadRawPixels"] is False
+    assert permissions["no_pixel_template"]["mayReadDerivedMasksLandmarks"] is False
+    assert permissions["deterministic_mask_landmark"][
+        "mayReadDerivedMasksLandmarks"
+    ] is True
+    assert permissions["image_conditioned"]["mayReadRawPixels"] is True
+
+
 def test_evidence_generation_is_deterministic_and_keeps_portable_scope_clean(
     tmp_path: Path,
 ) -> None:
@@ -195,6 +267,22 @@ def test_evidence_generation_is_deterministic_and_keeps_portable_scope_clean(
             destination = fixture_target / source.relative_to(FIXTURE_ROOT)
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(source.read_bytes())
+    runtime_source = (
+        PACKAGE_ROOT
+        / "docs"
+        / "evidence"
+        / "d0_truth_runtime_authority_v3"
+        / "runtime_candidate_v2.json"
+    )
+    runtime_target = (
+        package_root
+        / "docs"
+        / "evidence"
+        / "d0_truth_runtime_authority_v3"
+        / "runtime_candidate_v2.json"
+    )
+    runtime_target.parent.mkdir(parents=True)
+    runtime_target.write_bytes(runtime_source.read_bytes())
 
     first = generate_exact_raster_identity_evidence(
         package_root=package_root, source_lock_sha="38dfb56" + "0" * 33
@@ -214,6 +302,12 @@ def test_evidence_generation_is_deterministic_and_keeps_portable_scope_clean(
     assert "decodedContentSha256" not in portable_keys
     assert str(FIXTURE_ROOT) not in portable_text
     assert (second["root"] / "qualification" / "visual_overlay_front.svg").is_file()
+    observation_acceptance = read_json(
+        second["root"] / "qualification" / "exact_observation_acceptance.json"
+    )
+    assert isinstance(observation_acceptance, dict)
+    assert observation_acceptance["claims"]["correctionSelectedBeforeFit"] is True
+    assert observation_acceptance["claims"]["fitOrEvaluationExecuted"] is False
 
 
 def _build() -> dict[str, Any]:

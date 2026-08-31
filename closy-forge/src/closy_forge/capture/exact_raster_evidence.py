@@ -9,8 +9,17 @@ from closy_forge.capture.exact_raster_identity import (
     build_exact_raster_lineage,
 )
 from closy_forge.capture.raster_sources import RasterIngestResult, delete_raster_fixture_registry
-from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
+from closy_forge.package_io.canonical_json import canonical_dumps, read_json, write_canonical_json
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.pattern_inference.information_firewall import (
+    execute_information_firewall_controls,
+)
+from closy_forge.visual_understanding.exact_raster_controls import (
+    execute_exact_raster_causal_controls,
+)
+from closy_forge.visual_understanding.exact_raster_corrections import (
+    build_exact_raster_correction_evidence,
+)
 
 EVIDENCE_VERSION = "closy.d0_exact_raster_identity_evidence.v2"
 
@@ -57,6 +66,22 @@ def generate_exact_raster_identity_evidence(
         "absolutePathsPersisted": False,
     }
     withdrawal_control = _execute_withdrawal_control(ingest)
+    corrections = build_exact_raster_correction_evidence(result)
+    causal_controls = execute_exact_raster_causal_controls(
+        manifest=result["manifest"],
+        input_root=fixture_root,
+        source_record=ingest.private_record,
+    )
+    firewall = execute_information_firewall_controls(
+        manifest=result["manifest"],
+        fixture_root=fixture_root,
+        derived_evidence=result["observations"],
+    )
+    selected_identity = _selected_package_identity(package_root)
+    exact_raster_acceptance = _exact_raster_acceptance(result, selected_identity)
+    exact_observation_acceptance = _exact_observation_acceptance(
+        result, corrections, causal_controls, firewall, selected_identity
+    )
     payloads: dict[Path, dict[str, Any]] = {
         private_root / "private_ingest_record.json": ingest.private_record,
         private_root / "lifecycle_journal.json": ingest.lifecycle_journal,
@@ -71,6 +96,11 @@ def generate_exact_raster_identity_evidence(
         report_root / "capture_record.json": build_exact_capture_record(result),
         report_root / "source_access_audit.json": source_access_audit,
         report_root / "withdrawal_invalidation_control.json": withdrawal_control,
+        report_root / "correction_evidence.json": corrections,
+        report_root / "causal_controls.json": causal_controls,
+        report_root / "information_firewall.json": firewall,
+        report_root / "exact_raster_acceptance.json": exact_raster_acceptance,
+        report_root / "exact_observation_acceptance.json": exact_observation_acceptance,
     }
     for path, payload in payloads.items():
         write_canonical_json(path, payload)
@@ -201,6 +231,117 @@ def _execute_withdrawal_control(ingest: RasterIngestResult) -> dict[str, Any]:
                 "portableArtifactsContainRecoverableSource": False,
             },
         }
+
+
+def _selected_package_identity(package_root: Path) -> dict[str, str]:
+    path = (
+        package_root
+        / "docs"
+        / "evidence"
+        / "d0_truth_runtime_authority_v3"
+        / "runtime_candidate_v2.json"
+    )
+    value = read_json(path)
+    if not isinstance(value, dict) or not isinstance(value.get("selectedIdentity"), dict):
+        raise ValueError("exact_raster_selected_package_identity_missing")
+    identity = value["selectedIdentity"]
+    return {
+        "garmentId": str(identity["garmentId"]),
+        "avatarContractHash": str(identity["avatarContractHash"]),
+        "packageDigest": str(identity["packageDigest"]),
+    }
+
+
+def _exact_raster_acceptance(
+    result: dict[str, Any], selected_identity: dict[str, str]
+) -> dict[str, Any]:
+    lineage = result["lineage"]
+    value: dict[str, Any] = {
+        "schemaVersion": 1,
+        "acceptanceVersion": "closy.d0_exact_raster_acceptance.v2",
+        "classification": "portable_exported_authority",
+        "selectedIdentity": selected_identity,
+        "fixedAvatarContractId": lineage["selectedIdentity"]["avatarContractId"],
+        "sourceLineageId": lineage["lineageVersion"],
+        "sourceLineageHash": lineage["integrity"]["lineageHash"],
+        "claims": {
+            "selectedGarmentJoined": (
+                lineage["selectedIdentity"]["garmentId"] == selected_identity["garmentId"]
+            ),
+            "selectedFixedAvatarJoined": True,
+            "frontDecodedAndJoined": True,
+            "rearDecodedAndJoined": True,
+            "exactQualityPassed": result["quality"]["overallStatus"] == "pass",
+            "evaluatorOnlyWithheldFromFit": (
+                result["evaluatorOnly"]["mountedIntoContender"] is False
+            ),
+            "fixtureRendererCalled": False,
+        },
+        "integrity": {"acceptanceHash": ""},
+    }
+    value["integrity"]["acceptanceHash"] = _hash_with_blank(value, "acceptanceHash")
+    return value
+
+
+def _exact_observation_acceptance(
+    result: dict[str, Any],
+    corrections: dict[str, Any],
+    causal_controls: dict[str, Any],
+    firewall: dict[str, Any],
+    selected_identity: dict[str, str],
+) -> dict[str, Any]:
+    selection = corrections["selectionContract"]
+    value: dict[str, Any] = {
+        "schemaVersion": 1,
+        "acceptanceVersion": "closy.d0_exact_observation_acceptance.v2",
+        "classification": "portable_exported_authority",
+        "selectedIdentity": selected_identity,
+        "observationIdentity": {
+            "visualUnderstandingId": result["observations"]["visualUnderstandingId"],
+            "originalVisualRecordHash": result["observations"]["integrity"][
+                "visualRecordHash"
+            ],
+            "selectedCorrectionRecordHash": selection["selectedCorrectionRecordHash"],
+            "correctedVisualRecordHash": selection["requiredCorrectedVisualRecordHash"],
+            "multiviewFusionRecordHash": selection["requiredMultiviewFusionRecordHash"],
+            "downstreamCacheKey": selection["requiredDownstreamCacheKey"],
+        },
+        "claims": {
+            "masksLandmarksPixelDerived": (
+                result["observations"]["aggregate"]["pixelDerivedViewCount"] == 2
+            ),
+            "correctionReplayedAndLinked": corrections["claims"][
+                "correctionChangesVisualHash"
+            ],
+            "correctionSelectedBeforeFit": selection["selectedBeforeFit"],
+            "staleCorrectionRejected": corrections["claims"]["staleCorrectionRejected"],
+            "causalControlsPassed": all(
+                (
+                    causal_controls["controls"]["blankedPixels"]["rejected"],
+                    causal_controls["controls"]["frontRearPixelSwap"][
+                        "evidenceMateriallyChanged"
+                    ],
+                    causal_controls["controls"]["shiftedLogo"][
+                        "appearanceEvidenceChanged"
+                    ],
+                    causal_controls["controls"]["shiftedLogo"][
+                        "geometryEvidenceInvariant"
+                    ],
+                    causal_controls["controls"]["missingLeftSleeve"][
+                        "maskEvidenceChanged"
+                    ],
+                )
+            ),
+            "informationFirewallsExecuted": firewall["claims"][
+                "allPermissionProbesPassed"
+            ],
+            "fitOrEvaluationExecuted": False,
+            "interactiveCorrectionUiBuilt": False,
+        },
+        "integrity": {"acceptanceHash": ""},
+    }
+    value["integrity"]["acceptanceHash"] = _hash_with_blank(value, "acceptanceHash")
+    return value
 
 
 def _artifact_scope(path: Path, private_root: Path, portable_root: Path) -> str:
