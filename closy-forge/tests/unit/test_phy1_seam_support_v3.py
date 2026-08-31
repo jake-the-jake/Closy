@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from closy_forge.package_io.hashing import sha256_file
+from closy_forge.geometry.glb_io import read_glb_meshset
+from closy_forge.package_io.canonical_json import canonical_dumps, read_json
+from closy_forge.package_io.hashing import geometry_content_hash, sha256_file
 from closy_forge.simulation_topology_v2.phy1_seam_support_v3 import (
+    evidence_inventory,
     float32_roundtrip_identity_microfixture,
     load_phy1_v3_inputs,
     run_analytic_microfixtures,
@@ -84,3 +87,23 @@ def test_phy1_v3_float32_reporting_repair_has_independent_microfixture() -> None
     assert all(report["checks"].values())
     assert report["originalValues"] != report["persistedValues"]
     assert report["firstByteSha256"] == report["secondByteSha256"]
+
+
+def test_phy1_v3_committed_evidence_is_byte_and_identity_complete() -> None:
+    evidence_root = ROOT / "docs/evidence/phy1_seam_support_v3"
+    neutral = read_json(evidence_root / "neutral_preflight.json")
+    outcome = read_json(evidence_root / "outcome.json")
+    trajectory = read_json(evidence_root / "trajectory/index.json")
+    manifest = read_json(evidence_root / "evidence_manifest.json")
+
+    assert outcome["outcomeClass"] == "A_neutral_preflight_failed_v3"
+    assert neutral["acceptance"]["status"] == "fail"
+    assert len(manifest["inventory"]) == 59
+    assert manifest["evidenceDigest"] == (
+        "280df4684724d2dae73eb20a09008aec824c2c6476ed21325c754c9c05ef1b4c"
+    )
+    assert canonical_dumps(manifest) == canonical_dumps(evidence_inventory(ROOT, evidence_root))
+    for item in trajectory["frames"]:
+        path = evidence_root / item["path"]
+        assert sha256_file(path) == item["sha256"]
+        assert geometry_content_hash(read_glb_meshset(path)) == item["persistedMeshContentHash"]
