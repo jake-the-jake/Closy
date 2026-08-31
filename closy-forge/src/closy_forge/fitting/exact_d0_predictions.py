@@ -9,7 +9,6 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from closy_forge.appearance.exact_bitmap_atlas import build_exact_d0_bitmap_atlas
-from closy_forge.fitting.d0_optimizer import evaluate_candidate
 from closy_forge.fitting.exact_d0_candidate import (
     CompiledExactCandidate,
     compile_exact_d0_candidate,
@@ -22,6 +21,7 @@ from closy_forge.fitting.exact_d0_lock import (
     EXACT_D0_EVALUATION_LOCK_SHA256,
     load_exact_d0_evaluation_lock,
 )
+from closy_forge.fitting.exact_d0_pixel_controls import execute_exact_d0_pixel_fit_controls
 from closy_forge.fitting.tshirt_fit import fit_tshirt_parameters_from_visual_observations
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 from closy_forge.geometry.glb_io import read_glb_meshset
@@ -53,6 +53,7 @@ def generate_exact_d0_predictions(
     acceptance = _read_json(qualification / "exact_observation_acceptance.json")
     unit_b_firewall = _read_json(qualification / "information_firewall.json")
     unit_b_controls = _read_json(qualification / "causal_controls.json")
+    capture = _read_json(qualification / "capture_record.json")
     visual = _dict(correction.get("correctedObservation"))
     fusion = _dict(correction.get("multiviewFusion"))
     _validate_selected_chain(lock, visual, fusion, acceptance, fixture_manifest)
@@ -142,13 +143,23 @@ def generate_exact_d0_predictions(
     write_canonical_json(target / "delete_rebuild_reproducibility.json", reproducibility)
     fallback = _qualify_fallback(target, candidate_root, candidate_manifest)
     write_canonical_json(target / "fallback_qualification.json", fallback)
-    causal = _causal_fit_controls(
-        lock=lock,
-        visual=visual,
-        fusion=fusion,
-        image_fit=image_fit,
-        unit_b_controls=unit_b_controls,
+    winner_template = next(
+        item
+        for item in _list_of_dicts(lock.get("templateSet"))
+        if item["templateId"] == ranking["winner"]["templateId"]
     )
+    causal = execute_exact_d0_pixel_fit_controls(
+        fixture_root=fixture_root,
+        fixture_manifest=fixture_manifest,
+        capture_record=capture,
+        selected_correction=_dict(correction.get("selectedCorrectionRecord")),
+        prior=TShirtParameters(**_dict(winner_template.get("prior"))),
+        baseline_fit=image_fit,
+        minimum_delta=float(lock["thresholds"]["fit"]["minimumCausalParameterDeltaMeters"]),
+    )
+    causal["unitBControlHash"] = _dict(unit_b_controls.get("integrity")).get("controlReportHash")
+    causal["logoColourOnly"] = _dict(_dict(unit_b_controls.get("controls")).get("shiftedLogo"))
+    causal["unitBPixelRecomputationLinked"] = True
     write_canonical_json(target / "causal_fit_controls.json", causal)
     contact_sheet = _contact_sheet_svg(compiled_winner.report)
     (target / "review_contact_sheet.svg").write_text(contact_sheet, encoding="utf-8")
@@ -439,7 +450,7 @@ def _candidate_manifest(
         "candidate.d0_exact_fitted_topology_v2."
         + sha256_bytes(canonical_dumps(identity_payload).encode("utf-8"))[:24]
     )
-    return {
+    manifest: dict[str, Any] = {
         "schemaVersion": 1,
         "manifestVersion": "closy.d0_exact_fitted_candidate_manifest.v2",
         "candidateId": candidate_id,
@@ -454,6 +465,8 @@ def _candidate_manifest(
         "fallbackPath": "render/render_mesh.glb",
         "integrity": {"manifestHash": ""},
     }
+    manifest["integrity"]["manifestHash"] = _hash(manifest, "manifestHash")
+    return manifest
 
 
 def _rebuild_candidate(
@@ -522,75 +535,6 @@ def _qualify_fallback(
         "zeroOneStatic": "not_run_supplemental",
         "zeroOneDynamic": "not_run_supplemental",
         "runtimeV1SelectionChanged": False,
-    }
-
-
-def _causal_fit_controls(
-    *,
-    lock: Mapping[str, Any],
-    visual: Mapping[str, Any],
-    fusion: Mapping[str, Any],
-    image_fit: Mapping[str, Any],
-    unit_b_controls: Mapping[str, Any],
-) -> dict[str, Any]:
-    params = TShirtParameters(**_dict(image_fit.get("fittedParameters")))
-    prior = TShirtParameters(**_dict(image_fit.get("priorParameters")))
-    baseline = evaluate_candidate(visual, fusion, params, prior)
-    width_step = max(
-        0.004, float(_dict(lock["thresholds"])["fit"]["minimumCausalParameterDeltaMeters"])
-    )
-    trials = [
-        ("widened_silhouette", "half_chest_width", width_step),
-        ("narrowed_silhouette", "half_chest_width", -width_step),
-        ("changed_sleeve_reach", "sleeve_length", width_step),
-        ("shifted_hem", "garment_body_length", width_step),
-    ]
-    records = []
-    values = params.to_json()
-    for control_id, parameter, delta in trials:
-        changed = {**values, parameter: values[parameter] + delta}
-        controlled = TShirtParameters(**changed)
-        ignored = evaluate_candidate(visual, fusion, controlled, prior)
-        records.append(
-            {
-                "controlId": control_id,
-                "parameter": parameter,
-                "baselineValue": values[parameter],
-                "controlledValue": changed[parameter],
-                "directionalDelta": delta,
-                "canonicalQuantisationExceeded": abs(delta) >= width_step,
-                "ignoredPerturbationMetricWorsened": float(ignored["objective"])
-                >= float(baseline["objective"]),
-                "baselineObjective": baseline["objective"],
-                "controlledObjectiveOnUnchangedEvidence": ignored["objective"],
-            }
-        )
-    shifted_logo = _dict(_dict(unit_b_controls.get("controls")).get("shiftedLogo"))
-    records.append(
-        {
-            "controlId": "logo_colour_only",
-            "appearanceEvidenceChanged": shifted_logo.get("appearanceEvidenceChanged"),
-            "geometryEvidenceInvariant": shifted_logo.get("geometryEvidenceInvariant"),
-            "fittedGeometryDeltaMeters": 0.0,
-            "withinFrozenTolerance": True,
-        }
-    )
-    return {
-        "schemaVersion": 1,
-        "controlVersion": "closy.d0_exact_fit_causal_controls.v2",
-        "records": records,
-        "allDirectionalDeltasAboveQuantisation": all(
-            bool(item.get("canonicalQuantisationExceeded", True)) for item in records
-        ),
-        "unitBPixelRecomputationLinked": True,
-        "unitBControlHash": _dict(unit_b_controls.get("integrity")).get("controlReportHash"),
-        "targetParametersRead": False,
-        "evaluatorOnlyMounted": False,
-        "limitations": [
-            "bounded_parameter_response_trials_apply_predeclared_parameter_"
-            "perturbations_to_the_locked_evaluator",
-            "unit_b_supplies_the_upstream_pixel_recomputation_controls",
-        ],
     }
 
 

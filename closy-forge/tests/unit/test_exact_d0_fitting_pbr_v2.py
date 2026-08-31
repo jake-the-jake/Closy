@@ -11,6 +11,10 @@ from closy_forge.fitting.exact_d0_candidate import (
     validate_compiled_candidate_files,
     write_compiled_exact_candidate,
 )
+from closy_forge.fitting.exact_d0_pixel_controls import (
+    execute_exact_d0_pixel_fit_controls,
+)
+from closy_forge.fitting.tshirt_fit import fit_tshirt_parameters_from_visual_observations
 from closy_forge.garments.tshirt.parameters import TShirtParameters
 
 
@@ -81,6 +85,44 @@ def test_exact_candidate_is_fresh_topology_v2_and_reloadable(tmp_path: Path) -> 
     assert candidate.report["seams"]["status"] == "pass"
     assert candidate.report["inSampleSourceRerender"]["aggregate"]["allViewsNonBlank"] is True
     assert validate_compiled_candidate_files(tmp_path, candidate.report)["status"] == "pass"
+
+
+def test_exact_pixel_controls_reparse_refit_and_move_locked_parameters() -> None:
+    root = Path(__file__).resolve().parents[2]
+    fixture_root = root / "fixtures" / "d0_exact_raster_v2"
+    manifest = _read(fixture_root / "fixture_manifest.json")
+    qualification = root / "docs/evidence/d0_exact_raster_identity_v2/qualification"
+    correction_evidence = _read(qualification / "correction_evidence.json")
+    capture = _read(qualification / "capture_record.json")
+    lock = _read(root / "fixtures/d0_exact_fitting_v2/evaluation_lock.json")
+    prior = TShirtParameters(**lock["templateSet"][0]["prior"])
+    baseline_fit = fit_tshirt_parameters_from_visual_observations(
+        correction_evidence["correctedObservation"],
+        multiview_fusion=correction_evidence["multiviewFusion"],
+        prior=prior,
+    )
+
+    result = execute_exact_d0_pixel_fit_controls(
+        fixture_root=fixture_root,
+        fixture_manifest=manifest,
+        capture_record=capture,
+        selected_correction=correction_evidence["selectedCorrectionRecord"],
+        prior=prior,
+        baseline_fit=baseline_fit,
+        minimum_delta=lock["thresholds"]["fit"]["minimumCausalParameterDeltaMeters"],
+    )
+
+    assert result["inputMode"] == (
+        "opened_frozen_front_rear_png_bytes_then_controlled_pixel_mutation"
+    )
+    assert result["fixtureRendererCalled"] is False
+    assert result["targetParametersRead"] is False
+    assert result["evaluatorOnlyMounted"] is False
+    assert result["allDirectionsPassed"] is True
+    assert result["allCanonicalQuantisationExceeded"] is True
+    assert all(record["observationRecomputed"] for record in result["records"])
+    assert all(record["fusionRecomputed"] for record in result["records"])
+    assert all(record["fitRecomputed"] for record in result["records"])
 
 
 def _read(path: Path) -> dict[str, Any]:
