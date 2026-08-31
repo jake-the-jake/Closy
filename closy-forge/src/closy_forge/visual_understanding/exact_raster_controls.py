@@ -76,9 +76,7 @@ def execute_exact_raster_causal_controls(
                 "maskEvidenceChanged": (
                     _geometry_evidence_hash(missing_sleeve) != baseline_geometry
                 ),
-                "missingEvidenceRecorded": bool(
-                    missing_sleeve["aggregate"]["missingEvidence"]
-                ),
+                "missingEvidenceRecorded": bool(missing_sleeve["aggregate"]["missingEvidence"]),
                 "controlVisualHash": missing_sleeve["integrity"]["visualRecordHash"],
             },
         },
@@ -90,18 +88,14 @@ def execute_exact_raster_causal_controls(
         },
         "integrity": {"controlReportHash": ""},
     }
-    report["integrity"]["controlReportHash"] = _hash_with_blank(
-        report, "controlReportHash"
-    )
+    report["integrity"]["controlReportHash"] = _hash_with_blank(report, "controlReportHash")
     return report
 
 
 def _fit_pixel_views(
     manifest: dict[str, Any], input_root: Path, source_record: dict[str, Any]
 ) -> list[RasterFixtureView]:
-    sources = {
-        str(source["fixtureId"]): source for source in source_record["acceptedSources"]
-    }
+    sources = {str(source["fixtureId"]): source for source in source_record["acceptedSources"]}
     views: list[RasterFixtureView] = []
     for fixture in manifest["fixtures"]:
         if fixture["role"] not in {"front", "rear"}:
@@ -126,9 +120,7 @@ def _fit_pixel_views(
     return views
 
 
-def _blank_control(
-    views: list[RasterFixtureView], source_record: dict[str, Any]
-) -> dict[str, Any]:
+def _blank_control(views: list[RasterFixtureView], source_record: dict[str, Any]) -> dict[str, Any]:
     background = views[0].rgba[:4]
     blank = _replace_pixels(views[0], background * (views[0].width * views[0].height))
     try:

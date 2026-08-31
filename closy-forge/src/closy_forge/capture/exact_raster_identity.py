@@ -46,9 +46,9 @@ def load_exact_raster_manifest(path: Path) -> dict[str, Any]:
         raise ExactRasterIdentityError("exact_manifest_policy_unsafe")
     if policy.get("publicFixtureException") is not True:
         raise ExactRasterIdentityError("exact_manifest_public_exception_missing")
-    if boundary.get("fitRoles") != ["front", "rear"] or boundary.get(
-        "evaluatorOnlyRoles"
-    ) != ["evaluator_only_three_quarter"]:
+    if boundary.get("fitRoles") != ["front", "rear"] or boundary.get("evaluatorOnlyRoles") != [
+        "evaluator_only_three_quarter"
+    ]:
         raise ExactRasterIdentityError("exact_manifest_information_boundary_invalid")
     fixtures = value.get("fixtures")
     if not isinstance(fixtures, list) or len(fixtures) != 3:
@@ -100,9 +100,9 @@ def build_exact_raster_lineage(
         "manifest": {
             "manifestId": manifest["manifestId"],
             "manifestHash": _hash_document(manifest),
-            "sourceFixtureSetHash": read_json(
-                input_root / "publication_provenance.json"
-            )["fixtureSetHash"],
+            "sourceFixtureSetHash": read_json(input_root / "publication_provenance.json")[
+                "fixtureSetHash"
+            ],
         },
         "sourceJoins": [
             {

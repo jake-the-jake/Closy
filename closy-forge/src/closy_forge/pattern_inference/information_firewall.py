@@ -35,9 +35,7 @@ PERMISSIONS = (
     ContenderPermission(
         "deterministic_mask_landmark", "candidate_or_challenger", False, True, False
     ),
-    ContenderPermission(
-        "image_conditioned", "primary_candidate", True, True, False
-    ),
+    ContenderPermission("image_conditioned", "primary_candidate", True, True, False),
     ContenderPermission("evaluator_only", "qualification", True, True, True, True),
 )
 
@@ -187,9 +185,7 @@ def execute_information_firewall_controls(
         },
         "integrity": {"firewallReportHash": ""},
     }
-    report["integrity"]["firewallReportHash"] = _hash_with_blank(
-        report, "firewallReportHash"
-    )
+    report["integrity"]["firewallReportHash"] = _hash_with_blank(report, "firewallReportHash")
     return report
 
 
@@ -292,11 +288,7 @@ def _expected_access(
     if name == "derived_evidence.json":
         return "allowed" if permission.may_read_derived_evidence else "denied"
     if name == "evaluator_only.png":
-        return (
-            "allowed"
-            if permission.evaluator_only and prediction_state == "frozen"
-            else "denied"
-        )
+        return "allowed" if permission.evaluator_only and prediction_state == "frozen" else "denied"
     return "denied"
 
 

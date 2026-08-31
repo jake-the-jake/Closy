@@ -89,9 +89,7 @@ def build_exact_raster_correction_evidence(
             "selectedCorrectionRecordId": selected["correctionRecordId"],
             "selectedCorrectionRecordHash": selected["integrity"]["correctionRecordHash"],
             "requiredCorrectedVisualRecordHash": corrected["integrity"]["visualRecordHash"],
-            "requiredMultiviewFusionRecordHash": fusion["integrity"][
-                "multiviewFusionRecordHash"
-            ],
+            "requiredMultiviewFusionRecordHash": fusion["integrity"]["multiviewFusionRecordHash"],
             "requiredDownstreamCacheKey": cache_key,
             "approvalDownstreamCacheKey": approval_cache_key,
             "unitCFitMustConsumeAllRequiredIdentities": True,

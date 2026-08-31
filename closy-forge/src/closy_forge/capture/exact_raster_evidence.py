@@ -169,12 +169,10 @@ def _visual_overlay_svg(view: dict[str, Any]) -> str:
         colour = colours.get(semantic_id, "#777777")
         for polygon in mask["polygons"]:
             points = " ".join(
-                f"{float(point[0]) * width:.3f},{float(point[1]) * height:.3f}"
-                for point in polygon
+                f"{float(point[0]) * width:.3f},{float(point[1]) * height:.3f}" for point in polygon
             )
             parts.append(
-                f'<polygon points="{points}" fill="none" stroke="{colour}" '
-                'stroke-width="1.25"/>'
+                f'<polygon points="{points}" fill="none" stroke="{colour}" ' 'stroke-width="1.25"/>'
             )
     for landmark in view["landmarks"]:
         position = landmark["position2d"]
@@ -298,9 +296,7 @@ def _exact_observation_acceptance(
         "selectedIdentity": selected_identity,
         "observationIdentity": {
             "visualUnderstandingId": result["observations"]["visualUnderstandingId"],
-            "originalVisualRecordHash": result["observations"]["integrity"][
-                "visualRecordHash"
-            ],
+            "originalVisualRecordHash": result["observations"]["integrity"]["visualRecordHash"],
             "selectedCorrectionRecordHash": selection["selectedCorrectionRecordHash"],
             "correctedVisualRecordHash": selection["requiredCorrectedVisualRecordHash"],
             "multiviewFusionRecordHash": selection["requiredMultiviewFusionRecordHash"],
@@ -310,31 +306,19 @@ def _exact_observation_acceptance(
             "masksLandmarksPixelDerived": (
                 result["observations"]["aggregate"]["pixelDerivedViewCount"] == 2
             ),
-            "correctionReplayedAndLinked": corrections["claims"][
-                "correctionChangesVisualHash"
-            ],
+            "correctionReplayedAndLinked": corrections["claims"]["correctionChangesVisualHash"],
             "correctionSelectedBeforeFit": selection["selectedBeforeFit"],
             "staleCorrectionRejected": corrections["claims"]["staleCorrectionRejected"],
             "causalControlsPassed": all(
                 (
                     causal_controls["controls"]["blankedPixels"]["rejected"],
-                    causal_controls["controls"]["frontRearPixelSwap"][
-                        "evidenceMateriallyChanged"
-                    ],
-                    causal_controls["controls"]["shiftedLogo"][
-                        "appearanceEvidenceChanged"
-                    ],
-                    causal_controls["controls"]["shiftedLogo"][
-                        "geometryEvidenceInvariant"
-                    ],
-                    causal_controls["controls"]["missingLeftSleeve"][
-                        "maskEvidenceChanged"
-                    ],
+                    causal_controls["controls"]["frontRearPixelSwap"]["evidenceMateriallyChanged"],
+                    causal_controls["controls"]["shiftedLogo"]["appearanceEvidenceChanged"],
+                    causal_controls["controls"]["shiftedLogo"]["geometryEvidenceInvariant"],
+                    causal_controls["controls"]["missingLeftSleeve"]["maskEvidenceChanged"],
                 )
             ),
-            "informationFirewallsExecuted": firewall["claims"][
-                "allPermissionProbesPassed"
-            ],
+            "informationFirewallsExecuted": firewall["claims"]["allPermissionProbesPassed"],
             "fitOrEvaluationExecuted": False,
             "interactiveCorrectionUiBuilt": False,
         },

@@ -41,9 +41,12 @@ def test_exact_raster_lineage_reopens_front_rear_and_withholds_evaluator() -> No
     assert result["quality"]["legacyV1Status"] == "fail"
     assert result["observations"]["fitInputRoles"] == ["front", "rear"]
     assert result["observations"]["aggregate"]["pixelDerivedViewCount"] == 2
-    assert result["observations"]["provider"]["settings"][
-        "fixtureRendererCalledDuringObservationBuild"
-    ] is False
+    assert (
+        result["observations"]["provider"]["settings"][
+            "fixtureRendererCalledDuringObservationBuild"
+        ]
+        is False
+    )
     assert result["observations"]["provider"]["settings"]["sourceFilesReopened"] is True
     assert result["evaluatorOnly"]["decodedAndValidated"] is True
     assert result["evaluatorOnly"]["rgbaBytesPersisted"] is False
@@ -154,9 +157,9 @@ def test_exact_quality_rejects_predeclared_capture_controls(
     elif control == "clipped":
         front_stats["combinedClipFraction"] = 1.0
     elif control == "duplicate":
-        ingest.private_record["acceptedSources"][1]["decodedContentSha256"] = (
-            ingest.private_record["acceptedSources"][0]["decodedContentSha256"]
-        )
+        ingest.private_record["acceptedSources"][1]["decodedContentSha256"] = ingest.private_record[
+            "acceptedSources"
+        ][0]["decodedContentSha256"]
     elif control == "wrong_role":
         manifest["fixtures"][0]["role"] = "side"
     elif control == "occluded":
@@ -205,9 +208,10 @@ def test_exact_correction_is_selected_linked_and_stale_safe() -> None:
     assert evidence["staleCorrectionControl"]["reasonCode"] == "stale_visual_record_hash"
     selection = evidence["selectionContract"]
     assert selection["unitCFitMustConsumeAllRequiredIdentities"] is True
-    assert selection["requiredCorrectedVisualRecordHash"] != evidence[
-        "originalObservation"
-    ]["visualRecordHash"]
+    assert (
+        selection["requiredCorrectedVisualRecordHash"]
+        != evidence["originalObservation"]["visualRecordHash"]
+    )
     assert len(selection["requiredDownstreamCacheKey"]) == 64
     assert len(evidence["integrity"]["correctionEvidenceHash"]) == 64
 
@@ -245,14 +249,11 @@ def test_contender_firewall_denies_baselines_and_holds_evaluator_until_freeze() 
     assert firewall["claims"]["noFitOrEvaluationExecuted"] is True
     assert firewall["enforcement"]["operatingSystemSandboxClaimed"] is False
     permissions = {
-        item["contenderId"]: item
-        for item in firewall["permissionManifest"]["contenders"]
+        item["contenderId"]: item for item in firewall["permissionManifest"]["contenders"]
     }
     assert permissions["metadata_category_prior"]["mayReadRawPixels"] is False
     assert permissions["no_pixel_template"]["mayReadDerivedMasksLandmarks"] is False
-    assert permissions["deterministic_mask_landmark"][
-        "mayReadDerivedMasksLandmarks"
-    ] is True
+    assert permissions["deterministic_mask_landmark"]["mayReadDerivedMasksLandmarks"] is True
     assert permissions["image_conditioned"]["mayReadRawPixels"] is True
 
 

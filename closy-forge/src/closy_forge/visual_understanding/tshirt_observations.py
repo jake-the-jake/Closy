@@ -162,9 +162,7 @@ def build_tshirt_visual_observations_from_ingested_rasters(
             "sourceId": source.get("sourceId"),
             "sourceByteSha256": fixture.get("expectedSha256"),
             "decodedContentSha256": decoded.decoded_content_sha256,
-            "normalizationRecordHash": normalization_record["integrity"][
-                "normalizationRecordHash"
-            ],
+            "normalizationRecordHash": normalization_record["integrity"]["normalizationRecordHash"],
             "camera": deepcopy(fixture.get("camera")),
         }
 
@@ -209,9 +207,7 @@ def validate_evaluator_only_ingested_raster(
     if not isinstance(fixtures, list) or len(fixtures) != 3:
         raise RasterVisualParseError("evaluator_fixture_inventory_invalid")
     fixture = fixtures[2]
-    if not isinstance(fixture, Mapping) or fixture.get("role") != (
-        "evaluator_only_three_quarter"
-    ):
+    if not isinstance(fixture, Mapping) or fixture.get("role") != ("evaluator_only_three_quarter"):
         raise RasterVisualParseError("evaluator_fixture_role_invalid")
     root = input_root.resolve()
     path = (root / str(fixture.get("relativePath", ""))).resolve()

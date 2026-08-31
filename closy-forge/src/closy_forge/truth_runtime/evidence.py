@@ -231,9 +231,9 @@ def _dependency_graph(
         identities["fit"] = {
             **identities["fit"],
             "exactFitStatus": "not_run",
-            "requiredCorrectedVisualRecordHash": exact_observation[
-                "observationIdentity"
-            ]["correctedVisualRecordHash"],
+            "requiredCorrectedVisualRecordHash": exact_observation["observationIdentity"][
+                "correctedVisualRecordHash"
+            ],
             "requiredDownstreamCacheKey": exact_observation["observationIdentity"][
                 "downstreamCacheKey"
             ],
@@ -412,9 +412,7 @@ def _matrix_bindings(root: Path, target: Path, selected_identity: dict[str, str]
                 _equals("front_joined", "/claims/frontDecodedAndJoined", True),
                 _equals("rear_joined", "/claims/rearDecodedAndJoined", True),
                 _equals("quality_passed", "/claims/exactQualityPassed", True),
-                _equals(
-                    "evaluator_withheld", "/claims/evaluatorOnlyWithheldFromFit", True
-                ),
+                _equals("evaluator_withheld", "/claims/evaluatorOnlyWithheldFromFit", True),
                 _equals("renderer_not_called", "/claims/fixtureRendererCalled", False),
             ],
         )
@@ -437,20 +435,12 @@ def _matrix_bindings(root: Path, target: Path, selected_identity: dict[str, str]
                     "/selectedIdentity/garmentId",
                     "garmentId",
                 ),
-                _equals(
-                    "pixel_derived", "/claims/masksLandmarksPixelDerived", True
-                ),
-                _equals(
-                    "correction_linked", "/claims/correctionReplayedAndLinked", True
-                ),
-                _equals(
-                    "correction_selected", "/claims/correctionSelectedBeforeFit", True
-                ),
+                _equals("pixel_derived", "/claims/masksLandmarksPixelDerived", True),
+                _equals("correction_linked", "/claims/correctionReplayedAndLinked", True),
+                _equals("correction_selected", "/claims/correctionSelectedBeforeFit", True),
                 _equals("stale_rejected", "/claims/staleCorrectionRejected", True),
                 _equals("causal_controls", "/claims/causalControlsPassed", True),
-                _equals(
-                    "firewalls_executed", "/claims/informationFirewallsExecuted", True
-                ),
+                _equals("firewalls_executed", "/claims/informationFirewallsExecuted", True),
                 _equals("fit_not_executed", "/claims/fitOrEvaluationExecuted", False),
             ],
         )
