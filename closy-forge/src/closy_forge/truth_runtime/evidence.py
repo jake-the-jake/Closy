@@ -217,7 +217,7 @@ def _dependency_graph(
             "availability": "exact_public_raster_lineage_available",
             "opaqueSourceLineageHash": exact_raster["sourceLineageHash"],
             "acceptanceHash": exact_raster["integrity"]["acceptanceHash"],
-            "privateByteHashesPortable": False,
+            "privateByteHashesPortable": "false",
         }
         identities["capture"] = {
             **identities["capture"],
