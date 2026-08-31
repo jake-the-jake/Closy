@@ -2,15 +2,15 @@
   "coverage": {
     "blueprintSha256": "AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D",
     "counts": {
-      "complete": 21,
+      "complete": 20,
       "discovery_pending": 11,
       "not_started": 7,
-      "partial": 62
+      "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.d0_truth_runtime_authority_v3.v9",
+    "coverageVersion": "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10",
     "total": 101
   },
-  "evidenceAnchorSha": "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+  "evidenceAnchorSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -229,6 +229,67 @@
       ],
       "workflowRun": null
     },
+    "PHY1-Neutral-SeamSupport-D0-v3": {
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "neutral_acceptance_passed_11_of_28_checks",
+        "unresolved_contacts_242",
+        "residual_depth_0.0024_exceeds_0.00016",
+        "simulation_clearance_0_below_0.000005",
+        "render_clearance_negative_0.050591166989",
+        "seam_crack_0.041513220488_exceeds_0.002",
+        "tangential_slip_0.145067036152_exceeds_0.005",
+        "support_strain_area_terminal_energy_and_runtime_failed"
+      ],
+      "ccdExecuted": false,
+      "computeProfile": "D0",
+      "dRuntimePinnedToV1": true,
+      "dataProvenance": "project-authored public fixture",
+      "evidenceDigest": "280df4684724d2dae73eb20a09008aec824c2c6476ed21325c754c9c05ef1b4c",
+      "evidenceDurability": "59-file content-addressed evidence with unchanged GLB rescore",
+      "evidenceTier": "committed_persisted_neutral_trajectory_and_independent_oracles",
+      "executableSha": null,
+      "executionKind": "CPU/source/opt-in topology-v2 neutral physical experiment",
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "PHY1-Neutral-SeamSupport-D0-v3",
+      "gateScope": "neutral seam-support-collision preflight only",
+      "globalStatus": "partial",
+      "maximumResidualDepthMeters": 0.0024,
+      "maximumSeamCrackMeters": 0.041513220488,
+      "maximumTangentialSlipMeters": 0.145067036152,
+      "minimumRenderClearanceMeters": -0.050591166989,
+      "outcomeClass": "A_neutral_preflight_failed_v3",
+      "phy1Executed": false,
+      "platform": [
+        "windows"
+      ],
+      "remainingSeamModels": 0,
+      "remainingTopologyStrategies": 2,
+      "runtimeCapabilityExposed": false,
+      "scopedStatus": "failed",
+      "sourceSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+      "toolchain": [
+        "CPython 3.12"
+      ],
+      "trajectoryFrameCount": 49,
+      "unresolvedContactCount": 242,
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "multilayer",
+        "full_PHY1",
+        "integrated_CCD",
+        "solver_driven_Z2"
+      ],
+      "workflowRun": null,
+      "z2Executed": false
+    },
     "PHY1-SingleLayer-D0": {
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
@@ -326,6 +387,48 @@
         "multilayer",
         "integrated_CCD",
         "solver_driven_Z2"
+      ],
+      "workflowRun": null
+    },
+    "ResearchPrototype-D0-matrix-v2": {
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "D0-RP-07",
+        "D0-RP-08",
+        "D0-RP-15"
+      ],
+      "computeProfile": "D0",
+      "dataProvenance": "project-authored public fixture",
+      "evidenceDurability": "committed matrix and exact-head stacked CI",
+      "evidenceTier": "exact_selected_identity_predicate_matrix",
+      "executableSha": null,
+      "executionKind": "predicate evaluation over opened exact evidence",
+      "firstUnmetRequiredPredicate": "D0-RP-07",
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "ResearchPrototype-D0-matrix-v2",
+      "gateScope": "research prototype",
+      "globalStatus": "partial",
+      "platform": [
+        "windows",
+        "ubuntu"
+      ],
+      "scopedStatus": "partial_9_pass_3_fail_3_not_run",
+      "sourceSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+      "toolchain": [
+        "CPython 3.11",
+        "CPython 3.12"
+      ],
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "real_fabric",
+        "human_review"
       ],
       "workflowRun": null
     },
@@ -618,7 +721,7 @@
     "committedSourceAnchorExceptions": [
       10
     ],
-    "crossRepositoryNodeCount": 42,
+    "crossRepositoryNodeCount": 45,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -628,24 +731,48 @@
         "pullRequest": 39,
         "result": "pass",
         "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33342673147"
+      },
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+        "publishedHeadSha": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+        "pullRequest": 40,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33380042123"
+      },
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+        "publishedHeadSha": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+        "pullRequest": 41,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33393781144"
+      },
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+        "publishedHeadSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+        "pullRequest": 42,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33409665461"
       }
     ],
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
-    "latestPullRequest": 40,
+    "latestPullRequest": 43,
     "pendingExternalExactHeadAttestations": [
       {
         "authority": "github_workflow_api_and_draft_pr_body",
-        "committedSourceAnchorSha": "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
+        "committedSourceAnchorSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "publishedHeadSha": null,
-        "pullRequest": 40,
+        "pullRequest": 43,
         "result": "pending_publication_exact_head_ci",
         "workflowRunUrl": null
       }
     ],
-    "pullRequestCount": 40,
+    "pullRequestCount": 43,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v8",
+  "statusModelVersion": "closy.blueprint_status_model.v9",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -659,11 +786,12 @@
     "currentRasterPhase9SourceIntegrated": true,
     "currentRasterPhase9SourcePullRequest": 26,
     "dependencyIdentityGraphAvailable": true,
+    "finalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
     "finalD0ResearchMatrixStatus": "partial",
     "finalD0ResearchMatrixStatusCounts": {
-      "fail": 0,
-      "not_run": 7,
-      "pass": 8
+      "fail": 3,
+      "not_run": 3,
+      "pass": 9
     },
     "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
     "historicalZeroOneStaticCookEvidencePresent": true,
@@ -679,6 +807,12 @@
     "phase9E1Status": "partial_experimental",
     "phase9E2Status": "executed_feasibility_partial",
     "phases10To14EvidenceScope": "default_all_family_static_pass_parameter_range_partial_compiled_phase11_pairing_failed_mt1_mechanical_pass_phase12_13_integrated_headless_phase14_integrated_advisory",
+    "phy1SeamSupportV3CcdExecuted": false,
+    "phy1SeamSupportV3FullSuiteExecuted": false,
+    "phy1SeamSupportV3NeutralExecuted": true,
+    "phy1SeamSupportV3Outcome": "A_neutral_preflight_failed_v3",
+    "phy1SeamSupportV3TrajectoryBytesPreserved": true,
+    "phy1SeamSupportV3Z2Executed": false,
     "phy1TopologyV2ExperimentExecuted": true,
     "phy1TopologyV2Passed": false,
     "phy1TopologyV2RuntimeExposed": false,

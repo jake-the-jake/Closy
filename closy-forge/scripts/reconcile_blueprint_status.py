@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+EVIDENCE_ANCHOR = "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.d0_truth_runtime_authority_v3.v9"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_truth_runtime_authority_v3.v6"
+VERSION = "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.exact_d0_phy1_seam_support_v3.v7"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -255,11 +255,11 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-phy1-topology-v2",
         "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
         "921ef05b61f39e6020ad12126ffac24c4728f7e0",
-        "a6134df2fb67a8cbcb572e344caf828b926df273",
-        7,
-        22,
-        "",
-        "NOT_RUN_AT_EVIDENCE_ANCHOR",
+        "f732df267642cd55960205764e699c7fa2bb2d0f",
+        9,
+        32,
+        "33342673147",
+        "SUCCESS",
         "phy1_topology_v2_experiment_only",
     ),
     (
@@ -268,12 +268,51 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-d0-truth-runtime-authority-v3",
         "codex/closy-forge-phy1-topology-v2",
         "f732df267642cd55960205764e699c7fa2bb2d0f",
-        "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
-        6,
+        "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+        9,
+        44,
+        "33380042123",
+        "SUCCESS",
+        "d0_truth_runtime_authority_v3",
+    ),
+    (
+        41,
+        "Forge: execute exact D0 raster identity v2",
+        "codex/closy-forge-d0-raster-identity-v2",
+        "codex/closy-forge-d0-truth-runtime-authority-v3",
+        "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+        "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+        10,
+        54,
+        "33393781144",
+        "SUCCESS",
+        "d0_exact_raster_identity_v2",
+    ),
+    (
         42,
+        "Forge: fit and evaluate exact D0 candidate v2",
+        "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
+        "codex/closy-forge-d0-raster-identity-v2",
+        "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+        "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+        9,
+        90,
+        "33409665461",
+        "SUCCESS",
+        "d0_fitting_pbr_fidelity_v2",
+    ),
+    (
+        43,
+        "Forge: execute preregistered PHY1 seam support v3",
+        "codex/closy-forge-phy1-seam-support-v3",
+        "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
+        "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+        7,
+        68,
         "",
         "NOT_RUN_AT_EVIDENCE_ANCHOR",
-        "d0_truth_runtime_authority_v3",
+        "phy1_seam_support_v3_neutral_failure",
     ),
 ]
 
@@ -312,6 +351,17 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/evidence/phy1_topology_v2/final_d0_research_prototype_matrix.json",
     "closy-forge/src/closy_forge/simulation_topology_v2/evidence.py",
     "closy-forge/scripts/generate_phy1_topology_v2_evidence.py",
+    "closy-forge/docs/evidence/d0_exact_raster_identity_v2/evidence_manifest.json",
+    "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2/evaluation/"
+    "final_d0_research_prototype_matrix_v2.json",
+    "closy-forge/docs/evidence/phy1_seam_support_v3/neutral_preflight.json",
+    "closy-forge/docs/evidence/phy1_seam_support_v3/outcome.json",
+    "closy-forge/docs/evidence/phy1_seam_support_v3/evidence_manifest.json",
+    "closy-forge/fixtures/phy1_seam_support_v3/experiment_lock.json",
+    "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+    "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+    "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
+    "closy-forge/scripts/generate_phy1_seam_support_v3_evidence.py",
 ]
 
 PHASE10_PATHS = [
@@ -1097,6 +1147,153 @@ TRUTH_RUNTIME_EVIDENCE_ADDITIONS = {
     for row_id in TRUTH_RUNTIME_PROGRESSION_UPDATES
 }
 
+FINAL_D0_PHY1_V3_PROGRESSION_UPDATES = {
+    "BP-49-RASTER-INGESTION-PRIVACY": {
+        "status": "partial",
+        "summary": (
+            "The exact public D0 front/rear raster identities are frozen before fitting, decoded "
+            "from source bytes, privacy-classified, and joined to the selected candidate."
+        ),
+        "limitations": (
+            "The evidence is project-authored public-fixture data only; private-user Gate P1, "
+            "real-photo breadth, and device capture remain not run."
+        ),
+        "nextAction": "Add authorised identity-disjoint public capture without widening claims.",
+    },
+    "BP-50-PIXEL-PARSING-CORRECTIONS": {
+        "status": "partial",
+        "summary": (
+            "Pixel-derived masks, landmarks, openings, camera evidence, and correction replay "
+            "pass exact selected-identity lineage controls."
+        ),
+        "limitations": "The exact D0 fixture does not establish private-user or learned parsing.",
+        "nextAction": "Retain the frozen observation contract for independent capture tiers.",
+    },
+    "BP-52-IMAGE-CONDITIONED-FITTING": {
+        "status": "partial",
+        "summary": (
+            "The exact image-conditioned template ranker and continuous fitter produce finite, "
+            "deterministic candidate 060e8d4aaaa7e82eddb75880 with permissioned controls."
+        ),
+        "limitations": (
+            "The candidate remains a public D0 research fixture and its strict C3 and neutral "
+            "physical predicates fail."
+        ),
+        "nextAction": "Preserve the fit while isolating appearance and physical failures.",
+    },
+    "BP-53-SOURCE-TEXTURE-PBR-RECOVERY": {
+        "status": "partial",
+        "summary": (
+            "Decoded bitmap/PBR maps and independent rerender evidence are persisted against "
+            "source pixels rather than candidate-derived targets."
+        ),
+        "limitations": (
+            "D0-RP-07 fails because logo displacement 0.154158086 exceeds the frozen 0.14 limit; "
+            "no measured-fabric claim is made."
+        ),
+        "nextAction": "Improve source-conditioned logo placement under a new frozen visual trial.",
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "The final exact-candidate matrix records 9 pass, 3 fail, and 3 not-run rows after "
+            "persisted PHY1-v3 neutral scoring."
+        ),
+        "limitations": (
+            "D0-RP-07 texture rerender, D0-RP-08 strict C3, and D0-RP-15 neutral simulation "
+            "fail; the first unmet required predicate is D0-RP-07."
+        ),
+        "nextAction": "Repair exact source-conditioned appearance before another physical trial.",
+    },
+    "BP-17-PHASE-04": {
+        "status": "partial",
+        "summary": (
+            "Source-backed bitmap/PBR recovery executes with an independent rerender oracle."
+        ),
+        "limitations": "The frozen logo-displacement predicate fails and fabric is not calibrated.",
+        "nextAction": "Run a new preregistered appearance correction without target leakage.",
+    },
+    "BP-17-PHASE-06": {
+        "status": "partial",
+        "summary": (
+            "PHY1 seam/support v3 executes a solver-active 49-frame neutral trajectory with "
+            "rank-aware junctions, temporary supports, in-iteration collision, and independent "
+            "simulation/render oracles."
+        ),
+        "limitations": (
+            "Outcome A is frozen: 242 unresolved contacts, 0.0024 m residual depth, "
+            "0.041513220488 m "
+            "seam crack, 0.145067036152 m slip, negative render clearance, strain/energy failures, "
+            "and runtime above 180 s."
+        ),
+        "nextAction": (
+            "Do not spend topology strategy 2 until a newly budgeted dependency-ready physical "
+            "milestone is explicitly authorised."
+        ),
+    },
+    "BP-17-PHASE-11": {
+        "status": "partial",
+        "summary": (
+            "MT1 remains a separate analytic transport pass; the exact candidate produces no "
+            "admissible solver-driven clip because neutral preflight fails."
+        ),
+        "limitations": "The 11-state PHY1 replay, CCD, and solver-driven Z2 are not run.",
+        "nextAction": "Keep ZeroOne PR #4 frozen until exact C3 and PHY1 prerequisites pass.",
+    },
+    "BP-18-GATE-C3": {
+        "status": "partial",
+        "summary": (
+            "Historical scoped C3 remains preserved, while strict C3 on exact candidate "
+            "060e8d4aaaa7e82eddb75880 fails and is not promoted."
+        ),
+        "limitations": "No cross-identity evidence is used to repair the exact-candidate result.",
+        "nextAction": "Regenerate strict binding only from a future exact candidate identity.",
+    },
+    "BP-18-GATE-Z2": {
+        "status": "partial",
+        "summary": "No new solver-driven Z2 attempt is admitted after neutral outcome A.",
+        "limitations": "PHY1, CCD, and current-platform ZeroOne execution are not run.",
+        "nextAction": "Retain failed/not-run Z2 until exact C3 and full PHY1 both pass.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "The exact public-fixture D0 matrix records 9 pass, 3 fail, and 3 not-run rows on "
+            "candidate 060e8d4aaaa7e82eddb75880."
+        ),
+        "limitations": (
+            "The first unmet row is D0-RP-07; strict C3 and neutral physics also fail, and human, "
+            "private, device, GPU, mobile, and real-fabric evidence remain not run."
+        ),
+        "nextAction": "Open one appearance-correction branch gated by the frozen D0-RP-07 limit.",
+    },
+}
+
+FINAL_D0_PHY1_V3_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+            "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+            "closy-forge/docs/evidence/phy1_seam_support_v3",
+            "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+            "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+            "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
+        ],
+        "executableEvidence": [
+            "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+            "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator "
+            "repair",
+            "runtime v1 remains selected and topology v2 remains opt-in",
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+            "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+            "closy-forge/tests/unit/test_exact_raster_identity.py",
+        ],
+    }
+    for row_id in FINAL_D0_PHY1_V3_PROGRESSION_UPDATES
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -1257,6 +1454,9 @@ def main() -> int:
         truth_runtime_update = TRUTH_RUNTIME_PROGRESSION_UPDATES.get(row_id)
         if truth_runtime_update:
             row.update(truth_runtime_update)
+        final_d0_phy1_update = FINAL_D0_PHY1_V3_PROGRESSION_UPDATES.get(row_id)
+        if final_d0_phy1_update:
+            row.update(final_d0_phy1_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1281,11 +1481,17 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), truth_runtime_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        final_d0_phy1_evidence = FINAL_D0_PHY1_V3_EVIDENCE_ADDITIONS.get(row_id)
+        if final_d0_phy1_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), final_d0_phy1_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
             and row_id not in PHY1_V2_PROGRESSION_UPDATES
             and row_id not in TRUTH_RUNTIME_PROGRESSION_UPDATES
+            and row_id not in FINAL_D0_PHY1_V3_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -1470,6 +1676,9 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         38: 36,
         39: 38,
         40: 39,
+        41: 40,
+        42: 41,
+        43: 42,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []

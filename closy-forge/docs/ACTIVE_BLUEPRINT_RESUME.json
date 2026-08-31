@@ -1,42 +1,67 @@
 {
-  "activeLane": "D0 executable truth and runtime authority",
-  "branch": "codex/closy-forge-d0-truth-runtime-authority-v3",
-  "evidenceHead": "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-  "exactNextAction": "After external exact-head review-unit-A attestation, create review unit B from that published head and execute exact public front/rear raster source and observation lineage.",
+  "activeLane": "Exact D0 source-to-garment closeout and PHY1 seam-support v3",
+  "branch": "codex/closy-forge-phy1-seam-support-v3",
+  "evidenceHead": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+  "exactNextAction": "Create codex/closy-forge-d0-texture-rerender-correction-v3 from PR #43 only after exact-head CI; preregister a source-conditioned appearance correction whose literal gate includes logo displacement <= 0.14 without target leakage.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
-    "C3-Binding-D0-v1": "pass_scoped_exact_identity",
+    "C3-Binding-D0-v1": "historical_scoped_pass_preserved",
+    "C3-Binding-D0-exact-candidate-v2": "fail",
     "MT1-MechanicalReference-D0": "pass_scoped_not_Z2",
     "P1": "not_run",
+    "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
     "PHY1-SingleLayer-D0-v2": "failed_0_of_11_preserved",
-    "ResearchPrototype-D0-matrix-v2": "partial_8_pass_7_not_run",
-    "RuntimeCandidate-v2": "validated_descriptor_only_garment_fallback_not_product_selected",
+    "ResearchPrototype-D0-matrix-v2": "partial_9_pass_3_fail_3_not_run",
+    "RuntimeCandidate-v2": "validated_research_only_product_runtime_v1_unchanged",
     "Z1": "candidate_default_family_scoped_pass_global_partial",
-    "Z2": "failed_not_admitted"
+    "Z2": "failed_not_admitted_no_new_run"
   },
-  "localHeadAtResumeSource": "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
-  "machineResumeVersion": "closy.active_blueprint_resume.d0_truth_runtime_authority_v3.v1",
+  "localHeadAtResumeSource": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+  "machineResumeVersion": "closy.active_blueprint_resume.exact_d0_phy1_seam_support_v3.v1",
   "mergeAuthorised": false,
   "parent": {
-    "branch": "codex/closy-forge-phy1-topology-v2",
-    "pullRequest": 39,
-    "sha": "f732df267642cd55960205764e699c7fa2bb2d0f"
+    "branch": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
+    "pullRequest": 42,
+    "sha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
   },
   "pendingCIAtEvidenceHead": true,
-  "pullRequest": 40,
+  "physicalResult": {
+    "evidenceDigest": "280df4684724d2dae73eb20a09008aec824c2c6476ed21325c754c9c05ef1b4c",
+    "neutralChecksPassed": 11,
+    "neutralChecksTotal": 28,
+    "trajectoryFrameCount": 49,
+    "trajectoryGlbBytesPreservedAfterReportingRepair": true,
+    "unresolvedContacts": 242,
+    "maximumResidualDepthMeters": 0.0024,
+    "maximumSeamCrackMeters": 0.041513220488,
+    "maximumTangentialSlipMeters": 0.145067036152,
+    "minimumRenderClearanceMeters": -0.050591166989,
+    "fullPhy1Executed": false,
+    "ccdExecuted": false,
+    "z2Executed": false
+  },
+  "pullRequest": 43,
   "remainingBudgets": {
-    "seamModels": 1,
+    "seamModels": 0,
     "topologyStrategies": 2
   },
   "remoteHeadAtResumeSource": null,
   "replayState": {
+    "candidateId": "candidate.d0_exact_fitted_topology_v2.060e8d4aaaa7e82eddb75880",
     "dependencyAuthority": "explicit_graph_validated",
+    "firstUnmetResearchPredicate": "D0-RP-07",
+    "matrixCounts": {
+      "pass": 9,
+      "fail": 3,
+      "not_run": 3
+    },
     "productRuntimeV1Unchanged": true,
     "runtimeCandidateV2ProductSelected": false,
     "runtimeFallback": "canonical_garment_glb",
+    "topologyV2RuntimeExposed": false,
     "zeroOneDescriptorsArePayloads": false
   },
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "unit_a_complete_pending_exact_head_attestation"
+  "stopReason": "unit_d_neutral_failure_stop_rule_complete_pending_exact_head_attestation"
 }

@@ -437,6 +437,36 @@
       "to": "github:jake-the-jake/Closy:pr/40"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/40",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/41"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/40",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/41"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/41",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/42"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/41",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/42"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/42",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/43"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/42",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/43"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -2027,20 +2057,28 @@
       "uniqueCommitRange": "4c5dcd284a1221a7820184e640fb92b67b880787..921ef05b61f39e6020ad12126ffac24c4728f7e0"
     },
     {
-      "ahead": 7,
+      "ahead": 9,
       "baseRef": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
       "baseSha": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
       "behind": 0,
       "branch": "codex/closy-forge-phy1-topology-v2",
       "capabilityRole": "forge_progress_bounded_phy1_topology_v2",
-      "changedFileCount": 22,
+      "changedFileCount": 32,
       "dependencyIds": [
         "github:jake-the-jake/Closy:pr/38"
       ],
-      "headSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
+      "headSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
       "id": "github:jake-the-jake/Closy:pr/39",
       "integrationMappings": [],
-      "latestExactHeadWorkflows": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33342673147",
+          "workflow": "Closy Forge"
+        }
+      ],
       "mergeBase": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
       "mergeEligible": true,
       "neverMergeWith": [],
@@ -2053,23 +2091,31 @@
       "sourceOnly": false,
       "state": "OPEN",
       "superseded": false,
-      "uniqueCommitRange": "921ef05b61f39e6020ad12126ffac24c4728f7e0..a6134df2fb67a8cbcb572e344caf828b926df273"
+      "uniqueCommitRange": "921ef05b61f39e6020ad12126ffac24c4728f7e0..f732df267642cd55960205764e699c7fa2bb2d0f"
     },
     {
-      "ahead": 6,
+      "ahead": 9,
       "baseRef": "codex/closy-forge-phy1-topology-v2",
       "baseSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
       "behind": 0,
       "branch": "codex/closy-forge-d0-truth-runtime-authority-v3",
       "capabilityRole": "forge_add_executable_d0_truth_and_runtime_authority",
-      "changedFileCount": 42,
+      "changedFileCount": 44,
       "dependencyIds": [
         "github:jake-the-jake/Closy:pr/39"
       ],
-      "headSha": "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
+      "headSha": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
       "id": "github:jake-the-jake/Closy:pr/40",
       "integrationMappings": [],
-      "latestExactHeadWorkflows": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33380042123",
+          "workflow": "Closy Forge"
+        }
+      ],
       "mergeBase": "f732df267642cd55960205764e699c7fa2bb2d0f",
       "mergeEligible": true,
       "neverMergeWith": [],
@@ -2082,7 +2128,110 @@
       "sourceOnly": false,
       "state": "OPEN",
       "superseded": false,
-      "uniqueCommitRange": "f732df267642cd55960205764e699c7fa2bb2d0f..7579f5e7dced1a19cea5df47a4a482bead57f4b4"
+      "uniqueCommitRange": "f732df267642cd55960205764e699c7fa2bb2d0f..dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a"
+    },
+    {
+      "ahead": 10,
+      "baseRef": "codex/closy-forge-d0-truth-runtime-authority-v3",
+      "baseSha": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-raster-identity-v2",
+      "capabilityRole": "forge_execute_exact_d0_raster_identity_v2",
+      "changedFileCount": 54,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/40"
+      ],
+      "headSha": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+      "id": "github:jake-the-jake/Closy:pr/41",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33393781144",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/40"
+      ],
+      "pullRequest": 41,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_exact_raster_identity_v2",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a..4b1f4d550cf6e595170f9ef7bd28384c147ca2e8"
+    },
+    {
+      "ahead": 9,
+      "baseRef": "codex/closy-forge-d0-raster-identity-v2",
+      "baseSha": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
+      "capabilityRole": "forge_fit_and_evaluate_exact_d0_candidate_v2",
+      "changedFileCount": 90,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/41"
+      ],
+      "headSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+      "id": "github:jake-the-jake/Closy:pr/42",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33409665461",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/41"
+      ],
+      "pullRequest": 42,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_fitting_pbr_fidelity_v2",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8..7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
+    },
+    {
+      "ahead": 7,
+      "baseRef": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
+      "baseSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+      "behind": 0,
+      "branch": "codex/closy-forge-phy1-seam-support-v3",
+      "capabilityRole": "forge_execute_preregistered_phy1_seam_support_v3",
+      "changedFileCount": 68,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/42"
+      ],
+      "headSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+      "id": "github:jake-the-jake/Closy:pr/43",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/42"
+      ],
+      "pullRequest": 43,
+      "repository": "jake-the-jake/Closy",
+      "role": "phy1_seam_support_v3_neutral_failure",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4..fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
     },
     {
       "ahead": 3,
@@ -3863,19 +4012,22 @@
       "baseBranch": "codex/closy-forge-integrated-runtime-avatar-outfit-v2",
       "baseSha": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
       "branch": "codex/closy-forge-phy1-topology-v2",
-      "changedFileCount": 22,
+      "changedFileCount": 32,
       "directParentMergeBaseVerified": true,
       "draft": true,
-      "headSha": "a6134df2fb67a8cbcb572e344caf828b926df273",
-      "knownException": {
-        "code": "exact_head_ci_recorded_outside_generated_evidence",
-        "descendantEvidenceIsExactHead": false,
-        "reason": "PR #39 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      "headSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33342673147",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
       },
-      "latestExactHeadForgeRun": null,
-      "layerAhead": 7,
+      "layerAhead": 9,
       "layerBehind": 0,
-      "layerCommitCount": 7,
+      "layerCommitCount": 9,
       "mergeBase": "921ef05b61f39e6020ad12126ffac24c4728f7e0",
       "mergeability": "MERGEABLE",
       "number": 39,
@@ -3889,19 +4041,22 @@
       "baseBranch": "codex/closy-forge-phy1-topology-v2",
       "baseSha": "f732df267642cd55960205764e699c7fa2bb2d0f",
       "branch": "codex/closy-forge-d0-truth-runtime-authority-v3",
-      "changedFileCount": 42,
+      "changedFileCount": 44,
       "directParentMergeBaseVerified": true,
       "draft": true,
-      "headSha": "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
-      "knownException": {
-        "code": "exact_head_ci_recorded_outside_generated_evidence",
-        "descendantEvidenceIsExactHead": false,
-        "reason": "PR #40 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      "headSha": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33380042123",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
       },
-      "latestExactHeadForgeRun": null,
-      "layerAhead": 6,
+      "layerAhead": 9,
       "layerBehind": 0,
-      "layerCommitCount": 6,
+      "layerCommitCount": 9,
       "mergeBase": "f732df267642cd55960205764e699c7fa2bb2d0f",
       "mergeability": "MERGEABLE",
       "number": 40,
@@ -3910,6 +4065,90 @@
       "state": "OPEN",
       "title": "Forge: add executable D0 truth and runtime authority",
       "url": "https://github.com/jake-the-jake/Closy/pull/40"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-truth-runtime-authority-v3",
+      "baseSha": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+      "branch": "codex/closy-forge-d0-raster-identity-v2",
+      "changedFileCount": 54,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33393781144",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 10,
+      "layerBehind": 0,
+      "layerCommitCount": 10,
+      "mergeBase": "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a",
+      "mergeability": "MERGEABLE",
+      "number": 41,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_exact_raster_identity_v2",
+      "state": "OPEN",
+      "title": "Forge: execute exact D0 raster identity v2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/41"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-raster-identity-v2",
+      "baseSha": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+      "branch": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
+      "changedFileCount": 90,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "jobCount": 26,
+        "runId": "33409665461",
+        "successfulJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 9,
+      "layerBehind": 0,
+      "layerCommitCount": 9,
+      "mergeBase": "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8",
+      "mergeability": "MERGEABLE",
+      "number": 42,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_fitting_pbr_fidelity_v2",
+      "state": "OPEN",
+      "title": "Forge: fit and evaluate exact D0 candidate v2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/42"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
+      "baseSha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+      "branch": "codex/closy-forge-phy1-seam-support-v3",
+      "changedFileCount": 68,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #43 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 7,
+      "layerBehind": 0,
+      "layerCommitCount": 7,
+      "mergeBase": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
+      "mergeability": "MERGEABLE",
+      "number": 43,
+      "repository": "jake-the-jake/Closy",
+      "role": "phy1_seam_support_v3_neutral_failure",
+      "state": "OPEN",
+      "title": "Forge: execute preregistered PHY1 seam support v3",
+      "url": "https://github.com/jake-the-jake/Closy/pull/43"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -3956,7 +4195,10 @@
     "github:jake-the-jake/Closy:pr/36",
     "github:jake-the-jake/Closy:pr/38",
     "github:jake-the-jake/Closy:pr/39",
-    "github:jake-the-jake/Closy:pr/40"
+    "github:jake-the-jake/Closy:pr/40",
+    "github:jake-the-jake/Closy:pr/41",
+    "github:jake-the-jake/Closy:pr/42",
+    "github:jake-the-jake/Closy:pr/43"
   ],
   "topology": "explicit_dag",
   "validation": {

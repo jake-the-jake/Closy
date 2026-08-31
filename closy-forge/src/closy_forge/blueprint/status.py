@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v8"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v9"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -29,7 +29,11 @@ PHY1_V2_SOURCE_SHA = "477c1fd881c7e55c352ca89732e5772d9d6bbeeb"
 PHY1_V2_PUBLICATION_SHA = "a6134df2fb67a8cbcb572e344caf828b926df273"
 PHY1_V2_PUBLISHED_EXACT_HEAD = "f732df267642cd55960205764e699c7fa2bb2d0f"
 PHY1_V2_EXACT_HEAD_WORKFLOW = "https://github.com/jake-the-jake/Closy/actions/runs/33342673147"
-D0_TRUTH_RUNTIME_PUBLICATION_SHA = "7579f5e7dced1a19cea5df47a4a482bead57f4b4"
+D0_TRUTH_RUNTIME_PUBLICATION_SHA = "dbe9b3691b6c7bfc8a8a92ceeb04a7916e34e30a"
+D0_RASTER_IDENTITY_PUBLICATION_SHA = "4b1f4d550cf6e595170f9ef7bd28384c147ca2e8"
+D0_FITTING_PBR_PUBLICATION_SHA = "7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
+PHY1_V3_EVIDENCE_SHA = "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+PHY1_V3_EVIDENCE_DIGEST = "280df4684724d2dae73eb20a09008aec824c2c6476ed21325c754c9c05ef1b4c"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -163,6 +167,72 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
             "strain_opening_support_energy_failed",
             "coupled_convergence_failed",
         ],
+    },
+    "PHY1-Neutral-SeamSupport-D0-v3": {
+        "gateId": "PHY1-Neutral-SeamSupport-D0-v3",
+        "globalStatus": "partial",
+        "scopedStatus": "failed",
+        "evidenceTier": "committed_persisted_neutral_trajectory_and_independent_oracles",
+        "platform": ["windows"],
+        "toolchain": ["CPython 3.12"],
+        "sourceSha": PHY1_V3_EVIDENCE_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public fixture",
+        "executionKind": "CPU/source/opt-in topology-v2 neutral physical experiment",
+        "gateScope": "neutral seam-support-collision preflight only",
+        "evidenceDurability": "59-file content-addressed evidence with unchanged GLB rescore",
+        "workflowRun": None,
+        "outcomeClass": "A_neutral_preflight_failed_v3",
+        "trajectoryFrameCount": 49,
+        "unresolvedContactCount": 242,
+        "maximumResidualDepthMeters": 0.0024,
+        "maximumSeamCrackMeters": 0.041513220488,
+        "maximumTangentialSlipMeters": 0.145067036152,
+        "minimumRenderClearanceMeters": -0.050591166989,
+        "evidenceDigest": PHY1_V3_EVIDENCE_DIGEST,
+        "phy1Executed": False,
+        "ccdExecuted": False,
+        "z2Executed": False,
+        "runtimeCapabilityExposed": False,
+        "dRuntimePinnedToV1": True,
+        "remainingTopologyStrategies": 2,
+        "remainingSeamModels": 0,
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["multilayer", "full_PHY1", "integrated_CCD", "solver_driven_Z2"],
+        "blockers": [
+            "neutral_acceptance_passed_11_of_28_checks",
+            "unresolved_contacts_242",
+            "residual_depth_0.0024_exceeds_0.00016",
+            "simulation_clearance_0_below_0.000005",
+            "render_clearance_negative_0.050591166989",
+            "seam_crack_0.041513220488_exceeds_0.002",
+            "tangential_slip_0.145067036152_exceeds_0.005",
+            "support_strain_area_terminal_energy_and_runtime_failed",
+        ],
+    },
+    "ResearchPrototype-D0-matrix-v2": {
+        "gateId": "ResearchPrototype-D0-matrix-v2",
+        "globalStatus": "partial",
+        "scopedStatus": "partial_9_pass_3_fail_3_not_run",
+        "evidenceTier": "exact_selected_identity_predicate_matrix",
+        "platform": ["windows", "ubuntu"],
+        "toolchain": ["CPython 3.11", "CPython 3.12"],
+        "sourceSha": PHY1_V3_EVIDENCE_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public fixture",
+        "executionKind": "predicate evaluation over opened exact evidence",
+        "gateScope": "research prototype",
+        "evidenceDurability": "committed matrix and exact-head stacked CI",
+        "workflowRun": None,
+        "firstUnmetRequiredPredicate": "D0-RP-07",
+        "unsupportedTiers": _COMMON_UNSUPPORTED + ["real_fabric", "human_review"],
+        "blockers": ["D0-RP-07", "D0-RP-08", "D0-RP-15"],
     },
     "MT1-MechanicalReference-D0": {
         "gateId": "MT1-MechanicalReference-D0",
@@ -413,7 +483,7 @@ def build_status_model(
                 for row in stack["nodes"]
                 if row["repository"] == "jake-the-jake/Closy"
                 and not row["latestExactHeadWorkflows"]
-                and int(row["pullRequest"]) not in {39, 40}
+                and int(row["pullRequest"]) not in {39, 43}
             ],
             "externalExactHeadAttestations": [
                 {
@@ -423,12 +493,36 @@ def build_status_model(
                     "workflowRunUrl": PHY1_V2_EXACT_HEAD_WORKFLOW,
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
-                }
-            ],
-            "pendingExternalExactHeadAttestations": [
+                },
                 {
                     "pullRequest": 40,
                     "committedSourceAnchorSha": D0_TRUTH_RUNTIME_PUBLICATION_SHA,
+                    "publishedHeadSha": D0_TRUTH_RUNTIME_PUBLICATION_SHA,
+                    "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33380042123",
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+                {
+                    "pullRequest": 41,
+                    "committedSourceAnchorSha": D0_RASTER_IDENTITY_PUBLICATION_SHA,
+                    "publishedHeadSha": D0_RASTER_IDENTITY_PUBLICATION_SHA,
+                    "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33393781144",
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+                {
+                    "pullRequest": 42,
+                    "committedSourceAnchorSha": D0_FITTING_PBR_PUBLICATION_SHA,
+                    "publishedHeadSha": D0_FITTING_PBR_PUBLICATION_SHA,
+                    "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33409665461",
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+            ],
+            "pendingExternalExactHeadAttestations": [
+                {
+                    "pullRequest": 43,
+                    "committedSourceAnchorSha": PHY1_V3_EVIDENCE_SHA,
                     "publishedHeadSha": None,
                     "workflowRunUrl": None,
                     "result": "pending_publication_exact_head_ci",
@@ -469,10 +563,17 @@ def build_status_model(
             "phy1TopologyV2ExperimentExecuted": True,
             "phy1TopologyV2Passed": False,
             "phy1TopologyV2RuntimeExposed": False,
+            "phy1SeamSupportV3NeutralExecuted": True,
+            "phy1SeamSupportV3Outcome": "A_neutral_preflight_failed_v3",
+            "phy1SeamSupportV3TrajectoryBytesPreserved": True,
+            "phy1SeamSupportV3FullSuiteExecuted": False,
+            "phy1SeamSupportV3CcdExecuted": False,
+            "phy1SeamSupportV3Z2Executed": False,
             "integratedRuntimePinnedToTopologyV1": True,
             "finalD0ResearchMatrixStatus": "partial",
             "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
-            "finalD0ResearchMatrixStatusCounts": {"pass": 8, "fail": 0, "not_run": 7},
+            "finalD0ResearchMatrixStatusCounts": {"pass": 9, "fail": 3, "not_run": 3},
+            "finalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
             "dependencyIdentityGraphAvailable": True,
             "runtimeCandidateV2Available": True,
             "runtimeCandidateV2ProductSelected": False,
@@ -506,7 +607,7 @@ def validate_status_model(
     if status_stack.get("committedSourceAnchorExceptions") != [10]:
         issues.append("stack_exception_set_invalid")
     attestations = status_stack.get("externalExactHeadAttestations", [])
-    if attestations != [
+    expected_attestations = [
         {
             "pullRequest": 39,
             "committedSourceAnchorSha": PHY1_V2_PUBLICATION_SHA,
@@ -514,14 +615,39 @@ def validate_status_model(
             "workflowRunUrl": PHY1_V2_EXACT_HEAD_WORKFLOW,
             "result": "pass",
             "authority": "github_workflow_api_and_draft_pr_body",
-        }
-    ]:
+        },
+        {
+            "pullRequest": 40,
+            "committedSourceAnchorSha": D0_TRUTH_RUNTIME_PUBLICATION_SHA,
+            "publishedHeadSha": D0_TRUTH_RUNTIME_PUBLICATION_SHA,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33380042123",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+        {
+            "pullRequest": 41,
+            "committedSourceAnchorSha": D0_RASTER_IDENTITY_PUBLICATION_SHA,
+            "publishedHeadSha": D0_RASTER_IDENTITY_PUBLICATION_SHA,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33393781144",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+        {
+            "pullRequest": 42,
+            "committedSourceAnchorSha": D0_FITTING_PBR_PUBLICATION_SHA,
+            "publishedHeadSha": D0_FITTING_PBR_PUBLICATION_SHA,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33409665461",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+    ]
+    if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
     if pending_attestations != [
         {
-            "pullRequest": 40,
-            "committedSourceAnchorSha": D0_TRUTH_RUNTIME_PUBLICATION_SHA,
+            "pullRequest": 43,
+            "committedSourceAnchorSha": PHY1_V3_EVIDENCE_SHA,
             "publishedHeadSha": None,
             "workflowRunUrl": None,
             "result": "pending_publication_exact_head_ci",
@@ -549,6 +675,14 @@ def validate_status_model(
         issues.append("phy1_topology_v2_overclaimed")
     if truth.get("phy1TopologyV2RuntimeExposed") is not False:
         issues.append("phy1_topology_v2_runtime_exposure_overclaimed")
+    if truth.get("phy1SeamSupportV3Outcome") != "A_neutral_preflight_failed_v3":
+        issues.append("phy1_v3_outcome_missing_or_overclaimed")
+    if truth.get("phy1SeamSupportV3FullSuiteExecuted") is not False:
+        issues.append("phy1_v3_full_suite_overclaimed")
+    if truth.get("phy1SeamSupportV3CcdExecuted") is not False:
+        issues.append("phy1_v3_ccd_overclaimed")
+    if truth.get("phy1SeamSupportV3Z2Executed") is not False:
+        issues.append("phy1_v3_z2_overclaimed")
     if truth.get("integratedRuntimePinnedToTopologyV1") is not True:
         issues.append("integrated_runtime_topology_identity_drift")
     if truth.get("packageValidityDependsOnZeroOne") is not False:
@@ -592,7 +726,10 @@ def render_status_summary(model: dict[str, Any]) -> str:
         "Compute profile, data provenance, execution profile, and gate scope are independent "
         "axes. C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile; "
         "PHY1-SingleLayer-D0 and its opt-in topology-v2 experiment both fail their declared "
-        "scopes. Topology v2 removes qualified temporal degeneracy but is not runtime-exposed. "
+        "scopes. The exact-candidate seam/support-v3 neutral preflight also fails, so the full "
+        "11-state PHY1 replay, CCD, and solver-driven Z2 are not run. Topology v2 remains "
+        "opt-in and is not runtime-exposed. The final exact matrix is partial at 9 pass, 3 fail, "
+        "and 3 not-run rows, first unmet at D0-RP-07. "
         "Historical compiled dynamic ZeroOne "
         "pairing failed, while the separate clean analytic MT1 mechanical-reference profile passes "
         "without implying Z2 or physical cloth. Geometric LayerCollision-D0 passes only for the "

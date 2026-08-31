@@ -11,6 +11,7 @@ _REQUIRED_THRESHOLD_PROFILES = {
     "closy.outfit_surface.d0.v1",
     "closy.phase9_e1.selective.v1",
     "closy.phase9_e2.typed_program.v1",
+    "closy.phy1.seam_support_neutral.v3",
 }
 _EXPECTED_BUDGETS = {
     "Z1-SURFACE-REPAIR": ("maximumStrategiesPerFamily", 3),
@@ -20,6 +21,7 @@ _EXPECTED_BUDGETS = {
     "PHASE9-E1": ("maximumModelFamiliesAfterBaselines", 3),
     "PHASE9-E2": ("maximumDecoderFamilies", 1),
     "PHY1": ("maximumStrategies", 3),
+    "PHY1-SEAM-SUPPORT-V3": ("maximumSeamModels", 2),
     "CI-INFRASTRUCTURE-RETRY": ("maximumRetries", 1),
 }
 
