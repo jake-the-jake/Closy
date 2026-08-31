@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10",
+    "coverageVersion": "closy.blueprint_coverage.d0_evidence_integrity_v4.v11",
     "total": 101
   },
-  "evidenceAnchorSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
+  "evidenceAnchorSha": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -393,9 +393,7 @@
     "ResearchPrototype-D0-matrix-v2": {
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
-        "D0-RP-07",
-        "D0-RP-08",
-        "D0-RP-15"
+        "superseded_by_matrix_v3_integrity_reset"
       ],
       "computeProfile": "D0",
       "dataProvenance": "project-authored public fixture",
@@ -414,7 +412,7 @@
         "windows",
         "ubuntu"
       ],
-      "scopedStatus": "partial_9_pass_3_fail_3_not_run",
+      "scopedStatus": "historical_superseded_9_pass_3_fail_3_not_run",
       "sourceSha": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
       "toolchain": [
         "CPython 3.11",
@@ -429,6 +427,93 @@
         "private_user",
         "real_fabric",
         "human_review"
+      ],
+      "workflowRun": null
+    },
+    "ResearchPrototype-D0-matrix-v3-core": {
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "D0-RP-03",
+        "D0-RP-04",
+        "D0-RP-07",
+        "D0-RP-08",
+        "D0-RP-15"
+      ],
+      "computeProfile": "D0",
+      "dataProvenance": "project-authored public fixture",
+      "evidenceDurability": "committed_hash_chained_matrix_and_exact_head_stacked_ci",
+      "evidenceTier": "artifact_reopened_selected_identity_predicate_matrix",
+      "executableSha": null,
+      "executionKind": "predicate evaluation over opened exact evidence",
+      "firstUnmetRequiredPredicate": "D0-RP-03",
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "ResearchPrototype-D0-matrix-v3-core",
+      "gateScope": "research prototype core exact fixture",
+      "globalStatus": "partial",
+      "platform": [
+        "windows",
+        "ubuntu"
+      ],
+      "scopedStatus": "partial_6_pass_5_fail_0_not_run",
+      "sourceSha": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
+      "toolchain": [
+        "CPython 3.11",
+        "CPython 3.12"
+      ],
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "real_fabric",
+        "human_review",
+        "identity_disjoint_cohort"
+      ],
+      "workflowRun": null
+    },
+    "ResearchPrototype-D0-matrix-v3-supplemental": {
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "D0-RP-10",
+        "D0-RP-14"
+      ],
+      "computeProfile": "D0",
+      "dataProvenance": "project-authored public fixture",
+      "evidenceDurability": "committed_hash_chained_matrix_and_exact_head_stacked_ci",
+      "evidenceTier": "artifact_reopened_supplemental_predicate_matrix",
+      "executableSha": null,
+      "executionKind": "predicate evaluation over opened supplemental evidence",
+      "firstUnmetRequiredPredicate": "D0-RP-10",
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "ResearchPrototype-D0-matrix-v3-supplemental",
+      "gateScope": "supplemental runtime and governance",
+      "globalStatus": "partial",
+      "platform": [
+        "windows",
+        "ubuntu"
+      ],
+      "scopedStatus": "2_pass_0_fail_2_not_run",
+      "sourceSha": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
+      "toolchain": [
+        "CPython 3.11",
+        "CPython 3.12"
+      ],
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "real_fabric",
+        "human_review",
+        "identity_disjoint_cohort"
       ],
       "workflowRun": null
     },
@@ -772,7 +857,7 @@
     "pullRequestCount": 43,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v9",
+  "statusModelVersion": "closy.blueprint_status_model.v10",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,

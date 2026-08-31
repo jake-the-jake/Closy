@@ -1,8 +1,8 @@
 {
-  "activeLane": "Exact D0 source-to-garment closeout and PHY1 seam-support v3",
-  "branch": "codex/closy-forge-phy1-seam-support-v3",
-  "evidenceHead": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
-  "exactNextAction": "Create codex/closy-forge-d0-texture-rerender-correction-v3 from PR #43 only after exact-head CI; preregister a source-conditioned appearance correction whose literal gate includes logo displacement <= 0.14 without target leakage.",
+  "activeLane": "D0 evidence integrity and truth reset",
+  "branch": "codex/closy-forge-d0-evidence-integrity-v4",
+  "evidenceHead": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
+  "exactNextAction": "After Unit E exact-head CI, create codex/closy-forge-d0-texture-rerender-correction-v3 from the final Unit E head and execute exactly one frozen known-target source-only appearance diagnostic without promoting D0-RP-07.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "C3-Binding-D0-v1": "historical_scoped_pass_preserved",
@@ -11,18 +11,20 @@
     "P1": "not_run",
     "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
     "PHY1-SingleLayer-D0-v2": "failed_0_of_11_preserved",
-    "ResearchPrototype-D0-matrix-v2": "partial_9_pass_3_fail_3_not_run",
+    "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
+    "ResearchPrototype-D0-matrix-v3-core": "partial_6_pass_5_fail_0_not_run",
+    "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
     "RuntimeCandidate-v2": "validated_research_only_product_runtime_v1_unchanged",
     "Z1": "candidate_default_family_scoped_pass_global_partial",
     "Z2": "failed_not_admitted_no_new_run"
   },
-  "localHeadAtResumeSource": "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
-  "machineResumeVersion": "closy.active_blueprint_resume.exact_d0_phy1_seam_support_v3.v1",
+  "localHeadAtResumeSource": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
+  "machineResumeVersion": "closy.active_blueprint_resume.d0_evidence_integrity_v4.v2",
   "mergeAuthorised": false,
   "parent": {
-    "branch": "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
-    "pullRequest": 42,
-    "sha": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
+    "branch": "codex/closy-forge-phy1-seam-support-v3",
+    "pullRequest": 43,
+    "sha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e"
   },
   "pendingCIAtEvidenceHead": true,
   "physicalResult": {
@@ -40,7 +42,7 @@
     "ccdExecuted": false,
     "z2Executed": false
   },
-  "pullRequest": 43,
+  "pullRequest": 44,
   "remainingBudgets": {
     "seamModels": 0,
     "topologyStrategies": 2
@@ -49,11 +51,16 @@
   "replayState": {
     "candidateId": "candidate.d0_exact_fitted_topology_v2.060e8d4aaaa7e82eddb75880",
     "dependencyAuthority": "explicit_graph_validated",
-    "firstUnmetResearchPredicate": "D0-RP-07",
-    "matrixCounts": {
-      "pass": 9,
-      "fail": 3,
-      "not_run": 3
+    "firstUnmetResearchPredicate": "D0-RP-03",
+    "matrixV3CoreCounts": {
+      "pass": 6,
+      "fail": 5,
+      "not_run": 0
+    },
+    "matrixV3SupplementalCounts": {
+      "pass": 2,
+      "fail": 0,
+      "not_run": 2
     },
     "productRuntimeV1Unchanged": true,
     "runtimeCandidateV2ProductSelected": false,
@@ -63,5 +70,5 @@
   },
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "unit_d_neutral_failure_stop_rule_complete_pending_exact_head_attestation"
+  "stopReason": "unit_e_integrity_reset_complete_pending_exact_head_attestation"
 }

@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
+EVIDENCE_ANCHOR = "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.exact_d0_phy1_seam_support_v3.v7"
+VERSION = "closy.blueprint_coverage.d0_evidence_integrity_v4.v11"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_evidence_integrity_v4.v8"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -307,11 +307,11 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-phy1-seam-support-v3",
         "codex/closy-forge-d0-fitting-pbr-fidelity-v2",
         "7922e9b6ece8fca2c3b7dec13299a39de102cbc4",
-        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
-        7,
-        68,
-        "",
-        "NOT_RUN_AT_EVIDENCE_ANCHOR",
+        "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+        8,
+        82,
+        "33423822705",
+        "SUCCESS",
         "phy1_seam_support_v3_neutral_failure",
     ),
 ]
@@ -1294,6 +1294,73 @@ FINAL_D0_PHY1_V3_EVIDENCE_ADDITIONS = {
     for row_id in FINAL_D0_PHY1_V3_PROGRESSION_UPDATES
 }
 
+UNIT_E_INTEGRITY_PROGRESSION_UPDATES = {
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Research Prototype matrix v3 independently reports core 6 pass, 5 fail, 0 not-run "
+            "and supplemental 2 pass, 0 fail, 2 not-run on the exact-fixture authority."
+        ),
+        "limitations": (
+            "D0-RP-03 is attempted-fail, D0-RP-04 is attempted-integrity-error, D0-RP-07, "
+            "D0-RP-08, and D0-RP-15 fail; broader identity-disjoint reconstruction remains "
+            "never attempted."
+        ),
+        "nextAction": (
+            "Run the one frozen known-target appearance diagnostic, then the separately scoped "
+            "identity-disjoint benchmark without donating identities across matrices."
+        ),
+    },
+    "BP-18-GATE-C3": {
+        "status": "partial",
+        "summary": (
+            "Historical scoped C3 is preserved, while matrix v3 keeps strict exact-candidate C3 "
+            "failed and independently identity-bound."
+        ),
+        "limitations": (
+            "No summary flag, supplemental execution, or cross-candidate package may repair the "
+            "failed exact-candidate result."
+        ),
+        "nextAction": "Run strict C3 only on a newly frozen exact candidate lineage.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Matrix v3 recomputes exact-fixture core status as 6 pass and 5 fail, with a separate "
+            "supplemental summary of 2 pass and 2 not-run."
+        ),
+        "limitations": (
+            "The image-conditioned comparison and execution-isolation claims were demoted; "
+            "texture fidelity, strict C3, and neutral simulation also fail. No identity-disjoint, "
+            "private, human, GPU, mobile, or production qualification follows."
+        ),
+        "nextAction": (
+            "Preserve the failed attempt chain and execute Unit F then the untouched Unit G "
+            "identity-disjoint cohort."
+        ),
+    },
+}
+
+UNIT_E_INTEGRITY_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/evidence_integrity_v4",
+            "closy-forge/docs/capability-profiles/d0-research-matrix-v3.json",
+            "closy-forge/docs/evidence/d0_evidence_integrity_v4",
+            "closy-forge/scripts/generate_d0_evidence_integrity_v4.py",
+        ],
+        "executableEvidence": [
+            "matrix v3 opens evidence and recomputes byte, payload, identity, and predicate truth",
+            "exact-fixture core 6 pass/5 fail/0 not-run and supplemental 2 pass/0 fail/2 not-run",
+            "append-only hash-chained attempts preserve failures and fail closed on missing bytes",
+            "PR #43 diagnostic PHY rescore changes definitions without rerunning physics or "
+            "outcome",
+        ],
+        "tests": ["closy-forge/tests/unit/test_d0_evidence_integrity_v4.py"],
+    }
+    for row_id in UNIT_E_INTEGRITY_PROGRESSION_UPDATES
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -1457,6 +1524,9 @@ def main() -> int:
         final_d0_phy1_update = FINAL_D0_PHY1_V3_PROGRESSION_UPDATES.get(row_id)
         if final_d0_phy1_update:
             row.update(final_d0_phy1_update)
+        unit_e_update = UNIT_E_INTEGRITY_PROGRESSION_UPDATES.get(row_id)
+        if unit_e_update:
+            row.update(unit_e_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1486,12 +1556,18 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), final_d0_phy1_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        unit_e_evidence = UNIT_E_INTEGRITY_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_e_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_e_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
             and row_id not in PHY1_V2_PROGRESSION_UPDATES
             and row_id not in TRUTH_RUNTIME_PROGRESSION_UPDATES
             and row_id not in FINAL_D0_PHY1_V3_PROGRESSION_UPDATES
+            and row_id not in UNIT_E_INTEGRITY_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -1936,16 +2012,27 @@ def _replace_legacy_truth_terms(value: object) -> object:
 def _closy_run(run_id: str, conclusion: str) -> dict[str, object] | None:
     if not run_id:
         return None
-    job_count = 29 if run_id == "33329481046" else 26
+    forge_29_job_runs = {
+        "33329481046",
+        "33342673147",
+        "33380042123",
+        "33393781144",
+        "33409665461",
+        "33423822705",
+    }
+    job_count = 29 if run_id in forge_29_job_runs else 26
     result: dict[str, object] = {
         "exactHead": True,
         "runId": run_id,
         "workflow": "Closy Forge",
         "conclusion": conclusion,
-        "jobCount": job_count,
+        "forgeJobCount": job_count,
+        "forgeJobCountSemantics": (
+            "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded"
+        ),
     }
     if conclusion == "SUCCESS":
-        result["successfulJobCount"] = job_count
+        result["successfulForgeJobCount"] = job_count
     else:
         result.update(FAILED_RUN_JOB_COUNTS[run_id])
     return result
@@ -1980,7 +2067,7 @@ def _normalise_workflows(run: object) -> list[dict[str, object]]:
             str(run.get("workflow", "Closy Forge")),
             str(run["runId"]),
             str(run.get("conclusion", "UNKNOWN")),
-            int(run.get("jobCount", 0)),
+            int(run.get("forgeJobCount", run.get("jobCount", 0))),
         )
     ]
 

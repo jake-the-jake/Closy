@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10"
+    assert coverage["version"] == "closy.blueprint_coverage.d0_evidence_integrity_v4.v11"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -153,8 +153,14 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["outcomeClass"] == (
         "A_neutral_preflight_failed_v3"
     )
-    assert status["gates"]["ResearchPrototype-D0-matrix-v2"]["scopedStatus"] == (
-        "partial_9_pass_3_fail_3_not_run"
+    assert status["gates"]["ResearchPrototype-D0-matrix-v2"]["scopedStatus"].startswith(
+        "historical_superseded"
+    )
+    assert status["gates"]["ResearchPrototype-D0-matrix-v3-core"]["scopedStatus"] == (
+        "partial_6_pass_5_fail_0_not_run"
+    )
+    assert status["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"]["scopedStatus"] == (
+        "2_pass_0_fail_2_not_run"
     )
     assert status["gates"]["MT1-MechanicalReference-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["LayerCollision-D0"]["scopedStatus"] == "pass"
@@ -266,7 +272,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 43}:
+        if row["number"] == 10:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -392,7 +398,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.exact_d0_phy1_seam_support_v3.v7"
+        "closy.blueprint_reconciliation.d0_evidence_integrity_v4.v8"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
@@ -411,19 +417,25 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_exact_d0_phy1_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_e_integrity_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-phy1-seam-support-v3"
+    assert resume["branch"] == "codex/closy-forge-d0-evidence-integrity-v4"
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
-    assert resume["gates"]["ResearchPrototype-D0-matrix-v2"] == ("partial_9_pass_3_fail_3_not_run")
+    assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
+    assert resume["gates"]["ResearchPrototype-D0-matrix-v3-core"] == (
+        "partial_6_pass_5_fail_0_not_run"
+    )
+    assert resume["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"] == (
+        "2_pass_0_fail_2_not_run"
+    )
     assert resume["replayState"]["productRuntimeV1Unchanged"] is True
     assert resume["replayState"]["runtimeCandidateV2ProductSelected"] is False
     assert resume["physicalResult"]["trajectoryGlbBytesPreservedAfterReportingRepair"] is True
     assert resume["remainingBudgets"] == {"seamModels": 0, "topologyStrategies": 2}
-    assert "9 pass, 3 fail, and 3 not-run" in markdown
+    assert "6 pass, 5 fail" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
 
 
