@@ -32,12 +32,22 @@
       "closy-forge/docs/evidence/phy1_topology_v2/invalidation_ledger.json",
       "closy-forge/docs/evidence/phy1_topology_v2/final_d0_research_prototype_matrix.json",
       "closy-forge/src/closy_forge/simulation_topology_v2/evidence.py",
-      "closy-forge/scripts/generate_phy1_topology_v2_evidence.py"
+      "closy-forge/scripts/generate_phy1_topology_v2_evidence.py",
+      "closy-forge/docs/evidence/d0_exact_raster_identity_v2/evidence_manifest.json",
+      "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2/evaluation/final_d0_research_prototype_matrix_v2.json",
+      "closy-forge/docs/evidence/phy1_seam_support_v3/neutral_preflight.json",
+      "closy-forge/docs/evidence/phy1_seam_support_v3/outcome.json",
+      "closy-forge/docs/evidence/phy1_seam_support_v3/evidence_manifest.json",
+      "closy-forge/fixtures/phy1_seam_support_v3/experiment_lock.json",
+      "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+      "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+      "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
+      "closy-forge/scripts/generate_phy1_seam_support_v3_evidence.py"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.d0_truth_runtime_authority_v3.v6",
+    "generatorVersion": "closy.blueprint_reconciliation.exact_d0_phy1_seam_support_v3.v7",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "79a9bc93dc12bb25a01fa67e26f9c1ec3895fbf6853132ca014ae9178c65b7f7"
+    "sourceTreeHash": "e75fad252b949830a4f8c229506b361dfaa3a481f1caabda2d41988705b5f39a"
   },
   "integratedImplementationRowCount": 83,
   "rows": [
@@ -212,7 +222,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -574,7 +585,8 @@
         "e23820eddaf6d6599a3b125ee1a083dc97ef4acd",
         "c6c94f7",
         "bb49668",
-        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -587,7 +599,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0 project-authored raster fixture only; the bounded optimiser and independent CPU raster are not a learned predictor, differentiable renderer, private-user fit, depth estimator, calibrated production acceptance model or real cloth/photo inverse solver.",
+          "limitations": "The candidate remains a public D0 research fixture and its strict C3 and neutral physical predicates fail.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -602,7 +614,10 @@
         "winner is rebuilt, settled with the full solver closy.reference_xpbd_cpu.v1.3_integrated_self_collision_d0 and independently CPU-raster compared; settledRenderFitComparisonAvailable=true",
         "bounded uncertainty alternatives and camera/mask/landmark corruption controls are persisted and fail closed",
         "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning",
-        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-52-IMAGE-CONDITIONED-FITTING",
       "implementationPaths": [
@@ -613,24 +628,33 @@
         "closy-forge/src/closy_forge/validation/validator.py",
         "closy-forge/schemas/v1/tshirt-fit-report.schema.json",
         "closy-forge/tests/unit/test_tshirt_fit.py",
-        "closy-forge/tests/corruption/test_corrupted_packages.py"
+        "closy-forge/tests/corruption/test_corrupted_packages.py",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0 project-authored raster fixture only; the bounded optimiser and independent CPU raster are not a learned predictor, differentiable renderer, private-user fit, depth estimator, calibrated production acceptance model or real cloth/photo inverse solver.",
-      "nextAction": "Evaluate the trained synthetic D0 grammar model on identity-disjoint hidden targets and retain deterministic fitting fallback.",
+      "limitations": "The candidate remains a public D0 research fixture and its strict C3 and neutral physical predicates fail.",
+      "nextAction": "Preserve the fit while isolating appearance and physical failures.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 13",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Actual bounded iterative D0 T-shirt fitting now converges against decoded multiview evidence and verifies its winner through the full solver and independent CPU raster.",
+      "summary": "The exact image-conditioned template ranker and continuous fitter produce finite, deterministic candidate 060e8d4aaaa7e82eddb75880 with permissioned controls.",
       "tests": [
         "tests/unit/test_tshirt_fit.py",
         "tests/integration/test_cli_and_package.py",
         "tests/integration/test_determinism_and_variants.py",
         "tests/golden/test_golden_demo.py",
-        "tests/corruption/test_corrupted_packages.py"
+        "tests/corruption/test_corrupted_packages.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -638,7 +662,8 @@
       "commitSha": [
         "9fc004d429d9187bfd427586ca43af65e54ec2f5",
         "93f2e6587cc4f5f3237aba669870648a01118a09",
-        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -652,7 +677,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0 project-authored public fixture only; packaged pixels are not private-user imagery, the normal/roughness/occlusion maps are deterministic derived approximations rather than measured material capture, hidden regions use controlled fill, and no learned completion or production colour calibration is claimed.",
+          "limitations": "D0-RP-07 fails because logo displacement 0.154158086 exceeds the frozen 0.14 limit; no measured-fabric claim is made.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -667,7 +692,10 @@
         "432 logo-region atlas pixels preserve the authored source mark; visible source pixels cannot be overwritten by controlled fill",
         "decoded-byte validation rejects swapped source, wrong profile, shifted logo, seam discontinuity, corrupt bytes, bad dimensions, forged confidence and provenance mismatch",
         "legacy JSON texture summaries remain labelled as summaries; actual decoded bitmap evidence is available in the 125-file canonical package",
-        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-53-SOURCE-TEXTURE-PBR-RECOVERY",
       "implementationPaths": [
@@ -679,23 +707,32 @@
         "closy-forge/src/closy_forge/validation/validator.py",
         "closy-forge/schemas/v1/texture-identity.schema.json",
         "closy-forge/schemas/v1/garment-manifest.schema.json",
-        "closy-forge/tests/unit/test_texture_identity.py"
+        "closy-forge/tests/unit/test_texture_identity.py",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0 project-authored public fixture only; packaged pixels are not private-user imagery, the normal/roughness/occlusion maps are deterministic derived approximations rather than measured material capture, hidden regions use controlled fill, and no learned completion or production colour calibration is claimed.",
-      "nextAction": "Validate appearance against independently authored target rasters and authorised source tiers without treating generated fill as source evidence.",
+      "limitations": "D0-RP-07 fails because logo displacement 0.154158086 exceeds the frozen 0.14 limit; no measured-fabric claim is made.",
+      "nextAction": "Improve source-conditioned logo placement under a new frozen visual trial.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Deterministic decoded bitmap atlas and mobile-safe PBR evidence now preserve source/generated provenance and visible logo detail.",
+      "summary": "Decoded bitmap/PBR maps and independent rerender evidence are persisted against source pixels rather than candidate-derived targets.",
       "tests": [
         "tests/unit/test_texture_identity.py",
         "tests/integration/test_cli_and_package.py",
         "tests/golden/test_golden_demo.py",
-        "tests/corruption/test_corrupted_packages.py"
+        "tests/corruption/test_corrupted_packages.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -761,7 +798,8 @@
       "ancestryClass": "in_tree",
       "commitSha": [
         "0db14ee",
-        "fcf64dce8a2117c78df7d1a01f3cefad118b5093"
+        "fcf64dce8a2117c78df7d1a01f3cefad118b5093",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [
         "BP-08-A-INGESTION",
@@ -774,7 +812,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0 project-authored synthetic raster fixtures only; no real-user capture, no provider upload, no training use, no portable source hashes, and JPEG pixel metrics remain structural-only until a pinned decoder dependency is added.",
+          "limitations": "The evidence is project-authored public-fixture data only; private-user Gate P1, real-photo breadth, and device capture remain not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -789,7 +827,10 @@
         "deletion tombstone flow is idempotent and non-recoverable",
         "external API and training policy fail closed",
         "remote Actions run 32700668662 passed Ubuntu job 97351342200 and Windows job 97351342416 with 174 tests per OS",
-        "cross-OS deterministic package digest b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329 with 83 files per package tree"
+        "cross-OS deterministic package digest b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329 with 83 files per package tree",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-49-RASTER-INGESTION-PRIVACY",
       "implementationPaths": [
@@ -800,29 +841,39 @@
         "closy-forge/schemas/v1/raster-ingest-private-record.schema.json",
         "closy-forge/schemas/v1/raster-normalization-record.schema.json",
         "closy-forge/schemas/v1/raster-capture-quality.schema.json",
-        "closy-forge/schemas/v1/raster-deletion-tombstone.schema.json"
+        "closy-forge/schemas/v1/raster-deletion-tombstone.schema.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0 project-authored synthetic raster fixtures only; no real-user capture, no provider upload, no training use, no portable source hashes, and JPEG pixel metrics remain structural-only until a pinned decoder dependency is added.",
-      "nextAction": "Retain fixture-only capture authority while completing bounded JPEG decode and deletion safety; private-user Gate P1 remains not run.",
+      "limitations": "The evidence is project-authored public-fixture data only; private-user Gate P1, real-photo breadth, and device capture remain not run.",
+      "nextAction": "Add authorised identity-disjoint public capture without widening claims.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 10 BP-49 privacy-safe local PNG/JPEG ingestion",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Add a fail-closed local raster fixture ingest path with private source records, normalization evidence, pixel-derived PNG quality, privacy reports, schemas, CLI commands, deletion tombstones and cross-OS symlink/hardlink/traversal guard evidence.",
+      "summary": "The exact public D0 front/rear raster identities are frozen before fitting, decoded from source bytes, privacy-classified, and joined to the selected candidate.",
       "tests": [
         "tests/unit/test_raster_sources.py",
         "tests/unit/test_ci_sanitized_diagnostics.py",
-        "tests/unit/test_schema_freshness.py"
+        "tests/unit/test_schema_freshness.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
       "ancestryClass": "in_tree",
       "commitSha": [
         "e90a38e",
-        "0da8cea"
+        "0da8cea",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -835,7 +886,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0 synthetic fixture parser only: no learned/provider segmentation, no private-user imagery, no exported source pixels, no multiview fusion/registration and no Phase-2 completion claim.",
+          "limitations": "The exact D0 fixture does not establish private-user or learned parsing.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -848,7 +899,10 @@
         "mask IoU, boundary F-score, semantic-part IoU, landmark error, opening precision/recall, confidence calibration, missing evidence and view consistency metrics",
         "non-empty structured correction replay with before/after hashes, confidence delta and stale-hash rejection",
         "deterministic package digest 8be718fdbf929a0f5112526fd4ae67d4f056ac3605d8e9ffd0593cee1b99708c with 83 files per package tree",
-        "remote Actions run 32710390547 passed Ubuntu job 97380328078 and Windows job 97380328390 with 182 tests per OS"
+        "remote Actions run 32710390547 passed Ubuntu job 97380328078 and Windows job 97380328390 with 182 tests per OS",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-50-PIXEL-PARSING-CORRECTIONS",
       "implementationPaths": [
@@ -859,22 +913,31 @@
         "closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py",
         "closy-forge/src/closy_forge/reports/reporter.py",
         "closy-forge/schemas/v1/visual-observations.schema.json",
-        "closy-forge/schemas/v1/correction-record.schema.json"
+        "closy-forge/schemas/v1/correction-record.schema.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0 synthetic fixture parser only: no learned/provider segmentation, no private-user imagery, no exported source pixels, no multiview fusion/registration and no Phase-2 completion claim.",
-      "nextAction": "Evaluate parsing and correction contracts on identity-disjoint hidden targets; automated fixtures remain simulated corrections.",
+      "limitations": "The exact D0 fixture does not establish private-user or learned parsing.",
+      "nextAction": "Retain the frozen observation contract for independent capture tiers.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 11 BP-50 pixel-derived garment parsing and applied corrections",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Derive T-shirt masks, parts, openings, landmarks and metrics from decoded D0 raster fixture pixels, then apply ordered structured visual-evidence corrections.",
+      "summary": "Pixel-derived masks, landmarks, openings, camera evidence, and correction replay pass exact selected-identity lineage controls.",
       "tests": [
         "tests/unit/test_visual_understanding.py",
         "tests/integration/test_cli_and_package.py",
-        "tests/golden/test_golden_demo.py"
+        "tests/golden/test_golden_demo.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -1372,7 +1435,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1474,7 +1538,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1775,7 +1840,8 @@
       "commitSha": [
         "f100fd5",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1928,7 +1994,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2045,7 +2112,8 @@
       "commitSha": [
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2237,7 +2305,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2300,7 +2369,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2572,7 +2642,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2730,7 +2801,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2857,7 +2929,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2866,7 +2939,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Exact decoded raster, observation, fit, baseline, reference-3D, independent texture-rerender, and neutral-simulation evidence remain not run.",
+          "limitations": "D0-RP-07 texture rerender, D0-RP-08 strict C3, and D0-RP-15 neutral simulation fail; the first unmet required predicate is D0-RP-07.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -2893,7 +2966,10 @@
         "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
         "predicate-derived 15-row matrix rejects stale, swapped, and cross-package evidence",
         "candidate-v2 selects the canonical garment fallback and remains offline after source withdrawal",
-        "bounded raster/runtime decompression rejects truncation and trailing streams"
+        "bounded raster/runtime decompression rejects truncation and trailing streams",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -2916,18 +2992,24 @@
         "closy-forge/src/closy_forge/dependency_identity/graph.py",
         "closy-forge/src/closy_forge/runtime_delivery/candidate_v2.py",
         "closy-forge/src/closy_forge/truth_runtime/evidence.py",
-        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json"
+        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Exact decoded raster, observation, fit, baseline, reference-3D, independent texture-rerender, and neutral-simulation evidence remain not run.",
-      "nextAction": "Execute the exact public front/rear raster lineage as the next child unit.",
+      "limitations": "D0-RP-07 texture rerender, D0-RP-08 strict C3, and D0-RP-15 neutral simulation fail; the first unmet required predicate is D0-RP-07.",
+      "nextAction": "Repair exact source-conditioned appearance before another physical trial.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The versioned D0 matrix now derives every result from opened, hashed evidence and exact selected-identity predicates; it records 8 pass and 7 not-run rows.",
+      "summary": "The final exact-candidate matrix records 9 pass, 3 fail, and 3 not-run rows after persisted PHY1-v3 neutral scoring.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -2942,7 +3024,10 @@
         "closy-forge/tests/unit/test_research_matrix_v2.py",
         "closy-forge/tests/unit/test_dependency_identity_graph.py",
         "closy-forge/tests/unit/test_runtime_candidate_v2.py",
-        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py"
+        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -2951,7 +3036,8 @@
         "07b801c",
         "ba4d358",
         "0db14ee",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3398,7 +3484,8 @@
         "07b801c",
         "ba4d358",
         "9fc004d429d9187bfd427586ca43af65e54ec2f5",
-        "242c5c79e4bcfaffa6028e621990a7a68ce156a4"
+        "242c5c79e4bcfaffa6028e621990a7a68ce156a4",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3407,7 +3494,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Phase 4 remains partial: public project-authored D0 pixels and deterministic derived material maps only; no private-user imagery, learned completion, provider comparison, signed human review or calibrated production acceptance.",
+          "limitations": "The frozen logo-displacement predicate fails and fabric is not calibrated.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3419,7 +3506,10 @@
         "bitmap audit records source-observed fraction 0.659362793, controlled generated fill 0.340637207, zero seam discontinuity and 432 protected logo pixels",
         "BP47 independently compares four decoded source views against settled CPU renders and passes the bounded public-fixture D0 tier",
         "canonical D0 package has 125 inventoried files, digest 5ea83813e59fc07bc053ace3af9702f781893f9475ca8916d2612be1814173fa and only self_collision_unresolved_contacts warning",
-        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS"
+        "run 32935270185 passed Ubuntu job 98075193691 and Windows job 98075193550 with 234 tests per OS",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-17-PHASE-04",
       "implementationPaths": [
@@ -3427,24 +3517,33 @@
         "closy-forge/src/closy_forge/inspection/source_render_fidelity.py",
         "closy-forge/src/closy_forge/raster/png_codec.py",
         "closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py",
-        "closy-forge/src/closy_forge/validation/validator.py"
+        "closy-forge/src/closy_forge/validation/validator.py",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Phase 4 remains partial: public project-authored D0 pixels and deterministic derived material maps only; no private-user imagery, learned completion, provider comparison, signed human review or calibrated production acceptance.",
-      "nextAction": "Validate texture/PBR fidelity against independent targets and authorised source tiers.",
+      "limitations": "The frozen logo-displacement predicate fails and fabric is not calibrated.",
+      "nextAction": "Run a new preregistered appearance correction without target leakage.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Blueprint phase 4 now has decoded bitmap texture evidence and bounded source-versus-render public-fixture comparison.",
+      "summary": "Source-backed bitmap/PBR recovery executes with an independent rerender oracle.",
       "tests": [
         "Forge local tests",
         "tests/unit/test_texture_identity.py",
         "tests/integration/test_cli_and_package.py",
         "tests/golden/test_golden_demo.py",
-        "tests/corruption/test_corrupted_packages.py"
+        "tests/corruption/test_corrupted_packages.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -3555,7 +3654,8 @@
         "13604d169ecbc0fddf475cdf177e743790c836a2",
         "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3564,7 +3664,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Zero of 11 physical states pass; maximum residual depth is 0.002399077 m, simulation clearance is -0.014360829 m, and render clearance is -0.064466621 m.",
+          "limitations": "Outcome A is frozen: 242 unresolved contacts, 0.0024 m residual depth, 0.041513220488 m seam crack, 0.145067036152 m slip, negative render clearance, strain/energy failures, and runtime above 180 s.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3594,7 +3694,10 @@
         "two identical 138-file clean packages pass with digest c8e3fee54cb6625664f131eb605a42759a1b5c283ef4da6dc717c2ea6f6c8faf",
         "PR #7 implementation run 32912124815 passed Ubuntu job 98008234902 and Windows job 98008235112 with matching digest",
         "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
-        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
@@ -3611,18 +3714,24 @@
         "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
-        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Zero of 11 physical states pass; maximum residual depth is 0.002399077 m, simulation clearance is -0.014360829 m, and render clearance is -0.064466621 m.",
-      "nextAction": "Attempt one later versioned coupled-convergence strategy with joint residual traces; CCD remains ineligible.",
+      "limitations": "Outcome A is frozen: 242 unresolved contacts, 0.0024 m residual depth, 0.041513220488 m seam crack, 0.145067036152 m slip, negative render clearance, strain/energy failures, and runtime above 180 s.",
+      "nextAction": "Do not spend topology strategy 2 until a newly budgeted dependency-ready physical milestone is explicitly authorised.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Topology v2 removes all qualified temporal degeneracy in the frozen 11-state replay without changing v1 runtime identities.",
+      "summary": "PHY1 seam/support v3 executes a solver-active 49-frame neutral trajectory with rank-aware junctions, temporary supports, in-iteration collision, and independent simulation/render oracles.",
       "tests": [
         "Forge local tests",
         "tests/unit/test_render_frame_pose_suite.py",
@@ -3632,7 +3741,10 @@
         "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
         "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
         "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
-        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -3881,7 +3993,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3985,7 +4098,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4053,7 +4167,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4062,7 +4177,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No Z2-ClothDriven namespace, integrated CCD, or physical runtime capability is created.",
+          "limitations": "The 11-state PHY1 replay, CCD, and solver-driven Z2 are not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4076,7 +4191,10 @@
         "13 compiled frames have zero position/rest error and zero culling false negatives but fail dense self-intersection",
         "clean analytic MT1 passes its bounded mechanical-reference transport profile",
         "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
-        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-17-PHASE-11",
       "implementationPaths": [
@@ -4090,18 +4208,24 @@
         "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
-        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No Z2-ClothDriven namespace, integrated CCD, or physical runtime capability is created.",
-      "nextAction": "Do not revisit solver-driven Z2 until a future PHY1 profile passes every frozen gate.",
+      "limitations": "The 11-state PHY1 replay, CCD, and solver-driven Z2 are not run.",
+      "nextAction": "Keep ZeroOne PR #4 frozen until exact C3 and PHY1 prerequisites pass.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The clean analytic MT1 mechanical-reference pass remains available; topology-v2 produces no solver-driven cloth clip because PHY1-v2 fails.",
+      "summary": "MT1 remains a separate analytic transport pass; the exact candidate produces no admissible solver-driven clip because neutral preflight fails.",
       "tests": [
         "closy-forge/tests/unit/test_future_foundations.py",
         "closy-forge/tests/unit/test_zeroone_dynamic_reference.py",
@@ -4111,7 +4235,10 @@
         "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
         "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
         "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
-        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -4120,7 +4247,8 @@
         "30ea629639cb34894511d49b1b965fc344adb4c3",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4196,7 +4324,8 @@
         "30ea629639cb34894511d49b1b965fc344adb4c3",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4264,7 +4393,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4438,7 +4568,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4447,7 +4578,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "This is a scoped binding pass only. PHY1 fails and broader avatars, garments, mobile, private-user, and production profiles remain unproven.",
+          "limitations": "No cross-identity evidence is used to repair the exact-candidate result.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4480,7 +4611,10 @@
         "six families produced validated mesh, cluster, hierarchy, page-pack, material, and garment semantic derivatives",
         "long-sleeved top, button shirt, and jacket were rejected fail-closed for exact degenerate-surface diagnostics",
         "successful namespaces pass cache, deletion/rebuild, independent derivative inspection, canonical-authority preservation, and conventional-fallback preservation",
-        "exact execution records clean Closy and ZeroOne SHAs, executable hash, commands, wall/CPU timings, peak memory, input/output hashes, and remaining blockers"
+        "exact execution records clean Closy and ZeroOne SHAs, executable hash, commands, wall/CPU timings, peak memory, input/output hashes, and remaining blockers",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -4493,23 +4627,32 @@
         "closy-forge/src/closy_forge/zeroone/tool.py",
         "closy-forge/src/closy_forge/zeroone/validation.py",
         "closy-forge/src/closy_forge/zeroone/derivative_inspection.py",
-        "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json"
+        "closy-forge/docs/evidence/phase10_zeroone_static/execution_evidence.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "This is a scoped binding pass only. PHY1 fails and broader avatars, garments, mobile, private-user, and production profiles remain unproven.",
-      "nextAction": "Preserve the scoped C3 and representative Z1 passes while running the stricter PHY1-SingleLayer-D0 physical campaign independently.",
+      "limitations": "No cross-identity evidence is used to repair the exact-candidate result.",
+      "nextAction": "Regenerate strict binding only from a future exact candidate identity.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "status": "complete",
-      "summary": "C3-Binding-D0 passes its literal five-part fixed-avatar D0 T-shirt profile across all 11 binding states with exact persisted lineage and frame validation.",
+      "status": "partial",
+      "summary": "Historical scoped C3 remains preserved, while strict C3 on exact candidate 060e8d4aaaa7e82eddb75880 fails and is not promoted.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/golden/test_golden_demo.py",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
-        "closy-forge/tests/unit/test_zeroone_execution_evidence.py"
+        "closy-forge/tests/unit/test_zeroone_execution_evidence.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -4528,7 +4671,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4589,7 +4733,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4598,7 +4743,7 @@
           "evidenceTier": "external_source_exact_head",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "PHY1-v2 fails 0/11 states, so integrated CCD and a solver-driven Z2 profile are ineligible.",
+          "limitations": "PHY1, CCD, and current-platform ZeroOne execution are not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4618,7 +4763,10 @@
       "executableEvidence": [
         "authenticated ZeroOne workflow artifact e704a0f2196f066f7aab16669356ee7de97f59b89de5cf51cbb2f529526457dc executed and failed admission",
         "all 11 frozen states execute with zero temporal degenerates, swept collapses, and true inversions but zero states pass the complete physical profile",
-        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities"
+        "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-18-GATE-Z2",
       "implementationPaths": [
@@ -4628,25 +4776,34 @@
         "closy-forge/src/closy_forge/simulation_topology_v2/binding.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/temporal_quality.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/phy1_experiment.py",
-        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json"
+        "closy-forge/docs/evidence/phy1_topology_v2/phy1_experiment.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "PHY1-v2 fails 0/11 states, so integrated CCD and a solver-driven Z2 profile are ineligible.",
-      "nextAction": "Preserve the failed gate until a valid solver-driven cloth clip exists.",
+      "limitations": "PHY1, CCD, and current-platform ZeroOne execution are not run.",
+      "nextAction": "Retain failed/not-run Z2 until exact C3 and full PHY1 both pass.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Historical Z2 remains failed and topology-v2 does not create a replacement; MT1 continues as a separate clean mechanical-reference capability.",
+      "summary": "No new solver-driven Z2 attempt is admitted after neutral outcome A.",
       "tests": [
         "closy-forge/tests/unit/test_zeroone_dynamic_reference.py",
         "closy-forge/tests/unit/test_simulation_topology_v2.py",
         "closy-forge/tests/unit/test_topology_v2_seams_binding.py",
         "closy-forge/tests/unit/test_topology_v2_temporal_quality.py",
         "closy-forge/tests/unit/test_phy1_topology_v2_experiment.py",
-        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -5419,7 +5576,8 @@
         "23ee8d2e9b79f07ed9dbfbe05e60cd29dc5ecd7d",
         "dd916913ac14119bc2e127989703f1c51f91e00a",
         "a6134df2fb67a8cbcb572e344caf828b926df273",
-        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f"
+        "01699163ed4470992f0e33ff9d9b6b4c65a67f7f",
+        "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5428,7 +5586,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The first unmet row is decoded front/rear raster source identity; the new neutral simulation row is also not run, and no unsupported tier is promoted.",
+          "limitations": "The first unmet row is D0-RP-07; strict C3 and neutral physics also fail, and human, private, device, GPU, mobile, and real-fabric evidence remain not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5461,7 +5619,10 @@
         "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
         "predicate-derived 15-row matrix rejects stale, swapped, and cross-package evidence",
         "candidate-v2 selects the canonical garment fallback and remains offline after source withdrawal",
-        "bounded raster/runtime decompression rejects truncation and trailing streams"
+        "bounded raster/runtime decompression rejects truncation and trailing streams",
+        "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
+        "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
+        "runtime v1 remains selected and topology v2 remains opt-in"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -5482,18 +5643,24 @@
         "closy-forge/src/closy_forge/dependency_identity/graph.py",
         "closy-forge/src/closy_forge/runtime_delivery/candidate_v2.py",
         "closy-forge/src/closy_forge/truth_runtime/evidence.py",
-        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json"
+        "closy-forge/docs/evidence/d0_truth_runtime_authority_v3/final_d0_research_prototype_matrix_v2.json",
+        "closy-forge/docs/evidence/d0_exact_raster_identity_v2",
+        "closy-forge/docs/evidence/d0_fitting_pbr_fidelity_v2",
+        "closy-forge/docs/evidence/phy1_seam_support_v3",
+        "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The first unmet row is decoded front/rear raster source identity; the new neutral simulation row is also not run, and no unsupported tier is promoted.",
-      "nextAction": "Execute exact raster lineage, fitting, fidelity, and neutral simulation predicates without replaying historical summary booleans.",
+      "limitations": "The first unmet row is D0-RP-07; strict C3 and neutral physics also fail, and human, private, device, GPU, mobile, and real-fabric evidence remain not run.",
+      "nextAction": "Open one appearance-correction branch gated by the frozen D0-RP-07 limit.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The executable v2 Research Prototype matrix records 8 passing and 7 not-run rows from exact selected public-fixture/package identities.",
+      "summary": "The exact public-fixture D0 matrix records 9 pass, 3 fail, and 3 not-run rows on candidate 060e8d4aaaa7e82eddb75880.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -5506,7 +5673,10 @@
         "closy-forge/tests/unit/test_research_matrix_v2.py",
         "closy-forge/tests/unit/test_dependency_identity_graph.py",
         "closy-forge/tests/unit/test_runtime_candidate_v2.py",
-        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py"
+        "closy-forge/tests/unit/test_truth_runtime_authority_evidence.py",
+        "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
+        "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
+        "closy-forge/tests/unit/test_exact_raster_identity.py"
       ]
     },
     {
@@ -5755,5 +5925,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.d0_truth_runtime_authority_v3.v9"
+  "version": "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10"
 }

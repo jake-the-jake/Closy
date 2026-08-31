@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_truth_runtime_authority_v3.v9"
+    assert coverage["version"] == "closy.blueprint_coverage.exact_d0_phy1_seam_support_v3.v10"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -149,6 +149,13 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["statePassCount"] == 0
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["runtimeCapabilityExposed"] is False
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["dRuntimePinnedToV1"] is True
+    assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["scopedStatus"] == "failed"
+    assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["outcomeClass"] == (
+        "A_neutral_preflight_failed_v3"
+    )
+    assert status["gates"]["ResearchPrototype-D0-matrix-v2"]["scopedStatus"] == (
+        "partial_9_pass_3_fail_3_not_run"
+    )
     assert status["gates"]["MT1-MechanicalReference-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["LayerCollision-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["Z1"]["globalStatus"] == "partial"
@@ -180,10 +187,17 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "phy1TopologyV2ExperimentExecuted": True,
         "phy1TopologyV2Passed": False,
         "phy1TopologyV2RuntimeExposed": False,
+        "phy1SeamSupportV3NeutralExecuted": True,
+        "phy1SeamSupportV3Outcome": "A_neutral_preflight_failed_v3",
+        "phy1SeamSupportV3TrajectoryBytesPreserved": True,
+        "phy1SeamSupportV3FullSuiteExecuted": False,
+        "phy1SeamSupportV3CcdExecuted": False,
+        "phy1SeamSupportV3Z2Executed": False,
         "integratedRuntimePinnedToTopologyV1": True,
         "finalD0ResearchMatrixStatus": "partial",
         "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
-        "finalD0ResearchMatrixStatusCounts": {"pass": 8, "fail": 0, "not_run": 7},
+        "finalD0ResearchMatrixStatusCounts": {"pass": 9, "fail": 3, "not_run": 3},
+        "finalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
         "dependencyIdentityGraphAvailable": True,
         "runtimeCandidateV2Available": True,
         "runtimeCandidateV2ProductSelected": False,
@@ -224,8 +238,8 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 41))
-    assert len(nodes) == 42
+    assert numbers == list(range(1, 44))
+    assert len(nodes) == 45
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert stack["externalPullRequests"][1]["number"] == 3
@@ -252,7 +266,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 39, 40}:
+        if row["number"] in {10, 43}:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -308,6 +322,15 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert by_id["github:jake-the-jake/Closy:pr/40"]["parentIds"] == [
         "github:jake-the-jake/Closy:pr/39"
     ]
+    assert by_id["github:jake-the-jake/Closy:pr/41"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/40"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/42"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/41"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/43"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/42"
+    ]
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -338,6 +361,11 @@ def test_execution_budgets_and_precommitted_thresholds_are_complete() -> None:
     assert thresholds["thresholdMutationPolicy"] == (
         "immutable_after_heldout_execution_version_new_profile_instead"
     )
+    phy1_v3 = next(lane for lane in budget["lanes"] if lane["laneId"] == "PHY1-SEAM-SUPPORT-V3")
+    assert phy1_v3["outcome"] == "A_neutral_preflight_failed_v3"
+    assert phy1_v3["consumption"]["seamModelsRemainingAfterV3"] == 0
+    assert phy1_v3["consumption"]["topologyStrategiesRemainingAfterV3"] == 2
+    assert phy1_v3["consumption"]["fullPhy1Executed"] is False
 
 
 def test_phy1_sanitised_failure_witness_is_exact_and_not_promoted() -> None:
@@ -364,7 +392,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_truth_runtime_authority_v3.v6"
+        "closy.blueprint_reconciliation.exact_d0_phy1_seam_support_v3.v7"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
@@ -383,18 +411,20 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_truth_runtime_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_exact_d0_phy1_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-truth-runtime-authority-v3"
+    assert resume["branch"] == "codex/closy-forge-phy1-seam-support-v3"
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
-    assert resume["gates"]["ResearchPrototype-D0-matrix-v2"] == "partial_8_pass_7_not_run"
+    assert resume["gates"]["ResearchPrototype-D0-matrix-v2"] == ("partial_9_pass_3_fail_3_not_run")
     assert resume["replayState"]["productRuntimeV1Unchanged"] is True
     assert resume["replayState"]["runtimeCandidateV2ProductSelected"] is False
-    assert "8 pass, 0 fail, and 7 not-run" in markdown
-    assert "canonical T-shirt garment fallback" in markdown
+    assert resume["physicalResult"]["trajectoryGlbBytesPreservedAfterReportingRepair"] is True
+    assert resume["remainingBudgets"] == {"seamModels": 0, "topologyStrategies": 2}
+    assert "9 pass, 3 fail, and 3 not-run" in markdown
+    assert "A_neutral_preflight_failed_v3" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:

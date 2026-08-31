@@ -300,6 +300,45 @@
       ]
     },
     {
+      "blocker": "the exact D0 candidate fails the frozen neutral seam-support gate before full PHY1 eligibility",
+      "commands": [
+        "python scripts/generate_phy1_seam_support_v3_evidence.py --preflight",
+        "python scripts/generate_phy1_seam_support_v3_evidence.py --validate-committed"
+      ],
+      "consumption": {
+        "candidateIdentityComparedWithPr39": true,
+        "fullPhy1Executed": false,
+        "seamModelsBeforeV3": 1,
+        "seamModelsConsumedByV3": 1,
+        "seamModelsRemainingAfterV3": 0,
+        "topologyStrategiesBeforeV3": 1,
+        "topologyStrategiesConsumedByV3": 0,
+        "topologyStrategiesRemainingAfterV3": 2
+      },
+      "evidencePaths": [
+        "closy-forge/fixtures/phy1_seam_support_v3/experiment_lock.json",
+        "closy-forge/docs/evidence/phy1_seam_support_v3/neutral_preflight.json",
+        "closy-forge/docs/evidence/phy1_seam_support_v3/outcome.json",
+        "closy-forge/docs/evidence/phy1_seam_support_v3/evidence_manifest.json"
+      ],
+      "laneId": "PHY1-SEAM-SUPPORT-V3",
+      "maximumSeamModels": 2,
+      "maximumTopologyStrategies": 3,
+      "outcome": "A_neutral_preflight_failed_v3",
+      "predeclaredThresholdProfile": "closy.phy1.seam_support_neutral.v3",
+      "remainingBlocker": "17 of 28 neutral predicates fail, including contacts, clearance, seam, support, terminal motion, deformation and runtime ceiling",
+      "stopReason": "frozen_neutral_preflight_failed_full_phy1_ccd_and_z2_not_run",
+      "strategyIds": [
+        "PHY1-TOPOLOGY-V2-EXACT-CANDIDATE",
+        "PHY1-TOPOLOGY-STRATEGY-2-RESERVED",
+        "PHY1-TOPOLOGY-STRATEGY-3-RESERVED"
+      ],
+      "trialIds": [
+        "PHY1-SEAM-MODEL-V2-HISTORICAL",
+        "PHY1-SEAM-SUPPORT-COLLISION-V3-FROZEN-1"
+      ]
+    },
+    {
       "blocker": "only demonstrated transient infrastructure failures may consume this lane",
       "commands": [
         "gh run rerun {run_id} --failed"

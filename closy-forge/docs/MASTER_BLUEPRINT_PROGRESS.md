@@ -260,3 +260,26 @@ This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne
 | BP-53-SOURCE-TEXTURE-PBR-RECOVERY | partial | Decoded bitmap atlas and mobile-safe PBR evidence with explicit source/generated provenance. | BP49-BP52 decoded evidence and fitted UV mapping | `appearance/bitmap_atlas.py`, `appearance/texture_identity.py`, `raster/png_codec.py`, bitmap report/maps, schemas/unit/corruption tests | Four source PNGs and eight actual atlas PNG maps are inventoried; source fraction is `0.659362793`, controlled fill `0.340637207`, seam discontinuity zero and 432 logo pixels protected. Byte-level validation rejects profile, source, logo, seam, dimension, confidence and provenance mismatch. | Existing `9fc004d`, `93f2e65`; D0 `242c5c7`; green run `32935270185` | Public project-authored D0 pixels only; derived normal/material maps are not measured fabric calibration, private imagery and learned completion are absent. | Feed decoded bitmap evidence into Phase 7 fabric descriptors and response comparisons. |
 | REPO-HYGIENE-GITLINKS | complete | Remove malformed generated engine dependency gitlinks while preserving source-of-truth FetchContent declarations. | Continuation prompt section 8.1 repository hygiene | `.gitignore`, `engine/CMakeLists.txt`, `engine/build/_deps/glfw-src`, `engine/build/_deps/glm-src`, `tests/unit/test_repository_hygiene.py` | `engine/CMakeLists.txt` declares `glm` and `glfw` through CMake `FetchContent`; the accidentally tracked generated build-tree entries `engine/build/_deps/glfw-src` and `engine/build/_deps/glm-src` were removed from the index only, `/engine/build/` is ignored, local folders remain ignored/uncommitted, and the regression test rejects future generated dependency-source gitlinks. Remote run `32669470115` checkout logs contain no malformed-gitlink annotation. | `e02b85a` | Broad historical `engine/build` generated files remain tracked and were not deleted as a side effect; the malformed generated dependency gitlink warning is resolved for the active Forge checkout path. | Continue dependency-ready Forge blueprint slices without recommitting generated build trees. |
 | REPO-HYGIENE-CI-DIAGNOSTICS | complete | Replace broad Forge failure-artifact upload with privacy-safe generated diagnostics. | Continuation prompt section 8.2 CI diagnostics hygiene | `.github/workflows/closy-forge.yml`, `ci/sanitized_diagnostics.py`, `cli/main.py`, `tests/unit/test_ci_sanitized_diagnostics.py` | The workflow no longer uploads `$RUNNER_TEMP/closy-forge` on failure. It first runs `closy-forge ci diagnostics`, which emits only four fixed JSON summaries under `$RUNNER_TEMP/closy-forge-safe-diagnostics`, scans source inputs for package/image/GLB/binary/absolute-path/secret-like/base64/symlink/hardlink hazards, records rejection counts, and never copies source package bytes. Failed run `32668079403`, Ubuntu job `97264550581`, exercised the sanitized artifact path and uploaded artifact `9500652729` with four files, 980 bytes total and SHA-256 `fb8627a294bbd71cd082cca69ceb72af7a0568639fcebb9298c056bf2c2e8498`; green run `32669470115` correctly skipped failure-only upload. | `eb4c611` | Failure upload remains intentionally failure-only; green runs prove the sanitizer through tests and workflow syntax, while the failed run above proves the remote artifact path. | Continue BP-50 raster masks/corrections using the sanitized diagnostics guardrails. |
+
+## Exact D0 and PHY1 Seam-Support v3 Closeout
+
+The four-unit exact D0 progression is published as a linear draft stack rooted at PR #39. Unit A
+replaced hard-coded promotion truth with executable predicates and exact runtime/dependency authority.
+Unit B froze and decoded source-external public front/rear raster bytes with correction provenance and
+information firewalls. Unit C created the exact source-conditioned candidate
+`candidate.d0_exact_fitted_topology_v2.060e8d4aaaa7e82eddb75880`, rebuilt its bitmap/PBR, independent
+rerender, package, fallback, C3 and runtime evidence, and produced a 9-pass/3-fail/3-not-run D0 matrix.
+
+Unit D preregistered and executed one solver-active neutral seam/support/collision model over that exact
+candidate. Its six-class junction graph, independent seam metrics, temporary pose-driven supports,
+iterative collision cadence, independent collision oracles, 49-frame trajectory and deterministic
+repeat evidence are literal and non-vacuous. The persisted result is
+`A_neutral_preflight_failed_v3`: 11/28 checks pass and the contact, clearance, seam, support, terminal
+motion, deformation and runtime predicates fail. A versioned reporting-only `float32` rescore corrected
+the evidence hash comparison without changing or rerunning trajectory bytes.
+
+The stop rule therefore applies: full PHY1, CCD and solver-driven Z2 are not run; runtime v1 remains
+selected; topology v2 remains opt-in. Both seam-model trials are consumed and two topology strategies
+remain. Research Prototype stays partial, first blocked by `D0-RP-07`; no private, human, real-photo,
+real-fabric, GPU, mobile or product claim is made. See `docs/phy1-seam-support-v3-closeout.md` and
+`docs/evidence/phy1_seam_support_v3` for the exact identities, thresholds, metrics and inventory.
