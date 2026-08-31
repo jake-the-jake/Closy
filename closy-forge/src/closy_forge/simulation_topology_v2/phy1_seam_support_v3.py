@@ -910,7 +910,8 @@ def _stale_support_microfixture() -> bool:
     offset = (0.03, 0.01, -0.01)
     stale = add(rest_centre, offset)
     driven = add(moved_centre, offset)
-    return driven != stale and sub(driven, stale) == sub(moved_centre, rest_centre)
+    delta_error = sub(sub(driven, stale), sub(moved_centre, rest_centre))
+    return driven != stale and _length(delta_error) <= 1e-12
 
 
 def _static_trajectory_control(mesh: MeshSet) -> bool:
