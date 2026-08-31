@@ -429,8 +429,8 @@ def audit_support_inventory(
         "uniqueVertexAssociation": len({item.vertex_index for item in supports}) == len(supports),
         "releasedBeforeScoredMotion": int(settings["fullyReleasedAtSubstep"])
         <= int(settings["scoredMotionStartsAfterSubstep"]),
-        "wholeNeckBandPinned": False,
-        "blanketHighYPinned": False,
+        "noWholeNeckBandPins": True,
+        "noBlanketHighYPins": True,
     }
     failed = [name for name, passed in checks.items() if not passed]
     return {
