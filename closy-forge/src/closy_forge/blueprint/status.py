@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v7"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v8"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -29,6 +29,7 @@ PHY1_V2_SOURCE_SHA = "477c1fd881c7e55c352ca89732e5772d9d6bbeeb"
 PHY1_V2_PUBLICATION_SHA = "a6134df2fb67a8cbcb572e344caf828b926df273"
 PHY1_V2_PUBLISHED_EXACT_HEAD = "f732df267642cd55960205764e699c7fa2bb2d0f"
 PHY1_V2_EXACT_HEAD_WORKFLOW = "https://github.com/jake-the-jake/Closy/actions/runs/33342673147"
+D0_TRUTH_RUNTIME_PUBLICATION_SHA = "7579f5e7dced1a19cea5df47a4a482bead57f4b4"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -412,7 +413,7 @@ def build_status_model(
                 for row in stack["nodes"]
                 if row["repository"] == "jake-the-jake/Closy"
                 and not row["latestExactHeadWorkflows"]
-                and int(row["pullRequest"]) != 39
+                and int(row["pullRequest"]) not in {39, 40}
             ],
             "externalExactHeadAttestations": [
                 {
@@ -421,6 +422,16 @@ def build_status_model(
                     "publishedHeadSha": PHY1_V2_PUBLISHED_EXACT_HEAD,
                     "workflowRunUrl": PHY1_V2_EXACT_HEAD_WORKFLOW,
                     "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                }
+            ],
+            "pendingExternalExactHeadAttestations": [
+                {
+                    "pullRequest": 40,
+                    "committedSourceAnchorSha": D0_TRUTH_RUNTIME_PUBLICATION_SHA,
+                    "publishedHeadSha": None,
+                    "workflowRunUrl": None,
+                    "result": "pending_publication_exact_head_ci",
                     "authority": "github_workflow_api_and_draft_pr_body",
                 }
             ],
@@ -506,6 +517,18 @@ def validate_status_model(
         }
     ]:
         issues.append("external_exact_head_attestation_invalid")
+    pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
+    if pending_attestations != [
+        {
+            "pullRequest": 40,
+            "committedSourceAnchorSha": D0_TRUTH_RUNTIME_PUBLICATION_SHA,
+            "publishedHeadSha": None,
+            "workflowRunUrl": None,
+            "result": "pending_publication_exact_head_ci",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        }
+    ]:
+        issues.append("pending_external_exact_head_attestation_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (
         "candidate_default_all_family_and_representative_pass"

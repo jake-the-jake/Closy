@@ -262,6 +262,19 @@ PR_SNAPSHOTS = [
         "NOT_RUN_AT_EVIDENCE_ANCHOR",
         "phy1_topology_v2_experiment_only",
     ),
+    (
+        40,
+        "Forge: add executable D0 truth and runtime authority",
+        "codex/closy-forge-d0-truth-runtime-authority-v3",
+        "codex/closy-forge-phy1-topology-v2",
+        "f732df267642cd55960205764e699c7fa2bb2d0f",
+        "7579f5e7dced1a19cea5df47a4a482bead57f4b4",
+        6,
+        42,
+        "",
+        "NOT_RUN_AT_EVIDENCE_ANCHOR",
+        "d0_truth_runtime_authority_v3",
+    ),
 ]
 
 PR25_REPLAY_MAPPINGS = [
@@ -1456,6 +1469,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         37: 35,
         38: 36,
         39: 38,
+        40: 39,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []

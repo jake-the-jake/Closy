@@ -1,6 +1,6 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v7` at evidence anchor `01699163ed4470992f0e33ff9d9b6b4c65a67f7f`.
+Authority: `closy.blueprint_status_model.v8` at evidence anchor `01699163ed4470992f0e33ff9d9b6b4c65a67f7f`.
 
 ## Requirement Rows
 
