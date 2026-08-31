@@ -4,6 +4,7 @@ from pathlib import Path
 
 from closy_forge.package_io.hashing import sha256_file
 from closy_forge.simulation_topology_v2.phy1_seam_support_v3 import (
+    float32_roundtrip_identity_microfixture,
     load_phy1_v3_inputs,
     run_analytic_microfixtures,
 )
@@ -74,3 +75,12 @@ def test_phy1_v3_analytic_microfixtures_and_corruption_controls_pass() -> None:
         "tangentialSlipMeters": 0.004,
         "euclideanGapMeters": 0.004,
     }
+
+
+def test_phy1_v3_float32_reporting_repair_has_independent_microfixture() -> None:
+    report = float32_roundtrip_identity_microfixture()
+
+    assert report["status"] == "pass"
+    assert all(report["checks"].values())
+    assert report["originalValues"] != report["persistedValues"]
+    assert report["firstByteSha256"] == report["secondByteSha256"]

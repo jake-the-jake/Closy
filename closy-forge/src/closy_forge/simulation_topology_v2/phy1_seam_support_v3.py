@@ -5,6 +5,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from math import isfinite, sqrt
 from pathlib import Path
+from struct import pack, unpack
 from time import monotonic
 from typing import Any
 
@@ -76,7 +77,7 @@ from .seam_support_v3 import (
 )
 from .temporal_quality import audit_temporal_deformation_quality
 
-EVIDENCE_VERSION = "closy.phy1.seam_support_v3.neutral_preflight.v1"
+EVIDENCE_VERSION = "closy.phy1.seam_support_v3.neutral_preflight.v2_persisted_rescore"
 MATRIX_VERSION = "closy.d0_research_matrix.phy1_seam_support_v3_refresh.v1"
 
 
@@ -269,6 +270,31 @@ def run_analytic_microfixtures(
         "status": "pass" if not failed else "fail",
         "integrity": {"evidenceHash": ""},
     }
+    report["integrity"]["evidenceHash"] = _hash_without(report, "evidenceHash")
+    return report
+
+
+def float32_roundtrip_identity_microfixture() -> dict[str, Any]:
+    original = (0.123456789012, -0.0, -0.987654321098)
+    first_bytes = b"".join(pack("<f", value) for value in original)
+    second_bytes = b"".join(pack("<f", value) for value in original)
+    persisted = tuple(unpack("<f", first_bytes[index : index + 4])[0] for index in range(0, 12, 4))
+    normalized_persisted = tuple(0.0 if value == 0.0 else value for value in persisted)
+    report: dict[str, Any] = {
+        "schemaVersion": 1,
+        "microfixtureVersion": "closy.phy1.float32_persisted_identity.v1",
+        "originalValues": list(original),
+        "persistedValues": list(normalized_persisted),
+        "firstByteSha256": sha256_bytes(first_bytes),
+        "secondByteSha256": sha256_bytes(second_bytes),
+        "checks": {
+            "repeatedBytesIdentical": first_bytes == second_bytes,
+            "float32SemanticValueDiffersFromInMemory": normalized_persisted != original,
+            "persistedIdentityMustBeComputedAfterSerialization": True,
+        },
+        "integrity": {"evidenceHash": ""},
+    }
+    report["status"] = "pass" if all(_mapping(report["checks"]).values()) else "fail"
     report["integrity"]["evidenceHash"] = _hash_without(report, "evidenceHash")
     return report
 

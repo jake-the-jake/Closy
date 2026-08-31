@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 from collections.abc import Mapping
+from copy import deepcopy
 from pathlib import Path
 from time import monotonic
 from typing import Any
@@ -20,8 +22,10 @@ from closy_forge.package_io.managed_output import (
 )
 from closy_forge.simulation.reference_cloth_solver import flatten_mesh, replace_mesh_positions
 from closy_forge.simulation_topology_v2.phy1_seam_support_v3 import (
+    NeutralSolveResult,
     evaluate_neutral_preflight,
     evidence_inventory,
+    float32_roundtrip_identity_microfixture,
     load_phy1_v3_inputs,
     refresh_research_matrix,
     run_analytic_microfixtures,
@@ -41,11 +45,16 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--analytic-only", action="store_true")
+    parser.add_argument("--repair-persisted-float32", action="store_true")
+    parser.add_argument("--source-sha")
     parser.add_argument("--validate-committed", action="store_true")
     args = parser.parse_args()
     root = args.root.resolve()
-    if args.analytic_only and args.validate_committed:
-        parser.error("--analytic-only and --validate-committed are mutually exclusive")
+    selected_modes = sum(
+        (args.analytic_only, args.repair_persisted_float32, args.validate_committed)
+    )
+    if selected_modes > 1:
+        parser.error("execution modes are mutually exclusive")
     if args.analytic_only:
         analytic = _analytic(root)
         write_canonical_json(root / ANALYTIC_PREFLIGHT_PATH, analytic)
@@ -60,6 +69,16 @@ def main() -> int:
         print(
             f"outcome={summary['outcomeClass']} evidence={summary['evidenceDigest']} "
             f"files={summary['inventoryCount']}"
+        )
+        return 0
+    if args.repair_persisted_float32:
+        if args.source_sha is None or len(args.source_sha) != 40:
+            parser.error("--source-sha is required for a reporting repair")
+        summary = repair_persisted_float32_evidence(root, args.source_sha)
+        print(
+            f"repair={summary['status']} outcome={summary['outcomeClass']} "
+            f"trajectoryBytesUnchanged={summary['trajectoryBytesUnchanged']} "
+            f"evidence={summary['evidenceDigest']}"
         )
         return 0
     summary = generate_evidence(root)
@@ -110,6 +129,141 @@ def generate_evidence(root: Path) -> dict[str, Any]:
     }
 
 
+def repair_persisted_float32_evidence(root: Path, source_sha: str) -> dict[str, Any]:
+    allowed_root = root / EVIDENCE_PATH.parent
+    target = root / EVIDENCE_PATH
+    original_glbs = _glb_inventory(target)
+    old_neutral = _object(target / "neutral_preflight.json")
+    old_trajectory = _object(target / "trajectory/index.json")
+    lock = load_experiment_lock(root)
+    inputs = load_phy1_v3_inputs(root, lock)
+    analytic = run_analytic_microfixtures(root, lock, inputs)
+    microfixture = float32_roundtrip_identity_microfixture()
+    if analytic["status"] != "pass" or microfixture["status"] != "pass":
+        raise ValueError("phy1_v3_reporting_repair_microfixture_failed")
+
+    staging = create_managed_staging(target, allowed_root=allowed_root, purpose=PURPOSE)
+    try:
+        for item in original_glbs:
+            relative = Path(str(item["path"]))
+            destination = staging / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(target / relative, destination)
+        copied_glbs = _glb_inventory(staging)
+        if copied_glbs != original_glbs:
+            raise ValueError("phy1_v3_reporting_repair_changed_glb_bytes")
+
+        persisted_frames = [
+            read_glb_meshset(staging / str(_mapping(item)["path"]))
+            for item in old_trajectory["frames"]
+        ]
+        persisted_hashes = [geometry_content_hash(frame) for frame in persisted_frames]
+        diagnostics = deepcopy(_mapping(old_neutral["solver"]))
+        diagnostics["trajectoryFrameCount"] = len(persisted_frames)
+        diagnostics["distinctTrajectoryContentHashCount"] = len(set(persisted_hashes))
+        diagnostics["trajectoryContentHash"] = sha256_bytes(
+            canonical_dumps(persisted_hashes).encode("utf-8")
+        )
+        primary = NeutralSolveResult(
+            persisted_frames[-1],
+            persisted_frames,
+            persisted_hashes,
+            dict(diagnostics),
+        )
+        repeat = NeutralSolveResult(
+            persisted_frames[-1],
+            persisted_frames,
+            persisted_hashes,
+            deepcopy(dict(diagnostics)),
+        )
+        neutral = evaluate_neutral_preflight(
+            root,
+            lock,
+            inputs,
+            primary,
+            repeat,
+            analytic,
+            delete_rebuild_verified=True,
+        )
+        old_identity = _mapping(old_neutral["identities"])
+        neutral["identities"]["solverInMemorySettledContentHashV1"] = old_identity[
+            "simulationSettledContentHash"
+        ]
+        neutral["identities"]["solverInMemoryTrajectoryContentHashV1"] = old_identity[
+            "trajectoryContentHash"
+        ]
+        neutral["identities"]["persistedSimulationSettledContentHash"] = persisted_hashes[-1]
+        neutral["determinism"]["originalIndependentRepeat"] = old_neutral["determinism"]
+        neutral["reportingRepair"] = {
+            "repairVersion": "closy.phy1.persisted_float32_rescore.v1",
+            "predecessorEvidenceHash": _mapping(old_neutral["integrity"])["evidenceHash"],
+            "trajectoryExecutableSourceHead": "379f9c2539c7c9f83e588ac4ef1d3b94637bfa6c",
+            "reportingEvaluatorSourceHead": source_sha,
+            "trajectoryExecutableSourceInventory": old_neutral["sourceInventory"],
+            "microfixtureEvidenceHash": _mapping(microfixture["integrity"])["evidenceHash"],
+            "trajectoryGlbInventoryDigest": inventory_digest(original_glbs),
+            "trajectoryGlbBytesUnchanged": True,
+            "physicalTrajectoryReexecuted": False,
+            "solverDiagnosticsReused": True,
+            "persistedFramesRescored": len(persisted_frames),
+            "configurationChanged": False,
+            "thresholdsChanged": False,
+        }
+        neutral["integrity"]["evidenceHash"] = _hash_without(neutral, "evidenceHash")
+
+        trajectory = _repaired_trajectory_index(
+            staging,
+            old_trajectory,
+            persisted_hashes,
+            source_sha,
+        )
+        outcome = _outcome(lock, neutral)
+        matrix = refresh_research_matrix(root, neutral)
+        repair_report: dict[str, Any] = {
+            "schemaVersion": 1,
+            "repairVersion": "closy.phy1.persisted_float32_rescore.v1",
+            "status": "pass",
+            "sourceHead": source_sha,
+            "predecessorEvidenceHash": _mapping(old_neutral["integrity"])["evidenceHash"],
+            "repairedEvidenceHash": _mapping(neutral["integrity"])["evidenceHash"],
+            "microfixture": microfixture,
+            "originalGlbInventory": original_glbs,
+            "repairedGlbInventory": copied_glbs,
+            "trajectoryBytesUnchanged": copied_glbs == original_glbs,
+            "trajectoryReexecuted": False,
+            "integrity": {"repairHash": ""},
+        }
+        repair_report["integrity"]["repairHash"] = _hash_without(repair_report, "repairHash")
+        write_canonical_json(staging / "analytic_microfixtures.json", analytic)
+        write_canonical_json(staging / "junction_graph.json", inputs.junction_graph)
+        write_canonical_json(
+            staging / "support_inventory.json", audit_support_inventory(inputs.supports, lock)
+        )
+        write_canonical_json(staging / "neutral_preflight.json", neutral)
+        write_canonical_json(staging / "trajectory/index.json", trajectory)
+        write_canonical_json(staging / "outcome.json", outcome)
+        write_canonical_json(staging / "final_d0_research_prototype_matrix_v2.json", matrix)
+        write_canonical_json(staging / "reporting_repair_float32.json", repair_report)
+        manifest = evidence_inventory(root, staging)
+        write_canonical_json(staging / "evidence_manifest.json", manifest)
+        publish_managed_staging(
+            staging,
+            target,
+            allowed_root=allowed_root,
+            purpose=PURPOSE,
+            force=True,
+        )
+    except BaseException:
+        cleanup_managed_staging(staging, allowed_root=allowed_root, purpose=PURPOSE)
+        raise
+    return {
+        "status": "pass",
+        "outcomeClass": outcome["outcomeClass"],
+        "trajectoryBytesUnchanged": True,
+        "evidenceDigest": manifest["evidenceDigest"],
+    }
+
+
 def validate_committed_evidence(root: Path) -> dict[str, Any]:
     evidence_root = root / EVIDENCE_PATH
     lock = load_experiment_lock(root)
@@ -127,11 +281,13 @@ def validate_committed_evidence(root: Path) -> dict[str, Any]:
     matrix = _object(evidence_root / "final_d0_research_prototype_matrix_v2.json")
     trajectory = _object(evidence_root / "trajectory/index.json")
     manifest = _object(evidence_root / "evidence_manifest.json")
+    repair = _object(evidence_root / "reporting_repair_float32.json")
     _validate_integrity(neutral, "evidenceHash")
     _validate_integrity(outcome, "outcomeHash")
     _validate_integrity(matrix, "matrixHash")
     _validate_integrity(trajectory, "trajectoryIndexHash")
     _validate_integrity(manifest, "manifestHash")
+    _validate_integrity(repair, "repairHash")
     if outcome.get("outcomeClass") != "A_neutral_preflight_failed_v3":
         raise ValueError("phy1_v3_committed_outcome_not_supported")
     if _mapping(neutral.get("acceptance")).get("status") != "fail":
@@ -151,14 +307,18 @@ def validate_committed_evidence(root: Path) -> dict[str, Any]:
         path = evidence_root / str(record["path"])
         if sha256_file(path) != record.get("sha256"):
             raise ValueError("phy1_v3_trajectory_byte_hash_mismatch")
-        if geometry_content_hash(read_glb_meshset(path)) != record.get("meshContentHash"):
+        if geometry_content_hash(read_glb_meshset(path)) != record.get("persistedMeshContentHash"):
             raise ValueError("phy1_v3_trajectory_content_hash_mismatch")
     settled = read_glb_meshset(evidence_root / "neutral_settled_simulation.glb")
     if (
         geometry_content_hash(settled)
-        != _mapping(neutral["identities"])["simulationSettledContentHash"]
+        != _mapping(neutral["identities"])["persistedSimulationSettledContentHash"]
     ):
         raise ValueError("phy1_v3_settled_mesh_identity_mismatch")
+    if repair.get("trajectoryBytesUnchanged") is not True:
+        raise ValueError("phy1_v3_reporting_repair_changed_trajectory")
+    if repair.get("originalGlbInventory") != _glb_inventory(evidence_root):
+        raise ValueError("phy1_v3_reporting_repair_inventory_mismatch")
     source_inventory = neutral.get("sourceInventory", [])
     if not isinstance(source_inventory, list):
         raise ValueError("phy1_v3_source_inventory_invalid")
@@ -284,6 +444,53 @@ def _write_trajectory(output: Path, frames: list[MeshSet], content_hashes: list[
     }
     document["integrity"]["trajectoryIndexHash"] = _hash_without(document, "trajectoryIndexHash")
     write_canonical_json(output / "trajectory/index.json", document)
+
+
+def _repaired_trajectory_index(
+    output: Path,
+    predecessor: Mapping[str, Any],
+    persisted_hashes: list[str],
+    source_sha: str,
+) -> dict[str, Any]:
+    old_frames = predecessor.get("frames", [])
+    if not isinstance(old_frames, list) or len(old_frames) != len(persisted_hashes):
+        raise ValueError("phy1_v3_reporting_repair_frame_count_mismatch")
+    frames: list[dict[str, Any]] = []
+    for item, persisted_hash in zip(old_frames, persisted_hashes, strict=True):
+        record = _mapping(item)
+        path = output / str(record["path"])
+        if sha256_file(path) != record.get("sha256"):
+            raise ValueError("phy1_v3_reporting_repair_frame_bytes_changed")
+        frames.append(
+            {
+                "frameIndex": record["frameIndex"],
+                "path": record["path"],
+                "sha256": record["sha256"],
+                "solverInMemoryMeshContentHashV1": record["meshContentHash"],
+                "persistedMeshContentHash": persisted_hash,
+            }
+        )
+    document: dict[str, Any] = {
+        "schemaVersion": 1,
+        "trajectoryVersion": "closy.phy1.seam_support_v3.neutral_trajectory.v2",
+        "frameCount": len(frames),
+        "frames": frames,
+        "reportingRepair": {
+            "predecessorTrajectoryIndexHash": _mapping(predecessor["integrity"])[
+                "trajectoryIndexHash"
+            ],
+            "reportingEvaluatorSourceHead": source_sha,
+            "persistedIdentityComputedAfterGlbSerialization": True,
+            "frameBytesChanged": False,
+        },
+        "integrity": {"trajectoryIndexHash": ""},
+    }
+    document["integrity"]["trajectoryIndexHash"] = _hash_without(document, "trajectoryIndexHash")
+    return document
+
+
+def _glb_inventory(root: Path) -> list[dict[str, Any]]:
+    return [item for item in package_inventory(root) if str(item["path"]).lower().endswith(".glb")]
 
 
 def _outcome(lock: Mapping[str, Any], neutral: Mapping[str, Any]) -> dict[str, Any]:
