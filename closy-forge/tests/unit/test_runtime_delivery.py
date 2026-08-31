@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import zlib
 from pathlib import Path
 
 import pytest
@@ -90,6 +91,27 @@ def _inventory_digest(inventory: list[dict[str, object]]) -> str:
         for entry in sorted(inventory, key=lambda item: str(item["path"]))
     )
     return sha256_bytes(payload.encode())
+
+
+def _replace_first_page(package: Path, compressed: bytes) -> None:
+    manifest = _manifest(package)
+    pages = manifest["pages"]
+    assert isinstance(pages, dict)
+    records = pages["records"]
+    assert isinstance(records, list)
+    record = records[0]
+    assert isinstance(record, dict)
+    page = package / str(record["path"])
+    page.write_bytes(compressed)
+    record["compressedLength"] = len(compressed)
+    record["compressedSha256"] = sha256_bytes(compressed)
+    inventory = manifest["inventory"]
+    assert isinstance(inventory, list)
+    inventory_row = next(row for row in inventory if row["path"] == record["path"])
+    inventory_row["byteSize"] = len(compressed)
+    inventory_row["sha256"] = sha256_bytes(compressed)
+    manifest["packageDigest"] = _inventory_digest(inventory)
+    _write_manifest(package, manifest)
 
 
 def test_runtime_package_is_deterministic_and_exercises_declared_fallback_order(
@@ -207,6 +229,22 @@ def test_runtime_loader_rejects_corrupt_chunk_and_tight_memory_budget(tmp_path: 
     clean, _ = _build_package(tmp_path, "clean.closyruntime")
     with pytest.raises(RuntimePackageError, match="runtime_decoded_memory_limit_exceeded"):
         load_runtime_package(clean, limits=RuntimeLimits(max_decoded_bytes=8))
+
+
+@pytest.mark.parametrize("mutation", ["truncated", "trailing"])
+def test_runtime_decoder_rejects_truncated_or_trailing_stream(
+    tmp_path: Path, mutation: str
+) -> None:
+    package, glb = _build_package(tmp_path)
+    compressed = zlib.compress(glb, level=9)
+    if mutation == "truncated":
+        compressed = compressed[:-2]
+    else:
+        compressed += zlib.compress(b"undeclared-second-stream")
+    _replace_first_page(package, compressed)
+
+    with pytest.raises(RuntimePackageError, match="runtime_chunk_decoded_mismatch"):
+        load_runtime_package(package)
 
 
 def test_runtime_loader_rejects_raw_private_capture_digest(tmp_path: Path) -> None:

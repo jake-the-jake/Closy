@@ -167,6 +167,7 @@ def test_raster_ingest_rejects_bad_magic_and_truncated_inputs(
         ("large_dimension", "dimension_limit_exceeded"),
         ("large_pixels", "pixel_count_limit_exceeded"),
         ("decompression_extra", "decompression_limit_exceeded"),
+        ("decompression_trailing", "decompression_trailing_data"),
         ("animated", "animated_or_multipage_rejected"),
         ("icc", "unsupported_color_profile"),
     ],
@@ -179,6 +180,7 @@ def test_raster_ingest_rejects_limits_animation_and_profiles(
         "large_dimension": _png_rgba(5000, 1),
         "large_pixels": _png_header_only(2048, 2048),
         "decompression_extra": _png_rgba(16, 16, raw_extra=b"\x00"),
+        "decompression_trailing": _png_rgba(16, 16, compressed_trailing=b"trailing"),
         "animated": _png_rgba(8, 8, extra_chunks=[(b"acTL", b"\x00" * 8)]),
         "icc": _png_rgba(8, 8, extra_chunks=[(b"iCCP", b"profile\x00\x00x")]),
     }
@@ -443,6 +445,7 @@ def _png_rgba(
     height: int,
     *,
     raw_extra: bytes = b"",
+    compressed_trailing: bytes = b"",
     extra_chunks: list[tuple[bytes, bytes]] | None = None,
 ) -> bytes:
     chunks: list[tuple[bytes, bytes]] = []
@@ -457,7 +460,7 @@ def _png_rgba(
             blue = 128 + ((x + y) * 5) % 80
             alpha = 255 if 1 <= x < width - 1 and 1 <= y < height - 1 else 0
             rows.extend((red, green, blue, alpha))
-    chunks.append((b"IDAT", zlib.compress(bytes(rows) + raw_extra)))
+    chunks.append((b"IDAT", zlib.compress(bytes(rows) + raw_extra) + compressed_trailing))
     chunks.append((b"IEND", b""))
     payload = bytearray(b"\x89PNG\r\n\x1a\n")
     for name, chunk in chunks:
