@@ -8,6 +8,8 @@ on:
       - "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/development_summary.json"
       - "closy-forge/src/closy_forge/disjoint_benchmark_v1/**"
       - "closy-forge/scripts/*d0_disjoint_benchmark_v1*.py"
+      - "closy-forge/scripts/validate_unit_g_seed_lifecycle.py"
+      - "closy-forge/tests/unit/test_unit_g_seed_lifecycle.py"
       - ".github/workflows/closy-forge-unit-g-seed.yml"
 
 permissions:
@@ -15,7 +17,7 @@ permissions:
 
 jobs:
   seed-authority:
-    name: Unit G first non-rerun seed authority
+    name: Unit G seed lifecycle authority
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -23,25 +25,16 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.11"
-      - name: Verify pre-evaluator lock
+      - name: Derive and verify sealed lifecycle state
         working-directory: closy-forge
+        env:
+          PYTHONPATH: src
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          root = Path("fixtures/d0_disjoint_tshirt_benchmark_v1")
-          protocol = json.loads((root / "protocol_lock.json").read_text())
-          lock = json.loads((root / "development_lock.json").read_text())
-          assert protocol["evaluatorIdentitiesRealized"] is False
-          assert protocol["targetContentsMounted"] is False
-          assert lock["evaluatorIdentitiesRealized"] is False
-          assert lock["targetContentsMounted"] is False
-          assert not (root / "evaluator").exists()
-          print("unit_g_seed_authority_lock_valid")
-          PY
-      - name: Record seed authority inputs
+          python scripts/validate_unit_g_seed_lifecycle.py --expect sealed_post_evaluator
+      - name: Record sanitized sealed-state authority
         run: |
-          echo "lock_sha=${GITHUB_SHA}" >> "${GITHUB_STEP_SUMMARY}"
-          echo "run_id=${GITHUB_RUN_ID}" >> "${GITHUB_STEP_SUMMARY}"
-          echo "run_attempt=${GITHUB_RUN_ATTEMPT}" >> "${GITHUB_STEP_SUMMARY}"
+          echo "lifecycle_state=sealed_post_evaluator" >> "${GITHUB_STEP_SUMMARY}"
+          echo "original_authority_run_id=33467062432" >> "${GITHUB_STEP_SUMMARY}"
+          echo "original_authority_job_id=99729005374" >> "${GITHUB_STEP_SUMMARY}"
+          echo "seed_derivation_performed=false" >> "${GITHUB_STEP_SUMMARY}"
+          echo "evaluator_dispatch_performed=false" >> "${GITHUB_STEP_SUMMARY}"
