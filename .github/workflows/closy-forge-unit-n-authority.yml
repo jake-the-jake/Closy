@@ -1,7 +1,10 @@
 name: Forge Unit N fresh C3 pose authority
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - codex/closy-forge-d0-disjoint-tshirt-confirmation-v2
+    types: [synchronize]
 
 permissions:
   contents: read
@@ -9,17 +12,19 @@ permissions:
 jobs:
   authority:
     name: Unit N first external pose authority
+    if: github.head_ref == 'codex/closy-forge-d0-strict-c3-confirmation-v5'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: Reject any non-Unit-N branch
         shell: bash
         run: |
-          test "${GITHUB_REF}" = "refs/heads/codex/closy-forge-d0-strict-c3-confirmation-v5"
+          test "${GITHUB_HEAD_REF}" = "codex/closy-forge-d0-strict-c3-confirmation-v5"
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.11"
@@ -33,9 +38,10 @@ jobs:
         run: python scripts/build_d0_strict_c3_confirmation_v5_lock.py --check
       - name: Run the sole fresh pose confirmation
         working-directory: closy-forge
-        run: >-
-          python scripts/run_d0_strict_c3_confirmation_v5_authority.py
-          --output "${RUNNER_TEMP}/unit-n-authority"
+        run: |
+          GITHUB_SHA="${{ github.event.pull_request.head.sha }}" \
+            python scripts/run_d0_strict_c3_confirmation_v5_authority.py \
+            --output "${RUNNER_TEMP}/unit-n-authority"
       - name: Upload consumed attempt evidence
         if: always()
         uses: actions/upload-artifact@v4
