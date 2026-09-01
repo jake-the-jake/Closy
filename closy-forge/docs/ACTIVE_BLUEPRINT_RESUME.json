@@ -108,7 +108,7 @@
     "candidateAttemptConsumed": false,
     "candidateCreated": false,
     "finalStrategyConsumed": false,
-    "integrityAttestationDigest": "f1522a1f0040a3e4345dbdc30371b32d837ecdfb27f72849869533e3a40a0e7c",
+    "integrityAttestationDigest": "f7a9538bda6435e9b87378f5563ad9889c528b7c454db36eb86687dd6adaf4d0",
     "integrityFailureRun": "33559874476",
     "outcome": "diagnosis_integrity_error",
     "rawOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",

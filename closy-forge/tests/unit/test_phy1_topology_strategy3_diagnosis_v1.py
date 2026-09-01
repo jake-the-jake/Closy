@@ -6,6 +6,7 @@ from pathlib import Path
 from closy_forge.package_io.canonical_json import read_json
 from closy_forge.phy1_topology_strategy3_diagnosis_v1.integrity_attestation import (
     INTEGRITY_ATTESTATION_PATH,
+    _canonical_lf_sha256,
 )
 from closy_forge.phy1_topology_strategy3_diagnosis_v1.protocol import (
     AUTHORITY_PATH,
@@ -68,3 +69,12 @@ def test_unit_o_committed_outcome_and_integrity_failure_are_reproducible() -> No
     assert outcome["candidateCreated"] is False
     assert outcome["candidateAttemptConsumed"] is False
     assert outcome["finalStrategyConsumed"] is False
+
+
+def test_unit_o_markdown_hash_is_checkout_newline_safe(tmp_path: Path) -> None:
+    report = tmp_path / "REPORT.md"
+    report.write_bytes(b"line one\r\nline two\r\n")
+    assert (
+        _canonical_lf_sha256(report)
+        == hashlib.sha256(b"line one\nline two\n", usedforsecurity=False).hexdigest()
+    )

@@ -66,6 +66,13 @@
       "classification": "software_verifier_defect",
       "result": "pointer_whitelist_derived_from_local_witness_rejected_additional_linux_numeric_drift",
       "scientificReplayPerformed": false
+    },
+    {
+      "runId": "33568859455",
+      "headSha": "e256647ab159c1cbd8397fc8da0bc27f3915ba20",
+      "classification": "software_verifier_defect",
+      "result": "windows_checkout_newline_conversion_changed_raw_markdown_worktree_hash",
+      "scientificReplayPerformed": false
     }
   ],
   "preservedRawEvidence": [
@@ -91,7 +98,8 @@
     },
     {
       "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/REPORT.md",
-      "sha256": "67c69d14d5215738379a3d0fc4579b38de406b5c08fd4f3e725328fbf75010eb"
+      "sha256": "67c69d14d5215738379a3d0fc4579b38de406b5c08fd4f3e725328fbf75010eb",
+      "hashMode": "canonical_lf_text"
     }
   ],
   "executionState": {
@@ -119,6 +127,6 @@
     "candidateAttempts": 1
   },
   "integrity": {
-    "attestationDigest": "f1522a1f0040a3e4345dbdc30371b32d837ecdfb27f72849869533e3a40a0e7c"
+    "attestationDigest": "f7a9538bda6435e9b87378f5563ad9889c528b7c454db36eb86687dd6adaf4d0"
   }
 }

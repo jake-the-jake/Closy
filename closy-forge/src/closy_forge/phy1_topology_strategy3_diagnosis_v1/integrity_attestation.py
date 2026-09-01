@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from closy_forge.package_io.canonical_json import read_json
-from closy_forge.package_io.hashing import sha256_file
+from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 from closy_forge.phy1_topology_strategy3_diagnosis_v1.protocol import (
     EVIDENCE_ROOT,
     OUTCOME_PATH,
@@ -34,7 +34,11 @@ def verify_integrity_failure(
     for record in attestation.get("preservedRawEvidence", []):
         row = _mapping(record)
         path = root / str(row.get("path"))
-        if not path.is_file() or sha256_file(path) != row.get("sha256"):
+        if row.get("hashMode", "raw_bytes") == "canonical_lf_text":
+            actual_hash = _canonical_lf_sha256(path) if path.is_file() else None
+        else:
+            actual_hash = sha256_file(path) if path.is_file() else None
+        if actual_hash != row.get("sha256"):
             raise ValueError(f"unit_o_preserved_evidence_hash_mismatch:{row.get('path')}")
 
     committed_outcome = read_json(root / OUTCOME_PATH)
@@ -93,3 +97,8 @@ def _verify_non_authoritative_regeneration_structure(
 
 def _mapping(value: object) -> dict[str, Any]:
     return cast(dict[str, Any], value) if isinstance(value, dict) else {}
+
+
+def _canonical_lf_sha256(path: Path) -> str:
+    content = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return sha256_bytes(content)
