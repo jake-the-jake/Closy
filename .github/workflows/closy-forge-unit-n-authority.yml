@@ -1,0 +1,46 @@
+name: Forge Unit N fresh C3 pose authority
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authority:
+    name: Unit N first external pose authority
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Reject any non-Unit-N branch
+        shell: bash
+        run: |
+          test "${GITHUB_REF}" = "refs/heads/codex/closy-forge-d0-strict-c3-confirmation-v5"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Verify pre-pose lock without realizing poses
+        working-directory: closy-forge
+        run: python scripts/build_d0_strict_c3_confirmation_v5_lock.py --check
+      - name: Run the sole fresh pose confirmation
+        working-directory: closy-forge
+        run: >-
+          python scripts/run_d0_strict_c3_confirmation_v5_authority.py
+          --output "${RUNNER_TEMP}/unit-n-authority"
+      - name: Upload consumed attempt evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-n-strict-c3-attempt-${{ github.run_id }}
+          path: ${{ runner.temp }}/unit-n-authority
+          if-no-files-found: error
+          retention-days: 30
