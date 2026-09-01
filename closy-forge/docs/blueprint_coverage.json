@@ -59,12 +59,22 @@
       "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/commitments.json",
       "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/prediction_freeze.json",
       "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/benchmark_result.json",
-      "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/evaluation_attempt_failure.json"
+      "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/evaluation_attempt_failure.json",
+      "closy-forge/fixtures/d0_core_runtime_c3_v4/sentinel_manifest.json",
+      "closy-forge/fixtures/d0_core_runtime_c3_v4/protocol_lock.json",
+      "closy-forge/src/closy_forge/core_runtime_c3_v4/sentinel.py",
+      "closy-forge/src/closy_forge/core_runtime_c3_v4/reproducibility.py",
+      "closy-forge/src/closy_forge/core_runtime_c3_v4/oracle.py",
+      "closy-forge/src/closy_forge/core_runtime_c3_v4/evaluator.py",
+      "closy-forge/docs/evidence/d0_core_runtime_c3_v4/core_reproducibility.json",
+      "closy-forge/docs/evidence/d0_core_runtime_c3_v4/strict_c3_result.json",
+      "closy-forge/docs/evidence/d0_core_runtime_c3_v4/processor_authority_audit.json",
+      "closy-forge/docs/evidence/d0_core_runtime_c3_v4/unit_h_outcome.json"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.d0_disjoint_tshirt_benchmark_v1.v10",
+    "generatorVersion": "closy.blueprint_reconciliation.d0_core_runtime_c3_v4.v11",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "73a0904692f941de5c29239e5cdaceb36987780057768c2fc8551dedc83976f5"
+    "sourceTreeHash": "0556905ccaca5cf33e35207a09d3b21d26500bdbbc540a124ffa7797f68600b7"
   },
   "integratedImplementationRowCount": 83,
   "rows": [
@@ -243,7 +253,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -609,7 +620,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -699,7 +711,8 @@
         "5a01ed40656c3f2924169f2c3e8f4d702f572cc5",
         "1038cbc9125461a8b80587b56e083191296861ec",
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -792,7 +805,8 @@
     {
       "ancestryClass": "in_tree",
       "commitSha": [
-        "0e743bb"
+        "0e743bb",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "BP-47-INSPECTION-ARTIFACTS",
@@ -804,7 +818,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Partial BP48 checkpoint: fallback GLB frames and a bounded four-pose suite are available for runtime preview, but stitched-shell binding, crack/sliding proof, performance/memory evidence, full cloth motion and clean/canonical acceptance remain incomplete.",
+          "limitations": "No held-out frame validity or dense/fallback C3 pass exists; the one-attempt budget is consumed and no retry or post-result key repair is permitted.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -820,7 +834,13 @@
         "acceptedForRuntimeFramePreview=true",
         "acceptedForCleanProposal=false",
         "pose suite max binding error 1e-09 within tolerance 1e-6",
-        "package digest b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329"
+        "package digest b8e56370434d9275a17048eee5e94367de8736366ed2919e292a2b8acf8a4329",
+        "H0 sentinel resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "core runtime fresh, second-clean, cache, corruption, withdrawal, and delete/rebuild checks pass",
+        "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
+        "one strict C3 held-out attempt consumed and failed before any of eight states completed",
+        "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
       ],
       "id": "BP-48-PERSISTED-FRAMES-TANGENTS",
       "implementationPaths": [
@@ -829,23 +849,27 @@
         "closy-forge/src/closy_forge/rendering/frame_pose_suite.py",
         "closy-forge/src/closy_forge/pipeline/build_tshirt_demo.py",
         "closy-forge/src/closy_forge/validation/validator.py",
-        "closy-forge/schemas/v1/render-frame-pose-suite.schema.json"
+        "closy-forge/schemas/v1/render-frame-pose-suite.schema.json",
+        "closy-forge/fixtures/d0_core_runtime_c3_v4",
+        "closy-forge/src/closy_forge/core_runtime_c3_v4",
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Partial BP48 checkpoint: fallback GLB frames and a bounded four-pose suite are available for runtime preview, but stitched-shell binding, crack/sliding proof, performance/memory evidence, full cloth motion and clean/canonical acceptance remain incomplete.",
-      "nextAction": "Validate independently reconstructed dense and fallback frames over real stitched-shell deformation states.",
+      "limitations": "No held-out frame validity or dense/fallback C3 pass exists; the one-attempt budget is consumed and no retry or post-result key repair is permitted.",
+      "nextAction": "Preserve the failed predecessor attempt and continue the separately bounded Unit I topology strategy without claiming C3 success.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 10 persisted render normals/tangents and pose-suite evidence",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Persist fallback GLB normal/tangent frames and validate bounded pose-suite binding evidence without promoting clean/canonical acceptance.",
+      "summary": "Unit H froze an independently implemented direct-shell oracle and eight-state non-physical C3 suite, but the sole held-out attempt failed in the frozen frame-metric reporting adapter before any state completed.",
       "tests": [
         "tests/unit/test_render_frame_pose_suite.py",
         "tests/unit/test_schema_freshness.py",
         "tests/golden/test_golden_demo.py",
-        "tests/corruption/test_corrupted_packages.py"
+        "tests/corruption/test_corrupted_packages.py",
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
       ]
     },
     {
@@ -856,7 +880,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "BP-08-A-INGESTION",
@@ -933,7 +958,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -1499,7 +1525,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1605,7 +1632,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1910,7 +1938,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2067,7 +2096,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2129,7 +2159,8 @@
         "3dd65b1",
         "0ced19b3efdf69a7ba55cb330c66e8da44a68669",
         "a8a053a68d8f455134e5a2bfed0fe340467a039a",
-        "13604d169ecbc0fddf475cdf177e743790c836a2"
+        "13604d169ecbc0fddf475cdf177e743790c836a2",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2138,7 +2169,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The repaired D0 profile remains partial because independent fallback landmark agreement and tangential sliding exceed provisional scale-derived thresholds. Clean/canonical geometry, provider-derived topology, mobile/GPU runtime profiling and high-velocity collision remain not run.",
+          "limitations": "Development-state reconstruction below 6.7e-8 m is not held-out qualification, and the failed harness yields D0-RP-08 fail rather than partial metric credit.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -2151,7 +2182,13 @@
         "render/simulation_fallback.glb is a direct simulation-topology fallback whose implementation does not call dense reconstruction",
         "reports/production_binding_c3.json records partial_scoped_reference_profile with crack residual 0.021539119 m, opening drift 0.003968363 m, fallback landmark disagreement 0.098963781 m and tangential sliding 0.184355169 m",
         "noncanonical Windows host benchmark executes 3 warmups and 20 repeats for decode, dense and fallback workloads; canonical report records performance not run",
-        "run 32912124815 measured dense/fallback full-suite median 131.688151/0.518228 ms Ubuntu and 250.75065/0.57115 ms Windows"
+        "run 32912124815 measured dense/fallback full-suite median 131.688151/0.518228 ms Ubuntu and 250.75065/0.57115 ms Windows",
+        "H0 sentinel resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "core runtime fresh, second-clean, cache, corruption, withdrawal, and delete/rebuild checks pass",
+        "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
+        "one strict C3 held-out attempt consumed and failed before any of eight states completed",
+        "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
       ],
       "id": "BP-08-R-SIM-TO-RENDER-BINDING",
       "implementationPaths": [
@@ -2161,22 +2198,26 @@
         "closy-forge/src/closy_forge/binding/production_binding.py",
         "closy-forge/src/closy_forge/geometry/frame_attributes.py",
         "closy-forge/src/closy_forge/rendering/frame_pose_suite.py",
-        "closy-forge/src/closy_forge/validation/validator.py"
+        "closy-forge/src/closy_forge/validation/validator.py",
+        "closy-forge/fixtures/d0_core_runtime_c3_v4",
+        "closy-forge/src/closy_forge/core_runtime_c3_v4",
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The repaired D0 profile remains partial because independent fallback landmark agreement and tangential sliding exceed provisional scale-derived thresholds. Clean/canonical geometry, provider-derived topology, mobile/GPU runtime profiling and high-velocity collision remain not run.",
-      "nextAction": "Consume the repaired authoritative route in BP52/BP53/BP47, while improving fallback correspondence and seam sliding without widening thresholds.",
+      "limitations": "Development-state reconstruction below 6.7e-8 m is not held-out qualification, and the failed harness yields D0-RP-08 fail rather than partial metric credit.",
+      "nextAction": "Any admissible post-topology Unit I candidate must be requalified from bytes in Unit J; predecessor H evidence cannot transfer.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Stage R has one authoritative persisted solver-state binding route and independent fallback evidence, with literal threshold failures keeping the D0 C3 profile partial.",
+      "summary": "The exact Unit F sentinel, package, simulation/render topology, and binding are locked under H0; H4 consumed one strict held-out attempt and failed in its frozen frame-metric adapter.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/unit/test_render_frame_pose_suite.py",
-        "tests/golden/test_golden_demo.py"
+        "tests/golden/test_golden_demo.py",
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
       ]
     },
     {
@@ -2188,7 +2229,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2384,7 +2426,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2451,7 +2494,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2727,7 +2771,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2889,7 +2934,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3023,7 +3069,8 @@
         "5a01ed40656c3f2924169f2c3e8f4d702f572cc5",
         "1038cbc9125461a8b80587b56e083191296861ec",
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3032,7 +3079,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No canonical compile, reference-3D, appearance, aggregate, bootstrap, or route promotion result was produced.",
+          "limitations": "The exact authenticated supplemental processors were unavailable, and zero of eight held-out C3 states completed.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3075,7 +3122,13 @@
         "8 development identities and 16 seed-authority-derived evaluator commitments",
         "64 predictions executed with application-process deny-by-default input isolation",
         "all target commitments validated only after prediction freeze",
-        "frozen evaluator failed before worker dispatch with zero compile/appearance counts"
+        "frozen evaluator failed before worker dispatch with zero compile/appearance counts",
+        "H0 sentinel resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "core runtime fresh, second-clean, cache, corruption, withdrawal, and delete/rebuild checks pass",
+        "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
+        "one strict C3 held-out attempt consumed and failed before any of eight states completed",
+        "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -3115,18 +3168,21 @@
         "closy-forge/scripts/generate_d0_texture_rerender_v3_prediction.py",
         "closy-forge/scripts/evaluate_d0_texture_rerender_v3_known_target.py",
         "closy-forge/src/closy_forge/disjoint_benchmark_v1",
-        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1"
+        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1",
+        "closy-forge/fixtures/d0_core_runtime_c3_v4",
+        "closy-forge/src/closy_forge/core_runtime_c3_v4",
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No canonical compile, reference-3D, appearance, aggregate, bootstrap, or route promotion result was produced.",
-      "nextAction": "Continue Unit H without repairing or replaying Unit G evaluator targets.",
+      "limitations": "The exact authenticated supplemental processors were unavailable, and zero of eight held-out C3 states completed.",
+      "nextAction": "Execute Unit I's one preregistered topology strategy, then apply the mandatory post-topology J or logical J-A rules.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit G preserves a complete two-stage lock, seed authority, 16 commitments, 64 isolated predictions, target reveal, and the literal fixed-inventory evaluator harness failure.",
+      "summary": "Unit H independently records core Forge reproducibility pass, static Z1 and MT1 dependency blocks, and a literal strict-C3 frozen-evaluator failure.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -3147,7 +3203,8 @@
         "closy-forge/tests/unit/test_exact_raster_identity.py",
         "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py",
         "closy-forge/tests/unit/test_d0_texture_rerender_correction_v3.py",
-        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py"
+        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py",
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
       ]
     },
     {
@@ -3160,7 +3217,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3614,7 +3672,8 @@
         "5a01ed40656c3f2924169f2c3e8f4d702f572cc5",
         "1038cbc9125461a8b80587b56e083191296861ec",
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3798,7 +3857,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4140,7 +4200,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4248,7 +4309,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4320,7 +4382,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4403,7 +4466,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4483,7 +4547,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4555,7 +4620,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4733,7 +4799,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4742,7 +4809,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No summary flag, supplemental execution, or cross-candidate package may repair the failed exact-candidate result.",
+          "limitations": "No held-out C3 pass, PHY1 implication, trajectory qualification, or Z2 admission follows from Unit H.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4782,7 +4849,13 @@
         "matrix v3 opens evidence and recomputes byte, payload, identity, and predicate truth",
         "exact-fixture core 6 pass/5 fail/0 not-run and supplemental 2 pass/0 fail/2 not-run",
         "append-only hash-chained attempts preserve failures and fail closed on missing bytes",
-        "PR #43 diagnostic PHY rescore changes definitions without rerunning physics or outcome"
+        "PR #43 diagnostic PHY rescore changes definitions without rerunning physics or outcome",
+        "H0 sentinel resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "core runtime fresh, second-clean, cache, corruption, withdrawal, and delete/rebuild checks pass",
+        "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
+        "one strict C3 held-out attempt consumed and failed before any of eight states completed",
+        "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -4805,18 +4878,21 @@
         "closy-forge/src/closy_forge/evidence_integrity_v4",
         "closy-forge/docs/capability-profiles/d0-research-matrix-v3.json",
         "closy-forge/docs/evidence/d0_evidence_integrity_v4",
-        "closy-forge/scripts/generate_d0_evidence_integrity_v4.py"
+        "closy-forge/scripts/generate_d0_evidence_integrity_v4.py",
+        "closy-forge/fixtures/d0_core_runtime_c3_v4",
+        "closy-forge/src/closy_forge/core_runtime_c3_v4",
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No summary flag, supplemental execution, or cross-candidate package may repair the failed exact-candidate result.",
-      "nextAction": "Run strict C3 only on a newly frozen exact candidate lineage.",
+      "limitations": "No held-out C3 pass, PHY1 implication, trajectory qualification, or Z2 admission follows from Unit H.",
+      "nextAction": "Do not replay Unit H; requalification is required only for a newly minted admissible Unit I lineage in Unit J.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Historical scoped C3 is preserved, while matrix v3 keeps strict exact-candidate C3 failed and independently identity-bound.",
+      "summary": "Core runtime reconstruction is reproducible, but strict exact-sentinel C3 remains failed after its one frozen held-out attempt stopped on a frame-metric key mismatch.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/golden/test_golden_demo.py",
@@ -4825,7 +4901,8 @@
         "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
         "closy-forge/tests/unit/test_exact_raster_identity.py",
-        "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py"
+        "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py",
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
       ]
     },
     {
@@ -4848,7 +4925,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4913,7 +4991,8 @@
         "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0",
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5762,7 +5841,8 @@
         "5a01ed40656c3f2924169f2c3e8f4d702f572cc5",
         "1038cbc9125461a8b80587b56e083191296861ec",
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        "3541507808946ae1248fba110b7732599db3fdbc"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5771,7 +5851,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Image-conditioned cohort fitting, cohort appearance, strict C3, and admissible physics remain unpassed.",
+          "limitations": "Research Prototype remains partial; identity-disjoint fitting, appearance, strict C3, neutral physics, human, private-user, and device evidence are unpassed.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5820,7 +5900,13 @@
         "8 development identities and 16 seed-authority-derived evaluator commitments",
         "64 predictions executed with application-process deny-by-default input isolation",
         "all target commitments validated only after prediction freeze",
-        "frozen evaluator failed before worker dispatch with zero compile/appearance counts"
+        "frozen evaluator failed before worker dispatch with zero compile/appearance counts",
+        "H0 sentinel resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "core runtime fresh, second-clean, cache, corruption, withdrawal, and delete/rebuild checks pass",
+        "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
+        "one strict C3 held-out attempt consumed and failed before any of eight states completed",
+        "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -5858,18 +5944,21 @@
         "closy-forge/scripts/generate_d0_texture_rerender_v3_prediction.py",
         "closy-forge/scripts/evaluate_d0_texture_rerender_v3_known_target.py",
         "closy-forge/src/closy_forge/disjoint_benchmark_v1",
-        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1"
+        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1",
+        "closy-forge/fixtures/d0_core_runtime_c3_v4",
+        "closy-forge/src/closy_forge/core_runtime_c3_v4",
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Image-conditioned cohort fitting, cohort appearance, strict C3, and admissible physics remain unpassed.",
-      "nextAction": "Execute predecessor-scoped Unit H reproducibility and strict C3 harness.",
+      "limitations": "Research Prototype remains partial; identity-disjoint fitting, appearance, strict C3, neutral physics, human, private-user, and device evidence are unpassed.",
+      "nextAction": "Spend only Unit I's one topology-strategy-2 attempt under its frozen budget.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Research Prototype remains partial after the identity-disjoint benchmark failed before evaluator worker dispatch; Unit F known-target evidence remains separately scoped.",
+      "summary": "Unit H closes D0-RP-12 with predecessor-scoped core Forge reproducibility while D0-RP-08 remains failed and D0-RP-10/11 remain not run.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -5888,7 +5977,8 @@
         "closy-forge/tests/unit/test_exact_raster_identity.py",
         "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py",
         "closy-forge/tests/unit/test_d0_texture_rerender_correction_v3.py",
-        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py"
+        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py",
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
       ]
     },
     {
@@ -6137,5 +6227,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.d0_disjoint_tshirt_benchmark_v1.v13"
+  "version": "closy.blueprint_coverage.d0_core_runtime_c3_v4.v14"
 }

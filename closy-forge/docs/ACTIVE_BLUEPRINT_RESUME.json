@@ -1,8 +1,8 @@
 {
-  "activeLane": "D0 identity-disjoint T-shirt benchmark v1",
-  "branch": "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
-  "evidenceHead": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-  "exactNextAction": "After Unit G exact-head CI, create codex/closy-forge-d0-core-runtime-c3-v4 from the final Unit G head and execute predecessor-scoped core reproducibility, supplemental Z1 and MT1 when available, and the independently-oracled strict C3 harness.",
+  "activeLane": "D0 core runtime reproducibility and strict C3 v4",
+  "branch": "codex/closy-forge-d0-core-runtime-c3-v4",
+  "evidenceHead": "3541507808946ae1248fba110b7732599db3fdbc",
+  "exactNextAction": "After Unit H exact-head CI, create codex/closy-forge-phy1-topology-strategy2-v1 from the final Unit H head and execute the single pre-frozen Unit I topology strategy, followed by Unit J only for an admissible candidate or logical J-A otherwise.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "C3-Binding-D0-v1": "historical_scoped_pass_preserved",
@@ -15,18 +15,22 @@
     "ResearchPrototype-D0-matrix-v3-core": "partial_6_pass_5_fail_0_not_run",
     "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
     "D0-DisjointTshirt-v1": "benchmark_failed_fixed_inventory_unfinished",
+    "D0-Core-Reproducibility-H1": "pass_predecessor_sentinel_scoped",
+    "D0-Strict-C3-H4": "fail_frozen_evaluator_adapter_0_of_8",
+    "D0-Exact-Z1-H2": "not_run_dependency_blocked",
+    "D0-Exact-MT1-H3": "not_run_dependency_blocked",
     "TextureRerender-KnownTarget-v3": "known_target_regression_pass_not_qualification",
     "RuntimeCandidate-v2": "validated_research_only_product_runtime_v1_unchanged",
     "Z1": "candidate_default_family_scoped_pass_global_partial",
     "Z2": "failed_not_admitted_no_new_run"
   },
-  "localHeadAtResumeSource": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-  "machineResumeVersion": "closy.active_blueprint_resume.d0_disjoint_tshirt_benchmark_v1.v4",
+  "localHeadAtResumeSource": "3541507808946ae1248fba110b7732599db3fdbc",
+  "machineResumeVersion": "closy.active_blueprint_resume.d0_core_runtime_c3_v4.v5",
   "mergeAuthorised": false,
   "parent": {
-    "branch": "codex/closy-forge-d0-texture-rerender-correction-v3",
-    "pullRequest": 45,
-    "sha": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87"
+    "branch": "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
+    "pullRequest": 46,
+    "sha": "069707bbd0bfc95eabbc5a3b3045e349d4c0b121"
   },
   "pendingCIAtEvidenceHead": true,
   "physicalResult": {
@@ -44,7 +48,7 @@
     "ccdExecuted": false,
     "z2Executed": false
   },
-  "pullRequest": 46,
+  "pullRequest": 47,
   "remainingBudgets": {
     "seamModels": 0,
     "topologyStrategies": 2
@@ -73,7 +77,7 @@
   },
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "unit_g_fixed_inventory_evaluator_harness_failure_pending_exact_head_attestation",
+  "stopReason": "unit_h_mixed_outcomes_pending_exact_head_attestation_and_unit_i",
   "appearanceResult": {
     "atlasGeneratedControlledFillFraction": 0.447538306,
     "atlasSourceObservedFraction": 0.552461694,
@@ -101,5 +105,18 @@
     "d0Rp04Promoted": false,
     "d0Rp06Promoted": false,
     "d0Rp07Promoted": false
+  },
+  "unitHResult": {
+    "sentinelManifestDigest": "4aa21093529adfd3dc05666947b02ae6cae0d13363a76ba55d1d05e97ba3b42e",
+    "candidatePackageDigest": "c338762915d390a22e879f588e0f01a4b6ed586b9ff045eb0a039888ace8223b",
+    "runtimePackageDigest": "5a856b425b3a7e2139f774d1a2c2b9f7392a8b4bafb9e7418c51308c132b378e",
+    "coreReproducibility": "pass_predecessor_scoped",
+    "staticZ1": "not_run_dependency_blocked",
+    "mt1": "not_run_dependency_blocked",
+    "strictC3": "fail_frozen_evaluator_frame_metric_key_mismatch",
+    "heldOutAttemptsConsumed": 1,
+    "heldOutStatesCompleted": 0,
+    "runtimeV1RemainsSelected": true,
+    "unitITopologyChangeRequiresUnitJRerun": true
   }
 }

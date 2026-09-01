@@ -363,3 +363,28 @@ files. Their content hashes, deterministic generators, compact source/target rec
 prediction inventory, target reveal, isolation report, and failure/result manifests remain committed.
 Runtime v1 stays selected, no physics ran, no seam/topology budget changed, and no private-user,
 real-photo, human-review, or production claim is made. Unit H is the next independent lane.
+
+## D0 Core Runtime Reproducibility and Strict C3 v4
+
+Review Unit H resolves sentinel `4aa21093529adfd3dc05666947b02ae6cae0d13363a76ba55d1d05e97ba3b42e`
+to the final Unit F known-target candidate only after reopening its canonical package and proving the
+required pattern, seam, simulation/render topology, and binding bytes descend unchanged from PR #43.
+No Unit G cohort identity is eligible. Candidate package digest
+`c338762915d390a22e879f588e0f01a4b6ed586b9ff045eb0a039888ace8223b` and runtime digest
+`5a856b425b3a7e2139f774d1a2c2b9f7392a8b4bafb9e7418c51308c132b378e` are exact.
+
+Core Forge reproducibility passes two clean builds, cache miss/hit, corruption detection and
+invalidation, source withdrawal, and delete/rebuild. This closes D0-RP-12 only for the predecessor
+sentinel; a Unit I topology identity change requires Unit J to rerun it. Exact static Z1 and clean
+MT1 remain not run because the authenticated executable hashes are unavailable. Historical sibling
+results are not substituted.
+
+The independently hashed direct-shell oracle and candidate deformation routes were frozen with eight
+held-out states, numeric thresholds, one strategy, and one attempt. A pre-execution H1 classifier bug
+was preserved and repaired before any held-out state mounted, producing final protocol digest
+`ce8d42e9449646dba93b18ab3efbd3bec98c806f3806065c8268d0c3cca942f5`. The sole H4 attempt then
+entered `neutral` and failed before any state completed: the frozen evaluator requested
+`maximumNormalLengthError`, while the frame API exposes `maxNormalLengthError`. The attempt is
+consumed, no patch or replay is allowed, and D0-RP-08 remains failed. No C3, physical-cloth, PHY1,
+Z2, provider, or production-animation success is inferred. Runtime v1 remains selected; Unit I is
+the next bounded lane.

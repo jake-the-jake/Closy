@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.d0_disjoint_tshirt_benchmark_v1.v13",
+    "coverageVersion": "closy.blueprint_coverage.d0_core_runtime_c3_v4.v14",
     "total": 101
   },
-  "evidenceAnchorSha": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+  "evidenceAnchorSha": "3541507808946ae1248fba110b7732599db3fdbc",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -898,7 +898,7 @@
     "committedSourceAnchorExceptions": [
       10
     ],
-    "crossRepositoryNodeCount": 48,
+    "crossRepositoryNodeCount": 49,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -956,24 +956,32 @@
         "pullRequest": 45,
         "result": "pass",
         "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33464425080"
-      }
-    ],
-    "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
-    "latestPullRequest": 46,
-    "pendingExternalExactHeadAttestations": [
+      },
       {
         "authority": "github_workflow_api_and_draft_pr_body",
         "committedSourceAnchorSha": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-        "publishedHeadSha": null,
+        "publishedHeadSha": "069707bbd0bfc95eabbc5a3b3045e349d4c0b121",
         "pullRequest": 46,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33470303559"
+      }
+    ],
+    "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
+    "latestPullRequest": 47,
+    "pendingExternalExactHeadAttestations": [
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "3541507808946ae1248fba110b7732599db3fdbc",
+        "publishedHeadSha": null,
+        "pullRequest": 47,
         "result": "pending_publication_exact_head_ci",
         "workflowRunUrl": null
       }
     ],
-    "pullRequestCount": 46,
+    "pullRequestCount": 47,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v12",
+  "statusModelVersion": "closy.blueprint_status_model.v13",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
