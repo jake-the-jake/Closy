@@ -5,6 +5,7 @@ from pathlib import Path
 from closy_forge.core_runtime_c3_v4.candidate_deformation import deform_simulation_representation
 from closy_forge.core_runtime_c3_v4.oracle import deform_dense_shell_directly
 from closy_forge.core_runtime_c3_v4.protocol import HELD_OUT_STATES, build_protocol_lock
+from closy_forge.core_runtime_c3_v4.reproducibility import evaluate_core_reproducibility
 from closy_forge.core_runtime_c3_v4.sentinel import build_sentinel
 from closy_forge.geometry.glb_io import read_glb_meshset
 from closy_forge.package_io.canonical_json import read_json
@@ -44,3 +45,10 @@ def test_candidate_and_oracle_are_separate_and_nonrigid() -> None:
     assert oracle.vertex_count == dense.vertex_count
     assert candidate.meshes[0].vertices != sim.meshes[0].vertices
     assert oracle.meshes[0].vertices != dense.meshes[0].vertices
+
+
+def test_h1_core_reproducibility_exercises_withdrawal_and_rebuild() -> None:
+    result = evaluate_core_reproducibility(ROOT, build_sentinel(ROOT))
+    assert result["resultStatus"] == "pass"
+    assert result["checks"]["sourceWithdrawalFailsClosed"] is True
+    assert result["checks"]["cacheCorruptionDetected"] is True

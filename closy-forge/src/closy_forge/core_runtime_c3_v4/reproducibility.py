@@ -53,8 +53,8 @@ def evaluate_core_reproducibility(root: Path, sentinel: dict[str, Any]) -> dict[
         withdrawal_detected = False
         try:
             _build(work / "withdrawn.closyruntime", isolated_source, source_manifest)
-        except FileNotFoundError:
-            withdrawal_detected = True
+        except RuntimePackageError as error:
+            withdrawal_detected = error.code == "runtime_source_file_missing"
         delete_target = _build(
             work / "delete-rebuild.closyruntime", fallback_source, source_manifest
         )
