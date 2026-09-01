@@ -112,7 +112,7 @@
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
     "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v17",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "e8be867cda84311cf7da06b879d9640b6c3dd489d7e809bc237f7bbc3bae8321",
+    "sourceTreeHash": "89f992d901d689e940300c0820a4a0be6d77dc9f507548fe0f35ddcd1f72c91b",
     "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,
@@ -1836,7 +1836,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. Three accumulated impulse totals drifted by one ULP across the Forge matrix, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
+          "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. A local witness found three one-ULP impulse-total differences and Linux had additional numeric drift, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -1871,7 +1871,8 @@
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
         "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
-        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
+        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift"
       ],
       "id": "BP-08-K-CLOTH-SIMULATION",
       "implementationPaths": [
@@ -1888,7 +1889,7 @@
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. Three accumulated impulse totals drifted by one ULP across the Forge matrix, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
+      "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. A local witness found three one-ULP impulse-total differences and Linux had additional numeric drift, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
       "nextAction": "Keep Unit P ineligible. A future authorised programme must begin with a new candidate-independent class; the final Strategy 3 slot remains unspent.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
@@ -3279,7 +3280,8 @@
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
         "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
-        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
+        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -4086,7 +4088,8 @@
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
         "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
-        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
+        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
@@ -6164,7 +6167,8 @@
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
         "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
-        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
+        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [

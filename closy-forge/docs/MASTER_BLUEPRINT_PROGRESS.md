@@ -470,8 +470,9 @@ canonical T-shirt or creating a candidate.
 Local longest-edge bisection passed `7/8` fixtures but introduced one T-junction and omitted the
 updated semantic seam sequence. Closure longest-edge bisection also passed `7/8`; it removed the
 topology defect but still omitted the semantic seam sequence. Exact-head Forge run `33559874476`
-then found that three accumulated impulse totals differ by one ULP across the Python/platform
-matrix, changing the revision digests. The effective literal outcome is
+then found that the committed revision bytes do not regenerate across the Python/platform matrix.
+A local Python 3.11 witness identified three one-ULP impulse-total differences, while Linux exposed
+additional numeric drift. The effective literal outcome is
 `diagnosis_integrity_error`; the raw files remain preserved and no replay occurred. Unit P is
 ineligible, so Units P, Q, and R were not created. The final topology strategy and candidate
 attempt remain unspent.

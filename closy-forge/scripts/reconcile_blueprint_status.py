@@ -1890,7 +1890,8 @@ UNIT_O_TOPOLOGY_PROGRESSION_UPDATES = {
         "limitations": (
             "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; "
             "revision 2 removed the topology defect but still omitted that semantic transfer. "
-            "Three accumulated impulse totals drifted by one ULP across the Forge matrix, so "
+            "A local witness found three one-ULP impulse-total differences and Linux had "
+            "additional numeric drift, so "
             "the effective Unit O outcome is diagnosis_integrity_error. No canonical garment "
             "candidate or physical solve was created."
         ),
@@ -1959,7 +1960,8 @@ UNIT_O_TOPOLOGY_EVIDENCE_ADDITIONS = {
             "development fixtures",
             "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
             "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
-            "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
+            "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and "
+            "Linux exposed additional numeric drift",
             "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation "
             "instance was consumed",
         ],
@@ -2662,10 +2664,11 @@ def _write_active_resume(docs: Path) -> None:
 ## Literal Unit O outcome
 
 Unit O executed exactly two candidate-independent development revisions. The preserved raw results
-were `7/8` for each revision and admitted no class. Exact-head Forge then found one-ULP drift at
-three accumulated impulse-total pointers across Python/platform combinations, changing revision
-digests. Effective literal outcome: `{effective_outcome}`. The raw result was not replayed or
-rewritten. No class was admitted in the preserved raw execution.
+were `7/8` for each revision and admitted no class. Exact-head Forge then failed to regenerate the
+revision bytes across Python/platform combinations. A local Python 3.11 witness found three
+one-ULP impulse-total differences, while Linux contained additional numeric drift. Effective
+literal outcome: `{effective_outcome}`. The raw result was not replayed or rewritten.
+No class was admitted in the preserved raw execution.
 
 No canonical garment candidate was created. The candidate attempt and final topology strategy are
 both unspent. The separately frozen Unit P confirmation generator has no seed or instances. Units
@@ -2952,8 +2955,9 @@ canonical T-shirt or creating a candidate.
 Local longest-edge bisection passed `7/8` fixtures but introduced one T-junction and omitted the
 updated semantic seam sequence. Closure longest-edge bisection also passed `7/8`; it removed the
 topology defect but still omitted the semantic seam sequence. Exact-head Forge run `33559874476`
-then found that three accumulated impulse totals differ by one ULP across the Python/platform
-matrix, changing the revision digests. The effective literal outcome is
+then found that the committed revision bytes do not regenerate across the Python/platform matrix.
+A local Python 3.11 witness identified three one-ULP impulse-total differences, while Linux exposed
+additional numeric drift. The effective literal outcome is
 `diagnosis_integrity_error`; the raw files remain preserved and no replay occurred. Unit P is
 ineligible, so Units P, Q, and R were not created. The final topology strategy and candidate
 attempt remain unspent.

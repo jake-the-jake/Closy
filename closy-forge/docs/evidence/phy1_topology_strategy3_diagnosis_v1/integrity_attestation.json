@@ -11,7 +11,7 @@
   "effectiveOutcome": "diagnosis_integrity_error",
   "failureClassification": "evidence_integrity_failure",
   "firstUnmetPredicate": "exact_cross_python_and_cross_platform_regeneration",
-  "reason": "Three accumulated binary64 impulse totals differ by one ULP across the locked Forge Python/platform matrix, changing both revision fixture digests and preventing exact committed evidence regeneration.",
+  "reason": "The locked Forge Python/platform matrix cannot regenerate the committed revision bytes. A local Python 3.11 witness identified three one-ULP accumulated impulse-total differences, while Linux regeneration also contains platform-dependent numeric drift. Derived fixture and revision digests therefore differ.",
   "discovery": {
     "workflow": "Closy Forge",
     "runId": "33559874476",
@@ -33,7 +33,10 @@
     "failedTest": "test_unit_o_committed_outcome_is_exactly_regenerable_when_present",
     "failureCode": "unit_o_diagnosis_regeneration_drift:docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_1.json"
   },
-  "pointerSpecificDrift": {
+  "localPython311Witness": {
+    "platform": "windows",
+    "comparisonRuntime": "CPython 3.11",
+    "committedEvidenceRuntime": "CPython 3.12",
     "maximumUlps": 1,
     "globalFloatToleranceAllowed": false,
     "pointers": [
@@ -50,6 +53,21 @@
     "acceptanceThresholdChanged": false,
     "canonicalEvidenceRewritten": false
   },
+  "verificationAttempts": [
+    {
+      "runId": "33559874476",
+      "headSha": "83d5b2a263cf34670370d2c187fe26c0e204475d",
+      "classification": "evidence_integrity_failure",
+      "result": "exact_regeneration_failed_on_three_matrix_jobs"
+    },
+    {
+      "runId": "33567025853",
+      "headSha": "90c9e69e2ebe214b600eb9c0884b68e01a45f59e",
+      "classification": "software_verifier_defect",
+      "result": "pointer_whitelist_derived_from_local_witness_rejected_additional_linux_numeric_drift",
+      "scientificReplayPerformed": false
+    }
+  ],
   "preservedRawEvidence": [
     {
       "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_1.json",
@@ -101,6 +119,6 @@
     "candidateAttempts": 1
   },
   "integrity": {
-    "attestationDigest": "71c4171d8219fa7ce343efab85f9cfade8f3b85e4aed372cc38d1e4265f7aca3"
+    "attestationDigest": "f1522a1f0040a3e4345dbdc30371b32d837ecdfb27f72849869533e3a40a0e7c"
   }
 }

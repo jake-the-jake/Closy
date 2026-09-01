@@ -12,10 +12,11 @@
 ## Literal Unit O outcome
 
 Unit O executed exactly two candidate-independent development revisions. The preserved raw results
-were `7/8` for each revision and admitted no class. Exact-head Forge then found one-ULP drift at
-three accumulated impulse-total pointers across Python/platform combinations, changing revision
-digests. Effective literal outcome: `diagnosis_integrity_error`. The raw result was not replayed or
-rewritten. No class was admitted in the preserved raw execution.
+were `7/8` for each revision and admitted no class. Exact-head Forge then failed to regenerate the
+revision bytes across Python/platform combinations. A local Python 3.11 witness found three
+one-ULP impulse-total differences, while Linux contained additional numeric drift. Effective
+literal outcome: `diagnosis_integrity_error`. The raw result was not replayed or rewritten.
+No class was admitted in the preserved raw execution.
 
 No canonical garment candidate was created. The candidate attempt and final topology strategy are
 both unspent. The separately frozen Unit P confirmation generator has no seed or instances. Units
