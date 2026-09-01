@@ -7,3 +7,5 @@ closy-forge/src/closy_forge/disjoint_benchmark_v1/*.py text eol=lf
 closy-forge/scripts/*d0_disjoint_benchmark_v1*.py text eol=lf
 closy-forge/src/closy_forge/core_runtime_c3_v4/*.py text eol=lf
 closy-forge/scripts/*d0_core_runtime_c3_v4*.py text eol=lf
+closy-forge/src/closy_forge/phy1_topology_strategy2_v4/*.py text eol=lf
+closy-forge/scripts/*phy1_topology_strategy2_v4*.py text eol=lf
