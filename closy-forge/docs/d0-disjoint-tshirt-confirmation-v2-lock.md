@@ -15,6 +15,11 @@ literally rather than being removed. This proves harness behavior only and close
 Prototype row.
 
 The official authority is a one-shot pull-request workflow at the exact implementation-lock head.
+One replacement workflow run is permitted only after a recorded pre-draw infrastructure failure
+with no seed, commitment, prediction, reveal, or published artifact. Authority run `33530331133`
+failed in the platform-sensitive lock-regeneration check before the authority script executed;
+job `99931572124` published zero artifacts. The replacement validates the committed protocol and
+its complete implementation hash inventory directly.
 It creates a random 256-bit seed in the trusted job, generates truth and source observations
 together, keeps targets unmounted while all 64 predictions run in Docker with a read-only allowlist
 and `--network none`, freezes predictions, then reveals and evaluates the existing targets. The

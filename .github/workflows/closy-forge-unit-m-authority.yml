@@ -28,10 +28,17 @@ jobs:
         shell: bash
         run: |
           test "$GITHUB_RUN_ATTEMPT" = "1"
-          prior_count="$(gh api \
+          prior_runs="$(gh api \
             "repos/${GITHUB_REPOSITORY}/actions/workflows/closy-forge-unit-m-authority.yml/runs?branch=${GITHUB_HEAD_REF}&event=pull_request&per_page=100" \
-            --jq "[.workflow_runs[] | select(.id != ${GITHUB_RUN_ID})] | length")"
-          test "$prior_count" = "0"
+            --jq ".workflow_runs[] | select(.id != ${GITHUB_RUN_ID}) | [.id, .conclusion] | @tsv")"
+          prior_count=0
+          while IFS=$'\t' read -r prior_id prior_conclusion; do
+            test -n "$prior_id" || continue
+            prior_count=$((prior_count + 1))
+            test "$prior_conclusion" = "failure"
+            test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${prior_id}/artifacts" --jq '.total_count')" = "0"
+          done <<< "$prior_runs"
+          test "$prior_count" -le "1"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -49,7 +56,25 @@ jobs:
         shell: bash
         run: |
           test "$(git rev-parse HEAD)" = "$LOCK_SHA"
-          python scripts/build_d0_disjoint_confirmation_v2_lock.py --check
+          python - <<'PY'
+          from pathlib import Path
+
+          from closy_forge.disjoint_confirmation_v2.protocol import (
+              load_protocol,
+              validate_implementation,
+          )
+          from closy_forge.package_io.hashing import sha256_file
+
+          root = Path.cwd()
+          protocol = load_protocol(root)
+          issues = validate_implementation(root, protocol)
+          if issues:
+              raise SystemExit(";".join(issues))
+          expected = protocol["seedAuthorityLifecycle"]["initialWorkflowSha256"]
+          actual = sha256_file(root.parent / ".github/workflows/closy-forge-unit-m-authority.yml")
+          if actual != expected:
+              raise SystemExit("confirmation_v2_initial_authority_workflow_hash_mismatch")
+          PY
           job_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" \
             --jq '.jobs[] | select(.name == "Unit M untouched cohort authority") | .id')"
           test -n "$job_id"

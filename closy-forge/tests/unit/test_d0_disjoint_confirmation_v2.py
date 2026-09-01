@@ -105,6 +105,23 @@ def test_authority_workflow_is_one_shot_and_exact_head() -> None:
     ).read_text(encoding="utf-8")
 
 
+def test_predraw_failure_allows_only_the_recorded_artifact_free_replacement() -> None:
+    lifecycle = _mapping(ROOT / FIXTURE_ROOT / "authority_lifecycle.json")
+    events = lifecycle["events"]
+    assert isinstance(events, list) and len(events) == 1
+    event = events[0]
+    assert isinstance(event, dict)
+    assert event["runId"] == "33530331133"
+    assert event["jobId"] == "99931572124"
+    assert event["classification"] == "failed_before_seed_or_commitment"
+    assert event["seedOrCommitmentCreated"] is False
+    assert event["publishedAttempt"] is False
+    assert event["artifactCount"] == 0
+    assert lifecycle["acceptedAttemptCount"] == 0
+    assert lifecycle["maximumReplacementRunsAfterPreDrawInfrastructureFailure"] == 1
+    assert lifecycle["nextAuthorityRunPermitted"] is True
+
+
 def test_aggregate_rejects_incomplete_denominators() -> None:
     protocol = load_protocol(ROOT)
     with pytest.raises(ValueError, match="confirmation_v2_record_list_required"):
