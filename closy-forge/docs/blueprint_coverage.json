@@ -97,12 +97,16 @@
       "closy-forge/docs/evidence/d0_recovery_foundation_v1/publication_truth.json",
       "closy-forge/docs/evidence/d0_recovery_foundation_v1/result_semantics.json",
       "closy-forge/docs/evidence/d0_recovery_foundation_v1/physical_budget_authority.json",
-      "closy-forge/docs/evidence/d0_recovery_foundation_v1/unit_l_outcome.json"
+      "closy-forge/docs/evidence/d0_recovery_foundation_v1/unit_l_outcome.json",
+      "closy-forge/fixtures/d0_strict_c3_confirmation_v5/protocol_lock.json",
+      "closy-forge/fixtures/d0_strict_c3_confirmation_v5/authority_lifecycle.json",
+      "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5/strict_c3_result.json",
+      "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5/outcome_report.json"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.d0_disjoint_confirmation_v2.v14",
+    "generatorVersion": "closy.blueprint_reconciliation.d0_strict_c3_confirmation_v5.v15",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "6f25d9cce3f9702106dca624053929be4d1e81363040a43ee65f1bce55ed6cbb",
+    "sourceTreeHash": "1ed5a21d082e4adf5c525a4fc05dd9dfbd97294a8bdc0401efd77cd3c675aaad",
     "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,
@@ -859,7 +863,8 @@
         "0e743bb",
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "9078a09f1156ba8b7f98099185478ca9efcee952"
+        "9078a09f1156ba8b7f98099185478ca9efcee952",
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
       ],
       "dependencies": [
         "BP-47-INSPECTION-ARTIFACTS",
@@ -871,7 +876,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No held-out frame validity or dense/fallback C3 pass exists; the one-attempt budget is consumed and no retry or post-result key repair is permitted.",
+          "limitations": "The pass is exact-Unit-F, synthetic, and pre-topology; it is not physical-cloth, trajectory, real-world deformation, or post-topology evidence.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -893,7 +898,12 @@
         "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
         "one strict C3 held-out attempt consumed and failed before any of eight states completed",
         "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
-        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed",
+        "authority run 33546821637 job 99986277154 committed exactly eight fresh poses",
+        "8/8 strict C3 states passed on exact Unit F sentinel",
+        "maximum binding reconstruction error 6.71791165111579e-08 m",
+        "semantic seam crack/sliding and inverted triangles remained zero",
+        "two fresh-process repeats and negative mutation controls passed"
       ],
       "id": "BP-48-PERSISTED-FRAMES-TANGENTS",
       "implementationPaths": [
@@ -905,24 +915,28 @@
         "closy-forge/schemas/v1/render-frame-pose-suite.schema.json",
         "closy-forge/fixtures/d0_core_runtime_c3_v4",
         "closy-forge/src/closy_forge/core_runtime_c3_v4",
-        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
+        "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
+        "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No held-out frame validity or dense/fallback C3 pass exists; the one-attempt budget is consumed and no retry or post-result key repair is permitted.",
-      "nextAction": "Preserve the failed predecessor attempt and continue the separately bounded Unit I topology strategy without claiming C3 success.",
+      "limitations": "The pass is exact-Unit-F, synthetic, and pre-topology; it is not physical-cloth, trajectory, real-world deformation, or post-topology evidence.",
+      "nextAction": "Run candidate-independent Unit O topology diagnosis without reusing poses.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 10 persisted render normals/tangents and pose-suite evidence",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit H froze an independently implemented direct-shell oracle and eight-state non-physical C3 suite, but the sole held-out attempt failed in the frozen frame-metric reporting adapter before any state completed.",
+      "summary": "Unit N preserved H4 at consumed 0/8, then the sole fresh v5 authority passed all eight untouched synthetic pose classes with corrected frame and seam metrics.",
       "tests": [
         "tests/unit/test_render_frame_pose_suite.py",
         "tests/unit/test_schema_freshness.py",
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
-        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py",
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
       ]
     },
     {
@@ -2239,7 +2253,8 @@
         "13604d169ecbc0fddf475cdf177e743790c836a2",
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "9078a09f1156ba8b7f98099185478ca9efcee952"
+        "9078a09f1156ba8b7f98099185478ca9efcee952",
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2248,7 +2263,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Development-state reconstruction below 6.7e-8 m is not held-out qualification, and the failed harness yields D0-RP-08 fail rather than partial metric credit.",
+          "limitations": "D0-RP-08 closes only for this frozen pre-topology sentinel; any topology or binding change requires a new untouched confirmation.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -2267,7 +2282,12 @@
         "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
         "one strict C3 held-out attempt consumed and failed before any of eight states completed",
         "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
-        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed",
+        "authority run 33546821637 job 99986277154 committed exactly eight fresh poses",
+        "8/8 strict C3 states passed on exact Unit F sentinel",
+        "maximum binding reconstruction error 6.71791165111579e-08 m",
+        "semantic seam crack/sliding and inverted triangles remained zero",
+        "two fresh-process repeats and negative mutation controls passed"
       ],
       "id": "BP-08-R-SIM-TO-RENDER-BINDING",
       "implementationPaths": [
@@ -2280,23 +2300,27 @@
         "closy-forge/src/closy_forge/validation/validator.py",
         "closy-forge/fixtures/d0_core_runtime_c3_v4",
         "closy-forge/src/closy_forge/core_runtime_c3_v4",
-        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
+        "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
+        "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Development-state reconstruction below 6.7e-8 m is not held-out qualification, and the failed harness yields D0-RP-08 fail rather than partial metric credit.",
-      "nextAction": "Any admissible post-topology Unit I candidate must be requalified from bytes in Unit J; predecessor H evidence cannot transfer.",
+      "limitations": "D0-RP-08 closes only for this frozen pre-topology sentinel; any topology or binding change requires a new untouched confirmation.",
+      "nextAction": "Preserve this pass while Unit O diagnoses a distinct topology class.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The exact Unit F sentinel, package, simulation/render topology, and binding are locked under H0; H4 consumed one strict held-out attempt and failed in its frozen frame-metric adapter.",
+      "summary": "The exact Unit F binding passed strict C3 v5 on 8/8 fresh committed states with maximum reconstruction error 6.71791165111579e-08 m and zero seam error.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/unit/test_render_frame_pose_suite.py",
         "tests/golden/test_golden_demo.py",
-        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py",
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
       ]
     },
     {
@@ -3161,7 +3185,8 @@
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "9078a09f1156ba8b7f98099185478ca9efcee952"
+        "9078a09f1156ba8b7f98099185478ca9efcee952",
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3170,7 +3195,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No target reveal, aggregate, bootstrap, route promotion, or qualifying row result exists; all four scoped rows retain literal fail states.",
+          "limitations": "Identity-disjoint reconstruction and appearance still fail; exact Z1/MT1 remain not_run/dependency_blocked.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3227,7 +3252,12 @@
         "canonical-LF source lock with 26 implementation files",
         "16 accepted fresh identities and commitment creation before boundary failure",
         "0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations retained",
-        "authority run 33532344652 sealed attempted_integrity_error without retry"
+        "authority run 33532344652 sealed attempted_integrity_error without retry",
+        "authority run 33546821637 job 99986277154 committed exactly eight fresh poses",
+        "8/8 strict C3 states passed on exact Unit F sentinel",
+        "maximum binding reconstruction error 6.71791165111579e-08 m",
+        "semantic seam crack/sliding and inverted triangles remained zero",
+        "two fresh-process repeats and negative mutation controls passed"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -3276,18 +3306,21 @@
         "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/disjoint_confirmation_v2",
         "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2",
-        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md"
+        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md",
+        "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
+        "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No target reveal, aggregate, bootstrap, route promotion, or qualifying row result exists; all four scoped rows retain literal fail states.",
-      "nextAction": "Run independent Unit N strict C3 confirmation under its fallback rule.",
+      "limitations": "Identity-disjoint reconstruction and appearance still fail; exact Z1/MT1 remain not_run/dependency_blocked.",
+      "nextAction": "Continue to Unit O; do not infer physical accuracy from C3.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit M records an attempted-integrity-error after first accepted draw: 16 accepted identities, 0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations.",
+      "summary": "Unit N records a literal strict-C3 pass: 8/8 fresh poses, semantic seam metrics, two fresh-process repeats, mutation controls, and bounded resources all passed.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -3314,7 +3347,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
-        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
+        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py",
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
       ]
     },
     {
@@ -4941,7 +4975,8 @@
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "9078a09f1156ba8b7f98099185478ca9efcee952"
+        "9078a09f1156ba8b7f98099185478ca9efcee952",
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4950,7 +4985,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Unit H evidence cannot transfer to a changed topology, and Unit I produced no changed topology. Post-topology strict and trajectory C3 are dependency-blocked, not passed.",
+          "limitations": "This is pre-topology synthetic binding reconstruction and cannot transfer to a future Strategy-3 candidate.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5000,7 +5035,12 @@
         "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
         "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
         "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
-        "logical J-A forbids Unit J and K because no post-topology candidate exists"
+        "logical J-A forbids Unit J and K because no post-topology candidate exists",
+        "authority run 33546821637 job 99986277154 committed exactly eight fresh poses",
+        "8/8 strict C3 states passed on exact Unit F sentinel",
+        "maximum binding reconstruction error 6.71791165111579e-08 m",
+        "semantic seam crack/sliding and inverted triangles remained zero",
+        "two fresh-process repeats and negative mutation controls passed"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -5029,18 +5069,21 @@
         "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
         "closy-forge/fixtures/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
-        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
+        "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Unit H evidence cannot transfer to a changed topology, and Unit I produced no changed topology. Post-topology strict and trajectory C3 are dependency-blocked, not passed.",
-      "nextAction": "Do not create a report-only Unit J branch without an admissible candidate.",
+      "limitations": "This is pre-topology synthetic binding reconstruction and cannot transfer to a future Strategy-3 candidate.",
+      "nextAction": "Require a new strict C3 attempt if Unit P changes topology.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Predecessor strict C3 remains failed; logical J-A correctly records that no new post-topology candidate exists to requalify.",
+      "summary": "Strict C3 v5 passes 8/8 for the exact Unit F sentinel after one externally committed fresh confirmation; D0-RP-08 is pass in that scope.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/golden/test_golden_demo.py",
@@ -5054,7 +5097,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
       ]
     },
     {
@@ -6000,7 +6044,8 @@
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "9078a09f1156ba8b7f98099185478ca9efcee952"
+        "9078a09f1156ba8b7f98099185478ca9efcee952",
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -6009,7 +6054,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Identity-disjoint fitting, isolation qualification, reference-3D fidelity, appearance, strict C3, and admissible physics remain unpassed.",
+          "limitations": "D0-RP-03/04/06/07 and D0-RP-15 remain blockers; no coherent identity-disjoint, physical, private-user, device, or production qualification exists.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -6072,7 +6117,12 @@
         "canonical-LF source lock with 26 implementation files",
         "16 accepted fresh identities and commitment creation before boundary failure",
         "0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations retained",
-        "authority run 33532344652 sealed attempted_integrity_error without retry"
+        "authority run 33532344652 sealed attempted_integrity_error without retry",
+        "authority run 33546821637 job 99986277154 committed exactly eight fresh poses",
+        "8/8 strict C3 states passed on exact Unit F sentinel",
+        "maximum binding reconstruction error 6.71791165111579e-08 m",
+        "semantic seam crack/sliding and inverted triangles remained zero",
+        "two fresh-process repeats and negative mutation controls passed"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -6119,18 +6169,21 @@
         "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/disjoint_confirmation_v2",
         "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2",
-        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md"
+        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md",
+        "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
+        "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Identity-disjoint fitting, isolation qualification, reference-3D fidelity, appearance, strict C3, and admissible physics remain unpassed.",
-      "nextAction": "Continue Unit N; do not promote any Unit M row or route.",
+      "limitations": "D0-RP-03/04/06/07 and D0-RP-15 remain blockers; no coherent identity-disjoint, physical, private-user, device, or production qualification exists.",
+      "nextAction": "Execute bounded candidate-independent Unit O diagnosis.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Research Prototype remains partial after Unit M's immutable identity-disjoint authority attempt ended in an isolation-harness integrity failure.",
+      "summary": "With Unit N, the scoped Research Prototype core matrix is 7 pass, 4 fail, 0 not-run; supplemental remains 2 pass, 0 fail, 2 not-run.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -6155,7 +6208,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
-        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
+        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py",
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
       ]
     },
     {
@@ -6404,5 +6458,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.d0_disjoint_confirmation_v2.v17"
+  "version": "closy.blueprint_coverage.d0_strict_c3_confirmation_v5.v18"
 }

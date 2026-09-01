@@ -439,3 +439,23 @@ fallback remain selected. Unit N strict C3 v5 is independently dependency-ready 
 fallback-sentinel rule. No private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha,
 Beta, Production, post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is
 made.
+
+## D0 Strict C3 Confirmation v5 Outcome
+
+Unit M is externally attested at `552867e96d53e9d4c728f90d12e0c1c9a344ba0d` by Forge workflow `33533707412`, with all
+29 Forge jobs successful after a failed-jobs rerun. Unit N then resolved the exact Unit F fallback
+sentinel, froze strict C3 v5 before any fresh pose existed, and preserved H4's consumed 0/8 failure.
+
+The sole immutable authority run `33546821637`, job `99986277154`, committed exactly eight fresh
+semantic pose classes and passed all `8/8`. Maximum binding reconstruction error was
+`6.71791165111579e-08 m`; seam crack, tangential sliding, and inverted triangles were zero. Fresh-
+process determinism and mutation controls passed. D0-RP-08 is therefore pass only for the exact
+synthetic pre-topology Unit F sentinel. Any topology change requires a new confirmation.
+
+The Research Prototype matrix is now `7 pass / 4 fail / 0 not-run` core plus
+`2 pass / 0 fail / 2 not-run` supplemental. Coverage remains `20 complete / 63 partial / 7 not
+started / 11 discovery pending`. Runtime v1 and the conventional fallback remain selected. Unit O
+candidate-independent Strategy-3 diagnosis is next; Unit P remains ineligible without literal
+admission. No physical-cloth, real-world deformation, private-user, human-review, real-photo,
+real-fabric, GPU, mobile, Alpha, Beta, Production, post-topology candidate, full-PHY1,
+integrated-CCD, or solver-driven-Z2 claim is made.
