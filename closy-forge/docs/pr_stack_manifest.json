@@ -477,6 +477,26 @@
       "to": "github:jake-the-jake/Closy:pr/44"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/44",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/45"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/44",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/45"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/45",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/46"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/45",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/46"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -2287,6 +2307,72 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e..2f40815010cef01685a7ed873081a22f11d67c00"
+    },
+    {
+      "ahead": 8,
+      "baseRef": "codex/closy-forge-d0-evidence-integrity-v4",
+      "baseSha": "2f40815010cef01685a7ed873081a22f11d67c00",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-texture-rerender-correction-v3",
+      "capabilityRole": "forge_execute_source_only_d0_texture_rerender_v3",
+      "changedFileCount": 82,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/44"
+      ],
+      "headSha": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+      "id": "github:jake-the-jake/Closy:pr/45",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33464425080",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "2f40815010cef01685a7ed873081a22f11d67c00",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/44"
+      ],
+      "pullRequest": 45,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_texture_rerender_correction_v3_known_target",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "2f40815010cef01685a7ed873081a22f11d67c00..ba54b17a0aef7518d9acac30c6b7ec6564a38d87"
+    },
+    {
+      "ahead": 7,
+      "baseRef": "codex/closy-forge-d0-texture-rerender-correction-v3",
+      "baseSha": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
+      "capabilityRole": "forge_benchmark_identity_disjoint_t_shirt_reconstruction",
+      "changedFileCount": 64,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/45"
+      ],
+      "headSha": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+      "id": "github:jake-the-jake/Closy:pr/46",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/45"
+      ],
+      "pullRequest": 46,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_disjoint_tshirt_benchmark_v1_failed_evaluator_harness",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87..6de060d7fa4e985070187bf417f159ecbe31e8b4"
     },
     {
       "ahead": 3,
@@ -4257,6 +4343,62 @@
       "state": "OPEN",
       "title": "Forge: reset D0 evidence integrity and research truth",
       "url": "https://github.com/jake-the-jake/Closy/pull/44"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-evidence-integrity-v4",
+      "baseSha": "2f40815010cef01685a7ed873081a22f11d67c00",
+      "branch": "codex/closy-forge-d0-texture-rerender-correction-v3",
+      "changedFileCount": 82,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
+        "runId": "33464425080",
+        "successfulForgeJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 8,
+      "layerBehind": 0,
+      "layerCommitCount": 8,
+      "mergeBase": "2f40815010cef01685a7ed873081a22f11d67c00",
+      "mergeability": "MERGEABLE",
+      "number": 45,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_texture_rerender_correction_v3_known_target",
+      "state": "OPEN",
+      "title": "Forge: execute source-only D0 texture rerender v3",
+      "url": "https://github.com/jake-the-jake/Closy/pull/45"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-texture-rerender-correction-v3",
+      "baseSha": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+      "branch": "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
+      "changedFileCount": 64,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #46 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 7,
+      "layerBehind": 0,
+      "layerCommitCount": 7,
+      "mergeBase": "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+      "mergeability": "MERGEABLE",
+      "number": 46,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_disjoint_tshirt_benchmark_v1_failed_evaluator_harness",
+      "state": "OPEN",
+      "title": "Forge: benchmark identity-disjoint T-shirt reconstruction",
+      "url": "https://github.com/jake-the-jake/Closy/pull/46"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -4307,7 +4449,9 @@
     "github:jake-the-jake/Closy:pr/41",
     "github:jake-the-jake/Closy:pr/42",
     "github:jake-the-jake/Closy:pr/43",
-    "github:jake-the-jake/Closy:pr/44"
+    "github:jake-the-jake/Closy:pr/44",
+    "github:jake-the-jake/Closy:pr/45",
+    "github:jake-the-jake/Closy:pr/46"
   ],
   "topology": "explicit_dag",
   "validation": {

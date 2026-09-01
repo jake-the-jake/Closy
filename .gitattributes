@@ -3,3 +3,5 @@ closy-forge/fixtures/**/*.json text eol=lf
 closy-forge/schemas/**/*.json text eol=lf
 closy-forge/src/closy_forge/appearance_correction_v3/*.py text eol=lf
 closy-forge/scripts/*d0_texture_rerender_v3*.py text eol=lf
+closy-forge/src/closy_forge/disjoint_benchmark_v1/*.py text eol=lf
+closy-forge/scripts/*d0_disjoint_benchmark_v1*.py text eol=lf

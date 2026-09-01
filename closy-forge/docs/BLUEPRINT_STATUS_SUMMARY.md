@@ -1,6 +1,6 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v11` at evidence anchor `7b4fbc199f462d35ba2f440494cff7cc700b0b94`.
+Authority: `closy.blueprint_status_model.v12` at evidence anchor `6de060d7fa4e985070187bf417f159ecbe31e8b4`.
 
 ## Requirement Rows
 
@@ -33,6 +33,7 @@ Authority: `closy.blueprint_status_model.v11` at evidence anchor `7b4fbc199f462d
 - C1: global `partial`, scoped `pass`
 - C2: global `partial`, scoped `pass`
 - C3-Binding-D0: global `partial`, scoped `pass`
+- D0-DisjointTshirt-v1: global `partial`, scoped `benchmark_failed_fixed_inventory_unfinished`
 - LayerCollision-D0: global `partial`, scoped `pass`
 - MT1-MechanicalReference-D0: global `partial`, scoped `pass`
 - P1: global `discovery_pending`, scoped `not_run`

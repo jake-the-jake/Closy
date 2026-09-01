@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v11"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v12"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -35,7 +35,10 @@ D0_FITTING_PBR_PUBLICATION_SHA = "7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
 PHY1_V3_EVIDENCE_SHA = "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
 PHY1_V3_EVIDENCE_DIGEST = "280df4684724d2dae73eb20a09008aec824c2c6476ed21325c754c9c05ef1b4c"
 D0_EVIDENCE_INTEGRITY_V4_SHA = "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
+D0_EVIDENCE_INTEGRITY_V4_PUBLISHED_HEAD = "2f40815010cef01685a7ed873081a22f11d67c00"
 UNIT_F_TEXTURE_RERENDER_V3_SHA = "7b4fbc199f462d35ba2f440494cff7cc700b0b94"
+UNIT_F_TEXTURE_RERENDER_V3_PUBLISHED_HEAD = "ba54b17a0aef7518d9acac30c6b7ec6564a38d87"
+UNIT_G_DISJOINT_BENCHMARK_V1_SHA = "6de060d7fa4e985070187bf417f159ecbe31e8b4"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -306,6 +309,36 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         + ["held_out", "identity_disjoint_cohort", "real_fabric", "human_review"],
         "blockers": ["unit_g_identity_disjoint_benchmark_required"],
     },
+    "D0-DisjointTshirt-v1": {
+        "gateId": "D0-DisjointTshirt-v1",
+        "globalStatus": "partial",
+        "scopedStatus": "benchmark_failed_fixed_inventory_unfinished",
+        "evidenceTier": "identity_disjoint_committed_predictions_failed_evaluator_harness",
+        "platform": ["windows"],
+        "toolchain": ["CPython 3.11"],
+        "sourceSha": UNIT_G_DISJOINT_BENCHMARK_V1_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public synthetic identity-disjoint cohort",
+        "executionKind": "isolated predictions then frozen evaluator harness failure",
+        "gateScope": "16-identity evaluator cohort",
+        "evidenceDurability": "committed_lock_commitments_predictions_reveal_and_failure",
+        "workflowRun": "33467062432",
+        "developmentIdentityCount": 8,
+        "evaluatorIdentityCount": 16,
+        "predictionCount": 64,
+        "fullCompileCount": 0,
+        "appearanceEvaluationCount": 0,
+        "firstUnmetRequiredPredicate": "fixed_inventory_evaluator_completion",
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["cohort_gate_pass", "real_photo", "real_fabric", "human_review"],
+        "blockers": [
+            "frozen_evaluator_transcript_loader_expected_mapping_but_transcript_is_list",
+            "no_completed_canonical_compile_or_appearance_evaluation",
+        ],
+    },
     "MT1-MechanicalReference-D0": {
         "gateId": "MT1-MechanicalReference-D0",
         "globalStatus": "partial",
@@ -555,7 +588,7 @@ def build_status_model(
                 for row in stack["nodes"]
                 if row["repository"] == "jake-the-jake/Closy"
                 and not row["latestExactHeadWorkflows"]
-                and int(row["pullRequest"]) not in {39, 43}
+                and int(row["pullRequest"]) not in {39, 46}
             ],
             "externalExactHeadAttestations": [
                 {
@@ -590,11 +623,41 @@ def build_status_model(
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
-            ],
-            "pendingExternalExactHeadAttestations": [
                 {
                     "pullRequest": 43,
                     "committedSourceAnchorSha": PHY1_V3_EVIDENCE_SHA,
+                    "publishedHeadSha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33423822705"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+                {
+                    "pullRequest": 44,
+                    "committedSourceAnchorSha": D0_EVIDENCE_INTEGRITY_V4_SHA,
+                    "publishedHeadSha": D0_EVIDENCE_INTEGRITY_V4_PUBLISHED_HEAD,
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33452856012"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+                {
+                    "pullRequest": 45,
+                    "committedSourceAnchorSha": UNIT_F_TEXTURE_RERENDER_V3_SHA,
+                    "publishedHeadSha": UNIT_F_TEXTURE_RERENDER_V3_PUBLISHED_HEAD,
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33464425080"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+            ],
+            "pendingExternalExactHeadAttestations": [
+                {
+                    "pullRequest": 46,
+                    "committedSourceAnchorSha": UNIT_G_DISJOINT_BENCHMARK_V1_SHA,
                     "publishedHeadSha": None,
                     "workflowRunUrl": None,
                     "result": "pending_publication_exact_head_ci",
@@ -733,14 +796,38 @@ def validate_status_model(
             "result": "pass",
             "authority": "github_workflow_api_and_draft_pr_body",
         },
+        {
+            "pullRequest": 43,
+            "committedSourceAnchorSha": PHY1_V3_EVIDENCE_SHA,
+            "publishedHeadSha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33423822705",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+        {
+            "pullRequest": 44,
+            "committedSourceAnchorSha": D0_EVIDENCE_INTEGRITY_V4_SHA,
+            "publishedHeadSha": D0_EVIDENCE_INTEGRITY_V4_PUBLISHED_HEAD,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33452856012",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+        {
+            "pullRequest": 45,
+            "committedSourceAnchorSha": UNIT_F_TEXTURE_RERENDER_V3_SHA,
+            "publishedHeadSha": UNIT_F_TEXTURE_RERENDER_V3_PUBLISHED_HEAD,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33464425080",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
     ]
     if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
     if pending_attestations != [
         {
-            "pullRequest": 43,
-            "committedSourceAnchorSha": PHY1_V3_EVIDENCE_SHA,
+            "pullRequest": 46,
+            "committedSourceAnchorSha": UNIT_G_DISJOINT_BENCHMARK_V1_SHA,
             "publishedHeadSha": None,
             "workflowRunUrl": None,
             "result": "pending_publication_exact_head_ci",

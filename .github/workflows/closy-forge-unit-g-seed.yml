@@ -1,0 +1,40 @@
+name: Forge Unit G seed authority
+
+on:
+  pull_request:
+    paths:
+      - "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/protocol_lock.json"
+      - "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/development_lock.json"
+      - "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/development_summary.json"
+      - "closy-forge/src/closy_forge/disjoint_benchmark_v1/**"
+      - "closy-forge/scripts/*d0_disjoint_benchmark_v1*.py"
+      - "closy-forge/scripts/validate_unit_g_seed_lifecycle.py"
+      - "closy-forge/tests/unit/test_unit_g_seed_lifecycle.py"
+      - ".github/workflows/closy-forge-unit-g-seed.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  seed-authority:
+    name: Unit G seed lifecycle authority
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Derive and verify sealed lifecycle state
+        working-directory: closy-forge
+        env:
+          PYTHONPATH: src
+        run: |
+          python scripts/validate_unit_g_seed_lifecycle.py --expect sealed_post_evaluator
+      - name: Record sanitized sealed-state authority
+        run: |
+          echo "lifecycle_state=sealed_post_evaluator" >> "${GITHUB_STEP_SUMMARY}"
+          echo "original_authority_run_id=33467062432" >> "${GITHUB_STEP_SUMMARY}"
+          echo "original_authority_job_id=99729005374" >> "${GITHUB_STEP_SUMMARY}"
+          echo "seed_derivation_performed=false" >> "${GITHUB_STEP_SUMMARY}"
+          echo "evaluator_dispatch_performed=false" >> "${GITHUB_STEP_SUMMARY}"
