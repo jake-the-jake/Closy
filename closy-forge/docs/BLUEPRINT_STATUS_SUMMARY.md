@@ -1,6 +1,6 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v16` at evidence anchor `d7b6e810477f169fea3a3cfca23c5ed99ba603b7`.
+Authority: `closy.blueprint_status_model.v18` at evidence anchor `d8c8318ad346ea66ebc1956ebc0839ee3d6db109`.
 
 ## Requirement Rows
 
@@ -42,8 +42,9 @@ Authority: `closy.blueprint_status_model.v16` at evidence anchor `d7b6e810477f16
 - PHY1-SingleLayer-D0: global `partial`, scoped `failed`
 - PHY1-SingleLayer-D0-v2: global `partial`, scoped `failed`
 - PHY1-Topology-Strategy2-D0-v4: global `partial`, scoped `outcome_M_strategy_microfixture_failed_no_candidate`
+- PHY1-Topology-Strategy3-Diagnosis-D0-v1: global `partial`, scoped `diagnosis_integrity_error`
 - ResearchPrototype-D0-matrix-v2: global `partial`, scoped `historical_superseded_9_pass_3_fail_3_not_run`
-- ResearchPrototype-D0-matrix-v3-core: global `partial`, scoped `partial_6_pass_5_fail_0_not_run`
+- ResearchPrototype-D0-matrix-v3-core: global `partial`, scoped `partial_7_pass_4_fail_0_not_run`
 - ResearchPrototype-D0-matrix-v3-supplemental: global `partial`, scoped `2_pass_0_fail_2_not_run`
 - TextureRerender-KnownTarget-v3: global `partial`, scoped `known_target_regression_pass_not_qualification`
 - Z1: global `partial`, scoped `candidate_default_all_family_and_representative_pass`

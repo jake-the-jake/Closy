@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v16"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v18"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -44,8 +44,12 @@ UNIT_H_CORE_RUNTIME_C3_V4_SHA = "3541507808946ae1248fba110b7732599db3fdbc"
 UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA = "854b85ed769bc3e67547e4195f65dfeb78878881"
 UNIT_I_TOPOLOGY_STRATEGY2_V4_PUBLISHED_HEAD = "69f17e0bc0d01472eec3aaf244c158181f74febf"
+UNIT_O_TOPOLOGY_STRATEGY3_DIAGNOSIS_SHA = "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
 UNIT_L_RECOVERY_FOUNDATION_V1_PUBLISHED_HEAD = "a72f45955abbe65ce14b7142668447d0477db71c"
 UNIT_M_DISJOINT_CONFIRMATION_V2_AUTHORITY_HEAD = "9078a09f1156ba8b7f98099185478ca9efcee952"
+UNIT_M_DISJOINT_CONFIRMATION_V2_PUBLISHED_HEAD = "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
+UNIT_N_STRICT_C3_V5_AUTHORITY_HEAD = "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
+UNIT_N_STRICT_C3_V5_PUBLISHED_HEAD = "e062a30ba295ed27334622916ddb449fd76e2166"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -265,6 +269,47 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
             "no_admissible_post_topology_candidate",
         ],
     },
+    "PHY1-Topology-Strategy3-Diagnosis-D0-v1": {
+        "gateId": "PHY1-Topology-Strategy3-Diagnosis-D0-v1",
+        "globalStatus": "partial",
+        "scopedStatus": "diagnosis_integrity_error",
+        "evidenceTier": "preserved_candidate_independent_results_with_failed_cross_minor_integrity",
+        "platform": ["windows", "ubuntu"],
+        "toolchain": ["CPython 3.11", "CPython 3.12"],
+        "sourceSha": UNIT_O_TOPOLOGY_STRATEGY3_DIAGNOSIS_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored synthetic development fixtures",
+        "executionKind": "two bounded candidate-independent production-kernel revisions",
+        "gateScope": "pre-candidate topology strategy class admission only",
+        "evidenceDurability": "immutable_lock_and_raw_results_plus_additive_integrity_attestation",
+        "workflowRun": None,
+        "revisionCount": 2,
+        "revisionFixturePassCounts": [7, 7],
+        "revisionFixtureDenominator": 8,
+        "admittedStrategyClass": None,
+        "candidateCreated": False,
+        "candidateAttemptConsumed": False,
+        "finalStrategyConsumed": False,
+        "unitPEligible": False,
+        "unitQEligible": False,
+        "unitREligible": False,
+        "runtimeCapabilityExposed": False,
+        "dRuntimePinnedToV1": True,
+        "remainingTopologyStrategies": 1,
+        "remainingCandidateAttempts": 1,
+        "remainingSeamModels": 0,
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["full_PHY1", "integrated_CCD", "solver_driven_Z2", "post_topology_candidate"],
+        "blockers": [
+            "exact_cross_python_and_cross_platform_regeneration_failed",
+            "revision_1_t_junction_and_incomplete_semantic_seam_transfer",
+            "revision_2_incomplete_semantic_seam_transfer",
+            "no_strategy3_class_admitted_in_preserved_raw_execution",
+        ],
+    },
     "ResearchPrototype-D0-matrix-v2": {
         "gateId": "ResearchPrototype-D0-matrix-v2",
         "globalStatus": "partial",
@@ -289,7 +334,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
     "ResearchPrototype-D0-matrix-v3-core": {
         "gateId": "ResearchPrototype-D0-matrix-v3-core",
         "globalStatus": "partial",
-        "scopedStatus": "partial_6_pass_5_fail_0_not_run",
+        "scopedStatus": "partial_7_pass_4_fail_0_not_run",
         "evidenceTier": "artifact_reopened_selected_identity_predicate_matrix",
         "platform": ["windows", "ubuntu"],
         "toolchain": ["CPython 3.11", "CPython 3.12"],
@@ -306,7 +351,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "firstUnmetRequiredPredicate": "D0-RP-03",
         "unsupportedTiers": _COMMON_UNSUPPORTED
         + ["real_fabric", "human_review", "identity_disjoint_cohort"],
-        "blockers": ["D0-RP-03", "D0-RP-04", "D0-RP-07", "D0-RP-08", "D0-RP-15"],
+        "blockers": ["D0-RP-03", "D0-RP-04", "D0-RP-07", "D0-RP-15"],
     },
     "ResearchPrototype-D0-matrix-v3-supplemental": {
         "gateId": "ResearchPrototype-D0-matrix-v3-supplemental",
@@ -791,8 +836,28 @@ def build_status_model(
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
+                {
+                    "pullRequest": 50,
+                    "committedSourceAnchorSha": UNIT_M_DISJOINT_CONFIRMATION_V2_AUTHORITY_HEAD,
+                    "publishedHeadSha": UNIT_M_DISJOINT_CONFIRMATION_V2_PUBLISHED_HEAD,
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33533707412"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+                {
+                    "pullRequest": 51,
+                    "committedSourceAnchorSha": UNIT_N_STRICT_C3_V5_AUTHORITY_HEAD,
+                    "publishedHeadSha": UNIT_N_STRICT_C3_V5_PUBLISHED_HEAD,
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33547909132"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
             ],
-            "pendingExternalExactHeadAttestations": [],
+            "pendingExternalExactHeadAttestations": [52],
             "headAuthorityPolicy": (
                 "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_"
                 "draft_pr_body_attest_final_published_head"
@@ -840,6 +905,17 @@ def build_status_model(
             "phy1TopologyStrategy2CandidateAttemptConsumed": False,
             "phy1TopologyStrategy2RemainingTopologyStrategies": 1,
             "phy1TopologyStrategy2RemainingSeamModels": 0,
+            "phy1TopologyStrategy3DiagnosisExecuted": True,
+            "phy1TopologyStrategy3DiagnosisOutcome": ("diagnosis_integrity_error"),
+            "phy1TopologyStrategy3DiagnosisRevisionCount": 2,
+            "phy1TopologyStrategy3AdmittedClass": None,
+            "phy1TopologyStrategy3CandidateCreated": False,
+            "phy1TopologyStrategy3CandidateAttemptConsumed": False,
+            "phy1TopologyStrategy3FinalStrategyConsumed": False,
+            "phy1TopologyStrategy3RemainingTopologyStrategies": 1,
+            "unitPEligible": False,
+            "unitQEligible": False,
+            "unitREligible": False,
             "unitJLogicalOutcome": "J-A_post_topology_candidate_unavailable",
             "unitJBranchAuthorized": False,
             "unitKEligible": False,
@@ -855,8 +931,8 @@ def build_status_model(
             "currentD0ResearchMatrixStatus": "partial",
             "currentD0ResearchMatrixVersion": "closy.final_d0_research_matrix.v3",
             "currentD0ResearchMatrixCoreStatusCounts": {
-                "pass": 6,
-                "fail": 5,
+                "pass": 7,
+                "fail": 4,
                 "not_run": 0,
             },
             "currentD0ResearchMatrixSupplementalStatusCounts": {
@@ -904,7 +980,7 @@ def validate_status_model(
     if any(model.get("phases", {}).get(f"{index:02d}") != "partial" for index in range(1, 15)):
         issues.append("phase_completion_overclaimed")
     status_stack = model.get("stack", {})
-    if status_stack.get("committedSourceAnchorExceptions") != [10]:
+    if status_stack.get("committedSourceAnchorExceptions") != [10, 52]:
         issues.append("stack_exception_set_invalid")
     attestations = status_stack.get("externalExactHeadAttestations", [])
     expected_attestations = [
@@ -996,11 +1072,27 @@ def validate_status_model(
             "result": "pass",
             "authority": "github_workflow_api_and_draft_pr_body",
         },
+        {
+            "pullRequest": 50,
+            "committedSourceAnchorSha": UNIT_M_DISJOINT_CONFIRMATION_V2_AUTHORITY_HEAD,
+            "publishedHeadSha": UNIT_M_DISJOINT_CONFIRMATION_V2_PUBLISHED_HEAD,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33533707412",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+        {
+            "pullRequest": 51,
+            "committedSourceAnchorSha": UNIT_N_STRICT_C3_V5_AUTHORITY_HEAD,
+            "publishedHeadSha": UNIT_N_STRICT_C3_V5_PUBLISHED_HEAD,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33547909132",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
     ]
     if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
-    if pending_attestations != []:
+    if pending_attestations != [52]:
         issues.append("pending_external_exact_head_attestation_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (
@@ -1040,6 +1132,22 @@ def validate_status_model(
         issues.append("phy1_topology_strategy2_solver_advanced_overclaimed")
     if truth.get("phy1TopologyStrategy2CandidateAttemptConsumed") is not False:
         issues.append("phy1_topology_strategy2_candidate_attempt_consumption_invalid")
+    if truth.get("phy1TopologyStrategy3DiagnosisOutcome") != ("diagnosis_integrity_error"):
+        issues.append("phy1_topology_strategy3_diagnosis_outcome_missing_or_overclaimed")
+    if truth.get("phy1TopologyStrategy3DiagnosisRevisionCount") != 2:
+        issues.append("phy1_topology_strategy3_revision_count_invalid")
+    if truth.get("phy1TopologyStrategy3AdmittedClass") is not None:
+        issues.append("phy1_topology_strategy3_admission_overclaimed")
+    if truth.get("phy1TopologyStrategy3CandidateCreated") is not False:
+        issues.append("phy1_topology_strategy3_candidate_overclaimed")
+    if truth.get("phy1TopologyStrategy3CandidateAttemptConsumed") is not False:
+        issues.append("phy1_topology_strategy3_candidate_attempt_consumption_invalid")
+    if truth.get("phy1TopologyStrategy3FinalStrategyConsumed") is not False:
+        issues.append("phy1_topology_strategy3_strategy_consumption_invalid")
+    if any(
+        truth.get(key) is not False for key in ("unitPEligible", "unitQEligible", "unitREligible")
+    ):
+        issues.append("conditional_unit_eligibility_overclaimed")
     if truth.get("unitJLogicalOutcome") != "J-A_post_topology_candidate_unavailable":
         issues.append("unit_j_logical_closure_missing")
     if truth.get("unitJBranchAuthorized") is not False:

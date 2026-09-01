@@ -527,6 +527,36 @@
       "to": "github:jake-the-jake/Closy:pr/49"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/49",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/50"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/49",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/50"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/50",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/51"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/50",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/51"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/51",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/52"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/51",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/52"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -645,10 +675,10 @@
     }
   ],
   "graphCounts": {
-    "closyPullRequests": 49,
-    "edges": 107,
+    "closyPullRequests": 52,
+    "edges": 113,
     "externalPullRequests": 3,
-    "nodes": 52
+    "nodes": 55
   },
   "graphVersion": "closy.cross_repository_pr_dag.v3",
   "nodes": [
@@ -2545,7 +2575,7 @@
         {
           "conclusion": "SUCCESS",
           "exactHead": true,
-          "jobCount": 26,
+          "jobCount": 29,
           "runId": "33524394054",
           "workflow": "Closy Forge"
         }
@@ -2563,6 +2593,109 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "69f17e0bc0d01472eec3aaf244c158181f74febf..a72f45955abbe65ce14b7142668447d0477db71c"
+    },
+    {
+      "ahead": 4,
+      "baseRef": "codex/closy-forge-d0-recovery-foundation-v1",
+      "baseSha": "a72f45955abbe65ce14b7142668447d0477db71c",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
+      "capabilityRole": "forge_untouched_identity_disjoint_t_shirt_confirmation_v2",
+      "changedFileCount": 27,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/49"
+      ],
+      "headSha": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+      "id": "github:jake-the-jake/Closy:pr/50",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 29,
+          "runId": "33533707412",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "a72f45955abbe65ce14b7142668447d0477db71c",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/49"
+      ],
+      "pullRequest": 50,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_disjoint_tshirt_confirmation_v2_integrity_error",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "a72f45955abbe65ce14b7142668447d0477db71c..552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
+    },
+    {
+      "ahead": 3,
+      "baseRef": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
+      "baseSha": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-strict-c3-confirmation-v5",
+      "capabilityRole": "forge_strict_c3_confirmation_v5",
+      "changedFileCount": 41,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/50"
+      ],
+      "headSha": "e062a30ba295ed27334622916ddb449fd76e2166",
+      "id": "github:jake-the-jake/Closy:pr/51",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 29,
+          "runId": "33547909132",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/50"
+      ],
+      "pullRequest": 51,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_strict_c3_confirmation_v5_pass",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d..e062a30ba295ed27334622916ddb449fd76e2166"
+    },
+    {
+      "ahead": 1,
+      "baseRef": "codex/closy-forge-d0-strict-c3-confirmation-v5",
+      "baseSha": "e062a30ba295ed27334622916ddb449fd76e2166",
+      "behind": 0,
+      "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+      "capabilityRole": "forge_unit_o_bounded_phy1_strategy_3_diagnosis",
+      "changedFileCount": 14,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/51"
+      ],
+      "headSha": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+      "id": "github:jake-the-jake/Closy:pr/52",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "e062a30ba295ed27334622916ddb449fd76e2166",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/51"
+      ],
+      "pullRequest": 52,
+      "repository": "jake-the-jake/Closy",
+      "role": "phy1_topology_strategy3_diagnosis_integrity_error",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "e062a30ba295ed27334622916ddb449fd76e2166..d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
     },
     {
       "ahead": 3,
@@ -4703,10 +4836,10 @@
       "latestExactHeadForgeRun": {
         "conclusion": "SUCCESS",
         "exactHead": true,
-        "forgeJobCount": 26,
+        "forgeJobCount": 29,
         "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
         "runId": "33524394054",
-        "successfulForgeJobCount": 26,
+        "successfulForgeJobCount": 29,
         "workflow": "Closy Forge"
       },
       "layerAhead": 1,
@@ -4720,6 +4853,92 @@
       "state": "OPEN",
       "title": "Forge: establish D0 recovery foundation v1",
       "url": "https://github.com/jake-the-jake/Closy/pull/49"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-recovery-foundation-v1",
+      "baseSha": "a72f45955abbe65ce14b7142668447d0477db71c",
+      "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
+      "changedFileCount": 27,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
+        "runId": "33533707412",
+        "successfulForgeJobCount": 29,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 4,
+      "layerBehind": 0,
+      "layerCommitCount": 4,
+      "mergeBase": "a72f45955abbe65ce14b7142668447d0477db71c",
+      "mergeability": "MERGEABLE",
+      "number": 50,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_disjoint_tshirt_confirmation_v2_integrity_error",
+      "state": "OPEN",
+      "title": "Forge: untouched identity-disjoint T-shirt confirmation v2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/50"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
+      "baseSha": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+      "branch": "codex/closy-forge-d0-strict-c3-confirmation-v5",
+      "changedFileCount": 41,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "e062a30ba295ed27334622916ddb449fd76e2166",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
+        "runId": "33547909132",
+        "successfulForgeJobCount": 29,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeBase": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+      "mergeability": "MERGEABLE",
+      "number": 51,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_strict_c3_confirmation_v5_pass",
+      "state": "OPEN",
+      "title": "Forge: strict C3 confirmation v5",
+      "url": "https://github.com/jake-the-jake/Closy/pull/51"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-strict-c3-confirmation-v5",
+      "baseSha": "e062a30ba295ed27334622916ddb449fd76e2166",
+      "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+      "changedFileCount": 14,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #52 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 1,
+      "layerBehind": 0,
+      "layerCommitCount": 1,
+      "mergeBase": "e062a30ba295ed27334622916ddb449fd76e2166",
+      "mergeability": "MERGEABLE",
+      "number": 52,
+      "repository": "jake-the-jake/Closy",
+      "role": "phy1_topology_strategy3_diagnosis_integrity_error",
+      "state": "OPEN",
+      "title": "Forge Unit O: bounded PHY1 Strategy 3 diagnosis",
+      "url": "https://github.com/jake-the-jake/Closy/pull/52"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -4776,6 +4995,9 @@
     "github:jake-the-jake/Closy:pr/47",
     "github:jake-the-jake/Closy:pr/48",
     "github:jake-the-jake/Closy:pr/49",
+    "github:jake-the-jake/Closy:pr/50",
+    "github:jake-the-jake/Closy:pr/51",
+    "github:jake-the-jake/Closy:pr/52",
     "github:jake-the-jake/ZeroOne:pr/4"
   ],
   "topology": "explicit_dag",

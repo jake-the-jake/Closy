@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "attestationVersion": "closy.phy1.topology_strategy3.diagnosis_integrity_attestation.v1",
+  "repository": "jake-the-jake/Closy",
+  "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+  "pullRequest": 52,
+  "baseSha": "e062a30ba295ed27334622916ddb449fd76e2166",
+  "preExecutionLockHead": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+  "rawExecutionHead": "83d5b2a263cf34670370d2c187fe26c0e204475d",
+  "provisionalRawOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
+  "effectiveOutcome": "diagnosis_integrity_error",
+  "failureClassification": "evidence_integrity_failure",
+  "firstUnmetPredicate": "exact_cross_python_and_cross_platform_regeneration",
+  "reason": "The locked Forge Python/platform matrix cannot regenerate the committed revision bytes. A local Python 3.11 witness identified three one-ULP accumulated impulse-total differences, while Linux regeneration also contains platform-dependent numeric drift. Derived fixture and revision digests therefore differ.",
+  "discovery": {
+    "workflow": "Closy Forge",
+    "runId": "33559874476",
+    "headSha": "83d5b2a263cf34670370d2c187fe26c0e204475d",
+    "failedJobs": [
+      {
+        "jobId": "100029527993",
+        "name": "Tests shard-0 windows-latest Python 3.11"
+      },
+      {
+        "jobId": "100029528073",
+        "name": "Tests shard-0 ubuntu-latest Python 3.12"
+      },
+      {
+        "jobId": "100029528126",
+        "name": "Tests shard-0 ubuntu-latest Python 3.11"
+      }
+    ],
+    "failedTest": "test_unit_o_committed_outcome_is_exactly_regenerable_when_present",
+    "failureCode": "unit_o_diagnosis_regeneration_drift:docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_1.json"
+  },
+  "localPython311Witness": {
+    "platform": "windows",
+    "comparisonRuntime": "CPython 3.11",
+    "committedEvidenceRuntime": "CPython 3.12",
+    "maximumUlps": 1,
+    "globalFloatToleranceAllowed": false,
+    "pointers": [
+      "/fixtures/1/measurements/totalAbsoluteImpulseNewtonSeconds",
+      "/fixtures/3/measurements/totalAbsoluteImpulseNewtonSeconds",
+      "/fixtures/4/measurements/constraint/totalAbsoluteImpulseNewtonSeconds"
+    ],
+    "derivedFieldsAffected": [
+      "/fixtures/7/measurements/fixtureDigest",
+      "/integrity/revisionDigest",
+      "/integrity/outcomeDigest",
+      "evidence_manifest record hashes and manifestDigest"
+    ],
+    "acceptanceThresholdChanged": false,
+    "canonicalEvidenceRewritten": false
+  },
+  "verificationAttempts": [
+    {
+      "runId": "33559874476",
+      "headSha": "83d5b2a263cf34670370d2c187fe26c0e204475d",
+      "classification": "evidence_integrity_failure",
+      "result": "exact_regeneration_failed_on_three_matrix_jobs"
+    },
+    {
+      "runId": "33567025853",
+      "headSha": "90c9e69e2ebe214b600eb9c0884b68e01a45f59e",
+      "classification": "software_verifier_defect",
+      "result": "pointer_whitelist_derived_from_local_witness_rejected_additional_linux_numeric_drift",
+      "scientificReplayPerformed": false
+    },
+    {
+      "runId": "33568859455",
+      "headSha": "e256647ab159c1cbd8397fc8da0bc27f3915ba20",
+      "classification": "software_verifier_defect",
+      "result": "windows_checkout_newline_conversion_changed_raw_markdown_worktree_hash",
+      "scientificReplayPerformed": false
+    }
+  ],
+  "preservedRawEvidence": [
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_1.json",
+      "sha256": "1331afa5671f4138677d3872ddfd2a097b95d09b5012e390684299a8fd02b645"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_2.json",
+      "sha256": "d51e6baaa891c8d47134e96b3205773614d3ebeb727bb67d77926a1f8d62b88b"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/unit_o_outcome.json",
+      "sha256": "fd9af53158b6e3a8f1951367751ed5ad912351d10f0e21e836f5b3db3e2cbf79"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/evidence_manifest.json",
+      "sha256": "2bb682c91ee42545571a0a10506890f1f93b6ac70306619cbe0557b86a0fdcd4"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/diagnosis_report.json",
+      "sha256": "b7a8e0cd2417fb9548e0a8877d9a261359ea2f0c3f2487cbc7445b2fe91c4b40"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/REPORT.md",
+      "sha256": "67c69d14d5215738379a3d0fc4579b38de406b5c08fd4f3e725328fbf75010eb",
+      "hashMode": "canonical_lf_text"
+    }
+  ],
+  "executionState": {
+    "boundedRevisionCount": 2,
+    "rawRevisionFixturePassCounts": [
+      7,
+      7
+    ],
+    "admittedStrategyClass": null,
+    "candidateCreated": false,
+    "candidateAttemptConsumed": false,
+    "finalStrategyConsumed": false,
+    "confirmationSeedRealized": false,
+    "confirmationInstancesRealized": false,
+    "replayAllowed": false
+  },
+  "replayPerformed": false,
+  "unitPEligible": false,
+  "unitQEligible": false,
+  "unitREligible": false,
+  "runtimeV1RemainsSelected": true,
+  "budgetsAfter": {
+    "seamModels": 0,
+    "topologyStrategies": 1,
+    "candidateAttempts": 1
+  },
+  "integrity": {
+    "attestationDigest": "f7a9538bda6435e9b87378f5563ad9889c528b7c454db36eb86687dd6adaf4d0"
+  }
+}

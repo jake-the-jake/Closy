@@ -1,35 +1,31 @@
 {
-  "activeLane": "Unit N strict C3 pass sealed; Unit O topology diagnosis next",
-  "branch": "codex/closy-forge-d0-strict-c3-confirmation-v5",
-  "evidenceHead": "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
-  "exactNextAction": "Create Unit O from the final Unit N head, freeze physical authority and production-kernel microfixtures, then execute at most two candidate-independent revisions.",
+  "activeLane": "finite sequence complete after Unit O diagnosis integrity error",
+  "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+  "conditionalUnits": {
+    "P": "not_created_ineligible",
+    "Q": "not_created_ineligible",
+    "R": "not_created_ineligible"
+  },
+  "evidenceHead": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+  "exactNextAction": "Complete external exact-head attestation and final handoff.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
-    "D0-Core-Reproducibility-H1": "pass_predecessor_sentinel_scoped",
-    "D0-DisjointTshirt-v1": "benchmark_failed_fixed_inventory_unfinished",
     "D0-DisjointTshirt-v2": "attempted_integrity_error",
-    "D0-Recovery-Foundation-v1": "pass_generic_candidate_independent_no_confirmation",
-    "D0-Strict-C3-H4": "fail_frozen_evaluator_adapter_0_of_8",
     "D0-Strict-C3-v5": "pass_exact_unit_f_pre_topology_8_of_8",
     "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
     "PHY1-Topology-Strategy2-D0-v4": "outcome_M_strategy_microfixture_failed_no_candidate",
+    "PHY1-Topology-Strategy3-Diagnosis-D0-v1": "diagnosis_integrity_error",
     "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
     "ResearchPrototype-D0-matrix-v3-core": "partial_7_pass_4_fail_0_not_run",
     "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
     "Runtime": "v1_selected_topology_v2_opt_in_unchanged",
-    "Unit-J": "J-A_post_topology_candidate_unavailable",
-    "Unit-K": "ineligible_no_post_topology_candidate"
+    "Unit-P": "ineligible_unit_o_diagnosis_integrity_error",
+    "Unit-Q": "ineligible_no_unit_p_candidate",
+    "Unit-R": "ineligible_no_unit_q_prerequisites"
   },
-  "latestFinishedParentPublicationHead": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+  "latestFinishedParentPublicationHead": "e062a30ba295ed27334622916ddb449fd76e2166",
   "localHeadAtResumeSource": "pending_final_commit",
-  "logicalJResult": {
-    "closureDigest": "67800b30070f0bedfa7b786319d50950e20fc7f0fcc4be2d2253e68020b5df9d",
-    "outcome": "J-A: post_topology_candidate_unavailable",
-    "postTopologyCandidateAvailable": false,
-    "unitJBranchAuthorized": false,
-    "unitKEligible": false
-  },
-  "machineResumeVersion": "closy.active_blueprint_resume.d0_strict_c3_confirmation_v5.v9",
+  "machineResumeVersion": "closy.active_blueprint_resume.phy1_strategy3_diagnosis_v1.v11",
   "matrixScopes": {
     "identityDisjointV1": {
       "appearanceEvaluations": 0,
@@ -45,8 +41,7 @@
       "compileDenominator": 48,
       "outcome": "attempted_integrity_error",
       "predictionDenominator": 64,
-      "predictions": 0,
-      "targetRevealOccurred": false
+      "predictions": 0
     },
     "knownTarget": {
       "d0Rp07Promoted": false,
@@ -56,10 +51,9 @@
     },
     "postTopologyCandidate": {
       "candidateExists": false,
-      "matrixNotRunReason": "post_topology_candidate_unavailable"
+      "matrixNotRunReason": "unit_o_diagnosis_integrity_error"
     },
     "strictC3V5": {
-      "candidateId": "candidate.d0_texture_rerender_v3.49161d8adafb514e5a04b1a9",
       "outcome": "pass",
       "poseCount": 8,
       "posePassCount": 8,
@@ -68,80 +62,78 @@
   },
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "candidate_independent_strategy3_class_admission",
-    "safestEvidenceAction": "freeze production-kernel microfixtures before diagnosis",
-    "selection": "unit_o_phy1_topology_strategy3_diagnosis_v1"
+    "firstUnmetPrerequisite": "unit_o_cross_minor_evidence_integrity",
+    "safestEvidenceAction": "preserve_raw_execution_and_integrity_error_with_unspent_budget",
+    "selection": "none_dependency_ready_in_authorised_sequence"
   },
   "parent": {
-    "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
-    "exactHeadWorkflow": "33533707412",
+    "branch": "codex/closy-forge-d0-strict-c3-confirmation-v5",
+    "exactHeadWorkflow": "33547909132",
     "forgeJobsPassed": 29,
     "forgeJobsTotal": 29,
-    "pullRequest": 50,
-    "sha": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
+    "pullRequest": 51,
+    "sha": "e062a30ba295ed27334622916ddb449fd76e2166"
   },
-  "pendingCIAtEvidenceHead": false,
-  "pullRequest": 51,
+  "pendingCIAtEvidenceHead": true,
+  "pullRequest": 52,
   "remainingBudgets": {
+    "candidateAttempts": 1,
     "seamModels": 0,
     "topologyStrategies": 1
   },
   "remoteHeadAtResumeSource": "pending_final_commit",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "unit_n_pass_sealed_unit_o_dependency_ready",
-  "unitIResult": {
-    "attemptRegistryHead": "48cab91cd65af1789774d9b047c0749e6bf528455138b017f0a6de34116921d9",
-    "candidateAttemptConsumed": false,
-    "candidateOpened": false,
-    "failedChecks": [
-      "normalSeparationEquivalent",
-      "tangentialSlipEquivalent",
-      "storedEnergyEquivalent",
-      "impulseEquivalent"
-    ],
-    "fullPhy1Executed": false,
-    "impulseDifferenceNewtonSeconds": 1.3333317066849276e-10,
-    "integratedCcdExecuted": false,
-    "neutralExecuted": false,
-    "outcomeClass": "M",
-    "outcomeDigest": "28ccd88d2744e69deea1398bd08d324f09730af6f9411c2ca8b6f6dddd1d87bd",
-    "positionDifferenceMeters": 1.5999980159352167e-08,
-    "reasonCode": "quotient_not_mechanically_equivalent_to_frozen_finite_compliance_seam_law",
-    "runtimeV1RemainsSelected": true,
-    "solverDrivenZ2Executed": false,
-    "solverStepAdvanced": false,
-    "storedEnergyDifferenceJoules": 2.8799928574752917e-07,
-    "strategyId": "PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT",
-    "strategyLockDigest": "a743e645c0b9ae62dea2cfd39a68a3de0dd0aa4626356c04397ec4b45579d50a",
-    "strategyMicrofixtureDigest": "fa6efcd2649769e9833d9d0007601ec42506df8b700135eecb10a542637136c5"
-  },
+  "stopReason": "authorised_finite_sequence_complete_after_unit_o_integrity_error",
   "unitMResult": {
     "acceptedIdentityCount": 16,
     "appearanceEvaluationCount": 0,
-    "authorityHead": "9078a09f1156ba8b7f98099185478ca9efcee952",
-    "authorityJob": "99938286152",
-    "authorityRun": "33532344652",
-    "firstUnmetPredicate": "container_negative_control_must_write_audited_output",
     "fullCompileCount": 0,
     "outcome": "attempted_integrity_error",
     "predictionCount": 0,
-    "qualificationRetryAllowed": false,
-    "targetRevealOccurred": false
+    "qualificationRetryAllowed": false
   },
   "unitNResult": {
-    "authorityHead": "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
-    "authorityJob": "99986277154",
-    "authorityRun": "33546821637",
-    "d0Rp08Status": "pass_exact_unit_f_pre_topology",
     "maximumBindingReconstructionErrorMeters": 6.71791165111579e-08,
-    "maximumInvertedTriangleCount": 0,
     "maximumSemanticSeamCrackMeters": 0.0,
     "maximumTangentialSeamSlidingMeters": 0.0,
     "outcome": "pass",
     "poseCount": 8,
     "posePassCount": 8,
-    "qualificationRetryAllowed": false
+    "preTopology": true,
+    "publishedHead": "e062a30ba295ed27334622916ddb449fd76e2166"
+  },
+  "unitOResult": {
+    "admittedStrategyClass": null,
+    "candidateAttemptConsumed": false,
+    "candidateCreated": false,
+    "finalStrategyConsumed": false,
+    "integrityAttestationDigest": "f7a9538bda6435e9b87378f5563ad9889c528b7c454db36eb86687dd6adaf4d0",
+    "integrityFailureRun": "33559874476",
+    "outcome": "diagnosis_integrity_error",
+    "rawOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
+    "rawOutcomeDigest": "bd2533161c19cc66dfe6cd024a083eaf098e42a6018dfffee4be0ef566cfc6c2",
+    "replayPerformed": false,
+    "revisionCount": 2,
+    "revisionFixturePassCounts": [
+      {
+        "admitted": false,
+        "firstUnmetPredicate": "allFixturesPass",
+        "fixtureCount": 8,
+        "fixturePassCount": 7,
+        "revision": 1,
+        "strategyClass": "local_longest_edge_bisection"
+      },
+      {
+        "admitted": false,
+        "firstUnmetPredicate": "allFixturesPass",
+        "fixtureCount": 8,
+        "fixturePassCount": 7,
+        "revision": 2,
+        "strategyClass": "closure_longest_edge_bisection"
+      }
+    ],
+    "unitPEligible": false
   },
   "unsupportedEvidenceClasses": [
     "post_topology_candidate",
