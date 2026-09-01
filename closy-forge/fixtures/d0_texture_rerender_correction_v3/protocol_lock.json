@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "lockId": "closy.d0_texture_rerender_correction.known_target_regression.v3",
+  "classification": "known_target_regression_engineering_diagnostic_not_qualification",
+  "strategy": {
+    "strategyId": "geometric_source_surface_atlas_projection",
+    "version": "closy.appearance.geometric_source_surface_atlas_projection.d0_v3",
+    "maximumAppearanceStrategies": 1,
+    "maximumKnownTargetTrials": 1,
+    "intendedAtlasUvClass": "camera_independent_front_rear_semantic_panel_uv_atlas_v2",
+    "geometryOrPhysicsChangesAllowed": false
+  },
+  "immutableParentFailure": {
+    "evidencePath": "docs/evidence/d0_fitting_pbr_fidelity_v2/evaluation/exact_texture_rerender_evaluation.json",
+    "evidenceHash": "e883f86ae628b27cf739b8cbc8bcebb38cbce4fd58b4310ccc33ff22a7816850",
+    "candidateId": "candidate.d0_exact_fitted_topology_v2.060e8d4aaaa7e82eddb75880",
+    "candidatePackageDigest": "aa3b6345d6fab56a59d9b0acbd05a8526ffdb473e8174f90f88fd255d8514ca2",
+    "logoIoU": 0.0,
+    "logoDisplacementNormalised": 0.154158086,
+    "d0Rp07Status": "fail",
+    "mayBeEditedOrReplaced": false
+  },
+  "sourceClosure": {
+    "fixtureManifestPath": "fixtures/d0_exact_raster_v2/fixture_manifest.json",
+    "fixtureManifestSha256": "0daf9d38753f3256ed6c97a465efd246f74e519ea7375d5a688a401d214815c5",
+    "allowedViews": [
+      {
+        "viewId": "view.front",
+        "sourceId": "source.d0_tshirt_exact_front_v2",
+        "role": "front",
+        "relativePath": "images/front.png",
+        "sha256": "5af080ceb0ef7d4f6b0e664702cc08d6b808efdcf95afab780fa87a0125a9c26",
+        "decodedPixelHash": "b316e98348da83892b693f7a4ffc14ad898fa7904f345e9cacc0322999b28953",
+        "camera": {
+          "projection": "orthographic",
+          "azimuthDegrees": 0.0,
+          "elevationDegrees": 4.0,
+          "distanceMeters": 2.6,
+          "focalLengthMm": 70.0,
+          "sensorWidthMm": 32.0,
+          "principalPointNormalized": [0.5, 0.5],
+          "scaleAssumption": "fixed_avatar_height_1_72_m"
+        }
+      },
+      {
+        "viewId": "view.rear",
+        "sourceId": "source.d0_tshirt_exact_rear_v2",
+        "role": "rear",
+        "relativePath": "images/rear.png",
+        "sha256": "efcd85e47a3f46ce2356407ef2b1aa052eeb3264f64e4303d3d7189f6e57d796",
+        "decodedPixelHash": "2f8f32d4df11ff9aa2295ce6bce3bae2e6ae9e375387e81635f7aa243357097c",
+        "camera": {
+          "projection": "orthographic",
+          "azimuthDegrees": 180.0,
+          "elevationDegrees": 4.0,
+          "distanceMeters": 2.6,
+          "focalLengthMm": 70.0,
+          "sensorWidthMm": 32.0,
+          "principalPointNormalized": [0.5, 0.5],
+          "scaleAssumption": "fixed_avatar_height_1_72_m"
+        }
+      }
+    ],
+    "allowedDerivedEvidence": {
+      "visualRecordId": "visual.exact_ingested_raster_d0_tshirt_v2",
+      "visualRecordHash": "fa33ac63938401e9ea157d65fc3c6e5ffd705b5e757929b2b85518193e2545d6",
+      "multiviewFusionRecordHash": "d9536c9490c3ab7ce70352f21927ae231f705b825ad8a603de1a47f6f85fc918",
+      "selectedCorrectionRecordHash": "f34d7cd8559b7dab4b744032f9ee2cc694e2a6e342feb934c3bcef2c60434011",
+      "maskIds": [
+        "mask.front.target_garment",
+        "mask.front.person_body_proxy",
+        "mask.front.background",
+        "mask.front.occlusion_uncertainty",
+        "mask.back.target_garment",
+        "mask.back.person_body_proxy",
+        "mask.back.background",
+        "mask.back.occlusion_uncertainty"
+      ],
+      "landmarkIds": [
+        "landmark.neck.center",
+        "landmark.shoulder.left",
+        "landmark.shoulder.right",
+        "landmark.armhole.left",
+        "landmark.armhole.right",
+        "landmark.cuff.left",
+        "landmark.cuff.right",
+        "landmark.hem.left",
+        "landmark.hem.right",
+        "landmark.hem.center"
+      ],
+      "openingIds": [
+        "opening.neck",
+        "opening.hem",
+        "opening.cuff.left",
+        "opening.cuff.right"
+      ]
+    },
+    "allowedCameraPerturbationControl": {
+      "maximumAbsoluteAzimuthDegrees": 2.0,
+      "maximumAbsoluteElevationDegrees": 1.0,
+      "maximumAbsolutePrincipalPointNormalised": 0.01,
+      "controlOnly": true
+    },
+    "networkAllowed": false,
+    "externalApisAllowed": false,
+    "privateOrUserPixelsAllowed": false
+  },
+  "forbiddenInputs": [
+    "evaluator_only_third_view_pixels_before_prediction_freeze",
+    "evaluator_only_derived_evidence_before_prediction_freeze",
+    "hidden_target_pattern_or_3d",
+    "previous_evaluator_output_as_optimisation_target",
+    "post_hoc_global_atlas_shift_from_failed_displacement",
+    "hand_edited_output_texture",
+    "target_specific_pixel_constants",
+    "deleted_hidden_or_suppressed_logo_region",
+    "fixture_generator",
+    "network_or_external_service"
+  ],
+  "sourceToTexelProvenanceContract": {
+    "recordVersion": "closy.source_to_texel_provenance.binary.v1",
+    "requiredFields": [
+      "atlasX",
+      "atlasY",
+      "sourceViewId",
+      "sourceX",
+      "sourceY",
+      "panelId",
+      "triangleIndex",
+      "barycentricWeights",
+      "materialUv",
+      "confidence",
+      "visibility",
+      "occlusion",
+      "classification"
+    ],
+    "classifications": ["observed", "blended", "generated"],
+    "observedPixelsOverrideGeneratedFill": true,
+    "logoObservedPixelsMayBeOverwritten": false,
+    "cameraIndependentFinalAtlas": true,
+    "generatedTexelsExcludedFromSourceFidelity": true
+  },
+  "antiHardcodingControls": [
+    "move_logo_left",
+    "move_logo_right",
+    "move_logo_vertically",
+    "change_logo_size",
+    "change_logo_color_without_geometry_change",
+    "remove_logo",
+    "swap_front_rear",
+    "perturb_camera_within_locked_range"
+  ],
+  "frozenImplementations": {
+    "renderer": {
+      "id": "closy_independent_cpu_triangle_raster_v1",
+      "path": "src/closy_forge/inspection/cpu_raster.py",
+      "sha256": "c1888e3cd800098f85d58bcdad16b11213c1f28a13482cc3443d1e4f4135e426"
+    },
+    "metricEvaluator": {
+      "id": "closy.source_render_fidelity.v2",
+      "path": "src/closy_forge/inspection/source_render_fidelity.py",
+      "sha256": "9653036081ef2c3975ebeaf0d8440a1b90f3fd204c8e1fa389dcbdab42003492"
+    },
+    "knownTargetEvaluator": {
+      "id": "closy.d0_exact_fitting_pbr.evaluation.v2",
+      "path": "src/closy_forge/fitting/exact_d0_evaluation.py",
+      "sha256": "12044b617ee4ce86c246200fb759ee8c06a9ef17353e863c277a15aabdbfa7bd"
+    }
+  },
+  "knownEvaluatorTarget": {
+    "accessStateBeforePredictionFreeze": "not_mounted",
+    "groundTruthPath": "fixtures/d0_exact_fitting_v2/evaluator_ground_truth.json",
+    "groundTruthSha256": "24f8663a376949131097e13f50fe163a9eac083b58cbb46abdc527d98a6cdf41",
+    "viewId": "view.evaluator_left_three_quarter",
+    "sourceSha256": "0ff08a2080d8bbdba58b7563f373c6d4c0512e7a4580cf3030e7c1005f562e3e",
+    "classification": "already_known_target_not_held_out_qualification"
+  },
+  "metricApplicability": {
+    "silhouette": "all_source_and_evaluator_views",
+    "boundaryChamfer": "all_source_and_evaluator_views",
+    "landmarkReprojection": "all_source_and_evaluator_views",
+    "foregroundLinearSrgbMae": "all_source_and_evaluator_views_source_observed_pixels_only",
+    "logoIoUAndDisplacement": "front_source_view_only",
+    "seamDiscontinuity": "all_source_and_evaluator_views",
+    "visibleCoverage": "all_source_and_evaluator_views",
+    "generatedRegionShare": "all_source_and_evaluator_views",
+    "physicalNormalRoughnessAoAccuracy": "not_measured"
+  },
+  "thresholds": {
+    "minimumSilhouetteIoU": 0.30,
+    "maximumBoundaryChamferNormalised": 0.095,
+    "maximumLandmarkReprojectionNormalised": 0.14,
+    "maximumForegroundLinearSrgbMae": 0.24,
+    "minimumLogoIoU": 0.02,
+    "maximumLogoDisplacementNormalised": 0.14,
+    "maximumSeamDiscontinuity": 0.22,
+    "minimumVisibleCoverage": 0.30,
+    "maximumGeneratedRegionShare": 0.55,
+    "maximumFrontRearSilhouetteDelta": 0.12,
+    "minimumSourceObservedAtlasFraction": 0.50,
+    "minimumGeneratedFillFractionExclusive": 0.0,
+    "maximumMetallicFactor": 0.10,
+    "minimumRoughnessFactor": 0.65,
+    "physicalNormalRoughnessAoAccuracy": "not_measured"
+  },
+  "candidateInvalidationRules": {
+    "newAtlasBytesRequireNewCandidateIdentity": true,
+    "invalidate": [
+      "atlas",
+      "material_maps",
+      "source_contribution",
+      "source_to_texel_provenance",
+      "candidate_package",
+      "runtime_package",
+      "matrix_evidence_binding",
+      "downstream_cache",
+      "reports"
+    ],
+    "retainOnlyWhenByteIdenticalAndProven": [
+      "pattern",
+      "rest_geometry",
+      "settled_geometry",
+      "render_geometry",
+      "binding",
+      "physics_constraints",
+      "physics_diagnostics"
+    ]
+  },
+  "outcomePolicy": {
+    "successLabel": "known_target_regression_pass",
+    "failureLabel": "known_target_regression_fail",
+    "mayPromoteD0Rp07": false,
+    "mayPromoteResearchPrototype": false,
+    "heldOutQualificationRequiredForPromotion": "review_unit_g",
+    "stopRule": "after_the_first_frozen_known_target_replay_freeze_result_and_continue_to_unit_g_without_tuning_or_second_strategy"
+  }
+}
