@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from closy_forge.avatar_variation import (
     AVATAR_CAPABILITY_VERSION,
@@ -131,7 +131,7 @@ def _monotonic_checks() -> dict[str, bool]:
         low = fit_avatar_patterns(
             SyntheticAvatarCase(
                 f"evidence.{field}.low",
-                replace(baseline, **{field: minimum}),
+                replace(baseline, **cast(Any, {field: minimum})),
                 "boundary",
                 (field,),
             )
@@ -139,7 +139,7 @@ def _monotonic_checks() -> dict[str, bool]:
         high = fit_avatar_patterns(
             SyntheticAvatarCase(
                 f"evidence.{field}.high",
-                replace(baseline, **{field: maximum}),
+                replace(baseline, **cast(Any, {field: maximum})),
                 "boundary",
                 (field,),
             )

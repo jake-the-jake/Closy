@@ -2,12 +2,16 @@
 
 ## Frozen boundary
 
-- Branch: `codex/closy-forge-phy1-topology-strategy2-v4`
-- Pull request: `#48`
+- Branch: `codex/closy-forge-d0-recovery-foundation-v1`
+- Pull request: `pending external attestation`
 - Immutable Unit I evidence head: `854b85ed769bc3e67547e4195f65dfeb78878881`
-- Exact parent: PR `#47` at `07b28f804274cdf6f79347150a85fcc3ff9f4684`
-- Parent exact-head Forge workflow: `33475901299` (`29/29` successful)
+- Latest finished parent publication: PR `#48` at `69f17e0bc0d01472eec3aaf244c158181f74febf`
+- Parent exact-head Forge workflow: `33511517533` (`29/29` successful)
 - Merge authorised: `false`
+
+Unit L recovery foundation passes its generic candidate-independent acceptance. It realises no
+fresh evaluator identity, target, held-out pose, topology candidate, or physical attempt. Its own
+future final head and exact-head workflow remain external to avoid self-reference.
 
 ## Literal outcome
 
@@ -38,9 +42,10 @@ run. Runtime v1 remains selected.
 
 - Seam models remaining: `0`
 - Reserved topology strategies remaining: `1` (Strategy 3)
-- Selected next lane: `none_dependency_ready`
-- First unmet prerequisite: `new_candidate_independent_diagnosis_for_materially_different_reserved_topology_strategy_3`
-- Safest evidence action: design analytic transfer fixtures preserving explicit frozen finite-compliance seams without executing a candidate.
+- Selected next lane: `unit_m_identity_disjoint_confirmation_v2`
+- First unmet prerequisite: `fresh_v2_external_seed_authority_and_cohort`
+- Safest evidence action: freeze Unit M protocol and implementation before any evaluator identity
+  exists.
 
-Do not create Unit J, Unit K, or a Strategy 3 implementation branch from this task. Final published
-head and exact-head CI are attested externally in the draft PR body to avoid self-reference.
+Unit M is now dependency-ready. Final Unit L published head and exact-head CI are attested
+externally in the draft PR body to avoid self-reference.

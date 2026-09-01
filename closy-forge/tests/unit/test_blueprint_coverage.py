@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.phy1_topology_strategy2_v4.v15"
+    assert coverage["version"] == "closy.blueprint_coverage.d0_recovery_foundation_v1.v16"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -279,10 +279,16 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
     assert numbers == list(range(1, 49))
-    assert len(nodes) == 50
+    assert stack["graphCounts"] == {
+        "closyPullRequests": len(rows),
+        "externalPullRequests": len(stack["externalPullRequests"]),
+        "nodes": len(nodes),
+        "edges": len(stack["edges"]),
+    }
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert stack["externalPullRequests"][1]["number"] == 3
+    assert stack["externalPullRequests"][2]["number"] == 4
     assert "sequentialMergeOrder" not in stack
     topological_position = {
         node_id: index for index, node_id in enumerate(stack["topologicalOrder"])
@@ -306,7 +312,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 48}:
+        if row["number"] == 10:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -351,6 +357,12 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert by_id["github:jake-the-jake/ZeroOne:pr/3"]["headSha"] == (
         "413aecd24434f90d89ad35c6a8f909de75df34c7"
     )
+    assert by_id["github:jake-the-jake/ZeroOne:pr/4"]["headSha"] == (
+        "9cbae4a8e6ef2e61c1839ecbdf8a462aaa560027"
+    )
+    assert by_id["github:jake-the-jake/ZeroOne:pr/4"]["parentIds"] == [
+        "github:jake-the-jake/ZeroOne:pr/3"
+    ]
     assert by_id["github:jake-the-jake/Closy:pr/34"]["sourceOnly"] is True
     assert len(by_id["github:jake-the-jake/Closy:pr/35"]["integrationMappings"]) == 6
     assert by_id["github:jake-the-jake/Closy:pr/38"]["parentIds"] == [
@@ -395,29 +407,32 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         "github:jake-the-jake/Closy:pr/45"
     ]
     assert by_id["github:jake-the-jake/Closy:pr/46"]["headSha"] == (
-        "069707bbd0bfc95eabbc5a3b3045e349d4c0b121"
+        "bc4927fe6d36667b5b236d844b4eff511ef6f987"
     )
     assert (
         by_id["github:jake-the-jake/Closy:pr/46"]["latestExactHeadWorkflows"][0]["runId"]
-        == "33470303559"
+        == "33503777760"
     )
     assert by_id["github:jake-the-jake/Closy:pr/47"]["parentIds"] == [
         "github:jake-the-jake/Closy:pr/46"
     ]
     assert by_id["github:jake-the-jake/Closy:pr/47"]["headSha"] == (
-        "07b28f804274cdf6f79347150a85fcc3ff9f4684"
+        "e25da69d29eb1b68885b911c7354df085f4a22c0"
     )
     assert (
         by_id["github:jake-the-jake/Closy:pr/47"]["latestExactHeadWorkflows"][0]["runId"]
-        == "33475901299"
+        == "33505903385"
     )
     assert by_id["github:jake-the-jake/Closy:pr/48"]["parentIds"] == [
         "github:jake-the-jake/Closy:pr/47"
     ]
     assert by_id["github:jake-the-jake/Closy:pr/48"]["headSha"] == (
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "69f17e0bc0d01472eec3aaf244c158181f74febf"
     )
-    assert by_id["github:jake-the-jake/Closy:pr/48"]["latestExactHeadWorkflows"] == []
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/48"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33511517533"
+    )
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -489,7 +504,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.phy1_topology_strategy2_v4.v12"
+        "closy.blueprint_reconciliation.d0_recovery_foundation_v1.v13"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
@@ -509,11 +524,15 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_i_logical_j_a_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_l_recovery_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-phy1-topology-strategy2-v4"
+    assert resume["branch"] == "codex/closy-forge-d0-recovery-foundation-v1"
+    assert resume["latestFinishedParentPublicationHead"] == (
+        "69f17e0bc0d01472eec3aaf244c158181f74febf"
+    )
+    assert resume["pendingCIAtEvidenceHead"] is False
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
     assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
@@ -535,12 +554,13 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_i_logical_j_a_boundar
     assert resume["matrixScopes"]["identityDisjoint"]["predictions"] == 64
     assert resume["matrixScopes"]["identityDisjoint"]["canonicalCompiles"] == 0
     assert resume["matrixScopes"]["postTopologyCandidate"]["candidateExists"] is False
-    assert resume["nextHandoff"]["selection"] == "none_dependency_ready"
+    assert resume["nextHandoff"]["selection"] == ("unit_m_identity_disjoint_confirmation_v2")
     assert "6 pass / 5 fail" in markdown
     assert "known_target_regression_pass" in markdown
     assert "no candidate" in markdown
     assert "benchmark_failed_fixed_inventory_unfinished" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
+    assert "Unit L recovery foundation passes" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:

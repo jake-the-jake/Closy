@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v14"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v15"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -39,10 +39,11 @@ D0_EVIDENCE_INTEGRITY_V4_PUBLISHED_HEAD = "2f40815010cef01685a7ed873081a22f11d67
 UNIT_F_TEXTURE_RERENDER_V3_SHA = "7b4fbc199f462d35ba2f440494cff7cc700b0b94"
 UNIT_F_TEXTURE_RERENDER_V3_PUBLISHED_HEAD = "ba54b17a0aef7518d9acac30c6b7ec6564a38d87"
 UNIT_G_DISJOINT_BENCHMARK_V1_SHA = "6de060d7fa4e985070187bf417f159ecbe31e8b4"
-UNIT_G_DISJOINT_BENCHMARK_V1_PUBLISHED_HEAD = "069707bbd0bfc95eabbc5a3b3045e349d4c0b121"
+UNIT_G_DISJOINT_BENCHMARK_V1_PUBLISHED_HEAD = "bc4927fe6d36667b5b236d844b4eff511ef6f987"
 UNIT_H_CORE_RUNTIME_C3_V4_SHA = "3541507808946ae1248fba110b7732599db3fdbc"
-UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD = "07b28f804274cdf6f79347150a85fcc3ff9f4684"
+UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA = "854b85ed769bc3e67547e4195f65dfeb78878881"
+UNIT_I_TOPOLOGY_STRATEGY2_V4_PUBLISHED_HEAD = "69f17e0bc0d01472eec3aaf244c158181f74febf"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -105,6 +106,8 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "workflowRun": "33264403890",
         "unsupportedTiers": _COMMON_UNSUPPORTED,
         "blockers": ["broader_avatar_garment_platform_and_private_user_profiles"],
+        "legacyHistoricalOnly": True,
+        "maySatisfyStrictC3OrD0Rp08": False,
     },
     "PHY1-SingleLayer-D0": {
         "gateId": "PHY1-SingleLayer-D0",
@@ -373,6 +376,17 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "predictionCount": 64,
         "fullCompileCount": 0,
         "appearanceEvaluationCount": 0,
+        "rowResults": {
+            "D0-RP-03": {"result": "fail", "attemptState": "completed"},
+            "D0-RP-04": {
+                "result": "fail",
+                "attemptState": "attempted_integrity_error",
+            },
+            "D0-RP-06": {"result": "fail", "attemptState": "completed"},
+            "D0-RP-07": {"result": "fail", "attemptState": "completed"},
+        },
+        "coverageState": "partial",
+        "latestGreenChecksMeaning": "failed_state_preservation_not_cohort_success",
         "firstUnmetRequiredPredicate": "fixed_inventory_evaluator_completion",
         "unsupportedTiers": _COMMON_UNSUPPORTED
         + ["cohort_gate_pass", "real_photo", "real_fabric", "human_review"],
@@ -700,7 +714,7 @@ def build_status_model(
                     "committedSourceAnchorSha": UNIT_G_DISJOINT_BENCHMARK_V1_SHA,
                     "publishedHeadSha": UNIT_G_DISJOINT_BENCHMARK_V1_PUBLISHED_HEAD,
                     "workflowRunUrl": (
-                        "https://github.com/jake-the-jake/Closy/actions/runs/33470303559"
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33503777760"
                     ),
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
@@ -710,22 +724,23 @@ def build_status_model(
                     "committedSourceAnchorSha": UNIT_H_CORE_RUNTIME_C3_V4_SHA,
                     "publishedHeadSha": UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD,
                     "workflowRunUrl": (
-                        "https://github.com/jake-the-jake/Closy/actions/runs/33475901299"
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33505903385"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+                {
+                    "pullRequest": 48,
+                    "committedSourceAnchorSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
+                    "publishedHeadSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_PUBLISHED_HEAD,
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33511517533"
                     ),
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
             ],
-            "pendingExternalExactHeadAttestations": [
-                {
-                    "pullRequest": 48,
-                    "committedSourceAnchorSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
-                    "publishedHeadSha": None,
-                    "workflowRunUrl": None,
-                    "result": "pending_publication_exact_head_ci",
-                    "authority": "github_workflow_api_and_draft_pr_body",
-                }
-            ],
+            "pendingExternalExactHeadAttestations": [],
             "headAuthorityPolicy": (
                 "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_"
                 "draft_pr_body_attest_final_published_head"
@@ -896,7 +911,7 @@ def validate_status_model(
             "pullRequest": 46,
             "committedSourceAnchorSha": UNIT_G_DISJOINT_BENCHMARK_V1_SHA,
             "publishedHeadSha": UNIT_G_DISJOINT_BENCHMARK_V1_PUBLISHED_HEAD,
-            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33470303559",
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33503777760",
             "result": "pass",
             "authority": "github_workflow_api_and_draft_pr_body",
         },
@@ -904,7 +919,15 @@ def validate_status_model(
             "pullRequest": 47,
             "committedSourceAnchorSha": UNIT_H_CORE_RUNTIME_C3_V4_SHA,
             "publishedHeadSha": UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD,
-            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33475901299",
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33505903385",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+        {
+            "pullRequest": 48,
+            "committedSourceAnchorSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
+            "publishedHeadSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_PUBLISHED_HEAD,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33511517533",
             "result": "pass",
             "authority": "github_workflow_api_and_draft_pr_body",
         },
@@ -912,16 +935,7 @@ def validate_status_model(
     if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
-    if pending_attestations != [
-        {
-            "pullRequest": 48,
-            "committedSourceAnchorSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
-            "publishedHeadSha": None,
-            "workflowRunUrl": None,
-            "result": "pending_publication_exact_head_ci",
-            "authority": "github_workflow_api_and_draft_pr_body",
-        }
-    ]:
+    if pending_attestations != []:
         issues.append("pending_external_exact_head_attestation_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (

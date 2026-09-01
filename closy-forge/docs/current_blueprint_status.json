@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.phy1_topology_strategy2_v4.v15",
+    "coverageVersion": "closy.blueprint_coverage.d0_recovery_foundation_v1.v16",
     "total": 101
   },
-  "evidenceAnchorSha": "3541507808946ae1248fba110b7732599db3fdbc",
+  "evidenceAnchorSha": "854b85ed769bc3e67547e4195f65dfeb78878881",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -105,6 +105,8 @@
       "gateId": "C3-Binding-D0",
       "gateScope": "binding",
       "globalStatus": "partial",
+      "legacyHistoricalOnly": true,
+      "maySatisfyStrictC3OrD0Rp08": false,
       "platform": [
         "windows"
       ],
@@ -131,6 +133,7 @@
         "no_completed_canonical_compile_or_appearance_evaluation"
       ],
       "computeProfile": "D0",
+      "coverageState": "partial",
       "dataProvenance": "project-authored public synthetic identity-disjoint cohort",
       "developmentIdentityCount": 8,
       "evaluatorIdentityCount": 16,
@@ -146,10 +149,29 @@
       "gateId": "D0-DisjointTshirt-v1",
       "gateScope": "16-identity evaluator cohort",
       "globalStatus": "partial",
+      "latestGreenChecksMeaning": "failed_state_preservation_not_cohort_success",
       "platform": [
         "windows"
       ],
       "predictionCount": 64,
+      "rowResults": {
+        "D0-RP-03": {
+          "attemptState": "completed",
+          "result": "fail"
+        },
+        "D0-RP-04": {
+          "attemptState": "attempted_integrity_error",
+          "result": "fail"
+        },
+        "D0-RP-06": {
+          "attemptState": "completed",
+          "result": "fail"
+        },
+        "D0-RP-07": {
+          "attemptState": "completed",
+          "result": "fail"
+        }
+      },
       "scopedStatus": "benchmark_failed_fixed_inventory_unfinished",
       "sourceSha": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
       "toolchain": [
@@ -952,7 +974,7 @@
     "committedSourceAnchorExceptions": [
       10
     ],
-    "crossRepositoryNodeCount": 50,
+    "crossRepositoryNodeCount": 51,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -1014,36 +1036,35 @@
       {
         "authority": "github_workflow_api_and_draft_pr_body",
         "committedSourceAnchorSha": "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-        "publishedHeadSha": "069707bbd0bfc95eabbc5a3b3045e349d4c0b121",
+        "publishedHeadSha": "bc4927fe6d36667b5b236d844b4eff511ef6f987",
         "pullRequest": 46,
         "result": "pass",
-        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33470303559"
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33503777760"
       },
       {
         "authority": "github_workflow_api_and_draft_pr_body",
         "committedSourceAnchorSha": "3541507808946ae1248fba110b7732599db3fdbc",
-        "publishedHeadSha": "07b28f804274cdf6f79347150a85fcc3ff9f4684",
+        "publishedHeadSha": "e25da69d29eb1b68885b911c7354df085f4a22c0",
         "pullRequest": 47,
         "result": "pass",
-        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33475901299"
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33505903385"
+      },
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "publishedHeadSha": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+        "pullRequest": 48,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33511517533"
       }
     ],
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
     "latestPullRequest": 48,
-    "pendingExternalExactHeadAttestations": [
-      {
-        "authority": "github_workflow_api_and_draft_pr_body",
-        "committedSourceAnchorSha": "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "publishedHeadSha": null,
-        "pullRequest": 48,
-        "result": "pending_publication_exact_head_ci",
-        "workflowRunUrl": null
-      }
-    ],
+    "pendingExternalExactHeadAttestations": [],
     "pullRequestCount": 48,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v14",
+  "statusModelVersion": "closy.blueprint_status_model.v15",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,

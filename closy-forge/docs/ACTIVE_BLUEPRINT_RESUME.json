@@ -1,12 +1,13 @@
 {
-  "activeLane": "PHY1 topology strategy 2 v4 logical J-A closure",
-  "branch": "codex/closy-forge-phy1-topology-strategy2-v4",
+  "activeLane": "D0 recovery foundation v1 complete; Unit M confirmation next",
+  "branch": "codex/closy-forge-d0-recovery-foundation-v1",
   "evidenceHead": "854b85ed769bc3e67547e4195f65dfeb78878881",
-  "exactNextAction": "Do not create Unit J or K. Preserve the reserved topology strategy 3 and first produce candidate-independent analytic transfer fixtures that retain explicit frozen finite-compliance seams.",
+  "exactNextAction": "Create Unit M from the externally attested Unit L head, freeze protocol and implementation, then invoke one fresh external seed authority.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "D0-Core-Reproducibility-H1": "pass_predecessor_sentinel_scoped",
     "D0-DisjointTshirt-v1": "benchmark_failed_fixed_inventory_unfinished",
+    "D0-Recovery-Foundation-v1": "pass_generic_candidate_independent_no_confirmation",
     "D0-Strict-C3-H4": "fail_frozen_evaluator_adapter_0_of_8",
     "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
     "PHY1-Topology-Strategy2-D0-v4": "outcome_M_strategy_microfixture_failed_no_candidate",
@@ -17,7 +18,8 @@
     "Unit-J": "J-A_post_topology_candidate_unavailable",
     "Unit-K": "ineligible_no_post_topology_candidate"
   },
-  "localHeadAtResumeSource": "854b85ed769bc3e67547e4195f65dfeb78878881",
+  "latestFinishedParentPublicationHead": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+  "localHeadAtResumeSource": "69f17e0bc0d01472eec3aaf244c158181f74febf",
   "logicalJResult": {
     "closureDigest": "67800b30070f0bedfa7b786319d50950e20fc7f0fcc4be2d2253e68020b5df9d",
     "outcome": "J-A: post_topology_candidate_unavailable",
@@ -25,7 +27,7 @@
     "unitJBranchAuthorized": false,
     "unitKEligible": false
   },
-  "machineResumeVersion": "closy.active_blueprint_resume.phy1_topology_strategy2_v4.v6",
+  "machineResumeVersion": "closy.active_blueprint_resume.d0_recovery_foundation_v1.v7",
   "matrixScopes": {
     "identityDisjoint": {
       "appearanceEvaluations": 0,
@@ -46,28 +48,28 @@
   },
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "new_candidate_independent_diagnosis_for_materially_different_reserved_topology_strategy_3",
-    "safestEvidenceAction": "design analytic transfer fixtures preserving explicit frozen finite-compliance seams without executing a candidate",
-    "selection": "none_dependency_ready"
+    "firstUnmetPrerequisite": "fresh_v2_external_seed_authority_and_cohort",
+    "safestEvidenceAction": "freeze Unit M protocol and implementation before any evaluator identity exists",
+    "selection": "unit_m_identity_disjoint_confirmation_v2"
   },
   "parent": {
-    "branch": "codex/closy-forge-d0-core-runtime-c3-v4",
-    "exactHeadWorkflow": "33475901299",
+    "branch": "codex/closy-forge-phy1-topology-strategy2-v4",
+    "exactHeadWorkflow": "33511517533",
     "forgeJobsPassed": 29,
     "forgeJobsTotal": 29,
-    "pullRequest": 47,
-    "sha": "07b28f804274cdf6f79347150a85fcc3ff9f4684"
+    "pullRequest": 48,
+    "sha": "69f17e0bc0d01472eec3aaf244c158181f74febf"
   },
-  "pendingCIAtEvidenceHead": true,
-  "pullRequest": 48,
+  "pendingCIAtEvidenceHead": false,
+  "pullRequest": "pending_external_attestation",
   "remainingBudgets": {
     "seamModels": 0,
     "topologyStrategies": 1
   },
-  "remoteHeadAtResumeSource": "854b85ed769bc3e67547e4195f65dfeb78878881",
+  "remoteHeadAtResumeSource": "69f17e0bc0d01472eec3aaf244c158181f74febf",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "finite_prompt_complete_through_unit_i_logical_j_a",
+  "stopReason": "unit_l_foundation_complete_unit_m_dependency_ready",
   "unitIResult": {
     "attemptRegistryHead": "48cab91cd65af1789774d9b047c0749e6bf528455138b017f0a6de34116921d9",
     "candidateAttemptConsumed": false,

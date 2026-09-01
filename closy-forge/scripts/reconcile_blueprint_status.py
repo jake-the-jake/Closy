@@ -11,14 +11,16 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "3541507808946ae1248fba110b7732599db3fdbc"
+EVIDENCE_ANCHOR = "854b85ed769bc3e67547e4195f65dfeb78878881"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.phy1_topology_strategy2_v4.v15"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_strategy2_v4.v12"
-UNIT_H_FINAL_HEAD = "07b28f804274cdf6f79347150a85fcc3ff9f4684"
+VERSION = "closy.blueprint_coverage.d0_recovery_foundation_v1.v16"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_recovery_foundation_v1.v13"
+UNIT_G_FINAL_HEAD = "bc4927fe6d36667b5b236d844b4eff511ef6f987"
+UNIT_H_FINAL_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_EVIDENCE_HEAD = "854b85ed769bc3e67547e4195f65dfeb78878881"
+UNIT_I_FINAL_HEAD = "69f17e0bc0d01472eec3aaf244c158181f74febf"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -348,10 +350,10 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
         "codex/closy-forge-d0-texture-rerender-correction-v3",
         "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
-        "069707bbd0bfc95eabbc5a3b3045e349d4c0b121",
-        8,
-        59,
-        "33470303559",
+        UNIT_G_FINAL_HEAD,
+        9,
+        62,
+        "33503777760",
         "SUCCESS",
         "d0_disjoint_tshirt_benchmark_v1_failed_evaluator_harness",
     ),
@@ -360,11 +362,11 @@ PR_SNAPSHOTS = [
         "Forge: pre-topology reproducibility and strict C3 v4",
         "codex/closy-forge-d0-core-runtime-c3-v4",
         "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
-        "069707bbd0bfc95eabbc5a3b3045e349d4c0b121",
+        UNIT_G_FINAL_HEAD,
         UNIT_H_FINAL_HEAD,
-        5,
+        6,
         29,
-        "33475901299",
+        "33505903385",
         "SUCCESS",
         "d0_core_reproducibility_pass_strict_c3_harness_fail",
     ),
@@ -374,11 +376,11 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-phy1-topology-strategy2-v4",
         "codex/closy-forge-d0-core-runtime-c3-v4",
         UNIT_H_FINAL_HEAD,
-        UNIT_I_EVIDENCE_HEAD,
-        4,
-        23,
-        "",
-        "PENDING",
+        UNIT_I_FINAL_HEAD,
+        7,
+        35,
+        "33511517533",
+        "SUCCESS",
         "phy1_topology_strategy2_outcome_M_logical_J_A",
     ),
 ]
@@ -479,6 +481,15 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/evidence/phy1_topology_strategy2_v4/unit_i_outcome.json",
     "closy-forge/docs/evidence/phy1_topology_strategy2_v4/logical_j_a_closure.json",
     "closy-forge/docs/evidence/phy1_topology_strategy2_v4/evidence_manifest.json",
+    "closy-forge/src/closy_forge/recovery_foundation_v1/contracts.py",
+    "closy-forge/src/closy_forge/recovery_foundation_v1/evaluator_v2.py",
+    "closy-forge/src/closy_forge/recovery_foundation_v1/contestant_boundary.py",
+    "closy-forge/src/closy_forge/recovery_foundation_v1/c3_v5.py",
+    "closy-forge/src/closy_forge/recovery_foundation_v1/sentinel.py",
+    "closy-forge/docs/evidence/d0_recovery_foundation_v1/publication_truth.json",
+    "closy-forge/docs/evidence/d0_recovery_foundation_v1/result_semantics.json",
+    "closy-forge/docs/evidence/d0_recovery_foundation_v1/physical_budget_authority.json",
+    "closy-forge/docs/evidence/d0_recovery_foundation_v1/unit_l_outcome.json",
 ]
 
 PHASE10_PATHS = [
@@ -2150,22 +2161,23 @@ def _write_active_resume(docs: Path) -> None:
     )
     resume = {
         "schemaVersion": 1,
-        "machineResumeVersion": "closy.active_blueprint_resume.phy1_topology_strategy2_v4.v6",
-        "activeLane": "PHY1 topology strategy 2 v4 logical J-A closure",
-        "branch": "codex/closy-forge-phy1-topology-strategy2-v4",
-        "pullRequest": 48,
+        "machineResumeVersion": "closy.active_blueprint_resume.d0_recovery_foundation_v1.v7",
+        "activeLane": "D0 recovery foundation v1 complete; Unit M confirmation next",
+        "branch": "codex/closy-forge-d0-recovery-foundation-v1",
+        "pullRequest": "pending_external_attestation",
         "evidenceHead": UNIT_I_EVIDENCE_HEAD,
-        "localHeadAtResumeSource": UNIT_I_EVIDENCE_HEAD,
-        "remoteHeadAtResumeSource": UNIT_I_EVIDENCE_HEAD,
+        "latestFinishedParentPublicationHead": UNIT_I_FINAL_HEAD,
+        "localHeadAtResumeSource": UNIT_I_FINAL_HEAD,
+        "remoteHeadAtResumeSource": UNIT_I_FINAL_HEAD,
         "sourceAnchorIsSelfReferential": False,
         "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
-        "pendingCIAtEvidenceHead": True,
+        "pendingCIAtEvidenceHead": False,
         "mergeAuthorised": False,
         "parent": {
-            "branch": "codex/closy-forge-d0-core-runtime-c3-v4",
-            "pullRequest": 47,
-            "sha": UNIT_H_FINAL_HEAD,
-            "exactHeadWorkflow": "33475901299",
+            "branch": "codex/closy-forge-phy1-topology-strategy2-v4",
+            "pullRequest": 48,
+            "sha": UNIT_I_FINAL_HEAD,
+            "exactHeadWorkflow": "33511517533",
             "forgeJobsPassed": 29,
             "forgeJobsTotal": 29,
         },
@@ -2176,6 +2188,7 @@ def _write_active_resume(docs: Path) -> None:
             "D0-DisjointTshirt-v1": "benchmark_failed_fixed_inventory_unfinished",
             "D0-Core-Reproducibility-H1": "pass_predecessor_sentinel_scoped",
             "D0-Strict-C3-H4": "fail_frozen_evaluator_adapter_0_of_8",
+            "D0-Recovery-Foundation-v1": "pass_generic_candidate_independent_no_confirmation",
             "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
             "PHY1-Topology-Strategy2-D0-v4": (
                 "outcome_M_strategy_microfixture_failed_no_candidate"
@@ -2240,13 +2253,18 @@ def _write_active_resume(docs: Path) -> None:
             "seamModels": outcome["remainingBudgets"]["seamModels"],
             "topologyStrategies": outcome["remainingBudgets"]["reservedTopologyStrategies"],
         },
-        "nextHandoff": closure["nextHandoff"],
+        "nextHandoff": {
+            "selection": "unit_m_identity_disjoint_confirmation_v2",
+            "firstUnmetPrerequisite": "fresh_v2_external_seed_authority_and_cohort",
+            "safestEvidenceAction": (
+                "freeze Unit M protocol and implementation before any evaluator identity exists"
+            ),
+        },
         "exactNextAction": (
-            "Do not create Unit J or K. Preserve the reserved topology strategy 3 and first "
-            "produce candidate-independent analytic transfer fixtures that retain explicit "
-            "frozen finite-compliance seams."
+            "Create Unit M from the externally attested Unit L head, freeze protocol and "
+            "implementation, then invoke one fresh external seed authority."
         ),
-        "stopReason": "finite_prompt_complete_through_unit_i_logical_j_a",
+        "stopReason": "unit_l_foundation_complete_unit_m_dependency_ready",
         "unsupportedEvidenceClasses": [
             "post_topology_candidate",
             "post_topology_core_reproducibility",
@@ -2273,11 +2291,15 @@ def _write_active_resume(docs: Path) -> None:
 ## Frozen boundary
 
 - Branch: `{resume['branch']}`
-- Pull request: `#48`
+- Pull request: `pending external attestation`
 - Immutable Unit I evidence head: `{UNIT_I_EVIDENCE_HEAD}`
-- Exact parent: PR `#47` at `{UNIT_H_FINAL_HEAD}`
-- Parent exact-head Forge workflow: `33475901299` (`29/29` successful)
+- Latest finished parent publication: PR `#48` at `{UNIT_I_FINAL_HEAD}`
+- Parent exact-head Forge workflow: `33511517533` (`29/29` successful)
 - Merge authorised: `false`
+
+Unit L recovery foundation passes its generic candidate-independent acceptance. It realises no
+fresh evaluator identity, target, held-out pose, topology candidate, or physical attempt. Its own
+future final head and exact-head workflow remain external to avoid self-reference.
 
 ## Literal outcome
 
@@ -2308,12 +2330,13 @@ run. Runtime v1 remains selected.
 
 - Seam models remaining: `0`
 - Reserved topology strategies remaining: `1` (Strategy 3)
-- Selected next lane: `{closure['nextHandoff']['selection']}`
-- First unmet prerequisite: `{closure['nextHandoff']['firstUnmetPrerequisite']}`
-- Safest evidence action: {closure['nextHandoff']['safestEvidenceAction']}.
+- Selected next lane: `unit_m_identity_disjoint_confirmation_v2`
+- First unmet prerequisite: `fresh_v2_external_seed_authority_and_cohort`
+- Safest evidence action: freeze Unit M protocol and implementation before any evaluator identity
+  exists.
 
-Do not create Unit J, Unit K, or a Strategy 3 implementation branch from this task. Final published
-head and exact-head CI are attested externally in the draft PR body to avoid self-reference.
+Unit M is now dependency-ready. Final Unit L published head and exact-head CI are attested
+externally in the draft PR body to avoid self-reference.
 """
     (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(markdown, encoding="utf-8", newline="\n")
 
@@ -2327,8 +2350,8 @@ def _update_master_progress(docs: Path) -> None:
 
 {marker}
 
-Review Unit I branched exactly from Unit H final head `{UNIT_H_FINAL_HEAD}`. Unit H is externally
-attested by Forge workflow `33475901299` with 29 of 29 jobs successful. Unit I froze a topology-only
+Review Unit I is synchronized on Unit H final head `{UNIT_H_FINAL_HEAD}`. Unit H is externally
+attested by Forge workflow `33505903385` with 29 of 29 jobs successful. Unit I froze a topology-only
 budget, diagnosed the immutable PR #43 trajectory without rerunning it, and locked exactly one
 strategy: `PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT`.
 
@@ -2341,10 +2364,16 @@ was consumed. Neutral/full PHY1, integrated CCD, post-topology C3/Z1, and Z2 wer
 
 Logical outcome `J-A: post_topology_candidate_unavailable` closes the finite sequence without a Unit
 J branch; Unit K is ineligible. Runtime v1 remains selected, seam models remaining are zero, and one
-materially different topology strategy remains reserved. The handoff is `none_dependency_ready`.
-Its first unmet prerequisite is new candidate-independent diagnosis for Strategy 3; the safest next
-evidence action is analytic transfer-fixture design that preserves explicit frozen finite-compliance
-seams. No private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, Production,
+materially different topology strategy remains reserved. PR #48 is published at
+`{UNIT_I_FINAL_HEAD}` with exact-head Forge workflow `33511517533`, 29 of 29 jobs successful.
+
+Unit L now supplies a passing candidate-independent recovery foundation: publication/result truth,
+global physical budgets, pointer-bounded ULP policy, evaluator v2 generic gates, deny-by-default
+contestant closure, strict C3 v5 generic metrics, and executable Unit-F-else-PR43 sentinel
+resolution. It generated no new evaluator identity, target, held-out pose, candidate, or physical
+attempt. The next dependency-ready unit is the untouched Unit M confirmation v2, after its protocol
+and implementation are frozen. No private-user, human-review, real-photo, real-fabric, GPU, mobile,
+Alpha, Beta, Production,
 post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is made.
 """
     path.write_text(prefix + section, encoding="utf-8", newline="\n")
@@ -2470,6 +2499,30 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         "latestExactHeadWorkflows": [
             _workflow("Closy Static Processor", "33262736792", "SUCCESS", 2),
             _workflow("Viewport UI Corrective CPU Validation", "33262736795", "SUCCESS", 1),
+        ],
+    }
+    zeroone_transport_row: dict[str, object] = {
+        "repository": "jake-the-jake/ZeroOne",
+        "number": 4,
+        "url": "https://github.com/jake-the-jake/ZeroOne/pull/4",
+        "title": "Qualify ZeroOne dynamic mechanical transport v2",
+        "branch": "codex/zeroone-closy-dynamic-contract-v2",
+        "baseBranch": "codex/closy-zeroone-dynamic-reference-v1",
+        "baseSha": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+        "headSha": "9cbae4a8e6ef2e61c1839ecbdf8a462aaa560027",
+        "mergeBase": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+        "layerAhead": 3,
+        "layerBehind": 0,
+        "layerCommitCount": 3,
+        "changedFileCount": 9,
+        "draft": True,
+        "state": "OPEN",
+        "mergeability": "MERGEABLE",
+        "directParentMergeBaseVerified": True,
+        "knownException": None,
+        "role": "compiled_mechanical_transport_v2_source",
+        "latestExactHeadWorkflows": [
+            _workflow("Closy Static Processor", "33297149608", "SUCCESS", 2),
         ],
     }
     rows.sort(key=lambda row: _as_int(row["number"]))
@@ -2686,16 +2739,58 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
             "latestExactHeadWorkflows": zeroone_dynamic_row["latestExactHeadWorkflows"],
         }
     )
+    zeroone_transport_id = "github:jake-the-jake/ZeroOne:pr/4"
+    edges.append({"from": zeroone_dynamic_id, "to": zeroone_transport_id, "kind": "parent"})
+    nodes.append(
+        {
+            "id": zeroone_transport_id,
+            "repository": zeroone_transport_row["repository"],
+            "pullRequest": zeroone_transport_row["number"],
+            "capabilityRole": "compiled_mechanical_transport_v2_source",
+            "branch": zeroone_transport_row["branch"],
+            "baseRef": zeroone_transport_row["baseBranch"],
+            "baseSha": zeroone_transport_row["baseSha"],
+            "mergeBase": zeroone_transport_row["mergeBase"],
+            "ahead": zeroone_transport_row["layerAhead"],
+            "behind": zeroone_transport_row["layerBehind"],
+            "changedFileCount": zeroone_transport_row["changedFileCount"],
+            "state": zeroone_transport_row["state"],
+            "role": zeroone_transport_row["role"],
+            "headSha": zeroone_transport_row["headSha"],
+            "parentIds": [zeroone_dynamic_id],
+            "dependencyIds": [zeroone_dynamic_id],
+            "uniqueCommitRange": (
+                f"{zeroone_transport_row['baseSha']}..{zeroone_transport_row['headSha']}"
+            ),
+            "integrationMappings": [],
+            "sourceOnly": False,
+            "superseded": False,
+            "mergeEligible": True,
+            "neverMergeWith": [],
+            "latestExactHeadWorkflows": zeroone_transport_row["latestExactHeadWorkflows"],
+        }
+    )
     stack["schemaVersion"] = 3
     stack["graphVersion"] = "closy.cross_repository_pr_dag.v3"
     stack["topology"] = "explicit_dag"
     stack["pullRequests"] = rows
-    stack["externalPullRequests"] = [zeroone_row, zeroone_dynamic_row]
+    external_pull_requests = [
+        zeroone_row,
+        zeroone_dynamic_row,
+        zeroone_transport_row,
+    ]
+    stack["externalPullRequests"] = external_pull_requests
     stack["nodes"] = nodes
     stack["edges"] = edges
     stack.pop("sequentialMergeOrder", None)
     stack.pop("sequentialMergeRehearsal", None)
     stack["topologicalOrder"] = _topological_order(nodes, edges)
+    stack["graphCounts"] = {
+        "closyPullRequests": len(rows),
+        "externalPullRequests": len(external_pull_requests),
+        "nodes": len(nodes),
+        "edges": len(edges),
+    }
     stack["validation"] = {
         "acyclic": True,
         "exactMergeBases": True,
@@ -2767,6 +2862,9 @@ def _closy_run(run_id: str, conclusion: str) -> dict[str, object] | None:
         "33464425080",
         "33470303559",
         "33475901299",
+        "33503777760",
+        "33505903385",
+        "33511517533",
     }
     job_count = 29 if run_id in forge_29_job_runs else 26
     result: dict[str, object] = {
