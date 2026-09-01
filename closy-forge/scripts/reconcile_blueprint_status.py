@@ -15,8 +15,10 @@ EVIDENCE_ANCHOR = "3541507808946ae1248fba110b7732599db3fdbc"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.d0_core_runtime_c3_v4.v14"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_core_runtime_c3_v4.v11"
+VERSION = "closy.blueprint_coverage.phy1_topology_strategy2_v4.v15"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_strategy2_v4.v12"
+UNIT_H_FINAL_HEAD = "07b28f804274cdf6f79347150a85fcc3ff9f4684"
+UNIT_I_EVIDENCE_HEAD = "854b85ed769bc3e67547e4195f65dfeb78878881"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -359,12 +361,25 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-d0-core-runtime-c3-v4",
         "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
         "069707bbd0bfc95eabbc5a3b3045e349d4c0b121",
-        "3541507808946ae1248fba110b7732599db3fdbc",
-        3,
-        18,
+        UNIT_H_FINAL_HEAD,
+        5,
+        29,
+        "33475901299",
+        "SUCCESS",
+        "d0_core_reproducibility_pass_strict_c3_harness_fail",
+    ),
+    (
+        48,
+        "Forge: execute bounded PHY1 topology strategy 2 v4",
+        "codex/closy-forge-phy1-topology-strategy2-v4",
+        "codex/closy-forge-d0-core-runtime-c3-v4",
+        UNIT_H_FINAL_HEAD,
+        UNIT_I_EVIDENCE_HEAD,
+        4,
+        23,
         "",
         "PENDING",
-        "d0_core_reproducibility_pass_strict_c3_harness_fail",
+        "phy1_topology_strategy2_outcome_M_logical_J_A",
     ),
 ]
 
@@ -447,6 +462,23 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/evidence/d0_core_runtime_c3_v4/strict_c3_result.json",
     "closy-forge/docs/evidence/d0_core_runtime_c3_v4/processor_authority_audit.json",
     "closy-forge/docs/evidence/d0_core_runtime_c3_v4/unit_h_outcome.json",
+    "closy-forge/fixtures/phy1_topology_strategy2_v4/budget_classifier.json",
+    "closy-forge/fixtures/phy1_topology_strategy2_v4/strategy_lock.json",
+    "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/budget.py",
+    "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/diagnosis.py",
+    "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/strategy.py",
+    "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/evidence.py",
+    "closy-forge/scripts/freeze_phy1_topology_strategy2_v4_budget.py",
+    "closy-forge/scripts/diagnose_phy1_topology_strategy2_v4.py",
+    "closy-forge/scripts/lock_phy1_topology_strategy2_v4.py",
+    "closy-forge/scripts/validate_phy1_topology_strategy2_v4_evidence.py",
+    "closy-forge/docs/evidence/phy1_topology_strategy2_v4/diagnosis.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy2_v4/general_microfixtures.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy2_v4/strategy_microfixtures.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy2_v4/physical_attempt_registry.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy2_v4/unit_i_outcome.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy2_v4/logical_j_a_closure.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy2_v4/evidence_manifest.json",
 ]
 
 PHASE10_PATHS = [
@@ -1714,6 +1746,109 @@ UNIT_H_CORE_C3_EVIDENCE_ADDITIONS = {
     for row_id in UNIT_H_CORE_C3_PROGRESSION_UPDATES
 }
 
+UNIT_I_TOPOLOGY_PROGRESSION_UPDATES = {
+    "BP-08-K-CLOTH-SIMULATION": {
+        "status": "partial",
+        "summary": (
+            "Unit I locked one topology/DOF-only conforming-seam quotient strategy, then its "
+            "single candidate-independent transfer microfixture proved that shared quotient "
+            "DOFs are not mechanically equivalent to the frozen finite-compliance seam law."
+        ),
+        "limitations": (
+            "Outcome M opened no candidate and advanced no solver step. Neutral PHY1, full PHY1, "
+            "integrated CCD, post-topology C3, and solver-driven Z2 were not run."
+        ),
+        "nextAction": (
+            "Do not create Unit J or K; require new candidate-independent diagnosis before the "
+            "reserved materially different topology strategy 3 can be authorised."
+        ),
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Unit I preserves a frozen lock, one failed strategy-specific equivalence result, an "
+            "append-only attempt registry, Outcome M, and logical J-A closure."
+        ),
+        "limitations": (
+            "There is no canonical post-topology candidate and therefore no post-topology "
+            "reproducibility, strict/trajectory C3, Z1, PHY1, CCD, or Z2 matrix scope."
+        ),
+        "nextAction": (
+            "Keep the three evaluation scopes separate and record none_dependency_ready until a "
+            "new candidate-independent Strategy 3 diagnosis exists."
+        ),
+    },
+    "BP-17-PHASE-06": {
+        "status": "partial",
+        "summary": (
+            "The reserved Strategy 2 lane executed exactly one candidate-independent mechanical "
+            "equivalence microfixture and closed as Outcome M before candidate construction."
+        ),
+        "limitations": (
+            "Normal separation, tangential slip, stored energy, and impulse equivalence all fail "
+            "the frozen 1e-12 transfer limits; the finite-compliance seam model cannot be "
+            "silently replaced by quotient shared DOFs."
+        ),
+        "nextAction": (
+            "Preserve explicit finite-compliance seams and design analytic transfer fixtures for "
+            "a materially different reserved Strategy 3 without executing a candidate."
+        ),
+    },
+    "BP-18-GATE-C3": {
+        "status": "partial",
+        "summary": (
+            "Predecessor strict C3 remains failed; logical J-A correctly records that no new "
+            "post-topology candidate exists to requalify."
+        ),
+        "limitations": (
+            "Unit H evidence cannot transfer to a changed topology, and Unit I produced no changed "
+            "topology. Post-topology strict and trajectory C3 are dependency-blocked, not passed."
+        ),
+        "nextAction": "Do not create a report-only Unit J branch without an admissible candidate.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Research Prototype remains partial after Strategy 2 failed its pre-candidate "
+            "mechanical transfer gate and closed through logical J-A."
+        ),
+        "limitations": (
+            "Matrix v3 failures, the unfinished identity-disjoint cohort, strict C3 failure, "
+            "inadmissible physics, and all human/private/device/product tiers remain unresolved."
+        ),
+        "nextAction": (
+            "Record none_dependency_ready; the first prerequisite is new candidate-independent "
+            "diagnosis for a materially different reserved topology strategy 3."
+        ),
+    },
+}
+
+UNIT_I_TOPOLOGY_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/fixtures/phy1_topology_strategy2_v4",
+            "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
+            "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
+        ],
+        "executableEvidence": [
+            "immutable topology-only budget and strategy lock precede the sole strategy-specific "
+            "microfixture",
+            "quotient transfer differs by 1.5999980159352167e-08 m position, "
+            "2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
+            "Outcome M records candidateOpened=false, solverStepAdvanced=false, and "
+            "candidateAttemptConsumed=false",
+            "logical J-A forbids Unit J and K because no post-topology candidate exists",
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
+            "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
+            "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
+            "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
+        ],
+    }
+    for row_id in UNIT_I_TOPOLOGY_PROGRESSION_UPDATES
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -1889,6 +2024,9 @@ def main() -> int:
         unit_h_update = UNIT_H_CORE_C3_PROGRESSION_UPDATES.get(row_id)
         if unit_h_update:
             row.update(unit_h_update)
+        unit_i_update = UNIT_I_TOPOLOGY_PROGRESSION_UPDATES.get(row_id)
+        if unit_i_update:
+            row.update(unit_i_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1938,6 +2076,11 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), unit_h_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        unit_i_evidence = UNIT_I_TOPOLOGY_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_i_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_i_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [UNIT_I_EVIDENCE_HEAD])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
@@ -1948,6 +2091,7 @@ def main() -> int:
             and row_id not in UNIT_F_APPEARANCE_PROGRESSION_UPDATES
             and row_id not in UNIT_G_DISJOINT_PROGRESSION_UPDATES
             and row_id not in UNIT_H_CORE_C3_PROGRESSION_UPDATES
+            and row_id not in UNIT_I_TOPOLOGY_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -1966,6 +2110,7 @@ def main() -> int:
         "generatorVersion": GENERATOR_VERSION,
         "declaredInputPaths": PROVENANCE_INPUTS,
         "sourceTreeHash": _source_tree_hash(PROVENANCE_INPUTS),
+        "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2",
         "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
         "selfReferentialCommitSha": False,
     }
@@ -1983,12 +2128,226 @@ def main() -> int:
     (docs / "BLUEPRINT_STATUS_SUMMARY.md").write_text(
         render_status_summary(model), encoding="utf-8", newline="\n"
     )
+    _write_active_resume(docs)
+    _update_master_progress(docs)
     return 0
 
 
 def _append_unique(current: object, additions: list[str]) -> list[str]:
     values = list(current) if isinstance(current, list) else []
     return values + [value for value in additions if value not in values]
+
+
+def _write_active_resume(docs: Path) -> None:
+    evidence_dir = docs / "evidence" / "phy1_topology_strategy2_v4"
+    outcome = json.loads((evidence_dir / "unit_i_outcome.json").read_text(encoding="utf-8"))
+    closure = json.loads((evidence_dir / "logical_j_a_closure.json").read_text(encoding="utf-8"))
+    attempt_registry = json.loads(
+        (evidence_dir / "physical_attempt_registry.json").read_text(encoding="utf-8")
+    )
+    microfixtures = json.loads(
+        (evidence_dir / "strategy_microfixtures.json").read_text(encoding="utf-8")
+    )
+    resume = {
+        "schemaVersion": 1,
+        "machineResumeVersion": "closy.active_blueprint_resume.phy1_topology_strategy2_v4.v6",
+        "activeLane": "PHY1 topology strategy 2 v4 logical J-A closure",
+        "branch": "codex/closy-forge-phy1-topology-strategy2-v4",
+        "pullRequest": 48,
+        "evidenceHead": UNIT_I_EVIDENCE_HEAD,
+        "localHeadAtResumeSource": UNIT_I_EVIDENCE_HEAD,
+        "remoteHeadAtResumeSource": UNIT_I_EVIDENCE_HEAD,
+        "sourceAnchorIsSelfReferential": False,
+        "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
+        "pendingCIAtEvidenceHead": True,
+        "mergeAuthorised": False,
+        "parent": {
+            "branch": "codex/closy-forge-d0-core-runtime-c3-v4",
+            "pullRequest": 47,
+            "sha": UNIT_H_FINAL_HEAD,
+            "exactHeadWorkflow": "33475901299",
+            "forgeJobsPassed": 29,
+            "forgeJobsTotal": 29,
+        },
+        "gates": {
+            "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
+            "ResearchPrototype-D0-matrix-v3-core": "partial_6_pass_5_fail_0_not_run",
+            "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
+            "D0-DisjointTshirt-v1": "benchmark_failed_fixed_inventory_unfinished",
+            "D0-Core-Reproducibility-H1": "pass_predecessor_sentinel_scoped",
+            "D0-Strict-C3-H4": "fail_frozen_evaluator_adapter_0_of_8",
+            "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
+            "PHY1-Topology-Strategy2-D0-v4": (
+                "outcome_M_strategy_microfixture_failed_no_candidate"
+            ),
+            "Unit-J": "J-A_post_topology_candidate_unavailable",
+            "Unit-K": "ineligible_no_post_topology_candidate",
+            "Runtime": "v1_selected_topology_v2_opt_in_unchanged",
+        },
+        "matrixScopes": {
+            "knownTarget": {
+                "outcome": "known_target_regression_pass",
+                "predicatesPassed": 34,
+                "predicatesTotal": 34,
+                "d0Rp07Promoted": False,
+            },
+            "identityDisjoint": {
+                "outcome": "benchmark_failed_fixed_inventory_unfinished",
+                "predictions": 64,
+                "canonicalCompiles": 0,
+                "appearanceEvaluations": 0,
+            },
+            "postTopologyCandidate": {
+                "candidateExists": False,
+                "matrixNotRunReason": "post_topology_candidate_unavailable",
+            },
+        },
+        "unitIResult": {
+            "strategyId": outcome["strategyId"],
+            "outcomeClass": outcome["outcomeClass"],
+            "reasonCode": outcome["reasonCode"],
+            "strategyLockDigest": outcome["strategyLockDigest"],
+            "strategyMicrofixtureDigest": outcome["strategyMicrofixtureDigest"],
+            "outcomeDigest": outcome["integrity"]["outcomeDigest"],
+            "attemptRegistryHead": attempt_registry["headHash"],
+            "failedChecks": microfixtures["failedChecks"],
+            "positionDifferenceMeters": microfixtures["equivalence"]["differences"][
+                "positionMeters"
+            ],
+            "storedEnergyDifferenceJoules": microfixtures["equivalence"]["differences"][
+                "storedEnergyJoules"
+            ],
+            "impulseDifferenceNewtonSeconds": microfixtures["equivalence"]["differences"][
+                "impulseNewtonSeconds"
+            ],
+            "candidateOpened": outcome["admissibleCanonicalPostTopologyCandidateExists"],
+            "solverStepAdvanced": False,
+            "candidateAttemptConsumed": outcome["candidateAttemptConsumed"],
+            "neutralExecuted": outcome["neutralExecuted"],
+            "fullPhy1Executed": outcome["fullPhy1Executed"],
+            "integratedCcdExecuted": outcome["integratedCcdExecuted"],
+            "solverDrivenZ2Executed": outcome["solverDrivenZ2Executed"],
+            "runtimeV1RemainsSelected": outcome["runtimeV1RemainsSelected"],
+        },
+        "logicalJResult": {
+            "outcome": closure["logicalOutcome"],
+            "closureDigest": closure["integrity"]["closureDigest"],
+            "postTopologyCandidateAvailable": closure["postTopologyCandidateAvailable"],
+            "unitJBranchAuthorized": closure["unitJBranchAuthorized"],
+            "unitKEligible": closure["unitKEligible"],
+        },
+        "remainingBudgets": {
+            "seamModels": outcome["remainingBudgets"]["seamModels"],
+            "topologyStrategies": outcome["remainingBudgets"]["reservedTopologyStrategies"],
+        },
+        "nextHandoff": closure["nextHandoff"],
+        "exactNextAction": (
+            "Do not create Unit J or K. Preserve the reserved topology strategy 3 and first "
+            "produce candidate-independent analytic transfer fixtures that retain explicit "
+            "frozen finite-compliance seams."
+        ),
+        "stopReason": "finite_prompt_complete_through_unit_i_logical_j_a",
+        "unsupportedEvidenceClasses": [
+            "post_topology_candidate",
+            "post_topology_core_reproducibility",
+            "post_topology_strict_or_trajectory_C3",
+            "full_PHY1",
+            "integrated_CCD",
+            "solver_driven_Z2",
+            "private_user",
+            "human_review",
+            "real_photo",
+            "real_fabric",
+            "GPU",
+            "mobile",
+            "Alpha",
+            "Beta",
+            "Production",
+        ],
+    }
+    (docs / "ACTIVE_BLUEPRINT_RESUME.json").write_text(
+        json.dumps(resume, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+    )
+    markdown = f"""# Active Blueprint Resume
+
+## Frozen boundary
+
+- Branch: `{resume['branch']}`
+- Pull request: `#48`
+- Immutable Unit I evidence head: `{UNIT_I_EVIDENCE_HEAD}`
+- Exact parent: PR `#47` at `{UNIT_H_FINAL_HEAD}`
+- Parent exact-head Forge workflow: `33475901299` (`29/29` successful)
+- Merge authorised: `false`
+
+## Literal outcome
+
+Strategy `{outcome['strategyId']}` failed its sole candidate-independent mechanical-equivalence
+microfixture. Shared quotient DOFs differed from the frozen finite-compliance seam law by
+`{microfixtures['equivalence']['differences']['positionMeters']}` m position,
+`{microfixtures['equivalence']['differences']['storedEnergyJoules']}` J stored energy, and
+`{microfixtures['equivalence']['differences']['impulseNewtonSeconds']}` N*s impulse. Outcome `M`
+therefore opened no candidate, advanced no solver step, and consumed no candidate attempt.
+
+Logical outcome is `{closure['logicalOutcome']}`. A Unit J branch is not authorised and Unit K is
+ineligible. Neutral/full PHY1, integrated CCD, post-topology C3/Z1, and solver-driven Z2 were not
+run. Runtime v1 remains selected.
+
+## Scope-separated matrix state
+
+- Known target: `known_target_regression_pass`, `34/34` predicates, engineering regression only;
+  D0-RP-07 not promoted.
+- Identity-disjoint cohort: `64` predictions, `0` canonical compiles, `0` appearance evaluations;
+  outcome `benchmark_failed_fixed_inventory_unfinished`.
+- Post-topology candidate: nonexistent, so no Unit J matrix scope exists.
+- Historical matrix v2: `9 pass / 3 fail / 3 not-run`, superseded.
+- Current matrix v3 core: `6 pass / 5 fail / 0 not-run`.
+- Current matrix v3 supplemental: `2 pass / 0 fail / 2 not-run`.
+- Frozen predecessor physical outcome: `A_neutral_preflight_failed_v3`; no physics was rerun.
+
+## Remaining budget and handoff
+
+- Seam models remaining: `0`
+- Reserved topology strategies remaining: `1` (Strategy 3)
+- Selected next lane: `{closure['nextHandoff']['selection']}`
+- First unmet prerequisite: `{closure['nextHandoff']['firstUnmetPrerequisite']}`
+- Safest evidence action: {closure['nextHandoff']['safestEvidenceAction']}.
+
+Do not create Unit J, Unit K, or a Strategy 3 implementation branch from this task. Final published
+head and exact-head CI are attested externally in the draft PR body to avoid self-reference.
+"""
+    (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(markdown, encoding="utf-8", newline="\n")
+
+
+def _update_master_progress(docs: Path) -> None:
+    path = docs / "MASTER_BLUEPRINT_PROGRESS.md"
+    marker = "## PHY1 Topology Strategy 2 v4 and Logical J-A Closeout"
+    current = path.read_text(encoding="utf-8")
+    prefix = current.split(marker, 1)[0].rstrip()
+    section = f"""
+
+{marker}
+
+Review Unit I branched exactly from Unit H final head `{UNIT_H_FINAL_HEAD}`. Unit H is externally
+attested by Forge workflow `33475901299` with 29 of 29 jobs successful. Unit I froze a topology-only
+budget, diagnosed the immutable PR #43 trajectory without rerunning it, and locked exactly one
+strategy: `PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT`.
+
+The sole strategy-specific candidate-independent microfixture failed all four required mechanical
+transfer checks. Quotient shared DOFs differ from the frozen finite-compliance seam law by
+`1.5999980159352167e-08` m position, `2.8799928574752917e-07` J stored energy, and
+`1.3333317066849276e-10` N*s impulse, each above its frozen `1e-12` equivalence limit. Outcome `M`
+is immutable: no canonical candidate was opened, no solver step advanced, and no candidate attempt
+was consumed. Neutral/full PHY1, integrated CCD, post-topology C3/Z1, and Z2 were not run.
+
+Logical outcome `J-A: post_topology_candidate_unavailable` closes the finite sequence without a Unit
+J branch; Unit K is ineligible. Runtime v1 remains selected, seam models remaining are zero, and one
+materially different topology strategy remains reserved. The handoff is `none_dependency_ready`.
+Its first unmet prerequisite is new candidate-independent diagnosis for Strategy 3; the safest next
+evidence action is analytic transfer-fixture design that preserves explicit frozen finite-compliance
+seams. No private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, Production,
+post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is made.
+"""
+    path.write_text(prefix + section, encoding="utf-8", newline="\n")
 
 
 def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
@@ -2139,6 +2498,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         45: 44,
         46: 45,
         47: 46,
+        48: 47,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
@@ -2404,6 +2764,9 @@ def _closy_run(run_id: str, conclusion: str) -> dict[str, object] | None:
         "33409665461",
         "33423822705",
         "33452856012",
+        "33464425080",
+        "33470303559",
+        "33475901299",
     }
     job_count = 29 if run_id in forge_29_job_runs else 26
     result: dict[str, object] = {
@@ -2463,7 +2826,7 @@ def _source_tree_hash(paths: list[str]) -> str:
         path = REPO_ROOT / relative
         digest.update(relative.encode("utf-8"))
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        digest.update(path.read_bytes().replace(b"\r\n", b"\n"))
         digest.update(b"\0")
     return digest.hexdigest()
 

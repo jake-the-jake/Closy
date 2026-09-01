@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v13"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v14"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -41,6 +41,8 @@ UNIT_F_TEXTURE_RERENDER_V3_PUBLISHED_HEAD = "ba54b17a0aef7518d9acac30c6b7ec6564a
 UNIT_G_DISJOINT_BENCHMARK_V1_SHA = "6de060d7fa4e985070187bf417f159ecbe31e8b4"
 UNIT_G_DISJOINT_BENCHMARK_V1_PUBLISHED_HEAD = "069707bbd0bfc95eabbc5a3b3045e349d4c0b121"
 UNIT_H_CORE_RUNTIME_C3_V4_SHA = "3541507808946ae1248fba110b7732599db3fdbc"
+UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD = "07b28f804274cdf6f79347150a85fcc3ff9f4684"
+UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA = "854b85ed769bc3e67547e4195f65dfeb78878881"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -218,6 +220,44 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
             "seam_crack_0.041513220488_exceeds_0.002",
             "tangential_slip_0.145067036152_exceeds_0.005",
             "support_strain_area_terminal_energy_and_runtime_failed",
+        ],
+    },
+    "PHY1-Topology-Strategy2-D0-v4": {
+        "gateId": "PHY1-Topology-Strategy2-D0-v4",
+        "globalStatus": "partial",
+        "scopedStatus": "outcome_M_strategy_microfixture_failed_no_candidate",
+        "evidenceTier": "committed_candidate_independent_mechanical_equivalence_failure",
+        "platform": ["windows"],
+        "toolchain": ["CPython 3.11"],
+        "sourceSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public fixture",
+        "executionKind": "candidate-independent analytic mechanical equivalence microfixture",
+        "gateScope": "reserved topology strategy 2 transfer admission only",
+        "evidenceDurability": "immutable lock_result_attempt_registry_and_logical_J_A_closure",
+        "workflowRun": None,
+        "strategyId": "PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT",
+        "outcomeClass": "M",
+        "candidateOpened": False,
+        "solverStepAdvanced": False,
+        "candidateAttemptConsumed": False,
+        "unitJAuthorized": False,
+        "unitKEligible": False,
+        "runtimeCapabilityExposed": False,
+        "dRuntimePinnedToV1": True,
+        "remainingTopologyStrategies": 1,
+        "remainingSeamModels": 0,
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["full_PHY1", "integrated_CCD", "solver_driven_Z2", "post_topology_candidate"],
+        "blockers": [
+            "quotient_shared_DOFs_not_mechanically_equivalent_to_frozen_finite_compliance_seams",
+            "position_difference_1.5999980159352167e-08_exceeds_1e-12",
+            "stored_energy_difference_2.8799928574752917e-07_exceeds_1e-12",
+            "impulse_difference_1.3333317066849276e-10_exceeds_1e-12",
+            "no_admissible_post_topology_candidate",
         ],
     },
     "ResearchPrototype-D0-matrix-v2": {
@@ -590,7 +630,7 @@ def build_status_model(
                 for row in stack["nodes"]
                 if row["repository"] == "jake-the-jake/Closy"
                 and not row["latestExactHeadWorkflows"]
-                and int(row["pullRequest"]) not in {39, 47}
+                and int(row["pullRequest"]) not in {39, 47, 48}
             ],
             "externalExactHeadAttestations": [
                 {
@@ -665,11 +705,21 @@ def build_status_model(
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
-            ],
-            "pendingExternalExactHeadAttestations": [
                 {
                     "pullRequest": 47,
                     "committedSourceAnchorSha": UNIT_H_CORE_RUNTIME_C3_V4_SHA,
+                    "publishedHeadSha": UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD,
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33475901299"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
+            ],
+            "pendingExternalExactHeadAttestations": [
+                {
+                    "pullRequest": 48,
+                    "committedSourceAnchorSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
                     "publishedHeadSha": None,
                     "workflowRunUrl": None,
                     "result": "pending_publication_exact_head_ci",
@@ -716,6 +766,16 @@ def build_status_model(
             "phy1SeamSupportV3FullSuiteExecuted": False,
             "phy1SeamSupportV3CcdExecuted": False,
             "phy1SeamSupportV3Z2Executed": False,
+            "phy1TopologyStrategy2V4Executed": True,
+            "phy1TopologyStrategy2V4Outcome": "M_strategy_microfixture_failed_no_candidate",
+            "phy1TopologyStrategy2CandidateOpened": False,
+            "phy1TopologyStrategy2SolverStepAdvanced": False,
+            "phy1TopologyStrategy2CandidateAttemptConsumed": False,
+            "phy1TopologyStrategy2RemainingTopologyStrategies": 1,
+            "phy1TopologyStrategy2RemainingSeamModels": 0,
+            "unitJLogicalOutcome": "J-A_post_topology_candidate_unavailable",
+            "unitJBranchAuthorized": False,
+            "unitKEligible": False,
             "integratedRuntimePinnedToTopologyV1": True,
             "historicalD0ResearchMatrixStatus": "partial_superseded",
             "historicalD0ResearchMatrixVersion": ("closy.final_d0_research_prototype_matrix.v2"),
@@ -840,14 +900,22 @@ def validate_status_model(
             "result": "pass",
             "authority": "github_workflow_api_and_draft_pr_body",
         },
+        {
+            "pullRequest": 47,
+            "committedSourceAnchorSha": UNIT_H_CORE_RUNTIME_C3_V4_SHA,
+            "publishedHeadSha": UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33475901299",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
     ]
     if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
     if pending_attestations != [
         {
-            "pullRequest": 47,
-            "committedSourceAnchorSha": UNIT_H_CORE_RUNTIME_C3_V4_SHA,
+            "pullRequest": 48,
+            "committedSourceAnchorSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
             "publishedHeadSha": None,
             "workflowRunUrl": None,
             "result": "pending_publication_exact_head_ci",
@@ -883,6 +951,22 @@ def validate_status_model(
         issues.append("phy1_v3_ccd_overclaimed")
     if truth.get("phy1SeamSupportV3Z2Executed") is not False:
         issues.append("phy1_v3_z2_overclaimed")
+    if truth.get("phy1TopologyStrategy2V4Outcome") != (
+        "M_strategy_microfixture_failed_no_candidate"
+    ):
+        issues.append("phy1_topology_strategy2_outcome_missing_or_overclaimed")
+    if truth.get("phy1TopologyStrategy2CandidateOpened") is not False:
+        issues.append("phy1_topology_strategy2_candidate_opened_overclaimed")
+    if truth.get("phy1TopologyStrategy2SolverStepAdvanced") is not False:
+        issues.append("phy1_topology_strategy2_solver_advanced_overclaimed")
+    if truth.get("phy1TopologyStrategy2CandidateAttemptConsumed") is not False:
+        issues.append("phy1_topology_strategy2_candidate_attempt_consumption_invalid")
+    if truth.get("unitJLogicalOutcome") != "J-A_post_topology_candidate_unavailable":
+        issues.append("unit_j_logical_closure_missing")
+    if truth.get("unitJBranchAuthorized") is not False:
+        issues.append("unit_j_branch_authorization_overclaimed")
+    if truth.get("unitKEligible") is not False:
+        issues.append("unit_k_eligibility_overclaimed")
     if truth.get("integratedRuntimePinnedToTopologyV1") is not True:
         issues.append("integrated_runtime_topology_identity_drift")
     if truth.get("packageValidityDependsOnZeroOne") is not False:

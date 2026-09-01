@@ -1,6 +1,6 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v13` at evidence anchor `3541507808946ae1248fba110b7732599db3fdbc`.
+Authority: `closy.blueprint_status_model.v14` at evidence anchor `3541507808946ae1248fba110b7732599db3fdbc`.
 
 ## Requirement Rows
 
@@ -40,6 +40,7 @@ Authority: `closy.blueprint_status_model.v13` at evidence anchor `3541507808946a
 - PHY1-Neutral-SeamSupport-D0-v3: global `partial`, scoped `failed`
 - PHY1-SingleLayer-D0: global `partial`, scoped `failed`
 - PHY1-SingleLayer-D0-v2: global `partial`, scoped `failed`
+- PHY1-Topology-Strategy2-D0-v4: global `partial`, scoped `outcome_M_strategy_microfixture_failed_no_candidate`
 - ResearchPrototype-D0-matrix-v2: global `partial`, scoped `historical_superseded_9_pass_3_fail_3_not_run`
 - ResearchPrototype-D0-matrix-v3-core: global `partial`, scoped `partial_6_pass_5_fail_0_not_run`
 - ResearchPrototype-D0-matrix-v3-supplemental: global `partial`, scoped `2_pass_0_fail_2_not_run`
