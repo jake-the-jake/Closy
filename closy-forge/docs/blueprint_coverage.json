@@ -87,6 +87,8 @@
       "closy-forge/docs/evidence/phy1_topology_strategy2_v4/unit_i_outcome.json",
       "closy-forge/docs/evidence/phy1_topology_strategy2_v4/logical_j_a_closure.json",
       "closy-forge/docs/evidence/phy1_topology_strategy2_v4/evidence_manifest.json",
+      "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/authority_lifecycle.json",
+      "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/official_attempt_failure.json",
       "closy-forge/src/closy_forge/recovery_foundation_v1/contracts.py",
       "closy-forge/src/closy_forge/recovery_foundation_v1/evaluator_v2.py",
       "closy-forge/src/closy_forge/recovery_foundation_v1/contestant_boundary.py",
@@ -98,9 +100,9 @@
       "closy-forge/docs/evidence/d0_recovery_foundation_v1/unit_l_outcome.json"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.d0_recovery_foundation_v1.v13",
+    "generatorVersion": "closy.blueprint_reconciliation.d0_disjoint_confirmation_v2.v14",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "2ea3a0897b5904f56ae923b615777212ce783db19acb983cada3dbf8d51df0a2",
+    "sourceTreeHash": "6f25d9cce3f9702106dca624053929be4d1e81363040a43ee65f1bce55ed6cbb",
     "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,
@@ -282,7 +284,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -650,7 +653,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -663,7 +667,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The fixed inventory completed zero canonical compiles; D0-RP-03 and D0-RP-06 remain failed and no route is a cohort winner.",
+          "limitations": "The accepted cohort is consumed and cannot be retried; no fitting, compile, reference-3D, comparative, or promotion metric exists.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -685,7 +689,11 @@
         "8 development identities and 16 seed-authority-derived evaluator commitments",
         "64 predictions executed with application-process deny-by-default input isolation",
         "all target commitments validated only after prediction freeze",
-        "frozen evaluator failed before worker dispatch with zero compile/appearance counts"
+        "frozen evaluator failed before worker dispatch with zero compile/appearance counts",
+        "canonical-LF source lock with 26 implementation files",
+        "16 accepted fresh identities and commitment creation before boundary failure",
+        "0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations retained",
+        "authority run 33532344652 sealed attempted_integrity_error without retry"
       ],
       "id": "BP-52-IMAGE-CONDITIONED-FITTING",
       "implementationPaths": [
@@ -704,18 +712,21 @@
         "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
         "closy-forge/src/closy_forge/disjoint_benchmark_v1",
-        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1"
+        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1",
+        "closy-forge/src/closy_forge/disjoint_confirmation_v2",
+        "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2",
+        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The fixed inventory completed zero canonical compiles; D0-RP-03 and D0-RP-06 remain failed and no route is a cohort winner.",
-      "nextAction": "Preserve the failed Unit G attempt and continue independent Unit H core reproducibility and strict C3 infrastructure.",
+      "limitations": "The accepted cohort is consumed and cannot be retried; no fitting, compile, reference-3D, comparative, or promotion metric exists.",
+      "nextAction": "Continue independent strict C3 v5 on the predeclared fallback sentinel.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 13",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit G froze 8 development and 16 identity-disjoint evaluator identities, then completed 64 isolated predictions before its frozen evaluator failed at transcript loading. No cohort fitting metric or promotion was produced.",
+      "summary": "Unit M froze evaluator v2 and accepted 16 fresh synthetic identities, but the official authority stopped at its Docker output-mount negative control before any of the fixed 64 predictions. D0-RP-03 and D0-RP-06 remain failed.",
       "tests": [
         "tests/unit/test_tshirt_fit.py",
         "tests/integration/test_cli_and_package.py",
@@ -725,7 +736,8 @@
         "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
         "closy-forge/tests/unit/test_exact_raster_identity.py",
-        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py"
+        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py",
+        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
       ]
     },
     {
@@ -742,7 +754,8 @@
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -756,7 +769,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0-RP-07 remains failed. Known-target and cohort scopes are separate and cannot be unioned.",
+          "limitations": "D0-RP-07 remains failed and the skipped artifact upload makes the ephemeral cohort bytes unavailable for diagnostic replay.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -783,7 +796,11 @@
         "8 development identities and 16 seed-authority-derived evaluator commitments",
         "64 predictions executed with application-process deny-by-default input isolation",
         "all target commitments validated only after prediction freeze",
-        "frozen evaluator failed before worker dispatch with zero compile/appearance counts"
+        "frozen evaluator failed before worker dispatch with zero compile/appearance counts",
+        "canonical-LF source lock with 26 implementation files",
+        "16 accepted fresh identities and commitment creation before boundary failure",
+        "0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations retained",
+        "authority run 33532344652 sealed attempted_integrity_error without retry"
       ],
       "id": "BP-53-SOURCE-TEXTURE-PBR-RECOVERY",
       "implementationPaths": [
@@ -808,18 +825,21 @@
         "closy-forge/scripts/generate_d0_texture_rerender_v3_prediction.py",
         "closy-forge/scripts/evaluate_d0_texture_rerender_v3_known_target.py",
         "closy-forge/src/closy_forge/disjoint_benchmark_v1",
-        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1"
+        "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1",
+        "closy-forge/src/closy_forge/disjoint_confirmation_v2",
+        "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2",
+        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0-RP-07 remains failed. Known-target and cohort scopes are separate and cannot be unioned.",
-      "nextAction": "Do not rerun or retune the revealed Unit G cohort in this review unit.",
+      "limitations": "D0-RP-07 remains failed and the skipped artifact upload makes the ephemeral cohort bytes unavailable for diagnostic replay.",
+      "nextAction": "Do not retry the consumed Unit M cohort; preserve its sealed failure.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Continuation prompt section 14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit F known-target regression remains 34/34; Unit G froze an untouched 8-identity appearance subset but completed zero appearance evaluations after the frozen evaluator harness failed.",
+      "summary": "Unit M created fresh source and private-target bytes but stopped before predictions or target reveal; appearance execution is 0/24 plus 0/8 repeats.",
       "tests": [
         "tests/unit/test_texture_identity.py",
         "tests/integration/test_cli_and_package.py",
@@ -829,7 +849,8 @@
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
         "closy-forge/tests/unit/test_exact_raster_identity.py",
         "closy-forge/tests/unit/test_d0_texture_rerender_correction_v3.py",
-        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py"
+        "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py",
+        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
       ]
     },
     {
@@ -837,7 +858,8 @@
       "commitSha": [
         "0e743bb",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "BP-47-INSPECTION-ARTIFACTS",
@@ -913,7 +935,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "BP-08-A-INGESTION",
@@ -992,7 +1015,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "BP-49-RASTER-INGESTION-PRIVACY",
@@ -1560,7 +1584,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1668,7 +1693,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1987,7 +2013,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2146,7 +2173,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2210,7 +2238,8 @@
         "a8a053a68d8f455134e5a2bfed0fe340467a039a",
         "13604d169ecbc0fddf475cdf177e743790c836a2",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2281,7 +2310,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -2479,7 +2509,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2548,7 +2579,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2826,7 +2858,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [
         "ZeroOne repository discovery"
@@ -2990,7 +3023,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3126,7 +3160,8 @@
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3135,7 +3170,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "There is no canonical post-topology candidate and therefore no post-topology reproducibility, strict/trajectory C3, Z1, PHY1, CCD, or Z2 matrix scope.",
+          "limitations": "No target reveal, aggregate, bootstrap, route promotion, or qualifying row result exists; all four scoped rows retain literal fail states.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3188,7 +3223,11 @@
         "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
         "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
         "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
-        "logical J-A forbids Unit J and K because no post-topology candidate exists"
+        "logical J-A forbids Unit J and K because no post-topology candidate exists",
+        "canonical-LF source lock with 26 implementation files",
+        "16 accepted fresh identities and commitment creation before boundary failure",
+        "0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations retained",
+        "authority run 33532344652 sealed attempted_integrity_error without retry"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -3234,18 +3273,21 @@
         "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
         "closy-forge/fixtures/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
-        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/disjoint_confirmation_v2",
+        "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2",
+        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "There is no canonical post-topology candidate and therefore no post-topology reproducibility, strict/trajectory C3, Z1, PHY1, CCD, or Z2 matrix scope.",
-      "nextAction": "Keep the three evaluation scopes separate and record none_dependency_ready until a new candidate-independent Strategy 3 diagnosis exists.",
+      "limitations": "No target reveal, aggregate, bootstrap, route promotion, or qualifying row result exists; all four scoped rows retain literal fail states.",
+      "nextAction": "Run independent Unit N strict C3 confirmation under its fallback rule.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit I preserves a frozen lock, one failed strategy-specific equivalence result, an append-only attempt registry, Outcome M, and logical J-A closure.",
+      "summary": "Unit M records an attempted-integrity-error after first accepted draw: 16 accepted identities, 0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -3271,7 +3313,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
+        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
       ]
     },
     {
@@ -3286,7 +3329,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3742,7 +3786,8 @@
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3928,7 +3973,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4283,7 +4329,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4393,7 +4440,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4467,7 +4515,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4552,7 +4601,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4634,7 +4684,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4708,7 +4759,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4888,7 +4940,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5026,7 +5079,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5093,7 +5147,8 @@
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5944,7 +5999,8 @@
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "9078a09f1156ba8b7f98099185478ca9efcee952"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5953,7 +6009,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Matrix v3 failures, the unfinished identity-disjoint cohort, strict C3 failure, inadmissible physics, and all human/private/device/product tiers remain unresolved.",
+          "limitations": "Identity-disjoint fitting, isolation qualification, reference-3D fidelity, appearance, strict C3, and admissible physics remain unpassed.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -6012,7 +6068,11 @@
         "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
         "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
         "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
-        "logical J-A forbids Unit J and K because no post-topology candidate exists"
+        "logical J-A forbids Unit J and K because no post-topology candidate exists",
+        "canonical-LF source lock with 26 implementation files",
+        "16 accepted fresh identities and commitment creation before boundary failure",
+        "0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations retained",
+        "authority run 33532344652 sealed attempted_integrity_error without retry"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -6056,18 +6116,21 @@
         "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
         "closy-forge/fixtures/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
-        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/disjoint_confirmation_v2",
+        "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2",
+        "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Matrix v3 failures, the unfinished identity-disjoint cohort, strict C3 failure, inadmissible physics, and all human/private/device/product tiers remain unresolved.",
-      "nextAction": "Record none_dependency_ready; the first prerequisite is new candidate-independent diagnosis for a materially different reserved topology strategy 3.",
+      "limitations": "Identity-disjoint fitting, isolation qualification, reference-3D fidelity, appearance, strict C3, and admissible physics remain unpassed.",
+      "nextAction": "Continue Unit N; do not promote any Unit M row or route.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Research Prototype remains partial after Strategy 2 failed its pre-candidate mechanical transfer gate and closed through logical J-A.",
+      "summary": "Research Prototype remains partial after Unit M's immutable identity-disjoint authority attempt ended in an isolation-harness integrity failure.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -6091,7 +6154,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
+        "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
       ]
     },
     {
@@ -6340,5 +6404,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.d0_recovery_foundation_v1.v16"
+  "version": "closy.blueprint_coverage.d0_disjoint_confirmation_v2.v17"
 }

@@ -416,3 +416,26 @@ attempt. The next dependency-ready unit is the untouched Unit M confirmation v2,
 and implementation are frozen. No private-user, human-review, real-photo, real-fabric, GPU, mobile,
 Alpha, Beta, Production,
 post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is made.
+
+## D0 Identity-Disjoint Confirmation v2 Integrity Outcome
+
+Unit L is externally attested at `a72f45955abbe65ce14b7142668447d0477db71c` by Forge workflow `33524394054`, with all
+29 Forge jobs successful. Unit M froze evaluator v2, all route/threshold/denominator semantics,
+canonical-LF implementation hashes, the prior-identity inventory, contestant isolation, and its
+single fixed primary route before any new evaluator identity existed.
+
+Two authority runs failed before seed creation and are retained as pre-draw infrastructure events.
+The official immutable run `33532344652`, job `99938286152`, then generated the seed, 16 accepted
+identities, source/private-target bytes, and cohort commitments. The Docker negative control failed
+because `/outputs/probe.json` was not writable. No predictions, compiles, appearance evaluations,
+or target reveal occurred, and no artifact was uploaded. Because the first accepted draw and source
+inventory existed, the qualification attempt is consumed and sealed as `attempted_integrity_error`.
+
+D0-RP-03, D0-RP-04, D0-RP-06, and D0-RP-07 each retain a literal fail with
+`attempted_integrity_error`; no route is promoted and the Research Prototype matrix remains
+`6 pass / 5 fail / 0 not-run` core plus `2 pass / 0 fail / 2 not-run` supplemental. Coverage remains
+`20 complete / 63 partial / 7 not started / 11 discovery pending`. Runtime v1 and the conventional
+fallback remain selected. Unit N strict C3 v5 is independently dependency-ready through the frozen
+fallback-sentinel rule. No private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha,
+Beta, Production, post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is
+made.

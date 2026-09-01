@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_recovery_foundation_v1.v16"
+    assert coverage["version"] == "closy.blueprint_coverage.d0_disjoint_confirmation_v2.v17"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -238,6 +238,11 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "knownTargetTextureRegressionOutcome": "known_target_regression_pass",
         "knownTargetTextureRegressionTrialCount": 1,
         "knownTargetTextureRegressionPromotedD0Rp07": False,
+        "identityDisjointV2AuthorityExecuted": True,
+        "identityDisjointV2Outcome": "attempted_integrity_error",
+        "identityDisjointV2AcceptedIdentityCount": 16,
+        "identityDisjointV2PredictionCount": 0,
+        "identityDisjointV2QualificationRetryAllowed": False,
         "dependencyIdentityGraphAvailable": True,
         "runtimeCandidateV2Available": True,
         "runtimeCandidateV2ProductSelected": False,
@@ -278,7 +283,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 49))
+    assert numbers == list(range(1, 50))
     assert stack["graphCounts"] == {
         "closyPullRequests": len(rows),
         "externalPullRequests": len(stack["externalPullRequests"]),
@@ -433,6 +438,16 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         by_id["github:jake-the-jake/Closy:pr/48"]["latestExactHeadWorkflows"][0]["runId"]
         == "33511517533"
     )
+    assert by_id["github:jake-the-jake/Closy:pr/49"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/48"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/49"]["headSha"] == (
+        "a72f45955abbe65ce14b7142668447d0477db71c"
+    )
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/49"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33524394054"
+    )
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -504,7 +519,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_recovery_foundation_v1.v13"
+        "closy.blueprint_reconciliation.d0_disjoint_confirmation_v2.v14"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
@@ -524,13 +539,13 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_l_recovery_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_m_integrity_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-recovery-foundation-v1"
+    assert resume["branch"] == "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2"
     assert resume["latestFinishedParentPublicationHead"] == (
-        "69f17e0bc0d01472eec3aaf244c158181f74febf"
+        "a72f45955abbe65ce14b7142668447d0477db71c"
     )
     assert resume["pendingCIAtEvidenceHead"] is False
     assert resume["evidenceHead"] in markdown
@@ -551,16 +566,20 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_l_recovery_boundary()
     assert resume["logicalJResult"]["unitJBranchAuthorized"] is False
     assert resume["logicalJResult"]["unitKEligible"] is False
     assert resume["matrixScopes"]["knownTarget"]["predicatesPassed"] == 34
-    assert resume["matrixScopes"]["identityDisjoint"]["predictions"] == 64
-    assert resume["matrixScopes"]["identityDisjoint"]["canonicalCompiles"] == 0
+    assert resume["matrixScopes"]["identityDisjointV1"]["predictions"] == 64
+    assert resume["matrixScopes"]["identityDisjointV2"]["predictions"] == 0
+    assert resume["matrixScopes"]["identityDisjointV2"]["predictionDenominator"] == 64
+    assert resume["matrixScopes"]["identityDisjointV2"]["canonicalCompiles"] == 0
     assert resume["matrixScopes"]["postTopologyCandidate"]["candidateExists"] is False
-    assert resume["nextHandoff"]["selection"] == ("unit_m_identity_disjoint_confirmation_v2")
+    assert resume["unitMResult"]["outcome"] == "attempted_integrity_error"
+    assert resume["unitMResult"]["qualificationRetryAllowed"] is False
+    assert resume["nextHandoff"]["selection"] == "unit_n_strict_c3_confirmation_v5"
     assert "6 pass / 5 fail" in markdown
     assert "known_target_regression_pass" in markdown
-    assert "no candidate" in markdown
-    assert "benchmark_failed_fixed_inventory_unfinished" in markdown
+    assert "Post-topology candidate: nonexistent" in markdown
+    assert "attempted_integrity_error" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
-    assert "Unit L recovery foundation passes" in markdown
+    assert "Unit N is independently dependency-ready" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:

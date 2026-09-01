@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v15"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v16"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -44,6 +44,8 @@ UNIT_H_CORE_RUNTIME_C3_V4_SHA = "3541507808946ae1248fba110b7732599db3fdbc"
 UNIT_H_CORE_RUNTIME_C3_V4_PUBLISHED_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA = "854b85ed769bc3e67547e4195f65dfeb78878881"
 UNIT_I_TOPOLOGY_STRATEGY2_V4_PUBLISHED_HEAD = "69f17e0bc0d01472eec3aaf244c158181f74febf"
+UNIT_L_RECOVERY_FOUNDATION_V1_PUBLISHED_HEAD = "a72f45955abbe65ce14b7142668447d0477db71c"
+UNIT_M_DISJOINT_CONFIRMATION_V2_AUTHORITY_HEAD = "9078a09f1156ba8b7f98099185478ca9efcee952"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -395,6 +397,46 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
             "no_completed_canonical_compile_or_appearance_evaluation",
         ],
     },
+    "D0-DisjointTshirt-v2": {
+        "gateId": "D0-DisjointTshirt-v2",
+        "globalStatus": "partial",
+        "scopedStatus": "attempted_integrity_error",
+        "evidenceTier": "external_authority_log_and_committed_failure_record",
+        "platform": ["ubuntu"],
+        "toolchain": ["CPython 3.11", "Docker"],
+        "sourceSha": UNIT_M_DISJOINT_CONFIRMATION_V2_AUTHORITY_HEAD,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public synthetic ephemeral cohort",
+        "executionKind": "external authority stopped at container negative control",
+        "gateScope": "16-identity evaluator-v2 cohort",
+        "evidenceDurability": "github_run_log_plus_committed_sealed_failure_record",
+        "workflowRun": "33532344652",
+        "authorityJob": "99938286152",
+        "acceptedIdentityCount": 16,
+        "predictionCount": 0,
+        "predictionDenominator": 64,
+        "fullCompileCount": 0,
+        "fullCompileDenominator": 48,
+        "appearanceEvaluationCount": 0,
+        "appearanceEvaluationDenominator": 24,
+        "rowResults": {
+            row: {"result": "fail", "attemptState": "attempted_integrity_error"}
+            for row in ("D0-RP-03", "D0-RP-04", "D0-RP-06", "D0-RP-07")
+        },
+        "coverageState": "partial",
+        "qualificationRetryAllowed": False,
+        "firstUnmetRequiredPredicate": "container_negative_control_must_write_audited_output",
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["cohort_gate_pass", "real_photo", "real_fabric", "human_review"],
+        "blockers": [
+            "container_boundary_probe_output_mount_permission_denied",
+            "official_commitment_and_source_bytes_not_recoverable_after_skipped_artifact_upload",
+            "no_prediction_compile_or_appearance_denominator_completed",
+        ],
+    },
     "MT1-MechanicalReference-D0": {
         "gateId": "MT1-MechanicalReference-D0",
         "globalStatus": "partial",
@@ -739,6 +781,16 @@ def build_status_model(
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
+                {
+                    "pullRequest": 49,
+                    "committedSourceAnchorSha": UNIT_L_RECOVERY_FOUNDATION_V1_PUBLISHED_HEAD,
+                    "publishedHeadSha": UNIT_L_RECOVERY_FOUNDATION_V1_PUBLISHED_HEAD,
+                    "workflowRunUrl": (
+                        "https://github.com/jake-the-jake/Closy/actions/runs/33524394054"
+                    ),
+                    "result": "pass",
+                    "authority": "github_workflow_api_and_draft_pr_body",
+                },
             ],
             "pendingExternalExactHeadAttestations": [],
             "headAuthorityPolicy": (
@@ -817,6 +869,11 @@ def build_status_model(
             "knownTargetTextureRegressionOutcome": "known_target_regression_pass",
             "knownTargetTextureRegressionTrialCount": 1,
             "knownTargetTextureRegressionPromotedD0Rp07": False,
+            "identityDisjointV2AuthorityExecuted": True,
+            "identityDisjointV2Outcome": "attempted_integrity_error",
+            "identityDisjointV2AcceptedIdentityCount": 16,
+            "identityDisjointV2PredictionCount": 0,
+            "identityDisjointV2QualificationRetryAllowed": False,
             "dependencyIdentityGraphAvailable": True,
             "runtimeCandidateV2Available": True,
             "runtimeCandidateV2ProductSelected": False,
@@ -928,6 +985,14 @@ def validate_status_model(
             "committedSourceAnchorSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_SHA,
             "publishedHeadSha": UNIT_I_TOPOLOGY_STRATEGY2_V4_PUBLISHED_HEAD,
             "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33511517533",
+            "result": "pass",
+            "authority": "github_workflow_api_and_draft_pr_body",
+        },
+        {
+            "pullRequest": 49,
+            "committedSourceAnchorSha": UNIT_L_RECOVERY_FOUNDATION_V1_PUBLISHED_HEAD,
+            "publishedHeadSha": UNIT_L_RECOVERY_FOUNDATION_V1_PUBLISHED_HEAD,
+            "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33524394054",
             "result": "pass",
             "authority": "github_workflow_api_and_draft_pr_body",
         },

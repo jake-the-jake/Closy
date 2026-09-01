@@ -1,0 +1,57 @@
+name: Forge Unit M untouched cohort authority
+
+on:
+  pull_request:
+    paths:
+      - "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/**"
+      - "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
+      - ".github/workflows/closy-forge-unit-m-authority.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  sealed-verification:
+    name: Unit M untouched cohort authority
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Verify sealed post-attempt evidence without authority dispatch
+        working-directory: closy-forge
+        run: |
+          python -m pytest tests/unit/test_d0_disjoint_confirmation_v2.py -q
+          python - <<'PY'
+          from pathlib import Path
+
+          from closy_forge.disjoint_confirmation_v2.protocol import (
+              load_protocol,
+              validate_implementation,
+          )
+
+          root = Path.cwd()
+          protocol = load_protocol(root)
+          issues = validate_implementation(root, protocol)
+          if issues:
+              raise SystemExit(";".join(issues))
+          PY
+      - name: Record sealed lifecycle summary
+        shell: bash
+        run: |
+          echo "state=sealed_post_attempt" >> "$GITHUB_STEP_SUMMARY"
+          echo "official_authority_run_id=33532344652" >> "$GITHUB_STEP_SUMMARY"
+          echo "official_authority_job_id=99938286152" >> "$GITHUB_STEP_SUMMARY"
+          echo "outcome=attempted_integrity_error" >> "$GITHUB_STEP_SUMMARY"
+          echo "authority_dispatch_enabled=false" >> "$GITHUB_STEP_SUMMARY"
+          echo "qualification_retry_allowed=false" >> "$GITHUB_STEP_SUMMARY"
