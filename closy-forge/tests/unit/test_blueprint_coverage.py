@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_evidence_integrity_v4.v11"
+    assert coverage["version"] == "closy.blueprint_coverage.d0_texture_rerender_v3.v12"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -162,6 +162,10 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"]["scopedStatus"] == (
         "2_pass_0_fail_2_not_run"
     )
+    assert status["gates"]["TextureRerender-KnownTarget-v3"]["scopedStatus"] == (
+        "known_target_regression_pass_not_qualification"
+    )
+    assert status["gates"]["TextureRerender-KnownTarget-v3"]["d0Rp07Promoted"] is False
     assert status["gates"]["MT1-MechanicalReference-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["LayerCollision-D0"]["scopedStatus"] == "pass"
     assert status["gates"]["Z1"]["globalStatus"] == "partial"
@@ -200,10 +204,23 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "phy1SeamSupportV3CcdExecuted": False,
         "phy1SeamSupportV3Z2Executed": False,
         "integratedRuntimePinnedToTopologyV1": True,
-        "finalD0ResearchMatrixStatus": "partial",
-        "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
-        "finalD0ResearchMatrixStatusCounts": {"pass": 9, "fail": 3, "not_run": 3},
-        "finalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
+        "historicalD0ResearchMatrixStatus": "partial_superseded",
+        "historicalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
+        "historicalD0ResearchMatrixStatusCounts": {"pass": 9, "fail": 3, "not_run": 3},
+        "historicalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
+        "currentD0ResearchMatrixStatus": "partial",
+        "currentD0ResearchMatrixVersion": "closy.final_d0_research_matrix.v3",
+        "currentD0ResearchMatrixCoreStatusCounts": {"pass": 6, "fail": 5, "not_run": 0},
+        "currentD0ResearchMatrixSupplementalStatusCounts": {
+            "pass": 2,
+            "fail": 0,
+            "not_run": 2,
+        },
+        "currentD0ResearchMatrixFirstUnmetPredicate": "D0-RP-03",
+        "knownTargetTextureRegressionExecuted": True,
+        "knownTargetTextureRegressionOutcome": "known_target_regression_pass",
+        "knownTargetTextureRegressionTrialCount": 1,
+        "knownTargetTextureRegressionPromotedD0Rp07": False,
         "dependencyIdentityGraphAvailable": True,
         "runtimeCandidateV2Available": True,
         "runtimeCandidateV2ProductSelected": False,
@@ -244,8 +261,8 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 44))
-    assert len(nodes) == 45
+    assert numbers == list(range(1, 45))
+    assert len(nodes) == 46
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert stack["externalPullRequests"][1]["number"] == 3
@@ -337,6 +354,15 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert by_id["github:jake-the-jake/Closy:pr/43"]["parentIds"] == [
         "github:jake-the-jake/Closy:pr/42"
     ]
+    assert by_id["github:jake-the-jake/Closy:pr/44"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/43"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/44"]["headSha"] == (
+        "2f40815010cef01685a7ed873081a22f11d67c00"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/44"]["latestExactHeadWorkflows"][0][
+        "runId"
+    ] == "33452856012"
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -398,7 +424,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_evidence_integrity_v4.v8"
+        "closy.blueprint_reconciliation.d0_texture_rerender_v3.v9"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
@@ -417,11 +443,11 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_e_integrity_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_f_appearance_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-evidence-integrity-v4"
+    assert resume["branch"] == "codex/closy-forge-d0-texture-rerender-correction-v3"
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
     assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
@@ -435,7 +461,18 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_e_integrity_boundary(
     assert resume["replayState"]["runtimeCandidateV2ProductSelected"] is False
     assert resume["physicalResult"]["trajectoryGlbBytesPreservedAfterReportingRepair"] is True
     assert resume["remainingBudgets"] == {"seamModels": 0, "topologyStrategies": 2}
+    assert resume["appearanceResult"] == {
+        "atlasGeneratedControlledFillFraction": 0.447538306,
+        "atlasSourceObservedFraction": 0.552461694,
+        "d0Rp07Promoted": False,
+        "knownTargetPredicatesPassed": 34,
+        "knownTargetPredicatesTotal": 34,
+        "knownTargetTrialCount": 1,
+        "outcome": "known_target_regression_pass",
+        "unitGRequired": True,
+    }
     assert "6 pass, 5 fail" in markdown
+    assert "known_target_regression_pass" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
 
 

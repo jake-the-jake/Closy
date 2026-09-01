@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
+EVIDENCE_ANCHOR = "7b4fbc199f462d35ba2f440494cff7cc700b0b94"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.d0_evidence_integrity_v4.v11"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_evidence_integrity_v4.v8"
+VERSION = "closy.blueprint_coverage.d0_texture_rerender_v3.v12"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_texture_rerender_v3.v9"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -314,6 +314,19 @@ PR_SNAPSHOTS = [
         "SUCCESS",
         "phy1_seam_support_v3_neutral_failure",
     ),
+    (
+        44,
+        "Forge: reset D0 evidence integrity and research truth",
+        "codex/closy-forge-d0-evidence-integrity-v4",
+        "codex/closy-forge-phy1-seam-support-v3",
+        "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+        "2f40815010cef01685a7ed873081a22f11d67c00",
+        3,
+        32,
+        "33452856012",
+        "SUCCESS",
+        "d0_evidence_integrity_v4_truth_reset",
+    ),
 ]
 
 PR25_REPLAY_MAPPINGS = [
@@ -362,6 +375,21 @@ PROVENANCE_INPUTS = [
     "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
     "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
     "closy-forge/scripts/generate_phy1_seam_support_v3_evidence.py",
+    "closy-forge/fixtures/d0_texture_rerender_correction_v3/protocol_lock.json",
+    "closy-forge/fixtures/d0_texture_rerender_correction_v3/implementation_freeze.json",
+    "closy-forge/src/closy_forge/appearance_correction_v3/projection.py",
+    "closy-forge/src/closy_forge/appearance_correction_v3/prediction.py",
+    "closy-forge/src/closy_forge/appearance_correction_v3/known_target.py",
+    "closy-forge/docs/evidence/d0_texture_rerender_correction_v3/predictions/"
+    "prediction_summary.json",
+    "closy-forge/docs/evidence/d0_texture_rerender_correction_v3/predictions/"
+    "source_only_controls.json",
+    "closy-forge/docs/evidence/d0_texture_rerender_correction_v3/evaluation/"
+    "qualification_summary.json",
+    "closy-forge/docs/evidence/d0_texture_rerender_correction_v3/evaluation/"
+    "predicate_table.json",
+    "closy-forge/docs/evidence/d0_texture_rerender_correction_v3/evaluation/"
+    "attempt_registry.json",
 ]
 
 PHASE10_PATHS = [
@@ -1361,6 +1389,98 @@ UNIT_E_INTEGRITY_EVIDENCE_ADDITIONS = {
     for row_id in UNIT_E_INTEGRITY_PROGRESSION_UPDATES
 }
 
+UNIT_F_APPEARANCE_COMMITS = [
+    "5a01ed40656c3f2924169f2c3e8f4d702f572cc5",
+    "1038cbc9125461a8b80587b56e083191296861ec",
+    "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
+    EVIDENCE_ANCHOR,
+]
+
+UNIT_F_APPEARANCE_PROGRESSION_UPDATES = {
+    "BP-53-SOURCE-TEXTURE-PBR-RECOVERY": {
+        "status": "partial",
+        "summary": (
+            "One preregistered source-only geometric projection preserves exact front/rear pixel "
+            "provenance, passes all eight causal controls, and passes 34 of 34 predicates in the "
+            "single known-target regression replay."
+        ),
+        "limitations": (
+            "This is known-target engineering regression evidence, not held-out qualification; "
+            "physical PBR remains not measured and D0-RP-07 remains failed until Unit G."
+        ),
+        "nextAction": (
+            "Run the untouched identity-disjoint Unit G cohort with the frozen appearance route."
+        ),
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Matrix v3 remains authoritative at core 6 pass/5 fail/0 not-run and supplemental "
+            "2 pass/0 fail/2 not-run; Unit F separately records a 34-of-34 known-target "
+            "regression pass without changing matrix rows."
+        ),
+        "limitations": (
+            "D0-RP-07, strict C3, and neutral physics remain failed; no held-out, cohort, human, "
+            "private-user, mobile, or product qualification follows from Unit F."
+        ),
+        "nextAction": (
+            "Execute the identity-disjoint Unit G benchmark before any D0-RP-07 reconsideration."
+        ),
+    },
+    "BP-17-PHASE-04": {
+        "status": "partial",
+        "summary": (
+            "The frozen source-only atlas route maps source pixels through camera-visible "
+            "triangles and material UVs, yielding 0.552461694 source-observed and 0.447538306 "
+            "explicit generated-fill fractions."
+        ),
+        "limitations": (
+            "Only the already-known exact D0 target was replayed once; independent identity "
+            "generalisation and measured physical material accuracy are not established."
+        ),
+        "nextAction": "Carry the unchanged route into Unit G without target-specific tuning.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Unit F produces a new appearance/package identity and a successful one-shot "
+            "known-target regression diagnostic while preserving matrix v3 and runtime-v1 "
+            "authority."
+        ),
+        "limitations": (
+            "Known-target regression cannot promote Research Prototype or D0-RP-07; Unit G "
+            "identity-disjoint evidence, strict C3, and admissible physics remain outstanding."
+        ),
+        "nextAction": (
+            "Execute Unit G's preregistered 8-development/16-evaluator identity-disjoint cohort."
+        ),
+    },
+}
+
+UNIT_F_APPEARANCE_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/fixtures/d0_texture_rerender_correction_v3",
+            "closy-forge/src/closy_forge/appearance_correction_v3",
+            "closy-forge/docs/evidence/d0_texture_rerender_correction_v3",
+            "closy-forge/scripts/generate_d0_texture_rerender_v3_prediction.py",
+            "closy-forge/scripts/evaluate_d0_texture_rerender_v3_known_target.py",
+        ],
+        "executableEvidence": [
+            "protocol committed before implementation and evaluator-only inputs remained "
+            "unmounted through prediction commit",
+            "all eight source-only causal controls pass with geometry invariant",
+            "source-observed atlas fraction 0.552461694 and generated fill 0.447538306",
+            "single known-target replay passes 34/34 atomic predicates",
+            "D0-RP-07 fail, Research Prototype partial, and runtime v1 selection preserved",
+        ],
+        "tests": [
+            "closy-forge/tests/unit/test_d0_texture_rerender_correction_v3.py",
+        ],
+    }
+    for row_id in UNIT_F_APPEARANCE_PROGRESSION_UPDATES
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -1527,6 +1647,9 @@ def main() -> int:
         unit_e_update = UNIT_E_INTEGRITY_PROGRESSION_UPDATES.get(row_id)
         if unit_e_update:
             row.update(unit_e_update)
+        unit_f_update = UNIT_F_APPEARANCE_PROGRESSION_UPDATES.get(row_id)
+        if unit_f_update:
+            row.update(unit_f_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1561,6 +1684,11 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), unit_e_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        unit_f_evidence = UNIT_F_APPEARANCE_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_f_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_f_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), UNIT_F_APPEARANCE_COMMITS)
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
@@ -1568,6 +1696,7 @@ def main() -> int:
             and row_id not in TRUTH_RUNTIME_PROGRESSION_UPDATES
             and row_id not in FINAL_D0_PHY1_V3_PROGRESSION_UPDATES
             and row_id not in UNIT_E_INTEGRITY_PROGRESSION_UPDATES
+            and row_id not in UNIT_F_APPEARANCE_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -1755,6 +1884,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         41: 40,
         42: 41,
         43: 42,
+        44: 43,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
@@ -2019,6 +2149,7 @@ def _closy_run(run_id: str, conclusion: str) -> dict[str, object] | None:
         "33393781144",
         "33409665461",
         "33423822705",
+        "33452856012",
     }
     job_count = 29 if run_id in forge_29_job_runs else 26
     result: dict[str, object] = {
