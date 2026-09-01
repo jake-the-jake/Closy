@@ -1,12 +1,13 @@
 {
-  "activeLane": "D0 recovery foundation v1 complete; Unit M confirmation next",
-  "branch": "codex/closy-forge-d0-recovery-foundation-v1",
-  "evidenceHead": "854b85ed769bc3e67547e4195f65dfeb78878881",
-  "exactNextAction": "Create Unit M from the externally attested Unit L head, freeze protocol and implementation, then invoke one fresh external seed authority.",
+  "activeLane": "Unit M integrity failure sealed; Unit N strict C3 confirmation next",
+  "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
+  "evidenceHead": "9078a09f1156ba8b7f98099185478ca9efcee952",
+  "exactNextAction": "Create Unit N from the final Unit M head, resolve the Unit-F fallback sentinel, freeze strict C3 v5, then invoke one fresh external pose authority.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "D0-Core-Reproducibility-H1": "pass_predecessor_sentinel_scoped",
     "D0-DisjointTshirt-v1": "benchmark_failed_fixed_inventory_unfinished",
+    "D0-DisjointTshirt-v2": "attempted_integrity_error",
     "D0-Recovery-Foundation-v1": "pass_generic_candidate_independent_no_confirmation",
     "D0-Strict-C3-H4": "fail_frozen_evaluator_adapter_0_of_8",
     "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
@@ -18,8 +19,8 @@
     "Unit-J": "J-A_post_topology_candidate_unavailable",
     "Unit-K": "ineligible_no_post_topology_candidate"
   },
-  "latestFinishedParentPublicationHead": "69f17e0bc0d01472eec3aaf244c158181f74febf",
-  "localHeadAtResumeSource": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+  "latestFinishedParentPublicationHead": "a72f45955abbe65ce14b7142668447d0477db71c",
+  "localHeadAtResumeSource": "9078a09f1156ba8b7f98099185478ca9efcee952",
   "logicalJResult": {
     "closureDigest": "67800b30070f0bedfa7b786319d50950e20fc7f0fcc4be2d2253e68020b5df9d",
     "outcome": "J-A: post_topology_candidate_unavailable",
@@ -27,13 +28,24 @@
     "unitJBranchAuthorized": false,
     "unitKEligible": false
   },
-  "machineResumeVersion": "closy.active_blueprint_resume.d0_recovery_foundation_v1.v7",
+  "machineResumeVersion": "closy.active_blueprint_resume.d0_disjoint_confirmation_v2.v8",
   "matrixScopes": {
-    "identityDisjoint": {
+    "identityDisjointV1": {
       "appearanceEvaluations": 0,
       "canonicalCompiles": 0,
       "outcome": "benchmark_failed_fixed_inventory_unfinished",
       "predictions": 64
+    },
+    "identityDisjointV2": {
+      "acceptedIdentities": 16,
+      "appearanceDenominator": 24,
+      "appearanceEvaluations": 0,
+      "canonicalCompiles": 0,
+      "compileDenominator": 48,
+      "outcome": "attempted_integrity_error",
+      "predictionDenominator": 64,
+      "predictions": 0,
+      "targetRevealOccurred": false
     },
     "knownTarget": {
       "d0Rp07Promoted": false,
@@ -48,17 +60,17 @@
   },
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "fresh_v2_external_seed_authority_and_cohort",
-    "safestEvidenceAction": "freeze Unit M protocol and implementation before any evaluator identity exists",
-    "selection": "unit_m_identity_disjoint_confirmation_v2"
+    "firstUnmetPrerequisite": "fresh_untouched_eight_pose_confirmation",
+    "safestEvidenceAction": "resolve the deterministic fallback sentinel before pose draw",
+    "selection": "unit_n_strict_c3_confirmation_v5"
   },
   "parent": {
-    "branch": "codex/closy-forge-phy1-topology-strategy2-v4",
-    "exactHeadWorkflow": "33511517533",
+    "branch": "codex/closy-forge-d0-recovery-foundation-v1",
+    "exactHeadWorkflow": "33524394054",
     "forgeJobsPassed": 29,
     "forgeJobsTotal": 29,
-    "pullRequest": 48,
-    "sha": "69f17e0bc0d01472eec3aaf244c158181f74febf"
+    "pullRequest": 49,
+    "sha": "a72f45955abbe65ce14b7142668447d0477db71c"
   },
   "pendingCIAtEvidenceHead": false,
   "pullRequest": "pending_external_attestation",
@@ -66,10 +78,10 @@
     "seamModels": 0,
     "topologyStrategies": 1
   },
-  "remoteHeadAtResumeSource": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+  "remoteHeadAtResumeSource": "9078a09f1156ba8b7f98099185478ca9efcee952",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "unit_l_foundation_complete_unit_m_dependency_ready",
+  "stopReason": "unit_m_integrity_failure_sealed_unit_n_independently_dependency_ready",
   "unitIResult": {
     "attemptRegistryHead": "48cab91cd65af1789774d9b047c0749e6bf528455138b017f0a6de34116921d9",
     "candidateAttemptConsumed": false,
@@ -96,6 +108,19 @@
     "strategyLockDigest": "a743e645c0b9ae62dea2cfd39a68a3de0dd0aa4626356c04397ec4b45579d50a",
     "strategyMicrofixtureDigest": "fa6efcd2649769e9833d9d0007601ec42506df8b700135eecb10a542637136c5"
   },
+  "unitMResult": {
+    "acceptedIdentityCount": 16,
+    "appearanceEvaluationCount": 0,
+    "authorityHead": "9078a09f1156ba8b7f98099185478ca9efcee952",
+    "authorityJob": "99938286152",
+    "authorityRun": "33532344652",
+    "firstUnmetPredicate": "container_negative_control_must_write_audited_output",
+    "fullCompileCount": 0,
+    "outcome": "attempted_integrity_error",
+    "predictionCount": 0,
+    "qualificationRetryAllowed": false,
+    "targetRevealOccurred": false
+  },
   "unsupportedEvidenceClasses": [
     "post_topology_candidate",
     "post_topology_core_reproducibility",
@@ -111,6 +136,7 @@
     "mobile",
     "Alpha",
     "Beta",
-    "Production"
+    "Production",
+    "identity_disjoint_cohort_qualification"
   ]
 }

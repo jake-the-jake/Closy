@@ -517,6 +517,16 @@
       "to": "github:jake-the-jake/Closy:pr/48"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/48",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/49"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/48",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/49"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -635,10 +645,10 @@
     }
   ],
   "graphCounts": {
-    "closyPullRequests": 48,
-    "edges": 105,
+    "closyPullRequests": 49,
+    "edges": 107,
     "externalPullRequests": 3,
-    "nodes": 51
+    "nodes": 52
   },
   "graphVersion": "closy.cross_repository_pr_dag.v3",
   "nodes": [
@@ -2516,6 +2526,43 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "e25da69d29eb1b68885b911c7354df085f4a22c0..69f17e0bc0d01472eec3aaf244c158181f74febf"
+    },
+    {
+      "ahead": 1,
+      "baseRef": "codex/closy-forge-phy1-topology-strategy2-v4",
+      "baseSha": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-recovery-foundation-v1",
+      "capabilityRole": "forge_establish_d0_recovery_foundation_v1",
+      "changedFileCount": 36,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/48"
+      ],
+      "headSha": "a72f45955abbe65ce14b7142668447d0477db71c",
+      "id": "github:jake-the-jake/Closy:pr/49",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 26,
+          "runId": "33524394054",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/48"
+      ],
+      "pullRequest": 49,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_recovery_foundation_v1",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "69f17e0bc0d01472eec3aaf244c158181f74febf..a72f45955abbe65ce14b7142668447d0477db71c"
     },
     {
       "ahead": 3,
@@ -4643,6 +4690,36 @@
       "state": "OPEN",
       "title": "Forge: execute bounded PHY1 topology strategy 2 v4",
       "url": "https://github.com/jake-the-jake/Closy/pull/48"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phy1-topology-strategy2-v4",
+      "baseSha": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+      "branch": "codex/closy-forge-d0-recovery-foundation-v1",
+      "changedFileCount": 36,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "a72f45955abbe65ce14b7142668447d0477db71c",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "forgeJobCount": 26,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
+        "runId": "33524394054",
+        "successfulForgeJobCount": 26,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 1,
+      "layerBehind": 0,
+      "layerCommitCount": 1,
+      "mergeBase": "69f17e0bc0d01472eec3aaf244c158181f74febf",
+      "mergeability": "MERGEABLE",
+      "number": 49,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_recovery_foundation_v1",
+      "state": "OPEN",
+      "title": "Forge: establish D0 recovery foundation v1",
+      "url": "https://github.com/jake-the-jake/Closy/pull/49"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -4698,6 +4775,7 @@
     "github:jake-the-jake/Closy:pr/46",
     "github:jake-the-jake/Closy:pr/47",
     "github:jake-the-jake/Closy:pr/48",
+    "github:jake-the-jake/Closy:pr/49",
     "github:jake-the-jake/ZeroOne:pr/4"
   ],
   "topology": "explicit_dag",

@@ -91,11 +91,12 @@ def test_authority_workflow_is_one_shot_and_exact_head() -> None:
     workflow = (ROOT.parent / ".github/workflows/closy-forge-unit-m-authority.yml").read_text(
         encoding="utf-8"
     )
-    official = ROOT / FIXTURE_ROOT / "official_attempt"
+    lifecycle = _mapping(ROOT / FIXTURE_ROOT / "authority_lifecycle.json")
     assert "workflow_dispatch" not in workflow
-    if official.exists():
+    if lifecycle.get("qualificationAttemptConsumed") is True:
         assert "sealed_post_attempt" in workflow
         assert "run_d0_disjoint_confirmation_v2_authority.py" not in workflow
+        assert "authority_dispatch_enabled=false" in workflow
     else:
         assert 'test "$GITHUB_RUN_ATTEMPT" = "1"' in workflow
         assert "github.event.pull_request.head.sha" in workflow
@@ -108,18 +109,42 @@ def test_authority_workflow_is_one_shot_and_exact_head() -> None:
 def test_predraw_failures_allow_only_an_explicitly_recorded_artifact_free_retry() -> None:
     lifecycle = _mapping(ROOT / FIXTURE_ROOT / "authority_lifecycle.json")
     events = lifecycle["events"]
-    assert isinstance(events, list) and len(events) == 2
-    assert [event["runId"] for event in events] == ["33530331133", "33531607760"]
-    assert [event["jobId"] for event in events] == ["99931572124", "99935863093"]
-    for event in events:
+    assert isinstance(events, list) and len(events) == 3
+    predraw = events[:2]
+    assert [event["runId"] for event in predraw] == ["33530331133", "33531607760"]
+    assert [event["jobId"] for event in predraw] == ["99931572124", "99935863093"]
+    for event in predraw:
         assert isinstance(event, dict)
         assert event["classification"] == "failed_before_seed_or_commitment"
         assert event["seedOrCommitmentCreated"] is False
         assert event["publishedAttempt"] is False
         assert event["artifactCount"] == 0
-    assert lifecycle["acceptedAttemptCount"] == 0
-    assert lifecycle["retryPolicy"].startswith("explicitly_logged_predraw_failures_only")
-    assert lifecycle["nextAuthorityRunPermitted"] is True
+    official = events[2]
+    assert official["runId"] == "33532344652"
+    assert official["seedOrCommitmentCreated"] is True
+    assert official["cohortCommitmentCreated"] is True
+    assert official["sourceInventoryCreated"] is True
+    assert official["predictionCount"] == 0
+    assert official["targetRevealOccurred"] is False
+    assert lifecycle["acceptedAttemptCount"] == 1
+    assert lifecycle["qualificationAttemptConsumed"] is True
+    assert lifecycle["nextAuthorityRunPermitted"] is False
+
+
+def test_official_integrity_failure_retains_every_denominator_and_row() -> None:
+    failure = _mapping(ROOT / FIXTURE_ROOT / "official_attempt_failure.json")
+    assert failure["benchmarkOutcome"] == "attempted_integrity_error"
+    assert failure["qualificationRetryAllowed"] is False
+    assert failure["predictionCount"] == 0
+    assert failure["predictionDenominator"] == 64
+    assert failure["fullCompileCount"] == 0
+    assert failure["fullCompileDenominator"] == 48
+    assert failure["appearanceEvaluationCount"] == 0
+    assert failure["appearanceEvaluationDenominator"] == 24
+    rows = failure["rows"]
+    assert isinstance(rows, dict)
+    assert set(rows) == {"D0-RP-03", "D0-RP-04", "D0-RP-06", "D0-RP-07"}
+    assert all(isinstance(row, dict) and row["result"] == "fail" for row in rows.values())
 
 
 def test_aggregate_rejects_incomplete_denominators() -> None:

@@ -23,10 +23,14 @@ also stopped before authority execution because inherited Unit-L files were CRLF
 lock worktree but LF in Git and Ubuntu; it likewise published zero artifacts. The lock now hashes
 UTF-8 source text with canonical LF and a final newline, validates its complete implementation
 inventory directly, and requires every prior authority run to match this committed pre-draw ledger.
-It creates a random 256-bit seed in the trusted job, generates truth and source observations
-together, keeps targets unmounted while all 64 predictions run in Docker with a read-only allowlist
-and `--network none`, freezes predictions, then reveals and evaluates the existing targets. The
-event does not claim cryptographic target secrecy.
 
-The canonical outcome will be imported additively after the authority artifact is complete. No
-evaluator, model, route, threshold, metric, or lock byte may change after that authority begins.
+Official immutable authority run `33532344652` (job `99938286152`) then generated the seed,
+16 accepted identities, private target/source bytes, and cohort commitments before its Docker
+negative control failed to write `/outputs/probe.json`. No prediction or target reveal occurred,
+and the skipped upload left no recoverable artifact. Because accepted source bytes and commitments
+already existed, the attempt is sealed as `attempted_integrity_error`; all four scoped D0 rows fail
+their retained denominators and no qualification retry is permitted. The event does not claim
+cryptographic target secrecy.
+
+No evaluator, model, route, threshold, metric, or lock byte changed after authority began. The
+workflow is now verification-only and cannot dispatch another seed, cohort, prediction, or evaluator.

@@ -11,16 +11,18 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "854b85ed769bc3e67547e4195f65dfeb78878881"
+EVIDENCE_ANCHOR = "9078a09f1156ba8b7f98099185478ca9efcee952"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.d0_recovery_foundation_v1.v16"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_recovery_foundation_v1.v13"
+VERSION = "closy.blueprint_coverage.d0_disjoint_confirmation_v2.v17"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_disjoint_confirmation_v2.v14"
 UNIT_G_FINAL_HEAD = "bc4927fe6d36667b5b236d844b4eff511ef6f987"
 UNIT_H_FINAL_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_EVIDENCE_HEAD = "854b85ed769bc3e67547e4195f65dfeb78878881"
 UNIT_I_FINAL_HEAD = "69f17e0bc0d01472eec3aaf244c158181f74febf"
+UNIT_L_FINAL_HEAD = "a72f45955abbe65ce14b7142668447d0477db71c"
+UNIT_M_AUTHORITY_HEAD = "9078a09f1156ba8b7f98099185478ca9efcee952"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -383,6 +385,19 @@ PR_SNAPSHOTS = [
         "SUCCESS",
         "phy1_topology_strategy2_outcome_M_logical_J_A",
     ),
+    (
+        49,
+        "Forge: establish D0 recovery foundation v1",
+        "codex/closy-forge-d0-recovery-foundation-v1",
+        "codex/closy-forge-phy1-topology-strategy2-v4",
+        UNIT_I_FINAL_HEAD,
+        UNIT_L_FINAL_HEAD,
+        1,
+        36,
+        "33524394054",
+        "SUCCESS",
+        "d0_recovery_foundation_v1",
+    ),
 ]
 
 PR25_REPLAY_MAPPINGS = [
@@ -481,6 +496,8 @@ PROVENANCE_INPUTS = [
     "closy-forge/docs/evidence/phy1_topology_strategy2_v4/unit_i_outcome.json",
     "closy-forge/docs/evidence/phy1_topology_strategy2_v4/logical_j_a_closure.json",
     "closy-forge/docs/evidence/phy1_topology_strategy2_v4/evidence_manifest.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/authority_lifecycle.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/official_attempt_failure.json",
     "closy-forge/src/closy_forge/recovery_foundation_v1/contracts.py",
     "closy-forge/src/closy_forge/recovery_foundation_v1/evaluator_v2.py",
     "closy-forge/src/closy_forge/recovery_foundation_v1/contestant_boundary.py",
@@ -1656,6 +1673,76 @@ UNIT_G_DISJOINT_EVIDENCE_ADDITIONS = {
     for row_id in UNIT_G_DISJOINT_PROGRESSION_UPDATES
 }
 
+UNIT_M_DISJOINT_PROGRESSION_UPDATES = {
+    "BP-52-IMAGE-CONDITIONED-FITTING": {
+        "status": "partial",
+        "summary": (
+            "Unit M froze evaluator v2 and accepted 16 fresh synthetic identities, but the "
+            "official authority stopped at its Docker output-mount negative control before any "
+            "of the fixed 64 predictions. D0-RP-03 and D0-RP-06 remain failed."
+        ),
+        "limitations": (
+            "The accepted cohort is consumed and cannot be retried; no fitting, compile, "
+            "reference-3D, comparative, or promotion metric exists."
+        ),
+        "nextAction": "Continue independent strict C3 v5 on the predeclared fallback sentinel.",
+    },
+    "BP-53-SOURCE-TEXTURE-PBR-RECOVERY": {
+        "status": "partial",
+        "summary": (
+            "Unit M created fresh source and private-target bytes but stopped before predictions "
+            "or target reveal; appearance execution is 0/24 plus 0/8 repeats."
+        ),
+        "limitations": (
+            "D0-RP-07 remains failed and the skipped artifact upload makes the ephemeral cohort "
+            "bytes unavailable for diagnostic replay."
+        ),
+        "nextAction": "Do not retry the consumed Unit M cohort; preserve its sealed failure.",
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Unit M records an attempted-integrity-error after first accepted draw: 16 accepted "
+            "identities, 0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations."
+        ),
+        "limitations": (
+            "No target reveal, aggregate, bootstrap, route promotion, or qualifying row result "
+            "exists; all four scoped rows retain literal fail states."
+        ),
+        "nextAction": "Run independent Unit N strict C3 confirmation under its fallback rule.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Research Prototype remains partial after Unit M's immutable identity-disjoint "
+            "authority attempt ended in an isolation-harness integrity failure."
+        ),
+        "limitations": (
+            "Identity-disjoint fitting, isolation qualification, reference-3D fidelity, "
+            "appearance, strict C3, and admissible physics remain unpassed."
+        ),
+        "nextAction": "Continue Unit N; do not promote any Unit M row or route.",
+    },
+}
+
+UNIT_M_DISJOINT_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/disjoint_confirmation_v2",
+            "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2",
+            "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md",
+        ],
+        "executableEvidence": [
+            "canonical-LF source lock with 26 implementation files",
+            "16 accepted fresh identities and commitment creation before boundary failure",
+            "0/64 predictions, 0/48 compiles, and 0/24 appearance evaluations retained",
+            "authority run 33532344652 sealed attempted_integrity_error without retry",
+        ],
+        "tests": ["closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"],
+    }
+    for row_id in UNIT_M_DISJOINT_PROGRESSION_UPDATES
+}
+
 UNIT_H_CORE_C3_PROGRESSION_UPDATES = {
     "BP-48-PERSISTED-FRAMES-TANGENTS": {
         "status": "partial",
@@ -2038,6 +2125,9 @@ def main() -> int:
         unit_i_update = UNIT_I_TOPOLOGY_PROGRESSION_UPDATES.get(row_id)
         if unit_i_update:
             row.update(unit_i_update)
+        unit_m_update = UNIT_M_DISJOINT_PROGRESSION_UPDATES.get(row_id)
+        if unit_m_update:
+            row.update(unit_m_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -2092,6 +2182,11 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), unit_i_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [UNIT_I_EVIDENCE_HEAD])
+        unit_m_evidence = UNIT_M_DISJOINT_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_m_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_m_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [UNIT_M_AUTHORITY_HEAD])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
@@ -2103,6 +2198,7 @@ def main() -> int:
             and row_id not in UNIT_G_DISJOINT_PROGRESSION_UPDATES
             and row_id not in UNIT_H_CORE_C3_PROGRESSION_UPDATES
             and row_id not in UNIT_I_TOPOLOGY_PROGRESSION_UPDATES
+            and row_id not in UNIT_M_DISJOINT_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -2161,23 +2257,23 @@ def _write_active_resume(docs: Path) -> None:
     )
     resume = {
         "schemaVersion": 1,
-        "machineResumeVersion": "closy.active_blueprint_resume.d0_recovery_foundation_v1.v7",
-        "activeLane": "D0 recovery foundation v1 complete; Unit M confirmation next",
-        "branch": "codex/closy-forge-d0-recovery-foundation-v1",
+        "machineResumeVersion": "closy.active_blueprint_resume.d0_disjoint_confirmation_v2.v8",
+        "activeLane": "Unit M integrity failure sealed; Unit N strict C3 confirmation next",
+        "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
         "pullRequest": "pending_external_attestation",
-        "evidenceHead": UNIT_I_EVIDENCE_HEAD,
-        "latestFinishedParentPublicationHead": UNIT_I_FINAL_HEAD,
-        "localHeadAtResumeSource": UNIT_I_FINAL_HEAD,
-        "remoteHeadAtResumeSource": UNIT_I_FINAL_HEAD,
+        "evidenceHead": UNIT_M_AUTHORITY_HEAD,
+        "latestFinishedParentPublicationHead": UNIT_L_FINAL_HEAD,
+        "localHeadAtResumeSource": UNIT_M_AUTHORITY_HEAD,
+        "remoteHeadAtResumeSource": UNIT_M_AUTHORITY_HEAD,
         "sourceAnchorIsSelfReferential": False,
         "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
         "pendingCIAtEvidenceHead": False,
         "mergeAuthorised": False,
         "parent": {
-            "branch": "codex/closy-forge-phy1-topology-strategy2-v4",
-            "pullRequest": 48,
-            "sha": UNIT_I_FINAL_HEAD,
-            "exactHeadWorkflow": "33511517533",
+            "branch": "codex/closy-forge-d0-recovery-foundation-v1",
+            "pullRequest": 49,
+            "sha": UNIT_L_FINAL_HEAD,
+            "exactHeadWorkflow": "33524394054",
             "forgeJobsPassed": 29,
             "forgeJobsTotal": 29,
         },
@@ -2186,6 +2282,7 @@ def _write_active_resume(docs: Path) -> None:
             "ResearchPrototype-D0-matrix-v3-core": "partial_6_pass_5_fail_0_not_run",
             "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
             "D0-DisjointTshirt-v1": "benchmark_failed_fixed_inventory_unfinished",
+            "D0-DisjointTshirt-v2": "attempted_integrity_error",
             "D0-Core-Reproducibility-H1": "pass_predecessor_sentinel_scoped",
             "D0-Strict-C3-H4": "fail_frozen_evaluator_adapter_0_of_8",
             "D0-Recovery-Foundation-v1": "pass_generic_candidate_independent_no_confirmation",
@@ -2204,11 +2301,22 @@ def _write_active_resume(docs: Path) -> None:
                 "predicatesTotal": 34,
                 "d0Rp07Promoted": False,
             },
-            "identityDisjoint": {
+            "identityDisjointV1": {
                 "outcome": "benchmark_failed_fixed_inventory_unfinished",
                 "predictions": 64,
                 "canonicalCompiles": 0,
                 "appearanceEvaluations": 0,
+            },
+            "identityDisjointV2": {
+                "outcome": "attempted_integrity_error",
+                "acceptedIdentities": 16,
+                "predictions": 0,
+                "predictionDenominator": 64,
+                "canonicalCompiles": 0,
+                "compileDenominator": 48,
+                "appearanceEvaluations": 0,
+                "appearanceDenominator": 24,
+                "targetRevealOccurred": False,
             },
             "postTopologyCandidate": {
                 "candidateExists": False,
@@ -2249,22 +2357,33 @@ def _write_active_resume(docs: Path) -> None:
             "unitJBranchAuthorized": closure["unitJBranchAuthorized"],
             "unitKEligible": closure["unitKEligible"],
         },
+        "unitMResult": {
+            "outcome": "attempted_integrity_error",
+            "authorityHead": UNIT_M_AUTHORITY_HEAD,
+            "authorityRun": "33532344652",
+            "authorityJob": "99938286152",
+            "acceptedIdentityCount": 16,
+            "predictionCount": 0,
+            "fullCompileCount": 0,
+            "appearanceEvaluationCount": 0,
+            "targetRevealOccurred": False,
+            "qualificationRetryAllowed": False,
+            "firstUnmetPredicate": ("container_negative_control_must_write_audited_output"),
+        },
         "remainingBudgets": {
             "seamModels": outcome["remainingBudgets"]["seamModels"],
             "topologyStrategies": outcome["remainingBudgets"]["reservedTopologyStrategies"],
         },
         "nextHandoff": {
-            "selection": "unit_m_identity_disjoint_confirmation_v2",
-            "firstUnmetPrerequisite": "fresh_v2_external_seed_authority_and_cohort",
-            "safestEvidenceAction": (
-                "freeze Unit M protocol and implementation before any evaluator identity exists"
-            ),
+            "selection": "unit_n_strict_c3_confirmation_v5",
+            "firstUnmetPrerequisite": "fresh_untouched_eight_pose_confirmation",
+            "safestEvidenceAction": "resolve the deterministic fallback sentinel before pose draw",
         },
         "exactNextAction": (
-            "Create Unit M from the externally attested Unit L head, freeze protocol and "
-            "implementation, then invoke one fresh external seed authority."
+            "Create Unit N from the final Unit M head, resolve the Unit-F fallback sentinel, "
+            "freeze strict C3 v5, then invoke one fresh external pose authority."
         ),
-        "stopReason": "unit_l_foundation_complete_unit_m_dependency_ready",
+        "stopReason": "unit_m_integrity_failure_sealed_unit_n_independently_dependency_ready",
         "unsupportedEvidenceClasses": [
             "post_topology_candidate",
             "post_topology_core_reproducibility",
@@ -2281,6 +2400,7 @@ def _write_active_resume(docs: Path) -> None:
             "Alpha",
             "Beta",
             "Production",
+            "identity_disjoint_cohort_qualification",
         ],
     }
     (docs / "ACTIVE_BLUEPRINT_RESUME.json").write_text(
@@ -2292,23 +2412,21 @@ def _write_active_resume(docs: Path) -> None:
 
 - Branch: `{resume['branch']}`
 - Pull request: `pending external attestation`
-- Immutable Unit I evidence head: `{UNIT_I_EVIDENCE_HEAD}`
-- Latest finished parent publication: PR `#48` at `{UNIT_I_FINAL_HEAD}`
-- Parent exact-head Forge workflow: `33511517533` (`29/29` successful)
+- Immutable Unit M authority head: `{UNIT_M_AUTHORITY_HEAD}`
+- Latest finished parent publication: PR `#49` at `{UNIT_L_FINAL_HEAD}`
+- Parent exact-head Forge workflow: `33524394054` (`29/29` successful)
 - Merge authorised: `false`
 
-Unit L recovery foundation passes its generic candidate-independent acceptance. It realises no
-fresh evaluator identity, target, held-out pose, topology candidate, or physical attempt. Its own
-future final head and exact-head workflow remain external to avoid self-reference.
+Unit M is sealed after its official external authority crossed the first-accepted-draw boundary.
+Its own future final head and exact-head workflow remain external to avoid self-reference.
 
 ## Literal outcome
 
-Strategy `{outcome['strategyId']}` failed its sole candidate-independent mechanical-equivalence
-microfixture. Shared quotient DOFs differed from the frozen finite-compliance seam law by
-`{microfixtures['equivalence']['differences']['positionMeters']}` m position,
-`{microfixtures['equivalence']['differences']['storedEnergyJoules']}` J stored energy, and
-`{microfixtures['equivalence']['differences']['impulseNewtonSeconds']}` N*s impulse. Outcome `M`
-therefore opened no candidate, advanced no solver step, and consumed no candidate attempt.
+Authority run `33532344652`, job `99938286152`, generated a 256-bit seed, 16 accepted identities,
+private targets/source bytes, and commitments. Its Docker negative control could not write the
+audited output mount, so no prediction, compile, appearance evaluation, or target reveal occurred.
+The immutable outcome is `attempted_integrity_error`; the qualification attempt is consumed and
+cannot be retried. D0-RP-03/04/06/07 each retain a literal fail for their incomplete denominator.
 
 Logical outcome is `{closure['logicalOutcome']}`. A Unit J branch is not authorised and Unit K is
 ineligible. Neutral/full PHY1, integrated CCD, post-topology C3/Z1, and solver-driven Z2 were not
@@ -2318,8 +2436,10 @@ run. Runtime v1 remains selected.
 
 - Known target: `known_target_regression_pass`, `34/34` predicates, engineering regression only;
   D0-RP-07 not promoted.
-- Identity-disjoint cohort: `64` predictions, `0` canonical compiles, `0` appearance evaluations;
+- Identity-disjoint v1: `64` predictions, `0` canonical compiles, `0` appearance evaluations;
   outcome `benchmark_failed_fixed_inventory_unfinished`.
+- Identity-disjoint v2: `16` accepted identities, `0/64` predictions, `0/48` canonical compiles,
+  and `0/24` appearance evaluations; outcome `attempted_integrity_error`.
 - Post-topology candidate: nonexistent, so no Unit J matrix scope exists.
 - Historical matrix v2: `9 pass / 3 fail / 3 not-run`, superseded.
 - Current matrix v3 core: `6 pass / 5 fail / 0 not-run`.
@@ -2330,51 +2450,45 @@ run. Runtime v1 remains selected.
 
 - Seam models remaining: `0`
 - Reserved topology strategies remaining: `1` (Strategy 3)
-- Selected next lane: `unit_m_identity_disjoint_confirmation_v2`
-- First unmet prerequisite: `fresh_v2_external_seed_authority_and_cohort`
-- Safest evidence action: freeze Unit M protocol and implementation before any evaluator identity
-  exists.
+- Selected next lane: `unit_n_strict_c3_confirmation_v5`
+- First unmet prerequisite: `fresh_untouched_eight_pose_confirmation`
+- Safest evidence action: resolve the deterministic Unit-F fallback sentinel before any pose draw.
 
-Unit M is now dependency-ready. Final Unit L published head and exact-head CI are attested
-externally in the draft PR body to avoid self-reference.
+Unit N is independently dependency-ready despite Unit M's failure. Final Unit M published head and
+exact-head CI will be attested externally in the draft PR body to avoid self-reference.
 """
     (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(markdown, encoding="utf-8", newline="\n")
 
 
 def _update_master_progress(docs: Path) -> None:
     path = docs / "MASTER_BLUEPRINT_PROGRESS.md"
-    marker = "## PHY1 Topology Strategy 2 v4 and Logical J-A Closeout"
+    marker = "## D0 Identity-Disjoint Confirmation v2 Integrity Outcome"
     current = path.read_text(encoding="utf-8")
     prefix = current.split(marker, 1)[0].rstrip()
     section = f"""
 
 {marker}
 
-Review Unit I is synchronized on Unit H final head `{UNIT_H_FINAL_HEAD}`. Unit H is externally
-attested by Forge workflow `33505903385` with 29 of 29 jobs successful. Unit I froze a topology-only
-budget, diagnosed the immutable PR #43 trajectory without rerunning it, and locked exactly one
-strategy: `PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT`.
+Unit L is externally attested at `{UNIT_L_FINAL_HEAD}` by Forge workflow `33524394054`, with all
+29 Forge jobs successful. Unit M froze evaluator v2, all route/threshold/denominator semantics,
+canonical-LF implementation hashes, the prior-identity inventory, contestant isolation, and its
+single fixed primary route before any new evaluator identity existed.
 
-The sole strategy-specific candidate-independent microfixture failed all four required mechanical
-transfer checks. Quotient shared DOFs differ from the frozen finite-compliance seam law by
-`1.5999980159352167e-08` m position, `2.8799928574752917e-07` J stored energy, and
-`1.3333317066849276e-10` N*s impulse, each above its frozen `1e-12` equivalence limit. Outcome `M`
-is immutable: no canonical candidate was opened, no solver step advanced, and no candidate attempt
-was consumed. Neutral/full PHY1, integrated CCD, post-topology C3/Z1, and Z2 were not run.
+Two authority runs failed before seed creation and are retained as pre-draw infrastructure events.
+The official immutable run `33532344652`, job `99938286152`, then generated the seed, 16 accepted
+identities, source/private-target bytes, and cohort commitments. The Docker negative control failed
+because `/outputs/probe.json` was not writable. No predictions, compiles, appearance evaluations,
+or target reveal occurred, and no artifact was uploaded. Because the first accepted draw and source
+inventory existed, the qualification attempt is consumed and sealed as `attempted_integrity_error`.
 
-Logical outcome `J-A: post_topology_candidate_unavailable` closes the finite sequence without a Unit
-J branch; Unit K is ineligible. Runtime v1 remains selected, seam models remaining are zero, and one
-materially different topology strategy remains reserved. PR #48 is published at
-`{UNIT_I_FINAL_HEAD}` with exact-head Forge workflow `33511517533`, 29 of 29 jobs successful.
-
-Unit L now supplies a passing candidate-independent recovery foundation: publication/result truth,
-global physical budgets, pointer-bounded ULP policy, evaluator v2 generic gates, deny-by-default
-contestant closure, strict C3 v5 generic metrics, and executable Unit-F-else-PR43 sentinel
-resolution. It generated no new evaluator identity, target, held-out pose, candidate, or physical
-attempt. The next dependency-ready unit is the untouched Unit M confirmation v2, after its protocol
-and implementation are frozen. No private-user, human-review, real-photo, real-fabric, GPU, mobile,
-Alpha, Beta, Production,
-post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is made.
+D0-RP-03, D0-RP-04, D0-RP-06, and D0-RP-07 each retain a literal fail with
+`attempted_integrity_error`; no route is promoted and the Research Prototype matrix remains
+`6 pass / 5 fail / 0 not-run` core plus `2 pass / 0 fail / 2 not-run` supplemental. Coverage remains
+`20 complete / 63 partial / 7 not started / 11 discovery pending`. Runtime v1 and the conventional
+fallback remain selected. Unit N strict C3 v5 is independently dependency-ready through the frozen
+fallback-sentinel rule. No private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha,
+Beta, Production, post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is
+made.
 """
     path.write_text(prefix + section, encoding="utf-8", newline="\n")
 
@@ -2552,6 +2666,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         46: 45,
         47: 46,
         48: 47,
+        49: 48,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []

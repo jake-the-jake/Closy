@@ -3,88 +3,23 @@ name: Forge Unit M untouched cohort authority
 on:
   pull_request:
     paths:
-      - "closy-forge/src/closy_forge/disjoint_confirmation_v2/**"
-      - "closy-forge/scripts/*d0_disjoint_confirmation_v2*.py"
-      - "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/protocol_lock.json"
-      - "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/development_proof.json"
-      - "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/prior_inventory.json"
+      - "closy-forge/fixtures/d0_disjoint_tshirt_confirmation_v2/**"
       - "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py"
       - ".github/workflows/closy-forge-unit-m-authority.yml"
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
-  untouched-authority:
+  sealed-verification:
     name: Unit M untouched cohort authority
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      GH_TOKEN: ${{ github.token }}
-      LOCK_SHA: ${{ github.event.pull_request.head.sha }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - name: Reject reruns and later authority runs
-        working-directory: closy-forge
-        shell: bash
-        run: |
-          test "$GITHUB_RUN_ATTEMPT" = "1"
-          test "$(git rev-parse HEAD)" = "$LOCK_SHA"
-          python - <<'PY'
-          import json
-          import os
-          import subprocess
-          from pathlib import Path
-
-          lifecycle = json.loads(
-              Path("fixtures/d0_disjoint_tshirt_confirmation_v2/authority_lifecycle.json")
-              .read_text(encoding="utf-8")
-          )
-          expected = {str(event["runId"]): event for event in lifecycle["events"]}
-          repository = os.environ["GITHUB_REPOSITORY"]
-          current = int(os.environ["GITHUB_RUN_ID"])
-          branch = os.environ["GITHUB_HEAD_REF"]
-          payload = json.loads(
-              subprocess.check_output(
-                  [
-                      "gh",
-                      "api",
-                      f"repos/{repository}/actions/workflows/closy-forge-unit-m-authority.yml/runs?branch={branch}&event=pull_request&per_page=100",
-                  ],
-                  text=True,
-              )
-          )
-          actual = {
-              str(run["id"]): run
-              for run in payload["workflow_runs"]
-              if int(run["id"]) != current
-          }
-          if set(actual) != set(expected):
-              raise SystemExit("confirmation_v2_unrecorded_prior_authority_run")
-          for run_id, event in expected.items():
-              if actual[run_id]["conclusion"] != "failure":
-                  raise SystemExit("confirmation_v2_prior_authority_not_failed")
-              required = (
-                  event["classification"] == "failed_before_seed_or_commitment"
-                  and event["seedOrCommitmentCreated"] is False
-                  and event["publishedAttempt"] is False
-                  and event["artifactCount"] == 0
-              )
-              if not required:
-                  raise SystemExit("confirmation_v2_prior_authority_not_predraw")
-              artifacts = json.loads(
-                  subprocess.check_output(
-                      ["gh", "api", f"repos/{repository}/actions/runs/{run_id}/artifacts"],
-                      text=True,
-                  )
-              )
-              if artifacts["total_count"] != 0:
-                  raise SystemExit("confirmation_v2_prior_authority_has_artifact")
-          PY
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.11"
@@ -93,16 +28,14 @@ jobs:
       - name: Install frozen Forge environment
         working-directory: closy-forge
         run: python -m pip install -e ".[dev]" -c requirements-dev.lock
-      - name: Verify exact lock and execute one untouched authority attempt
+      - name: Verify sealed post-attempt evidence without authority dispatch
         working-directory: closy-forge
-        shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "$LOCK_SHA"
+          python -m pytest tests/unit/test_d0_disjoint_confirmation_v2.py -q
           python - <<'PY'
           from pathlib import Path
 
           from closy_forge.disjoint_confirmation_v2.protocol import (
-              canonical_source_sha256,
               load_protocol,
               validate_implementation,
           )
@@ -112,39 +45,13 @@ jobs:
           issues = validate_implementation(root, protocol)
           if issues:
               raise SystemExit(";".join(issues))
-          expected = protocol["seedAuthorityLifecycle"]["initialWorkflowSha256"]
-          actual = canonical_source_sha256(
-              root.parent / ".github/workflows/closy-forge-unit-m-authority.yml"
-          )
-          if actual != expected:
-              raise SystemExit("confirmation_v2_initial_authority_workflow_hash_mismatch")
           PY
-          job_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" \
-            --jq '.jobs[] | select(.name == "Unit M untouched cohort authority") | .id')"
-          test -n "$job_id"
-          python scripts/run_d0_disjoint_confirmation_v2_authority.py \
-            --output "$RUNNER_TEMP/unit-m-official-attempt" \
-            --lock-sha "$LOCK_SHA" \
-            --workflow-run-id "$GITHUB_RUN_ID" \
-            --workflow-job-id "$job_id"
-      - name: Validate completed attempt before publication
-        working-directory: closy-forge
-        run: |
-          python scripts/import_d0_disjoint_confirmation_v2_attempt.py \
-            --source "$RUNNER_TEMP/unit-m-official-attempt" --check
-      - name: Upload already-revealed completed attempt
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: unit-m-official-attempt-${{ github.event.pull_request.head.sha }}
-          path: ${{ runner.temp }}/unit-m-official-attempt
-          if-no-files-found: error
-          retention-days: 30
-      - name: Record sanitized authority summary
+      - name: Record sealed lifecycle summary
         shell: bash
         run: |
-          echo "lock_sha=${LOCK_SHA}" >> "$GITHUB_STEP_SUMMARY"
-          echo "authority_run_id=${GITHUB_RUN_ID}" >> "$GITHUB_STEP_SUMMARY"
-          echo "seed_bits=256" >> "$GITHUB_STEP_SUMMARY"
-          echo "prediction_denominator=64" >> "$GITHUB_STEP_SUMMARY"
-          echo "raw_seed_logged=false" >> "$GITHUB_STEP_SUMMARY"
-          echo "targets_uploaded_only_after_prediction_freeze=true" >> "$GITHUB_STEP_SUMMARY"
+          echo "state=sealed_post_attempt" >> "$GITHUB_STEP_SUMMARY"
+          echo "official_authority_run_id=33532344652" >> "$GITHUB_STEP_SUMMARY"
+          echo "official_authority_job_id=99938286152" >> "$GITHUB_STEP_SUMMARY"
+          echo "outcome=attempted_integrity_error" >> "$GITHUB_STEP_SUMMARY"
+          echo "authority_dispatch_enabled=false" >> "$GITHUB_STEP_SUMMARY"
+          echo "qualification_retry_allowed=false" >> "$GITHUB_STEP_SUMMARY"

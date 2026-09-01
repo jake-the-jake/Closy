@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.d0_recovery_foundation_v1.v16",
+    "coverageVersion": "closy.blueprint_coverage.d0_disjoint_confirmation_v2.v17",
     "total": 101
   },
-  "evidenceAnchorSha": "854b85ed769bc3e67547e4195f65dfeb78878881",
+  "evidenceAnchorSha": "9078a09f1156ba8b7f98099185478ca9efcee952",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -190,6 +190,77 @@
         "human_review"
       ],
       "workflowRun": "33467062432"
+    },
+    "D0-DisjointTshirt-v2": {
+      "acceptedIdentityCount": 16,
+      "appearanceEvaluationCount": 0,
+      "appearanceEvaluationDenominator": 24,
+      "authorityJob": "99938286152",
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "container_boundary_probe_output_mount_permission_denied",
+        "official_commitment_and_source_bytes_not_recoverable_after_skipped_artifact_upload",
+        "no_prediction_compile_or_appearance_denominator_completed"
+      ],
+      "computeProfile": "D0",
+      "coverageState": "partial",
+      "dataProvenance": "project-authored public synthetic ephemeral cohort",
+      "evidenceDurability": "github_run_log_plus_committed_sealed_failure_record",
+      "evidenceTier": "external_authority_log_and_committed_failure_record",
+      "executableSha": null,
+      "executionKind": "external authority stopped at container negative control",
+      "firstUnmetRequiredPredicate": "container_negative_control_must_write_audited_output",
+      "fullCompileCount": 0,
+      "fullCompileDenominator": 48,
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "D0-DisjointTshirt-v2",
+      "gateScope": "16-identity evaluator-v2 cohort",
+      "globalStatus": "partial",
+      "platform": [
+        "ubuntu"
+      ],
+      "predictionCount": 0,
+      "predictionDenominator": 64,
+      "qualificationRetryAllowed": false,
+      "rowResults": {
+        "D0-RP-03": {
+          "attemptState": "attempted_integrity_error",
+          "result": "fail"
+        },
+        "D0-RP-04": {
+          "attemptState": "attempted_integrity_error",
+          "result": "fail"
+        },
+        "D0-RP-06": {
+          "attemptState": "attempted_integrity_error",
+          "result": "fail"
+        },
+        "D0-RP-07": {
+          "attemptState": "attempted_integrity_error",
+          "result": "fail"
+        }
+      },
+      "scopedStatus": "attempted_integrity_error",
+      "sourceSha": "9078a09f1156ba8b7f98099185478ca9efcee952",
+      "toolchain": [
+        "CPython 3.11",
+        "Docker"
+      ],
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "cohort_gate_pass",
+        "real_photo",
+        "real_fabric",
+        "human_review"
+      ],
+      "workflowRun": "33532344652"
     },
     "LayerCollision-D0": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -974,7 +1045,7 @@
     "committedSourceAnchorExceptions": [
       10
     ],
-    "crossRepositoryNodeCount": 51,
+    "crossRepositoryNodeCount": 52,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -1056,15 +1127,23 @@
         "pullRequest": 48,
         "result": "pass",
         "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33511517533"
+      },
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "a72f45955abbe65ce14b7142668447d0477db71c",
+        "publishedHeadSha": "a72f45955abbe65ce14b7142668447d0477db71c",
+        "pullRequest": 49,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33524394054"
       }
     ],
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
-    "latestPullRequest": 48,
+    "latestPullRequest": 49,
     "pendingExternalExactHeadAttestations": [],
-    "pullRequestCount": 48,
+    "pullRequestCount": 49,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v15",
+  "statusModelVersion": "closy.blueprint_status_model.v16",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -1101,6 +1180,11 @@
     "historicalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
+    "identityDisjointV2AcceptedIdentityCount": 16,
+    "identityDisjointV2AuthorityExecuted": true,
+    "identityDisjointV2Outcome": "attempted_integrity_error",
+    "identityDisjointV2PredictionCount": 0,
+    "identityDisjointV2QualificationRetryAllowed": false,
     "integratedRuntimePinnedToTopologyV1": true,
     "knownTargetTextureRegressionExecuted": true,
     "knownTargetTextureRegressionOutcome": "known_target_regression_pass",
