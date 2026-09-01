@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_texture_rerender_v3.v12"
+    assert coverage["version"] == "closy.blueprint_coverage.d0_disjoint_tshirt_benchmark_v1.v13"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -261,8 +261,8 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 45))
-    assert len(nodes) == 46
+    assert numbers == list(range(1, 47))
+    assert len(nodes) == 48
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert stack["externalPullRequests"][1]["number"] == 3
@@ -289,7 +289,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] == 10:
+        if row["number"] in {10, 46}:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -364,6 +364,23 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         by_id["github:jake-the-jake/Closy:pr/44"]["latestExactHeadWorkflows"][0]["runId"]
         == "33452856012"
     )
+    assert by_id["github:jake-the-jake/Closy:pr/45"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/44"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/45"]["headSha"] == (
+        "ba54b17a0aef7518d9acac30c6b7ec6564a38d87"
+    )
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/45"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33464425080"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/46"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/45"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/46"]["headSha"] == (
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/46"]["latestExactHeadWorkflows"] == []
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -425,7 +442,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_texture_rerender_v3.v9"
+        "closy.blueprint_reconciliation.d0_disjoint_tshirt_benchmark_v1.v10"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
@@ -444,11 +461,11 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_f_appearance_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_g_failure_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-texture-rerender-correction-v3"
+    assert resume["branch"] == "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1"
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
     assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
@@ -470,10 +487,15 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_f_appearance_boundary
         "knownTargetPredicatesTotal": 34,
         "knownTargetTrialCount": 1,
         "outcome": "known_target_regression_pass",
-        "unitGRequired": True,
+        "unitGRequired": False,
     }
+    assert resume["cohortResult"]["outcome"] == ("benchmark_failed_fixed_inventory_unfinished")
+    assert resume["cohortResult"]["predictionCount"] == 64
+    assert resume["cohortResult"]["fullCompileCount"] == 0
+    assert resume["cohortResult"]["appearanceEvaluationCount"] == 0
     assert "6 pass, 5 fail" in markdown
     assert "known_target_regression_pass" in markdown
+    assert "benchmark_failed_fixed_inventory_unfinished" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
 
 

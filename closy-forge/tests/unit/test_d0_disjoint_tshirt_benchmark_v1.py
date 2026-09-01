@@ -49,7 +49,31 @@ def test_protocol_lock_precedes_all_evaluator_identities() -> None:
     assert protocol["evaluatorIdentityCount"] == 16
     assert protocol["evaluatorIdentitiesRealized"] is False
     assert protocol["targetContentsMounted"] is False
-    assert not (ROOT / "fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator").exists()
+
+    evaluator_root = ROOT / "fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator"
+    commitments = json.loads((evaluator_root / "commitments.json").read_text())
+    assert commitments["identityCount"] == 16
+    assert commitments["targetsPresent"] is False
+    assert commitments["targetParametersPresent"] is False
+    assert commitments["noncesPresent"] is False
+
+
+def test_frozen_evaluator_failure_is_append_only_and_not_retriable() -> None:
+    evaluator_root = ROOT / "fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator"
+    failure = json.loads((evaluator_root / "evaluation_attempt_failure.json").read_text())
+    result = json.loads((evaluator_root / "benchmark_result.json").read_text())
+
+    assert failure["attemptId"] == "attempt.g.evaluator.001"
+    assert failure["retryAllowed"] is False
+    assert failure["workerDispatched"] is False
+    assert failure["reasonCode"] == (
+        "frozen_evaluator_transcript_loader_expected_mapping_but_transcript_is_list"
+    )
+    assert result["outcome"] == "benchmark_failed_fixed_inventory_unfinished"
+    assert result["predictionCount"] == 64
+    assert result["fullCompileCount"] == 0
+    assert result["appearanceEvaluationCount"] == 0
+    assert result["targetCommitmentsValid"] is True
 
 
 def test_identity_draws_are_opaque_disjoint_and_committed(development_identities) -> None:

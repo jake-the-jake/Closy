@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "7b4fbc199f462d35ba2f440494cff7cc700b0b94"
+EVIDENCE_ANCHOR = "6de060d7fa4e985070187bf417f159ecbe31e8b4"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.d0_texture_rerender_v3.v12"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_texture_rerender_v3.v9"
+VERSION = "closy.blueprint_coverage.d0_disjoint_tshirt_benchmark_v1.v13"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_disjoint_tshirt_benchmark_v1.v10"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -327,6 +327,32 @@ PR_SNAPSHOTS = [
         "SUCCESS",
         "d0_evidence_integrity_v4_truth_reset",
     ),
+    (
+        45,
+        "Forge: execute source-only D0 texture rerender v3",
+        "codex/closy-forge-d0-texture-rerender-correction-v3",
+        "codex/closy-forge-d0-evidence-integrity-v4",
+        "2f40815010cef01685a7ed873081a22f11d67c00",
+        "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+        8,
+        82,
+        "33464425080",
+        "SUCCESS",
+        "d0_texture_rerender_correction_v3_known_target",
+    ),
+    (
+        46,
+        "Forge: benchmark identity-disjoint T-shirt reconstruction",
+        "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
+        "codex/closy-forge-d0-texture-rerender-correction-v3",
+        "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
+        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
+        7,
+        64,
+        "",
+        "PENDING",
+        "d0_disjoint_tshirt_benchmark_v1_failed_evaluator_harness",
+    ),
 ]
 
 PR25_REPLAY_MAPPINGS = [
@@ -390,6 +416,14 @@ PROVENANCE_INPUTS = [
     "predicate_table.json",
     "closy-forge/docs/evidence/d0_texture_rerender_correction_v3/evaluation/"
     "attempt_registry.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/protocol_lock.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/development_lock.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/seed_authority.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/commitments.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/prediction_freeze.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/benchmark_result.json",
+    "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/"
+    "evaluation_attempt_failure.json",
 ]
 
 PHASE10_PATHS = [
@@ -1393,7 +1427,7 @@ UNIT_F_APPEARANCE_COMMITS = [
     "5a01ed40656c3f2924169f2c3e8f4d702f572cc5",
     "1038cbc9125461a8b80587b56e083191296861ec",
     "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
-    EVIDENCE_ANCHOR,
+    "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
 ]
 
 UNIT_F_APPEARANCE_PROGRESSION_UPDATES = {
@@ -1479,6 +1513,81 @@ UNIT_F_APPEARANCE_EVIDENCE_ADDITIONS = {
         ],
     }
     for row_id in UNIT_F_APPEARANCE_PROGRESSION_UPDATES
+}
+
+UNIT_G_DISJOINT_PROGRESSION_UPDATES = {
+    "BP-52-IMAGE-CONDITIONED-FITTING": {
+        "status": "partial",
+        "summary": (
+            "Unit G froze 8 development and 16 identity-disjoint evaluator identities, then "
+            "completed 64 isolated predictions before its frozen evaluator failed at transcript "
+            "loading. No cohort fitting metric or promotion was produced."
+        ),
+        "limitations": (
+            "The fixed inventory completed zero canonical compiles; D0-RP-03 and D0-RP-06 "
+            "remain failed and no route is a cohort winner."
+        ),
+        "nextAction": (
+            "Preserve the failed Unit G attempt and continue independent Unit H core "
+            "reproducibility and strict C3 infrastructure."
+        ),
+    },
+    "BP-53-SOURCE-TEXTURE-PBR-RECOVERY": {
+        "status": "partial",
+        "summary": (
+            "Unit F known-target regression remains 34/34; Unit G froze an untouched "
+            "8-identity appearance subset but completed zero appearance evaluations after the "
+            "frozen evaluator harness failed."
+        ),
+        "limitations": (
+            "D0-RP-07 remains failed. Known-target and cohort scopes are separate and cannot be "
+            "unioned."
+        ),
+        "nextAction": "Do not rerun or retune the revealed Unit G cohort in this review unit.",
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Unit G preserves a complete two-stage lock, seed authority, 16 commitments, 64 "
+            "isolated predictions, target reveal, and the literal fixed-inventory evaluator "
+            "harness failure."
+        ),
+        "limitations": (
+            "No canonical compile, reference-3D, appearance, aggregate, bootstrap, or route "
+            "promotion result was produced."
+        ),
+        "nextAction": "Continue Unit H without repairing or replaying Unit G evaluator targets.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Research Prototype remains partial after the identity-disjoint benchmark failed "
+            "before evaluator worker dispatch; Unit F known-target evidence remains separately "
+            "scoped."
+        ),
+        "limitations": (
+            "Image-conditioned cohort fitting, cohort appearance, strict C3, and admissible "
+            "physics remain unpassed."
+        ),
+        "nextAction": "Execute predecessor-scoped Unit H reproducibility and strict C3 harness.",
+    },
+}
+
+UNIT_G_DISJOINT_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/disjoint_benchmark_v1",
+            "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1",
+        ],
+        "executableEvidence": [
+            "8 development identities and 16 seed-authority-derived evaluator commitments",
+            "64 predictions executed with application-process deny-by-default input isolation",
+            "all target commitments validated only after prediction freeze",
+            "frozen evaluator failed before worker dispatch with zero compile/appearance counts",
+        ],
+        "tests": ["closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py"],
+    }
+    for row_id in UNIT_G_DISJOINT_PROGRESSION_UPDATES
 }
 
 NEXT_ACTIONS = {
@@ -1650,6 +1759,9 @@ def main() -> int:
         unit_f_update = UNIT_F_APPEARANCE_PROGRESSION_UPDATES.get(row_id)
         if unit_f_update:
             row.update(unit_f_update)
+        unit_g_update = UNIT_G_DISJOINT_PROGRESSION_UPDATES.get(row_id)
+        if unit_g_update:
+            row.update(unit_g_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1689,6 +1801,11 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), unit_f_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), UNIT_F_APPEARANCE_COMMITS)
+        unit_g_evidence = UNIT_G_DISJOINT_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_g_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_g_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
@@ -1697,6 +1814,7 @@ def main() -> int:
             and row_id not in FINAL_D0_PHY1_V3_PROGRESSION_UPDATES
             and row_id not in UNIT_E_INTEGRITY_PROGRESSION_UPDATES
             and row_id not in UNIT_F_APPEARANCE_PROGRESSION_UPDATES
+            and row_id not in UNIT_G_DISJOINT_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -1885,6 +2003,8 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         42: 41,
         43: 42,
         44: 43,
+        45: 44,
+        46: 45,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []

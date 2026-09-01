@@ -48,6 +48,8 @@ __pycache__/
 /closy-forge/.pytest_cache/
 /closy-forge/.ruff_cache/
 /closy-forge/generated/
+/closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/development/*/*.png
+/closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/sources/
 /generated/garments/*.closygarment/
 /generated/ci/*.closygarment/
 

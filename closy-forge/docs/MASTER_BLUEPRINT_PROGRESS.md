@@ -332,3 +332,34 @@ target, not held-out qualification. The original logo IoU `0.0`, displacement `0
 `D0-RP-07` failure remain immutable. Matrix v3, Research Prototype partial status, runtime v1,
 topology and physics authority are unchanged. Unit G's untouched identity-disjoint cohort is the
 only next lane that may reconsider image-conditioned or texture-fidelity scope.
+
+## D0 Identity-Disjoint T-shirt Benchmark v1
+
+Review Unit G followed the committed two-stage chronology. Lock head
+`77d8b0bd0b98ba78485979708bb2c61bc1e41b7c` fixed the independent corpus renderer,
+8-development/16-evaluator split, opaque identities, deterministic rejection policy, four routes,
+application-process input isolation, thresholds, comparison rules, one development-selected primary
+route, three compile routes, eight appearance ordinals, and the H0 sentinel before evaluator
+realization. Seed-authority workflow `33467062432`, first non-rerun job `99729005374`, produced seed
+`36bf2d72a4d1c97799df81c01195cc99719236b5bbd7d931e6475bf631a4cd12`.
+
+The evaluator realization committed 16 salted target commitments and a complete raw draw/rejection
+transcript without target pixels, parameters, nonces, or bulk evaluator source packages. All 64
+predictions completed in stripped workspaces with deny-by-default opened-path auditing; every source
+withdrawal check passed and no target, third view, repository, `.git`, prior result, or network access
+was observed. Predictions were frozen before target reveal, and all 16 commitments then validated.
+
+The single frozen evaluator attempt failed before worker dispatch because the evaluator's mapping-only
+JSON loader was applied to the committed list-shaped raw draw transcript. The cohort had already been
+revealed, so implementation, configuration, inventory, and evaluator remained frozen: no patch, retry,
+replay, reroll, replacement, shrinkage, or alternative route was permitted. Append-only reveal and
+failure records preserve the literal outcome `benchmark_failed_fixed_inventory_unfinished`, with 0 of
+64 canonical compiles and 0 of 32 appearance evaluations. Therefore `D0-RP-03` and `D0-RP-06` remain
+failed, `D0-RP-04` remains partial despite successful input isolation, and `D0-RP-07` remains failed.
+There is no cohort winner or promotion; Unit F remains known-target engineering evidence only.
+
+Bulk development/evaluator raster bytes are reproducible retention artifacts rather than review-source
+files. Their content hashes, deterministic generators, compact source/target records, commitments,
+prediction inventory, target reveal, isolation report, and failure/result manifests remain committed.
+Runtime v1 stays selected, no physics ran, no seam/topology budget changed, and no private-user,
+real-photo, human-review, or production claim is made. Unit H is the next independent lane.
