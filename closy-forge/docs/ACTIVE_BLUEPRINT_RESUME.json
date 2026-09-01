@@ -1,8 +1,8 @@
 {
-  "activeLane": "D0 evidence integrity and truth reset",
-  "branch": "codex/closy-forge-d0-evidence-integrity-v4",
-  "evidenceHead": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
-  "exactNextAction": "After Unit E exact-head CI, create codex/closy-forge-d0-texture-rerender-correction-v3 from the final Unit E head and execute exactly one frozen known-target source-only appearance diagnostic without promoting D0-RP-07.",
+  "activeLane": "D0 source-only texture rerender correction v3",
+  "branch": "codex/closy-forge-d0-texture-rerender-correction-v3",
+  "evidenceHead": "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
+  "exactNextAction": "After Unit F exact-head CI, create codex/closy-forge-d0-disjoint-tshirt-benchmark-v1 from the final Unit F head and execute the preregistered identity-disjoint Unit G benchmark without reusing evaluator identities for development.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "C3-Binding-D0-v1": "historical_scoped_pass_preserved",
@@ -14,17 +14,18 @@
     "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
     "ResearchPrototype-D0-matrix-v3-core": "partial_6_pass_5_fail_0_not_run",
     "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
+    "TextureRerender-KnownTarget-v3": "known_target_regression_pass_not_qualification",
     "RuntimeCandidate-v2": "validated_research_only_product_runtime_v1_unchanged",
     "Z1": "candidate_default_family_scoped_pass_global_partial",
     "Z2": "failed_not_admitted_no_new_run"
   },
-  "localHeadAtResumeSource": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
-  "machineResumeVersion": "closy.active_blueprint_resume.d0_evidence_integrity_v4.v2",
+  "localHeadAtResumeSource": "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
+  "machineResumeVersion": "closy.active_blueprint_resume.d0_texture_rerender_v3.v3",
   "mergeAuthorised": false,
   "parent": {
-    "branch": "codex/closy-forge-phy1-seam-support-v3",
-    "pullRequest": 43,
-    "sha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e"
+    "branch": "codex/closy-forge-d0-evidence-integrity-v4",
+    "pullRequest": 44,
+    "sha": "2f40815010cef01685a7ed873081a22f11d67c00"
   },
   "pendingCIAtEvidenceHead": true,
   "physicalResult": {
@@ -42,13 +43,14 @@
     "ccdExecuted": false,
     "z2Executed": false
   },
-  "pullRequest": 44,
+  "pullRequest": 45,
   "remainingBudgets": {
     "seamModels": 0,
     "topologyStrategies": 2
   },
   "remoteHeadAtResumeSource": null,
   "replayState": {
+    "appearanceCandidateId": "candidate.d0_texture_rerender_v3.49161d8adafb514e5a04b1a9",
     "candidateId": "candidate.d0_exact_fitted_topology_v2.060e8d4aaaa7e82eddb75880",
     "dependencyAuthority": "explicit_graph_validated",
     "firstUnmetResearchPredicate": "D0-RP-03",
@@ -70,5 +72,15 @@
   },
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "unit_e_integrity_reset_complete_pending_exact_head_attestation"
+  "stopReason": "unit_f_known_target_regression_complete_pending_exact_head_attestation",
+  "appearanceResult": {
+    "atlasGeneratedControlledFillFraction": 0.447538306,
+    "atlasSourceObservedFraction": 0.552461694,
+    "d0Rp07Promoted": false,
+    "knownTargetPredicatesPassed": 34,
+    "knownTargetPredicatesTotal": 34,
+    "knownTargetTrialCount": 1,
+    "outcome": "known_target_regression_pass",
+    "unitGRequired": true
+  }
 }

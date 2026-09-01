@@ -307,3 +307,28 @@ to avoid recursive self-reference. Runtime v1 remains selected, topology v2 rema
 private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta or Production claim is
 made. The next unit is exactly one known-target source-only appearance diagnostic, followed by the
 separate untouched identity-disjoint benchmark.
+
+## D0 Source-Only Texture Rerender Correction v3
+
+Review Unit F preserves the original failed appearance evidence and adds a separate attempt lineage.
+Protocol commit `5a01ed40656c3f2924169f2c3e8f4d702f572cc5` locked one geometric
+source-surface-atlas strategy, exact source closure, forbidden evaluator inputs, hashes, controls,
+thresholds and a one-replay stop rule before development. Implementation anchor
+`1038cbc9125461a8b80587b56e083191296861ec` then froze the mapper and evaluator, and prediction
+commit `1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c` persisted the source-only candidate before the
+known evaluator was mounted.
+
+The atlas records exact source pixel, visible triangle, barycentric coordinate, material UV,
+confidence, occlusion and observed/blended/generated classification. All eight causal controls pass
+without geometry changes or evaluator access. Of 38,571 active semantic-island texels, 21,309 are
+source-observed (`0.552461694`) and 17,262 are explicitly generated controlled fill (`0.447538306`).
+All retained geometry, simulation and binding bytes are identical to the parent candidate; atlas,
+material, provenance, candidate, runtime, cache and report identities are invalidated and rebuilt.
+
+The single permitted known-target replay passes 34 of 34 atomic predicates, including front logo
+IoU `0.977777778` and normalised displacement `0.000595279`. Its exact outcome is
+`known_target_regression_pass`: it is engineering regression evidence against an already-known
+target, not held-out qualification. The original logo IoU `0.0`, displacement `0.154158086` and
+`D0-RP-07` failure remain immutable. Matrix v3, Research Prototype partial status, runtime v1,
+topology and physics authority are unchanged. Unit G's untouched identity-disjoint cohort is the
+only next lane that may reconsider image-conditioned or texture-fidelity scope.

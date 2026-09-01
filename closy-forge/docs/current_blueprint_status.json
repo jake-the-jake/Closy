@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.d0_evidence_integrity_v4.v11",
+    "coverageVersion": "closy.blueprint_coverage.d0_texture_rerender_v3.v12",
     "total": 101
   },
-  "evidenceAnchorSha": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
+  "evidenceAnchorSha": "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -517,6 +517,52 @@
       ],
       "workflowRun": null
     },
+    "TextureRerender-KnownTarget-v3": {
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "unit_g_identity_disjoint_benchmark_required"
+      ],
+      "computeProfile": "D0",
+      "d0Rp07Promoted": false,
+      "dataProvenance": "project-authored public fixture and already-known evaluator target",
+      "evidenceDurability": "committed prediction before evaluator and hash-chained attempt",
+      "evidenceTier": "one_shot_known_target_engineering_regression",
+      "executableSha": null,
+      "executionKind": "frozen source projection followed by one known-target replay",
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "TextureRerender-KnownTarget-v3",
+      "gateScope": "engineering regression only",
+      "globalStatus": "partial",
+      "knownTargetTrialCount": 1,
+      "passedPredicateCount": 34,
+      "platform": [
+        "windows",
+        "ubuntu"
+      ],
+      "scopedStatus": "known_target_regression_pass_not_qualification",
+      "sourceSha": "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
+      "toolchain": [
+        "CPython 3.11",
+        "CPython 3.12"
+      ],
+      "totalPredicateCount": 34,
+      "unitGRequired": true,
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "held_out",
+        "identity_disjoint_cohort",
+        "real_fabric",
+        "human_review"
+      ],
+      "workflowRun": null
+    },
     "Z1": {
       "allFamilyAttemptCount": 9,
       "avatarProfile": "not_applicable_static_cook",
@@ -806,7 +852,7 @@
     "committedSourceAnchorExceptions": [
       10
     ],
-    "crossRepositoryNodeCount": 45,
+    "crossRepositoryNodeCount": 46,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -843,7 +889,7 @@
       }
     ],
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
-    "latestPullRequest": 43,
+    "latestPullRequest": 44,
     "pendingExternalExactHeadAttestations": [
       {
         "authority": "github_workflow_api_and_draft_pr_body",
@@ -854,10 +900,10 @@
         "workflowRunUrl": null
       }
     ],
-    "pullRequestCount": 43,
+    "pullRequestCount": 44,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v10",
+  "statusModelVersion": "closy.blueprint_status_model.v11",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -868,20 +914,37 @@
     "actualZeroOneStaticCookExecutedThisInvocation": true,
     "boundedRuntimeAndRasterDecompression": true,
     "cacheValidated": true,
+    "currentD0ResearchMatrixCoreStatusCounts": {
+      "fail": 5,
+      "not_run": 0,
+      "pass": 6
+    },
+    "currentD0ResearchMatrixFirstUnmetPredicate": "D0-RP-03",
+    "currentD0ResearchMatrixStatus": "partial",
+    "currentD0ResearchMatrixSupplementalStatusCounts": {
+      "fail": 0,
+      "not_run": 2,
+      "pass": 2
+    },
+    "currentD0ResearchMatrixVersion": "closy.final_d0_research_matrix.v3",
     "currentRasterPhase9SourceIntegrated": true,
     "currentRasterPhase9SourcePullRequest": 26,
     "dependencyIdentityGraphAvailable": true,
-    "finalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
-    "finalD0ResearchMatrixStatus": "partial",
-    "finalD0ResearchMatrixStatusCounts": {
+    "historicalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
+    "historicalD0ResearchMatrixStatus": "partial_superseded",
+    "historicalD0ResearchMatrixStatusCounts": {
       "fail": 3,
       "not_run": 3,
       "pass": 9
     },
-    "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
+    "historicalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
     "historicalZeroOneStaticCookEvidencePresent": true,
     "humanReviewRun": false,
     "integratedRuntimePinnedToTopologyV1": true,
+    "knownTargetTextureRegressionExecuted": true,
+    "knownTargetTextureRegressionOutcome": "known_target_regression_pass",
+    "knownTargetTextureRegressionPromotedD0Rp07": false,
+    "knownTargetTextureRegressionTrialCount": 1,
     "layerCollisionSurfaceIntegrated": true,
     "mt1ReferenceMotionD0Available": true,
     "packageValidityDependsOnZeroOne": false,

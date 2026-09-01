@@ -467,6 +467,16 @@
       "to": "github:jake-the-jake/Closy:pr/43"
     },
     {
+      "from": "github:jake-the-jake/Closy:pr/43",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/44"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/43",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/44"
+    },
+    {
       "from": "github:jake-the-jake/ZeroOne:pr/2",
       "kind": "dependency",
       "to": "github:jake-the-jake/ZeroOne:pr/3"
@@ -2240,6 +2250,43 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "7922e9b6ece8fca2c3b7dec13299a39de102cbc4..6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e"
+    },
+    {
+      "ahead": 3,
+      "baseRef": "codex/closy-forge-phy1-seam-support-v3",
+      "baseSha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-evidence-integrity-v4",
+      "capabilityRole": "forge_reset_d0_evidence_integrity_and_research_truth",
+      "changedFileCount": 32,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/43"
+      ],
+      "headSha": "2f40815010cef01685a7ed873081a22f11d67c00",
+      "id": "github:jake-the-jake/Closy:pr/44",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 29,
+          "runId": "33452856012",
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/43"
+      ],
+      "pullRequest": 44,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_evidence_integrity_v4_truth_reset",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e..2f40815010cef01685a7ed873081a22f11d67c00"
     },
     {
       "ahead": 3,
@@ -4180,6 +4227,36 @@
       "state": "OPEN",
       "title": "Forge: execute preregistered PHY1 seam support v3",
       "url": "https://github.com/jake-the-jake/Closy/pull/43"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phy1-seam-support-v3",
+      "baseSha": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+      "branch": "codex/closy-forge-d0-evidence-integrity-v4",
+      "changedFileCount": 32,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "2f40815010cef01685a7ed873081a22f11d67c00",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
+        "runId": "33452856012",
+        "successfulForgeJobCount": 29,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeBase": "6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e",
+      "mergeability": "MERGEABLE",
+      "number": 44,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_evidence_integrity_v4_truth_reset",
+      "state": "OPEN",
+      "title": "Forge: reset D0 evidence integrity and research truth",
+      "url": "https://github.com/jake-the-jake/Closy/pull/44"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -4229,7 +4306,8 @@
     "github:jake-the-jake/Closy:pr/40",
     "github:jake-the-jake/Closy:pr/41",
     "github:jake-the-jake/Closy:pr/42",
-    "github:jake-the-jake/Closy:pr/43"
+    "github:jake-the-jake/Closy:pr/43",
+    "github:jake-the-jake/Closy:pr/44"
   ],
   "topology": "explicit_dag",
   "validation": {

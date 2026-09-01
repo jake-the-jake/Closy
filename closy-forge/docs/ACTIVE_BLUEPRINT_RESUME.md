@@ -7,11 +7,12 @@ not-run research predicates.
 ## Active Lane
 
 - Repository: `jake-the-jake/Closy`.
-- Branch: `codex/closy-forge-d0-evidence-integrity-v4`.
-- Exact parent: draft PR #43 final head `6aee5ed3b2753ee99c95abdef6f5a24be39b3a7e`.
-- Immutable Unit E evidence anchor: `64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd`.
-- PR #43 final head is externally attested by workflow `33423822705` with 29 of 29 Forge jobs.
-- Draft PR #44 remains unmerged; its final head and workflow URL belong in its PR body.
+- Branch: `codex/closy-forge-d0-texture-rerender-correction-v3`.
+- Exact parent: draft PR #44 final head `2f40815010cef01685a7ed873081a22f11d67c00`.
+- Immutable Unit F evidence anchor: `7b4fbc199f462d35ba2f440494cff7cc700b0b94`.
+- PR #44 final head is externally attested by workflow `33452856012` with 29 of 29 Forge jobs.
+- Unit F's draft PR remains pending publication; its final head and exact workflow URL belong in
+  its PR body rather than this self-referential checkpoint.
 
 ## Evidence-Integrity Reset
 
@@ -38,6 +39,19 @@ not-run research predicates.
   remains valid without ZeroOne.
 - Two topology strategies remain and both seam-model trials remain consumed.
 
+## Unit F Appearance Result
+
+- Protocol commit `5a01ed40656c3f2924169f2c3e8f4d702f572cc5` locked one geometric
+  source-surface-atlas strategy and one known-target replay before implementation.
+- Implementation anchor `1038cbc9125461a8b80587b56e083191296861ec` was frozen before the
+  source-only prediction commit `1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c`.
+- All eight anti-hardcoding controls pass. Active semantic islands are `0.552461694`
+  source-observed and `0.447538306` explicitly generated controlled fill.
+- The single known-target replay passes 34 of 34 atomic predicates and is labelled exactly
+  `known_target_regression_pass`.
+- This result is not held-out/cohort qualification. `D0-RP-07` remains failed, Research Prototype
+  remains partial, runtime v1 remains selected, and Unit G is required.
+
 ## Gate Table
 
 | Gate | Scoped result | Exact boundary |
@@ -45,6 +59,7 @@ not-run research predicates.
 | Research Prototype matrix v3 core | partial | 6 pass, 5 fail, 0 not-run; first unmet `D0-RP-03` |
 | Matrix v3 supplemental | partial | 2 pass, 0 fail, 2 not-run; not core authority |
 | D0-RP-06 exact fixture | pass | broader identity-disjoint scope is separately not run |
+| Texture rerender known target v3 | engineering regression pass | 34/34 predicates; not qualification |
 | C3-Binding-D0 v1 | historical scoped pass | preserved predecessor identity only |
 | C3 exact candidate v2 | fail | no cross-identity repair |
 | PHY1 seam/support neutral v3 | fail / outcome A | diagnostic rescore only; no rerun |
@@ -53,8 +68,8 @@ not-run research predicates.
 
 ## Exact Next Action
 
-After Unit E exact-head CI is green, create
-`codex/closy-forge-d0-texture-rerender-correction-v3` from the final Unit E head. Commit the
-source-only protocol before development, freeze one implementation/prediction, and execute exactly
-one known-target diagnostic. Preserve the original failed appearance attempt and do not use Unit F
-to promote `D0-RP-07`; only the untouched identity-disjoint Unit G cohort may establish that scope.
+After Unit F exact-head CI is green, create
+`codex/closy-forge-d0-disjoint-tshirt-benchmark-v1` from the final Unit F head. Preregister the
+8-development/16-evaluator identity-disjoint split and evaluator before any evaluator identity is
+realised. Keep the Unit F appearance route frozen; only untouched Unit G evaluator identities may
+establish a new texture-fidelity gate.

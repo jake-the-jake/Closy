@@ -1,3 +1,5 @@
 closy-forge/docs/**/*.json text eol=lf
 closy-forge/fixtures/**/*.json text eol=lf
 closy-forge/schemas/**/*.json text eol=lf
+closy-forge/src/closy_forge/appearance_correction_v3/*.py text eol=lf
+closy-forge/scripts/*d0_texture_rerender_v3*.py text eol=lf

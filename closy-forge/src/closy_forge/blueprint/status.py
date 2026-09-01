@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v10"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v11"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -35,6 +35,7 @@ D0_FITTING_PBR_PUBLICATION_SHA = "7922e9b6ece8fca2c3b7dec13299a39de102cbc4"
 PHY1_V3_EVIDENCE_SHA = "fe8f6d8a6d08e4c1b75a838728d66fea5d2c92c0"
 PHY1_V3_EVIDENCE_DIGEST = "280df4684724d2dae73eb20a09008aec824c2c6476ed21325c754c9c05ef1b4c"
 D0_EVIDENCE_INTEGRITY_V4_SHA = "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd"
+UNIT_F_TEXTURE_RERENDER_V3_SHA = "7b4fbc199f462d35ba2f440494cff7cc700b0b94"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -278,6 +279,32 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "unsupportedTiers": _COMMON_UNSUPPORTED
         + ["real_fabric", "human_review", "identity_disjoint_cohort"],
         "blockers": ["D0-RP-10", "D0-RP-14"],
+    },
+    "TextureRerender-KnownTarget-v3": {
+        "gateId": "TextureRerender-KnownTarget-v3",
+        "globalStatus": "partial",
+        "scopedStatus": "known_target_regression_pass_not_qualification",
+        "evidenceTier": "one_shot_known_target_engineering_regression",
+        "platform": ["windows", "ubuntu"],
+        "toolchain": ["CPython 3.11", "CPython 3.12"],
+        "sourceSha": UNIT_F_TEXTURE_RERENDER_V3_SHA,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public fixture and already-known evaluator target",
+        "executionKind": "frozen source projection followed by one known-target replay",
+        "gateScope": "engineering regression only",
+        "evidenceDurability": "committed prediction before evaluator and hash-chained attempt",
+        "workflowRun": None,
+        "knownTargetTrialCount": 1,
+        "passedPredicateCount": 34,
+        "totalPredicateCount": 34,
+        "d0Rp07Promoted": False,
+        "unitGRequired": True,
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["held_out", "identity_disjoint_cohort", "real_fabric", "human_review"],
+        "blockers": ["unit_g_identity_disjoint_benchmark_required"],
     },
     "MT1-MechanicalReference-D0": {
         "gateId": "MT1-MechanicalReference-D0",
@@ -615,10 +642,31 @@ def build_status_model(
             "phy1SeamSupportV3CcdExecuted": False,
             "phy1SeamSupportV3Z2Executed": False,
             "integratedRuntimePinnedToTopologyV1": True,
-            "finalD0ResearchMatrixStatus": "partial",
-            "finalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
-            "finalD0ResearchMatrixStatusCounts": {"pass": 9, "fail": 3, "not_run": 3},
-            "finalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
+            "historicalD0ResearchMatrixStatus": "partial_superseded",
+            "historicalD0ResearchMatrixVersion": ("closy.final_d0_research_prototype_matrix.v2"),
+            "historicalD0ResearchMatrixStatusCounts": {
+                "pass": 9,
+                "fail": 3,
+                "not_run": 3,
+            },
+            "historicalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
+            "currentD0ResearchMatrixStatus": "partial",
+            "currentD0ResearchMatrixVersion": "closy.final_d0_research_matrix.v3",
+            "currentD0ResearchMatrixCoreStatusCounts": {
+                "pass": 6,
+                "fail": 5,
+                "not_run": 0,
+            },
+            "currentD0ResearchMatrixSupplementalStatusCounts": {
+                "pass": 2,
+                "fail": 0,
+                "not_run": 2,
+            },
+            "currentD0ResearchMatrixFirstUnmetPredicate": "D0-RP-03",
+            "knownTargetTextureRegressionExecuted": True,
+            "knownTargetTextureRegressionOutcome": "known_target_regression_pass",
+            "knownTargetTextureRegressionTrialCount": 1,
+            "knownTargetTextureRegressionPromotedD0Rp07": False,
             "dependencyIdentityGraphAvailable": True,
             "runtimeCandidateV2Available": True,
             "runtimeCandidateV2ProductSelected": False,
@@ -773,8 +821,10 @@ def render_status_summary(model: dict[str, Any]) -> str:
         "PHY1-SingleLayer-D0 and its opt-in topology-v2 experiment both fail their declared "
         "scopes. The exact-candidate seam/support-v3 neutral preflight also fails, so the full "
         "11-state PHY1 replay, CCD, and solver-driven Z2 are not run. Topology v2 remains "
-        "opt-in and is not runtime-exposed. The final exact matrix is partial at 9 pass, 3 fail, "
-        "and 3 not-run rows, first unmet at D0-RP-07. "
+        "opt-in and is not runtime-exposed. Historical matrix v2 is superseded at 9 pass, "
+        "3 fail, and 3 not-run. Current matrix v3 reports core 6 pass, 5 fail, and 0 not-run, "
+        "first unmet at D0-RP-03, plus supplemental 2 pass and 2 not-run. The separate Unit F "
+        "known-target texture replay passes 34 of 34 predicates but does not promote D0-RP-07. "
         "Historical compiled dynamic ZeroOne "
         "pairing failed, while the separate clean analytic MT1 mechanical-reference profile passes "
         "without implying Z2 or physical cloth. Geometric LayerCollision-D0 passes only for the "
