@@ -1,3 +1,4 @@
+.gitattributes text eol=lf
 closy-forge/docs/**/*.json text eol=lf
 closy-forge/fixtures/**/*.json text eol=lf
 closy-forge/schemas/**/*.json text eol=lf
@@ -9,3 +10,10 @@ closy-forge/src/closy_forge/core_runtime_c3_v4/*.py text eol=lf
 closy-forge/scripts/*d0_core_runtime_c3_v4*.py text eol=lf
 closy-forge/src/closy_forge/phy1_topology_strategy2_v4/*.py text eol=lf
 closy-forge/scripts/*phy1_topology_strategy2_v4*.py text eol=lf
+closy-forge/scripts/reconcile_blueprint_status.py text eol=lf
+closy-forge/src/closy_forge/blueprint/profiles.py text eol=lf
+closy-forge/src/closy_forge/blueprint/status.py text eol=lf
+closy-forge/tests/unit/test_blueprint_coverage.py text eol=lf
+closy-forge/docs/ACTIVE_BLUEPRINT_RESUME.md text eol=lf
+closy-forge/docs/BLUEPRINT_STATUS_SUMMARY.md text eol=lf
+closy-forge/docs/MASTER_BLUEPRINT_PROGRESS.md text eol=lf

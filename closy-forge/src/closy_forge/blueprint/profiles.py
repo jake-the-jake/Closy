@@ -22,6 +22,7 @@ _EXPECTED_BUDGETS = {
     "PHASE9-E2": ("maximumDecoderFamilies", 1),
     "PHY1": ("maximumStrategies", 3),
     "PHY1-SEAM-SUPPORT-V3": ("maximumSeamModels", 2),
+    "PHY1-TOPOLOGY-STRATEGY2-V4": ("maximumTopologyStrategies", 3),
     "CI-INFRASTRUCTURE-RETRY": ("maximumRetries", 1),
 }
 

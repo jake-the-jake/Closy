@@ -388,3 +388,25 @@ entered `neutral` and failed before any state completed: the frozen evaluator re
 consumed, no patch or replay is allowed, and D0-RP-08 remains failed. No C3, physical-cloth, PHY1,
 Z2, provider, or production-animation success is inferred. Runtime v1 remains selected; Unit I is
 the next bounded lane.
+
+## PHY1 Topology Strategy 2 v4 and Logical J-A Closeout
+
+Review Unit I branched exactly from Unit H final head `07b28f804274cdf6f79347150a85fcc3ff9f4684`. Unit H is externally
+attested by Forge workflow `33475901299` with 29 of 29 jobs successful. Unit I froze a topology-only
+budget, diagnosed the immutable PR #43 trajectory without rerunning it, and locked exactly one
+strategy: `PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT`.
+
+The sole strategy-specific candidate-independent microfixture failed all four required mechanical
+transfer checks. Quotient shared DOFs differ from the frozen finite-compliance seam law by
+`1.5999980159352167e-08` m position, `2.8799928574752917e-07` J stored energy, and
+`1.3333317066849276e-10` N*s impulse, each above its frozen `1e-12` equivalence limit. Outcome `M`
+is immutable: no canonical candidate was opened, no solver step advanced, and no candidate attempt
+was consumed. Neutral/full PHY1, integrated CCD, post-topology C3/Z1, and Z2 were not run.
+
+Logical outcome `J-A: post_topology_candidate_unavailable` closes the finite sequence without a Unit
+J branch; Unit K is ineligible. Runtime v1 remains selected, seam models remaining are zero, and one
+materially different topology strategy remains reserved. The handoff is `none_dependency_ready`.
+Its first unmet prerequisite is new candidate-independent diagnosis for Strategy 3; the safest next
+evidence action is analytic transfer-fixture design that preserves explicit frozen finite-compliance
+seams. No private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, Production,
+post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is made.

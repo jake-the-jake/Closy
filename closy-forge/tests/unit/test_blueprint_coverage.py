@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_core_runtime_c3_v4.v14"
+    assert coverage["version"] == "closy.blueprint_coverage.phy1_topology_strategy2_v4.v15"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -148,6 +148,13 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["scopedStatus"] == "failed"
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["statePassCount"] == 0
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["runtimeCapabilityExposed"] is False
+    topology_strategy = status["gates"]["PHY1-Topology-Strategy2-D0-v4"]
+    assert topology_strategy["outcomeClass"] == "M"
+    assert topology_strategy["candidateOpened"] is False
+    assert topology_strategy["solverStepAdvanced"] is False
+    assert topology_strategy["candidateAttemptConsumed"] is False
+    assert topology_strategy["unitJAuthorized"] is False
+    assert topology_strategy["unitKEligible"] is False
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["dRuntimePinnedToV1"] is True
     assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["scopedStatus"] == "failed"
     assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["outcomeClass"] == (
@@ -203,6 +210,16 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "phy1SeamSupportV3FullSuiteExecuted": False,
         "phy1SeamSupportV3CcdExecuted": False,
         "phy1SeamSupportV3Z2Executed": False,
+        "phy1TopologyStrategy2V4Executed": True,
+        "phy1TopologyStrategy2V4Outcome": "M_strategy_microfixture_failed_no_candidate",
+        "phy1TopologyStrategy2CandidateOpened": False,
+        "phy1TopologyStrategy2SolverStepAdvanced": False,
+        "phy1TopologyStrategy2CandidateAttemptConsumed": False,
+        "phy1TopologyStrategy2RemainingTopologyStrategies": 1,
+        "phy1TopologyStrategy2RemainingSeamModels": 0,
+        "unitJLogicalOutcome": "J-A_post_topology_candidate_unavailable",
+        "unitJBranchAuthorized": False,
+        "unitKEligible": False,
         "integratedRuntimePinnedToTopologyV1": True,
         "historicalD0ResearchMatrixStatus": "partial_superseded",
         "historicalD0ResearchMatrixVersion": "closy.final_d0_research_prototype_matrix.v2",
@@ -261,8 +278,8 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 48))
-    assert len(nodes) == 49
+    assert numbers == list(range(1, 49))
+    assert len(nodes) == 50
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert stack["externalPullRequests"][1]["number"] == 3
@@ -289,7 +306,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 47}:
+        if row["number"] in {10, 48}:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -388,9 +405,19 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         "github:jake-the-jake/Closy:pr/46"
     ]
     assert by_id["github:jake-the-jake/Closy:pr/47"]["headSha"] == (
-        "3541507808946ae1248fba110b7732599db3fdbc"
+        "07b28f804274cdf6f79347150a85fcc3ff9f4684"
     )
-    assert by_id["github:jake-the-jake/Closy:pr/47"]["latestExactHeadWorkflows"] == []
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/47"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33475901299"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/48"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/47"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/48"]["headSha"] == (
+        "854b85ed769bc3e67547e4195f65dfeb78878881"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/48"]["latestExactHeadWorkflows"] == []
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -426,6 +453,16 @@ def test_execution_budgets_and_precommitted_thresholds_are_complete() -> None:
     assert phy1_v3["consumption"]["seamModelsRemainingAfterV3"] == 0
     assert phy1_v3["consumption"]["topologyStrategiesRemainingAfterV3"] == 2
     assert phy1_v3["consumption"]["fullPhy1Executed"] is False
+    strategy2 = next(
+        lane for lane in budget["lanes"] if lane["laneId"] == "PHY1-TOPOLOGY-STRATEGY2-V4"
+    )
+    assert strategy2["outcome"] == "M_strategy_specific_microfixture_failed_logical_J_A"
+    assert strategy2["consumption"]["candidateOpened"] is False
+    assert strategy2["consumption"]["solverStepAdvanced"] is False
+    assert strategy2["consumption"]["candidateAttemptConsumed"] is False
+    assert strategy2["consumption"]["topologyStrategiesRemainingAfterUnitI"] == 1
+    assert strategy2["consumption"]["unitJBranchAuthorized"] is False
+    assert strategy2["consumption"]["unitKEligible"] is False
 
 
 def test_phy1_sanitised_failure_witness_is_exact_and_not_promoted() -> None:
@@ -452,9 +489,10 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_core_runtime_c3_v4.v11"
+        "closy.blueprint_reconciliation.phy1_topology_strategy2_v4.v12"
     )
     assert len(provenance["sourceTreeHash"]) == 64
+    assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
     assert provenance["selfReferentialCommitSha"] is False
     assert provenance["finalHeadAttestationLocation"] == (
         "external_exact_head_ci_check_or_draft_pr_body"
@@ -471,11 +509,11 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_h_failure_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_i_logical_j_a_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-core-runtime-c3-v4"
+    assert resume["branch"] == "codex/closy-forge-phy1-topology-strategy2-v4"
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
     assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
@@ -485,29 +523,22 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_h_failure_boundary() 
     assert resume["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"] == (
         "2_pass_0_fail_2_not_run"
     )
-    assert resume["replayState"]["productRuntimeV1Unchanged"] is True
-    assert resume["replayState"]["runtimeCandidateV2ProductSelected"] is False
-    assert resume["physicalResult"]["trajectoryGlbBytesPreservedAfterReportingRepair"] is True
-    assert resume["remainingBudgets"] == {"seamModels": 0, "topologyStrategies": 2}
-    assert resume["unitHResult"]["coreReproducibility"] == "pass_predecessor_scoped"
-    assert resume["unitHResult"]["strictC3"] == ("fail_frozen_evaluator_frame_metric_key_mismatch")
-    assert resume["unitHResult"]["heldOutAttemptsConsumed"] == 1
-    assert resume["appearanceResult"] == {
-        "atlasGeneratedControlledFillFraction": 0.447538306,
-        "atlasSourceObservedFraction": 0.552461694,
-        "d0Rp07Promoted": False,
-        "knownTargetPredicatesPassed": 34,
-        "knownTargetPredicatesTotal": 34,
-        "knownTargetTrialCount": 1,
-        "outcome": "known_target_regression_pass",
-        "unitGRequired": False,
-    }
-    assert resume["cohortResult"]["outcome"] == ("benchmark_failed_fixed_inventory_unfinished")
-    assert resume["cohortResult"]["predictionCount"] == 64
-    assert resume["cohortResult"]["fullCompileCount"] == 0
-    assert resume["cohortResult"]["appearanceEvaluationCount"] == 0
-    assert "6 pass, 5 fail" in markdown
+    assert resume["remainingBudgets"] == {"seamModels": 0, "topologyStrategies": 1}
+    assert resume["unitIResult"]["outcomeClass"] == "M"
+    assert resume["unitIResult"]["candidateOpened"] is False
+    assert resume["unitIResult"]["solverStepAdvanced"] is False
+    assert resume["unitIResult"]["candidateAttemptConsumed"] is False
+    assert resume["logicalJResult"]["outcome"] == ("J-A: post_topology_candidate_unavailable")
+    assert resume["logicalJResult"]["unitJBranchAuthorized"] is False
+    assert resume["logicalJResult"]["unitKEligible"] is False
+    assert resume["matrixScopes"]["knownTarget"]["predicatesPassed"] == 34
+    assert resume["matrixScopes"]["identityDisjoint"]["predictions"] == 64
+    assert resume["matrixScopes"]["identityDisjoint"]["canonicalCompiles"] == 0
+    assert resume["matrixScopes"]["postTopologyCandidate"]["candidateExists"] is False
+    assert resume["nextHandoff"]["selection"] == "none_dependency_ready"
+    assert "6 pass / 5 fail" in markdown
     assert "known_target_regression_pass" in markdown
+    assert "no candidate" in markdown
     assert "benchmark_failed_fixed_inventory_unfinished" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
 

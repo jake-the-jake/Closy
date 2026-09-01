@@ -339,6 +339,54 @@
       ]
     },
     {
+      "blocker": "the selected quotient shared-DOF topology is not mechanically equivalent to the frozen finite-compliance seam law",
+      "commands": [
+        "python scripts/freeze_phy1_topology_strategy2_v4_budget.py --validate-committed",
+        "python scripts/diagnose_phy1_topology_strategy2_v4.py --validate-committed",
+        "python scripts/lock_phy1_topology_strategy2_v4.py --validate-committed",
+        "python scripts/validate_phy1_topology_strategy2_v4_evidence.py"
+      ],
+      "consumption": {
+        "candidateAttemptConsumed": false,
+        "candidateOpened": false,
+        "fullPhy1Executed": false,
+        "integratedCcdExecuted": false,
+        "logicalUnitJOutcome": "J-A_post_topology_candidate_unavailable",
+        "neutralExecuted": false,
+        "seamModelsRemainingAfterUnitI": 0,
+        "solverDrivenZ2Executed": false,
+        "solverStepAdvanced": false,
+        "strategySpecificMicrofixtureExecuted": true,
+        "topologyStrategiesRemainingAfterUnitI": 1,
+        "unitJBranchAuthorized": false,
+        "unitKEligible": false
+      },
+      "evidencePaths": [
+        "closy-forge/fixtures/phy1_topology_strategy2_v4/budget_classifier.json",
+        "closy-forge/fixtures/phy1_topology_strategy2_v4/strategy_lock.json",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4/strategy_microfixtures.json",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4/physical_attempt_registry.json",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4/unit_i_outcome.json",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4/logical_j_a_closure.json"
+      ],
+      "laneId": "PHY1-TOPOLOGY-STRATEGY2-V4",
+      "maximumCandidateAttempts": 1,
+      "maximumPreCandidateImplementationRevisions": 2,
+      "maximumTopologyStrategies": 3,
+      "outcome": "M_strategy_specific_microfixture_failed_logical_J_A",
+      "predeclaredThresholdProfile": "closy.phy1.seam_support_neutral.v3",
+      "remainingBlocker": "new candidate-independent diagnosis is required before the reserved materially different topology strategy 3 may be authorised",
+      "stopReason": "strategy_specific_mechanical_equivalence_failed_before_candidate_open_no_unit_J_or_K",
+      "strategyIds": [
+        "PHY1-TOPOLOGY-V2-EXACT-CANDIDATE",
+        "PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT",
+        "PHY1-TOPOLOGY-STRATEGY-3-RESERVED"
+      ],
+      "trialIds": [
+        "UNIT-I-STRATEGY2-CANDIDATE-INDEPENDENT-MICROFIXTURE-1"
+      ]
+    },
+    {
       "blocker": "only demonstrated transient infrastructure failures may consume this lane",
       "commands": [
         "gh run rerun {run_id} --failed"

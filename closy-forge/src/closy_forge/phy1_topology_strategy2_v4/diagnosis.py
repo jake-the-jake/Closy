@@ -188,7 +188,7 @@ def build_general_microfixtures() -> dict[str, Any]:
         _case("self_contact_depth", math.isclose(max(0.0, 0.0024 - 0.0016), 0.0008)),
         _case("support_release", _support_active(16, 16) is False),
         _case("tail_window_complete", _tail_aggregate([1.0, 2.0, 3.0], 3) == (3.0, 6.0)),
-        _case("termination_separate", ("completed" == "completed") and ("fail" != "pass")),
+        _case("termination_separate", _termination_separate("completed", "fail")),
         _case("rotation_invariant_orientation", _orientation_sign((0, 0), (1, 0), (0, 1)) == 1),
         _case("support_energy_si_units", math.isclose(0.5 * 100.0 * 0.02**2, 0.02)),
     ]
@@ -267,7 +267,7 @@ def _rank_edges(participants: int) -> int:
 
 
 def _excluded_pairs(edges: list[tuple[int, int]], rings: int) -> set[tuple[int, int]]:
-    result = {tuple(sorted(edge)) for edge in edges}
+    result = {(min(left, right), max(left, right)) for left, right in edges}
     if rings > 0:
         result |= {(0, 2)}
     return result
@@ -279,6 +279,10 @@ def _signed_clearance(distance: float, clearance: float) -> float:
 
 def _support_active(substep: int, release: int) -> bool:
     return substep < release
+
+
+def _termination_separate(numerical_status: str, physical_status: str) -> bool:
+    return numerical_status == "completed" and physical_status != "pass"
 
 
 def _tail_aggregate(values: list[float], count: int) -> tuple[float, float]:

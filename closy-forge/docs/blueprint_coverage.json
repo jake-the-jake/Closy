@@ -69,12 +69,30 @@
       "closy-forge/docs/evidence/d0_core_runtime_c3_v4/core_reproducibility.json",
       "closy-forge/docs/evidence/d0_core_runtime_c3_v4/strict_c3_result.json",
       "closy-forge/docs/evidence/d0_core_runtime_c3_v4/processor_authority_audit.json",
-      "closy-forge/docs/evidence/d0_core_runtime_c3_v4/unit_h_outcome.json"
+      "closy-forge/docs/evidence/d0_core_runtime_c3_v4/unit_h_outcome.json",
+      "closy-forge/fixtures/phy1_topology_strategy2_v4/budget_classifier.json",
+      "closy-forge/fixtures/phy1_topology_strategy2_v4/strategy_lock.json",
+      "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/budget.py",
+      "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/diagnosis.py",
+      "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/strategy.py",
+      "closy-forge/src/closy_forge/phy1_topology_strategy2_v4/evidence.py",
+      "closy-forge/scripts/freeze_phy1_topology_strategy2_v4_budget.py",
+      "closy-forge/scripts/diagnose_phy1_topology_strategy2_v4.py",
+      "closy-forge/scripts/lock_phy1_topology_strategy2_v4.py",
+      "closy-forge/scripts/validate_phy1_topology_strategy2_v4_evidence.py",
+      "closy-forge/docs/evidence/phy1_topology_strategy2_v4/diagnosis.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy2_v4/general_microfixtures.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy2_v4/strategy_microfixtures.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy2_v4/physical_attempt_registry.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy2_v4/unit_i_outcome.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy2_v4/logical_j_a_closure.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy2_v4/evidence_manifest.json"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.d0_core_runtime_c3_v4.v11",
+    "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_strategy2_v4.v12",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "0556905ccaca5cf33e35207a09d3b21d26500bdbbc540a124ffa7797f68600b7"
+    "sourceTreeHash": "f9864ac6b18ecab026705b32084f4be631d3b82ea88c1dd8e499461e557ef4c1",
+    "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,
   "rows": [
@@ -1744,7 +1762,8 @@
         "bf1ae29",
         "a8a053a68d8f455134e5a2bfed0fe340467a039a",
         "13604d169ecbc0fddf475cdf177e743790c836a2",
-        "628738e5e8bc2da89be2ae1c349d9a2a220d8839"
+        "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
+        "854b85ed769bc3e67547e4195f65dfeb78878881"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1753,7 +1772,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0 reference-only self-collision retains 137 unresolved contacts and exceeds its residual-depth budget. Bounded CCD fixtures pass, but CCD response is not integrated into the reference motion solver and production GPU collision remains unsupported.",
+          "limitations": "Outcome M opened no candidate and advanced no solver step. Neutral PHY1, full PHY1, integrated CCD, post-topology C3, and solver-driven Z2 were not run.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -1779,28 +1798,39 @@
         "authoritative v3 package records 271 contacts before correction and 137 unresolved contacts after correction without new inverted/degenerate triangles",
         "maximum residual depth 0.002327721 m exceeds the predeclared 0.000160000 m budget",
         "bounded swept fixtures pass for crossing, thin-layer and opening-boundary cases while excess motion fails closed",
-        "PR #7 run 32912124815 passed Ubuntu job 98008234902 and Windows job 98008235112 with 222 tests per OS"
+        "PR #7 run 32912124815 passed Ubuntu job 98008234902 and Windows job 98008235112 with 222 tests per OS",
+        "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
+        "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
+        "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
+        "logical J-A forbids Unit J and K because no post-topology candidate exists"
       ],
       "id": "BP-08-K-CLOTH-SIMULATION",
       "implementationPaths": [
         "closy-forge/src/closy_forge/simulation/reference_cloth_solver.py",
         "closy-forge/src/closy_forge/simulation/self_collision.py",
         "closy-forge/src/closy_forge/validation/validator.py",
-        "closy-forge/reports/self_collision_report.json"
+        "closy-forge/reports/self_collision_report.json",
+        "closy-forge/fixtures/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0 reference-only self-collision retains 137 unresolved contacts and exceeds its residual-depth budget. Bounded CCD fixtures pass, but CCD response is not integrated into the reference motion solver and production GPU collision remains unsupported.",
-      "nextAction": "Close the scoped XPBD collision gate without filtering contacts, then gather broader provider, motion, and hardware evidence.",
+      "limitations": "Outcome M opened no candidate and advanced no solver step. Neutral PHY1, full PHY1, integrated CCD, post-topology C3, and solver-driven Z2 were not run.",
+      "nextAction": "Do not create Unit J or K; require new candidate-independent diagnosis before the reserved materially different topology strategy 3 can be authorised.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Stage K runs deterministic D0 reference self-collision and bounded swept fixtures while preserving unresolved depth and solver-integration limitations.",
+      "summary": "Unit I locked one topology/DOF-only conforming-seam quotient strategy, then its single candidate-independent transfer microfixture proved that shared quotient DOFs are not mechanically equivalent to the frozen finite-compliance seam law.",
       "tests": [
         "tests/unit/test_self_collision.py",
-        "tests/unit/test_reference_cloth_solver.py"
+        "tests/unit/test_reference_cloth_solver.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
       ]
     },
     {
@@ -3070,7 +3100,8 @@
         "1038cbc9125461a8b80587b56e083191296861ec",
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-        "3541507808946ae1248fba110b7732599db3fdbc"
+        "3541507808946ae1248fba110b7732599db3fdbc",
+        "854b85ed769bc3e67547e4195f65dfeb78878881"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3079,7 +3110,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The exact authenticated supplemental processors were unavailable, and zero of eight held-out C3 states completed.",
+          "limitations": "There is no canonical post-topology candidate and therefore no post-topology reproducibility, strict/trajectory C3, Z1, PHY1, CCD, or Z2 matrix scope.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3128,7 +3159,11 @@
         "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
         "one strict C3 held-out attempt consumed and failed before any of eight states completed",
         "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
-        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed",
+        "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
+        "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
+        "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
+        "logical J-A forbids Unit J and K because no post-topology candidate exists"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -3171,18 +3206,21 @@
         "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1",
         "closy-forge/fixtures/d0_core_runtime_c3_v4",
         "closy-forge/src/closy_forge/core_runtime_c3_v4",
-        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
+        "closy-forge/fixtures/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The exact authenticated supplemental processors were unavailable, and zero of eight held-out C3 states completed.",
-      "nextAction": "Execute Unit I's one preregistered topology strategy, then apply the mandatory post-topology J or logical J-A rules.",
+      "limitations": "There is no canonical post-topology candidate and therefore no post-topology reproducibility, strict/trajectory C3, Z1, PHY1, CCD, or Z2 matrix scope.",
+      "nextAction": "Keep the three evaluation scopes separate and record none_dependency_ready until a new candidate-independent Strategy 3 diagnosis exists.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit H independently records core Forge reproducibility pass, static Z1 and MT1 dependency blocks, and a literal strict-C3 frozen-evaluator failure.",
+      "summary": "Unit I preserves a frozen lock, one failed strategy-specific equivalence result, an append-only attempt registry, Outcome M, and logical J-A closure.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -3204,7 +3242,11 @@
         "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py",
         "closy-forge/tests/unit/test_d0_texture_rerender_correction_v3.py",
         "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py",
-        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
       ]
     },
     {
@@ -3858,7 +3900,8 @@
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-        "3541507808946ae1248fba110b7732599db3fdbc"
+        "3541507808946ae1248fba110b7732599db3fdbc",
+        "854b85ed769bc3e67547e4195f65dfeb78878881"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3867,7 +3910,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Outcome A is frozen: 242 unresolved contacts, 0.0024 m residual depth, 0.041513220488 m seam crack, 0.145067036152 m slip, negative render clearance, strain/energy failures, and runtime above 180 s.",
+          "limitations": "Normal separation, tangential slip, stored energy, and impulse equivalence all fail the frozen 1e-12 transfer limits; the finite-compliance seam model cannot be silently replaced by quotient shared DOFs.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3900,7 +3943,11 @@
         "the invalidation ledger proves all integrated D runtime capabilities remain pinned to unchanged topology-v1 identities",
         "exact D0 matrix: 9 pass, 3 fail, 3 not-run; first unmet D0-RP-07",
         "PHY1-v3 outcome A with unchanged persisted GLB trajectory bytes after evaluator repair",
-        "runtime v1 remains selected and topology v2 remains opt-in"
+        "runtime v1 remains selected and topology v2 remains opt-in",
+        "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
+        "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
+        "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
+        "logical J-A forbids Unit J and K because no post-topology candidate exists"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
@@ -3923,18 +3970,21 @@
         "closy-forge/docs/evidence/phy1_seam_support_v3",
         "closy-forge/src/closy_forge/simulation_topology_v2/seam_support_v3.py",
         "closy-forge/src/closy_forge/simulation_topology_v2/physical_oracles_v3.py",
-        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py"
+        "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
+        "closy-forge/fixtures/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Outcome A is frozen: 242 unresolved contacts, 0.0024 m residual depth, 0.041513220488 m seam crack, 0.145067036152 m slip, negative render clearance, strain/energy failures, and runtime above 180 s.",
-      "nextAction": "Do not spend topology strategy 2 until a newly budgeted dependency-ready physical milestone is explicitly authorised.",
+      "limitations": "Normal separation, tangential slip, stored energy, and impulse equivalence all fail the frozen 1e-12 transfer limits; the finite-compliance seam model cannot be silently replaced by quotient shared DOFs.",
+      "nextAction": "Preserve explicit finite-compliance seams and design analytic transfer fixtures for a materially different reserved Strategy 3 without executing a candidate.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "PHY1 seam/support v3 executes a solver-active 49-frame neutral trajectory with rank-aware junctions, temporary supports, in-iteration collision, and independent simulation/render oracles.",
+      "summary": "The reserved Strategy 2 lane executed exactly one candidate-independent mechanical equivalence microfixture and closed as Outcome M before candidate construction.",
       "tests": [
         "Forge local tests",
         "tests/unit/test_render_frame_pose_suite.py",
@@ -3947,7 +3997,11 @@
         "closy-forge/tests/unit/test_phy1_topology_v2_evidence.py",
         "closy-forge/tests/unit/test_phy1_seam_support_v3.py",
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
-        "closy-forge/tests/unit/test_exact_raster_identity.py"
+        "closy-forge/tests/unit/test_exact_raster_identity.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
       ]
     },
     {
@@ -4800,7 +4854,8 @@
         "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
         "7b4fbc199f462d35ba2f440494cff7cc700b0b94",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-        "3541507808946ae1248fba110b7732599db3fdbc"
+        "3541507808946ae1248fba110b7732599db3fdbc",
+        "854b85ed769bc3e67547e4195f65dfeb78878881"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4809,7 +4864,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No held-out C3 pass, PHY1 implication, trajectory qualification, or Z2 admission follows from Unit H.",
+          "limitations": "Unit H evidence cannot transfer to a changed topology, and Unit I produced no changed topology. Post-topology strict and trajectory C3 are dependency-blocked, not passed.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4855,7 +4910,11 @@
         "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
         "one strict C3 held-out attempt consumed and failed before any of eight states completed",
         "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
-        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed",
+        "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
+        "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
+        "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
+        "logical J-A forbids Unit J and K because no post-topology candidate exists"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -4881,18 +4940,21 @@
         "closy-forge/scripts/generate_d0_evidence_integrity_v4.py",
         "closy-forge/fixtures/d0_core_runtime_c3_v4",
         "closy-forge/src/closy_forge/core_runtime_c3_v4",
-        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
+        "closy-forge/fixtures/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No held-out C3 pass, PHY1 implication, trajectory qualification, or Z2 admission follows from Unit H.",
-      "nextAction": "Do not replay Unit H; requalification is required only for a newly minted admissible Unit I lineage in Unit J.",
+      "limitations": "Unit H evidence cannot transfer to a changed topology, and Unit I produced no changed topology. Post-topology strict and trajectory C3 are dependency-blocked, not passed.",
+      "nextAction": "Do not create a report-only Unit J branch without an admissible candidate.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Core runtime reconstruction is reproducible, but strict exact-sentinel C3 remains failed after its one frozen held-out attempt stopped on a frame-metric key mismatch.",
+      "summary": "Predecessor strict C3 remains failed; logical J-A correctly records that no new post-topology candidate exists to requalify.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/golden/test_golden_demo.py",
@@ -4902,7 +4964,11 @@
         "closy-forge/tests/unit/test_exact_d0_fitting_pbr_v2.py",
         "closy-forge/tests/unit/test_exact_raster_identity.py",
         "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py",
-        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
       ]
     },
     {
@@ -5842,7 +5908,8 @@
         "1038cbc9125461a8b80587b56e083191296861ec",
         "1dc8bec3adf8e9f35332b888499af8c2c0b8ae4c",
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-        "3541507808946ae1248fba110b7732599db3fdbc"
+        "3541507808946ae1248fba110b7732599db3fdbc",
+        "854b85ed769bc3e67547e4195f65dfeb78878881"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5851,7 +5918,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Research Prototype remains partial; identity-disjoint fitting, appearance, strict C3, neutral physics, human, private-user, and device evidence are unpassed.",
+          "limitations": "Matrix v3 failures, the unfinished identity-disjoint cohort, strict C3 failure, inadmissible physics, and all human/private/device/product tiers remain unresolved.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5906,7 +5973,11 @@
         "exact authenticated static Z1 and clean MT1 processors are unavailable and remain not run",
         "one strict C3 held-out attempt consumed and failed before any of eight states completed",
         "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after byte-descendant checks",
-        "one strict C3 held-out attempt was consumed and failed before any of eight states completed"
+        "one strict C3 held-out attempt was consumed and failed before any of eight states completed",
+        "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
+        "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
+        "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
+        "logical J-A forbids Unit J and K because no post-topology candidate exists"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -5947,18 +6018,21 @@
         "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1",
         "closy-forge/fixtures/d0_core_runtime_c3_v4",
         "closy-forge/src/closy_forge/core_runtime_c3_v4",
-        "closy-forge/docs/evidence/d0_core_runtime_c3_v4"
+        "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
+        "closy-forge/fixtures/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Research Prototype remains partial; identity-disjoint fitting, appearance, strict C3, neutral physics, human, private-user, and device evidence are unpassed.",
-      "nextAction": "Spend only Unit I's one topology-strategy-2 attempt under its frozen budget.",
+      "limitations": "Matrix v3 failures, the unfinished identity-disjoint cohort, strict C3 failure, inadmissible physics, and all human/private/device/product tiers remain unresolved.",
+      "nextAction": "Record none_dependency_ready; the first prerequisite is new candidate-independent diagnosis for a materially different reserved topology strategy 3.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit H closes D0-RP-12 with predecessor-scoped core Forge reproducibility while D0-RP-08 remains failed and D0-RP-10/11 remain not run.",
+      "summary": "Research Prototype remains partial after Strategy 2 failed its pre-candidate mechanical transfer gate and closed through logical J-A.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -5978,7 +6052,11 @@
         "closy-forge/tests/unit/test_d0_evidence_integrity_v4.py",
         "closy-forge/tests/unit/test_d0_texture_rerender_correction_v3.py",
         "closy-forge/tests/unit/test_d0_disjoint_tshirt_benchmark_v1.py",
-        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"
+        "closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
       ]
     },
     {
@@ -6227,5 +6305,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.d0_core_runtime_c3_v4.v14"
+  "version": "closy.blueprint_coverage.phy1_topology_strategy2_v4.v15"
 }
