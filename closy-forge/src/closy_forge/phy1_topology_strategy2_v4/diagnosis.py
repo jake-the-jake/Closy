@@ -13,6 +13,22 @@ from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 V3_LOCK = Path("fixtures/phy1_seam_support_v3/experiment_lock.json")
 V3_EVIDENCE = Path("docs/evidence/phy1_seam_support_v3")
 DIAGNOSIS_VERSION = "closy.phy1.topology_strategy2.pr43_diagnosis.v1"
+MAX_RECOMPUTATION_ULP_EXCEPTIONS = 1
+RECOMPUTATION_ULP_POLICY = {
+    "policyVersion": "closy.phy1.pr43_diagnosis.pointer_ulp_policy.v1",
+    "maximumAllowedExceptions": MAX_RECOMPUTATION_ULP_EXCEPTIONS,
+    "pointers": {
+        "/deformationByPanel/0/areaRatio/minimum": {
+            "allowedUlps": 1,
+            "documentedValues": [0.2602336050768176, 0.26023360507681753],
+            "platforms": ["CPython 3.11", "CPython 3.12"],
+            "justification": (
+                "Frozen PR43 float32 triangle coordinates feed one platform-libm square-root; "
+                "canonicalising now would change the immutable diagnosis digest."
+            ),
+        }
+    },
+}
 
 
 def build_pr43_diagnosis(root: Path) -> dict[str, Any]:
@@ -221,7 +237,12 @@ def validate_pr43_diagnosis(root: Path, committed: dict[str, Any]) -> list[str]:
         committed, "diagnosisDigest"
     ):
         issues.append("committed_diagnosis_digest_invalid")
-    _compare_recomputed_diagnosis(committed, build_pr43_diagnosis(root), "", issues)
+    tolerance_state = {"allowedExceptionsUsed": 0}
+    _compare_recomputed_diagnosis(
+        committed, build_pr43_diagnosis(root), "", issues, tolerance_state
+    )
+    if tolerance_state["allowedExceptionsUsed"] > MAX_RECOMPUTATION_ULP_EXCEPTIONS:
+        issues.append("diagnosis_ulp_exception_count_exceeded")
     return sorted(set(issues))
 
 
@@ -314,7 +335,11 @@ def _classification(category: str, observed: bool, evidence: str) -> dict[str, A
 
 
 def _compare_recomputed_diagnosis(
-    committed: object, recomputed: object, path: str, issues: list[str]
+    committed: object,
+    recomputed: object,
+    path: str,
+    issues: list[str],
+    tolerance_state: dict[str, int],
 ) -> None:
     if path == "/integrity/diagnosisDigest":
         return
@@ -323,24 +348,35 @@ def _compare_recomputed_diagnosis(
             issues.append(f"diagnosis_keys_differ:{path or '/'}")
             return
         for key in committed:
-            _compare_recomputed_diagnosis(committed[key], recomputed[key], f"{path}/{key}", issues)
+            _compare_recomputed_diagnosis(
+                committed[key], recomputed[key], f"{path}/{key}", issues, tolerance_state
+            )
         return
     if isinstance(committed, list) and isinstance(recomputed, list):
         if len(committed) != len(recomputed):
             issues.append(f"diagnosis_length_differs:{path}")
             return
         for index, (left, right) in enumerate(zip(committed, recomputed, strict=True)):
-            _compare_recomputed_diagnosis(left, right, f"{path}/{index}", issues)
+            _compare_recomputed_diagnosis(left, right, f"{path}/{index}", issues, tolerance_state)
         return
     if isinstance(committed, float) and isinstance(recomputed, float):
-        if committed == recomputed:
-            return
         if not (math.isfinite(committed) and math.isfinite(recomputed)):
             issues.append(f"diagnosis_value_differs:{path}")
             return
-        # CPython 3.11/3.12 differ by one ULP for one frozen triangle-area sqrt.
-        if abs(committed - recomputed) <= max(math.ulp(committed), math.ulp(recomputed)):
+        if committed == recomputed:
             return
+        pointers = RECOMPUTATION_ULP_POLICY["pointers"]
+        pointer_policy = pointers.get(path) if isinstance(pointers, dict) else None
+        if isinstance(pointer_policy, dict):
+            documented = pointer_policy["documentedValues"]
+            documented_pair = {committed, recomputed} == set(documented)
+            allowed_ulps = int(pointer_policy["allowedUlps"])
+            within_ulp = abs(committed - recomputed) <= allowed_ulps * max(
+                math.ulp(committed), math.ulp(recomputed)
+            )
+            if documented_pair and within_ulp:
+                tolerance_state["allowedExceptionsUsed"] += 1
+                return
     if committed != recomputed:
         issues.append(f"diagnosis_value_differs:{path}")
 

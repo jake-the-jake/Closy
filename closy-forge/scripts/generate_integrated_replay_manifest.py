@@ -120,8 +120,8 @@ def build_manifest(repository: Path) -> dict[str, Any]:
     dispositions: list[dict[str, Any]] = []
     for lane, sources in SOURCE_GROUPS.items():
         for source in sources:
-            result = source_to_result.get(source)
-            if result is None:
+            result_sha = source_to_result.get(source)
+            if result_sha is None:
                 raise ValueError(f"replay_source_result_missing:{source}")
             semantic = "business_patch"
             disposition = "applied_with_result_sha"
@@ -136,7 +136,7 @@ def build_manifest(repository: Path) -> dict[str, Any]:
                     "lane": lane,
                     "sourceSha": source,
                     "sourcePatchId": _patch_id(repository, source),
-                    "resultSha": result,
+                    "resultSha": result_sha,
                     "resultPatchId": _patch_id(repository, result),
                     "subject": _text(repository, "show", "-s", "--format=%s", source),
                     "semanticClass": semantic,

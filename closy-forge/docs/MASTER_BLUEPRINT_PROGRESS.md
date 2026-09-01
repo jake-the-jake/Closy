@@ -391,8 +391,8 @@ the next bounded lane.
 
 ## PHY1 Topology Strategy 2 v4 and Logical J-A Closeout
 
-Review Unit I branched exactly from Unit H final head `07b28f804274cdf6f79347150a85fcc3ff9f4684`. Unit H is externally
-attested by Forge workflow `33475901299` with 29 of 29 jobs successful. Unit I froze a topology-only
+Review Unit I is synchronized on Unit H final head `e25da69d29eb1b68885b911c7354df085f4a22c0`. Unit H is externally
+attested by Forge workflow `33505903385` with 29 of 29 jobs successful. Unit I froze a topology-only
 budget, diagnosed the immutable PR #43 trajectory without rerunning it, and locked exactly one
 strategy: `PHY1-V4-S2-CONFORMING-SEAM-QUOTIENT`.
 
@@ -405,8 +405,14 @@ was consumed. Neutral/full PHY1, integrated CCD, post-topology C3/Z1, and Z2 wer
 
 Logical outcome `J-A: post_topology_candidate_unavailable` closes the finite sequence without a Unit
 J branch; Unit K is ineligible. Runtime v1 remains selected, seam models remaining are zero, and one
-materially different topology strategy remains reserved. The handoff is `none_dependency_ready`.
-Its first unmet prerequisite is new candidate-independent diagnosis for Strategy 3; the safest next
-evidence action is analytic transfer-fixture design that preserves explicit frozen finite-compliance
-seams. No private-user, human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, Production,
+materially different topology strategy remains reserved. PR #48 is published at
+`69f17e0bc0d01472eec3aaf244c158181f74febf` with exact-head Forge workflow `33511517533`, 29 of 29 jobs successful.
+
+Unit L now supplies a passing candidate-independent recovery foundation: publication/result truth,
+global physical budgets, pointer-bounded ULP policy, evaluator v2 generic gates, deny-by-default
+contestant closure, strict C3 v5 generic metrics, and executable Unit-F-else-PR43 sentinel
+resolution. It generated no new evaluator identity, target, held-out pose, candidate, or physical
+attempt. The next dependency-ready unit is the untouched Unit M confirmation v2, after its protocol
+and implementation are frozen. No private-user, human-review, real-photo, real-fabric, GPU, mobile,
+Alpha, Beta, Production,
 post-topology candidate, full-PHY1, integrated-CCD, or solver-driven-Z2 claim is made.

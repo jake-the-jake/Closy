@@ -158,7 +158,7 @@ def repair_persisted_float32_evidence(root: Path, source_sha: str) -> dict[str, 
             for item in old_trajectory["frames"]
         ]
         persisted_hashes = [geometry_content_hash(frame) for frame in persisted_frames]
-        diagnostics = deepcopy(_mapping(old_neutral["solver"]))
+        diagnostics: dict[str, Any] = dict(deepcopy(_mapping(old_neutral["solver"])))
         diagnostics["trajectoryFrameCount"] = len(persisted_frames)
         diagnostics["distinctTrajectoryContentHashCount"] = len(set(persisted_hashes))
         diagnostics["trajectoryContentHash"] = sha256_bytes(
