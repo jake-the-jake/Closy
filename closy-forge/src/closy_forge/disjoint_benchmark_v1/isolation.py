@@ -117,7 +117,7 @@ def execute_isolated_contender(
             "priorResultsMounted": False,
             "networkAllowed": False,
             "inputInventory": inventory_before,
-            "openedPaths": open_audit["events"],
+            "openedPaths": _canonical_open_events(open_audit["events"], closure),
             "allOpenedPathsAllowed": open_audit["allAccessAllowed"],
             "outputIdentity": output_identity,
             "sourceRegistryWithdrawn": True,
@@ -137,3 +137,15 @@ def _inventory(root: Path) -> list[dict[str, Any]]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     ]
+
+
+def _canonical_open_events(events: list[dict[str, Any]], closure: Path) -> list[dict[str, Any]]:
+    canonical: list[dict[str, Any]] = []
+    for event in events:
+        path = Path(str(event["path"]))
+        try:
+            relative = path.relative_to(closure).as_posix()
+        except ValueError:
+            relative = "outside_declared_closure"
+        canonical.append({**event, "path": relative})
+    return canonical
