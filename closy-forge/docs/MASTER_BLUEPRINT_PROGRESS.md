@@ -459,3 +459,23 @@ candidate-independent Strategy-3 diagnosis is next; Unit P remains ineligible wi
 admission. No physical-cloth, real-world deformation, private-user, human-review, real-photo,
 real-fabric, GPU, mobile, Alpha, Beta, Production, post-topology candidate, full-PHY1,
 integrated-CCD, or solver-driven-Z2 claim is made.
+
+## PHY1 Strategy 3 Candidate-Independent Diagnosis v1 Outcome
+
+Unit O froze the exact PR43 package and physical authority, eight production-kernel development
+fixtures, two maximum pre-candidate revisions, and a separate unrealised Unit P confirmation
+generator at `d8c8318ad346ea66ebc1956ebc0839ee3d6db109`. It then executed the two revisions without transforming the
+canonical T-shirt or creating a candidate.
+
+Local longest-edge bisection passed `7/8` fixtures but introduced one T-junction and omitted the
+updated semantic seam sequence. Closure longest-edge bisection also passed `7/8`; it removed the
+topology defect but still omitted the semantic seam sequence. The literal outcome is
+`no_strategy3_class_admitted_within_bounded_diagnosis`. Unit P is ineligible, so Units P, Q, and R
+were not created. The final topology strategy and candidate attempt remain unspent.
+
+The Research Prototype matrix remains `7 pass / 4 fail / 0 not-run` core plus
+`2 pass / 0 fail / 2 not-run` supplemental. Coverage remains `20 complete / 63 partial / 7 not
+started / 11 discovery pending`. Runtime v1 and the conventional fallback remain selected. No
+physical-cloth, real-world deformation, private-user, human-review, real-photo, real-fabric, GPU,
+mobile, Alpha, Beta, Production, post-topology candidate, full-PHY1, integrated-CCD, or
+solver-driven-Z2 claim is made.

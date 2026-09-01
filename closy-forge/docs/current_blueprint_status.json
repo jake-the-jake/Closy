@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.d0_strict_c3_confirmation_v5.v18",
+    "coverageVersion": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19",
     "total": 101
   },
-  "evidenceAnchorSha": "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
+  "evidenceAnchorSha": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -583,6 +583,67 @@
       ],
       "workflowRun": null
     },
+    "PHY1-Topology-Strategy3-Diagnosis-D0-v1": {
+      "admittedStrategyClass": null,
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "revision_1_t_junction_and_incomplete_semantic_seam_transfer",
+        "revision_2_incomplete_semantic_seam_transfer",
+        "no_strategy3_class_admitted"
+      ],
+      "candidateAttemptConsumed": false,
+      "candidateCreated": false,
+      "computeProfile": "D0",
+      "dRuntimePinnedToV1": true,
+      "dataProvenance": "project-authored synthetic development fixtures",
+      "evidenceDurability": "immutable_lock_two_revision_results_and_exact_head_ci",
+      "evidenceTier": "committed_candidate_independent_production_kernel_development_fixtures",
+      "executableSha": null,
+      "executionKind": "two bounded candidate-independent production-kernel revisions",
+      "finalStrategyConsumed": false,
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "PHY1-Topology-Strategy3-Diagnosis-D0-v1",
+      "gateScope": "pre-candidate topology strategy class admission only",
+      "globalStatus": "partial",
+      "platform": [
+        "windows",
+        "ubuntu"
+      ],
+      "remainingCandidateAttempts": 1,
+      "remainingSeamModels": 0,
+      "remainingTopologyStrategies": 1,
+      "revisionCount": 2,
+      "revisionFixtureDenominator": 8,
+      "revisionFixturePassCounts": [
+        7,
+        7
+      ],
+      "runtimeCapabilityExposed": false,
+      "scopedStatus": "no_strategy3_class_admitted_within_bounded_diagnosis",
+      "sourceSha": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+      "toolchain": [
+        "CPython 3.11",
+        "CPython 3.12"
+      ],
+      "unitPEligible": false,
+      "unitQEligible": false,
+      "unitREligible": false,
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "full_PHY1",
+        "integrated_CCD",
+        "solver_driven_Z2",
+        "post_topology_candidate"
+      ],
+      "workflowRun": null
+    },
     "ResearchPrototype-D0-matrix-v2": {
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
@@ -629,7 +690,6 @@
         "D0-RP-03",
         "D0-RP-04",
         "D0-RP-07",
-        "D0-RP-08",
         "D0-RP-15"
       ],
       "computeProfile": "D0",
@@ -649,7 +709,7 @@
         "windows",
         "ubuntu"
       ],
-      "scopedStatus": "partial_6_pass_5_fail_0_not_run",
+      "scopedStatus": "partial_7_pass_4_fail_0_not_run",
       "sourceSha": "64fd0386dbb9dec5f91d6e154ebf96a2f3baf2dd",
       "toolchain": [
         "CPython 3.11",
@@ -1043,9 +1103,10 @@
     "acyclic": true,
     "businessPatchMappingsComplete": true,
     "committedSourceAnchorExceptions": [
-      10
+      10,
+      52
     ],
-    "crossRepositoryNodeCount": 52,
+    "crossRepositoryNodeCount": 55,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -1135,15 +1196,33 @@
         "pullRequest": 49,
         "result": "pass",
         "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33524394054"
+      },
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "9078a09f1156ba8b7f98099185478ca9efcee952",
+        "publishedHeadSha": "552867e96d53e9d4c728f90d12e0c1c9a344ba0d",
+        "pullRequest": 50,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33533707412"
+      },
+      {
+        "authority": "github_workflow_api_and_draft_pr_body",
+        "committedSourceAnchorSha": "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
+        "publishedHeadSha": "e062a30ba295ed27334622916ddb449fd76e2166",
+        "pullRequest": 51,
+        "result": "pass",
+        "workflowRunUrl": "https://github.com/jake-the-jake/Closy/actions/runs/33547909132"
       }
     ],
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
-    "latestPullRequest": 49,
-    "pendingExternalExactHeadAttestations": [],
-    "pullRequestCount": 49,
+    "latestPullRequest": 52,
+    "pendingExternalExactHeadAttestations": [
+      52
+    ],
+    "pullRequestCount": 52,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v16",
+  "statusModelVersion": "closy.blueprint_status_model.v17",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -1155,9 +1234,9 @@
     "boundedRuntimeAndRasterDecompression": true,
     "cacheValidated": true,
     "currentD0ResearchMatrixCoreStatusCounts": {
-      "fail": 5,
+      "fail": 4,
       "not_run": 0,
-      "pass": 6
+      "pass": 7
     },
     "currentD0ResearchMatrixFirstUnmetPredicate": "D0-RP-03",
     "currentD0ResearchMatrixStatus": "partial",
@@ -1213,6 +1292,14 @@
     "phy1TopologyStrategy2SolverStepAdvanced": false,
     "phy1TopologyStrategy2V4Executed": true,
     "phy1TopologyStrategy2V4Outcome": "M_strategy_microfixture_failed_no_candidate",
+    "phy1TopologyStrategy3AdmittedClass": null,
+    "phy1TopologyStrategy3CandidateAttemptConsumed": false,
+    "phy1TopologyStrategy3CandidateCreated": false,
+    "phy1TopologyStrategy3DiagnosisExecuted": true,
+    "phy1TopologyStrategy3DiagnosisOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
+    "phy1TopologyStrategy3DiagnosisRevisionCount": 2,
+    "phy1TopologyStrategy3FinalStrategyConsumed": false,
+    "phy1TopologyStrategy3RemainingTopologyStrategies": 1,
     "phy1TopologyV2ExperimentExecuted": true,
     "phy1TopologyV2Passed": false,
     "phy1TopologyV2RuntimeExposed": false,
@@ -1225,6 +1312,9 @@
     "unitJBranchAuthorized": false,
     "unitJLogicalOutcome": "J-A_post_topology_candidate_unavailable",
     "unitKEligible": false,
+    "unitPEligible": false,
+    "unitQEligible": false,
+    "unitREligible": false,
     "zeroOneStaticFamilyAttemptCount": 9,
     "zeroOneStaticRejectedFamilyCount": 0,
     "zeroOneStaticSuccessfulFamilyCount": 9

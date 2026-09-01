@@ -41,7 +41,9 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_strict_c3_confirmation_v5.v18"
+    assert coverage["version"] == (
+        "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19"
+    )
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -155,6 +157,16 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert topology_strategy["candidateAttemptConsumed"] is False
     assert topology_strategy["unitJAuthorized"] is False
     assert topology_strategy["unitKEligible"] is False
+    strategy3_diagnosis = status["gates"]["PHY1-Topology-Strategy3-Diagnosis-D0-v1"]
+    assert strategy3_diagnosis["scopedStatus"] == (
+        "no_strategy3_class_admitted_within_bounded_diagnosis"
+    )
+    assert strategy3_diagnosis["revisionFixturePassCounts"] == [7, 7]
+    assert strategy3_diagnosis["admittedStrategyClass"] is None
+    assert strategy3_diagnosis["candidateCreated"] is False
+    assert strategy3_diagnosis["candidateAttemptConsumed"] is False
+    assert strategy3_diagnosis["finalStrategyConsumed"] is False
+    assert strategy3_diagnosis["unitPEligible"] is False
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["dRuntimePinnedToV1"] is True
     assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["scopedStatus"] == "failed"
     assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["outcomeClass"] == (
@@ -164,7 +176,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "historical_superseded"
     )
     assert status["gates"]["ResearchPrototype-D0-matrix-v3-core"]["scopedStatus"] == (
-        "partial_6_pass_5_fail_0_not_run"
+        "partial_7_pass_4_fail_0_not_run"
     )
     assert status["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"]["scopedStatus"] == (
         "2_pass_0_fail_2_not_run"
@@ -217,6 +229,19 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "phy1TopologyStrategy2CandidateAttemptConsumed": False,
         "phy1TopologyStrategy2RemainingTopologyStrategies": 1,
         "phy1TopologyStrategy2RemainingSeamModels": 0,
+        "phy1TopologyStrategy3DiagnosisExecuted": True,
+        "phy1TopologyStrategy3DiagnosisOutcome": (
+            "no_strategy3_class_admitted_within_bounded_diagnosis"
+        ),
+        "phy1TopologyStrategy3DiagnosisRevisionCount": 2,
+        "phy1TopologyStrategy3AdmittedClass": None,
+        "phy1TopologyStrategy3CandidateCreated": False,
+        "phy1TopologyStrategy3CandidateAttemptConsumed": False,
+        "phy1TopologyStrategy3FinalStrategyConsumed": False,
+        "phy1TopologyStrategy3RemainingTopologyStrategies": 1,
+        "unitPEligible": False,
+        "unitQEligible": False,
+        "unitREligible": False,
         "unitJLogicalOutcome": "J-A_post_topology_candidate_unavailable",
         "unitJBranchAuthorized": False,
         "unitKEligible": False,
@@ -227,7 +252,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "historicalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
         "currentD0ResearchMatrixStatus": "partial",
         "currentD0ResearchMatrixVersion": "closy.final_d0_research_matrix.v3",
-        "currentD0ResearchMatrixCoreStatusCounts": {"pass": 6, "fail": 5, "not_run": 0},
+        "currentD0ResearchMatrixCoreStatusCounts": {"pass": 7, "fail": 4, "not_run": 0},
         "currentD0ResearchMatrixSupplementalStatusCounts": {
             "pass": 2,
             "fail": 0,
@@ -283,7 +308,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 50))
+    assert numbers == list(range(1, 53))
     assert stack["graphCounts"] == {
         "closyPullRequests": len(rows),
         "externalPullRequests": len(stack["externalPullRequests"]),
@@ -317,7 +342,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] == 10:
+        if row["number"] in {10, 52}:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -448,6 +473,25 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         by_id["github:jake-the-jake/Closy:pr/49"]["latestExactHeadWorkflows"][0]["runId"]
         == "33524394054"
     )
+    assert by_id["github:jake-the-jake/Closy:pr/50"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/49"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/50"]["headSha"] == (
+        "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/51"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/50"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/51"]["headSha"] == (
+        "e062a30ba295ed27334622916ddb449fd76e2166"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/52"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/51"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/52"]["headSha"] == (
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/52"]["latestExactHeadWorkflows"] == []
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -519,7 +563,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_strict_c3_confirmation_v5.v15"
+        "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v16"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
@@ -539,15 +583,15 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_n_pass_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_o_rejection_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-strict-c3-confirmation-v5"
+    assert resume["branch"] == "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1"
     assert resume["latestFinishedParentPublicationHead"] == (
-        "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
+        "e062a30ba295ed27334622916ddb449fd76e2166"
     )
-    assert resume["pendingCIAtEvidenceHead"] is False
+    assert resume["pendingCIAtEvidenceHead"] is True
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
     assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
@@ -557,16 +601,6 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_n_pass_boundary() -> 
     assert resume["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"] == (
         "2_pass_0_fail_2_not_run"
     )
-    assert resume["remainingBudgets"] == {"seamModels": 0, "topologyStrategies": 1}
-    assert resume["unitIResult"]["outcomeClass"] == "M"
-    assert resume["unitIResult"]["candidateOpened"] is False
-    assert resume["unitIResult"]["solverStepAdvanced"] is False
-    assert resume["unitIResult"]["candidateAttemptConsumed"] is False
-    assert resume["logicalJResult"]["outcome"] == ("J-A: post_topology_candidate_unavailable")
-    assert resume["logicalJResult"]["unitJBranchAuthorized"] is False
-    assert resume["logicalJResult"]["unitKEligible"] is False
-    assert resume["matrixScopes"]["knownTarget"]["predicatesPassed"] == 34
-    assert resume["matrixScopes"]["identityDisjointV1"]["predictions"] == 64
     assert resume["matrixScopes"]["identityDisjointV2"]["predictions"] == 0
     assert resume["matrixScopes"]["identityDisjointV2"]["predictionDenominator"] == 64
     assert resume["matrixScopes"]["identityDisjointV2"]["canonicalCompiles"] == 0
@@ -575,14 +609,32 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_n_pass_boundary() -> 
     assert resume["unitMResult"]["qualificationRetryAllowed"] is False
     assert resume["unitNResult"]["outcome"] == "pass"
     assert resume["unitNResult"]["posePassCount"] == 8
-    assert resume["unitNResult"]["qualificationRetryAllowed"] is False
-    assert resume["nextHandoff"]["selection"] == ("unit_o_phy1_topology_strategy3_diagnosis_v1")
+    assert resume["unitOResult"]["outcome"] == (
+        "no_strategy3_class_admitted_within_bounded_diagnosis"
+    )
+    assert resume["unitOResult"]["revisionCount"] == 2
+    assert resume["unitOResult"]["admittedStrategyClass"] is None
+    assert resume["unitOResult"]["candidateCreated"] is False
+    assert resume["unitOResult"]["candidateAttemptConsumed"] is False
+    assert resume["unitOResult"]["finalStrategyConsumed"] is False
+    assert resume["unitOResult"]["unitPEligible"] is False
+    assert resume["remainingBudgets"] == {
+        "candidateAttempts": 1,
+        "seamModels": 0,
+        "topologyStrategies": 1,
+    }
+    assert resume["conditionalUnits"] == {
+        "P": "not_created_ineligible",
+        "Q": "not_created_ineligible",
+        "R": "not_created_ineligible",
+    }
+    assert resume["nextHandoff"]["selection"] == ("none_dependency_ready_in_authorised_sequence")
     assert "7 pass / 4 fail" in markdown
     assert "known_target_regression_pass" in markdown
-    assert "Post-topology candidate: nonexistent" in markdown
+    assert "No canonical garment candidate was created" in markdown
     assert "attempted_integrity_error" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
-    assert "Unit O is dependency-ready" in markdown
+    assert "No class was admitted" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:

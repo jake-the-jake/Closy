@@ -15,8 +15,8 @@ EVIDENCE_ANCHOR = "9078a09f1156ba8b7f98099185478ca9efcee952"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.d0_strict_c3_confirmation_v5.v18"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_strict_c3_confirmation_v5.v15"
+VERSION = "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v16"
 UNIT_G_FINAL_HEAD = "bc4927fe6d36667b5b236d844b4eff511ef6f987"
 UNIT_H_FINAL_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_EVIDENCE_HEAD = "854b85ed769bc3e67547e4195f65dfeb78878881"
@@ -25,6 +25,8 @@ UNIT_L_FINAL_HEAD = "a72f45955abbe65ce14b7142668447d0477db71c"
 UNIT_M_AUTHORITY_HEAD = "9078a09f1156ba8b7f98099185478ca9efcee952"
 UNIT_M_FINAL_HEAD = "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
 UNIT_N_AUTHORITY_HEAD = "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
+UNIT_N_FINAL_HEAD = "e062a30ba295ed27334622916ddb449fd76e2166"
+UNIT_O_EVIDENCE_HEAD = "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -400,6 +402,45 @@ PR_SNAPSHOTS = [
         "SUCCESS",
         "d0_recovery_foundation_v1",
     ),
+    (
+        50,
+        "Forge: untouched identity-disjoint T-shirt confirmation v2",
+        "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
+        "codex/closy-forge-d0-recovery-foundation-v1",
+        UNIT_L_FINAL_HEAD,
+        UNIT_M_FINAL_HEAD,
+        4,
+        27,
+        "33533707412",
+        "SUCCESS",
+        "d0_disjoint_tshirt_confirmation_v2_integrity_error",
+    ),
+    (
+        51,
+        "Forge: strict C3 confirmation v5",
+        "codex/closy-forge-d0-strict-c3-confirmation-v5",
+        "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2",
+        UNIT_M_FINAL_HEAD,
+        UNIT_N_FINAL_HEAD,
+        3,
+        41,
+        "33547909132",
+        "SUCCESS",
+        "d0_strict_c3_confirmation_v5_pass",
+    ),
+    (
+        52,
+        "Forge Unit O: bounded PHY1 Strategy 3 diagnosis",
+        "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+        "codex/closy-forge-d0-strict-c3-confirmation-v5",
+        UNIT_N_FINAL_HEAD,
+        UNIT_O_EVIDENCE_HEAD,
+        1,
+        14,
+        "",
+        "PENDING",
+        "phy1_topology_strategy3_bounded_diagnosis_no_class_admitted",
+    ),
 ]
 
 PR25_REPLAY_MAPPINGS = [
@@ -513,6 +554,10 @@ PROVENANCE_INPUTS = [
     "closy-forge/fixtures/d0_strict_c3_confirmation_v5/authority_lifecycle.json",
     "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5/strict_c3_result.json",
     "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5/outcome_report.json",
+    "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1/diagnosis_lock.json",
+    "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1/confirmation_generator_lock.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/starting_authority.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/unit_o_outcome.json",
 ]
 
 PHASE10_PATHS = [
@@ -1831,6 +1876,88 @@ UNIT_N_C3_EVIDENCE_ADDITIONS = {
     for row_id in UNIT_N_C3_PROGRESSION_UPDATES
 }
 
+UNIT_O_TOPOLOGY_PROGRESSION_UPDATES = {
+    "BP-08-K-CLOTH-SIMULATION": {
+        "status": "partial",
+        "summary": (
+            "Unit O executed two candidate-independent constrained-remesh revisions through "
+            "the production distance, support, and body-collision kernels. Each passed seven "
+            "of eight fixtures, and neither strategy class was admitted."
+        ),
+        "limitations": (
+            "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; "
+            "revision 2 removed the topology defect but still omitted that semantic transfer. "
+            "No canonical garment candidate or physical solve was created."
+        ),
+        "nextAction": (
+            "Keep Unit P ineligible. A future authorised programme must begin with a new "
+            "candidate-independent class; the final Strategy 3 slot remains unspent."
+        ),
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Unit O records the literal outcome "
+            "no_strategy3_class_admitted_within_bounded_diagnosis after two locked revisions."
+        ),
+        "limitations": (
+            "The eight fixtures are synthetic development/discrimination evidence, not held-out "
+            "qualification. Unit P confirmation seed and instances remain unrealised."
+        ),
+        "nextAction": (
+            "Preserve the rejection and do not create Units P, Q, or R in this finite sequence."
+        ),
+    },
+    "BP-17-PHASE-06": {
+        "status": "partial",
+        "summary": (
+            "The bounded Strategy 3 diagnosis exercised explicit duplicated seams, finite "
+            "compliance, openings, transfer fields, contacts, mutations, and deterministic "
+            "recomputation without touching the canonical T-shirt."
+        ),
+        "limitations": (
+            "No investigated revision preserved every topology and semantic transfer invariant, "
+            "so no topology candidate, neutral preflight, full PHY1, or CCD run exists."
+        ),
+        "nextAction": "Do not spend the reserved strategy or candidate attempt on either class.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Research Prototype remains partial. Unit O improves solver-level diagnostic "
+            "coverage but admits no post-topology candidate and changes no matrix row result."
+        ),
+        "limitations": (
+            "D0-RP-03/04/07/15, identity-disjoint qualification, admissible physics, "
+            "post-topology C3/Z1, and all private/device/product evidence remain unresolved."
+        ),
+        "nextAction": (
+            "End this authorised finite sequence with runtime v1 selected and conditional Units "
+            "P/Q/R uncreated."
+        ),
+    },
+}
+
+UNIT_O_TOPOLOGY_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
+            "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
+            "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1",
+        ],
+        "executableEvidence": [
+            "two immutable candidate-independent revisions each passed 7/8 production-kernel "
+            "development fixtures",
+            "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
+            "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
+            "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation "
+            "instance was consumed",
+        ],
+        "tests": ["closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"],
+    }
+    for row_id in UNIT_O_TOPOLOGY_PROGRESSION_UPDATES
+}
+
 UNIT_H_CORE_C3_PROGRESSION_UPDATES = {
     "BP-48-PERSISTED-FRAMES-TANGENTS": {
         "status": "partial",
@@ -2219,6 +2346,9 @@ def main() -> int:
         unit_n_update = UNIT_N_C3_PROGRESSION_UPDATES.get(row_id)
         if unit_n_update:
             row.update(unit_n_update)
+        unit_o_update = UNIT_O_TOPOLOGY_PROGRESSION_UPDATES.get(row_id)
+        if unit_o_update:
+            row.update(unit_o_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -2283,6 +2413,11 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), unit_n_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [UNIT_N_AUTHORITY_HEAD])
+        unit_o_evidence = UNIT_O_TOPOLOGY_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_o_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_o_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [UNIT_O_EVIDENCE_HEAD])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
@@ -2296,6 +2431,7 @@ def main() -> int:
             and row_id not in UNIT_I_TOPOLOGY_PROGRESSION_UPDATES
             and row_id not in UNIT_M_DISJOINT_PROGRESSION_UPDATES
             and row_id not in UNIT_N_C3_PROGRESSION_UPDATES
+            and row_id not in UNIT_O_TOPOLOGY_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -2325,7 +2461,7 @@ def main() -> int:
     stack_path.write_text(
         json.dumps(stack, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
-    model = build_status_model(coverage, stack, evidence_anchor_sha=UNIT_N_AUTHORITY_HEAD)
+    model = build_status_model(coverage, stack, evidence_anchor_sha=UNIT_O_EVIDENCE_HEAD)
     (docs / "current_blueprint_status.json").write_text(
         json.dumps(model, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
@@ -2343,6 +2479,206 @@ def _append_unique(current: object, additions: list[str]) -> list[str]:
 
 
 def _write_active_resume(docs: Path) -> None:
+    outcome_path = docs / "evidence" / "phy1_topology_strategy3_diagnosis_v1"
+    outcome = json.loads((outcome_path / "unit_o_outcome.json").read_text(encoding="utf-8"))
+    revisions = outcome["revisions"]
+    resume = {
+        "schemaVersion": 1,
+        "machineResumeVersion": "closy.active_blueprint_resume.phy1_strategy3_diagnosis_v1.v10",
+        "activeLane": "finite sequence complete after Unit O rejected both bounded classes",
+        "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+        "pullRequest": 52,
+        "evidenceHead": UNIT_O_EVIDENCE_HEAD,
+        "latestFinishedParentPublicationHead": UNIT_N_FINAL_HEAD,
+        "localHeadAtResumeSource": "pending_final_commit",
+        "remoteHeadAtResumeSource": "pending_final_commit",
+        "sourceAnchorIsSelfReferential": False,
+        "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
+        "pendingCIAtEvidenceHead": True,
+        "mergeAuthorised": False,
+        "parent": {
+            "branch": "codex/closy-forge-d0-strict-c3-confirmation-v5",
+            "pullRequest": 51,
+            "sha": UNIT_N_FINAL_HEAD,
+            "exactHeadWorkflow": "33547909132",
+            "forgeJobsPassed": 29,
+            "forgeJobsTotal": 29,
+        },
+        "gates": {
+            "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
+            "ResearchPrototype-D0-matrix-v3-core": "partial_7_pass_4_fail_0_not_run",
+            "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
+            "D0-DisjointTshirt-v2": "attempted_integrity_error",
+            "D0-Strict-C3-v5": "pass_exact_unit_f_pre_topology_8_of_8",
+            "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
+            "PHY1-Topology-Strategy2-D0-v4": (
+                "outcome_M_strategy_microfixture_failed_no_candidate"
+            ),
+            "PHY1-Topology-Strategy3-Diagnosis-D0-v1": outcome["outcomeClass"],
+            "Unit-P": "ineligible_no_admitted_strategy3_class",
+            "Unit-Q": "ineligible_no_unit_p_candidate",
+            "Unit-R": "ineligible_no_unit_q_prerequisites",
+            "Runtime": "v1_selected_topology_v2_opt_in_unchanged",
+        },
+        "matrixScopes": {
+            "knownTarget": {
+                "outcome": "known_target_regression_pass",
+                "predicatesPassed": 34,
+                "predicatesTotal": 34,
+                "d0Rp07Promoted": False,
+            },
+            "identityDisjointV1": {
+                "outcome": "benchmark_failed_fixed_inventory_unfinished",
+                "predictions": 64,
+                "canonicalCompiles": 0,
+                "appearanceEvaluations": 0,
+            },
+            "identityDisjointV2": {
+                "outcome": "attempted_integrity_error",
+                "acceptedIdentities": 16,
+                "predictions": 0,
+                "predictionDenominator": 64,
+                "canonicalCompiles": 0,
+                "compileDenominator": 48,
+                "appearanceEvaluations": 0,
+                "appearanceDenominator": 24,
+            },
+            "strictC3V5": {
+                "outcome": "pass",
+                "posePassCount": 8,
+                "poseCount": 8,
+                "preTopology": True,
+            },
+            "postTopologyCandidate": {
+                "candidateExists": False,
+                "matrixNotRunReason": "unit_o_admitted_no_strategy3_class",
+            },
+        },
+        "unitMResult": {
+            "outcome": "attempted_integrity_error",
+            "acceptedIdentityCount": 16,
+            "predictionCount": 0,
+            "fullCompileCount": 0,
+            "appearanceEvaluationCount": 0,
+            "qualificationRetryAllowed": False,
+        },
+        "unitNResult": {
+            "outcome": "pass",
+            "publishedHead": UNIT_N_FINAL_HEAD,
+            "posePassCount": 8,
+            "poseCount": 8,
+            "maximumBindingReconstructionErrorMeters": 6.71791165111579e-08,
+            "maximumSemanticSeamCrackMeters": 0.0,
+            "maximumTangentialSeamSlidingMeters": 0.0,
+            "preTopology": True,
+        },
+        "unitOResult": {
+            "outcome": outcome["outcomeClass"],
+            "outcomeDigest": outcome["integrity"]["outcomeDigest"],
+            "revisionCount": outcome["revisionCount"],
+            "revisionFixturePassCounts": [
+                {
+                    "revision": row["revision"],
+                    "strategyClass": row["strategyClass"],
+                    "fixturePassCount": row["fixturePassCount"],
+                    "fixtureCount": row["fixtureCount"],
+                    "admitted": row["admitted"],
+                    "firstUnmetPredicate": row["firstUnmetPredicate"],
+                }
+                for row in revisions
+            ],
+            "admittedStrategyClass": outcome["admittedStrategyClass"],
+            "candidateCreated": outcome["candidateCreated"],
+            "candidateAttemptConsumed": outcome["candidateAttemptConsumed"],
+            "finalStrategyConsumed": outcome["finalStrategyConsumed"],
+            "unitPEligible": outcome["unitPEligible"],
+        },
+        "remainingBudgets": outcome["budgetsAfter"],
+        "conditionalUnits": {
+            "P": "not_created_ineligible",
+            "Q": "not_created_ineligible",
+            "R": "not_created_ineligible",
+        },
+        "nextHandoff": {
+            "selection": "none_dependency_ready_in_authorised_sequence",
+            "firstUnmetPrerequisite": "admitted_strategy3_class",
+            "safestEvidenceAction": "preserve_rejection_and_unspent_budget",
+        },
+        "exactNextAction": "Complete external exact-head attestation and final handoff.",
+        "stopReason": "authorised_finite_sequence_complete_after_unit_o_rejection",
+        "unsupportedEvidenceClasses": [
+            "post_topology_candidate",
+            "post_topology_core_reproducibility",
+            "post_topology_strict_or_trajectory_C3",
+            "full_PHY1",
+            "integrated_CCD",
+            "solver_driven_Z2",
+            "private_user",
+            "human_review",
+            "real_photo",
+            "real_fabric",
+            "GPU",
+            "mobile",
+            "Alpha",
+            "Beta",
+            "Production",
+            "identity_disjoint_cohort_qualification",
+        ],
+    }
+    (docs / "ACTIVE_BLUEPRINT_RESUME.json").write_text(
+        json.dumps(resume, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+    )
+    markdown = f"""# Active Blueprint Resume
+
+## Frozen boundary
+
+- Branch: `{resume['branch']}`
+- Pull request: `#52` (draft)
+- Immutable pre-execution lock head: `{UNIT_O_EVIDENCE_HEAD}`
+- Exact parent: PR `#51` at `{UNIT_N_FINAL_HEAD}`
+- Parent exact-head Forge workflow: `33547909132` (`29/29` successful)
+- Merge authorised: `false`
+
+## Literal Unit O outcome
+
+Unit O executed exactly two candidate-independent development revisions. Revision 1 passed `7/8`
+fixtures but introduced one T-junction and omitted the remeshed semantic seam sequence. Revision 2
+passed `7/8`, removed the topology defect, and still omitted the semantic seam sequence. Literal
+outcome: `{outcome['outcomeClass']}`. No class was admitted.
+
+No canonical garment candidate was created. The candidate attempt and final topology strategy are
+both unspent. The separately frozen Unit P confirmation generator has no seed or instances. Units
+P, Q, and R are ineligible and were not created. Runtime v1 and its conventional fallback remain
+selected.
+
+## Scope-separated truth
+
+- Identity-disjoint v2: `16` accepted identities, `0/64` predictions, `0/48` compiles, and `0/24`
+  appearance evaluations; literal `attempted_integrity_error`.
+- Known target: `known_target_regression_pass`, `34/34`; engineering regression only.
+- Strict C3 v5: exact Unit F synthetic pre-topology sentinel, `8/8 pass`.
+- Unit O: two synthetic development revisions, each `7/8`; rejection evidence only.
+- Prior neutral physical outcome: `A_neutral_preflight_failed_v3`; no physics was rerun.
+- Current matrix v3 core: `7 pass / 4 fail / 0 not-run`.
+- Current matrix v3 supplemental: `2 pass / 0 fail / 2 not-run`.
+- Coverage: `20 complete / 63 partial / 7 not started / 11 discovery pending`.
+
+## Remaining budget and handoff
+
+- Seam models remaining: `0`
+- Reserved topology strategies remaining: `1`
+- Candidate attempts remaining: `1`
+- Next authorised conditional unit: `none`
+- First unmet prerequisite: `admitted_strategy3_class`
+
+This finite prompt is complete once PR #52 receives exact-head external attestation. No physical
+cloth, full PHY1, integrated CCD, post-topology qualification, solver-driven Z2, private-user,
+human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, or Production claim is made.
+"""
+    (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(markdown, encoding="utf-8", newline="\n")
+
+
+def _write_active_resume_unit_n_legacy(docs: Path) -> None:
     evidence_dir = docs / "evidence" / "phy1_topology_strategy2_v4"
     outcome = json.loads((evidence_dir / "unit_i_outcome.json").read_text(encoding="utf-8"))
     closure = json.loads((evidence_dir / "logical_j_a_closure.json").read_text(encoding="utf-8"))
@@ -2578,30 +2914,30 @@ unless Unit O literally records `strategy3_class_admitted_pre_candidate`.
 
 def _update_master_progress(docs: Path) -> None:
     path = docs / "MASTER_BLUEPRINT_PROGRESS.md"
-    marker = "## D0 Strict C3 Confirmation v5 Outcome"
+    marker = "## PHY1 Strategy 3 Candidate-Independent Diagnosis v1 Outcome"
     current = path.read_text(encoding="utf-8")
     prefix = current.split(marker, 1)[0].rstrip()
     section = f"""
 
 {marker}
 
-Unit M is externally attested at `{UNIT_M_FINAL_HEAD}` by Forge workflow `33533707412`, with all
-29 Forge jobs successful after a failed-jobs rerun. Unit N then resolved the exact Unit F fallback
-sentinel, froze strict C3 v5 before any fresh pose existed, and preserved H4's consumed 0/8 failure.
+Unit O froze the exact PR43 package and physical authority, eight production-kernel development
+fixtures, two maximum pre-candidate revisions, and a separate unrealised Unit P confirmation
+generator at `{UNIT_O_EVIDENCE_HEAD}`. It then executed the two revisions without transforming the
+canonical T-shirt or creating a candidate.
 
-The sole immutable authority run `33546821637`, job `99986277154`, committed exactly eight fresh
-semantic pose classes and passed all `8/8`. Maximum binding reconstruction error was
-`6.71791165111579e-08 m`; seam crack, tangential sliding, and inverted triangles were zero. Fresh-
-process determinism and mutation controls passed. D0-RP-08 is therefore pass only for the exact
-synthetic pre-topology Unit F sentinel. Any topology change requires a new confirmation.
+Local longest-edge bisection passed `7/8` fixtures but introduced one T-junction and omitted the
+updated semantic seam sequence. Closure longest-edge bisection also passed `7/8`; it removed the
+topology defect but still omitted the semantic seam sequence. The literal outcome is
+`no_strategy3_class_admitted_within_bounded_diagnosis`. Unit P is ineligible, so Units P, Q, and R
+were not created. The final topology strategy and candidate attempt remain unspent.
 
-The Research Prototype matrix is now `7 pass / 4 fail / 0 not-run` core plus
+The Research Prototype matrix remains `7 pass / 4 fail / 0 not-run` core plus
 `2 pass / 0 fail / 2 not-run` supplemental. Coverage remains `20 complete / 63 partial / 7 not
-started / 11 discovery pending`. Runtime v1 and the conventional fallback remain selected. Unit O
-candidate-independent Strategy-3 diagnosis is next; Unit P remains ineligible without literal
-admission. No physical-cloth, real-world deformation, private-user, human-review, real-photo,
-real-fabric, GPU, mobile, Alpha, Beta, Production, post-topology candidate, full-PHY1,
-integrated-CCD, or solver-driven-Z2 claim is made.
+started / 11 discovery pending`. Runtime v1 and the conventional fallback remain selected. No
+physical-cloth, real-world deformation, private-user, human-review, real-photo, real-fabric, GPU,
+mobile, Alpha, Beta, Production, post-topology candidate, full-PHY1, integrated-CCD, or
+solver-driven-Z2 claim is made.
 """
     path.write_text(prefix + section, encoding="utf-8", newline="\n")
 
@@ -2780,6 +3116,9 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         47: 46,
         48: 47,
         49: 48,
+        50: 49,
+        51: 50,
+        52: 51,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
@@ -3093,6 +3432,9 @@ def _closy_run(run_id: str, conclusion: str) -> dict[str, object] | None:
         "33503777760",
         "33505903385",
         "33511517533",
+        "33524394054",
+        "33533707412",
+        "33547909132",
     }
     job_count = 29 if run_id in forge_29_job_runs else 26
     result: dict[str, object] = {

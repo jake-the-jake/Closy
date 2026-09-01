@@ -101,12 +101,16 @@
       "closy-forge/fixtures/d0_strict_c3_confirmation_v5/protocol_lock.json",
       "closy-forge/fixtures/d0_strict_c3_confirmation_v5/authority_lifecycle.json",
       "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5/strict_c3_result.json",
-      "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5/outcome_report.json"
+      "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5/outcome_report.json",
+      "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1/diagnosis_lock.json",
+      "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1/confirmation_generator_lock.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/starting_authority.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/unit_o_outcome.json"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.d0_strict_c3_confirmation_v5.v15",
+    "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v16",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "1ed5a21d082e4adf5c525a4fc05dd9dfbd97294a8bdc0401efd77cd3c675aaad",
+    "sourceTreeHash": "b66681f5550537bd5cc9e4e5af20268388e86af88922a658364fba2e6dd57acf",
     "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,
@@ -1820,7 +1824,8 @@
         "a8a053a68d8f455134e5a2bfed0fe340467a039a",
         "13604d169ecbc0fddf475cdf177e743790c836a2",
         "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
-        "854b85ed769bc3e67547e4195f65dfeb78878881"
+        "854b85ed769bc3e67547e4195f65dfeb78878881",
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1829,7 +1834,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Outcome M opened no candidate and advanced no solver step. Neutral PHY1, full PHY1, integrated CCD, post-topology C3, and solver-driven Z2 were not run.",
+          "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. No canonical garment candidate or physical solve was created.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -1859,7 +1864,11 @@
         "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
         "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
         "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
-        "logical J-A forbids Unit J and K because no post-topology candidate exists"
+        "logical J-A forbids Unit J and K because no post-topology candidate exists",
+        "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
+        "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
+        "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
       ],
       "id": "BP-08-K-CLOTH-SIMULATION",
       "implementationPaths": [
@@ -1869,25 +1878,29 @@
         "closy-forge/reports/self_collision_report.json",
         "closy-forge/fixtures/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
-        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Outcome M opened no candidate and advanced no solver step. Neutral PHY1, full PHY1, integrated CCD, post-topology C3, and solver-driven Z2 were not run.",
-      "nextAction": "Do not create Unit J or K; require new candidate-independent diagnosis before the reserved materially different topology strategy 3 can be authorised.",
+      "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. No canonical garment candidate or physical solve was created.",
+      "nextAction": "Keep Unit P ineligible. A future authorised programme must begin with a new candidate-independent class; the final Strategy 3 slot remains unspent.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit I locked one topology/DOF-only conforming-seam quotient strategy, then its single candidate-independent transfer microfixture proved that shared quotient DOFs are not mechanically equivalent to the frozen finite-compliance seam law.",
+      "summary": "Unit O executed two candidate-independent constrained-remesh revisions through the production distance, support, and body-collision kernels. Each passed seven of eight fixtures, and neither strategy class was admitted.",
       "tests": [
         "tests/unit/test_self_collision.py",
         "tests/unit/test_reference_cloth_solver.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"
       ]
     },
     {
@@ -3186,7 +3199,8 @@
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
         "9078a09f1156ba8b7f98099185478ca9efcee952",
-        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3195,7 +3209,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Identity-disjoint reconstruction and appearance still fail; exact Z1/MT1 remain not_run/dependency_blocked.",
+          "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. Unit P confirmation seed and instances remain unrealised.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3257,7 +3271,11 @@
         "8/8 strict C3 states passed on exact Unit F sentinel",
         "maximum binding reconstruction error 6.71791165111579e-08 m",
         "semantic seam crack/sliding and inverted triangles remained zero",
-        "two fresh-process repeats and negative mutation controls passed"
+        "two fresh-process repeats and negative mutation controls passed",
+        "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
+        "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
+        "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -3309,18 +3327,21 @@
         "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md",
         "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
         "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
-        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5",
+        "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Identity-disjoint reconstruction and appearance still fail; exact Z1/MT1 remain not_run/dependency_blocked.",
-      "nextAction": "Continue to Unit O; do not infer physical accuracy from C3.",
+      "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. Unit P confirmation seed and instances remain unrealised.",
+      "nextAction": "Preserve the rejection and do not create Units P, Q, or R in this finite sequence.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit N records a literal strict-C3 pass: 8/8 fresh poses, semantic seam metrics, two fresh-process repeats, mutation controls, and bounded resources all passed.",
+      "summary": "Unit O records the literal outcome no_strategy3_class_admitted_within_bounded_diagnosis after two locked revisions.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -3348,7 +3369,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
         "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py",
-        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"
       ]
     },
     {
@@ -4008,7 +4030,8 @@
         "6de060d7fa4e985070187bf417f159ecbe31e8b4",
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "9078a09f1156ba8b7f98099185478ca9efcee952"
+        "9078a09f1156ba8b7f98099185478ca9efcee952",
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -4017,7 +4040,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Normal separation, tangential slip, stored energy, and impulse equivalence all fail the frozen 1e-12 transfer limits; the finite-compliance seam model cannot be silently replaced by quotient shared DOFs.",
+          "limitations": "No investigated revision preserved every topology and semantic transfer invariant, so no topology candidate, neutral preflight, full PHY1, or CCD run exists.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4054,7 +4077,11 @@
         "immutable topology-only budget and strategy lock precede the sole strategy-specific microfixture",
         "quotient transfer differs by 1.5999980159352167e-08 m position, 2.8799928574752917e-07 J stored energy, and 1.3333317066849276e-10 N*s impulse",
         "Outcome M records candidateOpened=false, solverStepAdvanced=false, and candidateAttemptConsumed=false",
-        "logical J-A forbids Unit J and K because no post-topology candidate exists"
+        "logical J-A forbids Unit J and K because no post-topology candidate exists",
+        "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
+        "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
+        "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
@@ -4080,18 +4107,21 @@
         "closy-forge/src/closy_forge/simulation_topology_v2/phy1_seam_support_v3.py",
         "closy-forge/fixtures/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/phy1_topology_strategy2_v4",
-        "closy-forge/docs/evidence/phy1_topology_strategy2_v4"
+        "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
+        "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Normal separation, tangential slip, stored energy, and impulse equivalence all fail the frozen 1e-12 transfer limits; the finite-compliance seam model cannot be silently replaced by quotient shared DOFs.",
-      "nextAction": "Preserve explicit finite-compliance seams and design analytic transfer fixtures for a materially different reserved Strategy 3 without executing a candidate.",
+      "limitations": "No investigated revision preserved every topology and semantic transfer invariant, so no topology candidate, neutral preflight, full PHY1, or CCD run exists.",
+      "nextAction": "Do not spend the reserved strategy or candidate attempt on either class.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The reserved Strategy 2 lane executed exactly one candidate-independent mechanical equivalence microfixture and closed as Outcome M before candidate construction.",
+      "summary": "The bounded Strategy 3 diagnosis exercised explicit duplicated seams, finite compliance, openings, transfer fields, contacts, mutations, and deterministic recomputation without touching the canonical T-shirt.",
       "tests": [
         "Forge local tests",
         "tests/unit/test_render_frame_pose_suite.py",
@@ -4108,7 +4138,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_budget.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"
       ]
     },
     {
@@ -6045,7 +6076,8 @@
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
         "9078a09f1156ba8b7f98099185478ca9efcee952",
-        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -6054,7 +6086,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0-RP-03/04/06/07 and D0-RP-15 remain blockers; no coherent identity-disjoint, physical, private-user, device, or production qualification exists.",
+          "limitations": "D0-RP-03/04/07/15, identity-disjoint qualification, admissible physics, post-topology C3/Z1, and all private/device/product evidence remain unresolved.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -6122,7 +6154,11 @@
         "8/8 strict C3 states passed on exact Unit F sentinel",
         "maximum binding reconstruction error 6.71791165111579e-08 m",
         "semantic seam crack/sliding and inverted triangles remained zero",
-        "two fresh-process repeats and negative mutation controls passed"
+        "two fresh-process repeats and negative mutation controls passed",
+        "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
+        "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
+        "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -6172,18 +6208,21 @@
         "closy-forge/docs/d0-disjoint-tshirt-confirmation-v2-lock.md",
         "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
         "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
-        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5",
+        "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0-RP-03/04/06/07 and D0-RP-15 remain blockers; no coherent identity-disjoint, physical, private-user, device, or production qualification exists.",
-      "nextAction": "Execute bounded candidate-independent Unit O diagnosis.",
+      "limitations": "D0-RP-03/04/07/15, identity-disjoint qualification, admissible physics, post-topology C3/Z1, and all private/device/product evidence remain unresolved.",
+      "nextAction": "End this authorised finite sequence with runtime v1 selected and conditional Units P/Q/R uncreated.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "With Unit N, the scoped Research Prototype core matrix is 7 pass, 4 fail, 0 not-run; supplemental remains 2 pass, 0 fail, 2 not-run.",
+      "summary": "Research Prototype remains partial. Unit O improves solver-level diagnostic coverage but admits no post-topology candidate and changes no matrix row result.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -6209,7 +6248,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
         "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py",
-        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py",
+        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"
       ]
     },
     {
@@ -6458,5 +6498,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.d0_strict_c3_confirmation_v5.v18"
+  "version": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19"
 }
