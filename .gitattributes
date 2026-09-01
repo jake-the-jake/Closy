@@ -14,6 +14,7 @@ closy-forge/scripts/reconcile_blueprint_status.py text eol=lf
 closy-forge/src/closy_forge/blueprint/profiles.py text eol=lf
 closy-forge/src/closy_forge/blueprint/status.py text eol=lf
 closy-forge/tests/unit/test_blueprint_coverage.py text eol=lf
+closy-forge/tests/unit/test_phy1_topology_strategy2_v4_*.py text eol=lf
 closy-forge/docs/ACTIVE_BLUEPRINT_RESUME.md text eol=lf
 closy-forge/docs/BLUEPRINT_STATUS_SUMMARY.md text eol=lf
 closy-forge/docs/MASTER_BLUEPRINT_PROGRESS.md text eol=lf

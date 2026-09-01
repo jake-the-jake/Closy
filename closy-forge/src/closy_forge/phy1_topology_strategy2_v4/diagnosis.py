@@ -214,6 +214,17 @@ def build_general_microfixtures() -> dict[str, Any]:
     return report
 
 
+def validate_pr43_diagnosis(root: Path, committed: dict[str, Any]) -> list[str]:
+    issues: list[str] = []
+    integrity = committed.get("integrity")
+    if not isinstance(integrity, dict) or integrity.get("diagnosisDigest") != _digest(
+        committed, "diagnosisDigest"
+    ):
+        issues.append("committed_diagnosis_digest_invalid")
+    _compare_recomputed_diagnosis(committed, build_pr43_diagnosis(root), "", issues)
+    return sorted(set(issues))
+
+
 def _panel_distribution(before: Mesh, after: Mesh) -> dict[str, Any]:
     edge_ratios: list[float] = []
     area_ratios: list[float] = []
@@ -300,6 +311,38 @@ def _case(case_id: str, passed: bool) -> dict[str, str]:
 
 def _classification(category: str, observed: bool, evidence: str) -> dict[str, Any]:
     return {"category": category, "observed": observed, "evidence": evidence}
+
+
+def _compare_recomputed_diagnosis(
+    committed: object, recomputed: object, path: str, issues: list[str]
+) -> None:
+    if path == "/integrity/diagnosisDigest":
+        return
+    if isinstance(committed, dict) and isinstance(recomputed, dict):
+        if committed.keys() != recomputed.keys():
+            issues.append(f"diagnosis_keys_differ:{path or '/'}")
+            return
+        for key in committed:
+            _compare_recomputed_diagnosis(committed[key], recomputed[key], f"{path}/{key}", issues)
+        return
+    if isinstance(committed, list) and isinstance(recomputed, list):
+        if len(committed) != len(recomputed):
+            issues.append(f"diagnosis_length_differs:{path}")
+            return
+        for index, (left, right) in enumerate(zip(committed, recomputed, strict=True)):
+            _compare_recomputed_diagnosis(left, right, f"{path}/{index}", issues)
+        return
+    if isinstance(committed, float) and isinstance(recomputed, float):
+        if committed == recomputed:
+            return
+        if not (math.isfinite(committed) and math.isfinite(recomputed)):
+            issues.append(f"diagnosis_value_differs:{path}")
+            return
+        # CPython 3.11/3.12 differ by one ULP for one frozen triangle-area sqrt.
+        if abs(committed - recomputed) <= max(math.ulp(committed), math.ulp(recomputed)):
+            return
+    if committed != recomputed:
+        issues.append(f"diagnosis_value_differs:{path}")
 
 
 def _object(path: Path) -> dict[str, Any]:
