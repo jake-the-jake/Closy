@@ -643,9 +643,7 @@ def build_status_model(
             "phy1SeamSupportV3Z2Executed": False,
             "integratedRuntimePinnedToTopologyV1": True,
             "historicalD0ResearchMatrixStatus": "partial_superseded",
-            "historicalD0ResearchMatrixVersion": (
-                "closy.final_d0_research_prototype_matrix.v2"
-            ),
+            "historicalD0ResearchMatrixVersion": ("closy.final_d0_research_prototype_matrix.v2"),
             "historicalD0ResearchMatrixStatusCounts": {
                 "pass": 9,
                 "fail": 3,

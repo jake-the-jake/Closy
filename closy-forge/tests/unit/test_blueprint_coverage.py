@@ -360,9 +360,10 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert by_id["github:jake-the-jake/Closy:pr/44"]["headSha"] == (
         "2f40815010cef01685a7ed873081a22f11d67c00"
     )
-    assert by_id["github:jake-the-jake/Closy:pr/44"]["latestExactHeadWorkflows"][0][
-        "runId"
-    ] == "33452856012"
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/44"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33452856012"
+    )
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])

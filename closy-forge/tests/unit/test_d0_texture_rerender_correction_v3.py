@@ -30,9 +30,7 @@ from closy_forge.raster import DecodedPng
 
 ROOT = Path(__file__).resolve().parents[2]
 PROTOCOL_COMMIT = "5a01ed40656c3f2924169f2c3e8f4d702f572cc5"
-PARENT_CANDIDATE = ROOT / (
-    "docs/evidence/d0_fitting_pbr_fidelity_v2/predictions/candidate_package"
-)
+PARENT_CANDIDATE = ROOT / ("docs/evidence/d0_fitting_pbr_fidelity_v2/predictions/candidate_package")
 
 
 @pytest.fixture(scope="module")
@@ -104,9 +102,7 @@ def test_panel_uv_contract_matches_independent_renderer(
         for x in range(ATLAS_SIZE):
             pixels.extend((x, y, 17, 255))
     atlas = DecodedPng(ATLAS_SIZE, ATLAS_SIZE, bytes(pixels))
-    expected_x, expected_y = panel_uv_to_atlas(
-        panel_id, uv, use_rear=label == "back"
-    )
+    expected_x, expected_y = panel_uv_to_atlas(panel_id, uv, use_rear=label == "back")
     sampled = _atlas_sampler(atlas, label)(panel_id, uv)
     assert sampled == (int(expected_x), int(expected_y), 17, 255)
 
