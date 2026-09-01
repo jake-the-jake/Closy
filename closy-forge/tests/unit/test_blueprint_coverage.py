@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_disjoint_tshirt_benchmark_v1.v13"
+    assert coverage["version"] == "closy.blueprint_coverage.d0_core_runtime_c3_v4.v14"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -261,8 +261,8 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 47))
-    assert len(nodes) == 48
+    assert numbers == list(range(1, 48))
+    assert len(nodes) == 49
     assert stack["externalPullRequests"][0]["repository"] == "jake-the-jake/ZeroOne"
     assert stack["externalPullRequests"][0]["number"] == 2
     assert stack["externalPullRequests"][1]["number"] == 3
@@ -289,7 +289,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 46}:
+        if row["number"] in {10, 47}:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",
@@ -378,9 +378,19 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         "github:jake-the-jake/Closy:pr/45"
     ]
     assert by_id["github:jake-the-jake/Closy:pr/46"]["headSha"] == (
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+        "069707bbd0bfc95eabbc5a3b3045e349d4c0b121"
     )
-    assert by_id["github:jake-the-jake/Closy:pr/46"]["latestExactHeadWorkflows"] == []
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/46"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33470303559"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/47"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/46"
+    ]
+    assert by_id["github:jake-the-jake/Closy:pr/47"]["headSha"] == (
+        "3541507808946ae1248fba110b7732599db3fdbc"
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/47"]["latestExactHeadWorkflows"] == []
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -442,7 +452,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_disjoint_tshirt_benchmark_v1.v10"
+        "closy.blueprint_reconciliation.d0_core_runtime_c3_v4.v11"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["selfReferentialCommitSha"] is False
@@ -461,11 +471,11 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_g_failure_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_h_failure_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1"
+    assert resume["branch"] == "codex/closy-forge-d0-core-runtime-c3-v4"
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
     assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
@@ -479,6 +489,9 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_g_failure_boundary() 
     assert resume["replayState"]["runtimeCandidateV2ProductSelected"] is False
     assert resume["physicalResult"]["trajectoryGlbBytesPreservedAfterReportingRepair"] is True
     assert resume["remainingBudgets"] == {"seamModels": 0, "topologyStrategies": 2}
+    assert resume["unitHResult"]["coreReproducibility"] == "pass_predecessor_scoped"
+    assert resume["unitHResult"]["strictC3"] == ("fail_frozen_evaluator_frame_metric_key_mismatch")
+    assert resume["unitHResult"]["heldOutAttemptsConsumed"] == 1
     assert resume["appearanceResult"] == {
         "atlasGeneratedControlledFillFraction": 0.447538306,
         "atlasSourceObservedFraction": 0.552461694,

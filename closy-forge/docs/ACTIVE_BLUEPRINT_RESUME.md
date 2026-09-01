@@ -7,12 +7,12 @@ not-run research predicates.
 ## Active Lane
 
 - Repository: `jake-the-jake/Closy`.
-- Branch: `codex/closy-forge-d0-disjoint-tshirt-benchmark-v1`.
-- Exact parent: draft PR #45 final head `ba54b17a0aef7518d9acac30c6b7ec6564a38d87`.
-- Immutable Unit G evidence anchor: `6de060d7fa4e985070187bf417f159ecbe31e8b4`.
-- PR #45 final head is externally attested by workflow `33464425080` with 29 of 29 Forge jobs.
-- Unit G's draft PR remains pending final exact-head attestation; its final head and workflow URL belong in
-  its PR body rather than this self-referential checkpoint.
+- Branch: `codex/closy-forge-d0-core-runtime-c3-v4`.
+- Exact parent: draft PR #46 final head `069707bbd0bfc95eabbc5a3b3045e349d4c0b121`.
+- Immutable Unit H evidence anchor: `3541507808946ae1248fba110b7732599db3fdbc`.
+- PR #46 final head is externally attested by workflow `33470303559` with 29 of 29 Forge jobs.
+- Unit H's draft PR #47 remains pending final exact-head attestation; its final head and workflow URL
+  belong in its PR body rather than this self-referential checkpoint.
 
 ## Evidence-Integrity Reset
 
@@ -69,6 +69,19 @@ not-run research predicates.
   0 of 32 appearance evaluations completed. No cohort metric, bootstrap, winner, promotion, or D0 row
   pass exists. Unit F's known-target result remains separate.
 
+## Unit H Core Reproducibility and C3 Result
+
+- H0 resolves only to Unit F candidate `candidate.d0_texture_rerender_v3.49161d8adafb514e5a04b1a9`
+  with package digest `c338762915d390a22e879f588e0f01a4b6ed586b9ff045eb0a039888ace8223b`.
+  Every required PR #43 pattern, seam, simulation/render topology, and binding input is byte-proven.
+- H1 passes clean fresh, second clean, cache miss/hit, corruption invalidation, source withdrawal,
+  and delete/rebuild checks for runtime digest `5a856b425b3a7e2139f774d1a2c2b9f7392a8b4bafb9e7418c51308c132b378e`.
+- H2 and H3 remain not run: neither the exact authenticated static Z1 executable nor the clean MT1
+  executable is available in the non-pinned dirty local ZeroOne checkout.
+- H4 consumed its sole held-out attempt. The frozen evaluator entered `neutral` and failed before any
+  state completed because it requested `maximumNormalLengthError` while the frame API exposes
+  `maxNormalLengthError`. No patch, replay, metric result, C3 pass, PHY1 implication, or Z2 admission exists.
+
 ## Gate Table
 
 | Gate | Scoped result | Exact boundary |
@@ -78,6 +91,9 @@ not-run research predicates.
 | D0-RP-06 exact fixture | pass | broader identity-disjoint scope is separately not run |
 | Texture rerender known target v3 | engineering regression pass | 34/34 predicates; not qualification |
 | D0 identity-disjoint T-shirt v1 | fixed-inventory benchmark fail | 64 predictions; 0 compiles; 0 appearance evaluations |
+| Core Forge reproducibility H1 | pass, predecessor scoped | fresh/cache/corruption/withdrawal/delete-rebuild all pass |
+| Exact static Z1 H2 / MT1 H3 | not run | exact authenticated processors unavailable |
+| Strict C3 H4 | fail | one attempt consumed; 0/8 states completed after frozen adapter failure |
 | C3-Binding-D0 v1 | historical scoped pass | preserved predecessor identity only |
 | C3 exact candidate v2 | fail | no cross-identity repair |
 | PHY1 seam/support neutral v3 | fail / outcome A | diagnostic rescore only; no rerun |
@@ -86,8 +102,7 @@ not-run research predicates.
 
 ## Exact Next Action
 
-After Unit G exact-head CI is green, create
-`codex/closy-forge-d0-core-runtime-c3-v4` from the final Unit G head. Resolve the precommitted H0
-sentinel, then execute core Forge reproducibility independently of ZeroOne; run exact-candidate Z1 and
-MT1 only when their pinned processors are authenticated and available; and freeze one independently
-oracled strict C3 binding attempt before held-out poses are mounted. Do not repair or replay Unit G.
+After Unit H exact-head CI is green, create `codex/closy-forge-phy1-topology-strategy2-v1` from the
+final Unit H head. Execute one bounded topology strategy under Unit I's pre-frozen classifier and
+budget. Do not repair/replay Unit G or Unit H, do not donate predecessor C3 evidence, and create Unit J
+only if Unit I emits an admissible canonical post-topology candidate; otherwise record logical J-A in I.

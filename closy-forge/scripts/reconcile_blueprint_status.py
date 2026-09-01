@@ -11,12 +11,12 @@ from closy_forge.blueprint.pr_dag import validate_pr_dag
 from closy_forge.blueprint.status import build_status_model, render_status_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE_ANCHOR = "6de060d7fa4e985070187bf417f159ecbe31e8b4"
+EVIDENCE_ANCHOR = "3541507808946ae1248fba110b7732599db3fdbc"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.d0_disjoint_tshirt_benchmark_v1.v13"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_disjoint_tshirt_benchmark_v1.v10"
+VERSION = "closy.blueprint_coverage.d0_core_runtime_c3_v4.v14"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.d0_core_runtime_c3_v4.v11"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -346,12 +346,25 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
         "codex/closy-forge-d0-texture-rerender-correction-v3",
         "ba54b17a0aef7518d9acac30c6b7ec6564a38d87",
-        "6de060d7fa4e985070187bf417f159ecbe31e8b4",
-        7,
-        64,
+        "069707bbd0bfc95eabbc5a3b3045e349d4c0b121",
+        8,
+        59,
+        "33470303559",
+        "SUCCESS",
+        "d0_disjoint_tshirt_benchmark_v1_failed_evaluator_harness",
+    ),
+    (
+        47,
+        "Forge: pre-topology reproducibility and strict C3 v4",
+        "codex/closy-forge-d0-core-runtime-c3-v4",
+        "codex/closy-forge-d0-disjoint-tshirt-benchmark-v1",
+        "069707bbd0bfc95eabbc5a3b3045e349d4c0b121",
+        "3541507808946ae1248fba110b7732599db3fdbc",
+        3,
+        18,
         "",
         "PENDING",
-        "d0_disjoint_tshirt_benchmark_v1_failed_evaluator_harness",
+        "d0_core_reproducibility_pass_strict_c3_harness_fail",
     ),
 ]
 
@@ -424,6 +437,16 @@ PROVENANCE_INPUTS = [
     "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/benchmark_result.json",
     "closy-forge/fixtures/d0_disjoint_tshirt_benchmark_v1/evaluator/"
     "evaluation_attempt_failure.json",
+    "closy-forge/fixtures/d0_core_runtime_c3_v4/sentinel_manifest.json",
+    "closy-forge/fixtures/d0_core_runtime_c3_v4/protocol_lock.json",
+    "closy-forge/src/closy_forge/core_runtime_c3_v4/sentinel.py",
+    "closy-forge/src/closy_forge/core_runtime_c3_v4/reproducibility.py",
+    "closy-forge/src/closy_forge/core_runtime_c3_v4/oracle.py",
+    "closy-forge/src/closy_forge/core_runtime_c3_v4/evaluator.py",
+    "closy-forge/docs/evidence/d0_core_runtime_c3_v4/core_reproducibility.json",
+    "closy-forge/docs/evidence/d0_core_runtime_c3_v4/strict_c3_result.json",
+    "closy-forge/docs/evidence/d0_core_runtime_c3_v4/processor_authority_audit.json",
+    "closy-forge/docs/evidence/d0_core_runtime_c3_v4/unit_h_outcome.json",
 ]
 
 PHASE10_PATHS = [
@@ -1590,6 +1613,107 @@ UNIT_G_DISJOINT_EVIDENCE_ADDITIONS = {
     for row_id in UNIT_G_DISJOINT_PROGRESSION_UPDATES
 }
 
+UNIT_H_CORE_C3_PROGRESSION_UPDATES = {
+    "BP-48-PERSISTED-FRAMES-TANGENTS": {
+        "status": "partial",
+        "summary": (
+            "Unit H froze an independently implemented direct-shell oracle and eight-state "
+            "non-physical C3 suite, but the sole held-out attempt failed in the frozen frame-"
+            "metric reporting adapter before any state completed."
+        ),
+        "limitations": (
+            "No held-out frame validity or dense/fallback C3 pass exists; the one-attempt "
+            "budget is consumed and no retry or post-result key repair is permitted."
+        ),
+        "nextAction": (
+            "Preserve the failed predecessor attempt and continue the separately bounded Unit I "
+            "topology strategy without claiming C3 success."
+        ),
+    },
+    "BP-08-R-SIM-TO-RENDER-BINDING": {
+        "status": "partial",
+        "summary": (
+            "The exact Unit F sentinel, package, simulation/render topology, and binding are "
+            "locked under H0; H4 consumed one strict held-out attempt and failed in its frozen "
+            "frame-metric adapter."
+        ),
+        "limitations": (
+            "Development-state reconstruction below 6.7e-8 m is not held-out qualification, "
+            "and the failed harness yields D0-RP-08 fail rather than partial metric credit."
+        ),
+        "nextAction": (
+            "Any admissible post-topology Unit I candidate must be requalified from bytes in "
+            "Unit J; predecessor H evidence cannot transfer."
+        ),
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Unit H independently records core Forge reproducibility pass, static Z1 and MT1 "
+            "dependency blocks, and a literal strict-C3 frozen-evaluator failure."
+        ),
+        "limitations": (
+            "The exact authenticated supplemental processors were unavailable, and zero of eight "
+            "held-out C3 states completed."
+        ),
+        "nextAction": (
+            "Execute Unit I's one preregistered topology strategy, then apply the mandatory "
+            "post-topology J or logical J-A rules."
+        ),
+    },
+    "BP-18-GATE-C3": {
+        "status": "partial",
+        "summary": (
+            "Core runtime reconstruction is reproducible, but strict exact-sentinel C3 remains "
+            "failed after its one frozen held-out attempt stopped on a frame-metric key mismatch."
+        ),
+        "limitations": (
+            "No held-out C3 pass, PHY1 implication, trajectory qualification, or Z2 admission "
+            "follows from Unit H."
+        ),
+        "nextAction": (
+            "Do not replay Unit H; requalification is required only for a newly minted admissible "
+            "Unit I lineage in Unit J."
+        ),
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Unit H closes D0-RP-12 with predecessor-scoped core Forge reproducibility while "
+            "D0-RP-08 remains failed and D0-RP-10/11 remain not run."
+        ),
+        "limitations": (
+            "Research Prototype remains partial; identity-disjoint fitting, appearance, strict "
+            "C3, neutral physics, human, private-user, and device evidence are unpassed."
+        ),
+        "nextAction": (
+            "Spend only Unit I's one topology-strategy-2 attempt under its frozen budget."
+        ),
+    },
+}
+
+UNIT_H_CORE_C3_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/fixtures/d0_core_runtime_c3_v4",
+            "closy-forge/src/closy_forge/core_runtime_c3_v4",
+            "closy-forge/docs/evidence/d0_core_runtime_c3_v4",
+        ],
+        "executableEvidence": [
+            "H0 resolves to Unit F candidate 49161d8adafb514e5a04b1a9 only after "
+            "byte-descendant checks",
+            "core runtime fresh, second-clean, cache, corruption, withdrawal, and "
+            "delete/rebuild checks pass",
+            "exact authenticated static Z1 and clean MT1 processors are unavailable and "
+            "remain not run",
+            "one strict C3 held-out attempt was consumed and failed before any of eight "
+            "states completed",
+        ],
+        "tests": ["closy-forge/tests/unit/test_d0_core_runtime_c3_v4.py"],
+    }
+    for row_id in UNIT_H_CORE_C3_PROGRESSION_UPDATES
+}
+
 NEXT_ACTIONS = {
     "BP-05-04-ZEROONE-OPTIONAL": (
         "Retain optional hash-linked ZeroOne derivatives while broadening provider, mobile, and "
@@ -1762,6 +1886,9 @@ def main() -> int:
         unit_g_update = UNIT_G_DISJOINT_PROGRESSION_UPDATES.get(row_id)
         if unit_g_update:
             row.update(unit_g_update)
+        unit_h_update = UNIT_H_CORE_C3_PROGRESSION_UPDATES.get(row_id)
+        if unit_h_update:
+            row.update(unit_h_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -1806,6 +1933,11 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), unit_g_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
+        unit_h_evidence = UNIT_H_CORE_C3_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_h_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_h_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [EVIDENCE_ANCHOR])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
@@ -1815,6 +1947,7 @@ def main() -> int:
             and row_id not in UNIT_E_INTEGRITY_PROGRESSION_UPDATES
             and row_id not in UNIT_F_APPEARANCE_PROGRESSION_UPDATES
             and row_id not in UNIT_G_DISJOINT_PROGRESSION_UPDATES
+            and row_id not in UNIT_H_CORE_C3_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -2005,6 +2138,7 @@ def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:
         44: 43,
         45: 44,
         46: 45,
+        47: 46,
     }
     nodes: list[dict[str, object]] = []
     edges: list[dict[str, str]] = []
