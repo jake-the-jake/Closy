@@ -42,7 +42,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     ids = [row["id"] for row in rows]
 
     assert coverage["version"] == (
-        "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19"
+        "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v20"
     )
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
@@ -158,9 +158,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert topology_strategy["unitJAuthorized"] is False
     assert topology_strategy["unitKEligible"] is False
     strategy3_diagnosis = status["gates"]["PHY1-Topology-Strategy3-Diagnosis-D0-v1"]
-    assert strategy3_diagnosis["scopedStatus"] == (
-        "no_strategy3_class_admitted_within_bounded_diagnosis"
-    )
+    assert strategy3_diagnosis["scopedStatus"] == "diagnosis_integrity_error"
     assert strategy3_diagnosis["revisionFixturePassCounts"] == [7, 7]
     assert strategy3_diagnosis["admittedStrategyClass"] is None
     assert strategy3_diagnosis["candidateCreated"] is False
@@ -230,9 +228,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "phy1TopologyStrategy2RemainingTopologyStrategies": 1,
         "phy1TopologyStrategy2RemainingSeamModels": 0,
         "phy1TopologyStrategy3DiagnosisExecuted": True,
-        "phy1TopologyStrategy3DiagnosisOutcome": (
-            "no_strategy3_class_admitted_within_bounded_diagnosis"
-        ),
+        "phy1TopologyStrategy3DiagnosisOutcome": ("diagnosis_integrity_error"),
         "phy1TopologyStrategy3DiagnosisRevisionCount": 2,
         "phy1TopologyStrategy3AdmittedClass": None,
         "phy1TopologyStrategy3CandidateCreated": False,
@@ -563,7 +559,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v16"
+        "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v17"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
@@ -583,7 +579,7 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_o_rejection_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_o_integrity_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
@@ -609,9 +605,11 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_o_rejection_boundary(
     assert resume["unitMResult"]["qualificationRetryAllowed"] is False
     assert resume["unitNResult"]["outcome"] == "pass"
     assert resume["unitNResult"]["posePassCount"] == 8
-    assert resume["unitOResult"]["outcome"] == (
+    assert resume["unitOResult"]["outcome"] == "diagnosis_integrity_error"
+    assert resume["unitOResult"]["rawOutcome"] == (
         "no_strategy3_class_admitted_within_bounded_diagnosis"
     )
+    assert resume["unitOResult"]["replayPerformed"] is False
     assert resume["unitOResult"]["revisionCount"] == 2
     assert resume["unitOResult"]["admittedStrategyClass"] is None
     assert resume["unitOResult"]["candidateCreated"] is False

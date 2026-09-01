@@ -1,5 +1,5 @@
 {
-  "activeLane": "finite sequence complete after Unit O rejected both bounded classes",
+  "activeLane": "finite sequence complete after Unit O diagnosis integrity error",
   "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
   "conditionalUnits": {
     "P": "not_created_ineligible",
@@ -14,18 +14,18 @@
     "D0-Strict-C3-v5": "pass_exact_unit_f_pre_topology_8_of_8",
     "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
     "PHY1-Topology-Strategy2-D0-v4": "outcome_M_strategy_microfixture_failed_no_candidate",
-    "PHY1-Topology-Strategy3-Diagnosis-D0-v1": "no_strategy3_class_admitted_within_bounded_diagnosis",
+    "PHY1-Topology-Strategy3-Diagnosis-D0-v1": "diagnosis_integrity_error",
     "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
     "ResearchPrototype-D0-matrix-v3-core": "partial_7_pass_4_fail_0_not_run",
     "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
     "Runtime": "v1_selected_topology_v2_opt_in_unchanged",
-    "Unit-P": "ineligible_no_admitted_strategy3_class",
+    "Unit-P": "ineligible_unit_o_diagnosis_integrity_error",
     "Unit-Q": "ineligible_no_unit_p_candidate",
     "Unit-R": "ineligible_no_unit_q_prerequisites"
   },
   "latestFinishedParentPublicationHead": "e062a30ba295ed27334622916ddb449fd76e2166",
   "localHeadAtResumeSource": "pending_final_commit",
-  "machineResumeVersion": "closy.active_blueprint_resume.phy1_strategy3_diagnosis_v1.v10",
+  "machineResumeVersion": "closy.active_blueprint_resume.phy1_strategy3_diagnosis_v1.v11",
   "matrixScopes": {
     "identityDisjointV1": {
       "appearanceEvaluations": 0,
@@ -51,7 +51,7 @@
     },
     "postTopologyCandidate": {
       "candidateExists": false,
-      "matrixNotRunReason": "unit_o_admitted_no_strategy3_class"
+      "matrixNotRunReason": "unit_o_diagnosis_integrity_error"
     },
     "strictC3V5": {
       "outcome": "pass",
@@ -62,8 +62,8 @@
   },
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "admitted_strategy3_class",
-    "safestEvidenceAction": "preserve_rejection_and_unspent_budget",
+    "firstUnmetPrerequisite": "unit_o_cross_minor_evidence_integrity",
+    "safestEvidenceAction": "preserve_raw_execution_and_integrity_error_with_unspent_budget",
     "selection": "none_dependency_ready_in_authorised_sequence"
   },
   "parent": {
@@ -84,7 +84,7 @@
   "remoteHeadAtResumeSource": "pending_final_commit",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "authorised_finite_sequence_complete_after_unit_o_rejection",
+  "stopReason": "authorised_finite_sequence_complete_after_unit_o_integrity_error",
   "unitMResult": {
     "acceptedIdentityCount": 16,
     "appearanceEvaluationCount": 0,
@@ -108,8 +108,12 @@
     "candidateAttemptConsumed": false,
     "candidateCreated": false,
     "finalStrategyConsumed": false,
-    "outcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
-    "outcomeDigest": "bd2533161c19cc66dfe6cd024a083eaf098e42a6018dfffee4be0ef566cfc6c2",
+    "integrityAttestationDigest": "71c4171d8219fa7ce343efab85f9cfade8f3b85e4aed372cc38d1e4265f7aca3",
+    "integrityFailureRun": "33559874476",
+    "outcome": "diagnosis_integrity_error",
+    "rawOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
+    "rawOutcomeDigest": "bd2533161c19cc66dfe6cd024a083eaf098e42a6018dfffee4be0ef566cfc6c2",
+    "replayPerformed": false,
     "revisionCount": 2,
     "revisionFixturePassCounts": [
       {

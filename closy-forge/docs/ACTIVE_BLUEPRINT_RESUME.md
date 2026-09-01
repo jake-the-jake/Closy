@@ -11,10 +11,11 @@
 
 ## Literal Unit O outcome
 
-Unit O executed exactly two candidate-independent development revisions. Revision 1 passed `7/8`
-fixtures but introduced one T-junction and omitted the remeshed semantic seam sequence. Revision 2
-passed `7/8`, removed the topology defect, and still omitted the semantic seam sequence. Literal
-outcome: `no_strategy3_class_admitted_within_bounded_diagnosis`. No class was admitted.
+Unit O executed exactly two candidate-independent development revisions. The preserved raw results
+were `7/8` for each revision and admitted no class. Exact-head Forge then found one-ULP drift at
+three accumulated impulse-total pointers across Python/platform combinations, changing revision
+digests. Effective literal outcome: `diagnosis_integrity_error`. The raw result was not replayed or
+rewritten. No class was admitted in the preserved raw execution.
 
 No canonical garment candidate was created. The candidate attempt and final topology strategy are
 both unspent. The separately frozen Unit P confirmation generator has no seed or instances. Units
@@ -27,7 +28,8 @@ selected.
   appearance evaluations; literal `attempted_integrity_error`.
 - Known target: `known_target_regression_pass`, `34/34`; engineering regression only.
 - Strict C3 v5: exact Unit F synthetic pre-topology sentinel, `8/8 pass`.
-- Unit O: two synthetic development revisions, each `7/8`; rejection evidence only.
+- Unit O: two preserved synthetic development revisions, each `7/8`, followed by an exact
+  cross-minor regeneration integrity failure; effective `diagnosis_integrity_error`.
 - Prior neutral physical outcome: `A_neutral_preflight_failed_v3`; no physics was rerun.
 - Current matrix v3 core: `7 pass / 4 fail / 0 not-run`.
 - Current matrix v3 supplemental: `2 pass / 0 fail / 2 not-run`.
@@ -39,8 +41,9 @@ selected.
 - Reserved topology strategies remaining: `1`
 - Candidate attempts remaining: `1`
 - Next authorised conditional unit: `none`
-- First unmet prerequisite: `admitted_strategy3_class`
+- First unmet prerequisite: `unit_o_cross_minor_evidence_integrity`
 
-This finite prompt is complete once PR #52 receives exact-head external attestation. No physical
+This finite prompt is complete once PR #52 receives exact-head external attestation for this
+additive integrity classification. No physical
 cloth, full PHY1, integrated CCD, post-topology qualification, solver-driven Z2, private-user,
 human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, or Production claim is made.

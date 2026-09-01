@@ -4,6 +4,9 @@ import hashlib
 from pathlib import Path
 
 from closy_forge.package_io.canonical_json import read_json
+from closy_forge.phy1_topology_strategy3_diagnosis_v1.integrity_attestation import (
+    INTEGRITY_ATTESTATION_PATH,
+)
 from closy_forge.phy1_topology_strategy3_diagnosis_v1.protocol import (
     AUTHORITY_PATH,
     CONFIRMATION_GENERATOR_PATH,
@@ -49,20 +52,18 @@ def test_unit_o_keeps_confirmation_and_candidate_budgets_unspent() -> None:
     assert lock["finalStrategyConsumptionAllowed"] is False
 
 
-def test_unit_o_committed_outcome_is_exactly_regenerable_when_present() -> None:
+def test_unit_o_committed_outcome_and_integrity_failure_are_reproducible() -> None:
     if not (ROOT / OUTCOME_PATH).is_file():
         return
     from scripts.run_phy1_topology_strategy3_diagnosis_v1 import build, check
 
     documents, markdown = build(ROOT)
     check(ROOT, documents, markdown)
-    outcome = documents[OUTCOME_PATH]
-    assert outcome["outcomeClass"] in {
-        "strategy3_class_admitted_pre_candidate",
-        "no_strategy3_class_admitted_within_bounded_diagnosis",
-        "diagnosis_integrity_error",
-        "dependency_blocked",
-    }
+    outcome = read_json(ROOT / OUTCOME_PATH)
+    attestation = read_json(ROOT / INTEGRITY_ATTESTATION_PATH)
+    assert outcome["outcomeClass"] == "no_strategy3_class_admitted_within_bounded_diagnosis"
+    assert attestation["effectiveOutcome"] == "diagnosis_integrity_error"
+    assert attestation["replayPerformed"] is False
     assert outcome["revisionCount"] == 2
     assert outcome["candidateCreated"] is False
     assert outcome["candidateAttemptConsumed"] is False

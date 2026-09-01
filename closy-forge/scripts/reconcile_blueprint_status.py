@@ -15,8 +15,8 @@ EVIDENCE_ANCHOR = "9078a09f1156ba8b7f98099185478ca9efcee952"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v16"
+VERSION = "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v20"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v17"
 UNIT_G_FINAL_HEAD = "bc4927fe6d36667b5b236d844b4eff511ef6f987"
 UNIT_H_FINAL_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_EVIDENCE_HEAD = "854b85ed769bc3e67547e4195f65dfeb78878881"
@@ -439,7 +439,7 @@ PR_SNAPSHOTS = [
         14,
         "",
         "PENDING",
-        "phy1_topology_strategy3_bounded_diagnosis_no_class_admitted",
+        "phy1_topology_strategy3_diagnosis_integrity_error",
     ),
 ]
 
@@ -558,6 +558,8 @@ PROVENANCE_INPUTS = [
     "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1/confirmation_generator_lock.json",
     "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/starting_authority.json",
     "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/unit_o_outcome.json",
+    "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/integrity_attestation.json",
+    "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1/" "integrity_attestation.py",
 ]
 
 PHASE10_PATHS = [
@@ -1882,12 +1884,15 @@ UNIT_O_TOPOLOGY_PROGRESSION_UPDATES = {
         "summary": (
             "Unit O executed two candidate-independent constrained-remesh revisions through "
             "the production distance, support, and body-collision kernels. Each passed seven "
-            "of eight fixtures, and neither strategy class was admitted."
+            "of eight fixtures, and neither strategy class was admitted in the preserved raw "
+            "execution; exact cross-minor regeneration then failed."
         ),
         "limitations": (
             "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; "
             "revision 2 removed the topology defect but still omitted that semantic transfer. "
-            "No canonical garment candidate or physical solve was created."
+            "Three accumulated impulse totals drifted by one ULP across the Forge matrix, so "
+            "the effective Unit O outcome is diagnosis_integrity_error. No canonical garment "
+            "candidate or physical solve was created."
         ),
         "nextAction": (
             "Keep Unit P ineligible. A future authorised programme must begin with a new "
@@ -1897,12 +1902,14 @@ UNIT_O_TOPOLOGY_PROGRESSION_UPDATES = {
     "BP-14-EVALUATION": {
         "status": "partial",
         "summary": (
-            "Unit O records the literal outcome "
-            "no_strategy3_class_admitted_within_bounded_diagnosis after two locked revisions."
+            "Unit O records diagnosis_integrity_error after its exact-head matrix could not "
+            "regenerate the preserved revision bytes across Python/platform combinations."
         ),
         "limitations": (
             "The eight fixtures are synthetic development/discrimination evidence, not held-out "
-            "qualification. Unit P confirmation seed and instances remain unrealised."
+            "qualification. The preserved raw execution rejected both classes, but cannot be "
+            "promoted as cross-minor deterministic evidence. Unit P confirmation seed and "
+            "instances remain unrealised."
         ),
         "nextAction": (
             "Preserve the rejection and do not create Units P, Q, or R in this finite sequence."
@@ -1913,11 +1920,12 @@ UNIT_O_TOPOLOGY_PROGRESSION_UPDATES = {
         "summary": (
             "The bounded Strategy 3 diagnosis exercised explicit duplicated seams, finite "
             "compliance, openings, transfer fields, contacts, mutations, and deterministic "
-            "recomputation without touching the canonical T-shirt."
+            "same-process recomputation without touching the canonical T-shirt."
         ),
         "limitations": (
             "No investigated revision preserved every topology and semantic transfer invariant, "
-            "so no topology candidate, neutral preflight, full PHY1, or CCD run exists."
+            "and exact cross-minor regeneration failed, so no topology candidate, neutral "
+            "preflight, full PHY1, or CCD run exists."
         ),
         "nextAction": "Do not spend the reserved strategy or candidate attempt on either class.",
     },
@@ -1925,7 +1933,8 @@ UNIT_O_TOPOLOGY_PROGRESSION_UPDATES = {
         "status": "partial",
         "summary": (
             "Research Prototype remains partial. Unit O improves solver-level diagnostic "
-            "coverage but admits no post-topology candidate and changes no matrix row result."
+            "coverage but closes with diagnosis_integrity_error, admits no post-topology "
+            "candidate, and changes no matrix row result."
         ),
         "limitations": (
             "D0-RP-03/04/07/15, identity-disjoint qualification, admissible physics, "
@@ -1950,6 +1959,7 @@ UNIT_O_TOPOLOGY_EVIDENCE_ADDITIONS = {
             "development fixtures",
             "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
             "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
+            "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
             "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation "
             "instance was consumed",
         ],
@@ -2481,11 +2491,15 @@ def _append_unique(current: object, additions: list[str]) -> list[str]:
 def _write_active_resume(docs: Path) -> None:
     outcome_path = docs / "evidence" / "phy1_topology_strategy3_diagnosis_v1"
     outcome = json.loads((outcome_path / "unit_o_outcome.json").read_text(encoding="utf-8"))
+    integrity_attestation = json.loads(
+        (outcome_path / "integrity_attestation.json").read_text(encoding="utf-8")
+    )
+    effective_outcome = integrity_attestation["effectiveOutcome"]
     revisions = outcome["revisions"]
     resume = {
         "schemaVersion": 1,
-        "machineResumeVersion": "closy.active_blueprint_resume.phy1_strategy3_diagnosis_v1.v10",
-        "activeLane": "finite sequence complete after Unit O rejected both bounded classes",
+        "machineResumeVersion": "closy.active_blueprint_resume.phy1_strategy3_diagnosis_v1.v11",
+        "activeLane": "finite sequence complete after Unit O diagnosis integrity error",
         "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
         "pullRequest": 52,
         "evidenceHead": UNIT_O_EVIDENCE_HEAD,
@@ -2514,8 +2528,8 @@ def _write_active_resume(docs: Path) -> None:
             "PHY1-Topology-Strategy2-D0-v4": (
                 "outcome_M_strategy_microfixture_failed_no_candidate"
             ),
-            "PHY1-Topology-Strategy3-Diagnosis-D0-v1": outcome["outcomeClass"],
-            "Unit-P": "ineligible_no_admitted_strategy3_class",
+            "PHY1-Topology-Strategy3-Diagnosis-D0-v1": effective_outcome,
+            "Unit-P": "ineligible_unit_o_diagnosis_integrity_error",
             "Unit-Q": "ineligible_no_unit_p_candidate",
             "Unit-R": "ineligible_no_unit_q_prerequisites",
             "Runtime": "v1_selected_topology_v2_opt_in_unchanged",
@@ -2551,7 +2565,7 @@ def _write_active_resume(docs: Path) -> None:
             },
             "postTopologyCandidate": {
                 "candidateExists": False,
-                "matrixNotRunReason": "unit_o_admitted_no_strategy3_class",
+                "matrixNotRunReason": "unit_o_diagnosis_integrity_error",
             },
         },
         "unitMResult": {
@@ -2573,8 +2587,12 @@ def _write_active_resume(docs: Path) -> None:
             "preTopology": True,
         },
         "unitOResult": {
-            "outcome": outcome["outcomeClass"],
-            "outcomeDigest": outcome["integrity"]["outcomeDigest"],
+            "outcome": effective_outcome,
+            "rawOutcome": outcome["outcomeClass"],
+            "rawOutcomeDigest": outcome["integrity"]["outcomeDigest"],
+            "integrityAttestationDigest": integrity_attestation["integrity"]["attestationDigest"],
+            "integrityFailureRun": integrity_attestation["discovery"]["runId"],
+            "replayPerformed": integrity_attestation["replayPerformed"],
             "revisionCount": outcome["revisionCount"],
             "revisionFixturePassCounts": [
                 {
@@ -2601,11 +2619,13 @@ def _write_active_resume(docs: Path) -> None:
         },
         "nextHandoff": {
             "selection": "none_dependency_ready_in_authorised_sequence",
-            "firstUnmetPrerequisite": "admitted_strategy3_class",
-            "safestEvidenceAction": "preserve_rejection_and_unspent_budget",
+            "firstUnmetPrerequisite": "unit_o_cross_minor_evidence_integrity",
+            "safestEvidenceAction": (
+                "preserve_raw_execution_and_integrity_error_with_unspent_budget"
+            ),
         },
         "exactNextAction": "Complete external exact-head attestation and final handoff.",
-        "stopReason": "authorised_finite_sequence_complete_after_unit_o_rejection",
+        "stopReason": "authorised_finite_sequence_complete_after_unit_o_integrity_error",
         "unsupportedEvidenceClasses": [
             "post_topology_candidate",
             "post_topology_core_reproducibility",
@@ -2641,10 +2661,11 @@ def _write_active_resume(docs: Path) -> None:
 
 ## Literal Unit O outcome
 
-Unit O executed exactly two candidate-independent development revisions. Revision 1 passed `7/8`
-fixtures but introduced one T-junction and omitted the remeshed semantic seam sequence. Revision 2
-passed `7/8`, removed the topology defect, and still omitted the semantic seam sequence. Literal
-outcome: `{outcome['outcomeClass']}`. No class was admitted.
+Unit O executed exactly two candidate-independent development revisions. The preserved raw results
+were `7/8` for each revision and admitted no class. Exact-head Forge then found one-ULP drift at
+three accumulated impulse-total pointers across Python/platform combinations, changing revision
+digests. Effective literal outcome: `{effective_outcome}`. The raw result was not replayed or
+rewritten. No class was admitted in the preserved raw execution.
 
 No canonical garment candidate was created. The candidate attempt and final topology strategy are
 both unspent. The separately frozen Unit P confirmation generator has no seed or instances. Units
@@ -2657,7 +2678,8 @@ selected.
   appearance evaluations; literal `attempted_integrity_error`.
 - Known target: `known_target_regression_pass`, `34/34`; engineering regression only.
 - Strict C3 v5: exact Unit F synthetic pre-topology sentinel, `8/8 pass`.
-- Unit O: two synthetic development revisions, each `7/8`; rejection evidence only.
+- Unit O: two preserved synthetic development revisions, each `7/8`, followed by an exact
+  cross-minor regeneration integrity failure; effective `diagnosis_integrity_error`.
 - Prior neutral physical outcome: `A_neutral_preflight_failed_v3`; no physics was rerun.
 - Current matrix v3 core: `7 pass / 4 fail / 0 not-run`.
 - Current matrix v3 supplemental: `2 pass / 0 fail / 2 not-run`.
@@ -2669,9 +2691,10 @@ selected.
 - Reserved topology strategies remaining: `1`
 - Candidate attempts remaining: `1`
 - Next authorised conditional unit: `none`
-- First unmet prerequisite: `admitted_strategy3_class`
+- First unmet prerequisite: `unit_o_cross_minor_evidence_integrity`
 
-This finite prompt is complete once PR #52 receives exact-head external attestation. No physical
+This finite prompt is complete once PR #52 receives exact-head external attestation for this
+additive integrity classification. No physical
 cloth, full PHY1, integrated CCD, post-topology qualification, solver-driven Z2, private-user,
 human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, or Production claim is made.
 """
@@ -2928,9 +2951,12 @@ canonical T-shirt or creating a candidate.
 
 Local longest-edge bisection passed `7/8` fixtures but introduced one T-junction and omitted the
 updated semantic seam sequence. Closure longest-edge bisection also passed `7/8`; it removed the
-topology defect but still omitted the semantic seam sequence. The literal outcome is
-`no_strategy3_class_admitted_within_bounded_diagnosis`. Unit P is ineligible, so Units P, Q, and R
-were not created. The final topology strategy and candidate attempt remain unspent.
+topology defect but still omitted the semantic seam sequence. Exact-head Forge run `33559874476`
+then found that three accumulated impulse totals differ by one ULP across the Python/platform
+matrix, changing the revision digests. The effective literal outcome is
+`diagnosis_integrity_error`; the raw files remain preserved and no replay occurred. Unit P is
+ineligible, so Units P, Q, and R were not created. The final topology strategy and candidate
+attempt remain unspent.
 
 The Research Prototype matrix remains `7 pass / 4 fail / 0 not-run` core plus
 `2 pass / 0 fail / 2 not-run` supplemental. Coverage remains `20 complete / 63 partial / 7 not

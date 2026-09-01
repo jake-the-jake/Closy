@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "attestationVersion": "closy.phy1.topology_strategy3.diagnosis_integrity_attestation.v1",
+  "repository": "jake-the-jake/Closy",
+  "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+  "pullRequest": 52,
+  "baseSha": "e062a30ba295ed27334622916ddb449fd76e2166",
+  "preExecutionLockHead": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+  "rawExecutionHead": "83d5b2a263cf34670370d2c187fe26c0e204475d",
+  "provisionalRawOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
+  "effectiveOutcome": "diagnosis_integrity_error",
+  "failureClassification": "evidence_integrity_failure",
+  "firstUnmetPredicate": "exact_cross_python_and_cross_platform_regeneration",
+  "reason": "Three accumulated binary64 impulse totals differ by one ULP across the locked Forge Python/platform matrix, changing both revision fixture digests and preventing exact committed evidence regeneration.",
+  "discovery": {
+    "workflow": "Closy Forge",
+    "runId": "33559874476",
+    "headSha": "83d5b2a263cf34670370d2c187fe26c0e204475d",
+    "failedJobs": [
+      {
+        "jobId": "100029527993",
+        "name": "Tests shard-0 windows-latest Python 3.11"
+      },
+      {
+        "jobId": "100029528073",
+        "name": "Tests shard-0 ubuntu-latest Python 3.12"
+      },
+      {
+        "jobId": "100029528126",
+        "name": "Tests shard-0 ubuntu-latest Python 3.11"
+      }
+    ],
+    "failedTest": "test_unit_o_committed_outcome_is_exactly_regenerable_when_present",
+    "failureCode": "unit_o_diagnosis_regeneration_drift:docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_1.json"
+  },
+  "pointerSpecificDrift": {
+    "maximumUlps": 1,
+    "globalFloatToleranceAllowed": false,
+    "pointers": [
+      "/fixtures/1/measurements/totalAbsoluteImpulseNewtonSeconds",
+      "/fixtures/3/measurements/totalAbsoluteImpulseNewtonSeconds",
+      "/fixtures/4/measurements/constraint/totalAbsoluteImpulseNewtonSeconds"
+    ],
+    "derivedFieldsAffected": [
+      "/fixtures/7/measurements/fixtureDigest",
+      "/integrity/revisionDigest",
+      "/integrity/outcomeDigest",
+      "evidence_manifest record hashes and manifestDigest"
+    ],
+    "acceptanceThresholdChanged": false,
+    "canonicalEvidenceRewritten": false
+  },
+  "preservedRawEvidence": [
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_1.json",
+      "sha256": "1331afa5671f4138677d3872ddfd2a097b95d09b5012e390684299a8fd02b645"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/revision_2.json",
+      "sha256": "d51e6baaa891c8d47134e96b3205773614d3ebeb727bb67d77926a1f8d62b88b"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/unit_o_outcome.json",
+      "sha256": "fd9af53158b6e3a8f1951367751ed5ad912351d10f0e21e836f5b3db3e2cbf79"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/evidence_manifest.json",
+      "sha256": "2bb682c91ee42545571a0a10506890f1f93b6ac70306619cbe0557b86a0fdcd4"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/diagnosis_report.json",
+      "sha256": "b7a8e0cd2417fb9548e0a8877d9a261359ea2f0c3f2487cbc7445b2fe91c4b40"
+    },
+    {
+      "path": "docs/evidence/phy1_topology_strategy3_diagnosis_v1/REPORT.md",
+      "sha256": "67c69d14d5215738379a3d0fc4579b38de406b5c08fd4f3e725328fbf75010eb"
+    }
+  ],
+  "executionState": {
+    "boundedRevisionCount": 2,
+    "rawRevisionFixturePassCounts": [
+      7,
+      7
+    ],
+    "admittedStrategyClass": null,
+    "candidateCreated": false,
+    "candidateAttemptConsumed": false,
+    "finalStrategyConsumed": false,
+    "confirmationSeedRealized": false,
+    "confirmationInstancesRealized": false,
+    "replayAllowed": false
+  },
+  "replayPerformed": false,
+  "unitPEligible": false,
+  "unitQEligible": false,
+  "unitREligible": false,
+  "runtimeV1RemainsSelected": true,
+  "budgetsAfter": {
+    "seamModels": 0,
+    "topologyStrategies": 1,
+    "candidateAttempts": 1
+  },
+  "integrity": {
+    "attestationDigest": "71c4171d8219fa7ce343efab85f9cfade8f3b85e4aed372cc38d1e4265f7aca3"
+  }
+}

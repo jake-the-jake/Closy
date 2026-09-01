@@ -13,6 +13,10 @@ from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 from closy_forge.phy1_topology_strategy3_diagnosis_v1.diagnosis import (
     run_bounded_diagnosis,
 )
+from closy_forge.phy1_topology_strategy3_diagnosis_v1.integrity_attestation import (
+    INTEGRITY_ATTESTATION_PATH,
+    verify_integrity_failure,
+)
 from closy_forge.phy1_topology_strategy3_diagnosis_v1.protocol import (
     AUTHORITY_PATH,
     EVIDENCE_ROOT,
@@ -110,6 +114,9 @@ def write(root: Path, documents: dict[Path, dict[str, Any]], markdown: str) -> N
 
 
 def check(root: Path, documents: dict[Path, dict[str, Any]], markdown: str) -> None:
+    if (root / INTEGRITY_ATTESTATION_PATH).is_file():
+        verify_integrity_failure(root, documents, markdown)
+        return
     for path, document in documents.items():
         if read_json(root / path) != document:
             raise ValueError(f"unit_o_diagnosis_regeneration_drift:{path.as_posix()}")
@@ -171,8 +178,11 @@ def main() -> int:
     else:
         write(root, documents, markdown)
     outcome = documents[OUTCOME_PATH]
+    effective_outcome = outcome["outcomeClass"]
+    if (root / INTEGRITY_ATTESTATION_PATH).is_file():
+        effective_outcome = read_json(root / INTEGRITY_ATTESTATION_PATH)["effectiveOutcome"]
     print(
-        f"unit_o_outcome={outcome['outcomeClass']} "
+        f"unit_o_outcome={effective_outcome} "
         f"revisions={outcome['revisionCount']} candidate_created=false"
     )
     return 0

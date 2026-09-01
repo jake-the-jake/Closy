@@ -469,9 +469,12 @@ canonical T-shirt or creating a candidate.
 
 Local longest-edge bisection passed `7/8` fixtures but introduced one T-junction and omitted the
 updated semantic seam sequence. Closure longest-edge bisection also passed `7/8`; it removed the
-topology defect but still omitted the semantic seam sequence. The literal outcome is
-`no_strategy3_class_admitted_within_bounded_diagnosis`. Unit P is ineligible, so Units P, Q, and R
-were not created. The final topology strategy and candidate attempt remain unspent.
+topology defect but still omitted the semantic seam sequence. Exact-head Forge run `33559874476`
+then found that three accumulated impulse totals differ by one ULP across the Python/platform
+matrix, changing the revision digests. The effective literal outcome is
+`diagnosis_integrity_error`; the raw files remain preserved and no replay occurred. Unit P is
+ineligible, so Units P, Q, and R were not created. The final topology strategy and candidate
+attempt remain unspent.
 
 The Research Prototype matrix remains `7 pass / 4 fail / 0 not-run` core plus
 `2 pass / 0 fail / 2 not-run` supplemental. Coverage remains `20 complete / 63 partial / 7 not

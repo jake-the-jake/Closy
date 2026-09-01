@@ -105,12 +105,14 @@
       "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1/diagnosis_lock.json",
       "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1/confirmation_generator_lock.json",
       "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/starting_authority.json",
-      "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/unit_o_outcome.json"
+      "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/unit_o_outcome.json",
+      "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1/integrity_attestation.json",
+      "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1/integrity_attestation.py"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v16",
+    "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v17",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "b66681f5550537bd5cc9e4e5af20268388e86af88922a658364fba2e6dd57acf",
+    "sourceTreeHash": "e8be867cda84311cf7da06b879d9640b6c3dd489d7e809bc237f7bbc3bae8321",
     "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,
@@ -1834,7 +1836,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. No canonical garment candidate or physical solve was created.",
+          "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. Three accumulated impulse totals drifted by one ULP across the Forge matrix, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -1868,7 +1870,8 @@
         "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
-        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
       ],
       "id": "BP-08-K-CLOTH-SIMULATION",
       "implementationPaths": [
@@ -1885,14 +1888,14 @@
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. No canonical garment candidate or physical solve was created.",
+      "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. Three accumulated impulse totals drifted by one ULP across the Forge matrix, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
       "nextAction": "Keep Unit P ineligible. A future authorised programme must begin with a new candidate-independent class; the final Strategy 3 slot remains unspent.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit O executed two candidate-independent constrained-remesh revisions through the production distance, support, and body-collision kernels. Each passed seven of eight fixtures, and neither strategy class was admitted.",
+      "summary": "Unit O executed two candidate-independent constrained-remesh revisions through the production distance, support, and body-collision kernels. Each passed seven of eight fixtures, and neither strategy class was admitted in the preserved raw execution; exact cross-minor regeneration then failed.",
       "tests": [
         "tests/unit/test_self_collision.py",
         "tests/unit/test_reference_cloth_solver.py",
@@ -3209,7 +3212,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. Unit P confirmation seed and instances remain unrealised.",
+          "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. The preserved raw execution rejected both classes, but cannot be promoted as cross-minor deterministic evidence. Unit P confirmation seed and instances remain unrealised.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3275,7 +3278,8 @@
         "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
-        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -3334,14 +3338,14 @@
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. Unit P confirmation seed and instances remain unrealised.",
+      "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. The preserved raw execution rejected both classes, but cannot be promoted as cross-minor deterministic evidence. Unit P confirmation seed and instances remain unrealised.",
       "nextAction": "Preserve the rejection and do not create Units P, Q, or R in this finite sequence.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit O records the literal outcome no_strategy3_class_admitted_within_bounded_diagnosis after two locked revisions.",
+      "summary": "Unit O records diagnosis_integrity_error after its exact-head matrix could not regenerate the preserved revision bytes across Python/platform combinations.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -4040,7 +4044,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "No investigated revision preserved every topology and semantic transfer invariant, so no topology candidate, neutral preflight, full PHY1, or CCD run exists.",
+          "limitations": "No investigated revision preserved every topology and semantic transfer invariant, and exact cross-minor regeneration failed, so no topology candidate, neutral preflight, full PHY1, or CCD run exists.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -4081,7 +4085,8 @@
         "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
-        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
       ],
       "id": "BP-17-PHASE-06",
       "implementationPaths": [
@@ -4114,14 +4119,14 @@
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "No investigated revision preserved every topology and semantic transfer invariant, so no topology candidate, neutral preflight, full PHY1, or CCD run exists.",
+      "limitations": "No investigated revision preserved every topology and semantic transfer invariant, and exact cross-minor regeneration failed, so no topology candidate, neutral preflight, full PHY1, or CCD run exists.",
       "nextAction": "Do not spend the reserved strategy or candidate attempt on either class.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Phases 0-14",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The bounded Strategy 3 diagnosis exercised explicit duplicated seams, finite compliance, openings, transfer fields, contacts, mutations, and deterministic recomputation without touching the canonical T-shirt.",
+      "summary": "The bounded Strategy 3 diagnosis exercised explicit duplicated seams, finite compliance, openings, transfer fields, contacts, mutations, and deterministic same-process recomputation without touching the canonical T-shirt.",
       "tests": [
         "Forge local tests",
         "tests/unit/test_render_frame_pose_suite.py",
@@ -6158,7 +6163,8 @@
         "two immutable candidate-independent revisions each passed 7/8 production-kernel development fixtures",
         "revision 1 rejected for one T-junction and incomplete semantic seam transfer",
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
-        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed"
+        "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
+        "exact cross-minor regeneration failed at three pointer-specific one-ULP totals"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -6222,7 +6228,7 @@
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Research Prototype remains partial. Unit O improves solver-level diagnostic coverage but admits no post-topology candidate and changes no matrix row result.",
+      "summary": "Research Prototype remains partial. Unit O improves solver-level diagnostic coverage but closes with diagnosis_integrity_error, admits no post-topology candidate, and changes no matrix row result.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -6498,5 +6504,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19"
+  "version": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v20"
 }

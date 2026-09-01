@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v17"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v18"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -272,8 +272,8 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
     "PHY1-Topology-Strategy3-Diagnosis-D0-v1": {
         "gateId": "PHY1-Topology-Strategy3-Diagnosis-D0-v1",
         "globalStatus": "partial",
-        "scopedStatus": "no_strategy3_class_admitted_within_bounded_diagnosis",
-        "evidenceTier": "committed_candidate_independent_production_kernel_development_fixtures",
+        "scopedStatus": "diagnosis_integrity_error",
+        "evidenceTier": "preserved_candidate_independent_results_with_failed_cross_minor_integrity",
         "platform": ["windows", "ubuntu"],
         "toolchain": ["CPython 3.11", "CPython 3.12"],
         "sourceSha": UNIT_O_TOPOLOGY_STRATEGY3_DIAGNOSIS_SHA,
@@ -284,7 +284,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "dataProvenance": "project-authored synthetic development fixtures",
         "executionKind": "two bounded candidate-independent production-kernel revisions",
         "gateScope": "pre-candidate topology strategy class admission only",
-        "evidenceDurability": "immutable_lock_two_revision_results_and_exact_head_ci",
+        "evidenceDurability": "immutable_lock_and_raw_results_plus_additive_integrity_attestation",
         "workflowRun": None,
         "revisionCount": 2,
         "revisionFixturePassCounts": [7, 7],
@@ -304,9 +304,10 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "unsupportedTiers": _COMMON_UNSUPPORTED
         + ["full_PHY1", "integrated_CCD", "solver_driven_Z2", "post_topology_candidate"],
         "blockers": [
+            "exact_cross_python_and_cross_platform_regeneration_failed",
             "revision_1_t_junction_and_incomplete_semantic_seam_transfer",
             "revision_2_incomplete_semantic_seam_transfer",
-            "no_strategy3_class_admitted",
+            "no_strategy3_class_admitted_in_preserved_raw_execution",
         ],
     },
     "ResearchPrototype-D0-matrix-v2": {
@@ -905,9 +906,7 @@ def build_status_model(
             "phy1TopologyStrategy2RemainingTopologyStrategies": 1,
             "phy1TopologyStrategy2RemainingSeamModels": 0,
             "phy1TopologyStrategy3DiagnosisExecuted": True,
-            "phy1TopologyStrategy3DiagnosisOutcome": (
-                "no_strategy3_class_admitted_within_bounded_diagnosis"
-            ),
+            "phy1TopologyStrategy3DiagnosisOutcome": ("diagnosis_integrity_error"),
             "phy1TopologyStrategy3DiagnosisRevisionCount": 2,
             "phy1TopologyStrategy3AdmittedClass": None,
             "phy1TopologyStrategy3CandidateCreated": False,
@@ -1133,9 +1132,7 @@ def validate_status_model(
         issues.append("phy1_topology_strategy2_solver_advanced_overclaimed")
     if truth.get("phy1TopologyStrategy2CandidateAttemptConsumed") is not False:
         issues.append("phy1_topology_strategy2_candidate_attempt_consumption_invalid")
-    if truth.get("phy1TopologyStrategy3DiagnosisOutcome") != (
-        "no_strategy3_class_admitted_within_bounded_diagnosis"
-    ):
+    if truth.get("phy1TopologyStrategy3DiagnosisOutcome") != ("diagnosis_integrity_error"):
         issues.append("phy1_topology_strategy3_diagnosis_outcome_missing_or_overclaimed")
     if truth.get("phy1TopologyStrategy3DiagnosisRevisionCount") != 2:
         issues.append("phy1_topology_strategy3_revision_count_invalid")

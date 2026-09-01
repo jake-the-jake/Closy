@@ -2691,7 +2691,7 @@
       ],
       "pullRequest": 52,
       "repository": "jake-the-jake/Closy",
-      "role": "phy1_topology_strategy3_bounded_diagnosis_no_class_admitted",
+      "role": "phy1_topology_strategy3_diagnosis_integrity_error",
       "sourceOnly": false,
       "state": "OPEN",
       "superseded": false,
@@ -4935,7 +4935,7 @@
       "mergeability": "MERGEABLE",
       "number": 52,
       "repository": "jake-the-jake/Closy",
-      "role": "phy1_topology_strategy3_bounded_diagnosis_no_class_admitted",
+      "role": "phy1_topology_strategy3_diagnosis_integrity_error",
       "state": "OPEN",
       "title": "Forge Unit O: bounded PHY1 Strategy 3 diagnosis",
       "url": "https://github.com/jake-the-jake/Closy/pull/52"

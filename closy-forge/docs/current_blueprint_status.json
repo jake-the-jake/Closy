@@ -7,7 +7,7 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v19",
+    "coverageVersion": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v20",
     "total": 101
   },
   "evidenceAnchorSha": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
@@ -587,17 +587,18 @@
       "admittedStrategyClass": null,
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
+        "exact_cross_python_and_cross_platform_regeneration_failed",
         "revision_1_t_junction_and_incomplete_semantic_seam_transfer",
         "revision_2_incomplete_semantic_seam_transfer",
-        "no_strategy3_class_admitted"
+        "no_strategy3_class_admitted_in_preserved_raw_execution"
       ],
       "candidateAttemptConsumed": false,
       "candidateCreated": false,
       "computeProfile": "D0",
       "dRuntimePinnedToV1": true,
       "dataProvenance": "project-authored synthetic development fixtures",
-      "evidenceDurability": "immutable_lock_two_revision_results_and_exact_head_ci",
-      "evidenceTier": "committed_candidate_independent_production_kernel_development_fixtures",
+      "evidenceDurability": "immutable_lock_and_raw_results_plus_additive_integrity_attestation",
+      "evidenceTier": "preserved_candidate_independent_results_with_failed_cross_minor_integrity",
       "executableSha": null,
       "executionKind": "two bounded candidate-independent production-kernel revisions",
       "finalStrategyConsumed": false,
@@ -621,7 +622,7 @@
         7
       ],
       "runtimeCapabilityExposed": false,
-      "scopedStatus": "no_strategy3_class_admitted_within_bounded_diagnosis",
+      "scopedStatus": "diagnosis_integrity_error",
       "sourceSha": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
       "toolchain": [
         "CPython 3.11",
@@ -1222,7 +1223,7 @@
     "pullRequestCount": 52,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v17",
+  "statusModelVersion": "closy.blueprint_status_model.v18",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -1296,7 +1297,7 @@
     "phy1TopologyStrategy3CandidateAttemptConsumed": false,
     "phy1TopologyStrategy3CandidateCreated": false,
     "phy1TopologyStrategy3DiagnosisExecuted": true,
-    "phy1TopologyStrategy3DiagnosisOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
+    "phy1TopologyStrategy3DiagnosisOutcome": "diagnosis_integrity_error",
     "phy1TopologyStrategy3DiagnosisRevisionCount": 2,
     "phy1TopologyStrategy3FinalStrategyConsumed": false,
     "phy1TopologyStrategy3RemainingTopologyStrategies": 1,
