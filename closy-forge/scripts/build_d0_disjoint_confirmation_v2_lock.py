@@ -9,6 +9,7 @@ from typing import Any
 from closy_forge.disjoint_confirmation_v2.evaluator import execute_evaluator
 from closy_forge.disjoint_confirmation_v2.protocol import (
     FIXTURE_ROOT,
+    canonical_source_sha256,
     protocol_document,
     validate_protocol,
 )
@@ -31,7 +32,7 @@ def build() -> dict[str, Any]:
     protocol = protocol_document(
         source_anchor_sha=SOURCE_ANCHOR,
         implementation_files=implementation,
-        initial_authority_workflow_sha256=sha256_file(authority_workflow),
+        initial_authority_workflow_sha256=canonical_source_sha256(authority_workflow),
     )
     issues = validate_protocol(protocol)
     if issues:
@@ -228,7 +229,7 @@ def _implementation_inventory() -> list[dict[str, Any]]:
         *sorted((ROOT / "scripts").glob("*d0_disjoint_confirmation_v2*.py")),
     ]
     return [
-        {"path": _implementation_path(path), "sha256": sha256_file(path)}
+        {"path": _implementation_path(path), "sha256": canonical_source_sha256(path)}
         for path in paths
         if path.is_file()
     ]

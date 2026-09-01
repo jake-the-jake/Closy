@@ -4,8 +4,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from closy_forge.package_io.canonical_json import canonical_dumps, read_json
-from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.package_io.canonical_json import canonical_dumps, canonical_text_bytes, read_json
+from closy_forge.package_io.hashing import sha256_bytes
 
 BENCHMARK_VERSION = "closy.d0_disjoint_tshirt_confirmation.v2"
 FIXTURE_ROOT = Path("fixtures/d0_disjoint_tshirt_confirmation_v2")
@@ -70,6 +70,7 @@ def protocol_document(
         "sourceEvidenceAnchorSha": source_anchor_sha,
         "implementationFiles": implementation_files,
         "implementationDigest": _hash(implementation_files),
+        "implementationHashMode": "utf8_canonical_lf_final_newline",
         "compilerVersion": "closy.d0_disjoint.structural_compiler.v1",
         "canonicalPackageVersion": "closy.garment_package.v1",
         "routes": list(ROUTES),
@@ -194,6 +195,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> list[str]:
         "primaryAppearanceRepeatDenominator": 8,
         "maximumAppearanceEvaluations": 32,
         "primaryRoute": PRIMARY_ROUTE,
+        "implementationHashMode": "utf8_canonical_lf_final_newline",
     }
     for field, expected_value in expected.items():
         if protocol.get(field) != expected_value:
@@ -234,7 +236,7 @@ def validate_implementation(root: Path, protocol: Mapping[str, Any]) -> list[str
             continue
         relative = str(item.get("path", ""))
         path = root / relative
-        if not path.is_file() or sha256_file(path) != item.get("sha256"):
+        if not path.is_file() or canonical_source_sha256(path) != item.get("sha256"):
             issues.append(f"implementation_hash_mismatch:{relative}")
     if protocol.get("implementationDigest") != _hash(files):
         issues.append("implementation_digest_mismatch")
@@ -243,3 +245,8 @@ def validate_implementation(root: Path, protocol: Mapping[str, Any]) -> list[str
 
 def _hash(value: Any) -> str:
     return sha256_bytes(canonical_dumps(value).encode("utf-8"))
+
+
+def canonical_source_sha256(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    return sha256_bytes(canonical_text_bytes(text, final_newline=True))

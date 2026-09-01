@@ -18,8 +18,11 @@ The official authority is a one-shot pull-request workflow at the exact implemen
 One replacement workflow run is permitted only after a recorded pre-draw infrastructure failure
 with no seed, commitment, prediction, reveal, or published artifact. Authority run `33530331133`
 failed in the platform-sensitive lock-regeneration check before the authority script executed;
-job `99931572124` published zero artifacts. The replacement validates the committed protocol and
-its complete implementation hash inventory directly.
+job `99931572124` published zero artifacts. Replacement run `33531607760`, job `99935863093`,
+also stopped before authority execution because inherited Unit-L files were CRLF in the Windows
+lock worktree but LF in Git and Ubuntu; it likewise published zero artifacts. The lock now hashes
+UTF-8 source text with canonical LF and a final newline, validates its complete implementation
+inventory directly, and requires every prior authority run to match this committed pre-draw ledger.
 It creates a random 256-bit seed in the trusted job, generates truth and source observations
 together, keeps targets unmounted while all 64 predictions run in Docker with a read-only allowlist
 and `--network none`, freezes predictions, then reveals and evaluates the existing targets. The

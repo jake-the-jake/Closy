@@ -24,25 +24,67 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       LOCK_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - name: Reject reruns and later authority runs
-        shell: bash
-        run: |
-          test "$GITHUB_RUN_ATTEMPT" = "1"
-          prior_runs="$(gh api \
-            "repos/${GITHUB_REPOSITORY}/actions/workflows/closy-forge-unit-m-authority.yml/runs?branch=${GITHUB_HEAD_REF}&event=pull_request&per_page=100" \
-            --jq ".workflow_runs[] | select(.id != ${GITHUB_RUN_ID}) | [.id, .conclusion] | @tsv")"
-          prior_count=0
-          while IFS=$'\t' read -r prior_id prior_conclusion; do
-            test -n "$prior_id" || continue
-            prior_count=$((prior_count + 1))
-            test "$prior_conclusion" = "failure"
-            test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${prior_id}/artifacts" --jq '.total_count')" = "0"
-          done <<< "$prior_runs"
-          test "$prior_count" -le "1"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+      - name: Reject reruns and later authority runs
+        working-directory: closy-forge
+        shell: bash
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+          test "$(git rev-parse HEAD)" = "$LOCK_SHA"
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          lifecycle = json.loads(
+              Path("fixtures/d0_disjoint_tshirt_confirmation_v2/authority_lifecycle.json")
+              .read_text(encoding="utf-8")
+          )
+          expected = {str(event["runId"]): event for event in lifecycle["events"]}
+          repository = os.environ["GITHUB_REPOSITORY"]
+          current = int(os.environ["GITHUB_RUN_ID"])
+          branch = os.environ["GITHUB_HEAD_REF"]
+          payload = json.loads(
+              subprocess.check_output(
+                  [
+                      "gh",
+                      "api",
+                      f"repos/{repository}/actions/workflows/closy-forge-unit-m-authority.yml/runs?branch={branch}&event=pull_request&per_page=100",
+                  ],
+                  text=True,
+              )
+          )
+          actual = {
+              str(run["id"]): run
+              for run in payload["workflow_runs"]
+              if int(run["id"]) != current
+          }
+          if set(actual) != set(expected):
+              raise SystemExit("confirmation_v2_unrecorded_prior_authority_run")
+          for run_id, event in expected.items():
+              if actual[run_id]["conclusion"] != "failure":
+                  raise SystemExit("confirmation_v2_prior_authority_not_failed")
+              required = (
+                  event["classification"] == "failed_before_seed_or_commitment"
+                  and event["seedOrCommitmentCreated"] is False
+                  and event["publishedAttempt"] is False
+                  and event["artifactCount"] == 0
+              )
+              if not required:
+                  raise SystemExit("confirmation_v2_prior_authority_not_predraw")
+              artifacts = json.loads(
+                  subprocess.check_output(
+                      ["gh", "api", f"repos/{repository}/actions/runs/{run_id}/artifacts"],
+                      text=True,
+                  )
+              )
+              if artifacts["total_count"] != 0:
+                  raise SystemExit("confirmation_v2_prior_authority_has_artifact")
+          PY
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.11"
@@ -60,10 +102,10 @@ jobs:
           from pathlib import Path
 
           from closy_forge.disjoint_confirmation_v2.protocol import (
+              canonical_source_sha256,
               load_protocol,
               validate_implementation,
           )
-          from closy_forge.package_io.hashing import sha256_file
 
           root = Path.cwd()
           protocol = load_protocol(root)
@@ -71,7 +113,9 @@ jobs:
           if issues:
               raise SystemExit(";".join(issues))
           expected = protocol["seedAuthorityLifecycle"]["initialWorkflowSha256"]
-          actual = sha256_file(root.parent / ".github/workflows/closy-forge-unit-m-authority.yml")
+          actual = canonical_source_sha256(
+              root.parent / ".github/workflows/closy-forge-unit-m-authority.yml"
+          )
           if actual != expected:
               raise SystemExit("confirmation_v2_initial_authority_workflow_hash_mismatch")
           PY

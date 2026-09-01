@@ -99,26 +99,26 @@ def test_authority_workflow_is_one_shot_and_exact_head() -> None:
     else:
         assert 'test "$GITHUB_RUN_ATTEMPT" = "1"' in workflow
         assert "github.event.pull_request.head.sha" in workflow
-        assert "prior_count" in workflow
+        assert "confirmation_v2_unrecorded_prior_authority_run" in workflow
     assert "--network" in (
         ROOT / "src/closy_forge/disjoint_confirmation_v2/isolation.py"
     ).read_text(encoding="utf-8")
 
 
-def test_predraw_failure_allows_only_the_recorded_artifact_free_replacement() -> None:
+def test_predraw_failures_allow_only_an_explicitly_recorded_artifact_free_retry() -> None:
     lifecycle = _mapping(ROOT / FIXTURE_ROOT / "authority_lifecycle.json")
     events = lifecycle["events"]
-    assert isinstance(events, list) and len(events) == 1
-    event = events[0]
-    assert isinstance(event, dict)
-    assert event["runId"] == "33530331133"
-    assert event["jobId"] == "99931572124"
-    assert event["classification"] == "failed_before_seed_or_commitment"
-    assert event["seedOrCommitmentCreated"] is False
-    assert event["publishedAttempt"] is False
-    assert event["artifactCount"] == 0
+    assert isinstance(events, list) and len(events) == 2
+    assert [event["runId"] for event in events] == ["33530331133", "33531607760"]
+    assert [event["jobId"] for event in events] == ["99931572124", "99935863093"]
+    for event in events:
+        assert isinstance(event, dict)
+        assert event["classification"] == "failed_before_seed_or_commitment"
+        assert event["seedOrCommitmentCreated"] is False
+        assert event["publishedAttempt"] is False
+        assert event["artifactCount"] == 0
     assert lifecycle["acceptedAttemptCount"] == 0
-    assert lifecycle["maximumReplacementRunsAfterPreDrawInfrastructureFailure"] == 1
+    assert lifecycle["retryPolicy"].startswith("explicitly_logged_predraw_failures_only")
     assert lifecycle["nextAuthorityRunPermitted"] is True
 
 

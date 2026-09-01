@@ -28,7 +28,13 @@ from closy_forge.package_io.hashing import geometry_content_hash, sha256_bytes, 
 
 from .evaluator import execute_evaluator
 from .isolation import execute_contestant, run_container_negative_controls
-from .protocol import FIXTURE_ROOT, ROUTES, load_protocol, validate_implementation
+from .protocol import (
+    FIXTURE_ROOT,
+    ROUTES,
+    canonical_source_sha256,
+    load_protocol,
+    validate_implementation,
+)
 
 
 def run_official_attempt(
@@ -48,7 +54,7 @@ def run_official_attempt(
         raise ValueError(";".join(implementation_issues))
     lifecycle = _mapping(protocol["seedAuthorityLifecycle"])
     workflow = root.parent / ".github/workflows/closy-forge-unit-m-authority.yml"
-    if sha256_file(workflow) != lifecycle.get("initialWorkflowSha256"):
+    if canonical_source_sha256(workflow) != lifecycle.get("initialWorkflowSha256"):
         raise ValueError("confirmation_v2_initial_authority_workflow_hash_mismatch")
     output.mkdir(parents=True)
     private_store = output / ".authority_private_until_prediction_freeze"
