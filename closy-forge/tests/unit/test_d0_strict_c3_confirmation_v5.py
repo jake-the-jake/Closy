@@ -110,6 +110,7 @@ def test_imported_attempt_is_sealed_and_exact_when_present() -> None:
         return
     lifecycle = read_json(lifecycle_path)
     result = read_json(ROOT / EVIDENCE_ROOT / "strict_c3_result.json")
+    outcome = read_json(ROOT / EVIDENCE_ROOT / "outcome_report.json")
 
     assert lifecycle["state"] == "sealed_after_first_external_pose_commitment"
     assert lifecycle["attemptConsumed"] is True
@@ -118,3 +119,8 @@ def test_imported_attempt_is_sealed_and_exact_when_present() -> None:
     assert result["poseCount"] == 8
     assert result["attempt"]["consumed"] is True
     assert result["integrity"]["resultDigest"] == document_digest(result, "resultDigest")
+    assert outcome["status"]["literalResult"] == result["outcome"]
+    assert outcome["posePassCount"] == outcome["poseCount"] == 8
+    assert outcome["status"]["topologyStrategyBudgetBefore"] == 1
+    assert outcome["status"]["topologyStrategyBudgetAfter"] == 1
+    assert outcome["status"]["unitOEligible"] is True

@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.d0_disjoint_confirmation_v2.v17",
+    "coverageVersion": "closy.blueprint_coverage.d0_strict_c3_confirmation_v5.v18",
     "total": 101
   },
-  "evidenceAnchorSha": "9078a09f1156ba8b7f98099185478ca9efcee952",
+  "evidenceAnchorSha": "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",

@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == "closy.blueprint_coverage.d0_disjoint_confirmation_v2.v17"
+    assert coverage["version"] == "closy.blueprint_coverage.d0_strict_c3_confirmation_v5.v18"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -519,7 +519,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     provenance = coverage["generatedBy"]
 
     assert provenance["generatorVersion"] == (
-        "closy.blueprint_reconciliation.d0_disjoint_confirmation_v2.v14"
+        "closy.blueprint_reconciliation.d0_strict_c3_confirmation_v5.v15"
     )
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
@@ -539,20 +539,20 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_m_integrity_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_n_pass_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-d0-disjoint-tshirt-confirmation-v2"
+    assert resume["branch"] == "codex/closy-forge-d0-strict-c3-confirmation-v5"
     assert resume["latestFinishedParentPublicationHead"] == (
-        "a72f45955abbe65ce14b7142668447d0477db71c"
+        "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
     )
     assert resume["pendingCIAtEvidenceHead"] is False
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
     assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
     assert resume["gates"]["ResearchPrototype-D0-matrix-v3-core"] == (
-        "partial_6_pass_5_fail_0_not_run"
+        "partial_7_pass_4_fail_0_not_run"
     )
     assert resume["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"] == (
         "2_pass_0_fail_2_not_run"
@@ -573,13 +573,16 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_m_integrity_boundary(
     assert resume["matrixScopes"]["postTopologyCandidate"]["candidateExists"] is False
     assert resume["unitMResult"]["outcome"] == "attempted_integrity_error"
     assert resume["unitMResult"]["qualificationRetryAllowed"] is False
-    assert resume["nextHandoff"]["selection"] == "unit_n_strict_c3_confirmation_v5"
-    assert "6 pass / 5 fail" in markdown
+    assert resume["unitNResult"]["outcome"] == "pass"
+    assert resume["unitNResult"]["posePassCount"] == 8
+    assert resume["unitNResult"]["qualificationRetryAllowed"] is False
+    assert resume["nextHandoff"]["selection"] == ("unit_o_phy1_topology_strategy3_diagnosis_v1")
+    assert "7 pass / 4 fail" in markdown
     assert "known_target_regression_pass" in markdown
     assert "Post-topology candidate: nonexistent" in markdown
     assert "attempted_integrity_error" in markdown
     assert "A_neutral_preflight_failed_v3" in markdown
-    assert "Unit N is independently dependency-ready" in markdown
+    assert "Unit O is dependency-ready" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:
