@@ -52,3 +52,16 @@ def test_h1_core_reproducibility_exercises_withdrawal_and_rebuild() -> None:
     assert result["resultStatus"] == "pass"
     assert result["checks"]["sourceWithdrawalFailsClosed"] is True
     assert result["checks"]["cacheCorruptionDetected"] is True
+
+
+def test_persisted_unit_h_outcomes_are_independent_and_fail_closed() -> None:
+    evidence = ROOT / "docs/evidence/d0_core_runtime_c3_v4"
+    h1 = read_json(evidence / "core_reproducibility.json")
+    c3 = read_json(evidence / "strict_c3_result.json")
+    processors = read_json(evidence / "processor_authority_audit.json")
+    assert h1["d0Rp12Status"] == "pass"
+    assert c3["d0Rp08Status"] == "fail"
+    assert c3["heldOutAttemptConsumed"] is True
+    assert c3["completedHeldOutStateCount"] == 0
+    assert processors["h2StaticZ1"]["d0Rp10Status"] == "not_run"
+    assert processors["h3Mt1"]["d0Rp11Status"] == "not_run"
