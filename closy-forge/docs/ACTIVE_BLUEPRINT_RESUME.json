@@ -1,18 +1,19 @@
 {
-  "activeLane": "Unit S evidence and authority recovery v2",
-  "branch": "codex/closy-forge-evidence-authority-recovery-v2",
+  "activeLane": "Unit T sealed; Unit U final Strategy-3 semantic-remesh confirmation v2 next",
+  "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
   "conditionalUnits": {
-    "T": "dependency_ready",
-    "U": "dependency_ready_after_T",
+    "T": "complete_failed_absolute_gates",
+    "U": "dependency_ready",
     "V": "not_created_requires_unit_u_pass",
     "W": "not_created_requires_unit_v_candidate",
     "X": "not_created_requires_unit_w_core_prerequisites"
   },
-  "evidenceHead": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
-  "exactNextAction": "Create Unit T from exact Unit S publication head and freeze its v3 protocol.",
+  "evidenceHead": "7aae56b050e72e51916b592423f63d859f166117",
+  "exactNextAction": "Create Unit U from the final Unit T publication head, publish the immutable Strategy-3 design reservation, and run only disclosed public conformance fixtures before the final lock.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "D0-DisjointTshirt-v2": "attempted_integrity_error",
+    "D0-DisjointTshirt-v3": "completed_benchmark_failed_absolute_gates",
     "D0-Strict-C3-v5": "pass_exact_unit_f_pre_topology_8_of_8",
     "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
     "PHY1-Topology-Strategy2-D0-v4": "outcome_M_strategy_microfixture_failed_no_candidate",
@@ -28,7 +29,7 @@
     "Unit-Q": "ineligible_no_unit_p_candidate",
     "Unit-R": "ineligible_no_unit_q_prerequisites"
   },
-  "latestFinishedParentPublicationHead": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+  "latestFinishedParentPublicationHead": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
   "localHeadAtResumeSource": "pending_final_commit",
   "machineResumeVersion": "closy.active_blueprint_resume.evidence_authority_v2.v12",
   "matrixScopes": {
@@ -47,6 +48,19 @@
       "outcome": "attempted_integrity_error",
       "predictionDenominator": 64,
       "predictions": 0
+    },
+    "identityDisjointV3": {
+      "acceptedIdentities": 16,
+      "appearanceDenominator": 24,
+      "appearanceEvaluations": 24,
+      "canonicalCompiles": 48,
+      "compileDenominator": 48,
+      "disjointnessScope": "recoverable_inventory_only_lost_v2_relation_unverified",
+      "outcome": "completed_benchmark_failed_absolute_gates",
+      "predictionDenominator": 64,
+      "predictions": 64,
+      "routePromoted": false,
+      "successfulPredictionArtifacts": 60
     },
     "knownTarget": {
       "d0Rp07Promoted": false,
@@ -67,20 +81,20 @@
   },
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "unit_t_protocol_lock",
-    "safestEvidenceAction": "freeze_before_official_seed",
-    "selection": "unit_t_d0_confirmation_v3"
+    "firstUnmetPrerequisite": "unit_u_strategy_design_reservation",
+    "safestEvidenceAction": "reserve_final_strategy_before_implementation",
+    "selection": "unit_u_final_strategy3_semantic_remesh_confirmation_v2"
   },
   "parent": {
-    "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
-    "exactHeadWorkflow": "33570351597",
+    "branch": "codex/closy-forge-evidence-authority-recovery-v2",
+    "exactHeadWorkflow": "33616532606",
     "forgeJobsPassed": 29,
     "forgeJobsTotal": 29,
-    "pullRequest": 52,
-    "sha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a"
+    "pullRequest": 53,
+    "sha": "b8d222dadbe092e25604b838e7ad219d6a1c114b"
   },
   "pendingCIAtEvidenceHead": true,
-  "pullRequest": 53,
+  "pullRequest": 54,
   "remainingBudgets": {
     "candidateAttempts": 1,
     "seamModels": 0,
@@ -162,6 +176,27 @@
         "result": "pass"
       }
     }
+  },
+  "unitTResult": {
+    "acceptedIdentityCount": 16,
+    "appearanceEvaluationCount": 24,
+    "authorityHead": "7aae56b050e72e51916b592423f63d859f166117",
+    "authorityJob": "100219125702",
+    "authorityRun": "33621365050",
+    "disjointnessScope": "recoverable_inventory_only_lost_v2_relation_unverified",
+    "firstUnmetPredicate": "functional_absolute_gates",
+    "fullCompileCount": 48,
+    "outcome": "completed_benchmark_failed_absolute_gates",
+    "predictionCount": 64,
+    "qualificationRetryAllowed": false,
+    "routePromoted": false,
+    "rowResults": {
+      "D0-RP-03": "fail",
+      "D0-RP-04": "pass",
+      "D0-RP-06": "fail",
+      "D0-RP-07": "fail"
+    },
+    "successfulPredictionArtifactCount": 60
   },
   "unsupportedEvidenceClasses": [
     "post_topology_candidate",

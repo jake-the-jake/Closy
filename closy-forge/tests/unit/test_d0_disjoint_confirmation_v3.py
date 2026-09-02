@@ -24,7 +24,10 @@ ROOT = Path(__file__).resolve().parents[2]
 def test_preseed_protocol_is_exact_complete_and_contains_no_official_data() -> None:
     protocol = load_protocol(ROOT)
     assert validate_protocol(protocol) == []
-    assert validate_implementation(ROOT, protocol) == []
+    # The consumed authority workflow is deliberately replaced by its sealed verifier.
+    assert validate_implementation(ROOT, protocol) == [
+        "d0_v3_implementation_hash_mismatch:../.github/workflows/forge-unit-t-d0-v3-authority.yml"
+    ]
     assert tuple(protocol["routes"]) == ROUTES
     assert tuple(protocol["fullCompileRoutes"]) == FULL_COMPILE_ROUTES
     assert protocol["primaryRoute"] == PRIMARY_ROUTE
@@ -50,6 +53,26 @@ def test_preseed_protocol_is_exact_complete_and_contains_no_official_data() -> N
             "officialV3ResultPresent",
         )
     )
+
+
+def test_official_attempt_is_frozen_valid_and_authority_is_sealed() -> None:
+    from scripts.import_d0_disjoint_confirmation_v3_attempt import validate
+
+    attempt = ROOT / FIXTURE_ROOT / "official_attempt"
+    result = json.loads((attempt / "benchmark_result.json").read_text(encoding="utf-8"))
+    workflow = (ROOT.parent / ".github/workflows/forge-unit-t-d0-v3-authority.yml").read_text(
+        encoding="utf-8"
+    )
+    assert validate(attempt) == []
+    assert result["outcome"] == "completed_benchmark_failed_absolute_gates"
+    assert result["rowDecisions"] == {
+        "D0-RP-03": "fail",
+        "D0-RP-04": "pass",
+        "D0-RP-06": "fail",
+        "D0-RP-07": "fail",
+    }
+    assert "run_d0_disjoint_confirmation_v3_authority.py" not in workflow
+    assert "[unit-t-authority]" not in workflow
 
 
 def test_lock_development_proof_is_nonqualifying_and_mutations_are_detected() -> None:

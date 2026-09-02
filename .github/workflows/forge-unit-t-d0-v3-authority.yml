@@ -1,6 +1,9 @@
-name: Forge Unit T D0 v3 authority
+name: Forge Unit T D0 v3 sealed verifier
 
 on:
+  pull_request:
+    branches:
+      - codex/closy-forge-evidence-authority-recovery-v2
   push:
     branches:
       - codex/closy-forge-d0-disjoint-tshirt-confirmation-v3
@@ -9,139 +12,24 @@ permissions:
   contents: read
 
 jobs:
-  preflight:
-    name: Unit T exact-lock preflight
+  verify:
+    name: Unit T sealed evidence verifier
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    env:
-      AUTHORITY_TRIGGER: ${{ contains(github.event.head_commit.message, '[unit-t-authority]') }}
-      LOCK_HEAD: ${{ contains(github.event.head_commit.message, '[unit-t-authority]') && github.event.before || github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ env.LOCK_HEAD }}
           fetch-depth: 0
-      - name: Require exact frozen lock head
-        shell: bash
-        run: test "$(git rev-parse HEAD)" = "$LOCK_HEAD"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.11'
       - name: Install frozen Forge environment
         working-directory: closy-forge
         run: python -m pip install -e ".[dev]" -c requirements-dev.lock
-      - name: Verify pre-seed lock and mutations
+      - name: Verify frozen official artifact and sealed lifecycle
         working-directory: closy-forge
         run: |
-          python scripts/build_d0_disjoint_confirmation_v3_lock.py --check
+          python scripts/import_d0_disjoint_confirmation_v3_attempt.py \
+            --source fixtures/d0_disjoint_tshirt_confirmation_v3/official_attempt \
+            --check
           python -m pytest tests/unit/test_d0_disjoint_confirmation_v3.py -q
-      - name: Build exact contestant image
-        run: >-
-          docker build --pull=false
-          -f closy-forge/docker/d0_v3_confirmation/Dockerfile
-          -t closy-d0-v3:${LOCK_HEAD}
-          closy-forge/docker
-      - name: Run three clean-workspace canaries
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p unit-t-preflight-public
-          docker image inspect closy-d0-v3:${LOCK_HEAD} > unit-t-preflight-public/image-inspect.json
-          for ordinal in 1 2 3; do
-            input="$(mktemp -d)"
-            output="$(mktemp -d)"
-            printf 'closy-unit-t-exact-lock-canary-v1' > "$input/canary.bin"
-            sudo chown -R 65532:65532 "$input" "$output"
-            sudo chmod 0555 "$input"
-            sudo chmod 0444 "$input/canary.bin"
-            sudo chmod 0777 "$output"
-            PYTHONPATH=closy-forge/src python closy-forge/scripts/run_d0_v3_container_preflight.py \
-              --input "$input" \
-              --output "$output" \
-              --route generic_canary \
-              --image closy-d0-v3:${LOCK_HEAD} \
-              --report "unit-t-preflight-public/replication-${ordinal}.json"
-            sudo rm -rf "$input" "$output"
-          done
-          python - <<'PY'
-          import glob
-          import json
-
-          reports = [json.load(open(path, encoding="utf-8")) for path in sorted(glob.glob("unit-t-preflight-public/replication-*.json"))]
-          assert len(reports) == 3
-          assert all(report["pass"] is True for report in reports)
-          PY
-      - name: Upload allowlisted pre-seed diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-t-lock-preflight-${{ env.LOCK_HEAD }}
-          path: |
-            unit-t-preflight-public/image-inspect.json
-            unit-t-preflight-public/replication-1.json
-            unit-t-preflight-public/replication-2.json
-            unit-t-preflight-public/replication-3.json
-          if-no-files-found: warn
-          retention-days: 30
-
-  authority:
-    name: Unit T one-shot official authority
-    needs: preflight
-    if: contains(github.event.head_commit.message, '[unit-t-authority]')
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      LOCK_HEAD: ${{ github.event.before }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: ${{ env.LOCK_HEAD }}
-          fetch-depth: 0
-      - name: Require exact preflighted lock head
-        shell: bash
-        run: test "$(git rev-parse HEAD)" = "$LOCK_HEAD"
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with:
-          python-version: '3.11'
-      - name: Install frozen Forge environment
-        working-directory: closy-forge
-        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
-      - name: Revalidate lock and build exact contestant image
-        run: |
-          cd closy-forge
-          python scripts/build_d0_disjoint_confirmation_v3_lock.py --check
-          cd ..
-          docker build --pull=false \
-            -f closy-forge/docker/d0_v3_confirmation/Dockerfile \
-            -t closy-d0-v3:${LOCK_HEAD} \
-            closy-forge/docker
-      - name: Execute one official seed, freeze, reveal, and evaluation
-        working-directory: closy-forge
-        run: >-
-          python scripts/run_d0_disjoint_confirmation_v3_authority.py
-          --output ../unit-t-authority-public
-          --lock-sha "$LOCK_HEAD"
-          --workflow-run-id "${{ github.run_id }}"
-          --workflow-job-id "${{ github.job }}"
-          --image "closy-d0-v3:${LOCK_HEAD}"
-      - name: Upload only the frozen public allowlist
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-t-d0-v3-official-${{ env.LOCK_HEAD }}
-          path: |
-            unit-t-authority-public/attempt_manifest.json
-            unit-t-authority-public/authority_commitments.json
-            unit-t-authority-public/benchmark_result.json
-            unit-t-authority-public/changed_path_audit.json
-            unit-t-authority-public/environment_attestation.json
-            unit-t-authority-public/isolation_report.json
-            unit-t-authority-public/prediction_freeze.json
-            unit-t-authority-public/predictions.json
-            unit-t-authority-public/public_failure.json
-            unit-t-authority-public/public_source_inventory.json
-            unit-t-authority-public/raw_draw_rejection_transcript.json
-            unit-t-authority-public/source_roles/**
-            unit-t-authority-public/target_reveal.json
-          if-no-files-found: warn
-          retention-days: 90
