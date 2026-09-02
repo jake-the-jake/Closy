@@ -1,0 +1,68 @@
+{
+  "core": {
+    "fail": 4,
+    "failedRows": [
+      "D0-RP-03",
+      "D0-RP-06",
+      "D0-RP-07",
+      "D0-RP-15"
+    ],
+    "notRun": 0,
+    "pass": 7,
+    "passedRows": [
+      "D0-RP-01",
+      "D0-RP-02",
+      "D0-RP-04",
+      "D0-RP-05",
+      "D0-RP-08",
+      "D0-RP-12",
+      "D0-RP-13"
+    ]
+  },
+  "derivation": "Unit T supersedes only D0-RP-03, D0-RP-04, D0-RP-06, and D0-RP-07 at its recoverable-inventory-disjoint scope; all other rows retain their preceding scoped authority",
+  "rowUpdates": [
+    {
+      "attemptState": "attempted_fail",
+      "evidenceScope": "untouched_public_synthetic_recoverable_inventory_disjoint_lost_v2_relation_unverified",
+      "firstUnmetPredicate": "functional_absolute_gates",
+      "result": "fail",
+      "rowId": "D0-RP-03"
+    },
+    {
+      "attemptState": "attempted_pass",
+      "evidenceScope": "80_networkless_nonroot_container_executions",
+      "firstUnmetPredicate": null,
+      "result": "pass",
+      "rowId": "D0-RP-04"
+    },
+    {
+      "attemptState": "attempted_fail",
+      "evidenceScope": "untouched_public_synthetic_recoverable_inventory_disjoint_lost_v2_relation_unverified",
+      "firstUnmetPredicate": "functional_absolute_gates",
+      "result": "fail",
+      "rowId": "D0-RP-06"
+    },
+    {
+      "attemptState": "attempted_fail",
+      "evidenceScope": "eight_identity_visible_appearance_denominator",
+      "firstUnmetPredicate": "appearance_absolute_gates",
+      "result": "fail",
+      "rowId": "D0-RP-07"
+    }
+  ],
+  "schemaVersion": 1,
+  "supplemental": {
+    "fail": 0,
+    "notRun": 2,
+    "notRunRows": [
+      "D0-RP-10",
+      "D0-RP-11"
+    ],
+    "pass": 2,
+    "passedRows": [
+      "D0-RP-09",
+      "D0-RP-14"
+    ]
+  },
+  "unit": "T"
+}

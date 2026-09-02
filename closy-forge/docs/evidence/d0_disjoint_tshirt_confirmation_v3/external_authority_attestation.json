@@ -1,0 +1,34 @@
+{
+  "artifactName": "unit-t-d0-v3-official-7aae56b050e72e51916b592423f63d859f166117",
+  "authorityJob": {
+    "conclusion": "success",
+    "id": "100219125702",
+    "name": "Unit T one-shot official authority"
+  },
+  "authorityRun": {
+    "conclusion": "success",
+    "headSha": "521bd142d0d8043262eb913c373ca5a2d3163932",
+    "id": "33621365050",
+    "url": "https://github.com/jake-the-jake/Closy/actions/runs/33621365050"
+  },
+  "containerImageId": "sha256:5afe0987eed7cfd137a22cf44885f0b3684bae1988b1ca4df0df4aeac9c4c4ae",
+  "exactLockHead": "7aae56b050e72e51916b592423f63d859f166117",
+  "importValidation": "pass",
+  "literalScientificOutcome": "completed_benchmark_failed_absolute_gates",
+  "preflight": {
+    "conclusion": "success",
+    "exactHead": "7aae56b050e72e51916b592423f63d859f166117",
+    "jobId": "100218885868",
+    "runId": "33621365050"
+  },
+  "priorPreseedEngineeringFailures": [
+    {
+      "officialSeedCreated": false,
+      "reason": "raw model byte hash differed across platform newline conventions",
+      "runId": "33621106825"
+    }
+  ],
+  "schemaVersion": 1,
+  "sealed": true,
+  "unit": "T"
+}

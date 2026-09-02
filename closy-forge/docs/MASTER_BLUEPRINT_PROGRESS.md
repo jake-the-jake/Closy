@@ -505,3 +505,18 @@ solve, PHY1, CCD, or runtime selection changed.
 Unit S evidence anchor is `6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92`. Exact pinned-image and portability preflight is
 recorded at `1c748e63bab1282d697be960f19bd01a53337df2` by workflow `33616212488`. The Research Prototype
 remains `7/4/0` core and `2/0/2` supplemental; broader evidence tiers remain unsupported.
+
+## Recoverable-Inventory-Disjoint T-Shirt Confirmation v3
+
+Unit T froze its four-route protocol at `7aae56b050e72e51916b592423f63d859f166117`
+after an exact-head pinned-container preflight. GitHub Actions run `33621365050` then created the
+single official 256-bit seed and completed the fixed 16-identity authority lifecycle. The study is
+consumed and its dispatch has been replaced by a sealed evidence verifier.
+
+The literal outcome is `completed_benchmark_failed_absolute_gates`. All `64` route attempts, `48`
+full compiles, `16` primary compile repeats, `24` appearance evaluations, and `8` primary
+appearance repeats remained in their fixed denominators; `60` prediction artifacts succeeded.
+D0-RP-04 passes, while D0-RP-03, D0-RP-06, and D0-RP-07 fail. No route is promoted. The scope is
+disjoint only from the recoverable typed inventory, and the lost-v2 opaque-cohort relation remains
+unverified. Runtime v1, its package, its conventional fallback, and all physical budgets remain
+unchanged. Unit U is next independently of this failed D0 study.

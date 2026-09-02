@@ -580,13 +580,13 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_s_authority_boundary() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_t_authority_boundary() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-evidence-authority-recovery-v2"
+    assert resume["branch"] == "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3"
     assert resume["latestFinishedParentPublicationHead"] == (
-        "8dd7a547debf038e9e27c48cf8e42009ae69ac3a"
+        "b8d222dadbe092e25604b838e7ad219d6a1c114b"
     )
     assert resume["pendingCIAtEvidenceHead"] is True
     assert resume["evidenceHead"] in markdown
@@ -624,23 +624,35 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_s_authority_boundary(
         "S-PHY-authority",
     }
     assert all(row["result"] == "pass" for row in resume["unitSResult"]["subgates"].values())
+    assert resume["unitTResult"]["outcome"] == "completed_benchmark_failed_absolute_gates"
+    assert resume["unitTResult"]["qualificationRetryAllowed"] is False
+    assert resume["unitTResult"]["rowResults"] == {
+        "D0-RP-03": "fail",
+        "D0-RP-04": "pass",
+        "D0-RP-06": "fail",
+        "D0-RP-07": "fail",
+    }
+    assert resume["matrixScopes"]["identityDisjointV3"]["predictions"] == 64
+    assert resume["matrixScopes"]["identityDisjointV3"]["routePromoted"] is False
     assert resume["remainingBudgets"] == {
         "candidateAttempts": 1,
         "seamModels": 0,
         "topologyStrategies": 1,
     }
     assert resume["conditionalUnits"] == {
-        "T": "dependency_ready",
-        "U": "dependency_ready_after_T",
+        "T": "complete_failed_absolute_gates",
+        "U": "dependency_ready",
         "V": "not_created_requires_unit_u_pass",
         "W": "not_created_requires_unit_v_candidate",
         "X": "not_created_requires_unit_w_core_prerequisites",
     }
-    assert resume["nextHandoff"]["selection"] == "unit_t_d0_confirmation_v3"
-    assert resume["nextHandoff"]["firstUnmetPrerequisite"] == "unit_t_protocol_lock"
+    assert resume["nextHandoff"]["selection"] == (
+        "unit_u_final_strategy3_semantic_remesh_confirmation_v2"
+    )
+    assert resume["nextHandoff"]["firstUnmetPrerequisite"] == ("unit_u_strategy_design_reservation")
     assert "7 pass / 4 fail" in markdown
-    assert "S-D0-authority" in markdown
-    assert "Create Unit T" in markdown
+    assert "D0-RP-04: `pass`" in markdown
+    assert "Create Unit U" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:

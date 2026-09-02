@@ -1,0 +1,35 @@
+name: Forge Unit T D0 v3 sealed verifier
+
+on:
+  pull_request:
+    branches:
+      - codex/closy-forge-evidence-authority-recovery-v2
+  push:
+    branches:
+      - codex/closy-forge-d0-disjoint-tshirt-confirmation-v3
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Unit T sealed evidence verifier
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.11'
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Verify frozen official artifact and sealed lifecycle
+        working-directory: closy-forge
+        run: |
+          python scripts/import_d0_disjoint_confirmation_v3_attempt.py \
+            --source fixtures/d0_disjoint_tshirt_confirmation_v3/official_attempt \
+            --check
+          python -m pytest tests/unit/test_d0_disjoint_confirmation_v3.py -q

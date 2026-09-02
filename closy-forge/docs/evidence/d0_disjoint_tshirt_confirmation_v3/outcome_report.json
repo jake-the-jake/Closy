@@ -1,0 +1,80 @@
+{
+  "authority": {
+    "claim": "procedural_freeze_and_container_isolation_not_cryptographic_secrecy",
+    "commitmentsExternallyImmutableBeforeEvaluation": false,
+    "commitmentsLimitation": "ordered commitments were flushed before prediction inside one authority job but became externally downloadable only after job completion",
+    "headSha": "7aae56b050e72e51916b592423f63d859f166117",
+    "jobId": "100219125702",
+    "runId": "33621365050"
+  },
+  "base": {
+    "branch": "codex/closy-forge-evidence-authority-recovery-v2",
+    "sha": "b8d222dadbe092e25604b838e7ad219d6a1c114b"
+  },
+  "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+  "denominators": {
+    "appearance": 24,
+    "appearanceCompleted": 24,
+    "fullCompile": 48,
+    "fullCompileCompleted": 48,
+    "identities": 16,
+    "predictionAttempts": 64,
+    "predictionAttemptsCompleted": 64,
+    "primaryAppearanceRepeats": 8,
+    "primaryCompileRepeats": 16,
+    "successfulPredictionArtifacts": 60
+  },
+  "disjointnessScope": "disjoint_from_recoverable_typed_inventory; relation_to_lost_v2_opaque_cohort_unverified",
+  "evidenceClass": "untouched_public_synthetic_recoverable_inventory_disjoint",
+  "firstUnmetPredicate": "functional_absolute_gates",
+  "identities": {
+    "attemptManifestHash": "ae4e8e71ce794df75ba3862c3175eeaaab79208ed5631e6626f2e815f877d1d0",
+    "protocolLockHash": "fcd2861f6e21460c164c137804086be5aa6963c7d4f58b2097c97eed2466fe56",
+    "resultHash": "41488ac225fdcdf562027b452893ae4e74f1c46b2497b0ac3be61f576805b63f"
+  },
+  "integrity": {
+    "changedPathAudit": "pass",
+    "containerExecutions": 80,
+    "containerIsolation": "pass",
+    "predictionFreezeBeforeReveal": true,
+    "privateAuthorityStoreRemoved": true,
+    "qualificationRetryAllowed": false,
+    "scientificSurfaceHashIssues": []
+  },
+  "literalOutcome": "completed_benchmark_failed_absolute_gates",
+  "pullRequest": 54,
+  "rowResults": {
+    "D0-RP-03": "fail",
+    "D0-RP-04": "pass",
+    "D0-RP-06": "fail",
+    "D0-RP-07": "fail"
+  },
+  "routeDecision": {
+    "promoted": false,
+    "reason": "one_or_more_locked_promotion_predicates_failed",
+    "routeId": null
+  },
+  "schemaVersion": 1,
+  "seedLifecycle": {
+    "attemptConsumed": true,
+    "domain": "closy/d0-disjoint-tshirt/v3",
+    "entropyBits": 256,
+    "officialSeedCreated": true,
+    "rawSeedCommittedBeforePrediction": true,
+    "rerunAuthorised": false
+  },
+  "unit": "T",
+  "unsupportedEvidenceClasses": [
+    "disjoint_from_unrecoverable_v2_cohort",
+    "real_photo",
+    "private_user",
+    "human_review",
+    "real_fabric",
+    "physical_cloth",
+    "GPU",
+    "mobile",
+    "Alpha",
+    "Beta",
+    "Production"
+  ]
+}
