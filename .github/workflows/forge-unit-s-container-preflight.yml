@@ -1,6 +1,9 @@
 name: Forge Unit S container preflight
 
 on:
+  push:
+    branches:
+      - codex/closy-forge-evidence-authority-recovery-v2
   workflow_dispatch:
     inputs:
       lock_head:
@@ -10,6 +13,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  LOCK_HEAD: ${{ inputs.lock_head || github.sha }}
 
 jobs:
   portable-numeric:
@@ -23,10 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ inputs.lock_head }}
+          ref: ${{ env.LOCK_HEAD }}
       - name: Require exact dispatched head
         shell: bash
-        run: test "$(git rev-parse HEAD)" = "${{ inputs.lock_head }}"
+        run: test "$(git rev-parse HEAD)" = "${{ env.LOCK_HEAD }}"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: ${{ matrix.python }}
@@ -45,10 +51,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ inputs.lock_head }}
+          ref: ${{ env.LOCK_HEAD }}
       - name: Require exact dispatched head
         shell: bash
-        run: test "$(git rev-parse HEAD)" = "${{ inputs.lock_head }}"
+        run: test "$(git rev-parse HEAD)" = "${{ env.LOCK_HEAD }}"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.11'
@@ -56,14 +62,14 @@ jobs:
         working-directory: closy-forge
         run: python -m pip install --require-hashes -r requirements-dev.lock
       - name: Build exact minimal contestant image
-        run: docker build --pull=false -t closy-d0-v3:${{ inputs.lock_head }} closy-forge/docker/d0_v3
+        run: docker build --pull=false -t closy-d0-v3:${{ env.LOCK_HEAD }} closy-forge/docker/d0_v3
       - name: Record image identity and file inventory
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p unit-s-preflight-artifact
-          docker image inspect closy-d0-v3:${{ inputs.lock_head }} > unit-s-preflight-artifact/image-inspect.json
-          container="$(docker create closy-d0-v3:${{ inputs.lock_head }})"
+          docker image inspect closy-d0-v3:${{ env.LOCK_HEAD }} > unit-s-preflight-artifact/image-inspect.json
+          container="$(docker create closy-d0-v3:${{ env.LOCK_HEAD }})"
           docker export "$container" | tar -tf - > unit-s-preflight-artifact/image-files.txt
           docker rm "$container"
           ! grep -E '(^|/)(\.git|evaluator|targets|private|\.ssh|docker\.sock)(/|$)' unit-s-preflight-artifact/image-files.txt
@@ -80,7 +86,7 @@ jobs:
               --input "$input" \
               --output "$output" \
               --route generic_canary \
-              --image closy-d0-v3:${{ inputs.lock_head }} \
+              --image closy-d0-v3:${{ env.LOCK_HEAD }} \
               --report "unit-s-preflight-artifact/replication-${ordinal}.json"
             sudo rm -rf "$input" "$output"
           done
@@ -97,7 +103,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-s-container-preflight-${{ inputs.lock_head }}
+          name: unit-s-container-preflight-${{ env.LOCK_HEAD }}
           path: |
             unit-s-preflight-artifact/image-inspect.json
             unit-s-preflight-artifact/image-files.txt
