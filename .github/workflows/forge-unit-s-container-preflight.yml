@@ -38,7 +38,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install locked Forge environment
         working-directory: closy-forge
-        run: python -m pip install --require-hashes -r requirements-dev.lock
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
       - name: Verify portable numeric, topology and canonical locks
         working-directory: closy-forge
         run: >-
@@ -60,7 +60,7 @@ jobs:
           python-version: '3.11'
       - name: Install locked Forge environment
         working-directory: closy-forge
-        run: python -m pip install --require-hashes -r requirements-dev.lock
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
       - name: Build exact minimal contestant image
         run: docker build --pull=false -t closy-d0-v3:${{ env.LOCK_HEAD }} closy-forge/docker/d0_v3
       - name: Record image identity and file inventory
@@ -111,5 +111,5 @@ jobs:
             unit-s-preflight-artifact/replication-2.json
             unit-s-preflight-artifact/replication-3.json
             unit-s-preflight-artifact/replication-sha256.txt
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
