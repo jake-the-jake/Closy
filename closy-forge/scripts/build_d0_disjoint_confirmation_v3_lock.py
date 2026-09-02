@@ -16,7 +16,7 @@ from closy_forge.disjoint_confirmation_v3.protocol import (
     validate_protocol,
 )
 from closy_forge.package_io.canonical_json import canonical_dumps, read_json, write_canonical_json
-from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.package_io.hashing import sha256_bytes
 from closy_forge.recovery_foundation_v2.evaluator_v3 import mutation_report
 from closy_forge.recovery_foundation_v2.pixel_routes import build_pixel_causal_controls
 
@@ -35,7 +35,7 @@ def build() -> dict[str, Any]:
     protocol = build_protocol(
         implementation_files=implementation,
         workflow_sha256=canonical_source_sha256(workflow),
-        model_sha256=sha256_file(MODEL_PATH),
+        model_sha256=canonical_source_sha256(MODEL_PATH),
         model_digest=str(model["modelDigest"]),
         typed_inventory_digest=str(inventory["inventoryDigest"]),
     )

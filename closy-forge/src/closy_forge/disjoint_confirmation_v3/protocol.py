@@ -157,7 +157,7 @@ def build_protocol(
             "dockerfile": "docker/d0_v3_confirmation/Dockerfile",
             "entrypoint": "/app/entrypoint.sh",
             "modelPath": "models/d0_v3/public_pixel_fitted_tshirt_v1.json",
-            "modelFileSha256": model_sha256,
+            "modelCanonicalTextSha256": model_sha256,
             "modelDigest": model_digest,
             "trainingClass": "public_fixed_pre_v3_development_only",
             "trainingOrCalibrationOnV3": False,
