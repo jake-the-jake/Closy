@@ -97,6 +97,7 @@ jobs:
             sudo chmod 0555 "$input"
             sudo chmod 0444 "$input/canary.bin"
             sudo chown -R 65532:65532 "$output"
+            sudo chmod 0755 "$output"
             PYTHONPATH=closy-forge/src python closy-forge/scripts/run_d0_v3_container_preflight.py \
               --input "$input" \
               --output "$output" \

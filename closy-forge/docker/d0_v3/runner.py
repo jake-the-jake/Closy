@@ -16,7 +16,7 @@ ROUTE = os.environ.get("ROUTE_ID", "")
 def _write(name: str, value: object) -> None:
     path = OUTPUT / name
     data = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
     try:
         os.write(descriptor, data)
         os.fsync(descriptor)
