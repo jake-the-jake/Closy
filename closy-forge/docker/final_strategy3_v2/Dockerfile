@@ -4,6 +4,7 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PYTHONHASHSEED=0 PYTHONPATH=/app/src
 WORKDIR /app
 COPY src/closy_forge/__init__.py /app/src/closy_forge/__init__.py
 COPY src/closy_forge/final_strategy3_v2 /app/src/closy_forge/final_strategy3_v2
+COPY src/closy_forge/contracts /app/src/closy_forge/contracts
 COPY src/closy_forge/geometry /app/src/closy_forge/geometry
 COPY src/closy_forge/package_io /app/src/closy_forge/package_io
 COPY src/closy_forge/simulation /app/src/closy_forge/simulation
