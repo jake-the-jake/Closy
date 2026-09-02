@@ -146,8 +146,8 @@
     "officialTopologyFixturesCreated": false,
     "outcome": "pass",
     "physicalAttemptConsumed": false,
-    "preflightHead": "2f694869144fede0901507c37a2dd09fbef003a5",
-    "preflightRun": "33610438542",
+    "preflightHead": "1ad839bfbb95dd62117c2cbefbb3e66b4a3a42d7",
+    "preflightRun": "33611989613",
     "subgates": {
       "S-D0-authority": {
         "reason": "exact_head_pinned_image_preflight_3_of_3",

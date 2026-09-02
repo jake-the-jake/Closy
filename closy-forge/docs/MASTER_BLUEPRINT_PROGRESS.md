@@ -503,5 +503,5 @@ Only public ineligible development fixtures ran in Unit S. No topology strategy,
 solve, PHY1, CCD, or runtime selection changed.
 
 Unit S evidence anchor is `6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92`. Exact pinned-image and portability preflight is
-recorded at `2f694869144fede0901507c37a2dd09fbef003a5` by workflow `33610438542`. The Research Prototype
+recorded at `1ad839bfbb95dd62117c2cbefbb3e66b4a3a42d7` by workflow `33611989613`. The Research Prototype
 remains `7/4/0` core and `2/0/2` supplemental; broader evidence tiers remain unsupported.
