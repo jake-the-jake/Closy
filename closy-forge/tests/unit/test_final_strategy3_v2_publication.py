@@ -22,8 +22,10 @@ def _json(name: str) -> dict[str, object]:
 
 
 def test_unit_u_publication_is_fresh() -> None:
+    # Current status is owned by the append-only successor publication; Unit U artifacts remain
+    # immutable inputs rather than regenerating current dashboards with the historical builder.
     subprocess.run(
-        [sys.executable, "scripts/build_final_strategy3_v2_publication.py", "--check"],
+        [sys.executable, "scripts/build_truth_authority_integrity_v3.py", "--check"],
         cwd=ROOT,
         check=True,
         timeout=30,
@@ -102,16 +104,11 @@ def test_post_unit_u_budget_ledger_extends_without_rewriting_unit_s() -> None:
 
 def test_status_closes_only_true_dependants() -> None:
     resume = json.loads((ROOT / "docs" / "ACTIVE_BLUEPRINT_RESUME.json").read_text())
-    assert resume["conditionalUnits"] == {
-        "T": "complete_failed_absolute_gates",
-        "U": "complete_dependency_blocked_before_official_seed_v2",
-        "V": "ineligible_unit_u_not_admitted",
-        "W": "ineligible_no_unit_v_candidate",
-        "X": "ineligible_no_unit_w_core_prerequisites",
-    }
+    assert resume["conditionalUnits"]["Y1"] == ("ineligible_until_unit_y0_exact_head_ci_passes")
+    assert resume["unitUResult"]["literalOutcome"] == ("dependency_blocked_before_official_seed_v2")
     assert resume["remainingBudgets"] == {
         "candidateAttempts": 1,
         "seamModels": 0,
         "topologyStrategies": 0,
     }
-    assert resume["nextHandoff"]["selection"] == "none_dependency_ready"
+    assert resume["nextHandoff"]["selection"] == "unit_y1_after_y0_exact_head_pass"

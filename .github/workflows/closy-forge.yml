@@ -89,6 +89,37 @@ jobs:
       - name: Run stable unit and corruption shard
         run: python -m closy_forge.ci.test_shards --group "${{ matrix.group }}"
 
+  sealed-v2-failure:
+    name: Sealed v2 failure ${{ matrix.os }} Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python-version: "3.11"}
+          - {os: windows-latest, python-version: "3.11"}
+          - {os: ubuntu-latest, python-version: "3.12"}
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      # actions/checkout v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      # actions/setup-python v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: closy-forge/requirements-dev.lock
+      - name: Install version-constrained Forge dev environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Execute and verify the exact immutable v2 failure
+        run: python scripts/verify_sealed_v2_failure.py
+
   family-rebuilds:
     name: Families ${{ matrix.group }} ${{ matrix.os }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
@@ -215,19 +246,21 @@ jobs:
   forge-required:
     name: Forge required
     if: always()
-    needs: [contracts-static, test-shards, family-rebuilds, cumulative-integration, digest-consistency]
+    needs: [contracts-static, test-shards, sealed-v2-failure, family-rebuilds, cumulative-integration, digest-consistency]
     runs-on: ubuntu-latest
     steps:
       - name: Require every lane
         env:
           CONTRACTS_STATIC: ${{ needs.contracts-static.result }}
           TEST_SHARDS: ${{ needs.test-shards.result }}
+          SEALED_V2_FAILURE: ${{ needs.sealed-v2-failure.result }}
           FAMILIES: ${{ needs.family-rebuilds.result }}
           INTEGRATION: ${{ needs.cumulative-integration.result }}
           DIGESTS: ${{ needs.digest-consistency.result }}
         run: |
           test "$CONTRACTS_STATIC" = success
           test "$TEST_SHARDS" = success
+          test "$SEALED_V2_FAILURE" = success
           test "$FAMILIES" = success
           test "$INTEGRATION" = success
           test "$DIGESTS" = success
