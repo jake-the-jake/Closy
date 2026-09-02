@@ -1,75 +1,40 @@
 # Master Blueprint Progress Ledger
 
-This ledger records executable evidence against `Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`. It is not a roadmap substitute: entries marked complete require code, fixtures, reports, tests or explicit validation evidence. Current status and stack topology are generated from and cross-checked against `current_blueprint_status.json`, `blueprint_coverage.json`, and `pr_stack_manifest.json`; historical run details below are append-only evidence, not readiness authority.
+This ledger records executable evidence against
+`Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`. Machine-readable status,
+coverage, stack topology, and the versioned successor truth overlay are the readiness authority;
+historical prose below is append-only context.
 
-## Current D0 Truth And Runtime Authority Checkpoint
+## Current Truth And Authority Checkpoint
 
-- Review unit A is based exactly on draft PR #39 head
-  `f732df267642cd55960205764e699c7fa2bb2d0f`; its evidence generator source anchor is
-  `01699163ed4470992f0e33ff9d9b6b4c65a67f7f`.
-- `closy.final_d0_research_prototype_matrix.v2` evaluates 15 stable rows from opened artifact and
-  payload bytes, selected package/avatar/garment joins, and immutable threshold-registry references.
-  Current result: 8 pass, 0 fail, 7 not run; the first unmet row is exact decoded front/rear raster
-  source identity. The new neutral-simulation row is also not run.
-- The explicit dependency graph covers source through runtime authority and rejects cycles, unknown
-  nodes, duplicate authorities, cross-candidate joins, and private identifiers in portable evidence.
-- `closy.runtime_package.research_candidate.v2` packages the canonical T-shirt fallback GLB, derives
-  authority from selected validated bytes, and loads offline after source withdrawal. ZeroOne JSON
-  remains descriptor-only; product runtime v1 and product selection are unchanged.
-- Runtime/raster decompression is bounded while streaming and rejects ratio abuse, truncation,
-  trailing streams, and declared-size mismatch. No human, private-user, real-photo, device, GPU,
-  mobile, realistic-cloth, production, PHY1, or Z2 promotion is claimed.
-- The next dependency-ready review unit is exact public front/rear raster identity and observation
-  lineage. It must branch only after review unit A has externally attested exact-head Forge CI.
+- Active branch: `codex/closy-forge-truth-authority-integrity-v3`; draft PR `#56`; source evidence anchor
+  `59a75055d51cd5f15d56089cfc45103117ce06fd`. Final publication head and exact-head CI are externally attested.
+- Unit T literally returned `completed_benchmark_failed_absolute_gates`. It executed 64 attempts, produced 60
+  artifacts with four explicit abstentions, evaluated 48 compile rows, yielded zero strict
+  complete pixel-route compile-valid candidates, and actually evaluated 8/24 appearance rows
+  with zero passes. D0-RP-04 passed; D0-RP-03, D0-RP-06, and D0-RP-07 failed.
+- Unit U literally returned `dependency_blocked_before_official_seed_v2`. It created no seed, untouched fixture,
+  oracle reveal, scientific admission, or candidate. PR #55 exact-head Forge run
+  `33635092644` completed with 25 passing and four failing jobs.
+- Strategy 3 is reserved and consumed; scientific admission was not executed. Remaining budgets
+  are seam models `0`, topology strategies `0`, and canonical-candidate attempts `1`.
+- Unit S successor authority integrity is derived from the complete executable predicate and
+  mutation sets. These are integrity results only and create no scientific capability claim.
+- The supplemental matrix identities are D0-RP-09 and D0-RP-14 pass; D0-RP-10 and D0-RP-11 not
+  run. Pre-topology C3, scoped static Z1, failed non-solver Z2 evidence, and globally unproven
+  gates remain distinct.
 
 ## Dashboard
 
-- Branch: `codex/closy-forge-phase11-prerequisite-reconciliation-v2`
-- Master blueprint source: [`Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md`](./Closy_AI_3D_Garment_and_ZeroOne_Integration_Master_Blueprint.md), byte-faithful copy of the user-supplied document, SHA-256 `AD8ED0088776BEFFE8F1CAB75B7EDEA9C2497FC80146FB74E1686D0C41896A6D`
-- Exact published continuation base: PR #23 head
-  `a481ba26a424bd91607b8c1d41b6173a2c9579d9`; its explicit DAG node records 14 unique
-  commits, 24 changed files, and exact-head run `33150483293` with 26 successful jobs.
-- PR #24 is the common integrity/trust parent at
-  `5d080caad354bcecff94a7eadf16d080d68a606c`. PR #25 requalifies C3/PHY1, PR #26 is
-  the independent Phase 9 raster-trained synthetic branch, and PR #27 refreshes paired ZeroOne
-  static integration. The current branch replays PR #25's eight commits onto PR #27 without
-  rewriting either sibling.
-- Exact-head runs `33201911956` (Phase 9) and `33203908161` (Phase 10) each pass all 26 jobs.
-  PR #25 run `33203903630` passes static and family lanes but fails both integration shards from
-  package-byte drift; the immutable source is retained and the reconciliation descendant restores
-  compatibility while preserving explicit PHY1 diagnostics.
-- ZeroOne execution is candidate-static evidence from unmerged ZeroOne PR #2 source
-  `13a844d240f4bbb2cafde105c4a0bdca8d89a06b`; its independently inspected Windows
-  Release executable has SHA-256
-  `59bb051455ae2878a30edd353bdb451271107bb5df3e3570b89b955379cf2065`.
-- Current active increment: exact prerequisite reconciliation for Phase 11. C3-Binding-D0 passes,
-  but refreshed paired scoped Z1 and PHY1-SingleLayer-D0 fail. Phase 11 dynamic execution and Z2
-  therefore remain unexecuted; only independent Phase 12 static runtime preparation is eligible.
-- Completed phases: `BP-17-PHASE-00`
-- Partially complete phases: `BP-17-PHASE-01` through `BP-17-PHASE-14`
-- Scoped C1, C2, and fixed-profile C3-Binding-D0 pass; global statuses remain partial. Refreshed
-  paired scoped Z1 attempted all nine frozen families: six accepted and three failed exactly with
-  `E_SURFACE_BUILD:invalid_surface_topology:surface triangle is degenerate`. Z2 through Z8 and P1
-  are not run or discovery pending.
-- `PHY1-SingleLayer-D0` improves 33 initial contacts to 9 unresolved contacts, but residual depth
-  is `0.001878992 m` against the `0.000160000 m` budget, minimum body clearance is
-  `-0.009084014 m`, maximum seam crack is `0.109609688 m`, and `0/11` trajectories/states pass.
-- Requirement rows now total 21 complete / 59 partial / 8 not started / 13 discovery pending.
-  Phase 0 alone is complete; Phases 1-14 remain partial. Research Prototype is partial; Alpha,
+- Requirement rows: 20 complete / 63 partial /
+  7 not started / 11 discovery pending; 101 total.
+- Phase 0 is complete. Phases 1-14 remain partial. Research Prototype remains partial; Alpha,
   Beta, and Production are not started.
-- Phase 9 uses 96 identity-disjoint synthetic programs and 384 raster-derived observations. Its
-  held-out top-1 is `53/64` (`0.828125`) and top-3 is `1.0`; the nearest-centroid baseline reaches
-  `0.90625`, so learned superiority is false. Four of eight downstream learned fits are accepted;
-  all package builds remain valid through deterministic fallback.
-- Refreshed ZeroOne execution attempts all nine frozen families using candidate-static source
-  `13a844d240f4bbb2cafde105c4a0bdca8d89a06b`. Six derivatives validate; three reject
-  deterministically. Cache-hit authority, deletion/rebuild recovery, and fixture fallback remain
-  preserved, but the scoped Z1 candidate does not pass.
-- Independent work remains: PHY1 physical convergence, current-master ZeroOne requalification,
-  successful all-family paired scoped Z1, independent source fidelity, broader provider/mobile evidence,
-  authorised private-user tiers, licence review, and human visual acceptance. A Phase 11
-  mechanical/reference slice still requires a passing refreshed paired scoped Z1; solver-driven
-  physical quality additionally requires PHY1. No Phase 11 dynamic artifact has been created.
+- The immutable v2 Strategy 3 test remains byte-identical and its exact historical mismatch is
+  required in a dedicated CI lane. Ordinary pass-oriented shards deselect only that exact node.
+- Unit Y1 may start only after Unit Y0 exact-head Forge and sealed-v2-failure lanes both pass.
+- No merge, rebase, force-push, scientific retry, budget restoration, candidate transformation,
+  private-user, GPU, mobile, or human-review evidence is authorised by this checkpoint.
 
 ## Status Vocabulary
 
