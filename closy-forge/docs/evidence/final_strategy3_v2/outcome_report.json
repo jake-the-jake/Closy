@@ -1,0 +1,129 @@
+{
+  "admission": {
+    "admitted": false,
+    "confirmationExecuted": false,
+    "unitVEligible": false,
+    "unitWEligible": false,
+    "unitXEligible": false
+  },
+  "base": {
+    "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+    "sha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02"
+  },
+  "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+  "budgetsAfter": {
+    "candidateAttempts": 1,
+    "seamModels": 0,
+    "topologyStrategies": 0,
+    "untouchedConfirmationAttemptConsumed": false
+  },
+  "failure": {
+    "cause": "windows_autocrlf_worktree_bytes_were_hashed_instead_of_repository_blob_bytes",
+    "class": "pre_seed_portable_lock_byte_identity_failure",
+    "mismatchCount": 4,
+    "mismatches": [
+      {
+        "gitBlobOidSha1": "c1360db65edc6b73735a6c6027495f47eacc49d1",
+        "lockedByteLength": 6761,
+        "lockedSha256": "372ecba0d34527411d5e184767e399a9225dc49fa3ac21997e2a450e80e09692",
+        "path": "src/closy_forge/recovery_foundation_v2/topology_holdout.py",
+        "repositoryByteLength": 6605,
+        "repositorySha256": "3f595f60c5da54df3f9da901738de0000177de251f81e7994a85984823308f6e"
+      },
+      {
+        "gitBlobOidSha1": "e77fc707bd943b9b9469250e2f49f7949ec03ecd",
+        "lockedByteLength": 3326,
+        "lockedSha256": "c0cf79f42ea70ec3ac54ba426a726d65247e57d00759d615797ccd861e573878",
+        "path": "src/closy_forge/recovery_foundation_v2/topology_holdout_oracle.py",
+        "repositoryByteLength": 3252,
+        "repositorySha256": "ffc96bde5658e59c16373c7cca2f044c8a64db38476942659449fd51e47e88a8"
+      },
+      {
+        "gitBlobOidSha1": "a6c92eb704f6a627d937ebc4faa631a07033107e",
+        "lockedByteLength": 49669,
+        "lockedSha256": "cfa7ea16dfe952e66adce856cd7cb5700cc0b1074b882cddc76a2f480d38edb9",
+        "path": "src/closy_forge/simulation/reference_cloth_solver.py",
+        "repositoryByteLength": 48477,
+        "repositorySha256": "928069f98f049e0aace9625473c77a93caebc0bda9a7b0afa38b5587086b4f41"
+      },
+      {
+        "gitBlobOidSha1": "59de2deff7bec9527b474624754bbf6fbb76a233",
+        "lockedByteLength": 58989,
+        "lockedSha256": "92980ead1dcfc4329a1ef6c6b72847923ffaeae556ee873092d3a9a7fa8f9187",
+        "path": "src/closy_forge/simulation/self_collision.py",
+        "repositoryByteLength": 57533,
+        "repositorySha256": "0ddbcb2ff69b878030da91ef9bc9502a1efd5c74da0d8451a52ee3e8b477f5a9"
+      }
+    ],
+    "publicProofPassedBeforeFailure": true,
+    "scientificInterpretation": "dependency block before official seed; not a Strategy-3 scientific result"
+  },
+  "firstUnmetPredicate": "locked_implementation_byte_identity_portable_on_authority_checkout",
+  "literalOutcome": "dependency_blocked_before_official_seed_v2",
+  "lock": {
+    "fileSha256": "8159afee5130c673875e4efc69955175fa1cf0976eb573e2c5b0452b1927c3b6",
+    "headSha": "d76916461d3e96b037fbc31b646319effef7a264",
+    "implementationDigest": "3804f04f112be105a2b82381a3335b974732fb3a83d9eefa8549b92069878e0b",
+    "lockHash": "f56e16579bbd6e078638c36ef9c0c3de7e59e72cca7efd1087cf11fde1039204",
+    "postLockScientificSurfaceChanged": false,
+    "relockPermitted": false
+  },
+  "officialAuthority": {
+    "artifactUploaded": false,
+    "attemptConsumed": false,
+    "authorityJobId": "100250251482",
+    "authorityJobResult": "skipped",
+    "headSha": "d76916461d3e96b037fbc31b646319effef7a264",
+    "officialFixtureCount": 0,
+    "officialSeedCreated": false,
+    "preflightContainerJobId": "100249654433",
+    "preflightContainerJobResult": "failure",
+    "qualificationRetryAllowed": false,
+    "rerunPerformed": false,
+    "runId": "33630862367",
+    "strategyContainerExecutions": 0,
+    "ubuntuVerifierJobId": "100249654471",
+    "ubuntuVerifierJobResult": "success",
+    "windowsVerifierJobId": "100249653848",
+    "windowsVerifierJobResult": "success",
+    "workflowConclusion": "failure",
+    "workflowId": 348397321,
+    "workflowSeal": {
+      "mechanism": "github_actions_workflow_disabled_without_changing_locked_bytes",
+      "observedAtUtc": "2026-09-02T12:47:44Z",
+      "state": "disabled_manually"
+    }
+  },
+  "outcomeDigest": "e4416441df98e73961c3192de7eecf33be74061823b2a276172d3ee9300b9659",
+  "portablePreflight": {
+    "containerImageId": "sha256:07f54a27f9bce38c5be7c6e26ac906eee2cbaa19c83b68a2354064c80f695247",
+    "genericContainerCanary": "pass",
+    "result": "pass",
+    "runId": "33630652037",
+    "ubuntuVerifier": "pass",
+    "windowsVerifier": "pass"
+  },
+  "protocolVersion": "closy.phy1.final_strategy3_confirmation.v2",
+  "publicConformance": {
+    "allFixturesUseProductionAssembly": true,
+    "cycleResults": [
+      "failed_implementation_conformance",
+      "pass"
+    ],
+    "executedCycles": 2,
+    "finalDenominator": 8,
+    "finalPassed": 8,
+    "maximumCycles": 2
+  },
+  "pullRequest": 55,
+  "runtime": {
+    "changed": false,
+    "fallbackDigest": "8eccea814251f8974f5349548038be73a4d00cec73df7a7bfb787aede58385c6",
+    "packageDigest": "836abc564a79c0f38ae8bdad3d4a418b0fb05a550193059c1cece8130203c20a",
+    "selectedRuntime": "closy.integrated_runtime.headless_d0.v1"
+  },
+  "schemaVersion": 1,
+  "strategyClass": "seam-sequence-preserving conforming panel remesh with duplicated seam degrees of freedom and rebuilt transfer/binding ancestry",
+  "strategyId": "PHY1-V5-S3-SEAM-SEQUENCE-CONFORMING-REMESH-V2",
+  "unit": "U"
+}

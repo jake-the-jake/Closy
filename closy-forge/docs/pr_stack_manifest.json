@@ -565,6 +565,16 @@
       "from": "github:jake-the-jake/ZeroOne:pr/3",
       "kind": "parent",
       "to": "github:jake-the-jake/ZeroOne:pr/4"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/54",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/55"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/54",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/55"
     }
   ],
   "externalPullRequests": [
@@ -675,10 +685,10 @@
     }
   ],
   "graphCounts": {
-    "closyPullRequests": 53,
-    "edges": 113,
+    "closyPullRequests": 55,
+    "edges": 115,
     "externalPullRequests": 3,
-    "nodes": 56
+    "nodes": 58
   },
   "graphVersion": "closy.cross_repository_pr_dag.v3",
   "nodes": [
@@ -2721,6 +2731,75 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a..6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
+    },
+    {
+      "ahead": 6,
+      "baseRef": "codex/closy-forge-evidence-authority-recovery-v2",
+      "baseSha": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+      "capabilityRole": "forge_unit_t_untouched_d0_t_shirt_confirmation_v3",
+      "changedFileCount": 80,
+      "dependencyIds": [],
+      "headSha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "id": "github:jake-the-jake/Closy:pr/54",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 29,
+          "runId": "33624168164",
+          "workflow": "Closy Forge"
+        },
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "jobCount": 1,
+          "runId": "33624168111",
+          "workflow": "Forge Unit T D0 v3 authority"
+        }
+      ],
+      "mergeBase": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [],
+      "pullRequest": 54,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_disjoint_tshirt_confirmation_v3_failed_absolute_gates",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "b8d222dadbe092e25604b838e7ad219d6a1c114b..0c45587371165f1c5f3e33934ee2cbf5156f9e02"
+    },
+    {
+      "ahead": 8,
+      "baseRef": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+      "baseSha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "behind": 0,
+      "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+      "capabilityRole": "forge_unit_u_final_strategy_3_confirmation_v2",
+      "changedFileCount": 38,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/54"
+      ],
+      "headSha": "28b4dd93f0c6634f9ad7833f890d12000628e1b2",
+      "id": "github:jake-the-jake/Closy:pr/55",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/54"
+      ],
+      "pullRequest": 55,
+      "repository": "jake-the-jake/Closy",
+      "role": "final_strategy3_v2_dependency_blocked_before_official_seed",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "0c45587371165f1c5f3e33934ee2cbf5156f9e02..28b4dd93f0c6634f9ad7833f890d12000628e1b2"
     },
     {
       "ahead": 3,
@@ -4990,6 +5069,62 @@
       "state": "OPEN",
       "title": "Forge: evidence authority recovery foundation v2",
       "url": "https://github.com/jake-the-jake/Closy/pull/53"
+    },
+    {
+      "baseBranch": "codex/closy-forge-evidence-authority-recovery-v2",
+      "baseSha": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+      "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+      "changedFileCount": 80,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "forgeJobCount": 29,
+        "forgeJobCountSemantics": "all jobs in the Closy Forge workflow; unrelated skipped checks are excluded",
+        "runId": "33624168164",
+        "successfulForgeJobCount": 29,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 6,
+      "layerBehind": 0,
+      "layerCommitCount": 6,
+      "mergeBase": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+      "mergeability": "MERGEABLE",
+      "number": 54,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_disjoint_tshirt_confirmation_v3_failed_absolute_gates",
+      "state": "OPEN",
+      "title": "Forge Unit T: untouched D0 T-shirt confirmation v3",
+      "url": "https://github.com/jake-the-jake/Closy/pull/54"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+      "baseSha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+      "changedFileCount": 38,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "28b4dd93f0c6634f9ad7833f890d12000628e1b2",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #55 final exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable publication source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 8,
+      "layerBehind": 0,
+      "layerCommitCount": 8,
+      "mergeBase": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "mergeability": "MERGEABLE",
+      "number": 55,
+      "repository": "jake-the-jake/Closy",
+      "role": "final_strategy3_v2_dependency_blocked_before_official_seed",
+      "state": "OPEN",
+      "title": "Forge Unit U: final Strategy 3 confirmation v2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/55"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -5024,6 +5159,8 @@
     "github:jake-the-jake/Closy:pr/27",
     "github:jake-the-jake/Closy:pr/29",
     "github:jake-the-jake/Closy:pr/53",
+    "github:jake-the-jake/Closy:pr/54",
+    "github:jake-the-jake/Closy:pr/55",
     "github:jake-the-jake/ZeroOne:pr/2",
     "github:jake-the-jake/Closy:pr/28",
     "github:jake-the-jake/Closy:pr/30",

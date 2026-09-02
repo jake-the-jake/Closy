@@ -1,0 +1,90 @@
+{
+  "ancestry": {
+    "baseBranch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+    "baseSha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+    "immutablePr52Sha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+    "unitSHead": "b8d222dadbe092e25604b838e7ad219d6a1c114b"
+  },
+  "attributeTransfer": {
+    "categoricalRule": "inherit the unique ancestor value; on an equal-area mixed ancestry tie choose the lexicographically least canonical value and retain every ancestor id",
+    "faceAncestryRule": "each target face records one source panel id and the ordered source-face ids whose closure split produced it",
+    "massEquation": "target lumped vertex mass is one third of incident target rest-triangle mass; target triangle mass is source areal density times target rest area; total target mass is corrected only by assigning the exact fixed-point remainder to the lexicographically least target vertex id",
+    "massToleranceKg": "1e-12",
+    "numericDomain": "integer nanometer panel coordinates for ordering and topology identity; binary64 only inside measured kernels; metric-specific half-even fixed point for portable decisions",
+    "uvPanelSourceEquation": "new vertex attributes equal barycentric interpolation in the selected source panel triangle; existing vertices retain exact values",
+    "vertexAncestryRule": "existing ids retain singleton ancestry; an inserted edge vertex records the ordered endpoint ancestry union and rational split parameter"
+  },
+  "budget": {
+    "candidateAttempts": {
+      "available": 1,
+      "consumed": 0,
+      "remaining": 1,
+      "reserved": 0
+    },
+    "seamModels": {
+      "available": 0,
+      "consumed": 2,
+      "remaining": 0,
+      "reserved": 0
+    },
+    "topologyStrategies": {
+      "available": 0,
+      "consumed": 2,
+      "remaining": 0,
+      "reserved": 1
+    }
+  },
+  "candidatePolicy": {
+    "canonicalCandidateCreationAllowedInUnitU": false,
+    "canonicalSourceExecutionAllowedInUnitU": false,
+    "firstCanonicalTransformationConsumesCandidateAttempt": true,
+    "unitVEligibilityRequiresLiteralUntouchedAdmission": true
+  },
+  "conformancePolicy": {
+    "allowedRepairCycles": 2,
+    "alternativeStrategySelectionAllowed": false,
+    "officialResultMaySelectDesign": false,
+    "publicFixturesOnly": true
+  },
+  "junctionAndOpeningRules": {
+    "junctionRule": "preserve typed seam-side endpoint incidence; valence-three logical seam junctions remain constraint-graph junctions and never become shared raw-panel vertices",
+    "openingRule": "preserve every declared opening side as an ordered simple quotient cycle; reject added, missing, repeated, or branched opening edges"
+  },
+  "renderBindingRebuild": {
+    "equation": "for each render vertex select the containing target panel triangle in canonical panel coordinates by lexicographic face id tie-break, then store bounded barycentric weights summing to one",
+    "fallbackRule": "if no containing face exists, select minimum squared panel-space distance with lexicographic face id tie-break and store its clamped renormalized barycentric weights",
+    "staleBindingReuseAllowed": false
+  },
+  "remeshOperator": {
+    "closureRule": "bisect every face incident to a selected edge; recursively split the opposite edge in any neighbouring face that would otherwise contain the inserted point in its open edge interval",
+    "deterministicPriority": "descending integer squared edge length, then panel id, then ordered endpoint ancestry ids, then source face id",
+    "edgeSplitParameter": "1/2 exactly for conforming geometric refinement; semantic seam samples remain governed by the separate normalized-arclength map",
+    "insertedEdgeId": "sha256(strategyId || panelId || ordered endpoint ancestry ids || rational split parameter)",
+    "insertedVertexId": "sha256(strategyId || panelId || selected edge id || rational split parameter)",
+    "operator": "deterministic conforming longest-eligible-edge bisection independently inside each raw panel",
+    "panelBoundaryRule": "raw panel boundaries and duplicated seam sides remain distinct; a boundary split is mirrored only through semantic correspondence, never by welding degrees of freedom"
+  },
+  "representations": {
+    "rawPanelisedSimulation": "distinct orientable manifold-with-boundary panel components with duplicated seam-side vertices",
+    "renderAndFallback": "literal indexed connectivity with explicit equivalence and ancestry ids for intentional UV, material, and hard-normal splits",
+    "semanticSeamQuotient": "logical sewn connectivity induced only by typed ordered seam correspondences"
+  },
+  "schemaVersion": 1,
+  "seamCorrespondence": {
+    "easeEquation": "for each locked semantic sample q, map sA=q/(N-1) through the declared monotone piecewise-linear ease profile e(sA); locate the unique half-open target interval [sB_j,sB_j+1), using the closed final interval at s=1; weights are (1-t,t)",
+    "intervalCoverage": "ordered half-open intervals cover [0,1] once, with the final interval closed at 1",
+    "orientationRule": "same orientation uses sB=e(sA); reversed orientation uses sB=1-e(sA)",
+    "partitionRule": "all interpolation weights are bounded in [0,1] and sum to one within the frozen fixed-point unit",
+    "sampleAuthority": "preserve the existing finite-compliance semantic constraint sample identities and count; remesh boundary vertices do not multiply seam springs",
+    "seamLaw": "unchanged finite-compliance XPBD distance law, compliance, rest-gap/ease semantics, and normalized-arclength sampling authority from PHY1 seam-support v3"
+  },
+  "strategyClass": "seam-sequence-preserving conforming panel remesh with duplicated seam degrees of freedom and rebuilt transfer/binding ancestry",
+  "strategyId": "PHY1-V5-S3-SEAM-SEQUENCE-CONFORMING-REMESH-V2",
+  "strategyReservationVersion": "closy.phy1.final_strategy3.design_reservation.v2",
+  "transferRebuild": {
+    "collisionAdjacency": "rebuild target vertex-face and edge-edge adjacency from target indexed faces",
+    "constraintRule": "rebuild stretch, shear, bend, seam, and support constraints from target rest geometry and unchanged material/seam laws",
+    "selfCollisionExclusion": "exclude only literal target adjacency plus exact stitched semantic neighbours; broad-label exclusion is forbidden",
+    "staleSourceIndicesAllowed": false
+  }
+}
