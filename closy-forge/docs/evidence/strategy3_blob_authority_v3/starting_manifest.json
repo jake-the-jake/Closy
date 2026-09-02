@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "manifestVersion": "closy.strategy3_blob_authority.starting_state.v1",
+  "unit": "Y1",
+  "branch": "codex/closy-forge-strategy3-repository-blob-authority-v3",
+  "parent": {
+    "unit": "Y0",
+    "branch": "codex/closy-forge-truth-authority-integrity-v3",
+    "finalHead": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+    "rootTreeObjectId": "a7eb5aee9db1247b8725ab5db3ad6a9b61177017",
+    "exactHeadForgeRunId": "33672118033",
+    "exactHeadForgeJobCount": 32,
+    "exactHeadForgeResult": "pass"
+  },
+  "scientificSource": {
+    "strategyId": "PHY1-V5-S3-SEAM-SEQUENCE-CONFORMING-REMESH-V2",
+    "commit": "d76916461d3e96b037fbc31b646319effef7a264",
+    "strategyAlgorithmChanged": false,
+    "topologyStrategyBudgetRestored": false,
+    "newStrategyIntroduced": false
+  },
+  "sealedV2": {
+    "literalOutcome": "dependency_blocked_before_official_seed_v2",
+    "officialSeedCreated": false,
+    "officialFixtureCreated": false,
+    "scientificAdmissionExecuted": false,
+    "canonicalCandidateCreated": false,
+    "attemptConsumed": false
+  },
+  "budgetsBeforeY1": {
+    "seamModelsRemaining": 0,
+    "topologyStrategiesAvailable": 0,
+    "strategy3Reserved": true,
+    "strategy3Consumed": true,
+    "untouchedStrategy3ConfirmationAttemptConsumed": false,
+    "canonicalCandidateAttemptsRemaining": 1
+  },
+  "primaryWorktreeInventory": [
+    "M metro.config.js",
+    "M src/features/avatar-export/components/avatar-preview-dev-screen.tsx",
+    "M src/features/avatar-viewport/avatar-viewport-live.tsx",
+    "M src/features/avatar-viewport/live-viewport-debug-types.ts",
+    "M src/features/avatar-viewport/three.ts",
+    "?? closy-forge/.tmp/"
+  ],
+  "prompt": {
+    "externalFileName": "Closy_Next_Blueprint_Progression_Prompt_BlobLock_Strategy3_D0V4_PHY1.md",
+    "byteLength": 84591,
+    "sha256": "3837cfc18b2902362192f2a589257f1ca491d1af48780ce7cba0fbac8bad6055"
+  },
+  "authority": {
+    "successorAuthorized": true,
+    "maximumFinalLockCommits": 1,
+    "maximumOfficialAdmissionAttempts": 1,
+    "seedCreationConsumesAttempt": true,
+    "candidateAttemptAuthorized": false,
+    "mergeAuthorized": false
+  }
+}
