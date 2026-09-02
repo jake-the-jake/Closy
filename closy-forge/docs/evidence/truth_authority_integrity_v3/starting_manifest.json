@@ -1,0 +1,143 @@
+{
+  "auditedStartingState": {
+    "mainSha": "859d4ee9a8a3386e95ec8c29043aa9ecc246769a",
+    "pr55ChangedFileCount": 40,
+    "pr55HeadSha": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+    "pr55OwnCommitCount": 10
+  },
+  "liveStartingState": {
+    "aheadOfMain": 424,
+    "baseBranch": "codex/closy-forge-phy1-final-strategy3-v2",
+    "baseSha": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+    "behindMain": 0,
+    "branch": "codex/closy-forge-truth-authority-integrity-v3",
+    "mainSha": "859d4ee9a8a3386e95ec8c29043aa9ecc246769a",
+    "mergeBaseSha": "859d4ee9a8a3386e95ec8c29043aa9ecc246769a",
+    "pr55Draft": true,
+    "pr55Mergeable": true,
+    "pr55Open": true,
+    "valuesMatchAudit": true
+  },
+  "primaryWorktreePreserved": {
+    "modified": [
+      "metro.config.js",
+      "src/features/avatar-export/components/avatar-preview-dev-screen.tsx",
+      "src/features/avatar-viewport/avatar-viewport-live.tsx",
+      "src/features/avatar-viewport/live-viewport-debug-types.ts",
+      "src/features/avatar-viewport/three.ts"
+    ],
+    "untracked": [
+      "closy-forge/.tmp/"
+    ]
+  },
+  "prompt": {
+    "path": "C:/Users/zlerk/Downloads/Closy_Next_Blueprint_Progression_Prompt_BlobLock_Strategy3_D0V4_PHY1.md",
+    "sha256": "3837cfc18b2902362192f2a589257f1ca491d1af48780ce7cba0fbac8bad6055"
+  },
+  "schemaVersion": 1,
+  "successorAuthority": {
+    "newStrategyIntroduced": false,
+    "strategyAlgorithmChanged": false,
+    "strategyId": "PHY1-V5-S3-SEAM-SEQUENCE-CONFORMING-REMESH-V2",
+    "topologyStrategyBudgetRestored": false,
+    "v2AuthorityImmutable": true,
+    "v3AdmissionAttemptsAuthorized": 1
+  },
+  "unit": "Y0",
+  "v2AuthorityWorkflow": {
+    "state": "disabled_manually",
+    "workflowId": 348397321
+  },
+  "v2ExactHeadCiWitness": {
+    "failedJobs": [
+      {
+        "failure": "immutable lock mismatch: 4 inherited CRLF-captured paths",
+        "jobId": 100263853160,
+        "name": "Tests shard-1 ubuntu-latest Python 3.11",
+        "testsFailed": 1,
+        "testsPassed": 170
+      },
+      {
+        "failure": "immutable lock mismatch: 20 text paths after Windows checkout materialization",
+        "jobId": 100263853187,
+        "name": "Tests shard-1 windows-latest Python 3.11",
+        "testsFailed": 1,
+        "testsPassed": 170
+      },
+      {
+        "failure": "immutable lock mismatch: 4 inherited CRLF-captured paths",
+        "jobId": 100263853304,
+        "name": "Tests shard-1 ubuntu-latest Python 3.12",
+        "testsFailed": 1,
+        "testsPassed": 170
+      },
+      {
+        "failure": "aggregate reflects mandatory shard failures",
+        "jobId": 100271755631,
+        "name": "Forge required"
+      }
+    ],
+    "failedJobCount": 4,
+    "passedJobCount": 25,
+    "runId": 33635092644,
+    "runOutcome": "completed_failure",
+    "supabasePreview": "skipped"
+  },
+  "v2FrozenBlobInventory": [
+    {
+      "byteLength": 5220,
+      "gitBlobOid": "29ccfe7c1b181b6696d38aa211af4fa4190e9cc6",
+      "path": ".github/workflows/forge-unit-u-final-strategy3-v2.yml",
+      "sha256": "5c2e65c230cb3dcea8f5acd8977588e8ff13381cb0a9d11e689657b494727633"
+    },
+    {
+      "byteLength": 3400,
+      "gitBlobOid": "21a49e8d0f40e203bb606a977965a6115b2c5bb1",
+      "path": "closy-forge/docs/evidence/final_strategy3_v2/REPORT.md",
+      "sha256": "f0759b0af20ad32e41542a725e686f241568f2ff3bc8a0e656ab570546da4127"
+    },
+    {
+      "byteLength": 923,
+      "gitBlobOid": "1870be962fd1ee4ec5c8cf9529dc303ad8f71d3d",
+      "path": "closy-forge/docs/evidence/final_strategy3_v2/RESERVATION.md",
+      "sha256": "59434827bc078854b384da1cb02f4e2f6a4117700b2eb17f190b676b24e18aab"
+    },
+    {
+      "byteLength": 2168,
+      "gitBlobOid": "100d5ddb980c366bea4415ac4826774bc07c8da2",
+      "path": "closy-forge/docs/evidence/final_strategy3_v2/external_authority_attestation.json",
+      "sha256": "2699e02ce2faed9e6645027d41805519bbaa0f0c10f8bbb1a40e6071146d2bf3"
+    },
+    {
+      "byteLength": 5357,
+      "gitBlobOid": "c7416ceab6f6251bd0372a2deafc0dfb611aa859",
+      "path": "closy-forge/docs/evidence/final_strategy3_v2/outcome_report.json",
+      "sha256": "bbaea5ececea35665dca12537220c2ea2de4110d38fdce76cff0d95e6f813f12"
+    },
+    {
+      "byteLength": 3937,
+      "gitBlobOid": "23c6cf594025e9c6e65a3427bf9e076fa832d203",
+      "path": "closy-forge/docs/evidence/final_strategy3_v2/physical_budget_event_ledger_after_unit_u.json",
+      "sha256": "52c8479af97131d99b60e333f186b60a46461c79a682ba5b6f6dfdf4e47276bb"
+    },
+    {
+      "byteLength": 4911,
+      "gitBlobOid": "aebee95d7ec1fe76362fe7e9182992df0c08eb27",
+      "path": "closy-forge/docs/evidence/final_strategy3_v2/public_conformance.json",
+      "sha256": "42d4cbaacf5e94cb5cee4c565f9da8dcc74c488dc5d3355b7e1d6590d6e67390"
+    },
+    {
+      "byteLength": 17560,
+      "gitBlobOid": "6dd8184ed522e2784d73b76fa17e4813ac9aed38",
+      "path": "closy-forge/fixtures/final_strategy3_v2/final_implementation_lock.json",
+      "sha256": "8159afee5130c673875e4efc69955175fa1cf0976eb573e2c5b0452b1927c3b6"
+    },
+    {
+      "byteLength": 6353,
+      "gitBlobOid": "c514f9ef7e5187895dfe646f645a4c92b4bf41a1",
+      "path": "closy-forge/fixtures/final_strategy3_v2/strategy_design_reservation.json",
+      "sha256": "951121d93c34cd194a3cb1f36d54f7e1d9421d773c7cbf195fde6bab8b4fed40"
+    }
+  ],
+  "v2LiteralOutcome": "dependency_blocked_before_official_seed_v2"
+}
