@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "ledgerVersion": "closy.strategy3.repository_blob_attempt_ledger.v3",
+  "events": [
+    {
+      "ordinal": 0,
+      "event": "successor_lock_published",
+      "lockCommit": "b9c6d34f4339fece2c6e6566b59c5b548f3f973a",
+      "lockDigest": "804996610e99f947defb7f06f2eb13b42008f7bd4988f1777fe0ef0acb5c10b5",
+      "officialSeedCreatedAfter": false,
+      "untouchedConfirmationAttemptConsumedAfter": false
+    },
+    {
+      "ordinal": 1,
+      "event": "external_preflight_dispatch_blocked",
+      "observedAtUtc": "2026-09-02T20:18:56.970Z",
+      "reasonCode": "workflow_dispatch_requires_workflow_on_default_branch",
+      "githubApiStatus": 404,
+      "literalOutcome": "strategy3_dependency_blocked_before_seed_v3",
+      "officialSeedCreatedAfter": false,
+      "untouchedConfirmationAttemptConsumedAfter": false,
+      "canonicalCandidateAttemptsRemainingAfter": 1
+    }
+  ],
+  "ledgerDigest": "f11c2bf8563f2991d2066cb4eb057bf9fcc797b56e222eecc8e67bd12ea8c6ae"
+}

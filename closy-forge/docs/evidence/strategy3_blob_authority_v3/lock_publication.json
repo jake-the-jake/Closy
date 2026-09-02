@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "publicationVersion": "closy.strategy3.repository_blob_lock_publication.v3",
+  "scientificSourceCommit": "d76916461d3e96b037fbc31b646319effef7a264",
+  "authorityWrapperSourceCommit": "f0c4580298f5fd56d2230d31f63d82b76d4a7df2",
+  "authorityWrapperSourceTree": "27e258b500e08a10b8fb9a19e7533653470c21f5",
+  "lockDigest": "804996610e99f947defb7f06f2eb13b42008f7bd4988f1777fe0ef0acb5c10b5",
+  "lockedBlobCount": 84,
+  "strategyAlgorithmChanged": false,
+  "topologyStrategyBudgetRestored": false,
+  "newStrategyIntroduced": false,
+  "officialSeedCreated": false,
+  "officialFixtureCreated": false,
+  "officialCandidateCreated": false,
+  "localContainerPreflight": "not_run_docker_unavailable",
+  "lockCommitFinalHeadAuthority": "remote_branch_and_external_exact_head_attestation",
+  "externalPreflight": "pending"
+}

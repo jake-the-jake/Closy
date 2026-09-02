@@ -1,0 +1,272 @@
+name: Forge Unit Y1 Strategy 3 repository-blob authority v3
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Run preflight or the one authorized authority
+        required: true
+        default: preflight
+        type: choice
+        options:
+          - preflight
+          - authority
+      preflight_run_id:
+        description: Successful exact-lock preflight run required for authority
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  portability:
+    name: Blob portability ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: ubuntu-py311-normal, os: ubuntu-latest, python: "3.11", mode: normal, autocrlf: ""}
+          - {label: ubuntu-py312-false, os: ubuntu-latest, python: "3.12", mode: autocrlf_false, autocrlf: "false"}
+          - {label: windows-py311-normal, os: windows-latest, python: "3.11", mode: normal, autocrlf: ""}
+          - {label: windows-py311-true, os: windows-latest, python: "3.11", mode: autocrlf_true, autocrlf: "true"}
+          - {label: windows-py311-false, os: windows-latest, python: "3.11", mode: autocrlf_false, autocrlf: "false"}
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Apply declared checkout setting
+        if: matrix.autocrlf != ''
+        run: git -C .. config core.autocrlf "${{ matrix.autocrlf }}"
+      - name: Install frozen Forge environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Verify repository-blob lock and materialization
+        run: |
+          mkdir -p "$RUNNER_TEMP/strategy3-v3/${{ matrix.label }}"
+          python scripts/build_strategy3_blob_lock_v3.py --check --lock-commit "$GITHUB_SHA"
+          python scripts/run_strategy3_blob_preflight_v3.py \
+            --output "$RUNNER_TEMP/strategy3-v3/${{ matrix.label }}/blob-portability-report.json" \
+            --lock-commit "$GITHUB_SHA" \
+            --checkout-mode "${{ matrix.mode }}"
+      - name: Upload portability evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: strategy3-v3-portability-${{ matrix.label }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3/${{ matrix.label }}/blob-portability-report.json
+          if-no-files-found: error
+
+  pinned-container:
+    name: Pinned networkless non-root container
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      image_id: ${{ steps.identity.outputs.image_id }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: closy-forge
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Install frozen Forge environment
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Materialize, build, and run isolation canaries
+        run: |
+          mkdir -p "$RUNNER_TEMP/strategy3-v3/container"
+          python scripts/run_strategy3_blob_preflight_v3.py \
+            --output "$RUNNER_TEMP/strategy3-v3/container/container-preflight-report.json" \
+            --lock-commit "$GITHUB_SHA" \
+            --checkout-mode autocrlf_false \
+            --build-container \
+            --image closy-strategy3-v3:locked
+      - name: Record image identity
+        id: identity
+        run: |
+          image_id="$(docker image inspect closy-strategy3-v3:locked --format '{{.Id}}')"
+          echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
+          docker save closy-strategy3-v3:locked | gzip -n > "$RUNNER_TEMP/strategy3-v3/container/image.tar.gz"
+      - name: Upload container evidence and frozen image
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: strategy3-v3-container-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3/container
+          if-no-files-found: error
+          retention-days: 7
+
+  aggregate:
+    name: Aggregate exact blob portability
+    needs: [portability, pinned-container]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: strategy3-v3-portability-*-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3/portability
+      - name: Compare all platform identities
+        working-directory: closy-forge
+        run: |
+          python scripts/verify_strategy3_blob_artifacts_v3.py \
+            --input-root "$RUNNER_TEMP/strategy3-v3/portability" \
+            --output "$RUNNER_TEMP/strategy3-v3/portability-aggregation.json"
+      - name: Upload aggregation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: strategy3-v3-aggregation-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3/portability-aggregation.json
+          if-no-files-found: error
+
+  authority-precommit:
+    name: Authority precommit before contestant
+    if: inputs.phase == 'authority'
+    needs: [aggregate, pinned-container]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Require successful earlier exact-lock preflight
+        shell: bash
+        run: |
+          test -n "${{ inputs.preflight_run_id }}"
+          test "$(gh run view '${{ inputs.preflight_run_id }}' --repo '${{ github.repository }}' --json conclusion --jq .conclusion)" = success
+          test "$(gh run view '${{ inputs.preflight_run_id }}' --repo '${{ github.repository }}' --json headSha --jq .headSha)" = "$GITHUB_SHA"
+      - name: Create and externally order private commitments
+        working-directory: closy-forge
+        run: |
+          python scripts/run_strategy3_blob_authority_v3.py prepare \
+            --output "$RUNNER_TEMP/strategy3-v3-authority-precommit" \
+            --lock-commit "$GITHUB_SHA" \
+            --workflow-run-id "$GITHUB_RUN_ID" \
+            --workflow-job-id "$GITHUB_JOB" \
+            --preflight-run-id "${{ inputs.preflight_run_id }}" \
+            --image-id "${{ needs.pinned-container.outputs.image_id }}"
+      - name: Upload sealed precommit
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: strategy3-v3-authority-precommit-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3-authority-precommit
+          if-no-files-found: error
+          retention-days: 7
+
+  authority-contestant:
+    name: One-shot locked contestant
+    if: inputs.phase == 'authority'
+    needs: [authority-precommit, pinned-container]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: strategy3-v3-authority-precommit-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3-authority-precommit
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: strategy3-v3-container-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3-container
+      - name: Load exact preflight image
+        shell: bash
+        run: |
+          gunzip -c "$RUNNER_TEMP/strategy3-v3-container/image.tar.gz" | docker load
+          test "$(docker image inspect closy-strategy3-v3:locked --format '{{.Id}}')" = "${{ needs.pinned-container.outputs.image_id }}"
+      - name: Execute and freeze all contestant outputs
+        working-directory: closy-forge
+        run: |
+          python scripts/run_strategy3_blob_authority_v3.py contest \
+            --prepared "$RUNNER_TEMP/strategy3-v3-authority-precommit" \
+            --output "$RUNNER_TEMP/strategy3-v3-contestant-output" \
+            --lock-commit "$GITHUB_SHA" \
+            --workflow-run-id "$GITHUB_RUN_ID" \
+            --workflow-job-id "$GITHUB_JOB" \
+            --image closy-strategy3-v3:locked
+      - name: Upload frozen contestant output
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: strategy3-v3-contestant-output-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3-contestant-output
+          if-no-files-found: error
+          retention-days: 7
+
+  authority-evaluator:
+    name: Independent reveal and evaluation
+    if: inputs.phase == 'authority'
+    needs: [authority-precommit, authority-contestant]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: strategy3-v3-authority-precommit-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3-authority-precommit
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: strategy3-v3-contestant-output-${{ github.run_id }}
+          path: ${{ runner.temp }}/strategy3-v3-contestant-output
+      - name: Reveal after freeze and evaluate independently
+        working-directory: closy-forge
+        run: |
+          python scripts/run_strategy3_blob_authority_v3.py evaluate \
+            --prepared "$RUNNER_TEMP/strategy3-v3-authority-precommit" \
+            --contestant-output "$RUNNER_TEMP/strategy3-v3-contestant-output" \
+            --output "$RUNNER_TEMP/strategy3-v3-official" \
+            --lock-commit "$GITHUB_SHA" \
+            --workflow-run-id "$GITHUB_RUN_ID" \
+            --workflow-job-id "$GITHUB_JOB"
+      - name: Upload sealed official attempt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: strategy3-v3-official-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/strategy3-v3-official
+            ${{ runner.temp }}/strategy3-v3-official-public-failure
+          if-no-files-found: error
+          retention-days: 30
