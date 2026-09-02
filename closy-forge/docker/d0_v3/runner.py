@@ -175,6 +175,16 @@ def _pixel_prediction() -> tuple[dict[str, float], dict[str, object]]:
 def main() -> None:
     security = _security_probe()
     if not all(security.values()):
+        _write(
+            "probe.json",
+            {
+                "routeId": ROUTE,
+                "security": security,
+                "securityFailure": True,
+                "uid": os.getuid(),
+                "gid": os.getgid(),
+            },
+        )
         raise RuntimeError("container_security_probe_failed")
     if ROUTE == "generic_canary":
         canary = (INPUT / "canary.bin").read_bytes()
