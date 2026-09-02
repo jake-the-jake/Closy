@@ -23,6 +23,7 @@ def main() -> int:
         inputs, outputs = root / "inputs", root / "outputs"
         inputs.mkdir()
         outputs.mkdir()
+        outputs.chmod(0o777)
         write_canonical_json(
             inputs / "fixture.json",
             generate(PUBLIC_DEVELOPMENT_SEED, qualification_eligible=False)[0],

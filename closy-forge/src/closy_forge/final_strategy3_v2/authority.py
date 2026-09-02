@@ -217,6 +217,7 @@ def _run_contestant(
         inputs, outputs = root / "inputs", root / "outputs"
         inputs.mkdir()
         outputs.mkdir()
+        outputs.chmod(0o777)
         contestant_fixture = {
             key: value
             for key, value in fixture.items()
