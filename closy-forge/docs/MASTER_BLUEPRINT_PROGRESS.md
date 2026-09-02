@@ -8,7 +8,7 @@ historical prose below is append-only context.
 ## Current Truth And Authority Checkpoint
 
 - Active branch: `codex/closy-forge-truth-authority-integrity-v3`; draft PR `#56`; source evidence anchor
-  `501c71b7fe6691203320b8c972fe278fc060d7f4`. Final publication head and exact-head CI are externally attested.
+  `da8fea2b0cf3824a091f95a5c8cb749addeb018e`. Final publication head and exact-head CI are externally attested.
 - Unit T literally returned `completed_benchmark_failed_absolute_gates`. It executed 64 attempts, produced 60
   artifacts with four explicit abstentions, evaluated 48 compile rows, yielded zero strict
   complete pixel-route compile-valid candidates, and actually evaluated 8/24 appearance rows

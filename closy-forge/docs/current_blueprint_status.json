@@ -10,7 +10,7 @@
     "coverageVersion": "closy.blueprint_coverage.truth_authority_integrity_v3.v23",
     "total": 101
   },
-  "evidenceAnchorSha": "501c71b7fe6691203320b8c972fe278fc060d7f4",
+  "evidenceAnchorSha": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -1573,6 +1573,6 @@
     "finalPublicationHeadAuthority": "external_exact_head_ci_and_draft_pr_attestation",
     "overlayDigest": "8f9df323bcf10aa240681dc360becee61962b035e79b00cd1cc1444a3e7b3686",
     "overlayVersion": "closy.blueprint_truth_overlay.successor.v1",
-    "sourceEvidenceAnchor": "501c71b7fe6691203320b8c972fe278fc060d7f4"
+    "sourceEvidenceAnchor": "da8fea2b0cf3824a091f95a5c8cb749addeb018e"
   }
 }
