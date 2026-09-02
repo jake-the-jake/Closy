@@ -1635,7 +1635,7 @@
       "uniqueCommitRange": "5d080caad354bcecff94a7eadf16d080d68a606c..ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53"
     },
     {
-      "ahead": 15,
+      "ahead": 11,
       "baseRef": "codex/closy-forge-evidence-security-integrity-v2",
       "baseSha": "5d080caad354bcecff94a7eadf16d080d68a606c",
       "behind": 0,
@@ -2698,13 +2698,13 @@
       "uniqueCommitRange": "e062a30ba295ed27334622916ddb449fd76e2166..d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
     },
     {
-      "ahead": 11,
+      "ahead": 3,
       "baseRef": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
       "baseSha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
       "behind": 0,
       "branch": "codex/closy-forge-evidence-authority-recovery-v2",
       "capabilityRole": "forge_evidence_authority_recovery_foundation_v2",
-      "changedFileCount": 56,
+      "changedFileCount": 49,
       "dependencyIds": [],
       "headSha": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
       "id": "github:jake-the-jake/Closy:pr/53",
@@ -4207,9 +4207,9 @@
         "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
-      "layerAhead": 15,
+      "layerAhead": 11,
       "layerBehind": 0,
-      "layerCommitCount": 15,
+      "layerCommitCount": 11,
       "mergeBase": "5d080caad354bcecff94a7eadf16d080d68a606c",
       "mergeability": "MERGEABLE",
       "number": 27,
@@ -4969,7 +4969,7 @@
       "baseBranch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
       "baseSha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
       "branch": "codex/closy-forge-evidence-authority-recovery-v2",
-      "changedFileCount": 56,
+      "changedFileCount": 49,
       "directParentMergeBaseVerified": true,
       "draft": true,
       "headSha": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
@@ -4979,9 +4979,9 @@
         "reason": "PR #53 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
       },
       "latestExactHeadForgeRun": null,
-      "layerAhead": 11,
+      "layerAhead": 3,
       "layerBehind": 0,
-      "layerCommitCount": 11,
+      "layerCommitCount": 3,
       "mergeBase": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
       "mergeability": "MERGEABLE",
       "number": 53,

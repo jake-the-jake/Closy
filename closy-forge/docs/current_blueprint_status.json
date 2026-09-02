@@ -1219,7 +1219,8 @@
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
     "latestPullRequest": 53,
     "pendingExternalExactHeadAttestations": [
-      52
+      52,
+      53
     ],
     "pullRequestCount": 53,
     "topology": "explicit_dag"
@@ -1251,6 +1252,9 @@
     "currentRasterPhase9SourceIntegrated": true,
     "currentRasterPhase9SourcePullRequest": 26,
     "dependencyIdentityGraphAvailable": true,
+    "evidenceAuthorityRecoveryV2Executed": true,
+    "evidenceAuthorityRecoveryV2Outcome": "pass",
+    "evidenceAuthorityRecoveryV2ScientificAttemptCreated": false,
     "historicalD0ResearchMatrixFirstUnmetPredicate": "D0-RP-07",
     "historicalD0ResearchMatrixStatus": "partial_superseded",
     "historicalD0ResearchMatrixStatusCounts": {

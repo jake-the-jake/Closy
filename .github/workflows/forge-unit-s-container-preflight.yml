@@ -43,7 +43,8 @@ jobs:
         working-directory: closy-forge
         run: >-
           python -m pytest tests/unit/test_evidence_authority_recovery_v2.py
-          -k "portable_numeric or protocol_and_generator_locks" -q
+          -k "portable_numeric or protocol_and_generator_locks or
+          committed_production_telemetry or committed_unit_s_evidence" -q
 
   preflight:
     runs-on: ubuntu-latest

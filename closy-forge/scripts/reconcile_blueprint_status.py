@@ -113,7 +113,7 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-evidence-security-integrity-v2",
         "5d080caad354bcecff94a7eadf16d080d68a606c",
         "2a4fcd8146d95d2fab9a3d39751ffdafd5196387",
-        15,
+        11,
         16,
         "33203908161",
         "SUCCESS",
@@ -451,8 +451,8 @@ PR_SNAPSHOTS = [
         "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
         "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
         UNIT_S_EVIDENCE_HEAD,
-        11,
-        56,
+        3,
+        49,
         "",
         "PENDING",
         "evidence_authority_recovery_v2",
@@ -3183,18 +3183,6 @@ def _apply_unit_s_status_overlay(docs: Path) -> None:
 {resume['exactNextAction']}
 """
     (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(markdown, encoding="utf-8", newline="\n")
-
-    summary_path = docs / "BLUEPRINT_STATUS_SUMMARY.md"
-    summary = summary_path.read_text(encoding="utf-8").rstrip()
-    summary += (
-        "\n\n## Unit S Authority Recovery\n\n"
-        + "\n".join(
-            f"- {name}: `{row['result']}` - `{row['reason']}`" for name, row in subgates.items()
-        )
-        + "\n\nUnit S changes no Research Prototype row and creates no scientific cohort, "
-        "untouched topology fixture, candidate, or physical attempt.\n"
-    )
-    summary_path.write_text(summary, encoding="utf-8", newline="\n")
 
     master_path = docs / "MASTER_BLUEPRINT_PROGRESS.md"
     marker = "## Evidence and Authority Recovery Foundation v2"

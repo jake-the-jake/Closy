@@ -61,7 +61,10 @@ from closy_forge.recovery_foundation_v2.portable_numeric import (
     encode_metric,
     validate_metric,
 )
-from closy_forge.recovery_foundation_v2.production_assembly import execute_public_fixture
+from closy_forge.recovery_foundation_v2.production_assembly import (
+    execute_public_fixture,
+    portable_production_report,
+)
 from closy_forge.recovery_foundation_v2.topology_holdout import (
     PUBLIC_DEVELOPMENT_SEED,
     build_public_development_proof,
@@ -374,6 +377,32 @@ def test_public_topology_fixtures_traverse_declared_production_paths() -> None:
             assert report["productionCalls"]
         else:
             assert report["productionPathExecuted"] is False
+
+
+def test_committed_production_telemetry_is_field_classed_and_float_free() -> None:
+    fixture = generate(PUBLIC_DEVELOPMENT_SEED, qualification_eligible=False)[5]
+    raw = execute_public_fixture(fixture)
+    portable = portable_production_report(raw)
+
+    assert raw["numericLayer"] == "raw_execution_local_binary64"
+    assert portable["numericLayer"] == "portable_fixed_point_committed"
+    assert portable["rawTelemetry"]["committed"] is False
+    assert not _contains_float(portable)
+    assert portable["measurements"]["contact"]["maximumPenetrationBeforeMeters"] == {
+        "integerValue": 22_000_000,
+        "unit": "meters",
+        "integerScalePerUnit": 1_000_000_000,
+    }
+
+
+def _contains_float(value: object) -> bool:
+    if isinstance(value, float):
+        return True
+    if isinstance(value, dict):
+        return any(_contains_float(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_contains_float(item) for item in value)
+    return False
 
 
 def test_unit_o_frozen_raw_and_integrity_evidence_bytes_are_unchanged() -> None:

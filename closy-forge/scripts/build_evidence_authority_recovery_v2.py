@@ -6,7 +6,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from closy_forge.package_io.canonical_json import canonical_dumps, write_canonical_json
+from closy_forge.package_io.canonical_json import (
+    canonical_dumps,
+    canonical_text_bytes,
+    write_canonical_json,
+)
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 from closy_forge.recovery_foundation_v2.c3_audit import (
     audit_persisted_glb,
@@ -40,7 +44,10 @@ from closy_forge.recovery_foundation_v2.portable_numeric import (
     boundary_fixtures,
     canonical_geometry_coordinate,
 )
-from closy_forge.recovery_foundation_v2.production_assembly import execute_public_fixture
+from closy_forge.recovery_foundation_v2.production_assembly import (
+    execute_public_fixture,
+    portable_production_report,
+)
 from closy_forge.recovery_foundation_v2.topology_holdout import (
     PUBLIC_DEVELOPMENT_SEED,
     build_public_development_proof,
@@ -110,14 +117,17 @@ def _code_lock(root: Path) -> dict[str, Any]:
         "docker/d0_v3/entrypoint.sh",
         "docker/d0_v3/runner.py",
     ]
-    records = [
-        {
-            "path": path,
-            "sha256": sha256_file(root / path),
-            "byteLength": (root / path).stat().st_size,
-        }
-        for path in paths
-    ]
+    records = []
+    for path in paths:
+        source = canonical_text_bytes((root / path).read_text(encoding="utf-8"))
+        records.append(
+            {
+                "path": path,
+                "sha256": sha256_bytes(source),
+                "byteLength": len(source),
+                "hashMode": "utf8_canonical_lf_final_newline",
+            }
+        )
     return {
         "schemaVersion": 1,
         "lockVersion": "closy.evidence_authority_recovery.code_lock.v2",
@@ -140,12 +150,12 @@ def _source_separation(root: Path) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
         "learnedRouteSource": str(learned_path.relative_to(root)).replace("\\", "/"),
-        "learnedRouteSourceSha256": sha256_file(learned_path),
+        "learnedRouteSourceSha256": sha256_bytes(canonical_text_bytes(learned)),
         "learnedRouteForbiddenDependenciesAbsent": all(
             token not in learned for token in learned_forbidden
         ),
         "oracleSource": str(oracle_path.relative_to(root)).replace("\\", "/"),
-        "oracleSourceSha256": sha256_file(oracle_path),
+        "oracleSourceSha256": sha256_bytes(canonical_text_bytes(oracle)),
         "oracleForbiddenDependenciesAbsent": all(token not in oracle for token in oracle_forbidden),
         "forbiddenDependencies": {
             "learnedRoute": list(learned_forbidden),
@@ -161,7 +171,9 @@ def build(root: Path, authority: Mapping[str, Any] | None) -> dict[Path, Any]:
     evaluator_result = evaluate(evaluator_protocol, *generic_rows())
     fixtures = generate(PUBLIC_DEVELOPMENT_SEED, qualification_eligible=False)
     topology_oracles = [derive_invariants(fixture) for fixture in fixtures]
-    production_reports = [execute_public_fixture(fixture) for fixture in fixtures]
+    production_reports = [
+        portable_production_report(execute_public_fixture(fixture)) for fixture in fixtures
+    ]
     container = build_container_capability()
     preflight_pass = bool(authority and authority.get("pass") is True)
     portable_pass = bool(authority and authority.get("portableMatrixPass") is True)
