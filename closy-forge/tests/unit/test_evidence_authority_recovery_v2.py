@@ -438,3 +438,10 @@ def test_committed_unit_s_evidence_is_fresh() -> None:
         check=True,
         timeout=30,
     )
+    manifest = json.loads(
+        (ROOT / "docs/evidence/evidence_authority_recovery_v2/evidence_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    paths = [row["path"] for row in manifest["records"]]
+    assert paths == sorted(paths)

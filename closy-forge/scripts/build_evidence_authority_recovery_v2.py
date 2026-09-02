@@ -290,7 +290,7 @@ def build(root: Path, authority: Mapping[str, Any] | None) -> dict[Path, Any]:
 
 def _manifest(root: Path, paths: list[Path]) -> dict[str, Any]:
     records = []
-    for path in sorted(paths):
+    for path in sorted(paths, key=lambda item: item.as_posix()):
         content = canonical_text_bytes((root / path).read_text(encoding="utf-8"))
         records.append(
             {
