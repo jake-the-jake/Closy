@@ -14,7 +14,22 @@ def main() -> None:
     if input_files != ["fixture.json"]:
         raise RuntimeError(f"contestant_input_boundary_invalid:{input_files}")
     environment = set(os.environ)
-    allowed = {"HOME", "HOSTNAME", "LANG", "LC_ALL", "PATH", "PWD", "PYTHONHASHSEED", "PYTHONPATH"}
+    allowed = {
+        "GPG_KEY",
+        "HOME",
+        "HOSTNAME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PWD",
+        "PYTHON_GET_PIP_SHA256",
+        "PYTHON_GET_PIP_URL",
+        "PYTHON_PIP_VERSION",
+        "PYTHON_SETUPTOOLS_VERSION",
+        "PYTHON_VERSION",
+        "PYTHONHASHSEED",
+        "PYTHONPATH",
+    }
     unexpected = sorted(environment - allowed)
     if unexpected:
         raise RuntimeError(f"contestant_environment_not_allowlisted:{unexpected}")

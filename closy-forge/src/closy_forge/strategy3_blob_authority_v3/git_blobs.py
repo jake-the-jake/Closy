@@ -9,6 +9,9 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
 FULL_SHA1 = re.compile(r"^[0-9a-f]{40}$")
+_GLOBAL_TREE_CACHE: dict[tuple[str, str], str] = {}
+_GLOBAL_BLOB_CACHE: dict[tuple[str, str], bytes] = {}
+_GLOBAL_ENTRY_CACHE: dict[tuple[str, str], dict[str, tuple[str, str, str]]] = {}
 
 
 @dataclass(frozen=True)
@@ -26,6 +29,9 @@ class BlobIdentity:
 class GitBlobReader:
     def __init__(self, repo_root: Path) -> None:
         self.repo_root = repo_root.resolve()
+        self._tree_cache: dict[str, str] = {}
+        self._blob_cache: dict[str, bytes] = {}
+        self._identity_cache: dict[tuple[str, str], BlobIdentity] = {}
         self._assert_unambiguous_repository()
 
     def resolve_commit(self, revision: str) -> str:
@@ -35,22 +41,28 @@ class GitBlobReader:
         return commit
 
     def root_tree(self, commit: str) -> str:
-        tree = self.text("rev-parse", f"{commit}^{{tree}}")
+        cached = self._tree_cache.get(commit)
+        if cached is not None:
+            return cached
+        global_key = (self.repo_root.as_posix(), commit)
+        tree = _GLOBAL_TREE_CACHE.get(global_key)
+        if tree is None:
+            tree = self.text("rev-parse", f"{commit}^{{tree}}")
+            _GLOBAL_TREE_CACHE[global_key] = tree
         if not FULL_SHA1.fullmatch(tree):
             raise ValueError("strategy3_v3_tree_identity_invalid")
+        self._tree_cache[commit] = tree
         return tree
 
     def identity(self, commit: str, repository_path: str) -> BlobIdentity:
         normalized = normalize_repository_path(repository_path)
-        raw = self.raw("ls-tree", "-z", commit, "--", normalized)
-        rows = [row for row in raw.split(b"\0") if row]
-        if len(rows) != 1:
+        cached = self._identity_cache.get((commit, normalized))
+        if cached is not None:
+            return cached
+        entry = self._entries(commit).get(normalized)
+        if entry is None:
             raise ValueError(f"strategy3_v3_blob_missing_or_ambiguous:{normalized}")
-        metadata, actual_raw = rows[0].split(b"\t", 1)
-        mode, object_type, oid = metadata.decode("ascii").split(" ", 2)
-        actual = actual_raw.decode("utf-8")
-        if actual != normalized:
-            raise ValueError(f"strategy3_v3_path_alias:{normalized}")
+        mode, object_type, oid = entry
         if object_type != "blob" or mode in {"120000", "160000"}:
             raise ValueError(f"strategy3_v3_non_regular_blob:{normalized}")
         if mode not in {"100644", "100755"}:
@@ -58,7 +70,7 @@ class GitBlobReader:
         payload = self.blob(oid)
         if git_blob_oid(payload) != oid:
             raise ValueError(f"strategy3_v3_blob_oid_recompute_failed:{normalized}")
-        return BlobIdentity(
+        identity = BlobIdentity(
             repository_path=normalized,
             commit=commit,
             root_tree_object_id=self.root_tree(commit),
@@ -68,18 +80,32 @@ class GitBlobReader:
             sha256=hashlib.sha256(payload).hexdigest(),
             byte_length=len(payload),
         )
+        self._identity_cache[(commit, normalized)] = identity
+        return identity
 
     def list_paths(self, commit: str, prefix: str) -> list[str]:
         normalized = normalize_repository_path(prefix)
-        raw = self.raw("ls-tree", "-r", "-z", "--name-only", commit, "--", normalized)
-        paths = [item.decode("utf-8") for item in raw.split(b"\0") if item]
+        paths = [
+            path
+            for path in self._entries(commit)
+            if path == normalized or path.startswith(f"{normalized}/")
+        ]
         validate_path_set(paths)
         return sorted(paths)
 
     def blob(self, oid: str) -> bytes:
         if not FULL_SHA1.fullmatch(oid):
             raise ValueError("strategy3_v3_blob_oid_invalid")
-        return self.raw("cat-file", "blob", oid)
+        cached = self._blob_cache.get(oid)
+        if cached is not None:
+            return cached
+        global_key = (self.repo_root.as_posix(), oid)
+        payload = _GLOBAL_BLOB_CACHE.get(global_key)
+        if payload is None:
+            payload = self.raw("cat-file", "blob", oid)
+            _GLOBAL_BLOB_CACHE[global_key] = payload
+        self._blob_cache[oid] = payload
+        return payload
 
     def blob_at(self, commit: str, repository_path: str) -> bytes:
         return self.blob(self.identity(commit, repository_path).blob_oid)
@@ -101,6 +127,24 @@ class GitBlobReader:
 
     def text(self, *args: str) -> str:
         return self.raw(*args).decode("utf-8").strip()
+
+    def _entries(self, commit: str) -> dict[str, tuple[str, str, str]]:
+        key = (self.repo_root.as_posix(), commit)
+        cached = _GLOBAL_ENTRY_CACHE.get(key)
+        if cached is not None:
+            return cached
+        raw = self.raw("ls-tree", "-r", "-z", commit)
+        entries: dict[str, tuple[str, str, str]] = {}
+        for row in (item for item in raw.split(b"\0") if item):
+            metadata, path_raw = row.split(b"\t", 1)
+            mode, object_type, oid = metadata.decode("ascii").split(" ", 2)
+            path = path_raw.decode("utf-8")
+            if path in entries:
+                raise ValueError(f"strategy3_v3_duplicate_tree_path:{path}")
+            entries[path] = (mode, object_type, oid)
+        validate_path_set(list(entries))
+        _GLOBAL_ENTRY_CACHE[key] = entries
+        return entries
 
     def _assert_unambiguous_repository(self) -> None:
         if self.text("replace", "-l"):

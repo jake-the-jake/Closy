@@ -8,6 +8,7 @@ from pathlib import Path
 
 def main() -> None:
     sensitive = ("TOKEN", "SECRET", "KEY", "SEED", "ORACLE", "TARGET", "GITHUB")
+    pinned_base_environment = {"GPG_KEY"}
     network_denied = False
     try:
         socket.create_connection(("1.1.1.1", 53), timeout=0.25)
@@ -29,7 +30,9 @@ def main() -> None:
         "dockerSocketAbsent": not Path("/var/run/docker.sock").exists(),
         "hostHomeAbsent": not Path("/root").is_dir() or not os.access("/root", os.R_OK),
         "sensitiveEnvironmentAbsent": not any(
-            any(marker in key.upper() for marker in sensitive) for key in os.environ
+            key not in pinned_base_environment
+            and any(marker in key.upper() for marker in sensitive)
+            for key in os.environ
         ),
     }
     report["status"] = (

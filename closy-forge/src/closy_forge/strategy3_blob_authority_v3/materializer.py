@@ -35,9 +35,13 @@ def materialized_context(
             flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
             if hasattr(os, "O_NOFOLLOW"):
                 flags |= os.O_NOFOLLOW
+            if hasattr(os, "O_BINARY"):
+                flags |= os.O_BINARY
             descriptor = os.open(target, flags, 0o600)
             try:
-                os.write(descriptor, payload)
+                written = 0
+                while written < len(payload):
+                    written += os.write(descriptor, payload[written:])
                 os.fsync(descriptor)
                 opened = os.fstat(descriptor)
                 if not stat.S_ISREG(opened.st_mode) or opened.st_size != len(payload):
@@ -46,7 +50,10 @@ def materialized_context(
                 os.close(descriptor)
             mode = 0o755 if row["gitMode"] == "100755" else 0o644
             target.chmod(mode)
-            os.utime(target, (0, 0), follow_symlinks=False)
+            try:
+                os.utime(target, (0, 0), follow_symlinks=False)
+            except NotImplementedError:
+                os.utime(target, (0, 0))
             staged = target.read_bytes()
             _verify_payload(row, staged)
             manifest_rows.append(

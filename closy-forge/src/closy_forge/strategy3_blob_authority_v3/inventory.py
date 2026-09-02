@@ -39,6 +39,7 @@ WRAPPER_PATHS = (
     "closy-forge/docker/strategy3_blob_authority_v3/isolation_canary.py",
     "closy-forge/docker/strategy3_blob_authority_v3/runner.py",
     "closy-forge/scripts/build_strategy3_blob_lock_v3.py",
+    "closy-forge/scripts/import_strategy3_blob_attempt_v3.py",
     "closy-forge/scripts/materialize_strategy3_blob_context_v3.py",
     "closy-forge/scripts/run_strategy3_blob_authority_v3.py",
     "closy-forge/scripts/run_strategy3_blob_preflight_v3.py",
