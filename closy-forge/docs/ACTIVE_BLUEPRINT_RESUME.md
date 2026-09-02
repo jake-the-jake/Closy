@@ -7,8 +7,8 @@
 - Draft PR: `#53`
 - Exact parent: `8dd7a547debf038e9e27c48cf8e42009ae69ac3a` (PR #52)
 - Immutable evidence anchor: `6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92`
-- Exact preflight head: `1ad839bfbb95dd62117c2cbefbb3e66b4a3a42d7`
-- Exact preflight workflow: `33611989613`
+- Exact preflight head: `49e878c952af8466481bea5c42cec527fe32498e`
+- Exact preflight workflow: `33613269852`
 
 ## Sub-gates
 
