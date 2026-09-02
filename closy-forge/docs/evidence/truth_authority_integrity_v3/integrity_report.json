@@ -136,9 +136,9 @@
   },
   "frozenSurfaceGuard": {
     "comparisonCommit": "d76916461d3e96b037fbc31b646319effef7a264",
-    "guardDigest": "9dce83f9e86801300874375e69305e2a34559a3ce73c34544caf1087baf5704d",
+    "guardDigest": "4625e61732b4492e6f8c0f813a85a95c6f2a44e24e42d464b7b8ef0548a62ed0",
     "guardVersion": "closy.strategy3_frozen_surface_guard.v1",
-    "head": "59a75055d51cd5f15d56089cfc45103117ce06fd",
+    "head": "501c71b7fe6691203320b8c972fe278fc060d7f4",
     "newStrategyIntroduced": false,
     "pass": true,
     "pathCount": 24,
@@ -697,7 +697,7 @@
     "totalEvaluatorLineage": true,
     "typedPerRecordInventory": true
   },
-  "reportDigest": "3f6561d8ad2338e8c7ee41c63c47263f3185e84fb20fa5183f4ad703f1b08436",
+  "reportDigest": "a31895be3445d502418a86b137886a48915da32ab5ce5f10a59cb616831cbf79",
   "reportVersion": "closy.truth_authority_integrity.successor.v1",
   "schemaVersion": 1,
   "scientificAttemptCreated": false,

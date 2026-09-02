@@ -31,7 +31,7 @@
     "phase00": "complete",
     "phases01Through14": "partial",
     "rowCount": 101,
-    "sourceDigest": "7d9145c2f15380956c291a6b8dba7e0f27d6c549b195da310919af8efe11cc0a",
+    "sourceDigest": "e3b429b7b8e0afd5f8bdc26af0a2a73775f07abeaa44ea4f5c82eea30510f926",
     "sourcePath": "docs/blueprint_coverage.json",
     "statusCounts": {
       "complete": 20,
@@ -81,7 +81,7 @@
     "supersededKeysRetained": true
   },
   "nextAction": "publish Unit Y0 integrity hardening, require exact-head Forge plus sealed-v2 lane, then create Unit Y1 repository-blob authority from that final head",
-  "overlayDigest": "636bb72f8a12521267ee957f9ab218d5a584a04530a5b48f3e8a49b2a34fa6d8",
+  "overlayDigest": "8f9df323bcf10aa240681dc360becee61962b035e79b00cd1cc1444a3e7b3686",
   "overlayVersion": "closy.blueprint_truth_overlay.successor.v1",
   "researchPrototype": {
     "core": {

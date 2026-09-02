@@ -17,7 +17,7 @@
     "Y1": "ineligible_until_unit_y0_exact_head_ci_passes",
     "Z": "ineligible_until_strategy3_v3_admission"
   },
-  "evidenceHead": "59a75055d51cd5f15d56089cfc45103117ce06fd",
+  "evidenceHead": "501c71b7fe6691203320b8c972fe278fc060d7f4",
   "exactNextAction": "publish Unit Y0 integrity hardening, require exact-head Forge plus sealed-v2 lane, then create Unit Y1 repository-blob authority from that final head",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "finalPublicationHead": null,
@@ -34,7 +34,7 @@
     "Z2": "failed_non_solver_evidence_only"
   },
   "latestFinishedParentPublicationHead": "f56fc44ccf7173155186a30b4f4978454fb3debf",
-  "localHeadAtResumeSource": "59a75055d51cd5f15d56089cfc45103117ce06fd",
+  "localHeadAtResumeSource": "501c71b7fe6691203320b8c972fe278fc060d7f4",
   "machineResumeVersion": "closy.active_blueprint_resume.truth_authority_v3.v14",
   "mergeAuthorised": false,
   "nextHandoff": {
@@ -58,14 +58,14 @@
     "seamModels": 0,
     "topologyStrategies": 0
   },
-  "remoteHeadAtResumeSource": "59a75055d51cd5f15d56089cfc45103117ce06fd",
+  "remoteHeadAtResumeSource": "501c71b7fe6691203320b8c972fe278fc060d7f4",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "sourceEvidenceAnchor": "59a75055d51cd5f15d56089cfc45103117ce06fd",
+  "sourceEvidenceAnchor": "501c71b7fe6691203320b8c972fe278fc060d7f4",
   "stopReason": "unit_y0_exact_head_ci_required_before_unit_y1",
   "truthOverlay": {
     "consumerPolicy": "prefer_this_overlay_without_mutating_historical_keys",
-    "digest": "636bb72f8a12521267ee957f9ab218d5a584a04530a5b48f3e8a49b2a34fa6d8",
+    "digest": "8f9df323bcf10aa240681dc360becee61962b035e79b00cd1cc1444a3e7b3686",
     "version": "closy.blueprint_truth_overlay.successor.v1"
   },
   "unitSSuccessor": {

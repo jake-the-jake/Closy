@@ -5,7 +5,7 @@
 - Unit: `Y0` truth repair and authority-integrity hardening.
 - Branch: `codex/closy-forge-truth-authority-integrity-v3`
 - Draft PR: `#56`
-- Source evidence anchor: `59a75055d51cd5f15d56089cfc45103117ce06fd`
+- Source evidence anchor: `501c71b7fe6691203320b8c972fe278fc060d7f4`
 - Exact parent: `f56fc44ccf7173155186a30b4f4978454fb3debf` (PR #55)
 - Final publication head: externally attested after publication, not self-referential here.
 
