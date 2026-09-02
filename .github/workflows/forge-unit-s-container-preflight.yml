@@ -72,7 +72,19 @@ jobs:
           container="$(docker create closy-d0-v3:${{ env.LOCK_HEAD }})"
           docker export "$container" | tar -tf - > unit-s-preflight-artifact/image-files.txt
           docker rm "$container"
-          ! grep -E '(^|/)(\.git|evaluator|targets|private|\.ssh|docker\.sock)(/|$)' unit-s-preflight-artifact/image-files.txt
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = set(Path("unit-s-preflight-artifact/image-files.txt").read_text().splitlines())
+          app_files = {path for path in paths if path.startswith("app/") and not path.endswith("/")}
+          assert app_files == {
+              "app/entrypoint.sh",
+              "app/image-file-sbom.sha256",
+              "app/runner.py",
+          }
+          forbidden = ("/.git/", "/.ssh/", "/docker.sock", "/targets/", "/evaluator/")
+          assert not any(any(token in f"/{path}" for token in forbidden) for path in paths)
+          PY
       - name: Run three clean-workspace replications
         shell: bash
         run: |
