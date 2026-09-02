@@ -31,7 +31,7 @@ EXTERNAL_ATTESTATIONS_PATH = Path(
 )
 
 
-def build_integrity_report(repo_root: Path) -> dict[str, Any]:
+def build_integrity_report(repo_root: Path, *, frozen_surface_head: str = "HEAD") -> dict[str, Any]:
     forge_root = repo_root / "closy-forge"
     migration = audit_v2_lock(repo_root)
     inventory = build_typed_record_inventory(forge_root)
@@ -41,7 +41,7 @@ def build_integrity_report(repo_root: Path) -> dict[str, Any]:
     collector_mutations = executed_collector_mutation_report()
     budget = build_verified_budget_report(forge_root)
     budget_mutations = budget_mutation_report(forge_root)
-    frozen_guard = build_frozen_surface_guard(repo_root)
+    frozen_guard = build_frozen_surface_guard(repo_root, head=frozen_surface_head)
     predicates = {
         "migrationAudit": (
             validate_migration_audit(migration) == []

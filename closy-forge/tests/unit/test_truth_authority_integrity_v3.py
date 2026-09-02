@@ -61,9 +61,11 @@ def test_unit_y0_publication_is_fresh_and_non_scientific() -> None:
         timeout=30,
     )
     integrity = _json("integrity_report.json")
+    publication = _json("publication_context.json")
     assert integrity["allIntegrityPredicatesPass"] is True
     assert integrity["scientificAttemptCreated"] is False
     assert all(integrity["predicates"].values())
+    assert integrity["frozenSurfaceGuard"]["head"] == publication["sourceEvidenceAnchor"]
 
 
 def test_truth_overlay_uses_unambiguous_artifact_derived_counts() -> None:

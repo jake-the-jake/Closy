@@ -32,7 +32,10 @@ PUBLICATION_CONTEXT = OUTPUT_ROOT / "publication_context.json"
 
 
 def outputs(publication: dict[str, Any]) -> dict[Path, bytes]:
-    integrity = build_integrity_report(REPO_ROOT)
+    integrity = build_integrity_report(
+        REPO_ROOT,
+        frozen_surface_head=publication["sourceEvidenceAnchor"],
+    )
     overlay = build_truth_overlay(REPO_ROOT, integrity)
     issues = validate_truth_overlay(overlay)
     if issues or integrity.get("allIntegrityPredicatesPass") is not True:
