@@ -30,6 +30,16 @@ def test_unit_u_publication_is_fresh() -> None:
     )
 
 
+def test_unit_u_markdown_publication_is_checkout_stable() -> None:
+    report = "closy-forge/docs/evidence/final_strategy3_v2/REPORT.md"
+    attribute = subprocess.check_output(
+        ["git", "check-attr", "eol", "--", report],
+        cwd=REPO_ROOT,
+        text=True,
+    )
+    assert attribute.strip().endswith(": eol: lf")
+
+
 def test_preseed_dependency_block_is_literal_and_non_scientific() -> None:
     outcome = _json("outcome_report.json")
     authority = outcome["officialAuthority"]

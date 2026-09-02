@@ -18,3 +18,5 @@ closy-forge/tests/unit/test_phy1_topology_strategy2_v4_*.py text eol=lf
 closy-forge/docs/ACTIVE_BLUEPRINT_RESUME.md text eol=lf
 closy-forge/docs/BLUEPRINT_STATUS_SUMMARY.md text eol=lf
 closy-forge/docs/MASTER_BLUEPRINT_PROGRESS.md text eol=lf
+closy-forge/docs/evidence/final_strategy3_v2/REPORT.md text eol=lf
+closy-forge/tests/unit/test_final_strategy3_v2_publication.py text eol=lf
