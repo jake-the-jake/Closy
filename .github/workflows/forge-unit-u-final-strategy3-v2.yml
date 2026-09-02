@@ -1,0 +1,122 @@
+name: Forge Unit U final Strategy 3 v2 authority
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Execute generic preflight or the one-shot official authority
+        required: true
+        default: preflight
+        type: choice
+        options:
+          - preflight
+          - authority
+
+permissions:
+  contents: read
+
+jobs:
+  portable-verifier:
+    name: Portable decision verifier (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825a76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.11'
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Verify public portable decisions
+        working-directory: closy-forge
+        run: python -m pytest tests/unit/test_final_strategy3_v2.py -q
+
+  container-preflight:
+    name: Pinned contestant container preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      image_id: ${{ steps.image.outputs.image_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825a76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.11'
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Run public regression and mutation proof
+        working-directory: closy-forge
+        run: |
+          python scripts/build_final_strategy3_v2_public_proof.py --check
+          python -m pytest tests/unit/test_final_strategy3_v2.py tests/unit/test_final_strategy3_v2_protocol.py -q
+      - name: Build pinned contestant image
+        working-directory: closy-forge
+        run: docker build --pull=false -f docker/final_strategy3_v2/Dockerfile -t closy-final-strategy3-v2:locked .
+      - name: Record image identity
+        id: image
+        shell: bash
+        run: |
+          image_id="$(docker image inspect closy-final-strategy3-v2:locked --format '{{.Id}}')"
+          echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$image_id" > final-strategy3-image-id.txt
+      - name: Run networkless generic canary
+        working-directory: closy-forge
+        run: python scripts/run_final_strategy3_v2_preflight.py --image closy-final-strategy3-v2:locked
+      - name: Upload preflight identity
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: final-strategy3-v2-preflight-${{ github.run_id }}
+          path: final-strategy3-image-id.txt
+          if-no-files-found: error
+
+  authority:
+    name: One-shot untouched confirmation authority
+    if: ${{ inputs.phase == 'authority' }}
+    needs: [portable-verifier, container-preflight]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825a76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.11'
+      - name: Install frozen Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Require immutable lock at exact authority head
+        working-directory: closy-forge
+        run: |
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          python scripts/build_final_strategy3_v2_lock.py --check
+      - name: Rebuild exact contestant image
+        working-directory: closy-forge
+        run: docker build --pull=false -f docker/final_strategy3_v2/Dockerfile -t closy-final-strategy3-v2:locked .
+      - name: Require preflight image identity
+        shell: bash
+        run: |
+          actual="$(docker image inspect closy-final-strategy3-v2:locked --format '{{.Id}}')"
+          test "$actual" = "${{ needs.container-preflight.outputs.image_id }}"
+      - name: Execute one-shot authority
+        working-directory: closy-forge
+        run: |
+          python scripts/run_final_strategy3_v2_authority.py \
+            --output "$RUNNER_TEMP/final-strategy3-v2-official" \
+            --lock-sha "$GITHUB_SHA" \
+            --workflow-run-id "$GITHUB_RUN_ID" \
+            --workflow-job-id "$GITHUB_JOB" \
+            --image closy-final-strategy3-v2:locked
+      - name: Upload sealed official attempt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: final-strategy3-v2-official-${{ github.run_id }}
+          path: ${{ runner.temp }}/final-strategy3-v2-official
+          if-no-files-found: error
