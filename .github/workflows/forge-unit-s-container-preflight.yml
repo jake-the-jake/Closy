@@ -93,6 +93,9 @@ jobs:
             input="$(mktemp -d)"
             output="$(mktemp -d)"
             printf 'closy-unit-s-generic-canary-v1' > "$input/canary.bin"
+            sudo chown -R 65532:65532 "$input"
+            sudo chmod 0555 "$input"
+            sudo chmod 0444 "$input/canary.bin"
             sudo chown -R 65532:65532 "$output"
             PYTHONPATH=closy-forge/src python closy-forge/scripts/run_d0_v3_container_preflight.py \
               --input "$input" \
