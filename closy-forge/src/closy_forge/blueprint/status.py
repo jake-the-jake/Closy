@@ -924,7 +924,7 @@ def build_status_model(
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
             ],
-            "pendingExternalExactHeadAttestations": [52, 53],
+            "pendingExternalExactHeadAttestations": [52, 53, 55],
             "headAuthorityPolicy": (
                 "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_"
                 "draft_pr_body_attest_final_published_head"
@@ -1065,7 +1065,7 @@ def validate_status_model(
     if any(model.get("phases", {}).get(f"{index:02d}") != "partial" for index in range(1, 15)):
         issues.append("phase_completion_overclaimed")
     status_stack = model.get("stack", {})
-    if status_stack.get("committedSourceAnchorExceptions") != [10, 52, 53]:
+    if status_stack.get("committedSourceAnchorExceptions") != [10, 52, 53, 55]:
         issues.append("stack_exception_set_invalid")
     attestations = status_stack.get("externalExactHeadAttestations", [])
     expected_attestations = [
@@ -1177,7 +1177,7 @@ def validate_status_model(
     if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
-    if pending_attestations != [52, 53]:
+    if pending_attestations != [52, 53, 55]:
         issues.append("pending_external_exact_head_attestation_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (

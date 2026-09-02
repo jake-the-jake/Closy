@@ -329,7 +329,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 54))
+    assert numbers == list(range(1, 56))
     assert stack["graphCounts"] == {
         "closyPullRequests": len(rows),
         "externalPullRequests": len(stack["externalPullRequests"]),
@@ -363,7 +363,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 52, 53}:
+        if row["number"] in {10, 52, 53, 55}:
             assert row["latestExactHeadForgeRun"] is None
             assert row["knownException"]["code"] in {
                 "missing_exact_head_forge_run",

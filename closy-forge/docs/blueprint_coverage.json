@@ -115,7 +115,7 @@
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
     "generatorVersion": "closy.blueprint_publication.final_strategy3_v2.v19",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "87cfd51d572421334d2cb99e71eae14954b708c91bd9a24281bda58995bda7e8",
+    "sourceTreeHash": "48a4a4f07e1a01a566dc96d7277e1cf0900ab12769c84395f907de67dac1d56f",
     "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,

@@ -22,6 +22,7 @@ LOCK_PATH = FORGE_ROOT / "fixtures" / "final_strategy3_v2" / "final_implementati
 UNIT_T_HEAD = "0c45587371165f1c5f3e33934ee2cbf5156f9e02"
 UNIT_U_LOCK_HEAD = "d76916461d3e96b037fbc31b646319effef7a264"
 UNIT_T_AUTHORITY_HEAD = "7aae56b050e72e51916b592423f63d859f166117"
+UNIT_U_PUBLICATION_HEAD = "28b4dd93f0c6634f9ad7833f890d12000628e1b2"
 AUTHORITY_RUN = "33630862367"
 AUTHORITY_WORKFLOW_ID = 348397321
 OUTCOME = "dependency_blocked_before_official_seed_v2"
@@ -415,6 +416,216 @@ def _update_coverage(coverage: dict[str, Any]) -> dict[str, Any]:
     return coverage
 
 
+def _topological_order(nodes: list[dict[str, Any]], edges: list[dict[str, str]]) -> list[str]:
+    declared = [str(node["id"]) for node in nodes]
+    position = {node_id: index for index, node_id in enumerate(declared)}
+    incoming = {node_id: set[str]() for node_id in declared}
+    outgoing = {node_id: set[str]() for node_id in declared}
+    for edge in edges:
+        incoming[edge["to"]].add(edge["from"])
+        outgoing[edge["from"]].add(edge["to"])
+    ready = [node_id for node_id in declared if not incoming[node_id]]
+    result: list[str] = []
+    while ready:
+        ready.sort(key=position.__getitem__)
+        node_id = ready.pop(0)
+        result.append(node_id)
+        for target in sorted(outgoing[node_id], key=position.__getitem__):
+            incoming[target].discard(node_id)
+            if not incoming[target] and target not in result and target not in ready:
+                ready.append(target)
+    if len(result) != len(declared):
+        raise ValueError("unit_u_publication_pr_dag_cycle")
+    return result
+
+
+def _update_stack(stack: dict[str, Any]) -> dict[str, Any]:
+    stack = deepcopy(stack)
+    rows = [row for row in stack["pullRequests"] if int(row["number"]) not in {54, 55}]
+    rows.extend(
+        [
+            {
+                "baseBranch": "codex/closy-forge-evidence-authority-recovery-v2",
+                "baseSha": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+                "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+                "changedFileCount": 80,
+                "directParentMergeBaseVerified": True,
+                "draft": True,
+                "headSha": UNIT_T_HEAD,
+                "knownException": None,
+                "latestExactHeadForgeRun": {
+                    "exactHead": True,
+                    "runId": "33624168164",
+                    "workflow": "Closy Forge",
+                    "conclusion": "SUCCESS",
+                    "forgeJobCount": 29,
+                    "successfulForgeJobCount": 29,
+                    "forgeJobCountSemantics": (
+                        "all jobs in the Closy Forge workflow; unrelated skipped checks are "
+                        "excluded"
+                    ),
+                },
+                "layerAhead": 6,
+                "layerBehind": 0,
+                "layerCommitCount": 6,
+                "mergeBase": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+                "mergeability": "MERGEABLE",
+                "number": 54,
+                "repository": "jake-the-jake/Closy",
+                "role": "d0_disjoint_tshirt_confirmation_v3_failed_absolute_gates",
+                "state": "OPEN",
+                "title": "Forge Unit T: untouched D0 T-shirt confirmation v3",
+                "url": "https://github.com/jake-the-jake/Closy/pull/54",
+            },
+            {
+                "baseBranch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+                "baseSha": UNIT_T_HEAD,
+                "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+                "changedFileCount": 38,
+                "directParentMergeBaseVerified": True,
+                "draft": True,
+                "headSha": UNIT_U_PUBLICATION_HEAD,
+                "knownException": {
+                    "code": "exact_head_ci_recorded_outside_generated_evidence",
+                    "descendantEvidenceIsExactHead": False,
+                    "reason": (
+                        "PR #55 final exact-head CI is recorded in the draft PR body because "
+                        "this generated report is anchored to its immutable publication source"
+                    ),
+                },
+                "latestExactHeadForgeRun": None,
+                "layerAhead": 8,
+                "layerBehind": 0,
+                "layerCommitCount": 8,
+                "mergeBase": UNIT_T_HEAD,
+                "mergeability": "MERGEABLE",
+                "number": 55,
+                "repository": "jake-the-jake/Closy",
+                "role": "final_strategy3_v2_dependency_blocked_before_official_seed",
+                "state": "OPEN",
+                "title": "Forge Unit U: final Strategy 3 confirmation v2",
+                "url": "https://github.com/jake-the-jake/Closy/pull/55",
+            },
+        ]
+    )
+    rows.sort(key=lambda row: int(row["number"]))
+    stack["pullRequests"] = rows
+
+    nodes = [
+        node
+        for node in stack["nodes"]
+        if not (
+            node["repository"] == "jake-the-jake/Closy" and int(node["pullRequest"]) in {54, 55}
+        )
+    ]
+    external_index = next(
+        (index for index, node in enumerate(nodes) if node["repository"] != "jake-the-jake/Closy"),
+        len(nodes),
+    )
+    new_nodes = [
+        {
+            "ahead": 6,
+            "baseRef": "codex/closy-forge-evidence-authority-recovery-v2",
+            "baseSha": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+            "behind": 0,
+            "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+            "capabilityRole": "forge_unit_t_untouched_d0_t_shirt_confirmation_v3",
+            "changedFileCount": 80,
+            "dependencyIds": [],
+            "headSha": UNIT_T_HEAD,
+            "id": "github:jake-the-jake/Closy:pr/54",
+            "integrationMappings": [],
+            "latestExactHeadWorkflows": [
+                {
+                    "workflow": "Closy Forge",
+                    "runId": "33624168164",
+                    "exactHead": True,
+                    "conclusion": "SUCCESS",
+                    "jobCount": 29,
+                },
+                {
+                    "workflow": "Forge Unit T D0 v3 authority",
+                    "runId": "33624168111",
+                    "exactHead": True,
+                    "conclusion": "SUCCESS",
+                    "jobCount": 1,
+                },
+            ],
+            "mergeBase": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+            "mergeEligible": True,
+            "neverMergeWith": [],
+            "parentIds": [],
+            "pullRequest": 54,
+            "repository": "jake-the-jake/Closy",
+            "role": "d0_disjoint_tshirt_confirmation_v3_failed_absolute_gates",
+            "sourceOnly": False,
+            "state": "OPEN",
+            "superseded": False,
+            "uniqueCommitRange": (
+                "b8d222dadbe092e25604b838e7ad219d6a1c114b.."
+                "0c45587371165f1c5f3e33934ee2cbf5156f9e02"
+            ),
+        },
+        {
+            "ahead": 8,
+            "baseRef": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+            "baseSha": UNIT_T_HEAD,
+            "behind": 0,
+            "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+            "capabilityRole": "forge_unit_u_final_strategy_3_confirmation_v2",
+            "changedFileCount": 38,
+            "dependencyIds": ["github:jake-the-jake/Closy:pr/54"],
+            "headSha": UNIT_U_PUBLICATION_HEAD,
+            "id": "github:jake-the-jake/Closy:pr/55",
+            "integrationMappings": [],
+            "latestExactHeadWorkflows": [],
+            "mergeBase": UNIT_T_HEAD,
+            "mergeEligible": True,
+            "neverMergeWith": [],
+            "parentIds": ["github:jake-the-jake/Closy:pr/54"],
+            "pullRequest": 55,
+            "repository": "jake-the-jake/Closy",
+            "role": "final_strategy3_v2_dependency_blocked_before_official_seed",
+            "sourceOnly": False,
+            "state": "OPEN",
+            "superseded": False,
+            "uniqueCommitRange": f"{UNIT_T_HEAD}..{UNIT_U_PUBLICATION_HEAD}",
+        },
+    ]
+    nodes[external_index:external_index] = new_nodes
+    stack["nodes"] = nodes
+    edges = [
+        edge
+        for edge in stack["edges"]
+        if not any(
+            f"pr/{number}" in edge[endpoint] for number in (54, 55) for endpoint in ("from", "to")
+        )
+    ]
+    edges.extend(
+        [
+            {
+                "from": "github:jake-the-jake/Closy:pr/54",
+                "kind": "parent",
+                "to": "github:jake-the-jake/Closy:pr/55",
+            },
+            {
+                "from": "github:jake-the-jake/Closy:pr/54",
+                "kind": "dependency",
+                "to": "github:jake-the-jake/Closy:pr/55",
+            },
+        ]
+    )
+    stack["edges"] = edges
+    stack["topologicalOrder"] = _topological_order(nodes, edges)
+    stack["graphCounts"] = {
+        "closyPullRequests": len(rows),
+        "externalPullRequests": len(stack["externalPullRequests"]),
+        "nodes": len(nodes),
+        "edges": len(edges),
+    }
+    return stack
+
+
 def _update_status(coverage: dict[str, Any], stack: dict[str, Any]) -> dict[str, Any]:
     return cast(
         dict[str, Any],
@@ -578,7 +789,9 @@ def build_documents() -> dict[Path, bytes]:
     coverage = _update_coverage(
         json.loads((DOCS_ROOT / "blueprint_coverage.json").read_text(encoding="utf-8"))
     )
-    stack = json.loads((DOCS_ROOT / "pr_stack_manifest.json").read_text(encoding="utf-8"))
+    stack = _update_stack(
+        json.loads((DOCS_ROOT / "pr_stack_manifest.json").read_text(encoding="utf-8"))
+    )
     status = _update_status(coverage, stack)
     resume = _update_resume(
         json.loads((DOCS_ROOT / "ACTIVE_BLUEPRINT_RESUME.json").read_text(encoding="utf-8")),
@@ -590,6 +803,7 @@ def build_documents() -> dict[Path, bytes]:
         EVIDENCE_ROOT / "physical_budget_event_ledger_after_unit_u.json": _json_bytes(ledger),
         EVIDENCE_ROOT / "REPORT.md": _build_report(outcome).encode("utf-8"),
         DOCS_ROOT / "blueprint_coverage.json": _json_bytes(coverage),
+        DOCS_ROOT / "pr_stack_manifest.json": _json_bytes(stack),
         DOCS_ROOT / "current_blueprint_status.json": _json_bytes(status),
         DOCS_ROOT / "BLUEPRINT_STATUS_SUMMARY.md": render_status_summary(status).encode("utf-8"),
         DOCS_ROOT / "ACTIVE_BLUEPRINT_RESUME.json": _json_bytes(resume),

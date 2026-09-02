@@ -1208,9 +1208,10 @@
     "committedSourceAnchorExceptions": [
       10,
       52,
-      53
+      53,
+      55
     ],
-    "crossRepositoryNodeCount": 56,
+    "crossRepositoryNodeCount": 58,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -1319,12 +1320,13 @@
       }
     ],
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
-    "latestPullRequest": 53,
+    "latestPullRequest": 55,
     "pendingExternalExactHeadAttestations": [
       52,
-      53
+      53,
+      55
     ],
-    "pullRequestCount": 53,
+    "pullRequestCount": 55,
     "topology": "explicit_dag"
   },
   "statusModelVersion": "closy.blueprint_status_model.v19",
