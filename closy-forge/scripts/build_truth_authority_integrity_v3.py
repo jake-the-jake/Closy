@@ -116,7 +116,7 @@ def main() -> int:
 
 
 def _json_bytes(value: Any) -> bytes:
-    return (canonical_dumps(value) + "\n").encode("utf-8")
+    return canonical_dumps(value).encode("utf-8")
 
 
 def _load_json(path: Path) -> dict[str, Any]:
