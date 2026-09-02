@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import binascii
 import io
 import math
+import struct
+import zlib
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -221,9 +224,7 @@ def render_public_tshirt_png(parameters: Mapping[str, float], *, rear: bool, log
     draw.ellipse((center - 9, top + 2, center + 9, top + 16), fill=(0, 0, 0, 0))
     if logo and not rear:
         draw.rectangle((center - 6, top + 30, center + 6, top + 40), fill=(228, 218, 185, 255))
-    output = io.BytesIO()
-    image.save(output, format="PNG", compress_level=9)
-    return output.getvalue()
+    return _encode_canonical_rgba_png(image)
 
 
 def apply_crop_and_occlusion(png: bytes, *, crop_pixels: int, occlusion_width: int) -> bytes:
@@ -251,9 +252,40 @@ def apply_crop_and_occlusion(png: bytes, *, crop_pixels: int, occlusion_width: i
             ),
             fill=(0, 0, 0, 0),
         )
-    output = io.BytesIO()
-    image.save(output, format="PNG", compress_level=9)
-    return output.getvalue()
+    return _encode_canonical_rgba_png(image)
+
+
+def _encode_canonical_rgba_png(image: Image.Image) -> bytes:
+    rgba = image.convert("RGBA")
+    width, height = rgba.size
+    pixels = rgba.tobytes()
+    stride = width * 4
+    raw = b"".join(
+        b"\x00" + pixels[offset : offset + stride] for offset in range(0, len(pixels), stride)
+    )
+    compressed = bytearray(b"\x78\x01")
+    for offset in range(0, len(raw), 65_535):
+        payload = raw[offset : offset + 65_535]
+        final = offset + len(payload) == len(raw)
+        length = len(payload)
+        compressed.append(1 if final else 0)
+        compressed.extend(struct.pack("<HH", length, 0xFFFF ^ length))
+        compressed.extend(payload)
+    compressed.extend(struct.pack(">I", zlib.adler32(raw) & 0xFFFFFFFF))
+    header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    return b"".join(
+        (
+            b"\x89PNG\r\n\x1a\n",
+            _png_chunk(b"IHDR", header),
+            _png_chunk(b"IDAT", bytes(compressed)),
+            _png_chunk(b"IEND", b""),
+        )
+    )
+
+
+def _png_chunk(kind: bytes, payload: bytes) -> bytes:
+    checksum = binascii.crc32(kind + payload) & 0xFFFFFFFF
+    return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", checksum)
 
 
 def build_pixel_causal_controls(model: Mapping[str, Any]) -> dict[str, Any]:

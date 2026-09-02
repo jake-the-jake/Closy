@@ -227,6 +227,8 @@ def test_pixel_routes_decode_real_pngs_and_learned_model_is_causally_distinct() 
     }
     front = render_public_tshirt_png(parameters, rear=False, logo=True)
     rear = render_public_tshirt_png(parameters, rear=True, logo=False)
+    assert front == render_public_tshirt_png(parameters, rear=False, logo=True)
+    assert b"\x78\x01" in front
     observation = decode_pixel_observations(front, rear)
     assert observation["decodedRoles"] == ["front_png", "rear_png"]
     assert run_route(ROUTES[0], front_png=None, rear_png=None)["pixelsConsumed"] is False

@@ -1635,7 +1635,7 @@
       "uniqueCommitRange": "5d080caad354bcecff94a7eadf16d080d68a606c..ba73b310a8609de4eb4f0ed2284c6d2d9a6fab53"
     },
     {
-      "ahead": 13,
+      "ahead": 14,
       "baseRef": "codex/closy-forge-evidence-security-integrity-v2",
       "baseSha": "5d080caad354bcecff94a7eadf16d080d68a606c",
       "behind": 0,
@@ -4207,9 +4207,9 @@
         "successfulForgeJobCount": 26,
         "workflow": "Closy Forge"
       },
-      "layerAhead": 13,
+      "layerAhead": 14,
       "layerBehind": 0,
-      "layerCommitCount": 13,
+      "layerCommitCount": 14,
       "mergeBase": "5d080caad354bcecff94a7eadf16d080d68a606c",
       "mergeability": "MERGEABLE",
       "number": 27,
