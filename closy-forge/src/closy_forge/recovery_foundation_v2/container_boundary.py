@@ -48,8 +48,6 @@ def build_docker_run_command(
         "256m",
         "--memory-swap",
         "256m",
-        "--log-driver",
-        "none",
         "--user",
         f"{CONTAINER_UID}:{CONTAINER_GID}",
         "--env",
