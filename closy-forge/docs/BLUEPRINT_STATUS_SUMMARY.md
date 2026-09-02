@@ -1,6 +1,6 @@
 # Generated Blueprint Status
 
-Authority: `closy.blueprint_status_model.v18` at evidence anchor `6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92`.
+Authority: `closy.blueprint_status_model.v19` at evidence anchor `d76916461d3e96b037fbc31b646319effef7a264`.
 
 ## Requirement Rows
 
@@ -35,6 +35,7 @@ Authority: `closy.blueprint_status_model.v18` at evidence anchor `6d1b617cbe8bd1
 - C3-Binding-D0: global `partial`, scoped `pass`
 - D0-DisjointTshirt-v1: global `partial`, scoped `benchmark_failed_fixed_inventory_unfinished`
 - D0-DisjointTshirt-v2: global `partial`, scoped `attempted_integrity_error`
+- D0-DisjointTshirt-v3: global `partial`, scoped `completed_benchmark_failed_absolute_gates`
 - LayerCollision-D0: global `partial`, scoped `pass`
 - MT1-MechanicalReference-D0: global `partial`, scoped `pass`
 - P1: global `discovery_pending`, scoped `not_run`
@@ -42,6 +43,7 @@ Authority: `closy.blueprint_status_model.v18` at evidence anchor `6d1b617cbe8bd1
 - PHY1-SingleLayer-D0: global `partial`, scoped `failed`
 - PHY1-SingleLayer-D0-v2: global `partial`, scoped `failed`
 - PHY1-Topology-Strategy2-D0-v4: global `partial`, scoped `outcome_M_strategy_microfixture_failed_no_candidate`
+- PHY1-Topology-Strategy3-Confirmation-D0-v2: global `partial`, scoped `dependency_blocked_before_official_seed_v2`
 - PHY1-Topology-Strategy3-Diagnosis-D0-v1: global `partial`, scoped `diagnosis_integrity_error`
 - ResearchPrototype-D0-matrix-v2: global `partial`, scoped `historical_superseded_9_pass_3_fail_3_not_run`
 - ResearchPrototype-D0-matrix-v3-core: global `partial`, scoped `partial_7_pass_4_fail_0_not_run`

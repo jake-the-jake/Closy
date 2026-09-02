@@ -4,7 +4,7 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v18"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v19"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -50,6 +50,8 @@ UNIT_M_DISJOINT_CONFIRMATION_V2_AUTHORITY_HEAD = "9078a09f1156ba8b7f98099185478c
 UNIT_M_DISJOINT_CONFIRMATION_V2_PUBLISHED_HEAD = "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
 UNIT_N_STRICT_C3_V5_AUTHORITY_HEAD = "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
 UNIT_N_STRICT_C3_V5_PUBLISHED_HEAD = "e062a30ba295ed27334622916ddb449fd76e2166"
+UNIT_T_DISJOINT_CONFIRMATION_V3_AUTHORITY_HEAD = "7aae56b050e72e51916b592423f63d859f166117"
+UNIT_U_FINAL_STRATEGY3_V2_LOCK_HEAD = "d76916461d3e96b037fbc31b646319effef7a264"
 
 _COMMON_UNSUPPORTED = ["D1", "D2", "D3", "GPU", "mobile", "private_user"]
 GATE_RECORDS: dict[str, dict[str, Any]] = {
@@ -310,6 +312,40 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
             "no_strategy3_class_admitted_in_preserved_raw_execution",
         ],
     },
+    "PHY1-Topology-Strategy3-Confirmation-D0-v2": {
+        "gateId": "PHY1-Topology-Strategy3-Confirmation-D0-v2",
+        "globalStatus": "partial",
+        "scopedStatus": "dependency_blocked_before_official_seed_v2",
+        "evidenceTier": "locked_public_conformance_and_external_preseed_failure_attestation",
+        "platform": ["windows", "ubuntu"],
+        "toolchain": ["CPython 3.11", "Docker"],
+        "sourceSha": UNIT_U_FINAL_STRATEGY3_V2_LOCK_HEAD,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "public generic development fixtures; official holdout not created",
+        "executionKind": (
+            "public production-path conformance then external pre-seed authority preflight"
+        ),
+        "gateScope": "final Strategy-3 untouched pre-candidate admission",
+        "evidenceDurability": "immutable_lock_external_run_logs_and_committed_failure_record",
+        "workflowRun": "33630862367",
+        "publicConformancePassCount": 8,
+        "publicConformanceDenominator": 8,
+        "officialSeedCreated": False,
+        "confirmationAttemptConsumed": False,
+        "candidateAttemptConsumed": False,
+        "unitVEligible": False,
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["full_PHY1", "integrated_CCD", "solver_driven_Z2", "post_topology_candidate"],
+        "blockers": [
+            "four_windows_worktree_crlf_hashes_do_not_match_linux_repository_blob_bytes",
+            "final_lock_forbids_relock",
+            "official_seed_not_created",
+            "strategy_admission_not_run",
+        ],
+    },
     "ResearchPrototype-D0-matrix-v2": {
         "gateId": "ResearchPrototype-D0-matrix-v2",
         "globalStatus": "partial",
@@ -351,7 +387,7 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
         "firstUnmetRequiredPredicate": "D0-RP-03",
         "unsupportedTiers": _COMMON_UNSUPPORTED
         + ["real_fabric", "human_review", "identity_disjoint_cohort"],
-        "blockers": ["D0-RP-03", "D0-RP-04", "D0-RP-07", "D0-RP-15"],
+        "blockers": ["D0-RP-03", "D0-RP-06", "D0-RP-07", "D0-RP-15"],
     },
     "ResearchPrototype-D0-matrix-v3-supplemental": {
         "gateId": "ResearchPrototype-D0-matrix-v3-supplemental",
@@ -481,6 +517,37 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
             "official_commitment_and_source_bytes_not_recoverable_after_skipped_artifact_upload",
             "no_prediction_compile_or_appearance_denominator_completed",
         ],
+    },
+    "D0-DisjointTshirt-v3": {
+        "gateId": "D0-DisjointTshirt-v3",
+        "globalStatus": "partial",
+        "scopedStatus": "completed_benchmark_failed_absolute_gates",
+        "evidenceTier": "untouched_recoverable_inventory_disjoint_synthetic_cohort",
+        "platform": ["ubuntu"],
+        "toolchain": ["CPython 3.11", "Docker"],
+        "sourceSha": UNIT_T_DISJOINT_CONFIRMATION_V3_AUTHORITY_HEAD,
+        "executableSha": None,
+        "garmentFamilies": ["tshirt"],
+        "avatarProfile": "fixed_reference_avatar_v1",
+        "computeProfile": "D0",
+        "dataProvenance": "project-authored public synthetic",
+        "executionKind": "isolated networkless contestant predictions and frozen evaluation",
+        "gateScope": "16-identity recoverable-inventory-disjoint synthetic T-shirt cohort",
+        "evidenceDurability": "committed_authority_artifacts_and_sealed_exact_head_verifier",
+        "workflowRun": "33621365050",
+        "predictionCount": 64,
+        "fullCompileCount": 48,
+        "appearanceEvaluationCount": 24,
+        "routePromoted": False,
+        "rowResults": {
+            "D0-RP-03": "fail",
+            "D0-RP-04": "pass",
+            "D0-RP-06": "fail",
+            "D0-RP-07": "fail",
+        },
+        "unsupportedTiers": _COMMON_UNSUPPORTED
+        + ["cohort_gate_pass", "real_photo", "real_fabric", "human_review"],
+        "blockers": ["D0-RP-03", "D0-RP-06", "D0-RP-07"],
     },
     "MT1-MechanicalReference-D0": {
         "gateId": "MT1-MechanicalReference-D0",
@@ -950,6 +1017,21 @@ def build_status_model(
             "identityDisjointV2AcceptedIdentityCount": 16,
             "identityDisjointV2PredictionCount": 0,
             "identityDisjointV2QualificationRetryAllowed": False,
+            "identityDisjointV3Executed": True,
+            "identityDisjointV3Outcome": "completed_benchmark_failed_absolute_gates",
+            "identityDisjointV3PredictionCount": 64,
+            "identityDisjointV3RoutePromoted": False,
+            "phy1FinalStrategy3V2Locked": True,
+            "phy1FinalStrategy3V2PublicConformancePassed": True,
+            "phy1FinalStrategy3V2Outcome": "dependency_blocked_before_official_seed_v2",
+            "phy1FinalStrategy3V2OfficialSeedCreated": False,
+            "phy1FinalStrategy3V2ConfirmationAttemptConsumed": False,
+            "phy1FinalStrategy3V2CandidateCreated": False,
+            "phy1FinalStrategy3V2TopologyStrategiesRemaining": 0,
+            "phy1FinalStrategy3V2CandidateAttemptsRemaining": 1,
+            "unitVEligible": False,
+            "unitWEligible": False,
+            "unitXEligible": False,
             "dependencyIdentityGraphAvailable": True,
             "runtimeCandidateV2Available": True,
             "runtimeCandidateV2ProductSelected": False,

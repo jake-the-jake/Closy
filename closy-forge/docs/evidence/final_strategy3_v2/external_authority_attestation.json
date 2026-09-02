@@ -1,0 +1,53 @@
+{
+  "acquisitionMethod": "authenticated_gh_cli_and_local_git_read_only",
+  "attestationDigest": "c84a42bc1ec8899f6edc0e0af46257e951ff5eb53ddb5e15a59c4ed42093db40",
+  "attestationVersion": "closy.final_strategy3_v2.external_preseed_failure.v1",
+  "authorityClaim": "procedural_freeze_and_container_isolation_not_cryptographic_secrecy",
+  "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+  "headSha": "d76916461d3e96b037fbc31b646319effef7a264",
+  "limitations": [
+    "no official holdout was generated or executed",
+    "no strategy admission conclusion can be drawn",
+    "the prompt forbids relocking the failed locked path",
+    "workflow artifacts are absent because the authority job was skipped"
+  ],
+  "lockHash": "f56e16579bbd6e078638c36ef9c0c3de7e59e72cca7efd1087cf11fde1039204",
+  "outcome": "dependency_blocked_before_official_seed_v2",
+  "outcomeDigest": "e4416441df98e73961c3192de7eecf33be74061823b2a276172d3ee9300b9659",
+  "pullRequest": 55,
+  "repository": "jake-the-jake/Closy",
+  "schemaVersion": 1,
+  "seedLifecycle": {
+    "attemptConsumed": false,
+    "commitmentExisted": false,
+    "officialFixtureOrOracleRevealed": false,
+    "officialSeedCreated": false,
+    "rawSeedOrNonceExisted": false
+  },
+  "workflow": {
+    "artifactUploaded": false,
+    "attemptConsumed": false,
+    "authorityJobId": "100250251482",
+    "authorityJobResult": "skipped",
+    "headSha": "d76916461d3e96b037fbc31b646319effef7a264",
+    "officialFixtureCount": 0,
+    "officialSeedCreated": false,
+    "preflightContainerJobId": "100249654433",
+    "preflightContainerJobResult": "failure",
+    "qualificationRetryAllowed": false,
+    "rerunPerformed": false,
+    "runId": "33630862367",
+    "strategyContainerExecutions": 0,
+    "ubuntuVerifierJobId": "100249654471",
+    "ubuntuVerifierJobResult": "success",
+    "windowsVerifierJobId": "100249653848",
+    "windowsVerifierJobResult": "success",
+    "workflowConclusion": "failure",
+    "workflowId": 348397321,
+    "workflowSeal": {
+      "mechanism": "github_actions_workflow_disabled_without_changing_locked_bytes",
+      "observedAtUtc": "2026-09-02T12:47:44Z",
+      "state": "disabled_manually"
+    }
+  }
+}

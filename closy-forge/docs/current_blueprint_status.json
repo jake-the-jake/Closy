@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.evidence_authority_recovery_v2.v21",
+    "coverageVersion": "closy.blueprint_coverage.final_strategy3_v2_closeout.v22",
     "total": 101
   },
-  "evidenceAnchorSha": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
+  "evidenceAnchorSha": "d76916461d3e96b037fbc31b646319effef7a264",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -261,6 +261,58 @@
         "human_review"
       ],
       "workflowRun": "33532344652"
+    },
+    "D0-DisjointTshirt-v3": {
+      "appearanceEvaluationCount": 24,
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "D0-RP-03",
+        "D0-RP-06",
+        "D0-RP-07"
+      ],
+      "computeProfile": "D0",
+      "dataProvenance": "project-authored public synthetic",
+      "evidenceDurability": "committed_authority_artifacts_and_sealed_exact_head_verifier",
+      "evidenceTier": "untouched_recoverable_inventory_disjoint_synthetic_cohort",
+      "executableSha": null,
+      "executionKind": "isolated networkless contestant predictions and frozen evaluation",
+      "fullCompileCount": 48,
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "D0-DisjointTshirt-v3",
+      "gateScope": "16-identity recoverable-inventory-disjoint synthetic T-shirt cohort",
+      "globalStatus": "partial",
+      "platform": [
+        "ubuntu"
+      ],
+      "predictionCount": 64,
+      "routePromoted": false,
+      "rowResults": {
+        "D0-RP-03": "fail",
+        "D0-RP-04": "pass",
+        "D0-RP-06": "fail",
+        "D0-RP-07": "fail"
+      },
+      "scopedStatus": "completed_benchmark_failed_absolute_gates",
+      "sourceSha": "7aae56b050e72e51916b592423f63d859f166117",
+      "toolchain": [
+        "CPython 3.11",
+        "Docker"
+      ],
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "cohort_gate_pass",
+        "real_photo",
+        "real_fabric",
+        "human_review"
+      ],
+      "workflowRun": "33621365050"
     },
     "LayerCollision-D0": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -583,6 +635,56 @@
       ],
       "workflowRun": null
     },
+    "PHY1-Topology-Strategy3-Confirmation-D0-v2": {
+      "avatarProfile": "fixed_reference_avatar_v1",
+      "blockers": [
+        "four_windows_worktree_crlf_hashes_do_not_match_linux_repository_blob_bytes",
+        "final_lock_forbids_relock",
+        "official_seed_not_created",
+        "strategy_admission_not_run"
+      ],
+      "candidateAttemptConsumed": false,
+      "computeProfile": "D0",
+      "confirmationAttemptConsumed": false,
+      "dataProvenance": "public generic development fixtures; official holdout not created",
+      "evidenceDurability": "immutable_lock_external_run_logs_and_committed_failure_record",
+      "evidenceTier": "locked_public_conformance_and_external_preseed_failure_attestation",
+      "executableSha": null,
+      "executionKind": "public production-path conformance then external pre-seed authority preflight",
+      "garmentFamilies": [
+        "tshirt"
+      ],
+      "gateId": "PHY1-Topology-Strategy3-Confirmation-D0-v2",
+      "gateScope": "final Strategy-3 untouched pre-candidate admission",
+      "globalStatus": "partial",
+      "officialSeedCreated": false,
+      "platform": [
+        "windows",
+        "ubuntu"
+      ],
+      "publicConformanceDenominator": 8,
+      "publicConformancePassCount": 8,
+      "scopedStatus": "dependency_blocked_before_official_seed_v2",
+      "sourceSha": "d76916461d3e96b037fbc31b646319effef7a264",
+      "toolchain": [
+        "CPython 3.11",
+        "Docker"
+      ],
+      "unitVEligible": false,
+      "unsupportedTiers": [
+        "D1",
+        "D2",
+        "D3",
+        "GPU",
+        "mobile",
+        "private_user",
+        "full_PHY1",
+        "integrated_CCD",
+        "solver_driven_Z2",
+        "post_topology_candidate"
+      ],
+      "workflowRun": "33630862367"
+    },
     "PHY1-Topology-Strategy3-Diagnosis-D0-v1": {
       "admittedStrategyClass": null,
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -689,7 +791,7 @@
       "avatarProfile": "fixed_reference_avatar_v1",
       "blockers": [
         "D0-RP-03",
-        "D0-RP-04",
+        "D0-RP-06",
         "D0-RP-07",
         "D0-RP-15"
       ],
@@ -1225,7 +1327,7 @@
     "pullRequestCount": 53,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v18",
+  "statusModelVersion": "closy.blueprint_status_model.v19",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -1270,6 +1372,10 @@
     "identityDisjointV2Outcome": "attempted_integrity_error",
     "identityDisjointV2PredictionCount": 0,
     "identityDisjointV2QualificationRetryAllowed": false,
+    "identityDisjointV3Executed": true,
+    "identityDisjointV3Outcome": "completed_benchmark_failed_absolute_gates",
+    "identityDisjointV3PredictionCount": 64,
+    "identityDisjointV3RoutePromoted": false,
     "integratedRuntimePinnedToTopologyV1": true,
     "knownTargetTextureRegressionExecuted": true,
     "knownTargetTextureRegressionOutcome": "known_target_regression_pass",
@@ -1285,6 +1391,14 @@
     "phase9E1Status": "partial_experimental",
     "phase9E2Status": "executed_feasibility_partial",
     "phases10To14EvidenceScope": "default_all_family_static_pass_parameter_range_partial_compiled_phase11_pairing_failed_mt1_mechanical_pass_phase12_13_integrated_headless_phase14_integrated_advisory",
+    "phy1FinalStrategy3V2CandidateAttemptsRemaining": 1,
+    "phy1FinalStrategy3V2CandidateCreated": false,
+    "phy1FinalStrategy3V2ConfirmationAttemptConsumed": false,
+    "phy1FinalStrategy3V2Locked": true,
+    "phy1FinalStrategy3V2OfficialSeedCreated": false,
+    "phy1FinalStrategy3V2Outcome": "dependency_blocked_before_official_seed_v2",
+    "phy1FinalStrategy3V2PublicConformancePassed": true,
+    "phy1FinalStrategy3V2TopologyStrategiesRemaining": 0,
     "phy1SeamSupportV3CcdExecuted": false,
     "phy1SeamSupportV3FullSuiteExecuted": false,
     "phy1SeamSupportV3NeutralExecuted": true,
@@ -1321,6 +1435,9 @@
     "unitPEligible": false,
     "unitQEligible": false,
     "unitREligible": false,
+    "unitVEligible": false,
+    "unitWEligible": false,
+    "unitXEligible": false,
     "zeroOneStaticFamilyAttemptCount": 9,
     "zeroOneStaticRejectedFamilyCount": 0,
     "zeroOneStaticSuccessfulFamilyCount": 9

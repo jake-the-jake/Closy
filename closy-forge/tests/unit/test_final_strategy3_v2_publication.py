@@ -1,0 +1,107 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+from closy_forge.recovery_foundation_v2.contracts import (  # type: ignore[import-untyped]
+    validate_budget_event_ledger,
+)
+
+ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = ROOT.parent
+EVIDENCE = ROOT / "docs" / "evidence" / "final_strategy3_v2"
+
+
+def _json(name: str) -> dict[str, object]:
+    value = json.loads((EVIDENCE / name).read_text(encoding="utf-8"))
+    assert isinstance(value, dict)
+    return value
+
+
+def test_unit_u_publication_is_fresh() -> None:
+    subprocess.run(
+        [sys.executable, "scripts/build_final_strategy3_v2_publication.py", "--check"],
+        cwd=ROOT,
+        check=True,
+        timeout=30,
+    )
+
+
+def test_preseed_dependency_block_is_literal_and_non_scientific() -> None:
+    outcome = _json("outcome_report.json")
+    authority = outcome["officialAuthority"]
+    admission = outcome["admission"]
+    budgets = outcome["budgetsAfter"]
+    assert isinstance(authority, dict)
+    assert isinstance(admission, dict)
+    assert isinstance(budgets, dict)
+    assert outcome["literalOutcome"] == "dependency_blocked_before_official_seed_v2"
+    assert authority["officialSeedCreated"] is False
+    assert authority["strategyContainerExecutions"] == 0
+    assert authority["attemptConsumed"] is False
+    assert authority["rerunPerformed"] is False
+    assert admission == {
+        "confirmationExecuted": False,
+        "admitted": False,
+        "unitVEligible": False,
+        "unitWEligible": False,
+        "unitXEligible": False,
+    }
+    assert budgets == {
+        "seamModels": 0,
+        "topologyStrategies": 0,
+        "candidateAttempts": 1,
+        "untouchedConfirmationAttemptConsumed": False,
+    }
+
+
+def test_lock_mismatch_audit_matches_repository_blobs() -> None:
+    outcome = _json("outcome_report.json")
+    failure = outcome["failure"]
+    assert isinstance(failure, dict)
+    mismatches = failure["mismatches"]
+    assert isinstance(mismatches, list)
+    assert len(mismatches) == 4
+    for item in mismatches:
+        assert isinstance(item, dict)
+        relative = f"closy-forge/{item['path']}"
+        blob = subprocess.check_output(
+            ["git", "cat-file", "blob", f"HEAD:{relative}"], cwd=REPO_ROOT
+        )
+        assert len(blob) == item["repositoryByteLength"]
+        assert hashlib.sha256(blob).hexdigest() == item["repositorySha256"]
+        assert hashlib.sha256(blob.replace(b"\n", b"\r\n")).hexdigest() == item["lockedSha256"]
+
+
+def test_post_unit_u_budget_ledger_extends_without_rewriting_unit_s() -> None:
+    ledger = _json("physical_budget_event_ledger_after_unit_u.json")
+    assert validate_budget_event_ledger(ledger) == []
+    derived = ledger["derived"]
+    assert isinstance(derived, dict)
+    assert derived["remaining"] == {
+        "canonical_candidate": 1,
+        "seam_model": 0,
+        "topology_strategy": 0,
+    }
+    assert ledger["candidateAttemptConsumed"] is False
+    assert ledger["untouchedConfirmationAttemptConsumed"] is False
+
+
+def test_status_closes_only_true_dependants() -> None:
+    resume = json.loads((ROOT / "docs" / "ACTIVE_BLUEPRINT_RESUME.json").read_text())
+    assert resume["conditionalUnits"] == {
+        "T": "complete_failed_absolute_gates",
+        "U": "complete_dependency_blocked_before_official_seed_v2",
+        "V": "ineligible_unit_u_not_admitted",
+        "W": "ineligible_no_unit_v_candidate",
+        "X": "ineligible_no_unit_w_core_prerequisites",
+    }
+    assert resume["remainingBudgets"] == {
+        "candidateAttempts": 1,
+        "seamModels": 0,
+        "topologyStrategies": 0,
+    }
+    assert resume["nextHandoff"]["selection"] == "none_dependency_ready"

@@ -1,15 +1,15 @@
 {
-  "activeLane": "Unit T sealed; Unit U final Strategy-3 semantic-remesh confirmation v2 next",
-  "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+  "activeLane": "finite sequence complete after Unit U pre-seed dependency block",
+  "branch": "codex/closy-forge-phy1-final-strategy3-v2",
   "conditionalUnits": {
     "T": "complete_failed_absolute_gates",
-    "U": "dependency_ready",
-    "V": "not_created_requires_unit_u_pass",
-    "W": "not_created_requires_unit_v_candidate",
-    "X": "not_created_requires_unit_w_core_prerequisites"
+    "U": "complete_dependency_blocked_before_official_seed_v2",
+    "V": "ineligible_unit_u_not_admitted",
+    "W": "ineligible_no_unit_v_candidate",
+    "X": "ineligible_no_unit_w_core_prerequisites"
   },
-  "evidenceHead": "7aae56b050e72e51916b592423f63d859f166117",
-  "exactNextAction": "Create Unit U from the final Unit T publication head, publish the immutable Strategy-3 design reservation, and run only disclosed public conformance fixtures before the final lock.",
+  "evidenceHead": "d76916461d3e96b037fbc31b646319effef7a264",
+  "exactNextAction": "No further unit is authorised or dependency-ready; preserve the locked failure and await separately authorised successor methodology.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "D0-DisjointTshirt-v2": "attempted_integrity_error",
@@ -17,6 +17,7 @@
     "D0-Strict-C3-v5": "pass_exact_unit_f_pre_topology_8_of_8",
     "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
     "PHY1-Topology-Strategy2-D0-v4": "outcome_M_strategy_microfixture_failed_no_candidate",
+    "PHY1-Topology-Strategy3-Confirmation-D0-v2": "dependency_blocked_before_official_seed_v2",
     "PHY1-Topology-Strategy3-Diagnosis-D0-v1": "diagnosis_integrity_error",
     "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
     "ResearchPrototype-D0-matrix-v3-core": "partial_7_pass_4_fail_0_not_run",
@@ -29,9 +30,9 @@
     "Unit-Q": "ineligible_no_unit_p_candidate",
     "Unit-R": "ineligible_no_unit_q_prerequisites"
   },
-  "latestFinishedParentPublicationHead": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
-  "localHeadAtResumeSource": "pending_final_commit",
-  "machineResumeVersion": "closy.active_blueprint_resume.evidence_authority_v2.v12",
+  "latestFinishedParentPublicationHead": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+  "localHeadAtResumeSource": "pending_final_publication_commit",
+  "machineResumeVersion": "closy.active_blueprint_resume.final_strategy3_v2.v13",
   "matrixScopes": {
     "identityDisjointV1": {
       "appearanceEvaluations": 0,
@@ -70,7 +71,7 @@
     },
     "postTopologyCandidate": {
       "candidateExists": false,
-      "matrixNotRunReason": "unit_o_diagnosis_integrity_error"
+      "matrixNotRunReason": "unit_u_dependency_blocked_before_official_seed_v2"
     },
     "strictC3V5": {
       "outcome": "pass",
@@ -81,29 +82,29 @@
   },
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "unit_u_strategy_design_reservation",
-    "safestEvidenceAction": "reserve_final_strategy_before_implementation",
-    "selection": "unit_u_final_strategy3_semantic_remesh_confirmation_v2"
+    "firstUnmetPrerequisite": "unit_u_literal_untouched_admission_pass",
+    "safestEvidenceAction": "preserve_locked_preseed_failure_without_relock_or_rerun",
+    "selection": "none_dependency_ready"
   },
   "parent": {
-    "branch": "codex/closy-forge-evidence-authority-recovery-v2",
-    "exactHeadWorkflow": "33616532606",
+    "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+    "exactHeadWorkflow": "33624168164",
     "forgeJobsPassed": 29,
     "forgeJobsTotal": 29,
-    "pullRequest": 53,
-    "sha": "b8d222dadbe092e25604b838e7ad219d6a1c114b"
+    "pullRequest": 54,
+    "sha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02"
   },
   "pendingCIAtEvidenceHead": true,
-  "pullRequest": 54,
+  "pullRequest": 55,
   "remainingBudgets": {
     "candidateAttempts": 1,
     "seamModels": 0,
-    "topologyStrategies": 1
+    "topologyStrategies": 0
   },
-  "remoteHeadAtResumeSource": "pending_final_commit",
+  "remoteHeadAtResumeSource": "pending_final_publication_commit",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": null,
+  "stopReason": "unit_u_locked_path_dependency_blocked_before_official_seed_v2",
   "unitMResult": {
     "acceptedIdentityCount": 16,
     "appearanceEvaluationCount": 0,
@@ -197,6 +198,29 @@
       "D0-RP-07": "fail"
     },
     "successfulPredictionArtifactCount": 60
+  },
+  "unitUResult": {
+    "authorityJob": "100250251482",
+    "authorityJobResult": "skipped",
+    "authorityRun": "33630862367",
+    "authorityWorkflowState": "disabled_manually",
+    "candidateAttemptConsumed": false,
+    "candidateCreated": false,
+    "confirmationAttemptConsumed": false,
+    "lockHash": "f56e16579bbd6e078638c36ef9c0c3de7e59e72cca7efd1087cf11fde1039204",
+    "lockHead": "d76916461d3e96b037fbc31b646319effef7a264",
+    "mismatchCount": 4,
+    "officialSeedCreated": false,
+    "outcome": "dependency_blocked_before_official_seed_v2",
+    "preflightImageId": "sha256:07f54a27f9bce38c5be7c6e26ac906eee2cbaa19c83b68a2354064c80f695247",
+    "preflightRun": "33630652037",
+    "publicConformanceDenominator": 8,
+    "publicConformancePassCount": 8,
+    "relockAllowed": false,
+    "rerunPerformed": false,
+    "strategyClass": "seam-sequence-preserving conforming panel remesh with duplicated seam degrees of freedom and rebuilt transfer/binding ancestry",
+    "strategyId": "PHY1-V5-S3-SEAM-SEQUENCE-CONFORMING-REMESH-V2",
+    "unitVEligible": false
   },
   "unsupportedEvidenceClasses": [
     "post_topology_candidate",

@@ -520,3 +520,25 @@ D0-RP-04 passes, while D0-RP-03, D0-RP-06, and D0-RP-07 fail. No route is promot
 disjoint only from the recoverable typed inventory, and the lost-v2 opaque-cohort relation remains
 unverified. Runtime v1, its package, its conventional fallback, and all physical budgets remain
 unchanged. Unit U is next independently of this failed D0 study.
+
+## Final Strategy-3 Semantic-Remesh Confirmation v2 Outcome
+
+Unit U reserved the last topology strategy as
+`PHY1-V5-S3-SEAM-SEQUENCE-CONFORMING-REMESH-V2`, implemented ordered semantic seam transfer,
+rebuilt transferred attributes and bindings, exercised coupled production assembly and independent
+CCD controls, and used exactly two public conformance cycles. The corrected second cycle passed all
+`8/8` public production-path fixtures. Exact external preflight run `33630652037` passed both
+portable verifiers and its pinned, networkless, non-root container canary.
+
+The immutable lock was committed at `d76916461d3e96b037fbc31b646319effef7a264`. Official authority run `33630862367`
+then stopped before seed creation: its public proof passed `8/8` and both portable verifiers passed,
+but the Linux pinned-container job found four implementation hash mismatches. The lock builder had
+hashed CRLF-expanded Windows worktree bytes for four inherited files while Git stores LF blobs.
+The authority job was skipped, no official fixture or expected value was revealed, no confirmation
+attempt was consumed, and no scientific admission result exists.
+
+The locked path cannot be relocked under this prompt, so the literal outcome is `dependency_blocked_before_official_seed_v2`. The
+third topology strategy is consumed; the one canonical-candidate attempt remains unspent. Units V,
+W, and X are ineligible. Runtime v1 package
+`836abc564a79c0f38ae8bdad3d4a418b0fb05a550193059c1cece8130203c20a` and fallback
+`8eccea814251f8974f5349548038be73a4d00cec73df7a7bfb787aede58385c6` remain selected.
