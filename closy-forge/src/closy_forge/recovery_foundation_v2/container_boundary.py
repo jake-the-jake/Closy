@@ -15,9 +15,7 @@ IMAGE_REFERENCE = (
 CONTAINER_UID = 65532
 CONTAINER_GID = 65532
 ALLOWED_OUTPUTS = frozenset({"probe.json", "prediction.json", "lineage.json"})
-ALLOWED_ENVIRONMENT = frozenset(
-    {"LANG", "LC_ALL", "PATH", "PYTHONHASHSEED", "ROUTE_ID"}
-)
+ALLOWED_ENVIRONMENT = frozenset({"LANG", "LC_ALL", "PATH", "PYTHONHASHSEED", "ROUTE_ID"})
 
 
 def build_docker_run_command(

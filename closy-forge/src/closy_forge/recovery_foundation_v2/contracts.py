@@ -353,8 +353,7 @@ def derive_budgets(events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         previous_ordinal = ordinal
         previous_hash = expected_hash
     remaining = {
-        category: maximum - consumed[category]
-        for category, maximum in BUDGET_MAXIMA.items()
+        category: maximum - consumed[category] for category, maximum in BUDGET_MAXIMA.items()
     }
     if any(value < 0 for value in remaining.values()):
         raise ValueError("budget_overconsumed")

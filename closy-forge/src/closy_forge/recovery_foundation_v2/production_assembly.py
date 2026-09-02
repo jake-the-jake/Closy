@@ -34,8 +34,7 @@ def execute_public_fixture(fixture: Mapping[str, Any]) -> dict[str, Any]:
         )
         calls.append(str(contact["kernel"]))
         contact_positions = [
-            cast(Vec3, tuple(float(value) for value in row))
-            for row in contact["positions"]
+            cast(Vec3, tuple(float(value) for value in row)) for row in contact["positions"]
         ]
         seam = run_constraint_kernel(
             contact_positions,
@@ -69,7 +68,8 @@ def execute_public_fixture(fixture: Mapping[str, Any]) -> dict[str, Any]:
         "instrumentationVersion": "closy.production_constraint_path.instrumentation.v2",
         "productionCalls": calls,
         "productionPathExecuted": bool(calls),
-        "productionPathRequired": fixture_type not in {
+        "productionPathRequired": fixture_type
+        not in {
             "constrained_remesh_attribute_transfer",
             "repeat_portability_mutation_detection",
         },

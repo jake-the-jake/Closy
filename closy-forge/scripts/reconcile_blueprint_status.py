@@ -3087,9 +3087,7 @@ def _apply_unit_s_status_overlay(docs: Path) -> None:
             "branch": "codex/closy-forge-evidence-authority-recovery-v2",
             "pullRequest": 53,
             "evidenceHead": UNIT_S_EVIDENCE_HEAD,
-            "latestFinishedParentPublicationHead": (
-                "8dd7a547debf038e9e27c48cf8e42009ae69ac3a"
-            ),
+            "latestFinishedParentPublicationHead": ("8dd7a547debf038e9e27c48cf8e42009ae69ac3a"),
             "localHeadAtResumeSource": "pending_final_commit",
             "remoteHeadAtResumeSource": "pending_final_commit",
             "pendingCIAtEvidenceHead": True,
@@ -3152,8 +3150,7 @@ def _apply_unit_s_status_overlay(docs: Path) -> None:
     )
 
     subgate_lines = "\n".join(
-        f"- `{name}`: `{row['result']}` - `{row['reason']}`"
-        for name, row in subgates.items()
+        f"- `{name}`: `{row['result']}` - `{row['reason']}`" for name, row in subgates.items()
     )
     markdown = f"""# Active Blueprint Resume
 
@@ -3185,17 +3182,14 @@ def _apply_unit_s_status_overlay(docs: Path) -> None:
 
 {resume['exactNextAction']}
 """
-    (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(
-        markdown, encoding="utf-8", newline="\n"
-    )
+    (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(markdown, encoding="utf-8", newline="\n")
 
     summary_path = docs / "BLUEPRINT_STATUS_SUMMARY.md"
     summary = summary_path.read_text(encoding="utf-8").rstrip()
     summary += (
         "\n\n## Unit S Authority Recovery\n\n"
         + "\n".join(
-            f"- {name}: `{row['result']}` - `{row['reason']}`"
-            for name, row in subgates.items()
+            f"- {name}: `{row['result']}` - `{row['reason']}`" for name, row in subgates.items()
         )
         + "\n\nUnit S changes no Research Prototype row and creates no scientific cohort, "
         "untouched topology fixture, candidate, or physical attempt.\n"

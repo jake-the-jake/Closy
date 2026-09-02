@@ -134,21 +134,17 @@ def test_starting_manifest_and_external_attestation_are_exact_and_fail_closed() 
     attestation = build_external_attestation()
     assert validate_starting_manifest(manifest) == []
     assert validate_external_attestation(attestation) == []
-    assert manifest["activeTail"][-1]["headSha"] == (
-        "8dd7a547debf038e9e27c48cf8e42009ae69ac3a"
-    )
+    assert manifest["activeTail"][-1]["headSha"] == ("8dd7a547debf038e9e27c48cf8e42009ae69ac3a")
     bad = deepcopy(manifest)
-    bad["publicationAnchors"]["46"]["scientificResultSha"] = bad[
-        "publicationAnchors"
-    ]["46"]["publicationHeadSha"]
+    bad["publicationAnchors"]["46"]["scientificResultSha"] = bad["publicationAnchors"]["46"][
+        "publicationHeadSha"
+    ]
     bad["canonicalDigest"] = canonical_digest(bad)
     assert "publication_result_conflated:46" in validate_starting_manifest(bad)
     stale = deepcopy(attestation)
     stale["workflow"]["headSha"] = "0" * 40
     stale["canonicalDigest"] = canonical_digest(stale)
-    assert "external_attestation_workflow_head_invalid" in validate_external_attestation(
-        stale
-    )
+    assert "external_attestation_workflow_head_invalid" in validate_external_attestation(stale)
 
 
 def test_physical_budget_ledger_is_derived_and_preserves_unit_o_classification() -> None:
@@ -234,9 +230,10 @@ def test_pixel_routes_decode_real_pngs_and_learned_model_is_causally_distinct() 
     observation = decode_pixel_observations(front, rear)
     assert observation["decodedRoles"] == ["front_png", "rear_png"]
     assert run_route(ROUTES[0], front_png=None, rear_png=None)["pixelsConsumed"] is False
-    assert run_route(PRIMARY_ROUTE, front_png=front, rear_png=rear, model=model)[
-        "pixelsConsumed"
-    ] is True
+    assert (
+        run_route(PRIMARY_ROUTE, front_png=front, rear_png=rear, model=model)["pixelsConsumed"]
+        is True
+    )
     controls = build_pixel_causal_controls(model)
     assert all(
         controls[field] is True
@@ -252,9 +249,9 @@ def test_pixel_routes_decode_real_pngs_and_learned_model_is_causally_distinct() 
 
 
 def test_pixel_route_source_is_separated_from_target_and_evaluator_implementations() -> None:
-    source = (
-        ROOT / "src/closy_forge/recovery_foundation_v2/pixel_routes.py"
-    ).read_text(encoding="utf-8")
+    source = (ROOT / "src/closy_forge/recovery_foundation_v2/pixel_routes.py").read_text(
+        encoding="utf-8"
+    )
     forbidden_imports = (
         "topology_holdout",
         "evaluator_v3",
@@ -274,9 +271,7 @@ def test_typed_inventory_and_non_substitutable_disjointness_layers() -> None:
     result = evaluate_disjointness(prior, fresh, minimum_parameter_distance=0.01)
     assert result["overallRecoverableInventoryPass"] is True
     repeated_garment = deepcopy(_garment_record(0, capture=9))
-    repeated = evaluate_disjointness(
-        prior, [repeated_garment], minimum_parameter_distance=0.01
-    )
+    repeated = evaluate_disjointness(prior, [repeated_garment], minimum_parameter_distance=0.01)
     assert repeated["garmentIdentityPredicate"]["pass"] is False
     assert repeated["captureInstancePredicate"]["pass"] is True
     assert repeated["disjointFromUnrecoverableV2OpaqueCohort"] == "unverified"

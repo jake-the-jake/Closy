@@ -123,8 +123,7 @@ def evaluate(
     scored_compiles = [_score_compile(row) for row in compiles]
     scored_appearances = [_score_appearance(row, scored_compiles) for row in appearances]
     summaries = [
-        _route_summary(route, attempts, scored_compiles, scored_appearances)
-        for route in ROUTES
+        _route_summary(route, attempts, scored_compiles, scored_appearances) for route in ROUTES
     ]
     by_route = {str(row["routeId"]): row for row in summaries}
     primary = by_route[PRIMARY_ROUTE]
@@ -134,11 +133,10 @@ def evaluate(
         float(no_pixel["meanMacroError"]) - float(primary["meanMacroError"])
     ) / max(float(no_pixel["meanMacroError"]), 1e-12)
     silhouette_delta = float(primary["meanSilhouetteIoU"]) - float(no_pixel["meanSilhouetteIoU"])
-    conditioning_pass = (
-        relative_parameter
-        >= float(thresholds["primaryVersusNoPixelParameterRelativeImprovementMinimum"])
-        and silhouette_delta
-        >= float(thresholds["primaryVersusNoPixelSilhouetteAbsoluteImprovementMinimum"])
+    conditioning_pass = relative_parameter >= float(
+        thresholds["primaryVersusNoPixelParameterRelativeImprovementMinimum"]
+    ) and silhouette_delta >= float(
+        thresholds["primaryVersusNoPixelSilhouetteAbsoluteImprovementMinimum"]
     )
     deterministic = _repeat_match(compiles, compile_repeats) and _repeat_match(
         appearances, appearance_repeats
@@ -280,14 +278,19 @@ def _validate_unique_exact_rows(
 
 def _score_compile(row: Mapping[str, Any]) -> dict[str, Any]:
     metrics = _mapping(row.get("metrics"))
-    finite = all(math.isfinite(float(metrics.get(field, math.nan))) for field in (
-        "macroNormalizedError",
-        "worstNormalizedError",
-        "silhouetteIoU",
-    ))
+    finite = all(
+        math.isfinite(float(metrics.get(field, math.nan)))
+        for field in (
+            "macroNormalizedError",
+            "worstNormalizedError",
+            "silhouetteIoU",
+        )
+    )
     gates = _mapping(row.get("prerequisiteGates"))
-    success = row.get("status") == "pass" and finite and all(
-        gates.get(field) is True for field in ("geometry", "package", "render")
+    success = (
+        row.get("status") == "pass"
+        and finite
+        and all(gates.get(field) is True for field in ("geometry", "package", "render"))
     )
     scored = dict(row)
     scored["status"] = "pass" if success else "fail"
@@ -325,8 +328,7 @@ def _route_summary(
         for row in route_compiles
     ]
     silhouettes = [
-        float(_mapping(row.get("metrics")).get("silhouetteIoU", 0.0))
-        for row in route_compiles
+        float(_mapping(row.get("metrics")).get("silhouetteIoU", 0.0)) for row in route_compiles
     ]
     functional = bool(route_compiles) and (
         sum(row.get("status") == "pass" for row in route_attempts) >= 14
@@ -334,11 +336,15 @@ def _route_summary(
         and max(errors) <= 0.25
         and math.fsum(silhouettes) / len(silhouettes) >= 0.30
     )
-    appearance_pass = bool(route_appearances) and len(route_appearances) == 8 and all(
-        row.get("status") == "pass"
-        and float(_mapping(row.get("metrics")).get("foregroundSrgbMae", 1.0)) <= 0.12
-        and float(_mapping(row.get("metrics")).get("logoIoU", 0.0)) >= 0.02
-        for row in route_appearances
+    appearance_pass = (
+        bool(route_appearances)
+        and len(route_appearances) == 8
+        and all(
+            row.get("status") == "pass"
+            and float(_mapping(row.get("metrics")).get("foregroundSrgbMae", 1.0)) <= 0.12
+            and float(_mapping(row.get("metrics")).get("logoIoU", 0.0)) >= 0.02
+            for row in route_appearances
+        )
     )
     return {
         "routeId": route,
@@ -360,9 +366,7 @@ def _repeat_match(
 ) -> bool:
     for repeat in repeats:
         key = (int(repeat["ordinal"]), str(repeat["route"]))
-        original = next(
-            row for row in primary if (int(row["ordinal"]), str(row["route"])) == key
-        )
+        original = next(row for row in primary if (int(row["ordinal"]), str(row["route"])) == key)
         if dict(original) != dict(repeat):
             return False
     return True
@@ -373,19 +377,11 @@ def _prediction_keys() -> list[tuple[int, str]]:
 
 
 def _compile_keys() -> list[tuple[int, str]]:
-    return [
-        (ordinal, route)
-        for ordinal in range(IDENTITY_COUNT)
-        for route in FULL_COMPILE_ROUTES
-    ]
+    return [(ordinal, route) for ordinal in range(IDENTITY_COUNT) for route in FULL_COMPILE_ROUTES]
 
 
 def _appearance_keys() -> list[tuple[int, str]]:
-    return [
-        (ordinal, route)
-        for ordinal in APPEARANCE_ORDINALS
-        for route in FULL_COMPILE_ROUTES
-    ]
+    return [(ordinal, route) for ordinal in APPEARANCE_ORDINALS for route in FULL_COMPILE_ROUTES]
 
 
 def _mapping(value: object) -> dict[str, Any]:

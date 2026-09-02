@@ -111,10 +111,7 @@ def fit_public_development_model(sample_count: int = 24) -> dict[str, Any]:
         rear = render_public_tshirt_png(values, rear=True, logo=False)
         observation = decode_pixel_observations(front, rear)
         observations.append(
-            {
-                key: float(value)
-                for key, value in _mapping(observation["features"]).items()
-            }
+            {key: float(value) for key, value in _mapping(observation["features"]).items()}
         )
         targets.append(values)
     feature_for_target = dict(zip(TARGETS, FEATURES, strict=True))
@@ -196,9 +193,7 @@ def load_fitted_model(path: Path) -> dict[str, Any]:
     return model
 
 
-def render_public_tshirt_png(
-    parameters: Mapping[str, float], *, rear: bool, logo: bool
-) -> bytes:
+def render_public_tshirt_png(parameters: Mapping[str, float], *, rear: bool, logo: bool) -> bytes:
     size = 128
     image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
@@ -384,8 +379,7 @@ def _least_squares(x_values: Sequence[float], y_values: Sequence[float]) -> tupl
     x_mean = math.fsum(x_values) / len(x_values)
     y_mean = math.fsum(y_values) / len(y_values)
     numerator = math.fsum(
-        (x - x_mean) * (y - y_mean)
-        for x, y in zip(x_values, y_values, strict=True)
+        (x - x_mean) * (y - y_mean) for x, y in zip(x_values, y_values, strict=True)
     )
     denominator = math.fsum((x - x_mean) ** 2 for x in x_values)
     if denominator <= 0.0:

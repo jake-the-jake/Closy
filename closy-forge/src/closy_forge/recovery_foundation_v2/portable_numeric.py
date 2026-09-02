@@ -142,9 +142,7 @@ def canonical_geometry_coordinate(value: float) -> dict[str, Any]:
     with localcontext() as context:
         context.prec = 80
         integer = int(
-            (Decimal.from_float(value) * Decimal(scale)).to_integral_value(
-                rounding=ROUND_HALF_EVEN
-            )
+            (Decimal.from_float(value) * Decimal(scale)).to_integral_value(rounding=ROUND_HALF_EVEN)
         )
     return {
         "integerNanometers": integer,

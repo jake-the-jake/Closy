@@ -146,9 +146,7 @@ def _source_separation(root: Path) -> dict[str, Any]:
         ),
         "oracleSource": str(oracle_path.relative_to(root)).replace("\\", "/"),
         "oracleSourceSha256": sha256_file(oracle_path),
-        "oracleForbiddenDependenciesAbsent": all(
-            token not in oracle for token in oracle_forbidden
-        ),
+        "oracleForbiddenDependenciesAbsent": all(token not in oracle for token in oracle_forbidden),
         "forbiddenDependencies": {
             "learnedRoute": list(learned_forbidden),
             "topologyOracle": list(oracle_forbidden),
@@ -211,13 +209,11 @@ def build(root: Path, authority: Mapping[str, Any] | None) -> dict[Path, Any]:
         EVIDENCE_RELATIVE / "strict_c3_mutation_report.json": generic_c3_mutation_report(),
         EVIDENCE_RELATIVE / "persisted_glb_attribute_audit.json": {
             "simulation": audit_persisted_glb(
-                root
-                / "docs/evidence/d0_fitting_pbr_fidelity_v2/predictions/"
+                root / "docs/evidence/d0_fitting_pbr_fidelity_v2/predictions/"
                 "candidate_package/simulation/rest_mesh.glb"
             ),
             "render": audit_persisted_glb(
-                root
-                / "docs/evidence/d0_fitting_pbr_fidelity_v2/predictions/"
+                root / "docs/evidence/d0_fitting_pbr_fidelity_v2/predictions/"
                 "candidate_package/render/render_mesh.glb"
             ),
         },
@@ -225,8 +221,7 @@ def build(root: Path, authority: Mapping[str, Any] | None) -> dict[Path, Any]:
         EVIDENCE_RELATIVE / "canonical_geometry_boundary.json": {
             "policyVersion": "closy.canonical_geometry.nanometer_half_even.v1",
             "examples": [
-                canonical_geometry_coordinate(value)
-                for value in (-0.1234567894, 0.0, 0.1234567894)
+                canonical_geometry_coordinate(value) for value in (-0.1234567894, 0.0, 0.1234567894)
             ],
         },
         EVIDENCE_RELATIVE / "source_separation.json": _source_separation(root),
@@ -251,9 +246,7 @@ def build(root: Path, authority: Mapping[str, Any] | None) -> dict[Path, Any]:
             "schemaVersion": 1,
             "unit": "S",
             "result": (
-                "pass"
-                if all(row["result"] == "pass" for row in subgates.values())
-                else "partial"
+                "pass" if all(row["result"] == "pass" for row in subgates.values()) else "partial"
             ),
             "subgates": subgates,
             "remainingBudgets": {
@@ -313,10 +306,7 @@ def _report(documents: Mapping[Path, Any]) -> str:
             "",
             "## Sub-gates",
             "",
-            *[
-                f"- `{name}`: `{row['result']}` - `{row['reason']}`"
-                for name, row in gates.items()
-            ],
+            *[f"- `{name}`: `{row['result']}` - `{row['reason']}`" for name, row in gates.items()],
             "",
             "## Literal scope",
             "",

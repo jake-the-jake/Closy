@@ -164,9 +164,7 @@ def build_manifest(repository: Path) -> dict[str, Any]:
                     "semanticClass": semantic,
                     "disposition": disposition,
                     "conflictResolution": CONFLICTS.get(source),
-                    "cherryPickXVerified": (
-                        f"cherry picked from commit {source}" in result_body
-                    ),
+                    "cherryPickXVerified": (f"cherry picked from commit {source}" in result_body),
                 }
             )
 
@@ -233,9 +231,9 @@ def _validate_dispositions(
     if result_shas != sorted(result_shas, key=result_order.__getitem__):
         raise ValueError("replay_disposition_result_order_invalid")
     for row in dispositions:
-        if (
-            row["sourcePatchId"] != row["resultPatchId"]
-            and row.get("conflictResolution") in (None, "")
+        if row["sourcePatchId"] != row["resultPatchId"] and row.get("conflictResolution") in (
+            None,
+            "",
         ):
             raise ValueError(f"replay_patch_id_mismatch:{row['sourceSha']}")
         if row["cherryPickXVerified"] is not True:

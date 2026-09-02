@@ -61,7 +61,8 @@ def _security_probe() -> dict[str, object]:
             os.environ.get(name) is None
             for name in ("GITHUB_TOKEN", "AWS_SECRET_ACCESS_KEY", "SUPABASE_SERVICE_ROLE_KEY")
         ),
-        "undeclaredEnvironmentAbsent": set(os.environ) <= {
+        "undeclaredEnvironmentAbsent": set(os.environ)
+        <= {
             "LANG",
             "LC_ALL",
             "PATH",
@@ -113,7 +114,11 @@ def _decode_png(path: Path) -> tuple[int, int, bytes]:
                 scanline[index] = (scanline[index] + ((left + above) // 2)) & 255
             elif filter_type == 4:
                 prediction = left + above - upper_left
-                distances = (abs(prediction - left), abs(prediction - above), abs(prediction - upper_left))
+                distances = (
+                    abs(prediction - left),
+                    abs(prediction - above),
+                    abs(prediction - upper_left),
+                )
                 predictor = (left, above, upper_left)[distances.index(min(distances))]
                 scanline[index] = (scanline[index] + predictor) & 255
             elif filter_type != 0:
