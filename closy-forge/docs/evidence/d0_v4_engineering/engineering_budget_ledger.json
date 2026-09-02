@@ -1,17 +1,1 @@
-{
-  "schemaVersion": 1,
-  "ledgerVersion": "closy.d0_v4.engineering_budget_ledger.v1",
-  "events": [
-    {
-      "ordinal": 0,
-      "event": "engineering_protocol_frozen",
-      "unit": "AC",
-      "trainingStarted": false,
-      "publicTestExecuted": false
-    }
-  ],
-  "observationContractRevisionsConsumed": 0,
-  "modelTrainingTrialsConsumed": 0,
-  "publicTestExecutionsConsumed": 0,
-  "ledgerDigest": "a6c6c86b356599da6967bb0e1e7d297bada81dbd1f5c577a49cf5c90ad7acbda"
-}
+{"events":[{"event":"engineering_protocol_frozen","ordinal":0,"publicTestExecuted":false,"trainingStarted":false,"unit":"AC"},{"contractDigest":"626e84d75f526728cdd987753ad76d5c39edd60ba9da99141bc1e3c717ea1c44","event":"observation_contract_revision_completed","fullTrainingAndValidationEvaluated":true,"ordinal":1,"revisionId":"closy.d0_v4.rgb_observation.v1"},{"event":"model_training_trial_completed","modelSha256":"c8cbe57b2e4d5e163a01c93ac2535d7c83af5bad2a411fc0cdf491c5216d7b19","ordinal":2,"outcome":"failed_readiness_margins","publicTestRead":false,"trialId":"trial-001","validationMedianMacroNormalizedError":0.126648335582,"validationWorstNormalizedError":0.7659247}],"ledgerDigest":"903ac477d97a1ef70de46b33044c55efccdcbf9353d5c0cb3b4789eb45f5df7c","ledgerVersion":"closy.d0_v4.engineering_budget_ledger.v1","modelTrainingTrialsConsumed":1,"observationContractRevisionsConsumed":1,"publicTestExecutionsConsumed":0,"schemaVersion":1}

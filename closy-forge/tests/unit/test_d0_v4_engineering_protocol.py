@@ -47,12 +47,12 @@ def test_protocol_mutations_fail_closed() -> None:
         assert validate_engineering_protocol(mutated)
 
 
-def test_initial_budget_ledger_is_append_only_and_unconsumed() -> None:
+def test_budget_ledger_is_append_only_and_within_frozen_caps() -> None:
     protocol = load_engineering_protocol(ROOT)
     ledger = load_budget_ledger(ROOT)
     assert validate_budget_ledger(ledger, protocol) == []
-    assert ledger["observationContractRevisionsConsumed"] == 0
-    assert ledger["modelTrainingTrialsConsumed"] == 0
+    assert ledger["observationContractRevisionsConsumed"] == 1
+    assert ledger["modelTrainingTrialsConsumed"] == 1
     assert ledger["publicTestExecutionsConsumed"] == 0
 
 
@@ -63,7 +63,7 @@ def test_budget_ledger_rejects_reorder_and_overrun() -> None:
     reordered["events"][0]["ordinal"] = 1
     assert "budget_event_order_invalid" in validate_budget_ledger(reordered, protocol)
     overrun = deepcopy(ledger)
-    for ordinal in range(1, 14):
+    for ordinal in range(len(overrun["events"]), len(overrun["events"]) + 12):
         overrun["events"].append({"ordinal": ordinal, "event": "model_training_trial_completed"})
     overrun["modelTrainingTrialsConsumed"] = 13
     assert "model_training_trial_budget_exceeded" in validate_budget_ledger(overrun, protocol)
