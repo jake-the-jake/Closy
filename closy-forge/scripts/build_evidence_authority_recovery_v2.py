@@ -63,8 +63,8 @@ from closy_forge.recovery_foundation_v2.typed_inventory import (
 EVIDENCE_RELATIVE = Path("docs/evidence/evidence_authority_recovery_v2")
 FIXTURE_RELATIVE = Path("fixtures/evidence_authority_recovery_v2")
 MODEL_RELATIVE = Path("models/d0_v3/public_pixel_fitted_tshirt_v1.json")
-UNIT_S_PREFLIGHT_HEAD = "49e878c952af8466481bea5c42cec527fe32498e"
-UNIT_S_PREFLIGHT_RUN = "33613269852"
+UNIT_S_PREFLIGHT_HEAD = "1c748e63bab1282d697be960f19bd01a53337df2"
+UNIT_S_PREFLIGHT_RUN = "33616212488"
 
 
 def validate_unit_s_authority_attestation(authority: Mapping[str, Any]) -> list[str]:
@@ -88,7 +88,7 @@ def validate_unit_s_authority_attestation(authority: Mapping[str, Any]) -> list[
         if authority.get(field) != value:
             errors.append(f"unit_s_authority_{field}_invalid")
     if authority.get("runUrl") != (
-        "https://github.com/jake-the-jake/Closy/actions/runs/33613269852"
+        "https://github.com/jake-the-jake/Closy/actions/runs/33616212488"
     ):
         errors.append("unit_s_authority_runUrl_invalid")
     image_id = authority.get("imageId")
