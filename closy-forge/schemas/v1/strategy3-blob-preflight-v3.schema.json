@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://closy.dev/schemas/v1/strategy3-blob-preflight-v3.schema.json",
+  "title": "Strategy 3 repository-blob preflight v3",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "preflightVersion",
+    "checkoutMode",
+    "lockCommit",
+    "inventoryDigest",
+    "materializedBuildContextDigest",
+    "mutations",
+    "officialSeedCreated",
+    "status",
+    "preflightDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "preflightVersion": { "const": "closy.strategy3.repository_blob_preflight.v3" },
+    "checkoutMode": { "enum": ["normal", "autocrlf_true", "autocrlf_false"] },
+    "lockCommit": { "type": "string" },
+    "inventoryDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "materializedBuildContextDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "mutations": { "type": "object" },
+    "officialSeedCreated": { "const": false },
+    "status": { "enum": ["pass", "fail"] },
+    "preflightDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://closy.dev/schemas/v1/strategy3-blob-result-v3.schema.json",
+  "title": "Strategy 3 repository-blob result v3",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "resultVersion",
+    "literalOutcome",
+    "fixturePassCount",
+    "fixtureDenominator",
+    "portableDecisions",
+    "officialSeedCreated",
+    "unitZEligible",
+    "resultDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "resultVersion": { "const": "closy.strategy3.repository_blob_confirmation_result.v3" },
+    "literalOutcome": {
+      "enum": [
+        "strategy3_admitted_repository_blob_authority_v3",
+        "strategy3_scientific_admission_failed_v3",
+        "strategy3_authority_integrity_error_after_seed_v3",
+        "strategy3_dependency_blocked_before_seed_v3"
+      ]
+    },
+    "fixturePassCount": { "type": "integer", "minimum": 0, "maximum": 8 },
+    "fixtureDenominator": { "const": 8 },
+    "portableDecisions": { "type": "array", "minItems": 8, "maxItems": 8 },
+    "officialSeedCreated": { "type": "boolean" },
+    "unitZEligible": { "type": "boolean" },
+    "resultDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}
