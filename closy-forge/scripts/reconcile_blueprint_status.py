@@ -15,8 +15,8 @@ EVIDENCE_ANCHOR = "9078a09f1156ba8b7f98099185478ca9efcee952"
 STALE_INVALID_EVIDENCE_ANCHORS = {
     "076cb93c95e0d98052332e52622a15d06c6b6a4e",
 }
-VERSION = "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v20"
-GENERATOR_VERSION = "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v17"
+VERSION = "closy.blueprint_coverage.evidence_authority_recovery_v2.v21"
+GENERATOR_VERSION = "closy.blueprint_reconciliation.evidence_authority_recovery_v2.v18"
 UNIT_G_FINAL_HEAD = "bc4927fe6d36667b5b236d844b4eff511ef6f987"
 UNIT_H_FINAL_HEAD = "e25da69d29eb1b68885b911c7354df085f4a22c0"
 UNIT_I_EVIDENCE_HEAD = "854b85ed769bc3e67547e4195f65dfeb78878881"
@@ -27,6 +27,9 @@ UNIT_M_FINAL_HEAD = "552867e96d53e9d4c728f90d12e0c1c9a344ba0d"
 UNIT_N_AUTHORITY_HEAD = "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
 UNIT_N_FINAL_HEAD = "e062a30ba295ed27334622916ddb449fd76e2166"
 UNIT_O_EVIDENCE_HEAD = "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+UNIT_S_EVIDENCE_HEAD = "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
+UNIT_S_PREFLIGHT_HEAD = "1c748e63bab1282d697be960f19bd01a53337df2"
+UNIT_S_PREFLIGHT_RUN = "33616212488"
 PR23_FINAL_RUN = "33150483293"
 PR23_FINAL_HEAD = "a481ba26a424bd91607b8c1d41b6173a2c9579d9"
 PR23_FINAL_JOB_IDS = {
@@ -440,6 +443,19 @@ PR_SNAPSHOTS = [
         "",
         "PENDING",
         "phy1_topology_strategy3_diagnosis_integrity_error",
+    ),
+    (
+        53,
+        "Forge: evidence authority recovery foundation v2",
+        "codex/closy-forge-evidence-authority-recovery-v2",
+        "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+        "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+        UNIT_S_EVIDENCE_HEAD,
+        3,
+        49,
+        "",
+        "PENDING",
+        "evidence_authority_recovery_v2",
     ),
 ]
 
@@ -1813,7 +1829,8 @@ UNIT_N_C3_PROGRESSION_UPDATES = {
         "status": "partial",
         "summary": (
             "The exact Unit F binding passed strict C3 v5 on 8/8 fresh committed states with "
-            "maximum reconstruction error 6.71791165111579e-08 m and zero seam error."
+            "maximum reconstruction error 6.71791165111579e-08 m and zero candidate-versus-"
+            "oracle seam-delta residual."
         ),
         "limitations": (
             "D0-RP-08 closes only for this frozen pre-topology sentinel; any topology or binding "
@@ -1870,7 +1887,8 @@ UNIT_N_C3_EVIDENCE_ADDITIONS = {
             "authority run 33546821637 job 99986277154 committed exactly eight fresh poses",
             "8/8 strict C3 states passed on exact Unit F sentinel",
             "maximum binding reconstruction error 6.71791165111579e-08 m",
-            "semantic seam crack/sliding and inverted triangles remained zero",
+            "candidate-versus-oracle seam-delta and orientation residuals remained zero; "
+            "absolute seam crack and rest-relative inversion were not measured",
             "two fresh-process repeats and negative mutation controls passed",
         ],
         "tests": ["closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"],
@@ -1968,6 +1986,78 @@ UNIT_O_TOPOLOGY_EVIDENCE_ADDITIONS = {
         "tests": ["closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"],
     }
     for row_id in UNIT_O_TOPOLOGY_PROGRESSION_UPDATES
+}
+
+UNIT_S_RECOVERY_PROGRESSION_UPDATES = {
+    "BP-08-K-CLOTH-SIMULATION": {
+        "status": "partial",
+        "summary": (
+            "Unit S preserves every physical result while adding prospective portable numeric "
+            "policy, real production-path instrumentation, and an executable independent "
+            "eight-fixture Strategy-3 confirmation generator."
+        ),
+        "limitations": (
+            "Only public development fixtures ran. No official topology seed, untouched fixture, "
+            "strategy admission, candidate transformation, neutral solve, PHY1, or CCD exists."
+        ),
+        "nextAction": "Run Unit U only after S-core and S-PHY are externally green.",
+    },
+    "BP-14-EVALUATION": {
+        "status": "partial",
+        "summary": (
+            "Unit S repairs replay, result-schema, fixed-denominator, external-attestation, "
+            "typed-inventory, and mutation semantics without revising historical outcomes."
+        ),
+        "limitations": (
+            "The v3 evaluator has only generic/public contaminated development evidence until "
+            "one externally authorised untouched cohort is created."
+        ),
+        "nextAction": "Run Unit T only after the exact-image 3/3 S-D0 preflight is green.",
+    },
+    "BP-18-GATE-C3": {
+        "status": "partial",
+        "summary": (
+            "Unit S decomposes strict-C3 v5 accurately: exact positional binding and analytic "
+            "agreement pass, while absolute seam, physical deformation, rest-relative inversion, "
+            "persisted deformed frames, and coherent-shell predicates remain not measured."
+        ),
+        "limitations": (
+            "The frozen v5 artifact has 614 raw indexed components per side and no stable ancestry "
+            "map capable of proving prospective coherent-shell equivalence."
+        ),
+        "nextAction": "Require the corrected prospective C3 contract for any new candidate.",
+    },
+    "BP-20-RESEARCH-PROTOTYPE": {
+        "status": "partial",
+        "summary": (
+            "Unit S changes no Research Prototype result: core remains 7 pass, 4 fail, 0 not-run; "
+            "supplemental remains 2 pass, 0 fail, 2 not-run."
+        ),
+        "limitations": (
+            "D0-RP-03/04/06/07 and D0-RP-15 remain failed; no identity-disjoint v3, post-topology, "
+            "physical, private, device, human, Alpha, Beta, or Production evidence exists."
+        ),
+        "nextAction": "Advance only through the independently green Unit S sub-gates.",
+    },
+}
+
+UNIT_S_RECOVERY_EVIDENCE_ADDITIONS = {
+    row_id: {
+        "implementationPaths": [
+            "closy-forge/src/closy_forge/recovery_foundation_v2",
+            "closy-forge/docker/d0_v3",
+            "closy-forge/fixtures/evidence_authority_recovery_v2",
+        ],
+        "executableEvidence": [
+            "typed prior inventory and opaque-v2 unverified caveat",
+            "64/48/16/24/8 fail-closed evaluator contract and mutations",
+            "portable three-layer numeric boundary and exact geometry policy",
+            "independent executable eight-fixture Strategy-3 public development generator",
+            "historical C3 v5 predicate decomposition without replay",
+        ],
+        "tests": ["closy-forge/tests/unit/test_evidence_authority_recovery_v2.py"],
+    }
+    for row_id in UNIT_S_RECOVERY_PROGRESSION_UPDATES
 }
 
 UNIT_H_CORE_C3_PROGRESSION_UPDATES = {
@@ -2361,6 +2451,9 @@ def main() -> int:
         unit_o_update = UNIT_O_TOPOLOGY_PROGRESSION_UPDATES.get(row_id)
         if unit_o_update:
             row.update(unit_o_update)
+        unit_s_update = UNIT_S_RECOVERY_PROGRESSION_UPDATES.get(row_id)
+        if unit_s_update:
+            row.update(unit_s_update)
         if ROW_EVIDENCE_ADDITIONS.get(row_id):
             row["implementationPaths"] = _append_unique(
                 row.get("implementationPaths"), PHASE10_PATHS
@@ -2430,6 +2523,11 @@ def main() -> int:
             for field in ("implementationPaths", "executableEvidence", "tests"):
                 row[field] = _append_unique(row.get(field), unit_o_evidence[field])
             row["commitSha"] = _append_unique(row.get("commitSha"), [UNIT_O_EVIDENCE_HEAD])
+        unit_s_evidence = UNIT_S_RECOVERY_EVIDENCE_ADDITIONS.get(row_id)
+        if unit_s_evidence:
+            for field in ("implementationPaths", "executableEvidence", "tests"):
+                row[field] = _append_unique(row.get(field), unit_s_evidence[field])
+            row["commitSha"] = _append_unique(row.get("commitSha"), [UNIT_S_EVIDENCE_HEAD])
         if (
             row_id in NEXT_ACTIONS
             and row_id not in CURRENT_PROGRESSION_UPDATES
@@ -2444,6 +2542,7 @@ def main() -> int:
             and row_id not in UNIT_M_DISJOINT_PROGRESSION_UPDATES
             and row_id not in UNIT_N_C3_PROGRESSION_UPDATES
             and row_id not in UNIT_O_TOPOLOGY_PROGRESSION_UPDATES
+            and row_id not in UNIT_S_RECOVERY_PROGRESSION_UPDATES
         ):
             row["nextAction"] = NEXT_ACTIONS[row_id]
         if row_id.startswith("BP-09-Z") and row_id not in {"BP-09-Z1", "BP-09-Z2"}:
@@ -2473,7 +2572,7 @@ def main() -> int:
     stack_path.write_text(
         json.dumps(stack, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
-    model = build_status_model(coverage, stack, evidence_anchor_sha=UNIT_O_EVIDENCE_HEAD)
+    model = build_status_model(coverage, stack, evidence_anchor_sha=UNIT_S_EVIDENCE_HEAD)
     (docs / "current_blueprint_status.json").write_text(
         json.dumps(model, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
@@ -2482,6 +2581,7 @@ def main() -> int:
     )
     _write_active_resume(docs)
     _update_master_progress(docs)
+    _apply_unit_s_status_overlay(docs)
     return 0
 
 
@@ -2970,6 +3070,149 @@ mobile, Alpha, Beta, Production, post-topology candidate, full-PHY1, integrated-
 solver-driven-Z2 claim is made.
 """
     path.write_text(prefix + section, encoding="utf-8", newline="\n")
+
+
+def _apply_unit_s_status_overlay(docs: Path) -> None:
+    evidence_path = docs / "evidence" / "evidence_authority_recovery_v2"
+    outcome = json.loads((evidence_path / "unit_s_outcome.json").read_text(encoding="utf-8"))
+    subgates = outcome["subgates"]
+    all_green = all(row["result"] == "pass" for row in subgates.values())
+
+    resume_path = docs / "ACTIVE_BLUEPRINT_RESUME.json"
+    resume = json.loads(resume_path.read_text(encoding="utf-8"))
+    resume.update(
+        {
+            "machineResumeVersion": "closy.active_blueprint_resume.evidence_authority_v2.v12",
+            "activeLane": "Unit S evidence and authority recovery v2",
+            "branch": "codex/closy-forge-evidence-authority-recovery-v2",
+            "pullRequest": 53,
+            "evidenceHead": UNIT_S_EVIDENCE_HEAD,
+            "latestFinishedParentPublicationHead": ("8dd7a547debf038e9e27c48cf8e42009ae69ac3a"),
+            "localHeadAtResumeSource": "pending_final_commit",
+            "remoteHeadAtResumeSource": "pending_final_commit",
+            "pendingCIAtEvidenceHead": True,
+            "parent": {
+                "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+                "pullRequest": 52,
+                "sha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+                "exactHeadWorkflow": "33570351597",
+                "forgeJobsPassed": 29,
+                "forgeJobsTotal": 29,
+            },
+            "unitSResult": {
+                "outcome": outcome["result"],
+                "subgates": subgates,
+                "preflightHead": UNIT_S_PREFLIGHT_HEAD,
+                "preflightRun": UNIT_S_PREFLIGHT_RUN,
+                "officialD0CohortCreated": False,
+                "officialTopologyFixturesCreated": False,
+                "canonicalCandidateCreated": False,
+                "physicalAttemptConsumed": False,
+            },
+            "remainingBudgets": {
+                "seamModels": 0,
+                "topologyStrategies": 1,
+                "candidateAttempts": 1,
+            },
+            "conditionalUnits": {
+                "T": "dependency_ready" if all_green else "blocked_by_S_D0",
+                "U": "dependency_ready_after_T" if all_green else "blocked_by_S_PHY",
+                "V": "not_created_requires_unit_u_pass",
+                "W": "not_created_requires_unit_v_candidate",
+                "X": "not_created_requires_unit_w_core_prerequisites",
+            },
+            "stopReason": None if all_green else "unit_s_external_subgate_pending",
+            "exactNextAction": (
+                "Create Unit T from exact Unit S publication head and freeze its v3 protocol."
+                if all_green
+                else "Complete exact-head Unit S external preflight before scientific execution."
+            ),
+            "nextHandoff": {
+                "selection": "unit_t_d0_confirmation_v3" if all_green else "unit_s_preflight",
+                "firstUnmetPrerequisite": (
+                    "unit_t_protocol_lock" if all_green else "unit_s_external_subgates"
+                ),
+                "safestEvidenceAction": (
+                    "freeze_before_official_seed"
+                    if all_green
+                    else "preserve_nonqualifying_public_evidence"
+                ),
+            },
+        }
+    )
+    resume["gates"].update(
+        {name: f"{row['result']}:{row['reason']}" for name, row in subgates.items()}
+    )
+    resume_path.write_text(
+        json.dumps(resume, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    subgate_lines = "\n".join(
+        f"- `{name}`: `{row['result']}` - `{row['reason']}`" for name, row in subgates.items()
+    )
+    markdown = f"""# Active Blueprint Resume
+
+## Current Lane
+
+- Unit: `S` - evidence and authority recovery foundation v2
+- Branch: `codex/closy-forge-evidence-authority-recovery-v2`
+- Draft PR: `#53`
+- Exact parent: `8dd7a547debf038e9e27c48cf8e42009ae69ac3a` (PR #52)
+- Immutable evidence anchor: `{UNIT_S_EVIDENCE_HEAD}`
+- Exact preflight head: `{UNIT_S_PREFLIGHT_HEAD}`
+- Exact preflight workflow: `{UNIT_S_PREFLIGHT_RUN}`
+
+## Sub-gates
+
+{subgate_lines}
+
+## Literal State
+
+- Current Research Prototype core: `7 pass / 4 fail / 0 not-run`.
+- Current supplemental: `2 pass / 0 fail / 2 not-run`.
+- Runtime remains `closy.integrated_runtime.headless_d0.v1`.
+- Package remains `836abc564a79c0f38ae8bdad3d4a418b0fb05a550193059c1cece8130203c20a`.
+- Fallback remains `8eccea814251f8974f5349548038be73a4d00cec73df7a7bfb787aede58385c6`.
+- Remaining budgets: seam models `0`, topology strategies `1`, candidate attempts `1`.
+- No official v3 cohort, official topology fixture, candidate, or physical attempt exists in Unit S.
+
+## Next Action
+
+{resume['exactNextAction']}
+"""
+    (docs / "ACTIVE_BLUEPRINT_RESUME.md").write_text(markdown, encoding="utf-8", newline="\n")
+
+    master_path = docs / "MASTER_BLUEPRINT_PROGRESS.md"
+    marker = "## Evidence and Authority Recovery Foundation v2"
+    master = master_path.read_text(encoding="utf-8")
+    master = master.split(marker, 1)[0].rstrip()
+    master += f"""
+
+{marker}
+
+Unit S starts exactly from PR #52 head `8dd7a547debf038e9e27c48cf8e42009ae69ac3a`.
+It repairs the 41-source replay generator, separates scientific result and publication anchors,
+derives the remaining physical budgets from a hash-chained event ledger, and preserves Unit O's
+raw result plus superseding integrity error without replay.
+
+The D0 v3 foundation uses a pinned minimal Linux image, UID/GID `65532`, no network, a read-only
+root/input boundary, scrubbed environment, allowlisted output collection, four fixed routes, an
+honestly fitted public-development pixel model, typed prior domains, and exact evaluator
+denominators `64/48/16/24/8`. The opaque v2 cohort remains explicitly unverified.
+
+The PHY foundation decomposes historical C3 v5 to its positional binding scope, validates persisted
+rest-asset frame attributes without replaying qualification, introduces prospective raw/portable
+numeric layers, and freezes an executable independent eight-fixture Strategy-3 holdout generator.
+Only public ineligible development fixtures ran in Unit S. No topology strategy, candidate, neutral
+solve, PHY1, CCD, or runtime selection changed.
+
+Unit S evidence anchor is `{UNIT_S_EVIDENCE_HEAD}`. Exact pinned-image and portability preflight is
+recorded at `{UNIT_S_PREFLIGHT_HEAD}` by workflow `{UNIT_S_PREFLIGHT_RUN}`. The Research Prototype
+remains `7/4/0` core and `2/0/2` supplemental; broader evidence tiers remain unsupported.
+"""
+    master_path.write_text(master, encoding="utf-8", newline="\n")
 
 
 def _upgrade_stack_to_dag(stack: dict[str, object]) -> dict[str, object]:

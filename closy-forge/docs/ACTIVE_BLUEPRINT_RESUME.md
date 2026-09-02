@@ -1,50 +1,31 @@
 # Active Blueprint Resume
 
-## Frozen boundary
+## Current Lane
 
-- Branch: `codex/closy-forge-phy1-topology-strategy3-diagnosis-v1`
-- Pull request: `#52` (draft)
-- Immutable pre-execution lock head: `d8c8318ad346ea66ebc1956ebc0839ee3d6db109`
-- Exact parent: PR `#51` at `e062a30ba295ed27334622916ddb449fd76e2166`
-- Parent exact-head Forge workflow: `33547909132` (`29/29` successful)
-- Merge authorised: `false`
+- Unit: `S` - evidence and authority recovery foundation v2
+- Branch: `codex/closy-forge-evidence-authority-recovery-v2`
+- Draft PR: `#53`
+- Exact parent: `8dd7a547debf038e9e27c48cf8e42009ae69ac3a` (PR #52)
+- Immutable evidence anchor: `6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92`
+- Exact preflight head: `1c748e63bab1282d697be960f19bd01a53337df2`
+- Exact preflight workflow: `33616212488`
 
-## Literal Unit O outcome
+## Sub-gates
 
-Unit O executed exactly two candidate-independent development revisions. The preserved raw results
-were `7/8` for each revision and admitted no class. Exact-head Forge then failed to regenerate the
-revision bytes across Python/platform combinations. A local Python 3.11 witness found three
-one-ULP impulse-total differences, while Linux contained additional numeric drift. Effective
-literal outcome: `diagnosis_integrity_error`. The raw result was not replayed or rewritten.
-No class was admitted in the preserved raw execution.
+- `S-D0-authority`: `pass` - `exact_head_pinned_image_preflight_3_of_3`
+- `S-PHY-authority`: `pass` - `exact_head_cross_platform_numeric_matrix_green`
+- `S-core-truth`: `pass` - `starting_truth_replay_ledger_schema_and_budget_derivation_valid`
 
-No canonical garment candidate was created. The candidate attempt and final topology strategy are
-both unspent. The separately frozen Unit P confirmation generator has no seed or instances. Units
-P, Q, and R are ineligible and were not created. Runtime v1 and its conventional fallback remain
-selected.
+## Literal State
 
-## Scope-separated truth
+- Current Research Prototype core: `7 pass / 4 fail / 0 not-run`.
+- Current supplemental: `2 pass / 0 fail / 2 not-run`.
+- Runtime remains `closy.integrated_runtime.headless_d0.v1`.
+- Package remains `836abc564a79c0f38ae8bdad3d4a418b0fb05a550193059c1cece8130203c20a`.
+- Fallback remains `8eccea814251f8974f5349548038be73a4d00cec73df7a7bfb787aede58385c6`.
+- Remaining budgets: seam models `0`, topology strategies `1`, candidate attempts `1`.
+- No official v3 cohort, official topology fixture, candidate, or physical attempt exists in Unit S.
 
-- Identity-disjoint v2: `16` accepted identities, `0/64` predictions, `0/48` compiles, and `0/24`
-  appearance evaluations; literal `attempted_integrity_error`.
-- Known target: `known_target_regression_pass`, `34/34`; engineering regression only.
-- Strict C3 v5: exact Unit F synthetic pre-topology sentinel, `8/8 pass`.
-- Unit O: two preserved synthetic development revisions, each `7/8`, followed by an exact
-  cross-minor regeneration integrity failure; effective `diagnosis_integrity_error`.
-- Prior neutral physical outcome: `A_neutral_preflight_failed_v3`; no physics was rerun.
-- Current matrix v3 core: `7 pass / 4 fail / 0 not-run`.
-- Current matrix v3 supplemental: `2 pass / 0 fail / 2 not-run`.
-- Coverage: `20 complete / 63 partial / 7 not started / 11 discovery pending`.
+## Next Action
 
-## Remaining budget and handoff
-
-- Seam models remaining: `0`
-- Reserved topology strategies remaining: `1`
-- Candidate attempts remaining: `1`
-- Next authorised conditional unit: `none`
-- First unmet prerequisite: `unit_o_cross_minor_evidence_integrity`
-
-This finite prompt is complete once PR #52 receives exact-head external attestation for this
-additive integrity classification. No physical
-cloth, full PHY1, integrated CCD, post-topology qualification, solver-driven Z2, private-user,
-human-review, real-photo, real-fabric, GPU, mobile, Alpha, Beta, or Production claim is made.
+Create Unit T from exact Unit S publication head and freeze its v3 protocol.

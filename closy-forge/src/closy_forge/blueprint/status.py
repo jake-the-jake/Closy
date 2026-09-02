@@ -857,7 +857,7 @@ def build_status_model(
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
             ],
-            "pendingExternalExactHeadAttestations": [52],
+            "pendingExternalExactHeadAttestations": [52, 53],
             "headAuthorityPolicy": (
                 "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_"
                 "draft_pr_body_attest_final_published_head"
@@ -962,6 +962,9 @@ def build_status_model(
             "privateUserEvidenceRun": False,
             "physicalMobileEvidenceRun": False,
             "humanReviewRun": False,
+            "evidenceAuthorityRecoveryV2Executed": True,
+            "evidenceAuthorityRecoveryV2Outcome": "pass",
+            "evidenceAuthorityRecoveryV2ScientificAttemptCreated": False,
         },
     }
 
@@ -980,7 +983,7 @@ def validate_status_model(
     if any(model.get("phases", {}).get(f"{index:02d}") != "partial" for index in range(1, 15)):
         issues.append("phase_completion_overclaimed")
     status_stack = model.get("stack", {})
-    if status_stack.get("committedSourceAnchorExceptions") != [10, 52]:
+    if status_stack.get("committedSourceAnchorExceptions") != [10, 52, 53]:
         issues.append("stack_exception_set_invalid")
     attestations = status_stack.get("externalExactHeadAttestations", [])
     expected_attestations = [
@@ -1092,7 +1095,7 @@ def validate_status_model(
     if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
-    if pending_attestations != [52]:
+    if pending_attestations != [52, 53]:
         issues.append("pending_external_exact_head_attestation_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (
@@ -1200,12 +1203,15 @@ def render_status_summary(model: dict[str, Any]) -> str:
         "scopes. The exact-candidate seam/support-v3 neutral preflight also fails, so the full "
         "11-state PHY1 replay, CCD, and solver-driven Z2 are not run. Topology v2 remains "
         "opt-in and is not runtime-exposed. Historical matrix v2 is superseded at 9 pass, "
-        "3 fail, and 3 not-run. Current matrix v3 reports core 6 pass, 5 fail, and 0 not-run, "
+        "3 fail, and 3 not-run. Current matrix v3 reports core 7 pass, 4 fail, and 0 not-run, "
         "first unmet at D0-RP-03, plus supplemental 2 pass and 2 not-run. The separate Unit F "
         "known-target texture replay passes 34 of 34 predicates but does not promote D0-RP-07. "
         "Historical compiled dynamic ZeroOne "
         "pairing failed, while the separate clean analytic MT1 mechanical-reference profile passes "
         "without implying Z2 or physical cloth. Geometric LayerCollision-D0 passes only for the "
         "indexed synthetic two-garment surface profile and does not imply PHY1. "
-        "No GPU, mobile, private-user, or human-review execution is claimed.\n"
+        "Unit S authority recovery passes its core-truth, D0-authority, and PHY-authority "
+        "sub-gates without creating a scientific cohort, topology attempt, candidate, or physical "
+        "attempt, and changes no Research Prototype result. No GPU, mobile, private-user, or "
+        "human-review execution is claimed.\n"
     )

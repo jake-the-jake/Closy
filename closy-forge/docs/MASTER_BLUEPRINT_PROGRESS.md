@@ -483,3 +483,25 @@ started / 11 discovery pending`. Runtime v1 and the conventional fallback remain
 physical-cloth, real-world deformation, private-user, human-review, real-photo, real-fabric, GPU,
 mobile, Alpha, Beta, Production, post-topology candidate, full-PHY1, integrated-CCD, or
 solver-driven-Z2 claim is made.
+
+## Evidence and Authority Recovery Foundation v2
+
+Unit S starts exactly from PR #52 head `8dd7a547debf038e9e27c48cf8e42009ae69ac3a`.
+It repairs the 41-source replay generator, separates scientific result and publication anchors,
+derives the remaining physical budgets from a hash-chained event ledger, and preserves Unit O's
+raw result plus superseding integrity error without replay.
+
+The D0 v3 foundation uses a pinned minimal Linux image, UID/GID `65532`, no network, a read-only
+root/input boundary, scrubbed environment, allowlisted output collection, four fixed routes, an
+honestly fitted public-development pixel model, typed prior domains, and exact evaluator
+denominators `64/48/16/24/8`. The opaque v2 cohort remains explicitly unverified.
+
+The PHY foundation decomposes historical C3 v5 to its positional binding scope, validates persisted
+rest-asset frame attributes without replaying qualification, introduces prospective raw/portable
+numeric layers, and freezes an executable independent eight-fixture Strategy-3 holdout generator.
+Only public ineligible development fixtures ran in Unit S. No topology strategy, candidate, neutral
+solve, PHY1, CCD, or runtime selection changed.
+
+Unit S evidence anchor is `6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92`. Exact pinned-image and portability preflight is
+recorded at `1c748e63bab1282d697be960f19bd01a53337df2` by workflow `33616212488`. The Research Prototype
+remains `7/4/0` core and `2/0/2` supplemental; broader evidence tiers remain unsupported.

@@ -110,9 +110,9 @@
       "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1/integrity_attestation.py"
     ],
     "finalHeadAttestationLocation": "external_exact_head_ci_check_or_draft_pr_body",
-    "generatorVersion": "closy.blueprint_reconciliation.phy1_topology_strategy3_diagnosis_v1.v17",
+    "generatorVersion": "closy.blueprint_reconciliation.evidence_authority_recovery_v2.v18",
     "selfReferentialCommitSha": false,
-    "sourceTreeHash": "1d3971d4871c2f6ce1c104e13e4aa03537e0fcd06e6d09218f59473c142516ff",
+    "sourceTreeHash": "dffb59f6fb2f3507f041b4759cf0ae4229353d98aa2b0eeccf83994211275956",
     "sourceTreeHashAlgorithm": "sha256_path_nul_lf_normalized_content_nul_v2"
   },
   "integratedImplementationRowCount": 83,
@@ -909,7 +909,8 @@
         "8/8 strict C3 states passed on exact Unit F sentinel",
         "maximum binding reconstruction error 6.71791165111579e-08 m",
         "semantic seam crack/sliding and inverted triangles remained zero",
-        "two fresh-process repeats and negative mutation controls passed"
+        "two fresh-process repeats and negative mutation controls passed",
+        "candidate-versus-oracle seam-delta and orientation residuals remained zero; absolute seam crack and rest-relative inversion were not measured"
       ],
       "id": "BP-48-PERSISTED-FRAMES-TANGENTS",
       "implementationPaths": [
@@ -1827,7 +1828,8 @@
         "13604d169ecbc0fddf475cdf177e743790c836a2",
         "628738e5e8bc2da89be2ae1c349d9a2a220d8839",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
-        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+        "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -1836,7 +1838,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. A local witness found three one-ULP impulse-total differences and Linux had additional numeric drift, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
+          "limitations": "Only public development fixtures ran. No official topology seed, untouched fixture, strategy admission, candidate transformation, neutral solve, PHY1, or CCD exists.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -1872,7 +1874,12 @@
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
         "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
         "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
-        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift"
+        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift",
+        "typed prior inventory and opaque-v2 unverified caveat",
+        "64/48/16/24/8 fail-closed evaluator contract and mutations",
+        "portable three-layer numeric boundary and exact geometry policy",
+        "independent executable eight-fixture Strategy-3 public development generator",
+        "historical C3 v5 predicate decomposition without replay"
       ],
       "id": "BP-08-K-CLOTH-SIMULATION",
       "implementationPaths": [
@@ -1885,18 +1892,21 @@
         "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
         "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
-        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1"
+        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/src/closy_forge/recovery_foundation_v2",
+        "closy-forge/docker/d0_v3",
+        "closy-forge/fixtures/evidence_authority_recovery_v2"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "Revision 1 introduced one T-junction and omitted semantic seam-sequence transfer; revision 2 removed the topology defect but still omitted that semantic transfer. A local witness found three one-ULP impulse-total differences and Linux had additional numeric drift, so the effective Unit O outcome is diagnosis_integrity_error. No canonical garment candidate or physical solve was created.",
-      "nextAction": "Keep Unit P ineligible. A future authorised programme must begin with a new candidate-independent class; the final Strategy 3 slot remains unspent.",
+      "limitations": "Only public development fixtures ran. No official topology seed, untouched fixture, strategy admission, candidate transformation, neutral solve, PHY1, or CCD exists.",
+      "nextAction": "Run Unit U only after S-core and S-PHY are externally green.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit O executed two candidate-independent constrained-remesh revisions through the production distance, support, and body-collision kernels. Each passed seven of eight fixtures, and neither strategy class was admitted in the preserved raw execution; exact cross-minor regeneration then failed.",
+      "summary": "Unit S preserves every physical result while adding prospective portable numeric policy, real production-path instrumentation, and an executable independent eight-fixture Strategy-3 confirmation generator.",
       "tests": [
         "tests/unit/test_self_collision.py",
         "tests/unit/test_reference_cloth_solver.py",
@@ -1904,7 +1914,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py",
+        "closy-forge/tests/unit/test_evidence_authority_recovery_v2.py"
       ]
     },
     {
@@ -2304,7 +2315,8 @@
         "8/8 strict C3 states passed on exact Unit F sentinel",
         "maximum binding reconstruction error 6.71791165111579e-08 m",
         "semantic seam crack/sliding and inverted triangles remained zero",
-        "two fresh-process repeats and negative mutation controls passed"
+        "two fresh-process repeats and negative mutation controls passed",
+        "candidate-versus-oracle seam-delta and orientation residuals remained zero; absolute seam crack and rest-relative inversion were not measured"
       ],
       "id": "BP-08-R-SIM-TO-RENDER-BINDING",
       "implementationPaths": [
@@ -2331,7 +2343,7 @@
       "sourceSection": "Stages A-U",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "The exact Unit F binding passed strict C3 v5 on 8/8 fresh committed states with maximum reconstruction error 6.71791165111579e-08 m and zero seam error.",
+      "summary": "The exact Unit F binding passed strict C3 v5 on 8/8 fresh committed states with maximum reconstruction error 6.71791165111579e-08 m and zero candidate-versus-oracle seam-delta residual.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/unit/test_render_frame_pose_suite.py",
@@ -3204,7 +3216,8 @@
         "854b85ed769bc3e67547e4195f65dfeb78878881",
         "9078a09f1156ba8b7f98099185478ca9efcee952",
         "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
-        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+        "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -3213,7 +3226,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. The preserved raw execution rejected both classes, but cannot be promoted as cross-minor deterministic evidence. Unit P confirmation seed and instances remain unrealised.",
+          "limitations": "The v3 evaluator has only generic/public contaminated development evidence until one externally authorised untouched cohort is created.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -3281,7 +3294,13 @@
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
         "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
         "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
-        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift"
+        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift",
+        "candidate-versus-oracle seam-delta and orientation residuals remained zero; absolute seam crack and rest-relative inversion were not measured",
+        "typed prior inventory and opaque-v2 unverified caveat",
+        "64/48/16/24/8 fail-closed evaluator contract and mutations",
+        "portable three-layer numeric boundary and exact geometry policy",
+        "independent executable eight-fixture Strategy-3 public development generator",
+        "historical C3 v5 predicate decomposition without replay"
       ],
       "id": "BP-14-EVALUATION",
       "implementationPaths": [
@@ -3336,18 +3355,21 @@
         "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5",
         "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
         "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
-        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1"
+        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/src/closy_forge/recovery_foundation_v2",
+        "closy-forge/docker/d0_v3",
+        "closy-forge/fixtures/evidence_authority_recovery_v2"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "The eight fixtures are synthetic development/discrimination evidence, not held-out qualification. The preserved raw execution rejected both classes, but cannot be promoted as cross-minor deterministic evidence. Unit P confirmation seed and instances remain unrealised.",
-      "nextAction": "Preserve the rejection and do not create Units P, Q, or R in this finite sequence.",
+      "limitations": "The v3 evaluator has only generic/public contaminated development evidence until one externally authorised untouched cohort is created.",
+      "nextAction": "Run Unit T only after the exact-image 3/3 S-D0 preflight is green.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Package/software/model/data/evaluation/security/licensing/compute",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Unit O records diagnosis_integrity_error after its exact-head matrix could not regenerate the preserved revision bytes across Python/platform combinations.",
+      "summary": "Unit S repairs replay, result-schema, fixed-denominator, external-attestation, typed-inventory, and mutation semantics without revising historical outcomes.",
       "tests": [
         "tests/golden/test_golden_demo.py",
         "tests/corruption/test_corrupted_packages.py",
@@ -3376,7 +3398,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
         "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py",
         "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py",
+        "closy-forge/tests/unit/test_evidence_authority_recovery_v2.py"
       ]
     },
     {
@@ -5015,7 +5038,8 @@
         "3541507808946ae1248fba110b7732599db3fdbc",
         "854b85ed769bc3e67547e4195f65dfeb78878881",
         "9078a09f1156ba8b7f98099185478ca9efcee952",
-        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7"
+        "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
+        "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -5024,7 +5048,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "This is pre-topology synthetic binding reconstruction and cannot transfer to a future Strategy-3 candidate.",
+          "limitations": "The frozen v5 artifact has 614 raw indexed components per side and no stable ancestry map capable of proving prospective coherent-shell equivalence.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -5079,7 +5103,13 @@
         "8/8 strict C3 states passed on exact Unit F sentinel",
         "maximum binding reconstruction error 6.71791165111579e-08 m",
         "semantic seam crack/sliding and inverted triangles remained zero",
-        "two fresh-process repeats and negative mutation controls passed"
+        "two fresh-process repeats and negative mutation controls passed",
+        "candidate-versus-oracle seam-delta and orientation residuals remained zero; absolute seam crack and rest-relative inversion were not measured",
+        "typed prior inventory and opaque-v2 unverified caveat",
+        "64/48/16/24/8 fail-closed evaluator contract and mutations",
+        "portable three-layer numeric boundary and exact geometry policy",
+        "independent executable eight-fixture Strategy-3 public development generator",
+        "historical C3 v5 predicate decomposition without replay"
       ],
       "id": "BP-18-GATE-C3",
       "implementationPaths": [
@@ -5111,18 +5141,21 @@
         "closy-forge/docs/evidence/phy1_topology_strategy2_v4",
         "closy-forge/src/closy_forge/strict_c3_confirmation_v5",
         "closy-forge/fixtures/d0_strict_c3_confirmation_v5",
-        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5"
+        "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5",
+        "closy-forge/src/closy_forge/recovery_foundation_v2",
+        "closy-forge/docker/d0_v3",
+        "closy-forge/fixtures/evidence_authority_recovery_v2"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "This is pre-topology synthetic binding reconstruction and cannot transfer to a future Strategy-3 candidate.",
-      "nextAction": "Require a new strict C3 attempt if Unit P changes topology.",
+      "limitations": "The frozen v5 artifact has 614 raw indexed components per side and no stable ancestry map capable of proving prospective coherent-shell equivalence.",
+      "nextAction": "Require the corrected prospective C3 contract for any new candidate.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Gates C1/C2/C3/Z1/Z2/P1",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Strict C3 v5 passes 8/8 for the exact Unit F sentinel after one externally committed fresh confirmation; D0-RP-08 is pass in that scope.",
+      "summary": "Unit S decomposes strict-C3 v5 accurately: exact positional binding and analytic agreement pass, while absolute seam, physical deformation, rest-relative inversion, persisted deformed frames, and coherent-shell predicates remain not measured.",
       "tests": [
         "tests/unit/test_production_binding_c3.py",
         "tests/golden/test_golden_demo.py",
@@ -5137,7 +5170,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_diagnosis.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_lock.py",
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
-        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"
+        "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py",
+        "closy-forge/tests/unit/test_evidence_authority_recovery_v2.py"
       ]
     },
     {
@@ -6085,7 +6119,8 @@
         "854b85ed769bc3e67547e4195f65dfeb78878881",
         "9078a09f1156ba8b7f98099185478ca9efcee952",
         "d7b6e810477f169fea3a3cfca23c5ed99ba603b7",
-        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+        "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
       ],
       "dependencies": [],
       "evidenceSources": [
@@ -6094,7 +6129,7 @@
           "evidenceTier": "in_tree_committed_evidence",
           "incorporated": true,
           "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-          "limitations": "D0-RP-03/04/07/15, identity-disjoint qualification, admissible physics, post-topology C3/Z1, and all private/device/product evidence remain unresolved.",
+          "limitations": "D0-RP-03/04/06/07 and D0-RP-15 remain failed; no identity-disjoint v3, post-topology, physical, private, device, human, Alpha, Beta, or Production evidence exists.",
           "sourcePr": 38,
           "sourceRepository": "jake-the-jake/Closy",
           "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a"
@@ -6168,7 +6203,13 @@
         "revision 2 rejected for incomplete semantic seam transfer despite valid topology",
         "no candidate, candidate attempt, final strategy, confirmation seed, or confirmation instance was consumed",
         "exact cross-minor regeneration failed at three pointer-specific one-ULP totals",
-        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift"
+        "exact cross-minor regeneration failed; local 3.11 exposed three one-ULP totals and Linux exposed additional numeric drift",
+        "candidate-versus-oracle seam-delta and orientation residuals remained zero; absolute seam crack and rest-relative inversion were not measured",
+        "typed prior inventory and opaque-v2 unverified caveat",
+        "64/48/16/24/8 fail-closed evaluator contract and mutations",
+        "portable three-layer numeric boundary and exact geometry policy",
+        "independent executable eight-fixture Strategy-3 public development generator",
+        "historical C3 v5 predicate decomposition without replay"
       ],
       "id": "BP-20-RESEARCH-PROTOTYPE",
       "implementationPaths": [
@@ -6221,18 +6262,21 @@
         "closy-forge/docs/evidence/d0_strict_c3_confirmation_v5",
         "closy-forge/src/closy_forge/phy1_topology_strategy3_diagnosis_v1",
         "closy-forge/fixtures/phy1_topology_strategy3_diagnosis_v1",
-        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1"
+        "closy-forge/docs/evidence/phy1_topology_strategy3_diagnosis_v1",
+        "closy-forge/src/closy_forge/recovery_foundation_v2",
+        "closy-forge/docker/d0_v3",
+        "closy-forge/fixtures/evidence_authority_recovery_v2"
       ],
       "incorporated": true,
       "incorporationCommit": "dd916913ac14119bc2e127989703f1c51f91e00a",
-      "limitations": "D0-RP-03/04/07/15, identity-disjoint qualification, admissible physics, post-topology C3/Z1, and all private/device/product evidence remain unresolved.",
-      "nextAction": "End this authorised finite sequence with runtime v1 selected and conditional Units P/Q/R uncreated.",
+      "limitations": "D0-RP-03/04/06/07 and D0-RP-15 remain failed; no identity-disjoint v3, post-topology, physical, private, device, human, Alpha, Beta, or Production evidence exists.",
+      "nextAction": "Advance only through the independently green Unit S sub-gates.",
       "sourcePr": 38,
       "sourceRepository": "jake-the-jake/Closy",
       "sourceSection": "Research/alpha/beta/production success levels",
       "sourceSha": "dd916913ac14119bc2e127989703f1c51f91e00a",
       "status": "partial",
-      "summary": "Research Prototype remains partial. Unit O improves solver-level diagnostic coverage but closes with diagnosis_integrity_error, admits no post-topology candidate, and changes no matrix row result.",
+      "summary": "Unit S changes no Research Prototype result: core remains 7 pass, 4 fail, 0 not-run; supplemental remains 2 pass, 0 fail, 2 not-run.",
       "tests": [
         "Forge tests",
         "closy-forge/tests/unit/test_zeroone_static_integration.py",
@@ -6259,7 +6303,8 @@
         "closy-forge/tests/unit/test_phy1_topology_strategy2_v4_evidence.py",
         "closy-forge/tests/unit/test_d0_disjoint_confirmation_v2.py",
         "closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py",
-        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py"
+        "closy-forge/tests/unit/test_phy1_topology_strategy3_diagnosis_v1.py",
+        "closy-forge/tests/unit/test_evidence_authority_recovery_v2.py"
       ]
     },
     {
@@ -6508,5 +6553,5 @@
     "blocked_external",
     "not_applicable"
   ],
-  "version": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v20"
+  "version": "closy.blueprint_coverage.evidence_authority_recovery_v2.v21"
 }

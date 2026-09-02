@@ -1,0 +1,132 @@
+name: Forge Unit S container preflight
+
+on:
+  push:
+    branches:
+      - codex/closy-forge-evidence-authority-recovery-v2
+  workflow_dispatch:
+    inputs:
+      lock_head:
+        description: Exact Unit S lock head
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  LOCK_HEAD: ${{ inputs.lock_head || github.sha }}
+
+jobs:
+  portable-numeric:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.LOCK_HEAD }}
+      - name: Require exact dispatched head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "${{ env.LOCK_HEAD }}"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install locked Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Verify portable numeric, topology and canonical locks
+        working-directory: closy-forge
+        run: >-
+          python -m pytest tests/unit/test_evidence_authority_recovery_v2.py
+          -k "portable_numeric or protocol_and_generator_locks or
+          committed_production_telemetry or committed_unit_s_evidence" -q
+
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.LOCK_HEAD }}
+      - name: Require exact dispatched head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "${{ env.LOCK_HEAD }}"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.11'
+      - name: Install locked Forge environment
+        working-directory: closy-forge
+        run: python -m pip install -e ".[dev]" -c requirements-dev.lock
+      - name: Build exact minimal contestant image
+        run: docker build --pull=false -t closy-d0-v3:${{ env.LOCK_HEAD }} closy-forge/docker/d0_v3
+      - name: Record image identity and file inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p unit-s-preflight-artifact
+          docker image inspect closy-d0-v3:${{ env.LOCK_HEAD }} > unit-s-preflight-artifact/image-inspect.json
+          container="$(docker create closy-d0-v3:${{ env.LOCK_HEAD }})"
+          docker export "$container" | tar -tf - > unit-s-preflight-artifact/image-files.txt
+          docker rm "$container"
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = set(Path("unit-s-preflight-artifact/image-files.txt").read_text().splitlines())
+          app_files = {path for path in paths if path.startswith("app/") and not path.endswith("/")}
+          assert app_files == {
+              "app/entrypoint.sh",
+              "app/image-file-sbom.sha256",
+              "app/runner.py",
+          }
+          forbidden = ("/.git/", "/.ssh/", "/docker.sock", "/targets/", "/evaluator/")
+          assert not any(any(token in f"/{path}" for token in forbidden) for path in paths)
+          PY
+      - name: Run three clean-workspace replications
+        shell: bash
+        run: |
+          set -euo pipefail
+          for ordinal in 1 2 3; do
+            input="$(mktemp -d)"
+            output="$(mktemp -d)"
+            printf 'closy-unit-s-generic-canary-v1' > "$input/canary.bin"
+            sudo chown -R 65532:65532 "$input"
+            sudo chmod 0555 "$input"
+            sudo chmod 0444 "$input/canary.bin"
+            sudo chown -R 65532:65532 "$output"
+            sudo chmod 0755 "$output"
+            PYTHONPATH=closy-forge/src python closy-forge/scripts/run_d0_v3_container_preflight.py \
+              --input "$input" \
+              --output "$output" \
+              --route generic_canary \
+              --image closy-d0-v3:${{ env.LOCK_HEAD }} \
+              --report "unit-s-preflight-artifact/replication-${ordinal}.json"
+            sudo rm -rf "$input" "$output"
+          done
+          sha256sum unit-s-preflight-artifact/replication-*.json > unit-s-preflight-artifact/replication-sha256.txt
+          python - <<'PY'
+          import glob
+          import json
+
+          paths = sorted(glob.glob("unit-s-preflight-artifact/replication-*.json"))
+          assert len(paths) == 3
+          assert all(json.load(open(path, encoding="utf-8"))["pass"] is True for path in paths)
+          PY
+      - name: Upload bounded allowlisted diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-s-container-preflight-${{ env.LOCK_HEAD }}
+          path: |
+            unit-s-preflight-artifact/image-inspect.json
+            unit-s-preflight-artifact/image-files.txt
+            unit-s-preflight-artifact/replication-1.json
+            unit-s-preflight-artifact/replication-2.json
+            unit-s-preflight-artifact/replication-3.json
+            unit-s-preflight-artifact/replication-sha256.txt
+          if-no-files-found: warn
+          retention-days: 14

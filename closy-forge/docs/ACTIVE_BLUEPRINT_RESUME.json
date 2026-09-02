@@ -1,13 +1,15 @@
 {
-  "activeLane": "finite sequence complete after Unit O diagnosis integrity error",
-  "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+  "activeLane": "Unit S evidence and authority recovery v2",
+  "branch": "codex/closy-forge-evidence-authority-recovery-v2",
   "conditionalUnits": {
-    "P": "not_created_ineligible",
-    "Q": "not_created_ineligible",
-    "R": "not_created_ineligible"
+    "T": "dependency_ready",
+    "U": "dependency_ready_after_T",
+    "V": "not_created_requires_unit_u_pass",
+    "W": "not_created_requires_unit_v_candidate",
+    "X": "not_created_requires_unit_w_core_prerequisites"
   },
-  "evidenceHead": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
-  "exactNextAction": "Complete external exact-head attestation and final handoff.",
+  "evidenceHead": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
+  "exactNextAction": "Create Unit T from exact Unit S publication head and freeze its v3 protocol.",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
   "gates": {
     "D0-DisjointTshirt-v2": "attempted_integrity_error",
@@ -19,13 +21,16 @@
     "ResearchPrototype-D0-matrix-v3-core": "partial_7_pass_4_fail_0_not_run",
     "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
     "Runtime": "v1_selected_topology_v2_opt_in_unchanged",
+    "S-D0-authority": "pass:exact_head_pinned_image_preflight_3_of_3",
+    "S-PHY-authority": "pass:exact_head_cross_platform_numeric_matrix_green",
+    "S-core-truth": "pass:starting_truth_replay_ledger_schema_and_budget_derivation_valid",
     "Unit-P": "ineligible_unit_o_diagnosis_integrity_error",
     "Unit-Q": "ineligible_no_unit_p_candidate",
     "Unit-R": "ineligible_no_unit_q_prerequisites"
   },
-  "latestFinishedParentPublicationHead": "e062a30ba295ed27334622916ddb449fd76e2166",
+  "latestFinishedParentPublicationHead": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
   "localHeadAtResumeSource": "pending_final_commit",
-  "machineResumeVersion": "closy.active_blueprint_resume.phy1_strategy3_diagnosis_v1.v11",
+  "machineResumeVersion": "closy.active_blueprint_resume.evidence_authority_v2.v12",
   "matrixScopes": {
     "identityDisjointV1": {
       "appearanceEvaluations": 0,
@@ -62,20 +67,20 @@
   },
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "unit_o_cross_minor_evidence_integrity",
-    "safestEvidenceAction": "preserve_raw_execution_and_integrity_error_with_unspent_budget",
-    "selection": "none_dependency_ready_in_authorised_sequence"
+    "firstUnmetPrerequisite": "unit_t_protocol_lock",
+    "safestEvidenceAction": "freeze_before_official_seed",
+    "selection": "unit_t_d0_confirmation_v3"
   },
   "parent": {
-    "branch": "codex/closy-forge-d0-strict-c3-confirmation-v5",
-    "exactHeadWorkflow": "33547909132",
+    "branch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+    "exactHeadWorkflow": "33570351597",
     "forgeJobsPassed": 29,
     "forgeJobsTotal": 29,
-    "pullRequest": 51,
-    "sha": "e062a30ba295ed27334622916ddb449fd76e2166"
+    "pullRequest": 52,
+    "sha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a"
   },
   "pendingCIAtEvidenceHead": true,
-  "pullRequest": 52,
+  "pullRequest": 53,
   "remainingBudgets": {
     "candidateAttempts": 1,
     "seamModels": 0,
@@ -84,7 +89,7 @@
   "remoteHeadAtResumeSource": "pending_final_commit",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "authorised_finite_sequence_complete_after_unit_o_integrity_error",
+  "stopReason": null,
   "unitMResult": {
     "acceptedIdentityCount": 16,
     "appearanceEvaluationCount": 0,
@@ -134,6 +139,29 @@
       }
     ],
     "unitPEligible": false
+  },
+  "unitSResult": {
+    "canonicalCandidateCreated": false,
+    "officialD0CohortCreated": false,
+    "officialTopologyFixturesCreated": false,
+    "outcome": "pass",
+    "physicalAttemptConsumed": false,
+    "preflightHead": "1c748e63bab1282d697be960f19bd01a53337df2",
+    "preflightRun": "33616212488",
+    "subgates": {
+      "S-D0-authority": {
+        "reason": "exact_head_pinned_image_preflight_3_of_3",
+        "result": "pass"
+      },
+      "S-PHY-authority": {
+        "reason": "exact_head_cross_platform_numeric_matrix_green",
+        "result": "pass"
+      },
+      "S-core-truth": {
+        "reason": "starting_truth_replay_ledger_schema_and_budget_derivation_valid",
+        "result": "pass"
+      }
+    }
   },
   "unsupportedEvidenceClasses": [
     "post_topology_candidate",

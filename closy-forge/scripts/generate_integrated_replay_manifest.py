@@ -111,18 +111,40 @@ SHARED_WORKFLOW_SOURCES = (
 
 def build_manifest(repository: Path) -> dict[str, Any]:
     result_commits = _lines(repository, "rev-list", "--reverse", f"{BASE_HEAD}..{REPLAY_END}")
+    result_order = {commit: ordinal for ordinal, commit in enumerate(result_commits)}
+    expected_sources = [source for sources in SOURCE_GROUPS.values() for source in sources]
+    if len(expected_sources) != len(set(expected_sources)):
+        raise ValueError("replay_expected_source_inventory_has_duplicates")
+    expected_source_set = set(expected_sources)
     source_to_result: dict[str, str] = {}
-    for result in result_commits:
-        body = _text(repository, "show", "-s", "--format=%B", result)
-        for source in re.findall(r"cherry picked from commit ([0-9a-f]{40})", body):
-            source_to_result[source] = result
+    for result_sha in result_commits:
+        body = _text(repository, "show", "-s", "--format=%B", result_sha)
+        sources = [
+            source
+            for source in re.findall(r"cherry picked from commit ([0-9a-f]{40})", body)
+            if source in expected_source_set
+        ]
+        if len(sources) > 1:
+            raise ValueError(f"replay_result_has_duplicate_source_entries:{result_sha}")
+        for source in sources:
+            if source in source_to_result:
+                raise ValueError(f"replay_source_has_duplicate_results:{source}")
+            source_to_result[source] = result_sha
+
+    missing = sorted(set(expected_sources) - set(source_to_result))
+    if missing:
+        raise ValueError(f"replay_source_result_missing:{missing[0]}")
+    mapped_results = [source_to_result[source] for source in expected_sources]
+    if len(mapped_results) != len(set(mapped_results)):
+        raise ValueError("replay_result_mapped_from_multiple_sources")
+    if mapped_results != sorted(mapped_results, key=result_order.__getitem__):
+        raise ValueError("replay_source_result_topological_order_invalid")
 
     dispositions: list[dict[str, Any]] = []
     for lane, sources in SOURCE_GROUPS.items():
         for source in sources:
-            result_sha = source_to_result.get(source)
-            if result_sha is None:
-                raise ValueError(f"replay_source_result_missing:{source}")
+            result_sha = source_to_result[source]
+            result_body = _text(repository, "show", "-s", "--format=%B", result_sha)
             semantic = "business_patch"
             disposition = "applied_with_result_sha"
             if source in HISTORICAL_EVIDENCE:
@@ -137,15 +159,16 @@ def build_manifest(repository: Path) -> dict[str, Any]:
                     "sourceSha": source,
                     "sourcePatchId": _patch_id(repository, source),
                     "resultSha": result_sha,
-                    "resultPatchId": _patch_id(repository, result),
+                    "resultPatchId": _patch_id(repository, result_sha),
                     "subject": _text(repository, "show", "-s", "--format=%s", source),
                     "semanticClass": semantic,
                     "disposition": disposition,
                     "conflictResolution": CONFLICTS.get(source),
-                    "cherryPickXVerified": source
-                    in _text(repository, "show", "-s", "--format=%B", result),
+                    "cherryPickXVerified": (f"cherry picked from commit {source}" in result_body),
                 }
             )
+
+    _validate_dispositions(dispositions, expected_sources, result_order)
 
     duplicate_proofs = [
         _duplicate_proof(repository, source, result_commits, source_pr=26)
@@ -190,6 +213,31 @@ def build_manifest(repository: Path) -> dict[str, Any]:
             "mergeCommitUsed": False,
         },
     }
+
+
+def _validate_dispositions(
+    dispositions: list[dict[str, Any]],
+    expected_sources: list[str],
+    result_order: dict[str, int],
+) -> None:
+    source_shas = [str(row["sourceSha"]) for row in dispositions]
+    result_shas = [str(row["resultSha"]) for row in dispositions]
+    if len(source_shas) != len(set(source_shas)):
+        raise ValueError("replay_disposition_source_duplicate")
+    if len(result_shas) != len(set(result_shas)):
+        raise ValueError("replay_disposition_result_duplicate")
+    if source_shas != expected_sources:
+        raise ValueError("replay_disposition_source_order_invalid")
+    if result_shas != sorted(result_shas, key=result_order.__getitem__):
+        raise ValueError("replay_disposition_result_order_invalid")
+    for row in dispositions:
+        if row["sourcePatchId"] != row["resultPatchId"] and row.get("conflictResolution") in (
+            None,
+            "",
+        ):
+            raise ValueError(f"replay_patch_id_mismatch:{row['sourceSha']}")
+        if row["cherryPickXVerified"] is not True:
+            raise ValueError(f"replay_cherry_pick_trailer_missing:{row['sourceSha']}")
 
 
 def _duplicate_proof(
