@@ -1813,7 +1813,8 @@ UNIT_N_C3_PROGRESSION_UPDATES = {
         "status": "partial",
         "summary": (
             "The exact Unit F binding passed strict C3 v5 on 8/8 fresh committed states with "
-            "maximum reconstruction error 6.71791165111579e-08 m and zero seam error."
+            "maximum reconstruction error 6.71791165111579e-08 m and zero candidate-versus-"
+            "oracle seam-delta residual."
         ),
         "limitations": (
             "D0-RP-08 closes only for this frozen pre-topology sentinel; any topology or binding "
@@ -1870,7 +1871,8 @@ UNIT_N_C3_EVIDENCE_ADDITIONS = {
             "authority run 33546821637 job 99986277154 committed exactly eight fresh poses",
             "8/8 strict C3 states passed on exact Unit F sentinel",
             "maximum binding reconstruction error 6.71791165111579e-08 m",
-            "semantic seam crack/sliding and inverted triangles remained zero",
+            "candidate-versus-oracle seam-delta and orientation residuals remained zero; "
+            "absolute seam crack and rest-relative inversion were not measured",
             "two fresh-process repeats and negative mutation controls passed",
         ],
         "tests": ["closy-forge/tests/unit/test_d0_strict_c3_confirmation_v5.py"],

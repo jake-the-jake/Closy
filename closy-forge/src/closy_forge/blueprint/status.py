@@ -1200,7 +1200,7 @@ def render_status_summary(model: dict[str, Any]) -> str:
         "scopes. The exact-candidate seam/support-v3 neutral preflight also fails, so the full "
         "11-state PHY1 replay, CCD, and solver-driven Z2 are not run. Topology v2 remains "
         "opt-in and is not runtime-exposed. Historical matrix v2 is superseded at 9 pass, "
-        "3 fail, and 3 not-run. Current matrix v3 reports core 6 pass, 5 fail, and 0 not-run, "
+        "3 fail, and 3 not-run. Current matrix v3 reports core 7 pass, 4 fail, and 0 not-run, "
         "first unmet at D0-RP-03, plus supplemental 2 pass and 2 not-run. The separate Unit F "
         "known-target texture replay passes 34 of 34 predicates but does not promote D0-RP-07. "
         "Historical compiled dynamic ZeroOne "
