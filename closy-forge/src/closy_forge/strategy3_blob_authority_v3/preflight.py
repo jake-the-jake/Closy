@@ -10,7 +10,8 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from .common import canonical_bytes, canonical_digest
+from .common import canonical_digest
+from .git_blobs import GitBlobReader
 from .isolation import run_container_canaries
 from .materializer import build_container_image, materialized_context
 from .protocol import validate_lock, validate_lock_commit
@@ -97,7 +98,7 @@ def preflight_mutation_report(repo_root: Path, lock: Mapping[str, Any]) -> dict[
     )
     reports.update(
         {
-            "worktree_line_endings_ignored": _line_ending_independence(lock),
+            "worktree_line_endings_ignored": _line_ending_independence(repo_root, lock),
             "undeclared_context_file_rejected": True,
             "case_alias_rejected": True,
             "unicode_alias_rejected": True,
@@ -142,15 +143,20 @@ def compare_portability_reports(reports: Sequence[Mapping[str, Any]]) -> dict[st
     return document
 
 
-def _line_ending_independence(lock: Mapping[str, Any]) -> bool:
-    identity = {
-        "oids": [row["rawBlobOid"] for row in lock["blobs"]],
-        "hashes": [row["rawBlobSha256"] for row in lock["blobs"]],
-    }
-    simulated_checkout = canonical_bytes(identity).replace(b"\n", b"\r\n")
+def _line_ending_independence(repo_root: Path, lock: Mapping[str, Any]) -> bool:
+    reader = GitBlobReader(repo_root)
+    row = next(
+        item
+        for item in lock["blobs"]
+        if str(item["repositoryPath"]).endswith("topology_holdout.py")
+    )
+    payload = reader.blob(str(row["rawBlobOid"]))
+    checkout_crlf = payload.replace(b"\n", b"\r\n")
     return (
-        hashlib.sha256(canonical_bytes(identity)).hexdigest()
-        == hashlib.sha256(simulated_checkout.replace(b"\r\n", b"\n")).hexdigest()
+        checkout_crlf != payload
+        and hashlib.sha256(payload).hexdigest() == row["rawBlobSha256"]
+        and reader.identity(str(row["commit"]), str(row["repositoryPath"])).blob_oid
+        == row["rawBlobOid"]
     )
 
 

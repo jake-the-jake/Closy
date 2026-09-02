@@ -63,6 +63,7 @@ CONTAINER_WRAPPER_PATHS = frozenset(
 )
 BASE_IMAGE_PATTERN = re.compile(r"^FROM\s+[^@\s]+@sha256:([0-9a-f]{64})\s*$", re.MULTILINE)
 ACTION_PATTERN = re.compile(r"uses:\s*([^\s@]+)@([0-9a-f]{40})")
+COPY_PATTERN = re.compile(r"^(?:COPY|ADD)\s+([^\s]+)\s+[^\s]+\s*$", re.MULTILINE)
 
 
 def build_inventory(
@@ -118,13 +119,15 @@ def build_inventory(
     actions = sorted(
         (
             {"action": action, "commit": commit}
-            for action, commit in ACTION_PATTERN.findall(workflow)
+            for action, commit in set(ACTION_PATTERN.findall(workflow))
         ),
         key=lambda row: (row["action"], row["commit"]),
     )
     if not actions:
         raise ValueError("strategy3_v3_workflow_action_inventory_empty")
     _validate_import_coverage(reader, scientific, rows)
+    docker_copy_inputs = sorted(COPY_PATTERN.findall(dockerfile))
+    _validate_docker_copy_coverage(rows, docker_copy_inputs)
     document = {
         "inventoryVersion": "closy.strategy3.repository_blob_inventory.v3",
         "repository": "jake-the-jake/Closy",
@@ -134,6 +137,7 @@ def build_inventory(
         "authorityWrapperSourceTree": reader.root_tree(wrapper),
         "baseImageDigest": f"sha256:{base_match.group(1)}",
         "actions": actions,
+        "dockerCopyInputs": docker_copy_inputs,
         "blobCount": len(rows),
         "executionImageBlobCount": sum(row["entersExecutionImage"] for row in rows),
         "rows": rows,
@@ -209,6 +213,21 @@ def _validate_import_coverage(
             }
             if not options & declared:
                 raise ValueError(f"strategy3_v3_import_not_locked:{path}:{module}")
+
+
+def _validate_docker_copy_coverage(rows: list[dict[str, Any]], copy_inputs: list[str]) -> None:
+    if not copy_inputs:
+        raise ValueError("strategy3_v3_docker_copy_inventory_empty")
+    if any("*" in path or path.startswith("--") for path in copy_inputs):
+        raise ValueError("strategy3_v3_docker_copy_not_explicit")
+    materialized = {
+        str(row["materializedPath"]) for row in rows if row.get("entersExecutionImage") is True
+    }
+    for source in copy_inputs:
+        if source in materialized:
+            continue
+        if not any(path.startswith(f"{source.rstrip('/')}/") for path in materialized):
+            raise ValueError(f"strategy3_v3_docker_copy_input_not_locked:{source}")
 
 
 def _is_execution_path(path: str) -> bool:
