@@ -8,9 +8,6 @@ COPY src/closy_forge/contracts /app/src/closy_forge/contracts
 COPY src/closy_forge/geometry /app/src/closy_forge/geometry
 COPY src/closy_forge/package_io /app/src/closy_forge/package_io
 COPY src/closy_forge/simulation /app/src/closy_forge/simulation
-COPY src/closy_forge/recovery_foundation_v2/__init__.py /app/src/closy_forge/recovery_foundation_v2/__init__.py
-COPY src/closy_forge/recovery_foundation_v2/topology_holdout.py /app/src/closy_forge/recovery_foundation_v2/topology_holdout.py
-COPY src/closy_forge/recovery_foundation_v2/topology_holdout_oracle.py /app/src/closy_forge/recovery_foundation_v2/topology_holdout_oracle.py
 COPY docker/strategy3_blob_authority_v3/runner.py /app/runner.py
 COPY docker/strategy3_blob_authority_v3/isolation_canary.py /app/isolation_canary.py
 COPY docker/strategy3_blob_authority_v3/entrypoint.sh /app/entrypoint.sh

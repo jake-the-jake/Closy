@@ -4,6 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from closy_forge.strategy3_blob_authority_v3.authority import write_public_failure
 from closy_forge.strategy3_blob_authority_v3.git_blobs import GitBlobReader, git_blob_oid
 from closy_forge.strategy3_blob_authority_v3.inventory import build_inventory
 from closy_forge.strategy3_blob_authority_v3.materializer import materialized_context
@@ -46,12 +47,16 @@ def test_repository_blob_inventory_closes_execution_surface() -> None:
     assert all(row["objectType"] == "blob" for row in rows)
     assert all(row["gitMode"] in {"100644", "100755"} for row in rows)
     assert inventory["baseImageDigest"].startswith("sha256:")
+    assert inventory["dockerCopyInputs"]
     assert {row["action"] for row in inventory["actions"]} == {
         "actions/checkout",
         "actions/download-artifact",
         "actions/setup-python",
         "actions/upload-artifact",
     }
+    generator_rows = [row for row in rows if row["declaredRole"] in {"generator", "oracle"}]
+    assert generator_rows
+    assert all(row["entersExecutionImage"] is False for row in generator_rows)
 
 
 def test_blob_payload_identity_is_independent_of_checkout_materialization() -> None:
@@ -127,3 +132,20 @@ def test_workflow_separates_precommit_contestant_and_evaluator_jobs() -> None:
     assert "--network" in (
         FORGE_ROOT / "src/closy_forge/strategy3_blob_authority_v3/authority.py"
     ).read_text(encoding="utf-8")
+
+
+def test_public_failure_is_bounded_and_never_contains_private_authority_data(
+    tmp_path: Path,
+) -> None:
+    failure = write_public_failure(
+        tmp_path / "failure",
+        seed_created=False,
+        stage="preflight",
+        error=ValueError("x" * 1000),
+        workflow_run_id="generic-test",
+    )
+    assert failure["literalOutcome"] == OUTCOMES[3]
+    assert failure["privateArtifactsIncluded"] is False
+    assert len(failure["sanitizedDiagnostic"]) == 500
+    assert "rawSeed" not in failure
+    assert "oracle" not in failure

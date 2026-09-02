@@ -228,14 +228,20 @@ def _validate_docker_copy_coverage(rows: list[dict[str, Any]], copy_inputs: list
             continue
         if not any(path.startswith(f"{source.rstrip('/')}/") for path in materialized):
             raise ValueError(f"strategy3_v3_docker_copy_input_not_locked:{source}")
+    build_inputs = {
+        "docker/strategy3_blob_authority_v3/Dockerfile",
+        "docker/strategy3_blob_authority_v3/Dockerfile.dockerignore",
+    }
+    for path in materialized - build_inputs:
+        if not any(
+            path == source or path.startswith(f"{source.rstrip('/')}/") for source in copy_inputs
+        ):
+            raise ValueError(f"strategy3_v3_locked_image_blob_not_copied:{path}")
 
 
 def _is_execution_path(path: str) -> bool:
     return path.startswith(tuple(f"{prefix}/" for prefix in EXECUTION_PREFIXES)) or path in {
         "closy-forge/src/closy_forge/__init__.py",
-        "closy-forge/src/closy_forge/recovery_foundation_v2/__init__.py",
-        "closy-forge/src/closy_forge/recovery_foundation_v2/topology_holdout.py",
-        "closy-forge/src/closy_forge/recovery_foundation_v2/topology_holdout_oracle.py",
     }
 
 
