@@ -9,4 +9,3 @@ exec /usr/bin/env -i \
   PYTHONHASHSEED=0 \
   ROUTE_ID="$route_id" \
   python -I /app/runner_v3.py
-
