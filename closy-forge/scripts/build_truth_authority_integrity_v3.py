@@ -11,7 +11,6 @@ from closy_forge.blueprint.status import (
     render_status_summary,
     validate_status_model,
 )
-from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.truth_authority_integrity_v3.status_reconciliation import (
     build_resume,
     reconcile_coverage,
@@ -116,7 +115,7 @@ def main() -> int:
 
 
 def _json_bytes(value: Any) -> bytes:
-    return canonical_dumps(value).encode("utf-8")
+    return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
 def _load_json(path: Path) -> dict[str, Any]:
