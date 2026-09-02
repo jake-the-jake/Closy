@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ def test_unit_u_publication_is_fresh() -> None:
         [sys.executable, "scripts/build_truth_authority_integrity_v3.py", "--check"],
         cwd=ROOT,
         check=True,
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
         timeout=30,
     )
 

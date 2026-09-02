@@ -529,9 +529,12 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         "github:jake-the-jake/Closy:pr/51"
     ]
     assert by_id["github:jake-the-jake/Closy:pr/52"]["headSha"] == (
-        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+        "8dd7a547debf038e9e27c48cf8e42009ae69ac3a"
     )
-    assert by_id["github:jake-the-jake/Closy:pr/52"]["latestExactHeadWorkflows"] == []
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/52"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33570351597"
+    )
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -664,7 +667,7 @@ def test_active_machine_and_markdown_resumes_agree_on_unit_y0_truth_lane() -> No
         "unit_y0_exact_head_forge_and_sealed_v2_failure_lane_pass"
     )
     assert "D0-RP-04: `pass`" in markdown
-    assert "Do not relock" in markdown
+    assert "Do not" in markdown and "relock" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:

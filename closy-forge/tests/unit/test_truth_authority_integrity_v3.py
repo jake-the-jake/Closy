@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from copy import deepcopy
@@ -56,6 +57,7 @@ def test_unit_y0_publication_is_fresh_and_non_scientific() -> None:
         [sys.executable, "scripts/build_truth_authority_integrity_v3.py", "--check"],
         cwd=FORGE_ROOT,
         check=True,
+        env={**os.environ, "PYTHONPATH": str(FORGE_ROOT / "src")},
         timeout=30,
     )
     integrity = _json("integrity_report.json")
