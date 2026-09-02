@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "ledgerVersion": "closy.d0_v4.engineering_budget_ledger.v1",
+  "events": [
+    {
+      "ordinal": 0,
+      "event": "engineering_protocol_frozen",
+      "unit": "AC",
+      "trainingStarted": false,
+      "publicTestExecuted": false
+    }
+  ],
+  "observationContractRevisionsConsumed": 0,
+  "modelTrainingTrialsConsumed": 0,
+  "publicTestExecutionsConsumed": 0,
+  "ledgerDigest": "a6c6c86b356599da6967bb0e1e7d297bada81dbd1f5c577a49cf5c90ad7acbda"
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "stateVersion": "closy.d0_v4.engineering_starting_state.v1",
+  "unit": "AC",
+  "parentUnit": "Y1",
+  "parentFinalHead": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+  "parentLiteralOutcome": "strategy3_dependency_blocked_before_seed_v3",
+  "conditionalUnitsSkipped": ["Z", "AA", "AB"],
+  "unitTOutcome": "completed_benchmark_failed_absolute_gates",
+  "unitTOfficialAttemptHead": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+  "unitTOfficialSeedConsumed": true,
+  "unitTRerunAuthorized": false,
+  "v4QualificationSeedCreated": false,
+  "v4QualificationAuthorized": false,
+  "promptFile": "Closy_Next_Blueprint_Progression_Prompt_BlobLock_Strategy3_D0V4_PHY1.md",
+  "promptByteLength": 84591,
+  "promptSha256": "3837cfc18b2902362192f2a589257f1ca491d1af48780ce7cba0fbac8bad6055"
+}
