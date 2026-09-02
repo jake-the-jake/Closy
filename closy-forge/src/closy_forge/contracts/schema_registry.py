@@ -3429,6 +3429,43 @@ def _truth_authority_schemas() -> dict[str, dict[str, Any]]:
                 "resultDigest",
             ],
         ),
+        "d0-v4-observation.schema.json": _schema(
+            "D0 v4 RGB observation contract",
+            {
+                "schemaVersion": {"const": 1},
+                "observationVersion": {"const": "closy.d0_v4.rgb_observation.v1"},
+                "contractDigest": _sha256(),
+                "route": {"enum": ["multiview", "front_only_bounded"]},
+                "views": {"type": "object"},
+                "featureNames": {
+                    "type": "array",
+                    "minItems": 40,
+                    "maxItems": 40,
+                    "items": {"type": "string"},
+                },
+                "featureValues": {
+                    "type": "array",
+                    "minItems": 40,
+                    "maxItems": 40,
+                    "items": {"type": "number"},
+                },
+                "pixelDerived": {"const": True},
+                "targetParametersRead": {"const": False},
+                "observationDigest": _sha256(),
+            },
+            [
+                "schemaVersion",
+                "observationVersion",
+                "contractDigest",
+                "route",
+                "views",
+                "featureNames",
+                "featureValues",
+                "pixelDerived",
+                "targetParametersRead",
+                "observationDigest",
+            ],
+        ),
         "d0-v4-engineering-protocol.schema.json": _schema(
             "D0 v4 engineering protocol",
             {
