@@ -675,10 +675,10 @@
     }
   ],
   "graphCounts": {
-    "closyPullRequests": 52,
+    "closyPullRequests": 53,
     "edges": 113,
     "externalPullRequests": 3,
-    "nodes": 55
+    "nodes": 56
   },
   "graphVersion": "closy.cross_repository_pr_dag.v3",
   "nodes": [
@@ -2696,6 +2696,31 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "e062a30ba295ed27334622916ddb449fd76e2166..d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+    },
+    {
+      "ahead": 11,
+      "baseRef": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+      "baseSha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+      "behind": 0,
+      "branch": "codex/closy-forge-evidence-authority-recovery-v2",
+      "capabilityRole": "forge_evidence_authority_recovery_foundation_v2",
+      "changedFileCount": 56,
+      "dependencyIds": [],
+      "headSha": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
+      "id": "github:jake-the-jake/Closy:pr/53",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [],
+      "mergeBase": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [],
+      "pullRequest": 53,
+      "repository": "jake-the-jake/Closy",
+      "role": "evidence_authority_recovery_v2",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a..6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
     },
     {
       "ahead": 3,
@@ -4939,6 +4964,32 @@
       "state": "OPEN",
       "title": "Forge Unit O: bounded PHY1 Strategy 3 diagnosis",
       "url": "https://github.com/jake-the-jake/Closy/pull/52"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phy1-topology-strategy3-diagnosis-v1",
+      "baseSha": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+      "branch": "codex/closy-forge-evidence-authority-recovery-v2",
+      "changedFileCount": 56,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
+      "knownException": {
+        "code": "exact_head_ci_recorded_outside_generated_evidence",
+        "descendantEvidenceIsExactHead": false,
+        "reason": "PR #53 exact-head CI is recorded in the draft PR body because this generated report is anchored to its immutable implementation source"
+      },
+      "latestExactHeadForgeRun": null,
+      "layerAhead": 11,
+      "layerBehind": 0,
+      "layerCommitCount": 11,
+      "mergeBase": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+      "mergeability": "MERGEABLE",
+      "number": 53,
+      "repository": "jake-the-jake/Closy",
+      "role": "evidence_authority_recovery_v2",
+      "state": "OPEN",
+      "title": "Forge: evidence authority recovery foundation v2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/53"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -4972,6 +5023,7 @@
     "github:jake-the-jake/Closy:pr/26",
     "github:jake-the-jake/Closy:pr/27",
     "github:jake-the-jake/Closy:pr/29",
+    "github:jake-the-jake/Closy:pr/53",
     "github:jake-the-jake/ZeroOne:pr/2",
     "github:jake-the-jake/Closy:pr/28",
     "github:jake-the-jake/Closy:pr/30",

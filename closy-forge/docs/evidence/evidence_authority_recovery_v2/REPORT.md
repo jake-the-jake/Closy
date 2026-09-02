@@ -7,8 +7,8 @@ or physical attempt.
 ## Sub-gates
 
 - `S-core-truth`: `pass` - `starting_truth_replay_ledger_schema_and_budget_derivation_valid`
-- `S-D0-authority`: `dependency_blocked` - `local_docker_unavailable_external_exact_head_preflight_pending`
-- `S-PHY-authority`: `dependency_blocked` - `external_exact_head_cross_platform_matrix_pending`
+- `S-D0-authority`: `pass` - `exact_head_pinned_image_preflight_3_of_3`
+- `S-PHY-authority`: `pass` - `exact_head_cross_platform_numeric_matrix_green`
 
 ## Literal scope
 

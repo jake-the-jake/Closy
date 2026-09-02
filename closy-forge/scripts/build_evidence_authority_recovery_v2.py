@@ -13,7 +13,10 @@ from closy_forge.recovery_foundation_v2.c3_audit import (
     build_historical_v5_scope,
     generic_c3_mutation_report,
 )
-from closy_forge.recovery_foundation_v2.container_boundary import build_container_capability
+from closy_forge.recovery_foundation_v2.container_boundary import (
+    IMAGE_REFERENCE,
+    build_container_capability,
+)
 from closy_forge.recovery_foundation_v2.contracts import (
     build_budget_event_ledger,
     build_external_attestation,
@@ -53,6 +56,43 @@ from closy_forge.recovery_foundation_v2.typed_inventory import (
 EVIDENCE_RELATIVE = Path("docs/evidence/evidence_authority_recovery_v2")
 FIXTURE_RELATIVE = Path("fixtures/evidence_authority_recovery_v2")
 MODEL_RELATIVE = Path("models/d0_v3/public_pixel_fitted_tshirt_v1.json")
+UNIT_S_PREFLIGHT_HEAD = "2f694869144fede0901507c37a2dd09fbef003a5"
+UNIT_S_PREFLIGHT_RUN = "33610438542"
+
+
+def validate_unit_s_authority_attestation(authority: Mapping[str, Any]) -> list[str]:
+    errors: list[str] = []
+    expected = {
+        "schemaVersion": 1,
+        "attestationVersion": "closy.unit_s.external_preflight.v1",
+        "runId": UNIT_S_PREFLIGHT_RUN,
+        "headSha": UNIT_S_PREFLIGHT_HEAD,
+        "imageBaseReference": IMAGE_REFERENCE,
+        "replicationsRequired": 3,
+        "replicationsPassed": 3,
+        "portableMatrixRequired": 4,
+        "portableMatrixPassed": 4,
+        "portableMatrixPass": True,
+        "pass": True,
+        "officialD0SeedCreated": False,
+        "officialTopologySeedCreated": False,
+    }
+    for field, value in expected.items():
+        if authority.get(field) != value:
+            errors.append(f"unit_s_authority_{field}_invalid")
+    if authority.get("runUrl") != (
+        "https://github.com/jake-the-jake/Closy/actions/runs/33610438542"
+    ):
+        errors.append("unit_s_authority_runUrl_invalid")
+    image_id = authority.get("imageId")
+    if not isinstance(image_id, str) or not image_id.startswith("sha256:"):
+        errors.append("unit_s_authority_imageId_invalid")
+    earlier_runs = authority.get("earlierFailedPreflightRuns")
+    if not isinstance(earlier_runs, list) or not all(
+        isinstance(value, str) and value.isdigit() for value in earlier_runs
+    ):
+        errors.append("unit_s_authority_earlierFailedPreflightRuns_invalid")
+    return errors
 
 
 def _code_lock(root: Path) -> dict[str, Any]:
@@ -298,10 +338,18 @@ def main() -> int:
     args = parser.parse_args()
     root = args.root.resolve()
     authority: Mapping[str, Any] | None = None
-    if args.authority_attestation:
-        loaded = json.loads(args.authority_attestation.read_text(encoding="utf-8"))
+    authority_path = args.authority_attestation
+    if authority_path is None and args.check:
+        committed_attestation = root / FIXTURE_RELATIVE / "unit_s_external_attestation.json"
+        if committed_attestation.is_file():
+            authority_path = committed_attestation
+    if authority_path:
+        loaded = json.loads(authority_path.read_text(encoding="utf-8"))
         if not isinstance(loaded, Mapping):
             raise ValueError("unit_s_authority_attestation_mapping_required")
+        errors = validate_unit_s_authority_attestation(loaded)
+        if errors:
+            raise ValueError(";".join(errors))
         authority = loaded
     documents = build(root, authority)
     if validate_starting_manifest(documents[EVIDENCE_RELATIVE / "starting_manifest.json"]):

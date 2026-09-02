@@ -81,6 +81,30 @@ from closy_forge.recovery_foundation_v2.typed_inventory import (
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def _load_unit_s_builder() -> object:
+    import importlib.util
+
+    path = ROOT / "scripts/build_evidence_authority_recovery_v2.py"
+    spec = importlib.util.spec_from_file_location("build_evidence_authority_recovery_v2", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("unit_s_builder_import_failed")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_external_unit_s_authority_attestation_is_fail_closed() -> None:
+    module = _load_unit_s_builder()
+    path = ROOT / "fixtures/evidence_authority_recovery_v2/unit_s_external_attestation.json"
+    attestation = json.loads(path.read_text(encoding="utf-8"))
+    assert module.validate_unit_s_authority_attestation(attestation) == []
+    invalid = deepcopy(attestation)
+    invalid["replicationsPassed"] = 2
+    assert "unit_s_authority_replicationsPassed_invalid" in (
+        module.validate_unit_s_authority_attestation(invalid)
+    )
+
+
 def _garment_record(ordinal: int, *, capture: int | None = None) -> dict[str, object]:
     return {
         "garmentIdentity": {

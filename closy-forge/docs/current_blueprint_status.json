@@ -7,10 +7,10 @@
       "not_started": 7,
       "partial": 63
     },
-    "coverageVersion": "closy.blueprint_coverage.phy1_topology_strategy3_diagnosis_v1.v20",
+    "coverageVersion": "closy.blueprint_coverage.evidence_authority_recovery_v2.v21",
     "total": 101
   },
-  "evidenceAnchorSha": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109",
+  "evidenceAnchorSha": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -1105,9 +1105,10 @@
     "businessPatchMappingsComplete": true,
     "committedSourceAnchorExceptions": [
       10,
-      52
+      52,
+      53
     ],
-    "crossRepositoryNodeCount": 55,
+    "crossRepositoryNodeCount": 56,
     "exactMergeBases": true,
     "externalExactHeadAttestations": [
       {
@@ -1216,11 +1217,11 @@
       }
     ],
     "headAuthorityPolicy": "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_draft_pr_body_attest_final_published_head",
-    "latestPullRequest": 52,
+    "latestPullRequest": 53,
     "pendingExternalExactHeadAttestations": [
       52
     ],
-    "pullRequestCount": 52,
+    "pullRequestCount": 53,
     "topology": "explicit_dag"
   },
   "statusModelVersion": "closy.blueprint_status_model.v18",
