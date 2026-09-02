@@ -11,7 +11,7 @@ from closy_forge.package_io.canonical_json import (
     canonical_text_bytes,
     write_canonical_json,
 )
-from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.package_io.hashing import sha256_bytes
 from closy_forge.recovery_foundation_v2.c3_audit import (
     audit_persisted_glb,
     build_historical_v5_scope,
@@ -289,14 +289,17 @@ def build(root: Path, authority: Mapping[str, Any] | None) -> dict[Path, Any]:
 
 
 def _manifest(root: Path, paths: list[Path]) -> dict[str, Any]:
-    records = [
-        {
-            "path": path.as_posix(),
-            "sha256": sha256_file(root / path),
-            "byteLength": (root / path).stat().st_size,
-        }
-        for path in sorted(paths)
-    ]
+    records = []
+    for path in sorted(paths):
+        content = canonical_text_bytes((root / path).read_text(encoding="utf-8"))
+        records.append(
+            {
+                "path": path.as_posix(),
+                "sha256": sha256_bytes(content),
+                "byteLength": len(content),
+                "hashMode": "utf8_canonical_lf_final_newline",
+            }
+        )
     return {
         "schemaVersion": 1,
         "manifestVersion": "closy.evidence_authority_recovery.manifest.v2",
