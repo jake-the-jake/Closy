@@ -2,35 +2,30 @@
 
 ## Current Lane
 
-- Unit: `U` closed; Units `V`, `W`, and `X` are ineligible.
-- Branch: `codex/closy-forge-phy1-final-strategy3-v2`
-- Draft PR: `#55`
-- Exact parent: `0c45587371165f1c5f3e33934ee2cbf5156f9e02` (PR #54)
-- Exact scientific lock: `d76916461d3e96b037fbc31b646319effef7a264`
-- Official authority workflow: `33630862367`
-- Authority job: `100250251482` (`skipped` before seed)
+- Unit: `Y0` truth repair and authority-integrity hardening.
+- Branch: `codex/closy-forge-truth-authority-integrity-v3`
+- Draft PR: `#56`
+- Source evidence anchor: `da8fea2b0cf3824a091f95a5c8cb749addeb018e`
+- Exact parent: `f56fc44ccf7173155186a30b4f4978454fb3debf` (PR #55)
+- Final publication head: externally attested after publication, not self-referential here.
 
 ## Literal State
 
-- Unit U outcome: `dependency_blocked_before_official_seed_v2`.
-- Public conformance: `8/8` after exactly two bounded cycles.
-- Exact generic preflight: run `33630652037`, including both portable verifiers and pinned
-  networkless/non-root container canary, passed.
-- Official authority: both portable verifiers passed, but the pinned-container lock check found
-  four CRLF-versus-LF implementation hash mismatches before image creation.
-- Official seed, commitment, fixture, oracle, and strategy execution: none.
-- Confirmation attempt consumed: `false`; relock and rerun: not authorised.
-- Strategy admission: `false`; Unit V eligibility: `false`.
+- Unit T: `completed_benchmark_failed_absolute_gates`; 64/64 attempts executed,
+  60 artifacts, 4
+  abstentions, 48 compile rows evaluated, zero strict complete pixel-route compile-valid
+  candidates, and 8/24 appearance rows evaluated
+  with zero passes.
 - Unit T rows: D0-RP-03 `fail`, D0-RP-04: `pass`, D0-RP-06 `fail`, D0-RP-07 `fail`.
-- Current Research Prototype core: `7 pass / 4 fail / 0 not-run`.
-- Current supplemental: `2 pass / 0 fail / 2 not-run`.
-- Runtime remains `closy.integrated_runtime.headless_d0.v1`.
-- Package remains `836abc564a79c0f38ae8bdad3d4a418b0fb05a550193059c1cece8130203c20a`.
-- Fallback remains `8eccea814251f8974f5349548038be73a4d00cec73df7a7bfb787aede58385c6`.
-- Remaining budgets: seam models `0`, topology strategies `0`, candidate attempts `1`.
+- Unit U: `dependency_blocked_before_official_seed_v2`; pre-seed infrastructure failure, not a scientific failure.
+- Unit U seed, untouched fixture, oracle reveal, admission, and candidate: none.
+- Supplemental matrix: D0-RP-09 and D0-RP-14 pass; D0-RP-10 and D0-RP-11 are not run.
+- Strategy 3 is reserved and consumed; admission was not executed. Remaining budgets: seam models
+  `0`, topology strategies `0`, canonical-candidate attempts `1`.
+- The immutable v2 failure remains mandatory in its dedicated sealed-failure CI lane. Do not
+  relock, rerun, or weaken the historical test.
 
 ## Next Action
 
-No further review unit in this finite prompt is dependency-ready. Preserve the immutable lock and
-pre-seed failure. Do not relock, rerun the authority, create Unit V, transform the canonical
-T-shirt, or claim Strategy-3 admission. A successor requires separate user authorisation.
+publish Unit Y0 integrity hardening, require exact-head Forge plus sealed-v2 lane, then create Unit Y1 repository-blob authority from that final head Unit Y1 remains ineligible until both required Y0 lanes pass at the
+exact published head.

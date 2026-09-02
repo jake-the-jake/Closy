@@ -1,0 +1,9 @@
+{
+  "branch": "codex/closy-forge-truth-authority-integrity-v3",
+  "contextVersion": "closy.truth_authority_publication_context.v1",
+  "finalHeadAttestationAuthority": "exact_head_ci_and_draft_pr_body",
+  "finalPublicationHead": null,
+  "pullRequest": 56,
+  "schemaVersion": 1,
+  "sourceEvidenceAnchor": "da8fea2b0cf3824a091f95a5c8cb749addeb018e"
+}

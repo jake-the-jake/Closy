@@ -1,0 +1,200 @@
+{
+  "budgetStateBeforeSuccessorAuthority": {
+    "canonicalCandidateAttemptsRemaining": 1,
+    "derived": {
+      "consumed": {
+        "canonical_candidate": 0,
+        "seam_model": 2,
+        "topology_strategy": 3
+      },
+      "headEventHash": "bdf09b1f8c62d97aab04389924ef418ed37edf290f3c8c0ff328473542eb246b",
+      "remaining": {
+        "canonical_candidate": 1,
+        "seam_model": 0,
+        "topology_strategy": 0
+      },
+      "sourceInventoryDigest": "06f1fb93c03c2ee62b9d505dd109a4f2d34fc3e2d370ece7db652e8328f1ee32"
+    },
+    "eventCount": 5,
+    "reportVersion": "closy.physical_budget_verified_successor.v1",
+    "schemaVersion": 1,
+    "sourceLedgerDigest": "52c8479af97131d99b60e333f186b60a46461c79a682ba5b6f6dfdf4e47276bb",
+    "sourceLedgerPath": "docs/evidence/final_strategy3_v2/physical_budget_event_ledger_after_unit_u.json",
+    "strategy3Consumed": true,
+    "strategy3Reserved": true,
+    "strategy3ScientificAdmissionExecuted": false,
+    "untouchedStrategy3ConfirmationAttemptConsumed": false,
+    "validationIssues": []
+  },
+  "consumerPolicy": "prefer_this_overlay_without_mutating_historical_keys",
+  "coverage": {
+    "phase00": "complete",
+    "phases01Through14": "partial",
+    "rowCount": 101,
+    "sourceDigest": "e3b429b7b8e0afd5f8bdc26af0a2a73775f07abeaa44ea4f5c82eea30510f926",
+    "sourcePath": "docs/blueprint_coverage.json",
+    "statusCounts": {
+      "complete": 20,
+      "discovery_pending": 11,
+      "not_started": 7,
+      "partial": 63
+    }
+  },
+  "externalExactHeadAttestations": [
+    {
+      "exactHeadCiRun": "33570351597",
+      "finalPublicationHead": "8dd7a547debf038e9e27c48cf8e42009ae69ac3a",
+      "pullRequest": 52,
+      "result": "pass",
+      "sourceEvidenceAnchor": "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+    },
+    {
+      "exactHeadCiRun": "33616532606",
+      "finalPublicationHead": "b8d222dadbe092e25604b838e7ad219d6a1c114b",
+      "pullRequest": 53,
+      "result": "pass",
+      "sourceEvidenceAnchor": "6d1b617cbe8bd1f9396a6f860e4368a9fb49ca92"
+    },
+    {
+      "exactHeadCiRun": "33624168164",
+      "finalPublicationHead": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "pullRequest": 54,
+      "result": "pass",
+      "sourceEvidenceAnchor": "7aae56b050e72e51916b592423f63d859f166117"
+    },
+    {
+      "exactHeadCiRun": "33635092644",
+      "failedJobIds": [
+        100263853160,
+        100263853187,
+        100263853304,
+        100271755631
+      ],
+      "finalPublicationHead": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "pullRequest": 55,
+      "result": "completed_failure",
+      "sourceEvidenceAnchor": "d76916461d3e96b037fbc31b646319effef7a264"
+    }
+  ],
+  "historicalFieldPolicy": {
+    "reason": "legacy names conflate scheduling, execution, artifact, and gate success",
+    "supersededKeysRetained": true
+  },
+  "nextAction": "publish Unit Y0 integrity hardening, require exact-head Forge plus sealed-v2 lane, then create Unit Y1 repository-blob authority from that final head",
+  "overlayDigest": "8f9df323bcf10aa240681dc360becee61962b035e79b00cd1cc1444a3e7b3686",
+  "overlayVersion": "closy.blueprint_truth_overlay.successor.v1",
+  "researchPrototype": {
+    "core": {
+      "failCount": 4,
+      "failures": [
+        "D0-RP-03",
+        "D0-RP-06",
+        "D0-RP-07",
+        "D0-RP-15"
+      ],
+      "notRunCount": 0,
+      "passCount": 7
+    },
+    "supplemental": {
+      "failCount": 0,
+      "notRun": [
+        "D0-RP-10",
+        "D0-RP-11"
+      ],
+      "notRunCount": 2,
+      "passCount": 2,
+      "passes": [
+        "D0-RP-09",
+        "D0-RP-14"
+      ]
+    }
+  },
+  "schemaVersion": 1,
+  "scopeSeparation": {
+    "Z2": "failed_non_solver_evidence_only",
+    "globalGates": "unproven",
+    "preTopologyC3": "scoped_pass_not_post_topology",
+    "staticZ1": "scoped_static_pass_not_dynamic_or_physical"
+  },
+  "unitSSuccessor": {
+    "scientificAttemptCreated": false,
+    "subgates": {
+      "S-D0-authority-successor": {
+        "scientificCapabilityClaim": false,
+        "status": "integrity_predicates_pass"
+      },
+      "S-PHY-authority-successor": {
+        "scientificCapabilityClaim": false,
+        "status": "integrity_predicates_pass"
+      },
+      "S-core-truth-successor": {
+        "scientificCapabilityClaim": false,
+        "status": "integrity_predicates_pass"
+      }
+    },
+    "supersedesShallowPassDerivation": true
+  },
+  "unitT": {
+    "appearanceGatePassCount": 0,
+    "appearanceRowsActuallyEvaluatedCount": 8,
+    "appearanceRowsScheduledCount": 24,
+    "artifactRoot": "fixtures/d0_disjoint_tshirt_confirmation_v3/official_attempt",
+    "attemptsExecutedCount": 64,
+    "attemptsScheduledCount": 64,
+    "authorityRun": "33621365050",
+    "compileRowsEvaluatedCount": 48,
+    "compileRowsScheduledCount": 48,
+    "exactHeadCiRun": "33624168164",
+    "explicitAbstentionCount": 4,
+    "finalPublicationHead": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+    "identities": 16,
+    "legacyFieldSupersededBy": [
+      "strictCompletePixelRouteCompileValidCount",
+      "compileRowsEvaluatedCount"
+    ],
+    "legacyFullCompileSuccessCounter": 20,
+    "literalOutcome": "completed_benchmark_failed_absolute_gates",
+    "preSeedInfrastructureFailure": false,
+    "predictionArtifactProducedCount": 60,
+    "primaryAbsoluteSilhouetteImprovement": -0.767975768,
+    "primaryAppearanceRepeatGatePassCount": 0,
+    "primaryAppearanceRepeatRowsEvaluatedCount": 8,
+    "primaryCompileRepeatRowsEvaluatedCount": 16,
+    "primaryCompileRepeatSameFailureOrOutputClassCount": 2,
+    "primaryRelativeParameterImprovement": -2.700982084,
+    "routePromoted": false,
+    "rowResults": {
+      "D0-RP-03": "fail",
+      "D0-RP-04": "pass",
+      "D0-RP-06": "fail",
+      "D0-RP-07": "fail"
+    },
+    "scientificFailure": true,
+    "sourceEvidenceAnchor": "7aae56b050e72e51916b592423f63d859f166117",
+    "strictCompletePixelRouteCompileValidCount": 0
+  },
+  "unitU": {
+    "artifactPath": "docs/evidence/final_strategy3_v2/outcome_report.json",
+    "authorityAttemptsExecutedCount": 0,
+    "authorityAttemptsScheduledCount": 1,
+    "canonicalCandidateAttemptsRemaining": 1,
+    "canonicalCandidateCreated": false,
+    "exactHeadCi": {
+      "failedJobs": 4,
+      "passedJobs": 25,
+      "result": "completed_failure",
+      "run": "33635092644"
+    },
+    "finalPublicationHead": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+    "literalOutcome": "dependency_blocked_before_official_seed_v2",
+    "officialSeedCreated": false,
+    "oracleRevealed": false,
+    "preSeedInfrastructureFailure": true,
+    "scientificAdmissionExecuted": false,
+    "scientificFailure": false,
+    "sourceEvidenceAnchor": "d76916461d3e96b037fbc31b646319effef7a264",
+    "topologyStrategiesRemaining": 0,
+    "untouchedConfirmationAttemptConsumed": false,
+    "untouchedFixtureCreated": false
+  }
+}

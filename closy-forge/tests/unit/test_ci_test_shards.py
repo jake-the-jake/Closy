@@ -4,10 +4,12 @@ from pathlib import Path
 
 from closy_forge.ci import test_shards as test_shard_module
 from closy_forge.ci.test_shards import (
+    SEALED_V2_FAILURE_NODE,
     TEST_SHARD_NAMES,
     assign_test_shards,
     discover_sharded_tests,
     main,
+    pytest_arguments,
     validate_test_shards,
 )
 
@@ -72,3 +74,24 @@ def test_inventory_digest_is_stable_and_changes_with_recursive_inventory(tmp_pat
     nested.write_text("", encoding="utf-8")
 
     assert test_shard_module.test_inventory_digest(tmp_path) != first
+
+
+def test_only_exact_sealed_v2_node_moves_to_mandatory_witness_lane() -> None:
+    shards = assign_test_shards(FORGE_ROOT)
+    owning_paths = next(
+        paths
+        for paths in shards.values()
+        if "tests/unit/test_final_strategy3_v2_protocol.py" in paths
+    )
+    arguments = pytest_arguments(owning_paths, "unit")
+
+    assert "tests/unit/test_final_strategy3_v2_protocol.py" in arguments
+    assert arguments[-2:] == ["--deselect", SEALED_V2_FAILURE_NODE]
+    assert all(
+        path in arguments for path in discover_sharded_tests(FORGE_ROOT) if path in owning_paths
+    )
+
+
+def test_integration_shards_never_receive_sealed_v2_deselection() -> None:
+    paths = ("tests/integration/test_pipeline.py",)
+    assert pytest_arguments(paths, "integration") == list(paths)

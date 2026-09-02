@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
-from typing import Any
+from typing import Any, cast
 
-STATUS_MODEL_VERSION = "closy.blueprint_status_model.v19"
+STATUS_MODEL_VERSION = "closy.blueprint_status_model.v20"
 PHASE_IDS = tuple(f"BP-17-PHASE-{index:02d}" for index in range(15))
 MATURITY_IDS = (
     "BP-20-RESEARCH-PROTOTYPE",
@@ -725,7 +725,11 @@ GATE_RECORDS: dict[str, dict[str, Any]] = {
 
 
 def build_status_model(
-    coverage: dict[str, Any], stack: dict[str, Any], *, evidence_anchor_sha: str
+    coverage: dict[str, Any],
+    stack: dict[str, Any],
+    *,
+    evidence_anchor_sha: str,
+    truth_overlay: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     rows = list(coverage["rows"])
     by_id = {str(row["id"]): row for row in rows}
@@ -760,7 +764,15 @@ def build_status_model(
     }
     gates = {name: deepcopy(record) for name, record in GATE_RECORDS.items() if name != "Z2"}
     gates.update(stages)
-    return {
+    external_attestations = (
+        deepcopy(truth_overlay.get("externalExactHeadAttestations", []))
+        if truth_overlay is not None
+        else []
+    )
+    externally_attested_prs = {int(row["pullRequest"]) for row in external_attestations}
+    if truth_overlay is not None:
+        _apply_successor_overlay(gates, truth_overlay)
+    model = {
         "schemaVersion": 3,
         "statusModelVersion": STATUS_MODEL_VERSION,
         "evidenceAnchorSha": evidence_anchor_sha,
@@ -798,7 +810,7 @@ def build_status_model(
                 for row in stack["nodes"]
                 if row["repository"] == "jake-the-jake/Closy"
                 and not row["latestExactHeadWorkflows"]
-                and int(row["pullRequest"]) not in {39, 47, 48}
+                and int(row["pullRequest"]) not in {39, 47, 48, *externally_attested_prs}
             ],
             "externalExactHeadAttestations": [
                 {
@@ -923,8 +935,11 @@ def build_status_model(
                     "result": "pass",
                     "authority": "github_workflow_api_and_draft_pr_body",
                 },
+                *external_attestations,
             ],
-            "pendingExternalExactHeadAttestations": [52, 53, 55],
+            "pendingExternalExactHeadAttestations": (
+                [] if truth_overlay is not None else [52, 53, 55]
+            ),
             "headAuthorityPolicy": (
                 "committed_status_describes_immutable_source_anchor;_github_workflow_api_and_"
                 "draft_pr_body_attest_final_published_head"
@@ -978,8 +993,17 @@ def build_status_model(
             "phy1TopologyStrategy3AdmittedClass": None,
             "phy1TopologyStrategy3CandidateCreated": False,
             "phy1TopologyStrategy3CandidateAttemptConsumed": False,
-            "phy1TopologyStrategy3FinalStrategyConsumed": False,
-            "phy1TopologyStrategy3RemainingTopologyStrategies": 1,
+            "phy1TopologyStrategy3FinalStrategyConsumed": (
+                truth_overlay is not None
+                and truth_overlay["budgetStateBeforeSuccessorAuthority"]["strategy3Consumed"]
+            ),
+            "phy1TopologyStrategy3RemainingTopologyStrategies": (
+                truth_overlay["budgetStateBeforeSuccessorAuthority"]["derived"]["remaining"][
+                    "topology_strategy"
+                ]
+                if truth_overlay is not None
+                else 1
+            ),
             "unitPEligible": False,
             "unitQEligible": False,
             "unitREligible": False,
@@ -1049,14 +1073,162 @@ def build_status_model(
             "evidenceAuthorityRecoveryV2ScientificAttemptCreated": False,
         },
     }
+    if truth_overlay is not None:
+        model["truthAuthority"] = {
+            "overlayVersion": truth_overlay["overlayVersion"],
+            "overlayDigest": truth_overlay["overlayDigest"],
+            "consumerPolicy": truth_overlay["consumerPolicy"],
+            "sourceEvidenceAnchor": evidence_anchor_sha,
+            "finalPublicationHead": None,
+            "finalPublicationHeadAuthority": ("external_exact_head_ci_and_draft_pr_attestation"),
+        }
+        _apply_successor_truth(cast(dict[str, Any], model["truth"]), truth_overlay)
+    return model
+
+
+def _apply_successor_overlay(gates: dict[str, dict[str, Any]], overlay: dict[str, Any]) -> None:
+    unit_t = overlay["unitT"]
+    unit_u = overlay["unitU"]
+    budget = overlay["budgetStateBeforeSuccessorAuthority"]
+    supplemental = overlay["researchPrototype"]["supplemental"]
+
+    supplemental_gate = gates["ResearchPrototype-D0-matrix-v3-supplemental"]
+    supplemental_gate["firstUnmetRequiredPredicate"] = supplemental["notRun"][0]
+    supplemental_gate["blockers"] = list(supplemental["notRun"])
+
+    unit_t_gate = gates["D0-DisjointTshirt-v3"]
+    unit_t_gate.update(
+        {
+            "attemptsScheduledCount": unit_t["attemptsScheduledCount"],
+            "attemptsExecutedCount": unit_t["attemptsExecutedCount"],
+            "predictionArtifactProducedCount": unit_t["predictionArtifactProducedCount"],
+            "explicitAbstentionCount": unit_t["explicitAbstentionCount"],
+            "compileRowsScheduledCount": unit_t["compileRowsScheduledCount"],
+            "compileRowsEvaluatedCount": unit_t["compileRowsEvaluatedCount"],
+            "legacyFullCompileSuccessCounter": unit_t["legacyFullCompileSuccessCounter"],
+            "strictCompletePixelRouteCompileValidCount": unit_t[
+                "strictCompletePixelRouteCompileValidCount"
+            ],
+            "appearanceRowsScheduledCount": unit_t["appearanceRowsScheduledCount"],
+            "appearanceRowsActuallyEvaluatedCount": unit_t["appearanceRowsActuallyEvaluatedCount"],
+            "appearanceGatePassCount": unit_t["appearanceGatePassCount"],
+            "primaryCompileRepeatRowsEvaluatedCount": unit_t[
+                "primaryCompileRepeatRowsEvaluatedCount"
+            ],
+            "primaryCompileRepeatSameFailureOrOutputClassCount": unit_t[
+                "primaryCompileRepeatSameFailureOrOutputClassCount"
+            ],
+            "primaryAppearanceRepeatRowsEvaluatedCount": unit_t[
+                "primaryAppearanceRepeatRowsEvaluatedCount"
+            ],
+            "primaryAppearanceRepeatGatePassCount": unit_t["primaryAppearanceRepeatGatePassCount"],
+            "scientificFailure": unit_t["scientificFailure"],
+            "preSeedInfrastructureFailure": unit_t["preSeedInfrastructureFailure"],
+            "sourceEvidenceAnchor": unit_t["sourceEvidenceAnchor"],
+            "finalPublicationHead": unit_t["finalPublicationHead"],
+            "exactHeadCiRun": unit_t["exactHeadCiRun"],
+            "legacyFields": {
+                "predictionCount": {"value": unit_t_gate["predictionCount"], "superseded": True},
+                "fullCompileCount": {
+                    "value": unit_t_gate["fullCompileCount"],
+                    "superseded": True,
+                },
+                "appearanceEvaluationCount": {
+                    "value": unit_t_gate["appearanceEvaluationCount"],
+                    "superseded": True,
+                },
+                "reason": overlay["historicalFieldPolicy"]["reason"],
+            },
+        }
+    )
+
+    unit_u_gate = gates["PHY1-Topology-Strategy3-Confirmation-D0-v2"]
+    unit_u_gate.update(
+        {
+            "authorityAttemptsScheduledCount": unit_u["authorityAttemptsScheduledCount"],
+            "authorityAttemptsExecutedCount": unit_u["authorityAttemptsExecutedCount"],
+            "officialSeedCreated": unit_u["officialSeedCreated"],
+            "untouchedFixtureCreated": unit_u["untouchedFixtureCreated"],
+            "oracleRevealed": unit_u["oracleRevealed"],
+            "scientificAdmissionExecuted": unit_u["scientificAdmissionExecuted"],
+            "scientificFailure": unit_u["scientificFailure"],
+            "preSeedInfrastructureFailure": unit_u["preSeedInfrastructureFailure"],
+            "sourceEvidenceAnchor": unit_u["sourceEvidenceAnchor"],
+            "finalPublicationHead": unit_u["finalPublicationHead"],
+            "exactHeadCi": deepcopy(unit_u["exactHeadCi"]),
+        }
+    )
+
+    diagnosis = gates["PHY1-Topology-Strategy3-Diagnosis-D0-v1"]
+    diagnosis.update(
+        {
+            "finalStrategyConsumed": budget["strategy3Consumed"],
+            "remainingTopologyStrategies": budget["derived"]["remaining"]["topology_strategy"],
+            "historicalStateAtDiagnosis": {
+                "finalStrategyConsumed": False,
+                "remainingTopologyStrategies": 1,
+            },
+            "currentStateSupersededBy": budget["reportVersion"],
+        }
+    )
+
+
+def _apply_successor_truth(truth: dict[str, Any], overlay: dict[str, Any]) -> None:
+    unit_t = overlay["unitT"]
+    unit_u = overlay["unitU"]
+    budget = overlay["budgetStateBeforeSuccessorAuthority"]
+    truth.update(
+        {
+            "identityDisjointV3AttemptsScheduledCount": unit_t["attemptsScheduledCount"],
+            "identityDisjointV3AttemptsExecutedCount": unit_t["attemptsExecutedCount"],
+            "identityDisjointV3PredictionArtifactProducedCount": unit_t[
+                "predictionArtifactProducedCount"
+            ],
+            "identityDisjointV3ExplicitAbstentionCount": unit_t["explicitAbstentionCount"],
+            "identityDisjointV3CompileRowsEvaluatedCount": unit_t["compileRowsEvaluatedCount"],
+            "identityDisjointV3LegacyFullCompileSuccessCounter": unit_t[
+                "legacyFullCompileSuccessCounter"
+            ],
+            "identityDisjointV3StrictCompletePixelRouteCompileValidCount": unit_t[
+                "strictCompletePixelRouteCompileValidCount"
+            ],
+            "identityDisjointV3AppearanceRowsActuallyEvaluatedCount": unit_t[
+                "appearanceRowsActuallyEvaluatedCount"
+            ],
+            "identityDisjointV3AppearanceGatePassCount": unit_t["appearanceGatePassCount"],
+            "identityDisjointV3ScientificFailure": unit_t["scientificFailure"],
+            "phy1FinalStrategy3V2PreSeedInfrastructureFailure": unit_u[
+                "preSeedInfrastructureFailure"
+            ],
+            "phy1FinalStrategy3V2ScientificAdmissionExecuted": unit_u[
+                "scientificAdmissionExecuted"
+            ],
+            "strategy3Reserved": budget["strategy3Reserved"],
+            "strategy3Consumed": budget["strategy3Consumed"],
+            "strategy3ScientificAdmissionExecuted": budget["strategy3ScientificAdmissionExecuted"],
+            "untouchedStrategy3ConfirmationAttemptConsumed": budget[
+                "untouchedStrategy3ConfirmationAttemptConsumed"
+            ],
+            "canonicalCandidateAttemptsRemaining": budget["canonicalCandidateAttemptsRemaining"],
+            "unitSSuccessor": deepcopy(overlay["unitSSuccessor"]),
+            "scopeSeparation": deepcopy(overlay["scopeSeparation"]),
+        }
+    )
 
 
 def validate_status_model(
-    model: dict[str, Any], coverage: dict[str, Any], stack: dict[str, Any]
+    model: dict[str, Any],
+    coverage: dict[str, Any],
+    stack: dict[str, Any],
+    *,
+    truth_overlay: dict[str, Any] | None = None,
 ) -> list[str]:
     issues: list[str] = []
     rebuilt = build_status_model(
-        coverage, stack, evidence_anchor_sha=str(model.get("evidenceAnchorSha", ""))
+        coverage,
+        stack,
+        evidence_anchor_sha=str(model.get("evidenceAnchorSha", "")),
+        truth_overlay=truth_overlay,
     )
     if model != rebuilt:
         issues.append("status_model_not_recomputed_from_authority")
@@ -1065,7 +1237,8 @@ def validate_status_model(
     if any(model.get("phases", {}).get(f"{index:02d}") != "partial" for index in range(1, 15)):
         issues.append("phase_completion_overclaimed")
     status_stack = model.get("stack", {})
-    if status_stack.get("committedSourceAnchorExceptions") != [10, 52, 53, 55]:
+    expected_exceptions = [10] if truth_overlay is not None else [10, 52, 53, 55]
+    if status_stack.get("committedSourceAnchorExceptions") != expected_exceptions:
         issues.append("stack_exception_set_invalid")
     attestations = status_stack.get("externalExactHeadAttestations", [])
     expected_attestations = [
@@ -1174,10 +1347,13 @@ def validate_status_model(
             "authority": "github_workflow_api_and_draft_pr_body",
         },
     ]
+    if truth_overlay is not None:
+        expected_attestations.extend(truth_overlay["externalExactHeadAttestations"])
     if attestations != expected_attestations:
         issues.append("external_exact_head_attestation_invalid")
     pending_attestations = status_stack.get("pendingExternalExactHeadAttestations", [])
-    if pending_attestations != [52, 53, 55]:
+    expected_pending = [] if truth_overlay is not None else [52, 53, 55]
+    if pending_attestations != expected_pending:
         issues.append("pending_external_exact_head_attestation_invalid")
     z1 = model.get("gates", {}).get("Z1", {})
     if z1.get("globalStatus") != "partial" or z1.get("scopedStatus") != (
@@ -1227,8 +1403,22 @@ def validate_status_model(
         issues.append("phy1_topology_strategy3_candidate_overclaimed")
     if truth.get("phy1TopologyStrategy3CandidateAttemptConsumed") is not False:
         issues.append("phy1_topology_strategy3_candidate_attempt_consumption_invalid")
-    if truth.get("phy1TopologyStrategy3FinalStrategyConsumed") is not False:
+    expected_strategy_consumed = truth_overlay is not None
+    if truth.get("phy1TopologyStrategy3FinalStrategyConsumed") is not expected_strategy_consumed:
         issues.append("phy1_topology_strategy3_strategy_consumption_invalid")
+    if truth_overlay is not None:
+        if model.get("truthAuthority", {}).get("overlayDigest") != truth_overlay.get(
+            "overlayDigest"
+        ):
+            issues.append("successor_truth_overlay_not_preferred")
+        if truth.get("identityDisjointV3AppearanceRowsActuallyEvaluatedCount") != 8:
+            issues.append("unit_t_appearance_denominator_ambiguous")
+        if truth.get("identityDisjointV3StrictCompletePixelRouteCompileValidCount") != 0:
+            issues.append("unit_t_strict_compile_success_ambiguous")
+        if truth.get("phy1FinalStrategy3V2PreSeedInfrastructureFailure") is not True:
+            issues.append("unit_u_preseed_failure_missing")
+        if truth.get("strategy3Consumed") is not True:
+            issues.append("strategy3_consumption_stale")
     if any(
         truth.get(key) is not False for key in ("unitPEligible", "unitQEligible", "unitREligible")
     ):
@@ -1258,6 +1448,7 @@ def validate_status_model(
 
 def render_status_summary(model: dict[str, Any]) -> str:
     counts = model["coverage"]["counts"]
+    truth = model["truth"]
     phase_lines = "\n".join(
         f"- Phase {int(index)}: `{model['phases'][index]}`" for index in sorted(model["phases"])
     )
@@ -1292,8 +1483,17 @@ def render_status_summary(model: dict[str, Any]) -> str:
         "pairing failed, while the separate clean analytic MT1 mechanical-reference profile passes "
         "without implying Z2 or physical cloth. Geometric LayerCollision-D0 passes only for the "
         "indexed synthetic two-garment surface profile and does not imply PHY1. "
-        "Unit S authority recovery passes its core-truth, D0-authority, and PHY-authority "
-        "sub-gates without creating a scientific cohort, topology attempt, candidate, or physical "
-        "attempt, and changes no Research Prototype result. No GPU, mobile, private-user, or "
-        "human-review execution is claimed.\n"
+        "Unit S successor integrity evaluation executes the complete authority predicate set and "
+        "mutation suite; it creates no scientific cohort, topology attempt, candidate, or physical "
+        "attempt and changes no Research Prototype result. Unit T is a literal scientific failure: "
+        f"{truth.get('identityDisjointV3AttemptsExecutedCount', 64)}/64 attempts executed, "
+        f"{truth.get('identityDisjointV3PredictionArtifactProducedCount', 60)} prediction "
+        "artifacts "
+        "were produced, all 48 compile rows were evaluated, zero strict complete pixel-route "
+        f"candidates were compile-valid, and only "
+        f"{truth.get('identityDisjointV3AppearanceRowsActuallyEvaluatedCount', 8)}/24 appearance "
+        "rows actually ran with zero passes. Unit U is a pre-seed infrastructure failure: no "
+        "official seed, fixture, oracle, admission, or candidate existed. Strategy 3 is reserved "
+        "and consumed, zero topology strategies remain, and one canonical-candidate attempt "
+        "remains. No GPU, mobile, private-user, or human-review execution is claimed.\n"
     )

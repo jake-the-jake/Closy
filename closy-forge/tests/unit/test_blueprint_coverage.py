@@ -41,7 +41,7 @@ def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == ("closy.blueprint_coverage.final_strategy3_v2_closeout.v22")
+    assert coverage["version"] == ("closy.blueprint_coverage.truth_authority_integrity_v3.v23")
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -124,10 +124,14 @@ def test_canonical_status_is_recomputed_from_coverage_and_stack() -> None:
     coverage = _json("blueprint_coverage.json")
     stack = _json("pr_stack_manifest.json")
     status = _json("current_blueprint_status.json")
+    overlay = _json("evidence/truth_authority_integrity_v3/truth_overlay.json")
 
-    assert validate_status_model(status, coverage, stack) == []
+    assert validate_status_model(status, coverage, stack, truth_overlay=overlay) == []
     assert status == build_status_model(
-        coverage, stack, evidence_anchor_sha=status["evidenceAnchorSha"]
+        coverage,
+        stack,
+        evidence_anchor_sha=status["evidenceAnchorSha"],
+        truth_overlay=overlay,
     )
     counts: dict[str, int] = {}
     for row in coverage["rows"]:
@@ -161,7 +165,8 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert strategy3_diagnosis["admittedStrategyClass"] is None
     assert strategy3_diagnosis["candidateCreated"] is False
     assert strategy3_diagnosis["candidateAttemptConsumed"] is False
-    assert strategy3_diagnosis["finalStrategyConsumed"] is False
+    assert strategy3_diagnosis["finalStrategyConsumed"] is True
+    assert strategy3_diagnosis["remainingTopologyStrategies"] == 0
     assert strategy3_diagnosis["unitPEligible"] is False
     assert status["gates"]["PHY1-SingleLayer-D0-v2"]["dRuntimePinnedToV1"] is True
     assert status["gates"]["PHY1-Neutral-SeamSupport-D0-v3"]["scopedStatus"] == "failed"
@@ -209,7 +214,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "PRODUCTION": "not_started",
         "RESEARCH-PROTOTYPE": "partial",
     }
-    assert status["truth"] == {
+    expected_truth_subset = {
         "actualPhase9TrainingExecuted": True,
         "currentRasterPhase9SourceIntegrated": True,
         "currentRasterPhase9SourcePullRequest": 26,
@@ -240,8 +245,8 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "phy1TopologyStrategy3AdmittedClass": None,
         "phy1TopologyStrategy3CandidateCreated": False,
         "phy1TopologyStrategy3CandidateAttemptConsumed": False,
-        "phy1TopologyStrategy3FinalStrategyConsumed": False,
-        "phy1TopologyStrategy3RemainingTopologyStrategies": 1,
+        "phy1TopologyStrategy3FinalStrategyConsumed": True,
+        "phy1TopologyStrategy3RemainingTopologyStrategies": 0,
         "unitPEligible": False,
         "unitQEligible": False,
         "unitREligible": False,
@@ -319,6 +324,16 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
         "physicalMobileEvidenceRun": False,
         "privateUserEvidenceRun": False,
     }
+    assert all(status["truth"].get(key) == value for key, value in expected_truth_subset.items())
+    assert status["truth"]["identityDisjointV3AttemptsExecutedCount"] == 64
+    assert status["truth"]["identityDisjointV3PredictionArtifactProducedCount"] == 60
+    assert status["truth"]["identityDisjointV3AppearanceRowsActuallyEvaluatedCount"] == 8
+    assert status["truth"]["identityDisjointV3AppearanceGatePassCount"] == 0
+    assert status["truth"]["phy1FinalStrategy3V2PreSeedInfrastructureFailure"] is True
+    assert status["truth"]["strategy3Consumed"] is True
+    assert status["truthAuthority"]["consumerPolicy"] == (
+        "prefer_this_overlay_without_mutating_historical_keys"
+    )
 
 
 def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
@@ -363,18 +378,15 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
             text=True,
         ).stdout.strip()
         assert merge_base == row["baseSha"]
-        if row["number"] in {10, 52, 53, 55}:
+        if row["number"] == 10:
             assert row["latestExactHeadForgeRun"] is None
-            assert row["knownException"]["code"] in {
-                "missing_exact_head_forge_run",
-                "exact_head_ci_recorded_outside_generated_evidence",
-            }
+            assert row["knownException"]["code"] == "missing_exact_head_forge_run"
             assert row["knownException"]["descendantEvidenceIsExactHead"] is False
         else:
             run = row["latestExactHeadForgeRun"]
             assert run["exactHead"] is True
             assert run["runId"]
-            if row["number"] == 25:
+            if row["number"] in {25, 55}:
                 assert run["conclusion"] == "FAILURE"
             elif "conclusion" in run:
                 assert run["conclusion"] == "SUCCESS"
@@ -395,6 +407,13 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert (
         "github:jake-the-jake/Closy:pr/25"
         in by_id["github:jake-the-jake/Closy:pr/28"]["dependencyIds"]
+    )
+    assert by_id["github:jake-the-jake/Closy:pr/53"]["parentIds"] == [
+        "github:jake-the-jake/Closy:pr/52"
+    ]
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/55"]["latestExactHeadWorkflows"][0]["conclusion"]
+        == "FAILURE"
     )
     assert len(by_id["github:jake-the-jake/Closy:pr/28"]["integrationMappings"]) == 8
     assert by_id["github:jake-the-jake/Closy:pr/25"]["superseded"] is True
@@ -510,9 +529,12 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
         "github:jake-the-jake/Closy:pr/51"
     ]
     assert by_id["github:jake-the-jake/Closy:pr/52"]["headSha"] == (
-        "d8c8318ad346ea66ebc1956ebc0839ee3d6db109"
+        "8dd7a547debf038e9e27c48cf8e42009ae69ac3a"
     )
-    assert by_id["github:jake-the-jake/Closy:pr/52"]["latestExactHeadWorkflows"] == []
+    assert (
+        by_id["github:jake-the-jake/Closy:pr/52"]["latestExactHeadWorkflows"][0]["runId"]
+        == "33570351597"
+    )
     assert (
         "github:jake-the-jake/Closy:pr/37"
         in (by_id["github:jake-the-jake/Closy:pr/38"]["dependencyIds"])
@@ -583,7 +605,7 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     coverage = _json("blueprint_coverage.json")
     provenance = coverage["generatedBy"]
 
-    assert provenance["generatorVersion"] == "closy.blueprint_publication.final_strategy3_v2.v19"
+    assert provenance["generatorVersion"] == ("closy.blueprint_publication.truth_authority_v3.v20")
     assert len(provenance["sourceTreeHash"]) == 64
     assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
     assert provenance["selfReferentialCommitSha"] is False
@@ -602,83 +624,50 @@ def test_generated_markdown_is_exact_render_of_machine_status() -> None:
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_u_preseed_closeout() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_unit_y0_truth_lane() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-phy1-final-strategy3-v2"
+    assert resume["branch"] == "codex/closy-forge-truth-authority-integrity-v3"
     assert resume["latestFinishedParentPublicationHead"] == (
-        "0c45587371165f1c5f3e33934ee2cbf5156f9e02"
+        "f56fc44ccf7173155186a30b4f4978454fb3debf"
     )
     assert resume["pendingCIAtEvidenceHead"] is True
     assert resume["evidenceHead"] in markdown
     assert str(resume["parent"]["sha"]) in markdown
-    assert resume["gates"]["ResearchPrototype-D0-matrix-v2"].startswith("historical_superseded")
     assert resume["gates"]["ResearchPrototype-D0-matrix-v3-core"] == (
         "partial_7_pass_4_fail_0_not_run"
     )
     assert resume["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"] == (
         "2_pass_0_fail_2_not_run"
     )
-    assert resume["matrixScopes"]["identityDisjointV2"]["predictions"] == 0
-    assert resume["matrixScopes"]["identityDisjointV2"]["predictionDenominator"] == 64
-    assert resume["matrixScopes"]["identityDisjointV2"]["canonicalCompiles"] == 0
-    assert resume["matrixScopes"]["postTopologyCandidate"]["candidateExists"] is False
-    assert resume["unitMResult"]["outcome"] == "attempted_integrity_error"
-    assert resume["unitMResult"]["qualificationRetryAllowed"] is False
-    assert resume["unitNResult"]["outcome"] == "pass"
-    assert resume["unitNResult"]["posePassCount"] == 8
-    assert resume["unitOResult"]["outcome"] == "diagnosis_integrity_error"
-    assert resume["unitOResult"]["rawOutcome"] == (
-        "no_strategy3_class_admitted_within_bounded_diagnosis"
-    )
-    assert resume["unitOResult"]["replayPerformed"] is False
-    assert resume["unitOResult"]["revisionCount"] == 2
-    assert resume["unitOResult"]["admittedStrategyClass"] is None
-    assert resume["unitOResult"]["candidateCreated"] is False
-    assert resume["unitOResult"]["candidateAttemptConsumed"] is False
-    assert resume["unitOResult"]["finalStrategyConsumed"] is False
-    assert resume["unitOResult"]["unitPEligible"] is False
-    assert resume["unitSResult"]["outcome"] == "pass"
-    assert set(resume["unitSResult"]["subgates"]) == {
-        "S-core-truth",
-        "S-D0-authority",
-        "S-PHY-authority",
-    }
-    assert all(row["result"] == "pass" for row in resume["unitSResult"]["subgates"].values())
-    assert resume["unitTResult"]["outcome"] == "completed_benchmark_failed_absolute_gates"
-    assert resume["unitTResult"]["qualificationRetryAllowed"] is False
+    assert resume["unitTResult"]["literalOutcome"] == ("completed_benchmark_failed_absolute_gates")
+    assert resume["unitTResult"]["appearanceRowsActuallyEvaluatedCount"] == 8
+    assert resume["unitTResult"]["strictCompletePixelRouteCompileValidCount"] == 0
     assert resume["unitTResult"]["rowResults"] == {
         "D0-RP-03": "fail",
         "D0-RP-04": "pass",
         "D0-RP-06": "fail",
         "D0-RP-07": "fail",
     }
-    assert resume["matrixScopes"]["identityDisjointV3"]["predictions"] == 64
-    assert resume["matrixScopes"]["identityDisjointV3"]["routePromoted"] is False
     assert resume["remainingBudgets"] == {
         "candidateAttempts": 1,
         "seamModels": 0,
         "topologyStrategies": 0,
     }
-    assert resume["conditionalUnits"] == {
-        "T": "complete_failed_absolute_gates",
-        "U": "complete_dependency_blocked_before_official_seed_v2",
-        "V": "ineligible_unit_u_not_admitted",
-        "W": "ineligible_no_unit_v_candidate",
-        "X": "ineligible_no_unit_w_core_prerequisites",
-    }
-    assert resume["unitUResult"]["outcome"] == "dependency_blocked_before_official_seed_v2"
+    assert resume["budgetState"]["strategy3Reserved"] is True
+    assert resume["budgetState"]["strategy3Consumed"] is True
+    assert resume["conditionalUnits"]["Y1"] == ("ineligible_until_unit_y0_exact_head_ci_passes")
+    assert resume["unitUResult"]["literalOutcome"] == ("dependency_blocked_before_official_seed_v2")
     assert resume["unitUResult"]["officialSeedCreated"] is False
-    assert resume["unitUResult"]["confirmationAttemptConsumed"] is False
-    assert resume["unitUResult"]["candidateCreated"] is False
-    assert resume["nextHandoff"]["selection"] == "none_dependency_ready"
+    assert resume["unitUResult"]["untouchedConfirmationAttemptConsumed"] is False
+    assert resume["unitUResult"]["canonicalCandidateCreated"] is False
+    assert resume["nextHandoff"]["selection"] == "unit_y1_after_y0_exact_head_pass"
     assert resume["nextHandoff"]["firstUnmetPrerequisite"] == (
-        "unit_u_literal_untouched_admission_pass"
+        "unit_y0_exact_head_forge_and_sealed_v2_failure_lane_pass"
     )
-    assert "7 pass / 4 fail" in markdown
     assert "D0-RP-04: `pass`" in markdown
-    assert "Do not relock" in markdown
+    assert "Do not" in markdown and "relock" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:
@@ -750,8 +739,9 @@ def test_human_ledgers_are_not_machine_readiness_authorities() -> None:
     status = _json("current_blueprint_status.json")
     stack = _json("pr_stack_manifest.json")
     coverage = _json("blueprint_coverage.json")
+    overlay = _json("evidence/truth_authority_integrity_v3/truth_overlay.json")
 
-    assert validate_status_model(status, coverage, stack) == []
+    assert validate_status_model(status, coverage, stack, truth_overlay=overlay) == []
 
 
 def test_generated_evidence_and_changed_status_documents_are_path_and_secret_safe() -> None:

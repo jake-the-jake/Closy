@@ -1,195 +1,119 @@
 {
-  "activeLane": "finite sequence complete after Unit U pre-seed dependency block",
-  "branch": "codex/closy-forge-phy1-final-strategy3-v2",
-  "conditionalUnits": {
-    "T": "complete_failed_absolute_gates",
-    "U": "complete_dependency_blocked_before_official_seed_v2",
-    "V": "ineligible_unit_u_not_admitted",
-    "W": "ineligible_no_unit_v_candidate",
-    "X": "ineligible_no_unit_w_core_prerequisites"
+  "activeLane": "Unit Y0 truth repair and authority-integrity hardening",
+  "branch": "codex/closy-forge-truth-authority-integrity-v3",
+  "budgetState": {
+    "strategy3Consumed": true,
+    "strategy3Reserved": true,
+    "strategy3ScientificAdmissionExecuted": false,
+    "untouchedStrategy3ConfirmationAttemptConsumed": false
   },
-  "evidenceHead": "d76916461d3e96b037fbc31b646319effef7a264",
-  "exactNextAction": "No further unit is authorised or dependency-ready; preserve the locked failure and await separately authorised successor methodology.",
+  "conditionalUnits": {
+    "AA": "ineligible_no_unit_z_candidate",
+    "AB": "ineligible_no_post_topology_prerequisites",
+    "AC": "unconditional_after_topology_sequence_literal_outcome",
+    "AD": "conditional_on_d0_v4_development_admission",
+    "AE": "pending_literal_outcomes",
+    "Y0": "implementation_complete_publication_and_exact_head_ci_pending",
+    "Y1": "ineligible_until_unit_y0_exact_head_ci_passes",
+    "Z": "ineligible_until_strategy3_v3_admission"
+  },
+  "evidenceHead": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
+  "exactNextAction": "publish Unit Y0 integrity hardening, require exact-head Forge plus sealed-v2 lane, then create Unit Y1 repository-blob authority from that final head",
   "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
+  "finalPublicationHead": null,
   "gates": {
-    "D0-DisjointTshirt-v2": "attempted_integrity_error",
+    "C3": "pre_topology_scoped_pass_post_topology_unproven",
     "D0-DisjointTshirt-v3": "completed_benchmark_failed_absolute_gates",
-    "D0-Strict-C3-v5": "pass_exact_unit_f_pre_topology_8_of_8",
-    "PHY1-Neutral-SeamSupport-D0-v3": "A_neutral_preflight_failed_v3",
-    "PHY1-Topology-Strategy2-D0-v4": "outcome_M_strategy_microfixture_failed_no_candidate",
     "PHY1-Topology-Strategy3-Confirmation-D0-v2": "dependency_blocked_before_official_seed_v2",
-    "PHY1-Topology-Strategy3-Diagnosis-D0-v1": "diagnosis_integrity_error",
-    "ResearchPrototype-D0-matrix-v2": "historical_superseded_9_pass_3_fail_3_not_run",
     "ResearchPrototype-D0-matrix-v3-core": "partial_7_pass_4_fail_0_not_run",
     "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
-    "Runtime": "v1_selected_topology_v2_opt_in_unchanged",
-    "S-D0-authority": "pass:exact_head_pinned_image_preflight_3_of_3",
-    "S-PHY-authority": "pass:exact_head_cross_platform_numeric_matrix_green",
-    "S-core-truth": "pass:starting_truth_replay_ledger_schema_and_budget_derivation_valid",
-    "Unit-P": "ineligible_unit_o_diagnosis_integrity_error",
-    "Unit-Q": "ineligible_no_unit_p_candidate",
-    "Unit-R": "ineligible_no_unit_q_prerequisites"
+    "S-D0-authority-successor": "integrity_predicates_pass",
+    "S-PHY-authority-successor": "integrity_predicates_pass",
+    "S-core-truth-successor": "integrity_predicates_pass",
+    "Z1": "scoped_static_pass_exact_candidate_unproven",
+    "Z2": "failed_non_solver_evidence_only"
   },
-  "latestFinishedParentPublicationHead": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
-  "localHeadAtResumeSource": "pending_final_publication_commit",
-  "machineResumeVersion": "closy.active_blueprint_resume.final_strategy3_v2.v13",
-  "matrixScopes": {
-    "identityDisjointV1": {
-      "appearanceEvaluations": 0,
-      "canonicalCompiles": 0,
-      "outcome": "benchmark_failed_fixed_inventory_unfinished",
-      "predictions": 64
-    },
-    "identityDisjointV2": {
-      "acceptedIdentities": 16,
-      "appearanceDenominator": 24,
-      "appearanceEvaluations": 0,
-      "canonicalCompiles": 0,
-      "compileDenominator": 48,
-      "outcome": "attempted_integrity_error",
-      "predictionDenominator": 64,
-      "predictions": 0
-    },
-    "identityDisjointV3": {
-      "acceptedIdentities": 16,
-      "appearanceDenominator": 24,
-      "appearanceEvaluations": 24,
-      "canonicalCompiles": 48,
-      "compileDenominator": 48,
-      "disjointnessScope": "recoverable_inventory_only_lost_v2_relation_unverified",
-      "outcome": "completed_benchmark_failed_absolute_gates",
-      "predictionDenominator": 64,
-      "predictions": 64,
-      "routePromoted": false,
-      "successfulPredictionArtifacts": 60
-    },
-    "knownTarget": {
-      "d0Rp07Promoted": false,
-      "outcome": "known_target_regression_pass",
-      "predicatesPassed": 34,
-      "predicatesTotal": 34
-    },
-    "postTopologyCandidate": {
-      "candidateExists": false,
-      "matrixNotRunReason": "unit_u_dependency_blocked_before_official_seed_v2"
-    },
-    "strictC3V5": {
-      "outcome": "pass",
-      "poseCount": 8,
-      "posePassCount": 8,
-      "preTopology": true
-    }
-  },
+  "latestFinishedParentPublicationHead": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+  "localHeadAtResumeSource": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
+  "machineResumeVersion": "closy.active_blueprint_resume.truth_authority_v3.v14",
   "mergeAuthorised": false,
   "nextHandoff": {
-    "firstUnmetPrerequisite": "unit_u_literal_untouched_admission_pass",
-    "safestEvidenceAction": "preserve_locked_preseed_failure_without_relock_or_rerun",
-    "selection": "none_dependency_ready"
+    "firstUnmetPrerequisite": "unit_y0_exact_head_forge_and_sealed_v2_failure_lane_pass",
+    "safestEvidenceAction": "publish_y0_without_touching_frozen_strategy3_bytes",
+    "selection": "unit_y1_after_y0_exact_head_pass"
   },
   "parent": {
-    "branch": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
-    "exactHeadWorkflow": "33624168164",
-    "forgeJobsPassed": 29,
+    "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+    "exactHeadWorkflow": "33635092644",
+    "forgeJobsPassed": 25,
     "forgeJobsTotal": 29,
-    "pullRequest": 54,
-    "sha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02"
+    "literalCiResult": "completed_failure",
+    "pullRequest": 55,
+    "sha": "f56fc44ccf7173155186a30b4f4978454fb3debf"
   },
   "pendingCIAtEvidenceHead": true,
-  "pullRequest": 55,
+  "pullRequest": 56,
   "remainingBudgets": {
     "candidateAttempts": 1,
     "seamModels": 0,
     "topologyStrategies": 0
   },
-  "remoteHeadAtResumeSource": "pending_final_publication_commit",
+  "remoteHeadAtResumeSource": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "stopReason": "unit_u_locked_path_dependency_blocked_before_official_seed_v2",
-  "unitMResult": {
-    "acceptedIdentityCount": 16,
-    "appearanceEvaluationCount": 0,
-    "fullCompileCount": 0,
-    "outcome": "attempted_integrity_error",
-    "predictionCount": 0,
-    "qualificationRetryAllowed": false
+  "sourceEvidenceAnchor": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
+  "stopReason": "unit_y0_exact_head_ci_required_before_unit_y1",
+  "truthOverlay": {
+    "consumerPolicy": "prefer_this_overlay_without_mutating_historical_keys",
+    "digest": "8f9df323bcf10aa240681dc360becee61962b035e79b00cd1cc1444a3e7b3686",
+    "version": "closy.blueprint_truth_overlay.successor.v1"
   },
-  "unitNResult": {
-    "maximumBindingReconstructionErrorMeters": 6.71791165111579e-08,
-    "maximumSemanticSeamCrackMeters": 0.0,
-    "maximumTangentialSeamSlidingMeters": 0.0,
-    "outcome": "pass",
-    "poseCount": 8,
-    "posePassCount": 8,
-    "preTopology": true,
-    "publishedHead": "e062a30ba295ed27334622916ddb449fd76e2166"
-  },
-  "unitOResult": {
-    "admittedStrategyClass": null,
-    "candidateAttemptConsumed": false,
-    "candidateCreated": false,
-    "finalStrategyConsumed": false,
-    "integrityAttestationDigest": "f7a9538bda6435e9b87378f5563ad9889c528b7c454db36eb86687dd6adaf4d0",
-    "integrityFailureRun": "33559874476",
-    "outcome": "diagnosis_integrity_error",
-    "rawOutcome": "no_strategy3_class_admitted_within_bounded_diagnosis",
-    "rawOutcomeDigest": "bd2533161c19cc66dfe6cd024a083eaf098e42a6018dfffee4be0ef566cfc6c2",
-    "replayPerformed": false,
-    "revisionCount": 2,
-    "revisionFixturePassCounts": [
-      {
-        "admitted": false,
-        "firstUnmetPredicate": "allFixturesPass",
-        "fixtureCount": 8,
-        "fixturePassCount": 7,
-        "revision": 1,
-        "strategyClass": "local_longest_edge_bisection"
-      },
-      {
-        "admitted": false,
-        "firstUnmetPredicate": "allFixturesPass",
-        "fixtureCount": 8,
-        "fixturePassCount": 7,
-        "revision": 2,
-        "strategyClass": "closure_longest_edge_bisection"
-      }
-    ],
-    "unitPEligible": false
-  },
-  "unitSResult": {
-    "canonicalCandidateCreated": false,
-    "officialD0CohortCreated": false,
-    "officialTopologyFixturesCreated": false,
-    "outcome": "pass",
-    "physicalAttemptConsumed": false,
-    "preflightHead": "1c748e63bab1282d697be960f19bd01a53337df2",
-    "preflightRun": "33616212488",
+  "unitSSuccessor": {
+    "scientificAttemptCreated": false,
     "subgates": {
-      "S-D0-authority": {
-        "reason": "exact_head_pinned_image_preflight_3_of_3",
-        "result": "pass"
+      "S-D0-authority-successor": {
+        "scientificCapabilityClaim": false,
+        "status": "integrity_predicates_pass"
       },
-      "S-PHY-authority": {
-        "reason": "exact_head_cross_platform_numeric_matrix_green",
-        "result": "pass"
+      "S-PHY-authority-successor": {
+        "scientificCapabilityClaim": false,
+        "status": "integrity_predicates_pass"
       },
-      "S-core-truth": {
-        "reason": "starting_truth_replay_ledger_schema_and_budget_derivation_valid",
-        "result": "pass"
+      "S-core-truth-successor": {
+        "scientificCapabilityClaim": false,
+        "status": "integrity_predicates_pass"
       }
-    }
+    },
+    "supersedesShallowPassDerivation": true
   },
   "unitTResult": {
-    "acceptedIdentityCount": 16,
-    "appearanceEvaluationCount": 24,
-    "authorityHead": "7aae56b050e72e51916b592423f63d859f166117",
-    "authorityJob": "100219125702",
+    "appearanceGatePassCount": 0,
+    "appearanceRowsActuallyEvaluatedCount": 8,
+    "appearanceRowsScheduledCount": 24,
+    "artifactRoot": "fixtures/d0_disjoint_tshirt_confirmation_v3/official_attempt",
+    "attemptsExecutedCount": 64,
+    "attemptsScheduledCount": 64,
     "authorityRun": "33621365050",
-    "disjointnessScope": "recoverable_inventory_only_lost_v2_relation_unverified",
-    "firstUnmetPredicate": "functional_absolute_gates",
-    "fullCompileCount": 48,
-    "outcome": "completed_benchmark_failed_absolute_gates",
-    "predictionCount": 64,
-    "qualificationRetryAllowed": false,
+    "compileRowsEvaluatedCount": 48,
+    "compileRowsScheduledCount": 48,
+    "exactHeadCiRun": "33624168164",
+    "explicitAbstentionCount": 4,
+    "finalPublicationHead": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+    "identities": 16,
+    "legacyFieldSupersededBy": [
+      "strictCompletePixelRouteCompileValidCount",
+      "compileRowsEvaluatedCount"
+    ],
+    "legacyFullCompileSuccessCounter": 20,
+    "literalOutcome": "completed_benchmark_failed_absolute_gates",
+    "preSeedInfrastructureFailure": false,
+    "predictionArtifactProducedCount": 60,
+    "primaryAbsoluteSilhouetteImprovement": -0.767975768,
+    "primaryAppearanceRepeatGatePassCount": 0,
+    "primaryAppearanceRepeatRowsEvaluatedCount": 8,
+    "primaryCompileRepeatRowsEvaluatedCount": 16,
+    "primaryCompileRepeatSameFailureOrOutputClassCount": 2,
+    "primaryRelativeParameterImprovement": -2.700982084,
     "routePromoted": false,
     "rowResults": {
       "D0-RP-03": "fail",
@@ -197,32 +121,36 @@
       "D0-RP-06": "fail",
       "D0-RP-07": "fail"
     },
-    "successfulPredictionArtifactCount": 60
+    "scientificFailure": true,
+    "sourceEvidenceAnchor": "7aae56b050e72e51916b592423f63d859f166117",
+    "strictCompletePixelRouteCompileValidCount": 0
   },
   "unitUResult": {
-    "authorityJob": "100250251482",
-    "authorityJobResult": "skipped",
-    "authorityRun": "33630862367",
-    "authorityWorkflowState": "disabled_manually",
-    "candidateAttemptConsumed": false,
-    "candidateCreated": false,
-    "confirmationAttemptConsumed": false,
-    "lockHash": "f56e16579bbd6e078638c36ef9c0c3de7e59e72cca7efd1087cf11fde1039204",
-    "lockHead": "d76916461d3e96b037fbc31b646319effef7a264",
-    "mismatchCount": 4,
+    "artifactPath": "docs/evidence/final_strategy3_v2/outcome_report.json",
+    "authorityAttemptsExecutedCount": 0,
+    "authorityAttemptsScheduledCount": 1,
+    "canonicalCandidateAttemptsRemaining": 1,
+    "canonicalCandidateCreated": false,
+    "exactHeadCi": {
+      "failedJobs": 4,
+      "passedJobs": 25,
+      "result": "completed_failure",
+      "run": "33635092644"
+    },
+    "finalPublicationHead": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+    "literalOutcome": "dependency_blocked_before_official_seed_v2",
     "officialSeedCreated": false,
-    "outcome": "dependency_blocked_before_official_seed_v2",
-    "preflightImageId": "sha256:07f54a27f9bce38c5be7c6e26ac906eee2cbaa19c83b68a2354064c80f695247",
-    "preflightRun": "33630652037",
-    "publicConformanceDenominator": 8,
-    "publicConformancePassCount": 8,
-    "relockAllowed": false,
-    "rerunPerformed": false,
-    "strategyClass": "seam-sequence-preserving conforming panel remesh with duplicated seam degrees of freedom and rebuilt transfer/binding ancestry",
-    "strategyId": "PHY1-V5-S3-SEAM-SEQUENCE-CONFORMING-REMESH-V2",
-    "unitVEligible": false
+    "oracleRevealed": false,
+    "preSeedInfrastructureFailure": true,
+    "scientificAdmissionExecuted": false,
+    "scientificFailure": false,
+    "sourceEvidenceAnchor": "d76916461d3e96b037fbc31b646319effef7a264",
+    "topologyStrategiesRemaining": 0,
+    "untouchedConfirmationAttemptConsumed": false,
+    "untouchedFixtureCreated": false
   },
   "unsupportedEvidenceClasses": [
+    "strategy3_repository_blob_admission",
     "post_topology_candidate",
     "post_topology_core_reproducibility",
     "post_topology_strict_or_trajectory_C3",
@@ -237,7 +165,6 @@
     "mobile",
     "Alpha",
     "Beta",
-    "Production",
-    "identity_disjoint_cohort_qualification"
+    "Production"
   ]
 }
