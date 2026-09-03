@@ -100,6 +100,14 @@ def test_unsupported_real_fabric_promotion_fails_closed() -> None:
         validate_synthetic_mechanical_calibration(report, registry)
 
 
+def test_invalid_source_descriptor_is_reported_as_synthetic_calibration_error() -> None:
+    registry = build_material_preset_registry()
+    registry["presets"][0]["fields"]["thickness"]["unit"] = "millimetre"
+
+    with pytest.raises(SyntheticCalibrationError, match="invalid_descriptor:invalid_unit"):
+        run_synthetic_mechanical_calibration(registry)
+
+
 def test_package_synthetic_calibration_corruption_fails_closed(tmp_path) -> None:  # type: ignore[no-untyped-def]
     package = clone_package(
         build_demo(tmp_path), tmp_path / "bad_synthetic_calibration.closygarment"

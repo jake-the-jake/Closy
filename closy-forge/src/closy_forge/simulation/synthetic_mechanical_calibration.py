@@ -8,7 +8,10 @@ from typing import Any, Literal, cast
 
 from closy_forge.package_io.canonical_json import canonical_dumps
 from closy_forge.package_io.hashing import sha256_bytes
-from closy_forge.simulation.material_physics import validate_fabric_descriptor
+from closy_forge.simulation.material_physics import (
+    FabricDescriptorError,
+    validate_fabric_descriptor,
+)
 
 SYNTHETIC_CALIBRATION_VERSION = "closy.synthetic_mechanical_calibration.d0.v2"
 SYNTHETIC_COUPON_CORPUS_VERSION = "closy.synthetic_coupon_corpus.project_authored.v1"
@@ -479,7 +482,10 @@ def _validate_registry(registry: dict[str, Any]) -> str:
     for descriptor in presets:
         if not isinstance(descriptor, dict):
             raise SyntheticCalibrationError("invalid_descriptor")
-        validate_fabric_descriptor(descriptor)
+        try:
+            validate_fabric_descriptor(descriptor)
+        except FabricDescriptorError as exc:
+            raise SyntheticCalibrationError(f"invalid_descriptor:{exc.code}") from exc
     integrity = registry.get("integrity")
     if not isinstance(integrity, dict):
         raise SyntheticCalibrationError("missing_registry_integrity")
