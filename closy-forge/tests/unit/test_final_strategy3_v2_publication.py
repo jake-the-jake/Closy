@@ -104,13 +104,20 @@ def test_post_unit_u_budget_ledger_extends_without_rewriting_unit_s() -> None:
     assert ledger["untouchedConfirmationAttemptConsumed"] is False
 
 
-def test_status_closes_only_true_dependants() -> None:
+def test_successor_status_preserves_literal_y1_and_y2_outcomes() -> None:
     resume = json.loads((ROOT / "docs" / "ACTIVE_BLUEPRINT_RESUME.json").read_text())
-    assert resume["conditionalUnits"]["Y1"] == ("ineligible_until_unit_y0_exact_head_ci_passes")
-    assert resume["unitUResult"]["literalOutcome"] == ("dependency_blocked_before_official_seed_v2")
+    assert resume["machineResumeVersion"] == (
+        "closy.active_blueprint_resume.truth_dependency_authority.v4"
+    )
+    assert resume["unitY1Result"]["result"] == "strategy3_dependency_blocked_before_seed_v3"
+    assert resume["unitY2Result"]["terminalOutcome"] == "preseed_scientific_protocol_invalid"
+    assert resume["unitY2Result"]["seedCreated"] is False
+    assert resume["unitY2Result"]["scientificAttemptConsumed"] is False
     assert resume["remainingBudgets"] == {
         "candidateAttempts": 1,
         "seamModels": 0,
         "topologyStrategies": 0,
     }
-    assert resume["nextHandoff"]["selection"] == "unit_y1_after_y0_exact_head_pass"
+    assert resume["exactNextAction"] == (
+        "implement_PR_C_capture_camera_material_engineering_from_PR_A_final_head"
+    )

@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "attestationVersion": "closy.truth_dependency_authority.start.v4",
+  "repository": "jake-the-jake/Closy",
+  "main": {
+    "branch": "main",
+    "sha": "859d4ee9a8a3386e95ec8c29043aa9ecc246769a"
+  },
+  "source": {
+    "pullRequest": 59,
+    "branch": "codex/closy-forge-phase7-synthetic-mechanical-calibration-v2",
+    "commit": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e",
+    "tree": "b8e449080a040154cb408e42a0e4d36e37f6cd5e"
+  },
+  "openPullRequestCount": 59,
+  "cumulativeAgainstMain": {
+    "ahead": 450,
+    "behind": 0
+  },
+  "pullRequests": [
+    {
+      "number": 55,
+      "base": "codex/closy-forge-d0-disjoint-tshirt-confirmation-v3",
+      "baseSha": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "branch": "codex/closy-forge-phy1-final-strategy3-v2",
+      "head": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "mergeBase": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
+      "commitCount": 10,
+      "changedFileCount": 40,
+      "state": "OPEN_DRAFT",
+      "url": "https://github.com/jake-the-jake/Closy/pull/55",
+      "forge": {"runId": "33635092644", "conclusion": "FAILURE", "passed": 25, "failed": 4, "total": 29},
+      "supabase": {"conclusion": "SKIPPED"}
+    },
+    {
+      "number": 56,
+      "base": "codex/closy-forge-phy1-final-strategy3-v2",
+      "baseSha": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "branch": "codex/closy-forge-truth-authority-integrity-v3",
+      "head": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "mergeBase": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "commitCount": 10,
+      "changedFileCount": 42,
+      "state": "OPEN_DRAFT",
+      "url": "https://github.com/jake-the-jake/Closy/pull/56",
+      "forge": {"runId": "33672118033", "conclusion": "SUCCESS", "passed": 32, "failed": 0, "total": 32},
+      "supabase": {"conclusion": "SKIPPED"}
+    },
+    {
+      "number": 57,
+      "base": "codex/closy-forge-truth-authority-integrity-v3",
+      "baseSha": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "branch": "codex/closy-forge-strategy3-repository-blob-authority-v3",
+      "head": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "mergeBase": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "commitCount": 7,
+      "changedFileCount": 36,
+      "state": "OPEN_DRAFT",
+      "url": "https://github.com/jake-the-jake/Closy/pull/57",
+      "forge": {"runId": "33679038946", "conclusion": "SUCCESS", "passed": 32, "failed": 0, "total": 32},
+      "supabase": {"conclusion": "SKIPPED"},
+      "literalOutcome": "strategy3_dependency_blocked_before_seed_v3"
+    },
+    {
+      "number": 58,
+      "base": "codex/closy-forge-strategy3-repository-blob-authority-v3",
+      "baseSha": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "branch": "codex/closy-forge-d0-v4-contestant-engineering",
+      "head": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "mergeBase": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "commitCount": 6,
+      "changedFileCount": 98,
+      "state": "OPEN_DRAFT",
+      "url": "https://github.com/jake-the-jake/Closy/pull/58",
+      "forge": {"runId": "33712109857", "conclusion": "SUCCESS", "passed": 32, "failed": 0, "total": 32},
+      "supabase": {"conclusion": "SKIPPED"},
+      "literalOutcome": "completed_public_test_failed_ac_readiness_margins"
+    },
+    {
+      "number": 59,
+      "base": "codex/closy-forge-d0-v4-contestant-engineering",
+      "baseSha": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "branch": "codex/closy-forge-phase7-synthetic-mechanical-calibration-v2",
+      "head": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e",
+      "mergeBase": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "commitCount": 3,
+      "changedFileCount": 18,
+      "state": "OPEN_DRAFT",
+      "url": "https://github.com/jake-the-jake/Closy/pull/59",
+      "forge": {"runId": "33723731327", "conclusion": "SUCCESS", "passed": 32, "failed": 0, "total": 32},
+      "supabase": {"conclusion": "SKIPPED"},
+      "literalOutcome": "implemented_analytic_same_forward_model_inverse_harness_v2"
+    }
+  ],
+  "zeroOneFrozenHeads": {
+    "2": "13a844d240f4bbb2cafde105c4a0bdca8d89a06b",
+    "3": "413aecd24434f90d89ad35c6a8f909de75df34c7",
+    "4": "9cbae4a8e6ef2e61c1839ecbdf8a462aaa560027"
+  },
+  "dirtyPrimaryWorktreeExclusion": [
+    "metro.config.js",
+    "src/features/avatar-export/components/avatar-preview-dev-screen.tsx",
+    "src/features/avatar-viewport/avatar-viewport-live.tsx",
+    "src/features/avatar-viewport/live-viewport-debug-types.ts",
+    "src/features/avatar-viewport/three.ts",
+    "closy-forge/.tmp/"
+  ],
+  "sealedExperiments": {
+    "unitT": {"source": "7aae56b050e72e51916b592423f63d859f166117", "result": "completed_benchmark_failed_absolute_gates", "seedConsumed": true},
+    "unitU": {"source": "d76916461d3e96b037fbc31b646319effef7a264", "result": "dependency_blocked_before_official_seed_v2", "seedConsumed": false},
+    "unitY1": {"source": "d76916461d3e96b037fbc31b646319effef7a264", "lock": "b9c6d34f4339fece2c6e6566b59c5b548f3f973a", "result": "strategy3_dependency_blocked_before_seed_v3", "seedConsumed": false},
+    "unitAC": {"source": "7e8f01a4c75710f8de64203d921f961c3b31b7bc", "result": "completed_public_test_failed_ac_readiness_margins", "unitADRun": false},
+    "unitAE": {"source": "cfe3c1d5caebbb8f5de70f36abb254c896780906", "result": "implemented_analytic_same_forward_model_inverse_harness_v2", "phase7": "partial"}
+  },
+  "remainingBudgets": {"topologyStrategies": 0, "seamModels": 0, "candidateAttempts": 1},
+  "prompt": {
+    "path": "Closy_Next_Blueprint_Progression_Prompt_Truth_Y2_Capture_Phase7_Runtime.md",
+    "byteLength": 81854,
+    "sha256": "ab6b105e4d9a389445192bfdf5a215273b965c8f51a108bec4c87e15de8a6818"
+  }
+}

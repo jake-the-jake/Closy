@@ -595,6 +595,46 @@
       "from": "github:jake-the-jake/Closy:pr/54",
       "kind": "dependency",
       "to": "github:jake-the-jake/Closy:pr/55"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/55",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/56"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/55",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/56"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/56",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/57"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/56",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/57"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/57",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/58"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/57",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/58"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/58",
+      "kind": "parent",
+      "to": "github:jake-the-jake/Closy:pr/59"
+    },
+    {
+      "from": "github:jake-the-jake/Closy:pr/58",
+      "kind": "dependency",
+      "to": "github:jake-the-jake/Closy:pr/59"
     }
   ],
   "externalPullRequests": [
@@ -705,12 +745,12 @@
     }
   ],
   "graphCounts": {
-    "closyPullRequests": 55,
-    "edges": 119,
+    "closyPullRequests": 59,
+    "edges": 127,
     "externalPullRequests": 3,
-    "nodes": 58
+    "nodes": 62
   },
-  "graphVersion": "closy.cross_repository_pr_dag.v3",
+  "graphVersion": "closy.pr_stack.truth_dependency_authority.v4",
   "nodes": [
     {
       "ahead": 63,
@@ -2974,6 +3014,162 @@
       "state": "OPEN",
       "superseded": false,
       "uniqueCommitRange": "413aecd24434f90d89ad35c6a8f909de75df34c7..9cbae4a8e6ef2e61c1839ecbdf8a462aaa560027"
+    },
+    {
+      "ahead": 10,
+      "baseRef": "codex/closy-forge-phy1-final-strategy3-v2",
+      "baseSha": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "behind": 0,
+      "branch": "codex/closy-forge-truth-authority-integrity-v3",
+      "capabilityRole": "truth_authority_integrity_v3",
+      "changedFileCount": 42,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/55"
+      ],
+      "headSha": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "id": "github:jake-the-jake/Closy:pr/56",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "failedForgeJobCount": 0,
+          "forgeJobCount": 32,
+          "runId": "33672118033",
+          "successfulForgeJobCount": 32,
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/55"
+      ],
+      "pullRequest": 56,
+      "repository": "jake-the-jake/Closy",
+      "role": "truth_authority_integrity_v3",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "f56fc44ccf7173155186a30b4f4978454fb3debf..7ec3a884e0a7a3ab69ac71631499d4e097b63abe"
+    },
+    {
+      "ahead": 7,
+      "baseRef": "codex/closy-forge-truth-authority-integrity-v3",
+      "baseSha": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "behind": 0,
+      "branch": "codex/closy-forge-strategy3-repository-blob-authority-v3",
+      "capabilityRole": "strategy3_repository_blob_preseed_block_v3",
+      "changedFileCount": 36,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/56"
+      ],
+      "headSha": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "id": "github:jake-the-jake/Closy:pr/57",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "failedForgeJobCount": 0,
+          "forgeJobCount": 32,
+          "runId": "33679038946",
+          "successfulForgeJobCount": 32,
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/56"
+      ],
+      "pullRequest": 57,
+      "repository": "jake-the-jake/Closy",
+      "role": "strategy3_repository_blob_preseed_block_v3",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe..f36f60a73006aa5ac58652583ff8064ce3ed557b"
+    },
+    {
+      "ahead": 6,
+      "baseRef": "codex/closy-forge-strategy3-repository-blob-authority-v3",
+      "baseSha": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "behind": 0,
+      "branch": "codex/closy-forge-d0-v4-contestant-engineering",
+      "capabilityRole": "d0_v4_public_engineering_failed",
+      "changedFileCount": 98,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/57"
+      ],
+      "headSha": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "id": "github:jake-the-jake/Closy:pr/58",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "failedForgeJobCount": 0,
+          "forgeJobCount": 32,
+          "runId": "33712109857",
+          "successfulForgeJobCount": 32,
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/57"
+      ],
+      "pullRequest": 58,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_v4_public_engineering_failed",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "f36f60a73006aa5ac58652583ff8064ce3ed557b..cfe3c1d5caebbb8f5de70f36abb254c896780906"
+    },
+    {
+      "ahead": 3,
+      "baseRef": "codex/closy-forge-d0-v4-contestant-engineering",
+      "baseSha": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "behind": 0,
+      "branch": "codex/closy-forge-phase7-synthetic-mechanical-calibration-v2",
+      "capabilityRole": "phase7_analytic_inverse_harness_v2",
+      "changedFileCount": 18,
+      "dependencyIds": [
+        "github:jake-the-jake/Closy:pr/58"
+      ],
+      "headSha": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e",
+      "id": "github:jake-the-jake/Closy:pr/59",
+      "integrationMappings": [],
+      "latestExactHeadWorkflows": [
+        {
+          "conclusion": "SUCCESS",
+          "exactHead": true,
+          "failedForgeJobCount": 0,
+          "forgeJobCount": 32,
+          "runId": "33723731327",
+          "successfulForgeJobCount": 32,
+          "workflow": "Closy Forge"
+        }
+      ],
+      "mergeBase": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "mergeEligible": true,
+      "neverMergeWith": [],
+      "parentIds": [
+        "github:jake-the-jake/Closy:pr/58"
+      ],
+      "pullRequest": 59,
+      "repository": "jake-the-jake/Closy",
+      "role": "phase7_analytic_inverse_harness_v2",
+      "sourceOnly": false,
+      "state": "OPEN",
+      "superseded": false,
+      "uniqueCommitRange": "cfe3c1d5caebbb8f5de70f36abb254c896780906..f8508a4e70b5f6c858d416e46b28dea3bc512b9e"
     }
   ],
   "pullRequests": [
@@ -5192,6 +5388,126 @@
       "state": "OPEN",
       "title": "Forge Unit U: final Strategy 3 confirmation v2",
       "url": "https://github.com/jake-the-jake/Closy/pull/55"
+    },
+    {
+      "baseBranch": "codex/closy-forge-phy1-final-strategy3-v2",
+      "baseSha": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "branch": "codex/closy-forge-truth-authority-integrity-v3",
+      "changedFileCount": 42,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "failedForgeJobCount": 0,
+        "forgeJobCount": 32,
+        "runId": "33672118033",
+        "successfulForgeJobCount": 32,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 10,
+      "layerBehind": 0,
+      "layerCommitCount": 10,
+      "mergeBase": "f56fc44ccf7173155186a30b4f4978454fb3debf",
+      "mergeability": "MERGEABLE",
+      "number": 56,
+      "repository": "jake-the-jake/Closy",
+      "role": "truth_authority_integrity_v3",
+      "state": "OPEN",
+      "title": "Truth Authority Integrity V3",
+      "url": "https://github.com/jake-the-jake/Closy/pull/56"
+    },
+    {
+      "baseBranch": "codex/closy-forge-truth-authority-integrity-v3",
+      "baseSha": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "branch": "codex/closy-forge-strategy3-repository-blob-authority-v3",
+      "changedFileCount": 36,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "failedForgeJobCount": 0,
+        "forgeJobCount": 32,
+        "runId": "33679038946",
+        "successfulForgeJobCount": 32,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 7,
+      "layerBehind": 0,
+      "layerCommitCount": 7,
+      "mergeBase": "7ec3a884e0a7a3ab69ac71631499d4e097b63abe",
+      "mergeability": "MERGEABLE",
+      "number": 57,
+      "repository": "jake-the-jake/Closy",
+      "role": "strategy3_repository_blob_preseed_block_v3",
+      "state": "OPEN",
+      "title": "Strategy3 Repository Blob Preseed Block V3",
+      "url": "https://github.com/jake-the-jake/Closy/pull/57"
+    },
+    {
+      "baseBranch": "codex/closy-forge-strategy3-repository-blob-authority-v3",
+      "baseSha": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "branch": "codex/closy-forge-d0-v4-contestant-engineering",
+      "changedFileCount": 98,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "failedForgeJobCount": 0,
+        "forgeJobCount": 32,
+        "runId": "33712109857",
+        "successfulForgeJobCount": 32,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 6,
+      "layerBehind": 0,
+      "layerCommitCount": 6,
+      "mergeBase": "f36f60a73006aa5ac58652583ff8064ce3ed557b",
+      "mergeability": "MERGEABLE",
+      "number": 58,
+      "repository": "jake-the-jake/Closy",
+      "role": "d0_v4_public_engineering_failed",
+      "state": "OPEN",
+      "title": "D0 V4 Public Engineering Failed",
+      "url": "https://github.com/jake-the-jake/Closy/pull/58"
+    },
+    {
+      "baseBranch": "codex/closy-forge-d0-v4-contestant-engineering",
+      "baseSha": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "branch": "codex/closy-forge-phase7-synthetic-mechanical-calibration-v2",
+      "changedFileCount": 18,
+      "directParentMergeBaseVerified": true,
+      "draft": true,
+      "headSha": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e",
+      "knownException": null,
+      "latestExactHeadForgeRun": {
+        "conclusion": "SUCCESS",
+        "exactHead": true,
+        "failedForgeJobCount": 0,
+        "forgeJobCount": 32,
+        "runId": "33723731327",
+        "successfulForgeJobCount": 32,
+        "workflow": "Closy Forge"
+      },
+      "layerAhead": 3,
+      "layerBehind": 0,
+      "layerCommitCount": 3,
+      "mergeBase": "cfe3c1d5caebbb8f5de70f36abb254c896780906",
+      "mergeability": "MERGEABLE",
+      "number": 59,
+      "repository": "jake-the-jake/Closy",
+      "role": "phase7_analytic_inverse_harness_v2",
+      "state": "OPEN",
+      "title": "Phase7 Analytic Inverse Harness V2",
+      "url": "https://github.com/jake-the-jake/Closy/pull/59"
     }
   ],
   "repository": "jake-the-jake/Closy",
@@ -5254,7 +5570,11 @@
     "github:jake-the-jake/Closy:pr/53",
     "github:jake-the-jake/Closy:pr/54",
     "github:jake-the-jake/Closy:pr/55",
-    "github:jake-the-jake/ZeroOne:pr/4"
+    "github:jake-the-jake/ZeroOne:pr/4",
+    "github:jake-the-jake/Closy:pr/56",
+    "github:jake-the-jake/Closy:pr/57",
+    "github:jake-the-jake/Closy:pr/58",
+    "github:jake-the-jake/Closy:pr/59"
   ],
   "topology": "explicit_dag",
   "validation": {
@@ -5263,6 +5583,7 @@
     "businessPatchMappingsComplete": true,
     "exactMergeBases": true,
     "mode": "read_only_git_graph_verification",
-    "publishedParentsUnmoved": true
+    "publishedParentsUnmoved": true,
+    "reconciledThroughPullRequest": 59
   }
 }

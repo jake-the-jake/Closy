@@ -10,7 +10,7 @@
     "coverageVersion": "closy.blueprint_coverage.truth_authority_integrity_v3.v23",
     "total": 101
   },
-  "evidenceAnchorSha": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
+  "evidenceAnchorSha": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e",
   "gates": {
     "C1": {
       "avatarProfile": "fixed_reference_avatar_v1",
@@ -1411,7 +1411,7 @@
     "pullRequestCount": 55,
     "topology": "explicit_dag"
   },
-  "statusModelVersion": "closy.blueprint_status_model.v20",
+  "statusModelVersion": "closy.blueprint_status_model.truth_dependency_authority.v4",
   "truth": {
     "actualPhase9TrainingExecuted": true,
     "actualZeroOneDynamicDeformationExecuted": true,
@@ -1423,6 +1423,20 @@
     "boundedRuntimeAndRasterDecompression": true,
     "cacheValidated": true,
     "canonicalCandidateAttemptsRemaining": 1,
+    "coverageSchedulerReadyRows": [
+      "BP-07-MODE-A",
+      "BP-07-MODE-B",
+      "BP-07-MODE-D",
+      "BP-07-MODE-E",
+      "BP-09-Z3",
+      "BP-09-Z4",
+      "BP-09-Z5",
+      "BP-09-Z6",
+      "BP-09-Z7",
+      "BP-09-Z8",
+      "BP-12-MODEL-STRATEGY",
+      "BP-17-PHASE-12"
+    ],
     "currentD0ResearchMatrixCoreStatusCounts": {
       "fail": 4,
       "not_run": 0,
@@ -1463,11 +1477,12 @@
     "identityDisjointV3AttemptsScheduledCount": 64,
     "identityDisjointV3CompileRowsEvaluatedCount": 48,
     "identityDisjointV3Executed": true,
-    "identityDisjointV3ExplicitAbstentionCount": 4,
+    "identityDisjointV3ExplicitAbstentionCount": 0,
     "identityDisjointV3LegacyFullCompileSuccessCounter": 20,
     "identityDisjointV3Outcome": "completed_benchmark_failed_absolute_gates",
     "identityDisjointV3PredictionArtifactProducedCount": 60,
     "identityDisjointV3PredictionCount": 64,
+    "identityDisjointV3PredictionFailureCount": 4,
     "identityDisjointV3RoutePromoted": false,
     "identityDisjointV3ScientificFailure": true,
     "identityDisjointV3StrictCompletePixelRouteCompileValidCount": 0,
@@ -1482,6 +1497,8 @@
     "phase12SourceIntegrated": true,
     "phase13SourceIntegrated": true,
     "phase14SourceIntegrated": true,
+    "phase7Status": "partial",
+    "phase7SyntheticEvidenceClass": "analytic_same_forward_model_inverse_harness",
     "phase8EvidenceScope": "deterministic_fixture_family_verticals",
     "phase9E1Status": "partial_experimental",
     "phase9E2Status": "executed_feasibility_partial",
@@ -1535,6 +1552,7 @@
     "strategy3Consumed": true,
     "strategy3Reserved": true,
     "strategy3ScientificAdmissionExecuted": false,
+    "unitADExecuted": false,
     "unitJBranchAuthorized": false,
     "unitJLogicalOutcome": "J-A_post_topology_candidate_unavailable",
     "unitKEligible": false,
@@ -1562,17 +1580,21 @@
     "unitVEligible": false,
     "unitWEligible": false,
     "unitXEligible": false,
+    "unitY2AuthorityAuthorizationConsumed": false,
+    "unitY2CandidateBudgetConsumed": false,
+    "unitY2Outcome": "preseed_scientific_protocol_invalid",
+    "unitY2ScientificAttemptConsumed": false,
+    "unitY2SeedCreated": false,
     "untouchedStrategy3ConfirmationAttemptConsumed": false,
     "zeroOneStaticFamilyAttemptCount": 9,
     "zeroOneStaticRejectedFamilyCount": 0,
     "zeroOneStaticSuccessfulFamilyCount": 9
   },
   "truthAuthority": {
-    "consumerPolicy": "prefer_this_overlay_without_mutating_historical_keys",
-    "finalPublicationHead": null,
-    "finalPublicationHeadAuthority": "external_exact_head_ci_and_draft_pr_attestation",
-    "overlayDigest": "8f9df323bcf10aa240681dc360becee61962b035e79b00cd1cc1444a3e7b3686",
-    "overlayVersion": "closy.blueprint_truth_overlay.successor.v1",
-    "sourceEvidenceAnchor": "da8fea2b0cf3824a091f95a5c8cb749addeb018e"
+    "consumerPolicy": "prefer_v4_truth_ledger_without_mutating_historical_artifacts",
+    "finalPublicationHeadAuthority": "external_exact_head_ci_and_draft_pr_body",
+    "ledgerDigest": "1b0526f83c6976968244d6ad5035d636f5a4fdc762ed2d7b0a0f16db63d5f130",
+    "overlayVersion": "closy.truth_dependency_authority.v4",
+    "sourceEvidenceAnchor": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e"
   }
 }

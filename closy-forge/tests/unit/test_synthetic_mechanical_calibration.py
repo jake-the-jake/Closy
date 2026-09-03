@@ -5,6 +5,11 @@ from copy import deepcopy
 import pytest
 
 from closy_forge.simulation.material_physics import build_material_preset_registry
+from closy_forge.simulation.synthetic_material_reference import (
+    REFERENCE_VERSION,
+    build_synthetic_material_reference,
+    validate_or_migrate_synthetic_material_evidence,
+)
 from closy_forge.simulation.synthetic_mechanical_calibration import (
     SYNTHETIC_CALIBRATION_VERSION,
     SyntheticCalibrationError,
@@ -108,14 +113,31 @@ def test_invalid_source_descriptor_is_reported_as_synthetic_calibration_error() 
         run_synthetic_mechanical_calibration(registry)
 
 
+def test_compact_reference_preserves_selected_solver_provenance_and_migrates_old_report() -> None:
+    registry = build_material_preset_registry()
+    report = run_synthetic_mechanical_calibration(registry)
+    selected = registry["presets"][1]
+    reference = build_synthetic_material_reference(registry, selected, report)
+
+    assert len(str(reference)) < len(str(report)) // 5
+    assert reference["selectedPresetId"] == selected["presetId"]
+    assert len(reference["selectedSolverMapping"]) == 10
+    assert all("observations" not in row for row in reference["selectedSolverMapping"])
+    assert validate_or_migrate_synthetic_material_evidence(reference, registry) == reference
+
+    migrated = validate_or_migrate_synthetic_material_evidence(report, registry)
+    assert migrated["referenceVersion"] == REFERENCE_VERSION
+    assert migrated["calibrationReportDigest"] == report["integrity"]["reportHash"]
+
+
 def test_package_synthetic_calibration_corruption_fails_closed(tmp_path) -> None:  # type: ignore[no-untyped-def]
     package = clone_package(
         build_demo(tmp_path), tmp_path / "bad_synthetic_calibration.closygarment"
     )
     path = package / "reports" / "synthetic_mechanical_calibration.json"
     report = read_json(path)
-    report["presets"][0]["parameters"][0]["holdoutNormalizedRmse"] = 0.5
-    report["integrity"]["reportHash"] = hash_synthetic_mechanical_calibration(report)
+    assert report["referenceVersion"] == REFERENCE_VERSION
+    report["selectedDescriptor"]["fields"]["arealDensity"]["value"] = 999.0
     write_json(path, report)
 
     codes = issue_codes(validate_package(package))
