@@ -23,12 +23,14 @@ from closy_forge.truth_authority_integrity_v3.truth_overlay import (
     build_truth_overlay,
     validate_truth_overlay,
 )
+from closy_forge.truth_dependency_authority_v4.common import canonical_digest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FORGE_ROOT = REPO_ROOT / "closy-forge"
 OUTPUT_ROOT = FORGE_ROOT / "docs/evidence/truth_authority_integrity_v3"
 DOCS_ROOT = FORGE_ROOT / "docs"
 PUBLICATION_CONTEXT = OUTPUT_ROOT / "publication_context.json"
+SUCCESSOR_LEDGER = DOCS_ROOT / "evidence/truth_dependency_authority_v4/truth_ledger.json"
 
 
 def outputs(publication: dict[str, Any]) -> dict[Path, bytes]:
@@ -91,6 +93,8 @@ def outputs(publication: dict[str, Any]) -> dict[Path, bytes]:
 
 
 def build(*, check: bool, publication: dict[str, Any]) -> bool:
+    if check and SUCCESSOR_LEDGER.is_file():
+        return _frozen_publication_is_valid(publication)
     generated = outputs(publication)
     if check:
         return all(path.is_file() and path.read_bytes() == data for path, data in generated.items())
@@ -98,6 +102,30 @@ def build(*, check: bool, publication: dict[str, Any]) -> bool:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
     return True
+
+
+def _frozen_publication_is_valid(publication: dict[str, Any]) -> bool:
+    """Validate Y0 in place once an append-only successor owns current dashboards."""
+
+    try:
+        ledger = _load_json(SUCCESSOR_LEDGER)
+        integrity = _load_json(OUTPUT_ROOT / "integrity_report.json")
+        overlay = _load_json(OUTPUT_ROOT / "truth_overlay.json")
+        frozen_context = _load_json(PUBLICATION_CONTEXT)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return False
+    if ledger.get("ledgerVersion") != "closy.truth_dependency_authority.v4":
+        return False
+    if ledger.get("ledgerDigest") != canonical_digest(ledger, "ledgerDigest"):
+        return False
+    if frozen_context != publication:
+        return False
+    if integrity.get("allIntegrityPredicatesPass") is not True:
+        return False
+    if validate_truth_overlay(overlay):
+        return False
+    report = OUTPUT_ROOT / "REPORT.md"
+    return report.is_file() and report.read_bytes() == _report(overlay, integrity).encode("utf-8")
 
 
 def main() -> int:
