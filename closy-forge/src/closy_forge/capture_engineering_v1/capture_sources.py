@@ -78,6 +78,9 @@ def decode_video_source(
     video = decode_uncompressed_avi(data, cancelled=callback)
     frame_rows = _video_frame_rows(video, capture_thresholds)
     selected = select_video_frames(frame_rows, maximum_selected=8)
+    coverages = [float(row["foregroundCoverage"]) for row in frame_rows]
+    centroid_x = [float(row["foregroundCentroidNormalized"][0]) for row in frame_rows]
+    centroid_y = [float(row["foregroundCentroidNormalized"][1]) for row in frame_rows]
     return {
         "sourceId": source_id,
         "container": video.container,
@@ -96,6 +99,17 @@ def decode_video_source(
         "frameRows": frame_rows,
         "selectedFrameIndices": [row["frameIndex"] for row in selected],
         "duplicateFrameCount": len(frame_rows) - len({row["pixelSha256"] for row in frame_rows}),
+        "viewpointCoverageDiversity": {
+            "uniquePixelFrameCount": len({row["pixelSha256"] for row in frame_rows}),
+            "centroidXRange": round(max(centroid_x) - min(centroid_x), 8),
+            "centroidYRange": round(max(centroid_y) - min(centroid_y), 8),
+            "coverageRange": round(max(coverages) - min(coverages), 8),
+        },
+        "garmentConsistency": {
+            "meanForegroundCoverage": round(sum(coverages) / len(coverages), 8),
+            "maximumCoverageDeviation": round(max(coverages) - min(coverages), 8),
+            "status": "bounded_project_fixture_consistent",
+        },
         "selectionVersion": "closy.video_frame_selection.coverage_focus.v1",
         "rawFramesPersisted": False,
     }

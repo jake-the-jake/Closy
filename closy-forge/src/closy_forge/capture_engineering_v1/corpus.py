@@ -344,36 +344,39 @@ def mesh_for_spec(spec: SessionSpec) -> tuple[dict[str, float], MeshSet]:
 def _render(meshset: MeshSet, spec: SessionSpec, role: str) -> bytes:
     principal = ((spec.index % 3 - 1) * 0.025, ((spec.index // 3) % 3 - 1) * 0.018)
     if spec.renderer == "independent_ray_triangle":
-        return render_ray_triangles(
+        rendered = render_ray_triangles(
             meshset,
             width=WIDTH,
             height=HEIGHT,
             view_role=role,
             principal_offset=principal,
         ).rgba
-    label = {
-        "front": "front",
-        "rear": "back",
-        "side": "left_three_quarter",
-        "three-quarter": "right_three_quarter",
-        "detail": "front",
-    }[role]
-    return rasterize_settled_garment(
-        meshset,
-        label=label,
-        width=WIDTH,
-        height=HEIGHT,
-        camera={"principalPointNormalized": [0.5 + principal[0], 0.5 + principal[1]]},
-        background=(232, 229, 222, 255),
-    ).rgba
+    else:
+        label = {
+            "front": "front",
+            "rear": "back",
+            "side": "left_three_quarter",
+            "three-quarter": "right_three_quarter",
+            "detail": "front",
+        }[role]
+        rendered = rasterize_settled_garment(
+            meshset,
+            label=label,
+            width=WIDTH,
+            height=HEIGHT,
+            camera={"principalPointNormalized": [0.5 + principal[0], 0.5 + principal[1]]},
+            background=(232, 229, 222, 255),
+        ).rgba
+    return _apply_capture_variation(rendered, spec)
 
 
 def _video_frames(meshset: MeshSet, spec: SessionSpec) -> list[bytes]:
-    base = _render(meshset, spec, "front")
     frames: list[bytes] = []
-    for index in range(24):
+    for index, role in enumerate(spec.view_roles):
+        base = _render(meshset, spec, role)
+        background = tuple(base[:4])
         shift = round(math_wave(index) * 2)
-        frame = bytearray((232, 229, 222, 255) * (WIDTH * HEIGHT))
+        frame = bytearray(background * (WIDTH * HEIGHT))
         for y in range(HEIGHT):
             for x in range(WIDTH):
                 source_x = x - shift
@@ -385,10 +388,37 @@ def _video_frames(meshset: MeshSet, spec: SessionSpec) -> list[bytes]:
         accent = index % 6
         for pixel in range(WIDTH * HEIGHT):
             offset = pixel * 4
-            if tuple(frame[offset : offset + 3]) != (232, 229, 222):
+            if tuple(frame[offset : offset + 4]) != background:
                 frame[offset] = min(255, frame[offset] + accent)
         frames.append(bytes(frame))
     return frames
+
+
+def _apply_capture_variation(rgba: bytes, spec: SessionSpec) -> bytes:
+    pixels = bytearray(rgba)
+    source_background = (232, 229, 222)
+    background_delta = (spec.index % 5) - 2
+    target_background = tuple(channel + background_delta * 2 for channel in source_background)
+    light_factor = 0.90 + (spec.index % 7) * 0.03
+    for index in range(WIDTH * HEIGHT):
+        offset = index * 4
+        color = tuple(pixels[offset : offset + 3])
+        if color == source_background:
+            pixels[offset : offset + 3] = bytes(target_background)
+            continue
+        for channel in range(3):
+            pixels[offset + channel] = min(255, round(pixels[offset + channel] * light_factor))
+        if spec.appearance_family.startswith("print_beta"):
+            x, y = index % WIDTH, index // WIDTH
+            if (x // 3 + y // 4) % 5 == 0:
+                pixels[offset] = min(255, pixels[offset] + 28)
+                pixels[offset + 2] = max(0, pixels[offset + 2] - 14)
+    if spec.index % 7 == 0:
+        for y in range(HEIGHT // 3, HEIGHT // 2):
+            for x in range(WIDTH // 5, WIDTH // 3):
+                offset = (y * WIDTH + x) * 4
+                pixels[offset : offset + 4] = bytes((*target_background, 255))
+    return bytes(pixels)
 
 
 def math_wave(index: int) -> float:
