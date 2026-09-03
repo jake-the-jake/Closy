@@ -1,0 +1,179 @@
+{
+  "allowedContestantMetadata": [
+    "acquisitionPattern",
+    "evidenceTier",
+    "family",
+    "knownScaleMarkerMeters",
+    "sceneCondition",
+    "subjectCondition",
+    "viewRole"
+  ],
+  "baselines": {
+    "deterministicPixelFit": "bounded_contour_camera_pattern_search_v1",
+    "learnedPlusFit": "development_linear_pixel_model_then_bounded_fit_v1",
+    "modelOnly": "development_linear_pixel_model_v1",
+    "noPixelPrior": "family_default_parameters_without_source_observations"
+  },
+  "counts": {
+    "acquisitionPattern": {
+      "guided_multi_image": 34,
+      "guided_video": 12,
+      "single_image": 34
+    },
+    "avatar": {
+      "fixed_avatar_alpha": 40,
+      "fixed_avatar_beta": 40
+    },
+    "avatarShapeFamily": {
+      "fixed_alpha_development": 40,
+      "fixed_beta_development": 20,
+      "fixed_beta_holdout": 20
+    },
+    "appearanceFamily": {
+      "plain_development": 40,
+      "print_beta_development": 20,
+      "print_beta_holdout": 20
+    },
+    "family": {
+      "simple_skirt": 24,
+      "sleeveless_top": 24,
+      "tshirt": 32
+    },
+    "primaryMode": {
+      "A": 20,
+      "B": 16,
+      "C": 16,
+      "D": 12,
+      "E": 16
+    },
+    "renderer": {
+      "cpu_triangle_zbuffer": 40,
+      "independent_ray_triangle": 40
+    },
+    "rendererCameraFamily": {
+      "cpu_zbuffer_development": 40,
+      "ray_triangle_development": 20,
+      "ray_triangle_holdout": 20
+    },
+    "poseFamily": {
+      "neutral_development": 40,
+      "varied_development": 20,
+      "varied_holdout": 20
+    },
+    "sceneCondition": {
+      "flat": 18,
+      "hung": 18,
+      "unknown": 16,
+      "worn": 28
+    },
+    "split": {
+      "development": 60,
+      "validation": 20
+    },
+    "uniqueCaptureSessions": 80,
+    "viewRoleSourceFrames": {
+      "detail": 0,
+      "front": 140,
+      "rear": 106,
+      "side": 72,
+      "three-quarter": 106
+    }
+  },
+  "denominators": {
+    "allCaptureSessionAttempts": 80,
+    "corruptionAttempts": 16,
+    "encodedVideoClips": 12,
+    "heldOutIdentityGroups": 20,
+    "pixelDrivenSimpleSkirtIdentities": 8,
+    "pixelDrivenSleevelessIdentities": 8,
+    "sourceFramesPerVideo": 24,
+    "localRefinementIterationsPerIdentity": 9,
+    "topLevelFitAlternativesPerIdentity": 5,
+    "uvControlAttempts": 5
+  },
+  "evidenceClass": "project_authored_development_only",
+  "failureAccounting": [
+    "abstention",
+    "compile_failure",
+    "decode_failure",
+    "invalid_package",
+    "qc_rejection",
+    "solver_failure",
+    "topology_failure"
+  ],
+  "frozenBeforeValidation": true,
+  "grouping": {
+    "derivativesRemainCoPartitioned": true,
+    "partitionKey": "identityGroupId",
+    "zeroOverlapKeys": [
+      "appearanceIdentity",
+      "avatarIdentity",
+      "captureSession",
+      "garmentIdentity",
+      "rendererCameraFamily"
+    ]
+  },
+  "licensing": {
+    "decoder": "project_owned_mit_uncompressed_avi_dib_v1",
+    "externalDatasets": [],
+    "fixtures": "project_authored_synthetic_internal_development"
+  },
+  "protocolDigest": "a31ea9dc558e0a1c37537ea9f079192fa0d72d16cf3c66ca3143e10f669bf11f",
+  "protocolVersion": "closy.capture_camera_material_engineering.development.v1",
+  "resourceLimits": {
+    "maximumDecodedFrameBytes": 1048576,
+    "maximumImageBytes": 2000000,
+    "maximumPixelCount": 4000000,
+    "maximumSelectedVideoFrames": 8,
+    "maximumVideoBytes": 4000000,
+    "maximumVideoDurationSeconds": 8,
+    "maximumVideoFrames": 192,
+    "maximumVideoHeight": 256,
+    "maximumVideoWidth": 256
+  },
+  "stoppingRules": {
+    "fitAlternativeBudget": 5,
+    "maximumDevelopmentTrainingPasses": 1,
+    "maximumOptimizerIterationsPerAlternative": 12,
+    "postValidationThresholdMutationAllowed": false,
+    "validationPartitionInspectionBeforeFreezeAllowed": false
+  },
+  "thresholds": {
+    "appearance": {
+      "logoEditMustChangeAtlas": true,
+      "observedAndGeneratedMasksDisjoint": true,
+      "roleShuffleMustDegradeOrReject": true,
+      "sourcePixelMutationMustChangeAtlas": true,
+      "targetTruthMutationMustNotChangeAtlas": true
+    },
+    "camera": {
+      "maximumMedianNormalizedCenterError": 0.12,
+      "maximumMedianNormalizedScaleError": 0.25
+    },
+    "capture": {
+      "minimumBackgroundSeparation": 0.45,
+      "minimumExposureBalance": 0.55,
+      "minimumFocusScore": 0.02,
+      "minimumForegroundCoverage": 0.03,
+      "requiredValidDecodeRate": 1.0
+    },
+    "family": {
+      "maximumMeanNormalizedParameterError": 0.28,
+      "minimumValidPackageRate": 0.75
+    },
+    "fitting": {
+      "learnedPlusFitMustBeatDeterministicPixelFit": true,
+      "maximumAbstentionRate": 0.25,
+      "maximumMeanNormalizedParameterError": 0.25,
+      "minimumCompilerTopologySolverExecutionRate": 1.0
+    },
+    "uv": {
+      "minimumObservedTexelFraction": 0.08,
+      "novelViewMustDecode": true
+    }
+  },
+  "unsupportedEvidenceTiers": [
+    "future_licensed_public",
+    "future_private_authorized"
+  ]
+}
