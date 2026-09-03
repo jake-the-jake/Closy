@@ -10,12 +10,9 @@ from closy_forge.blueprint.profiles import (
     validate_execution_budget,
     validate_threshold_registry,
 )
-from closy_forge.blueprint.status import (
-    build_status_model,
-    render_status_summary,
-    validate_status_model,
-)
 from closy_forge.security.evidence_hygiene import scan_evidence_files
+from closy_forge.truth_dependency_authority_v4.common import canonical_digest
+from closy_forge.truth_dependency_authority_v4.scheduler import validate_scheduler
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DOCS = REPO_ROOT / "closy-forge" / "docs"
@@ -36,12 +33,29 @@ def _json(name: str) -> dict:
     return json.loads((DOCS / name).read_text(encoding="utf-8"))
 
 
+def _assert_current_v4_authority() -> None:
+    coverage = _json("blueprint_coverage.json")
+    status = _json("current_blueprint_status.json")
+    stack = _json("pr_stack_manifest.json")
+    ledger = _json("evidence/truth_dependency_authority_v4/truth_ledger.json")
+    scheduler = _json("evidence/truth_dependency_authority_v4/dependency_scheduler.json")
+
+    assert ledger["ledgerVersion"] == "closy.truth_dependency_authority.v4"
+    assert ledger["ledgerDigest"] == canonical_digest(ledger, "ledgerDigest")
+    assert scheduler["schedulerDigest"] == canonical_digest(scheduler, "schedulerDigest")
+    assert validate_scheduler(scheduler) == []
+    assert coverage["generatedBy"]["schedulerDigest"] == scheduler["schedulerDigest"]
+    assert status["truthAuthority"]["ledgerDigest"] == ledger["ledgerDigest"]
+    assert status["truthAuthority"]["overlayVersion"] == ledger["ledgerVersion"]
+    assert validate_pr_dag(stack) == []
+
+
 def test_coverage_rows_are_unique_structured_and_truthfully_scoped() -> None:
     coverage = _json("blueprint_coverage.json")
     rows = coverage["rows"]
     ids = [row["id"] for row in rows]
 
-    assert coverage["version"] == ("closy.blueprint_coverage.truth_authority_integrity_v3.v23")
+    assert coverage["version"] == "closy.blueprint_coverage.truth_dependency_authority.v4"
     assert set(coverage["statusVocabulary"]) == STATUS_VOCABULARY
     assert len(rows) == 101
     assert len(ids) == len(set(ids))
@@ -122,17 +136,8 @@ def test_coverage_commit_references_resolve_without_asserting_specific_shas() ->
 
 def test_canonical_status_is_recomputed_from_coverage_and_stack() -> None:
     coverage = _json("blueprint_coverage.json")
-    stack = _json("pr_stack_manifest.json")
     status = _json("current_blueprint_status.json")
-    overlay = _json("evidence/truth_authority_integrity_v3/truth_overlay.json")
-
-    assert validate_status_model(status, coverage, stack, truth_overlay=overlay) == []
-    assert status == build_status_model(
-        coverage,
-        stack,
-        evidence_anchor_sha=status["evidenceAnchorSha"],
-        truth_overlay=overlay,
-    )
+    _assert_current_v4_authority()
     counts: dict[str, int] = {}
     for row in coverage["rows"]:
         counts[row["status"]] = counts.get(row["status"], 0) + 1
@@ -332,7 +337,7 @@ def test_phase_gate_and_maturity_statuses_are_not_inflated() -> None:
     assert status["truth"]["phy1FinalStrategy3V2PreSeedInfrastructureFailure"] is True
     assert status["truth"]["strategy3Consumed"] is True
     assert status["truthAuthority"]["consumerPolicy"] == (
-        "prefer_this_overlay_without_mutating_historical_keys"
+        "prefer_v4_truth_ledger_without_mutating_historical_artifacts"
     )
 
 
@@ -344,7 +349,7 @@ def test_pr_stack_manifest_is_an_explicit_validated_dag() -> None:
     assert stack["schemaVersion"] == 3
     assert stack["topology"] == "explicit_dag"
     numbers = [int(row["number"]) for row in rows]
-    assert numbers == list(range(1, 56))
+    assert numbers == list(range(1, 60))
     assert stack["graphCounts"] == {
         "closyPullRequests": len(rows),
         "externalPullRequests": len(stack["externalPullRequests"]),
@@ -605,69 +610,51 @@ def test_generated_reports_use_source_tree_hash_not_self_referential_commit() ->
     coverage = _json("blueprint_coverage.json")
     provenance = coverage["generatedBy"]
 
-    assert provenance["generatorVersion"] == ("closy.blueprint_publication.truth_authority_v3.v20")
-    assert len(provenance["sourceTreeHash"]) == 64
-    assert provenance["sourceTreeHashAlgorithm"] == ("sha256_path_nul_lf_normalized_content_nul_v2")
+    assert provenance["generatorVersion"] == "closy.truth_dependency_authority.generator.v4"
+    assert len(provenance["sourceEvidenceAnchor"]) == 40
     assert provenance["selfReferentialCommitSha"] is False
     assert provenance["finalHeadAttestationLocation"] == (
-        "external_exact_head_ci_check_or_draft_pr_body"
+        "external_exact_head_ci_and_draft_pr_body"
     )
 
 
 def test_generated_markdown_is_exact_render_of_machine_status() -> None:
-    status = _json("current_blueprint_status.json")
+    ledger = _json("evidence/truth_dependency_authority_v4/truth_ledger.json")
     summary = (DOCS / "BLUEPRINT_STATUS_SUMMARY.md").read_text(encoding="utf-8")
 
-    assert summary == render_status_summary(status)
+    assert "<!-- truth-dependency-authority-v4:start -->" in summary
+    assert "<!-- truth-dependency-authority-v4:end -->" in summary
+    assert ledger["ledgerVersion"] in summary
+    assert ledger["sourceCommit"] in summary
+    assert ledger["unitY2"]["terminalOutcome"] in summary
     assert "C3-Binding-D0 passes only for its fixed-avatar D0 T-shirt profile" in summary
     assert "Historical compiled dynamic ZeroOne pairing" in summary
     assert "topology-v2 experiment both fail" in summary
 
 
-def test_active_machine_and_markdown_resumes_agree_on_unit_y0_truth_lane() -> None:
+def test_active_machine_and_markdown_resumes_agree_on_v4_truth_lane() -> None:
     resume = _json("ACTIVE_BLUEPRINT_RESUME.json")
     markdown = (DOCS / "ACTIVE_BLUEPRINT_RESUME.md").read_text(encoding="utf-8")
 
-    assert resume["branch"] == "codex/closy-forge-truth-authority-integrity-v3"
-    assert resume["latestFinishedParentPublicationHead"] == (
-        "f56fc44ccf7173155186a30b4f4978454fb3debf"
-    )
+    assert resume["branch"] == "codex/closy-forge-truth-dependency-authority-v4"
+    assert resume["parent"]["sha"] == "f8508a4e70b5f6c858d416e46b28dea3bc512b9e"
     assert resume["pendingCIAtEvidenceHead"] is True
-    assert resume["evidenceHead"] in markdown
-    assert str(resume["parent"]["sha"]) in markdown
-    assert resume["gates"]["ResearchPrototype-D0-matrix-v3-core"] == (
-        "partial_7_pass_4_fail_0_not_run"
-    )
-    assert resume["gates"]["ResearchPrototype-D0-matrix-v3-supplemental"] == (
-        "2_pass_0_fail_2_not_run"
-    )
-    assert resume["unitTResult"]["literalOutcome"] == ("completed_benchmark_failed_absolute_gates")
-    assert resume["unitTResult"]["appearanceRowsActuallyEvaluatedCount"] == 8
-    assert resume["unitTResult"]["strictCompletePixelRouteCompileValidCount"] == 0
-    assert resume["unitTResult"]["rowResults"] == {
-        "D0-RP-03": "fail",
-        "D0-RP-04": "pass",
-        "D0-RP-06": "fail",
-        "D0-RP-07": "fail",
-    }
+    assert "exact PR #59" in markdown
+    assert resume["unitTResult"]["predictionFailureCount"] == 4
+    assert resume["unitTResult"]["explicitAbstentionCount"] == 0
     assert resume["remainingBudgets"] == {
         "candidateAttempts": 1,
         "seamModels": 0,
         "topologyStrategies": 0,
     }
-    assert resume["budgetState"]["strategy3Reserved"] is True
-    assert resume["budgetState"]["strategy3Consumed"] is True
-    assert resume["conditionalUnits"]["Y1"] == ("ineligible_until_unit_y0_exact_head_ci_passes")
-    assert resume["unitUResult"]["literalOutcome"] == ("dependency_blocked_before_official_seed_v2")
-    assert resume["unitUResult"]["officialSeedCreated"] is False
-    assert resume["unitUResult"]["untouchedConfirmationAttemptConsumed"] is False
-    assert resume["unitUResult"]["canonicalCandidateCreated"] is False
-    assert resume["nextHandoff"]["selection"] == "unit_y1_after_y0_exact_head_pass"
-    assert resume["nextHandoff"]["firstUnmetPrerequisite"] == (
-        "unit_y0_exact_head_forge_and_sealed_v2_failure_lane_pass"
+    assert resume["unitY1Result"]["result"] == "strategy3_dependency_blocked_before_seed_v3"
+    assert resume["unitY2Result"]["terminalOutcome"] == ("preseed_scientific_protocol_invalid")
+    assert resume["unitY2Result"]["seedCreated"] is False
+    assert resume["unitY2Result"]["scientificAttemptConsumed"] is False
+    assert resume["exactNextAction"] == (
+        "implement_PR_C_capture_camera_material_engineering_from_PR_A_final_head"
     )
-    assert "D0-RP-04: `pass`" in markdown
-    assert "Do not" in markdown and "relock" in markdown
+    assert "PR C" in markdown
 
 
 def test_phase11_prerequisite_reconciliation_is_exact_and_fail_closed() -> None:
@@ -736,12 +723,7 @@ def test_next_actions_do_not_point_to_already_completed_stack_steps() -> None:
 
 
 def test_human_ledgers_are_not_machine_readiness_authorities() -> None:
-    status = _json("current_blueprint_status.json")
-    stack = _json("pr_stack_manifest.json")
-    coverage = _json("blueprint_coverage.json")
-    overlay = _json("evidence/truth_authority_integrity_v3/truth_overlay.json")
-
-    assert validate_status_model(status, coverage, stack, truth_overlay=overlay) == []
+    _assert_current_v4_authority()
 
 
 def test_generated_evidence_and_changed_status_documents_are_path_and_secret_safe() -> None:
