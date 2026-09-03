@@ -149,21 +149,40 @@ def render_atlas_novel_view(
 def projection_controls(meshset: MeshSet, views: list[ProjectionView]) -> dict[str, Any]:
     baseline = project_views_to_panel_uv(meshset, views)
     mutated_views = list(views)
-    first = mutated_views[0]
-    changed = bytearray(first.rgba)
-    for index in sorted(first.observation.foreground)[
-        : max(1, len(first.observation.foreground) // 5)
-    ]:
+    contributions = baseline.lineage["sourceContributions"]
+    selected_index = max(
+        range(len(views)), key=lambda index: int(contributions[views[index].source_id])
+    )
+    selected = mutated_views[selected_index]
+    changed = bytearray(selected.rgba)
+    for index in selected.observation.foreground:
         changed[index * 4 : index * 4 + 3] = b"\xff\x18\x18"
-    mutated_views[0] = ProjectionView(
-        first.source_id,
-        first.role,
-        first.width,
-        first.height,
+    mutated_views[selected_index] = ProjectionView(
+        selected.source_id,
+        selected.role,
+        selected.width,
+        selected.height,
         bytes(changed),
-        first.observation,
+        selected.observation,
     )
     pixel_mutation = project_views_to_panel_uv(meshset, mutated_views)
+    logo_changed = bytearray(selected.rgba)
+    left, top, right, bottom = selected.observation.foreground_bbox
+    for y in range(top + (bottom - top) // 3, top + (bottom - top) * 2 // 3 + 1):
+        for x in range(left + (right - left) // 3, left + (right - left) * 2 // 3 + 1):
+            index = y * selected.width + x
+            if index in selected.observation.foreground:
+                logo_changed[index * 4 : index * 4 + 3] = b"\x16\xf0\x38"
+    logo_views = list(views)
+    logo_views[selected_index] = ProjectionView(
+        selected.source_id,
+        selected.role,
+        selected.width,
+        selected.height,
+        bytes(logo_changed),
+        selected.observation,
+    )
+    logo_mutation = project_views_to_panel_uv(meshset, logo_views)
     role_swapped = [
         ProjectionView(
             view.source_id,
@@ -176,10 +195,11 @@ def projection_controls(meshset: MeshSet, views: list[ProjectionView]) -> dict[s
         for view in views
     ]
     swapped = project_views_to_panel_uv(meshset, role_swapped)
-    logo_edit_detected = baseline.rgba != pixel_mutation.rgba
+    logo_edit_detected = baseline.rgba != logo_mutation.rgba
     target_mutation_replay = project_views_to_panel_uv(meshset, views)
     return {
         "attemptCount": 5,
+        "mutatedSourceId": selected.source_id,
         "sourcePixelMutationChangesAtlas": baseline.rgba != pixel_mutation.rgba,
         "roleShuffleDegradesOrRejects": (
             swapped.lineage["observedTexelCount"] < baseline.lineage["observedTexelCount"]
@@ -193,6 +213,7 @@ def projection_controls(meshset: MeshSet, views: list[ProjectionView]) -> dict[s
         ),
         "baselineAtlasSha256": sha256_bytes(baseline.rgba),
         "pixelMutationAtlasSha256": sha256_bytes(pixel_mutation.rgba),
+        "logoMutationAtlasSha256": sha256_bytes(logo_mutation.rgba),
         "roleSwapAtlasSha256": sha256_bytes(swapped.rgba),
     }
 

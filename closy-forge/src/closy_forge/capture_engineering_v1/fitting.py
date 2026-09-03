@@ -246,28 +246,41 @@ def _build_package(
     family: str, parameters: Mapping[str, Any], output: Path, *, seed: int
 ) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="closy-fit-package-") as temporary:
-        staging = Path(temporary) / "package"
-        built: Any
-        if family == "tshirt":
-            built = build_demo_tshirt_package(
-                staging, params=TShirtParameters(**parameters), seed=seed
-            )
-        elif family == "sleeveless_top":
-            built = build_demo_sleeveless_package(
-                staging, params=SleevelessTopParameters(**parameters), seed=seed
-            )
-        else:
-            built = build_demo_simple_skirt_package(
-                staging, params=SimpleSkirtParameters(**parameters), seed=seed
-            )
+        staging = Path(temporary) / "package.closygarment"
+        try:
+            built: Any
+            if family == "tshirt":
+                built = build_demo_tshirt_package(
+                    staging, params=TShirtParameters(**parameters), seed=seed
+                )
+            elif family == "sleeveless_top":
+                built = build_demo_sleeveless_package(
+                    staging, params=SleevelessTopParameters(**parameters), seed=seed
+                )
+            else:
+                built = build_demo_simple_skirt_package(
+                    staging, params=SimpleSkirtParameters(**parameters), seed=seed
+                )
+        except RuntimeError as error:
+            if "package validation failed before publish" not in str(error):
+                raise
+            failed_summary = {
+                "validationStatus": "failed",
+                "validationCounts": {"error": 1},
+                "manifestIdentity": None,
+                "solverExecuted": True,
+                "referenceSolverEvidence": "package_build_reached_final_validation",
+                "compilerExecuted": True,
+                "topologyValidatorExecuted": True,
+                "failureReason": str(error),
+            }
+            write_json(output, failed_summary)
+            return failed_summary
         output.parent.mkdir(parents=True, exist_ok=True)
         summary = {
             "validationStatus": built.validation["status"],
             "validationCounts": built.validation["counts"],
-            "manifestIdentity": {
-                "garmentId": built.manifest["garmentId"],
-                "canonicalPackageDigest": built.manifest["canonicalPackageDigest"],
-            },
+            "manifestIdentity": package_manifest_identity(built.manifest),
             "solverExecuted": True,
             "referenceSolverEvidence": "package_motion_and_settle_contracts",
             "compilerExecuted": True,
@@ -275,6 +288,16 @@ def _build_package(
         }
         write_json(output, summary)
         return summary
+
+
+def package_manifest_identity(manifest: Mapping[str, Any]) -> dict[str, str]:
+    digest = manifest.get("canonicalPackageDigest", manifest.get("packageDigest"))
+    if not isinstance(digest, str) or len(digest) != 64:
+        raise ValueError("built_package_digest_missing")
+    garment_id = manifest.get("garmentId")
+    if not isinstance(garment_id, str) or not garment_id:
+        raise ValueError("built_package_garment_id_missing")
+    return {"garmentId": garment_id, "packageDigest": digest}
 
 
 def _default_values(family: str) -> dict[str, float]:

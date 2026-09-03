@@ -14,6 +14,7 @@ from closy_forge.capture_engineering_v1.development_model import (
     predict_linear_model,
     train_linear_model,
 )
+from closy_forge.capture_engineering_v1.fitting import package_manifest_identity
 from closy_forge.capture_engineering_v1.isolation import (
     assert_contestant_payload,
     future_d0_prerequisite_report,
@@ -84,6 +85,15 @@ def test_future_d0_boundary_is_executable_but_does_not_claim_qualification() -> 
     assert report["independentRenderers"]["sharedRasterizerCode"] is False
     with pytest.raises(ValueError, match="contestant_payload_leak"):
         assert_contestant_payload({"decodedRgba": b"", "generatorSeed": 7})
+
+
+@pytest.mark.parametrize("digest_key", ["canonicalPackageDigest", "packageDigest"])
+def test_package_identity_supports_existing_family_manifest_contracts(digest_key: str) -> None:
+    digest = "a" * 64
+    assert package_manifest_identity({"garmentId": "garment.test", digest_key: digest}) == {
+        "garmentId": "garment.test",
+        "packageDigest": digest,
+    }
 
 
 def test_legacy_mode_c_migrates_without_duplicate_facet_authority() -> None:

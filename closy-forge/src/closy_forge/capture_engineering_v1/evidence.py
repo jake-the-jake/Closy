@@ -4,6 +4,7 @@ import copy
 import statistics
 from collections import Counter
 from collections.abc import Mapping, Sequence
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -263,65 +264,22 @@ def _evaluate_fitting(
     package_scratch: Path,
 ) -> dict[str, Any]:
     package_scratch.mkdir(parents=True, exist_ok=True)
-    rows: list[dict[str, Any]] = []
+    validation = [session for session in sessions if session.spec.split == "validation"]
+    jobs = [
+        (
+            session,
+            dict(model),
+            dict(targets[session.spec.identity_group_id]),
+            str(package_scratch / f"{session.spec.opaque_session_id}.json"),
+        )
+        for session in validation
+    ]
+    with ProcessPoolExecutor(max_workers=min(8, len(jobs))) as executor:
+        rows = list(executor.map(_fit_validation_job, jobs))
     route_errors: dict[str, list[float]] = {}
-    for session in sessions:
-        if session.spec.split != "validation":
-            continue
-        target = targets[session.spec.identity_group_id]
-        if not session.observations:
-            rows.append(_failure_row(session.spec, "decode_failure"))
-            continue
-        try:
-            fit = fit_capture_to_package(
-                family=session.spec.family,
-                observations=session.observations,
-                model=model,
-                package_output=package_scratch / f"{session.spec.opaque_session_id}.json",
-                seed=20_000 + session.spec.index,
-            )
-        except (RuntimeError, ValueError) as error:
-            rows.append(_failure_row(session.spec, f"fit_exception:{type(error).__name__}"))
-            continue
-        alternatives: list[dict[str, Any]] = []
-        for alternative in fit["alternatives"]:
-            alternative_error = _normalized_parameter_error(
-                session.spec.family, alternative["parameters"], target
-            )
-            route = str(alternative["route"])
-            route_errors.setdefault(route, []).append(alternative_error)
-            alternatives.append(
-                {
-                    "route": route,
-                    "status": alternative["status"],
-                    "normalizedParameterError": alternative_error,
-                    "silhouetteIou": alternative["silhouetteIou"],
-                    "compileExecuted": alternative["compileExecuted"],
-                    "topologyValidatorExecuted": alternative["topologyValidatorExecuted"],
-                    "independentRendererExecuted": alternative["independentRendererExecuted"],
-                    "optimizerIterations": alternative["optimizerIterations"],
-                }
-            )
-        selected_error = _normalized_parameter_error(
-            session.spec.family, fit["selectedParameters"], target
-        )
-        rows.append(
-            {
-                "identityGroupId": session.spec.identity_group_id,
-                "family": session.spec.family,
-                "status": fit["status"],
-                "selectedRoute": fit["selectedRoute"],
-                "selectedNormalizedParameterError": selected_error,
-                "attemptedAlternativeCount": fit["attemptedAlternativeCount"],
-                "alternatives": alternatives,
-                "packageValidation": fit["package"]["validationStatus"],
-                "compilerTopologySolverExecuted": bool(
-                    fit["package"]["compilerExecuted"]
-                    and fit["package"]["topologyValidatorExecuted"]
-                    and fit["package"]["solverExecuted"]
-                ),
-            }
-        )
+    for row in rows:
+        for route, value in row.pop("_routeErrors", {}).items():
+            route_errors.setdefault(route, []).append(float(value))
     family_rows = {
         family: [row for row in rows if row["family"] == family] for family in sorted(TARGET_FIELDS)
     }
@@ -357,6 +315,64 @@ def _evaluate_fitting(
     }
     result["reportDigest"] = canonical_digest(result, "reportDigest")
     return result
+
+
+def _fit_validation_job(
+    job: tuple[DecodedSession, dict[str, Any], dict[str, float], str],
+) -> dict[str, Any]:
+    session, model, target, package_path = job
+    if not session.observations:
+        return _failure_row(session.spec, "decode_failure")
+    try:
+        fit = fit_capture_to_package(
+            family=session.spec.family,
+            observations=session.observations,
+            model=model,
+            package_output=Path(package_path),
+            seed=20_000 + session.spec.index,
+        )
+    except (KeyError, OSError, RuntimeError, ValueError) as error:
+        return _failure_row(session.spec, f"fit_exception:{type(error).__name__}")
+    alternatives: list[dict[str, Any]] = []
+    route_errors: dict[str, float] = {}
+    for alternative in fit["alternatives"]:
+        alternative_error = _normalized_parameter_error(
+            session.spec.family, alternative["parameters"], target
+        )
+        route = str(alternative["route"])
+        route_errors[route] = alternative_error
+        alternatives.append(
+            {
+                "route": route,
+                "status": alternative["status"],
+                "normalizedParameterError": alternative_error,
+                "silhouetteIou": alternative["silhouetteIou"],
+                "compileExecuted": alternative["compileExecuted"],
+                "topologyValidatorExecuted": alternative["topologyValidatorExecuted"],
+                "independentRendererExecuted": alternative["independentRendererExecuted"],
+                "optimizerIterations": alternative["optimizerIterations"],
+            }
+        )
+    selected_error = _normalized_parameter_error(
+        session.spec.family, fit["selectedParameters"], target
+    )
+    return {
+        "identityGroupId": session.spec.identity_group_id,
+        "family": session.spec.family,
+        "status": fit["status"],
+        "selectedRoute": fit["selectedRoute"],
+        "selectedNormalizedParameterError": selected_error,
+        "attemptedAlternativeCount": fit["attemptedAlternativeCount"],
+        "alternatives": alternatives,
+        "packageValidation": fit["package"]["validationStatus"],
+        "packageFailureReason": fit["package"].get("failureReason"),
+        "compilerTopologySolverExecuted": bool(
+            fit["package"]["compilerExecuted"]
+            and fit["package"]["topologyValidatorExecuted"]
+            and fit["package"]["solverExecuted"]
+        ),
+        "_routeErrors": route_errors,
+    }
 
 
 def _evaluate_uv(sessions: Sequence[DecodedSession]) -> dict[str, Any]:
@@ -608,6 +624,7 @@ def _failure_row(spec: SessionSpec, status: str) -> dict[str, Any]:
         "attemptedAlternativeCount": 0,
         "alternatives": [],
         "packageValidation": "not_run",
+        "packageFailureReason": status,
         "compilerTopologySolverExecuted": False,
     }
 
@@ -700,12 +717,13 @@ def _literal_result(
     passed = (
         capture["decodeFailureCount"] == 0
         and fitting["attemptedValidationIdentityCount"] == 20
+        and fitting["developmentCriteriaPassed"] is True
         and uv["attemptedIdentityCount"] == 20
         and uv["statusCounts"].get("fail", 0) == 0
         and isolation["status"] == "pass"
         and corruption["allExpectedOutcomesObserved"] is True
     )
-    return "development_acceptance_pass" if passed else "development_acceptance_partial_or_failed"
+    return "development_acceptance_pass" if passed else "development_acceptance_partial"
 
 
 def verify_generated_evidence(output_root: Path) -> list[str]:
