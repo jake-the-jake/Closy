@@ -111,9 +111,11 @@ from closy_forge.simulation.self_collision import (
     build_self_collision_report,
     hash_self_collision_report,
 )
+from closy_forge.simulation.synthetic_material_reference import (
+    validate_or_migrate_synthetic_material_evidence,
+)
 from closy_forge.simulation.synthetic_mechanical_calibration import (
     SyntheticCalibrationError,
-    validate_synthetic_mechanical_calibration,
 )
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
@@ -11309,7 +11311,7 @@ def _validate_material_physics(
         )
 
     try:
-        validate_synthetic_mechanical_calibration(synthetic_calibration, registry)
+        validate_or_migrate_synthetic_material_evidence(synthetic_calibration, registry)
     except SyntheticCalibrationError as exc:
         issues.append(
             _issue(

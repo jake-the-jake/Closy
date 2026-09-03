@@ -148,6 +148,9 @@ from closy_forge.simulation.self_collision import (
     SELF_COLLISION_REPORT_VERSION,
     build_self_collision_report,
 )
+from closy_forge.simulation.synthetic_material_reference import (
+    build_synthetic_material_reference,
+)
 from closy_forge.simulation.synthetic_mechanical_calibration import (
     SYNTHETIC_CALIBRATION_VERSION,
     run_synthetic_mechanical_calibration,
@@ -335,6 +338,11 @@ def _write_package_contents(
     material_physics = solver_material_payload(material_selection["selectedDescriptor"])
     material_calibration = run_material_calibration(material_selection["selectedDescriptor"])
     synthetic_mechanical_calibration = run_synthetic_mechanical_calibration(material_registry)
+    synthetic_material_reference = build_synthetic_material_reference(
+        material_registry,
+        material_selection["selectedDescriptor"],
+        synthetic_mechanical_calibration,
+    )
     settle = settle_reference_cloth(
         rest_mesh,
         constraints,
@@ -599,7 +607,7 @@ def _write_package_contents(
     )
     write_canonical_json(
         package_dir / "reports" / "synthetic_mechanical_calibration.json",
-        synthetic_mechanical_calibration,
+        synthetic_material_reference,
     )
     write_canonical_json(
         package_dir / "reports" / "material_motion_suite.json", material_motion_suite

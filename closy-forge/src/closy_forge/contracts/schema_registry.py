@@ -2265,47 +2265,7 @@ def schema_registry() -> dict[str, dict[str, Any]]:
                 "integrity",
             ],
         ),
-        "synthetic-mechanical-calibration.schema.json": _schema(
-            "Closy project-authored synthetic mechanical calibration report",
-            {
-                "schemaVersion": {"const": SCHEMA_VERSION},
-                "calibrationVersion": {"const": "closy.synthetic_mechanical_calibration.d0.v2"},
-                "calibrationId": {"type": "string"},
-                "solverVersion": {"const": "closy.bounded_coupon_inverse_grid.v1"},
-                "sourceRegistryHash": _sha256(),
-                "corpus": {"type": "object", "additionalProperties": True},
-                "presets": {
-                    "type": "array",
-                    "minItems": 4,
-                    "maxItems": 4,
-                    "items": {"type": "object"},
-                },
-                "aggregate": {"type": "object", "additionalProperties": True},
-                "readiness": {
-                    "type": "object",
-                    "additionalProperties": {"type": "boolean"},
-                },
-                "truth": {"type": "object", "additionalProperties": True},
-                "unsupportedEvidence": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                },
-                "integrity": _object({"reportHash": _sha256()}, ["reportHash"]),
-            },
-            [
-                "schemaVersion",
-                "calibrationVersion",
-                "solverVersion",
-                "sourceRegistryHash",
-                "corpus",
-                "presets",
-                "aggregate",
-                "readiness",
-                "truth",
-                "unsupportedEvidence",
-                "integrity",
-            ],
-        ),
+        "synthetic-mechanical-calibration.schema.json": _synthetic_material_evidence_schema(),
         "material-motion-suite.schema.json": _schema(
             "Closy material motion suite report",
             {
@@ -5292,6 +5252,89 @@ def _schema(title: str, properties: dict[str, Any], required: list[str]) -> dict
         "required": required,
         "properties": properties,
     }
+
+
+def _synthetic_material_evidence_schema() -> dict[str, Any]:
+    title = "Closy project-authored synthetic mechanical calibration report"
+    legacy = _object(
+        {
+            "schemaVersion": {"const": SCHEMA_VERSION},
+            "calibrationVersion": {"const": "closy.synthetic_mechanical_calibration.d0.v2"},
+            "calibrationId": {"type": "string"},
+            "solverVersion": {"const": "closy.bounded_coupon_inverse_grid.v1"},
+            "sourceRegistryHash": _sha256(),
+            "corpus": {"type": "object", "additionalProperties": True},
+            "presets": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {"type": "object"},
+            },
+            "aggregate": {"type": "object", "additionalProperties": True},
+            "readiness": {"type": "object", "additionalProperties": {"type": "boolean"}},
+            "truth": {"type": "object", "additionalProperties": True},
+            "unsupportedEvidence": {"type": "array", "items": {"type": "string"}},
+            "integrity": _object({"reportHash": _sha256()}, ["reportHash"]),
+        },
+        [
+            "schemaVersion",
+            "calibrationVersion",
+            "solverVersion",
+            "sourceRegistryHash",
+            "corpus",
+            "presets",
+            "aggregate",
+            "readiness",
+            "truth",
+            "unsupportedEvidence",
+            "integrity",
+        ],
+    )
+    compact = _object(
+        {
+            "schemaVersion": {"const": SCHEMA_VERSION},
+            "referenceVersion": {"const": "closy.synthetic_material_reference.v1"},
+            "registryVersion": {"const": "closy.fabric_preset_registry.d0.v1"},
+            "registryDigest": _sha256(),
+            "calibrationVersion": {"const": "closy.synthetic_mechanical_calibration.d0.v2"},
+            "calibrationReportDigest": _sha256(),
+            "selectedPresetId": {"type": "string"},
+            "selectedDescriptor": {"type": "object"},
+            "selectedDescriptorDigest": _sha256(),
+            "selectedSolverMapping": {
+                "type": "array",
+                "minItems": 10,
+                "maxItems": 10,
+                "items": {"type": "object"},
+            },
+            "selectedSolverMappingDigest": _sha256(),
+            "evidenceTier": {"const": "analytic_same_forward_model_inverse_harness"},
+            "measuredRealFabric": {"const": False},
+            "provenancePreserved": {"const": True},
+        },
+        [
+            "schemaVersion",
+            "referenceVersion",
+            "registryVersion",
+            "registryDigest",
+            "calibrationVersion",
+            "calibrationReportDigest",
+            "selectedPresetId",
+            "selectedDescriptor",
+            "selectedDescriptorDigest",
+            "selectedSolverMapping",
+            "selectedSolverMappingDigest",
+            "evidenceTier",
+            "measuredRealFabric",
+            "provenancePreserved",
+        ],
+    )
+    # Keep the shared root-schema contract while the branches enforce the
+    # mutually exclusive legacy-report and compact-reference shapes.
+    properties = {**legacy["properties"], **compact["properties"]}
+    schema = _schema(title, properties, ["schemaVersion"])
+    schema["oneOf"] = [legacy, compact]
+    return schema
 
 
 def _object(properties: dict[str, Any], required: list[str]) -> dict[str, Any]:

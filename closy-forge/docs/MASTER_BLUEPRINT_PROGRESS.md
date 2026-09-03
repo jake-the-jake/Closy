@@ -507,3 +507,11 @@ third topology strategy is consumed; the one canonical-candidate attempt remains
 W, and X are ineligible. Runtime v1 package
 `836abc564a79c0f38ae8bdad3d4a418b0fb05a550193059c1cece8130203c20a` and fallback
 `8eccea814251f8974f5349548038be73a4d00cec73df7a7bfb787aede58385c6` remain selected.
+
+<!-- truth-dependency-authority-v4:start -->
+## Truth Dependency Authority v4 and Unit Y2
+
+Primary truth is reconciled through PR #59. Unit T's four non-pass prediction rows are literal failures, not abstentions. Unit Y1 remains pre-seed dependency-blocked; D0 v4 remains a failed public engineering run; Unit AD was not run; and Phase 7 remains partial analytic same-forward-model evidence.
+
+The coverage-complete scheduler derives all 101 rows and reports zero unmapped. Unit Y2 stopped as `preseed_scientific_protocol_invalid`: no authorization tag, seed, scientific attempt, or candidate was consumed. Capture-mode, synthetic-solver, and conventional runtime engineering remain discoverable without false dependency blocks.
+<!-- truth-dependency-authority-v4:end -->

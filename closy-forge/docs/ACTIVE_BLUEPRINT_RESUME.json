@@ -1,166 +1,182 @@
 {
-  "activeLane": "Unit Y0 truth repair and authority-integrity hardening",
-  "branch": "codex/closy-forge-truth-authority-integrity-v3",
-  "budgetState": {
-    "strategy3Consumed": true,
-    "strategy3Reserved": true,
-    "strategy3ScientificAdmissionExecuted": false,
-    "untouchedStrategy3ConfirmationAttemptConsumed": false
-  },
-  "conditionalUnits": {
-    "AA": "ineligible_no_unit_z_candidate",
-    "AB": "ineligible_no_post_topology_prerequisites",
-    "AC": "unconditional_after_topology_sequence_literal_outcome",
-    "AD": "conditional_on_d0_v4_development_admission",
-    "AE": "pending_literal_outcomes",
-    "Y0": "implementation_complete_publication_and_exact_head_ci_pending",
-    "Y1": "ineligible_until_unit_y0_exact_head_ci_passes",
-    "Z": "ineligible_until_strategy3_v3_admission"
-  },
-  "evidenceHead": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
-  "exactNextAction": "publish Unit Y0 integrity hardening, require exact-head Forge plus sealed-v2 lane, then create Unit Y1 repository-blob authority from that final head",
-  "finalHeadAttestationLocation": "draft PR body and exact-head workflow",
-  "finalPublicationHead": null,
-  "gates": {
-    "C3": "pre_topology_scoped_pass_post_topology_unproven",
-    "D0-DisjointTshirt-v3": "completed_benchmark_failed_absolute_gates",
-    "PHY1-Topology-Strategy3-Confirmation-D0-v2": "dependency_blocked_before_official_seed_v2",
-    "ResearchPrototype-D0-matrix-v3-core": "partial_7_pass_4_fail_0_not_run",
-    "ResearchPrototype-D0-matrix-v3-supplemental": "2_pass_0_fail_2_not_run",
-    "S-D0-authority-successor": "integrity_predicates_pass",
-    "S-PHY-authority-successor": "integrity_predicates_pass",
-    "S-core-truth-successor": "integrity_predicates_pass",
-    "Z1": "scoped_static_pass_exact_candidate_unproven",
-    "Z2": "failed_non_solver_evidence_only"
-  },
-  "latestFinishedParentPublicationHead": "f56fc44ccf7173155186a30b4f4978454fb3debf",
-  "localHeadAtResumeSource": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
-  "machineResumeVersion": "closy.active_blueprint_resume.truth_authority_v3.v14",
+  "activeLane": "PR C capture camera fitting and appearance engineering",
+  "branch": "codex/closy-forge-truth-dependency-authority-v4",
+  "exactNextAction": "implement_PR_C_capture_camera_material_engineering_from_PR_A_final_head",
+  "finalPublicationHead": "external_exact_head_attestation",
+  "machineResumeVersion": "closy.active_blueprint_resume.truth_dependency_authority.v4",
   "mergeAuthorised": false,
-  "nextHandoff": {
-    "firstUnmetPrerequisite": "unit_y0_exact_head_forge_and_sealed_v2_failure_lane_pass",
-    "safestEvidenceAction": "publish_y0_without_touching_frozen_strategy3_bytes",
-    "selection": "unit_y1_after_y0_exact_head_pass"
-  },
   "parent": {
-    "branch": "codex/closy-forge-phy1-final-strategy3-v2",
-    "exactHeadWorkflow": "33635092644",
-    "forgeJobsPassed": 25,
-    "forgeJobsTotal": 29,
-    "literalCiResult": "completed_failure",
-    "pullRequest": 55,
-    "sha": "f56fc44ccf7173155186a30b4f4978454fb3debf"
+    "exactHeadWorkflow": "33723731327",
+    "pullRequest": 59,
+    "sha": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e"
   },
   "pendingCIAtEvidenceHead": true,
-  "pullRequest": 56,
+  "pullRequest": "draft_to_be_assigned",
+  "reconciledPullRequests": [
+    55,
+    56,
+    57,
+    58,
+    59
+  ],
   "remainingBudgets": {
     "candidateAttempts": 1,
     "seamModels": 0,
     "topologyStrategies": 0
   },
-  "remoteHeadAtResumeSource": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
+  "scheduler": {
+    "dynamicRequirementCount": 101,
+    "readyRows": [
+      "BP-07-MODE-A",
+      "BP-07-MODE-B",
+      "BP-07-MODE-D",
+      "BP-07-MODE-E",
+      "BP-09-Z3",
+      "BP-09-Z4",
+      "BP-09-Z5",
+      "BP-09-Z6",
+      "BP-09-Z7",
+      "BP-09-Z8",
+      "BP-12-MODEL-STRATEGY",
+      "BP-17-PHASE-12"
+    ],
+    "schedulerDigest": "f25273e36ab2e152ecc67530c3137822ef07d7788dc54d5d90476247b1fe6e02",
+    "unmappedRequirementCount": 0
+  },
   "schemaVersion": 1,
   "sourceAnchorIsSelfReferential": false,
-  "sourceEvidenceAnchor": "da8fea2b0cf3824a091f95a5c8cb749addeb018e",
-  "stopReason": "unit_y0_exact_head_ci_required_before_unit_y1",
-  "truthOverlay": {
-    "consumerPolicy": "prefer_this_overlay_without_mutating_historical_keys",
-    "digest": "8f9df323bcf10aa240681dc360becee61962b035e79b00cd1cc1444a3e7b3686",
-    "version": "closy.blueprint_truth_overlay.successor.v1"
+  "sourceEvidenceAnchor": "f8508a4e70b5f6c858d416e46b28dea3bc512b9e",
+  "stopReason": "y2_preseed_scientific_protocol_invalid_candidate_pr_skipped",
+  "unitACResult": {
+    "result": "completed_public_test_failed_ac_readiness_margins",
+    "source": "7e8f01a4c75710f8de64203d921f961c3b31b7bc",
+    "unitADEligible": false,
+    "unitADRun": false
   },
-  "unitSSuccessor": {
-    "scientificAttemptCreated": false,
-    "subgates": {
-      "S-D0-authority-successor": {
-        "scientificCapabilityClaim": false,
-        "status": "integrity_predicates_pass"
-      },
-      "S-PHY-authority-successor": {
-        "scientificCapabilityClaim": false,
-        "status": "integrity_predicates_pass"
-      },
-      "S-core-truth-successor": {
-        "scientificCapabilityClaim": false,
-        "status": "integrity_predicates_pass"
-      }
-    },
-    "supersedesShallowPassDerivation": true
+  "unitADResult": {
+    "executed": false,
+    "reason": "unit_ac_public_readiness_failed"
+  },
+  "unitAEResult": {
+    "measuredRealFabric": false,
+    "phase7": "partial",
+    "result": "implemented_analytic_same_forward_model_inverse_harness_v2",
+    "source": "cfe3c1d5caebbb8f5de70f36abb254c896780906"
   },
   "unitTResult": {
-    "appearanceGatePassCount": 0,
-    "appearanceRowsActuallyEvaluatedCount": 8,
-    "appearanceRowsScheduledCount": 24,
-    "artifactRoot": "fixtures/d0_disjoint_tshirt_confirmation_v3/official_attempt",
+    "attemptCount": 64,
     "attemptsExecutedCount": 64,
-    "attemptsScheduledCount": 64,
-    "authorityRun": "33621365050",
-    "compileRowsEvaluatedCount": 48,
-    "compileRowsScheduledCount": 48,
-    "exactHeadCiRun": "33624168164",
-    "explicitAbstentionCount": 4,
-    "finalPublicationHead": "0c45587371165f1c5f3e33934ee2cbf5156f9e02",
-    "identities": 16,
-    "legacyFieldSupersededBy": [
-      "strictCompletePixelRouteCompileValidCount",
-      "compileRowsEvaluatedCount"
-    ],
-    "legacyFullCompileSuccessCounter": 20,
-    "literalOutcome": "completed_benchmark_failed_absolute_gates",
-    "preSeedInfrastructureFailure": false,
+    "corruptCount": 0,
+    "explicitAbstentionCount": 0,
+    "missingCount": 0,
+    "notRunCount": 0,
     "predictionArtifactProducedCount": 60,
-    "primaryAbsoluteSilhouetteImprovement": -0.767975768,
-    "primaryAppearanceRepeatGatePassCount": 0,
-    "primaryAppearanceRepeatRowsEvaluatedCount": 8,
-    "primaryCompileRepeatRowsEvaluatedCount": 16,
-    "primaryCompileRepeatSameFailureOrOutputClassCount": 2,
-    "primaryRelativeParameterImprovement": -2.700982084,
-    "routePromoted": false,
-    "rowResults": {
-      "D0-RP-03": "fail",
-      "D0-RP-04": "pass",
-      "D0-RP-06": "fail",
-      "D0-RP-07": "fail"
-    },
-    "scientificFailure": true,
-    "sourceEvidenceAnchor": "7aae56b050e72e51916b592423f63d859f166117",
-    "strictCompletePixelRouteCompileValidCount": 0
+    "predictionFailureCount": 4,
+    "semanticRule": "literal_status_values_are_not_reinterpreted",
+    "statusCounts": {
+      "abstained": 0,
+      "corrupt": 0,
+      "failed": 4,
+      "missing": 0,
+      "not_run": 0,
+      "pass": 60
+    }
   },
-  "unitUResult": {
-    "artifactPath": "docs/evidence/final_strategy3_v2/outcome_report.json",
-    "authorityAttemptsExecutedCount": 0,
-    "authorityAttemptsScheduledCount": 1,
-    "canonicalCandidateAttemptsRemaining": 1,
-    "canonicalCandidateCreated": false,
-    "exactHeadCi": {
-      "failedJobs": 4,
-      "passedJobs": 25,
-      "result": "completed_failure",
-      "run": "33635092644"
+  "unitY1Result": {
+    "lock": "b9c6d34f4339fece2c6e6566b59c5b548f3f973a",
+    "result": "strategy3_dependency_blocked_before_seed_v3",
+    "seedConsumed": false,
+    "source": "d76916461d3e96b037fbc31b646319effef7a264"
+  },
+  "unitY2Result": {
+    "auditDigest": "d9cde1dc28f453b3abffac29bcce7308511f3baa91c23e2898a3a6c9b798dc18",
+    "auditVersion": "closy.y2.frozen_scientific_protocol_audit.v1",
+    "auditedFiles": [
+      {
+        "path": "src/closy_forge/final_strategy3_v2/authority.py",
+        "sha256": "f8bf6b61a499eacc6a4771940b8ff812071b6504b52518d3f96161d52c3ca220"
+      },
+      {
+        "path": "src/closy_forge/strategy3_blob_authority_v3/authority.py",
+        "sha256": "a382a4d12e1f84ac5e1ecb9a900dd353a7413e9c262bde1b33fd177c4080c044"
+      },
+      {
+        "path": "fixtures/final_strategy3_v2/final_implementation_lock.json",
+        "sha256": "8159afee5130c673875e4efc69955175fa1cf0976eb573e2c5b0452b1927c3b6"
+      }
+    ],
+    "authorityAuthorizationConsumed": false,
+    "authorityTagCreated": false,
+    "authorizationId": "CLOSY-S3-Y2-TRANSPORT-V4-20260903-AUTH1",
+    "candidateBudgetConsumed": false,
+    "candidateCreated": false,
+    "checks": {
+      "allReachablePostseedCasesUnambiguous": false,
+      "candidateSelectionRulePresent": false,
+      "frozenCandidateCreatedFalse": true,
+      "genericPostseedMappingPresent": true,
+      "missingOutputSharesGenericFailure": true,
+      "timeoutRaisedByRunner": true,
+      "wrapperUploadsRawExceptionText": true
     },
-    "finalPublicationHead": "f56fc44ccf7173155186a30b4f4978454fb3debf",
-    "literalOutcome": "dependency_blocked_before_official_seed_v2",
-    "officialSeedCreated": false,
-    "oracleRevealed": false,
-    "preSeedInfrastructureFailure": true,
-    "scientificAdmissionExecuted": false,
-    "scientificFailure": false,
-    "sourceEvidenceAnchor": "d76916461d3e96b037fbc31b646319effef7a264",
-    "topologyStrategiesRemaining": 0,
-    "untouchedConfirmationAttemptConsumed": false,
-    "untouchedFixtureCreated": false
+    "findings": [
+      {
+        "code": "postseed_failure_classes_collapse_to_generic_integrity",
+        "evidence": "write_public_failure selects one post-seed outcome from seed_created and does not distinguish timeout, OOM, resource exit, malformed output, or authority failure",
+        "scientificPolicyMissing": true
+      },
+      {
+        "code": "contestant_timeout_classification_not_frozen",
+        "evidence": "subprocess.run timeout propagates TimeoutExpired without a frozen outcome mapping",
+        "scientificPolicyMissing": true
+      },
+      {
+        "code": "contestant_missing_or_nonzero_output_classification_not_frozen",
+        "evidence": "nonzero exit and missing report share a generic ValueError path",
+        "scientificPolicyMissing": true
+      },
+      {
+        "code": "candidate_role_and_eight_report_aggregation_undefined",
+        "evidence": "the frozen result explicitly records candidateCreated=false and defines neither one candidate artifact role nor a deterministic eight-report selection/aggregation rule",
+        "scientificPolicyMissing": true
+      }
+    ],
+    "microcanaryTagCreated": false,
+    "nextAction": "a_future_explicit_scientific_authority_must_freeze_failure_classification_and_candidate_aggregation_before_any_seed",
+    "preflightTagCreated": false,
+    "remainingBudgets": {
+      "candidateAttempts": 1,
+      "topologyStrategies": 0
+    },
+    "schemaVersion": 1,
+    "scientificAttemptConsumed": false,
+    "scientificProtocolValidForY2": false,
+    "scientificSourceCommit": "d76916461d3e96b037fbc31b646319effef7a264",
+    "scope": "transport_only_no_scientific_semantic_repair",
+    "seedCreated": false,
+    "terminalOutcome": "preseed_scientific_protocol_invalid",
+    "transportLockCommitCreated": false,
+    "transportSourceCommitCreated": false,
+    "transportWrapperManifest": {
+      "created": false,
+      "newTransportPaths": [],
+      "reason": "protocol_invalid_before_transport_arming",
+      "scientificDecisionSemanticsChanged": false,
+      "scientificSurfaceChanged": false
+    },
+    "workflowBlobOid": "381355a047b7af0faf59af141a819c38ef4ff88d",
+    "y1LockCommit": "b9c6d34f4339fece2c6e6566b59c5b548f3f973a",
+    "y1LockDigest": "804996610e99f947defb7f06f2eb13b42008f7bd4988f1777fe0ef0acb5c10b5"
   },
   "unsupportedEvidenceClasses": [
-    "strategy3_repository_blob_admission",
+    "D0_v4_qualification",
     "post_topology_candidate",
-    "post_topology_core_reproducibility",
-    "post_topology_strict_or_trajectory_C3",
     "full_PHY1",
     "integrated_CCD",
     "solver_driven_Z2",
+    "real_fabric",
     "private_user",
     "human_review",
-    "real_photo",
-    "real_fabric",
     "GPU",
     "mobile",
     "Alpha",

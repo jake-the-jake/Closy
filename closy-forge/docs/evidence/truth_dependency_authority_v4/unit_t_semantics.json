@@ -1,0 +1,1 @@
+{"attemptCount":64,"attemptsExecutedCount":64,"corruptCount":0,"explicitAbstentionCount":0,"missingCount":0,"notRunCount":0,"predictionArtifactProducedCount":60,"predictionFailureCount":4,"semanticRule":"literal_status_values_are_not_reinterpreted","statusCounts":{"abstained":0,"corrupt":0,"failed":4,"missing":0,"not_run":0,"pass":60}}
