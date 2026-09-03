@@ -144,6 +144,8 @@ Representative current codes:
 - `fabric_descriptor_invalid`: descriptor version, unit, range, value, confidence, disclosure or hash is invalid.
 - `material_selection_invalid`: selection misses the registry or overclaims learned/calibrated evidence.
 - `material_calibration_invalid`: sensitivity fixtures, ordering, evidence tier or hashes are invalid.
+- `synthetic_mechanical_calibration_invalid`: the project-authored coupon corpus, inverse fit,
+  unseen synthetic holdout, unsupported-tier flags or deterministic report identity is invalid.
 - `material_motion_suite_invalid`: CPU solver or authoritative dense-binding evidence is contradictory.
 - `material_physics_capability_missing`: manifest omits an executed Phase 7 D0 capability.
 - `material_physics_evidence_tier_contradiction`: manifest overclaims measured, learned, private-user or GPU evidence.

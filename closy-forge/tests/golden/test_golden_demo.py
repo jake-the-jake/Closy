@@ -60,6 +60,8 @@ def test_demo_package_matches_structural_golden(tmp_path) -> None:  # type: igno
         assert summary["geometryVisualShellReview"][key] == value
     for key, value in expected["inspectionArtifacts"].items():
         assert summary["inspectionArtifacts"][key] == value
+    for key, value in expected["materialPhysics"].items():
+        assert summary["materialPhysics"][key] == value
     for key, value in expected["geometryCleanAcceptanceGate"].items():
         assert summary["geometryCleanAcceptanceGate"][key] == value
     for key, value in expected["cleanGeometryProposal"].items():

@@ -148,6 +148,10 @@ from closy_forge.simulation.self_collision import (
     SELF_COLLISION_REPORT_VERSION,
     build_self_collision_report,
 )
+from closy_forge.simulation.synthetic_mechanical_calibration import (
+    SYNTHETIC_CALIBRATION_VERSION,
+    run_synthetic_mechanical_calibration,
+)
 from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
     CORRECTION_RECORD_VERSION,
@@ -330,6 +334,7 @@ def _write_package_contents(
     material_selection = select_material_preset(_material_selection_input(), material_registry)
     material_physics = solver_material_payload(material_selection["selectedDescriptor"])
     material_calibration = run_material_calibration(material_selection["selectedDescriptor"])
+    synthetic_mechanical_calibration = run_synthetic_mechanical_calibration(material_registry)
     settle = settle_reference_cloth(
         rest_mesh,
         constraints,
@@ -591,6 +596,10 @@ def _write_package_contents(
     write_canonical_json(package_dir / "reports" / "material_selection.json", material_selection)
     write_canonical_json(
         package_dir / "reports" / "material_calibration.json", material_calibration
+    )
+    write_canonical_json(
+        package_dir / "reports" / "synthetic_mechanical_calibration.json",
+        synthetic_mechanical_calibration,
     )
     write_canonical_json(
         package_dir / "reports" / "material_motion_suite.json", material_motion_suite
@@ -871,6 +880,7 @@ def _write_package_contents(
         "materialRegistry": material_registry,
         "materialSelection": material_selection,
         "materialCalibration": material_calibration,
+        "syntheticMechanicalCalibration": synthetic_mechanical_calibration,
         "materialMotionSuite": material_motion_suite,
         "captureRecord": capture_record,
         "captureQuality": capture_quality,
@@ -1123,6 +1133,7 @@ def _manifest(
             "materialPresetRegistry": "simulation/material_presets.json",
             "materialSelection": "reports/material_selection.json",
             "materialCalibration": "reports/material_calibration.json",
+            "syntheticMechanicalCalibration": ("reports/synthetic_mechanical_calibration.json"),
             "materialMotionSuite": "reports/material_motion_suite.json",
             "materialMotionStates": "simulation/material_motion_states",
             "renderFallback": "render/fallback.glb",
@@ -1387,6 +1398,9 @@ def _manifest(
             "materialCalibrationHash": _hash_from_inventory(
                 inventory, "reports/material_calibration.json"
             ),
+            "syntheticMechanicalCalibrationHash": _hash_from_inventory(
+                inventory, "reports/synthetic_mechanical_calibration.json"
+            ),
             "materialMotionSuiteHash": _hash_from_inventory(
                 inventory, "reports/material_motion_suite.json"
             ),
@@ -1441,6 +1455,7 @@ def _manifest(
             "materialPresetRegistry": PRESET_REGISTRY_VERSION,
             "materialPresetSelection": MATERIAL_SELECTION_VERSION,
             "materialCalibration": CALIBRATION_VERSION,
+            "syntheticMechanicalCalibration": SYNTHETIC_CALIBRATION_VERSION,
             "materialMotionSuite": MATERIAL_MOTION_SUITE_VERSION,
             "renderSubdivision": "closy.render_subdivision.v1",
             "binding": str(binding_manifest["algorithm"]),
@@ -1469,6 +1484,7 @@ def _manifest(
             "public_synthetic_source_pixels_packaged_private_pixels_not_allowed",
             "decoded_pbr_maps_d0_derived_not_real_fabric_calibration",
             "material_presets_authored_not_measured_real_fabric",
+            "synthetic_mechanical_calibration_not_real_fabric_measurement",
             "material_motion_cpu_reference_not_production_gpu",
             "learned_material_inference_not_run",
             "private_user_material_estimation_not_run",
@@ -1516,6 +1532,8 @@ def _capabilities(
         "materialPresetRegistryAvailable": True,
         "materialPresetSelectionAvailable": True,
         "materialCalibrationFixturesAvailable": True,
+        "syntheticMechanicalCalibrationAvailable": True,
+        "acceptedForProjectAuthoredSyntheticCalibration": True,
         "materialMotionSuiteAvailable": True,
         "materialDenseBindingReconstructionAvailable": True,
         "acceptedForD0MaterialPhysics": True,
@@ -2775,6 +2793,7 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
     material_registry = context["materialRegistry"]
     material_selection = context["materialSelection"]
     material_calibration = context["materialCalibration"]
+    synthetic_mechanical_calibration = context["syntheticMechanicalCalibration"]
     material_motion_suite = context["materialMotionSuite"]
     return {
         "schemaVersion": 1,
@@ -3540,6 +3559,22 @@ def _summary_json(context: dict[str, Any], validation: dict[str, Any]) -> dict[s
             "calibrationAcceptedForD0Fixtures": material_calibration["readiness"][
                 "acceptedForD0CalibrationFixtures"
             ],
+            "syntheticCalibrationVersion": synthetic_mechanical_calibration["calibrationVersion"],
+            "syntheticCalibrationParameterCount": synthetic_mechanical_calibration["aggregate"][
+                "parameterRecordCount"
+            ],
+            "syntheticCalibrationHoldoutCount": synthetic_mechanical_calibration["corpus"][
+                "holdoutObservationCount"
+            ],
+            "syntheticCalibrationAccepted": synthetic_mechanical_calibration["readiness"][
+                "acceptedForProjectAuthoredSyntheticCalibration"
+            ],
+            "syntheticCalibrationWorstParameterError": synthetic_mechanical_calibration[
+                "aggregate"
+            ]["worstNormalizedParameterError"],
+            "syntheticCalibrationWorstHoldoutError": synthetic_mechanical_calibration["aggregate"][
+                "worstHoldoutNormalizedRmse"
+            ],
             "motionPresetCount": len(material_motion_suite["presets"]),
             "motionExecutedForD0Tshirt": material_motion_suite["readiness"][
                 "executedForD0FixedAvatarTshirt"
@@ -3619,6 +3654,11 @@ def _summary_markdown(context: dict[str, Any], validation: dict[str, Any]) -> st
         f"- Material physics: {summary['materialPhysics']['presetCount']} presets, "
         f"selected=`{summary['materialPhysics']['selectedPresetId']}`, "
         f"calibration fixtures={summary['materialPhysics']['calibrationFixtureCount']}, "
+        "synthetic coupon parameters/holdouts="
+        f"{summary['materialPhysics']['syntheticCalibrationParameterCount']}/"
+        f"{summary['materialPhysics']['syntheticCalibrationHoldoutCount']}, "
+        "synthetic calibration accepted="
+        f"{summary['materialPhysics']['syntheticCalibrationAccepted']}, "
         f"CPU motion executed={summary['materialPhysics']['motionExecutedForD0Tshirt']}, "
         f"motion quality accepted={summary['materialPhysics']['motionQualityAccepted']}, "
         "real-fabric/GPU runs=False/False\n"

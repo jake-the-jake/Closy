@@ -1,5 +1,5 @@
 {
-  "canonicalPackageDigest": "c1ad76661ff0642a58343f8d9639c3aa0bb3d084f9bb38d6bff2a9dd429b807a",
+  "canonicalPackageDigest": "48e486fec5e6ced48c2f5cdaa436d4beb0b93b29668e116f45c76290aa8d8c92",
   "capabilities": {
     "acceptedForD0PublicFixture": false,
     "actualClothSettleAvailable": true,
@@ -10,6 +10,8 @@
     "productionBindingC3ProfileAvailable": true,
     "selfCollisionAvailable": true,
     "sourceRenderFidelityAvailable": true,
+    "syntheticMechanicalCalibrationAvailable": true,
+    "acceptedForProjectAuthoredSyntheticCalibration": true,
     "zeroOneDynamicAvailable": false,
     "zeroOneStaticAvailable": false
   },
@@ -124,6 +126,14 @@
     "acceptedForVisualFidelity": false,
     "artifactCount": 12,
     "humanVisualReviewRun": false
+  },
+  "materialPhysics": {
+    "syntheticCalibrationAccepted": true,
+    "syntheticCalibrationHoldoutCount": 80,
+    "syntheticCalibrationParameterCount": 40,
+    "syntheticCalibrationVersion": "closy.synthetic_mechanical_calibration.d0.v2",
+    "syntheticCalibrationWorstHoldoutError": 0.018635609549,
+    "syntheticCalibrationWorstParameterError": 0.001139322917
   },
   "multiviewFusion": {
     "registrationStatus": "pass",

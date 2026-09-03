@@ -2265,6 +2265,47 @@ def schema_registry() -> dict[str, dict[str, Any]]:
                 "integrity",
             ],
         ),
+        "synthetic-mechanical-calibration.schema.json": _schema(
+            "Closy project-authored synthetic mechanical calibration report",
+            {
+                "schemaVersion": {"const": SCHEMA_VERSION},
+                "calibrationVersion": {"const": "closy.synthetic_mechanical_calibration.d0.v2"},
+                "calibrationId": {"type": "string"},
+                "solverVersion": {"const": "closy.bounded_coupon_inverse_grid.v1"},
+                "sourceRegistryHash": _sha256(),
+                "corpus": {"type": "object", "additionalProperties": True},
+                "presets": {
+                    "type": "array",
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "items": {"type": "object"},
+                },
+                "aggregate": {"type": "object", "additionalProperties": True},
+                "readiness": {
+                    "type": "object",
+                    "additionalProperties": {"type": "boolean"},
+                },
+                "truth": {"type": "object", "additionalProperties": True},
+                "unsupportedEvidence": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+                "integrity": _object({"reportHash": _sha256()}, ["reportHash"]),
+            },
+            [
+                "schemaVersion",
+                "calibrationVersion",
+                "solverVersion",
+                "sourceRegistryHash",
+                "corpus",
+                "presets",
+                "aggregate",
+                "readiness",
+                "truth",
+                "unsupportedEvidence",
+                "integrity",
+            ],
+        ),
         "material-motion-suite.schema.json": _schema(
             "Closy material motion suite report",
             {
