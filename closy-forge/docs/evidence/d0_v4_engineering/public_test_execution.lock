@@ -1,0 +1,1 @@
+{"consumptionPolicy":"claim_precedes_first_public_test_read_and_survives_partial_failure","lockVersion":"closy.d0_v4.public_test_execution_claim.v1","modelSha256":"1e2e382ca9ed5620dbc4970272e768af70abb986ff6d7c2c05c4ac0664db823e","sourceHead":"7e8f01a4c75710f8de64203d921f961c3b31b7bc"}
