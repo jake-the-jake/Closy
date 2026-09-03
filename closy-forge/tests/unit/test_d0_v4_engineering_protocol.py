@@ -10,13 +10,33 @@ from closy_forge.d0_v4_engineering.protocol import (
     LIFECYCLE_STATES,
     claim_public_test_execution,
     complete_public_test_execution,
+    ledger_digest,
     load_budget_ledger,
     load_engineering_protocol,
     validate_budget_ledger,
     validate_engineering_protocol,
 )
+from closy_forge.package_io.canonical_json import write_canonical_json
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _copy_pre_public_test_state(root: Path) -> None:
+    evidence = root / "docs" / "evidence" / "d0_v4_engineering"
+    evidence.mkdir(parents=True)
+    shutil.copy2(
+        ROOT / "docs" / "evidence" / "d0_v4_engineering" / "engineering_protocol.json",
+        evidence / "engineering_protocol.json",
+    )
+    ledger = deepcopy(load_budget_ledger(ROOT))
+    ledger["events"] = [
+        event for event in ledger["events"] if not event["event"].startswith("public_test_")
+    ]
+    for ordinal, event in enumerate(ledger["events"]):
+        event["ordinal"] = ordinal
+    ledger["publicTestExecutionsConsumed"] = 0
+    ledger["ledgerDigest"] = ledger_digest(ledger)
+    write_canonical_json(evidence / "engineering_budget_ledger.json", ledger)
 
 
 def test_engineering_protocol_freezes_budget_partitions_and_readiness() -> None:
@@ -86,10 +106,7 @@ def test_budget_ledger_rejects_reorder_and_overrun() -> None:
 
 
 def test_public_test_claim_is_atomic_one_shot_and_consumes_before_read(tmp_path: Path) -> None:
-    evidence = tmp_path / "docs" / "evidence" / "d0_v4_engineering"
-    evidence.mkdir(parents=True)
-    for name in ("engineering_protocol.json", "engineering_budget_ledger.json"):
-        shutil.copy2(ROOT / "docs" / "evidence" / "d0_v4_engineering" / name, evidence / name)
+    _copy_pre_public_test_state(tmp_path)
     claimed = claim_public_test_execution(
         tmp_path,
         source_head="a" * 40,
@@ -113,10 +130,7 @@ def test_public_test_claim_is_atomic_one_shot_and_consumes_before_read(tmp_path:
 
 
 def test_public_test_failure_reason_is_bounded_and_single_line(tmp_path: Path) -> None:
-    evidence = tmp_path / "docs" / "evidence" / "d0_v4_engineering"
-    evidence.mkdir(parents=True)
-    for name in ("engineering_protocol.json", "engineering_budget_ledger.json"):
-        shutil.copy2(ROOT / "docs" / "evidence" / "d0_v4_engineering" / name, evidence / name)
+    _copy_pre_public_test_state(tmp_path)
     claim_public_test_execution(
         tmp_path,
         source_head="a" * 40,
