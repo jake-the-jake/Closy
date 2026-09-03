@@ -7,6 +7,7 @@ import pytest
 from closy_forge.capture.source_records import build_synthetic_capture_record
 from closy_forge.capture_engineering_v1.alternate_renderer import render_ray_triangles
 from closy_forge.capture_engineering_v1.camera_observation import estimate_camera
+from closy_forge.capture_engineering_v1.capture_sources import decode_video_source
 from closy_forge.capture_engineering_v1.common import canonical_digest
 from closy_forge.capture_engineering_v1.corpus import session_specs
 from closy_forge.capture_engineering_v1.development_model import (
@@ -105,6 +106,25 @@ def test_actual_avi_round_trip_timestamps_and_cancellation() -> None:
     assert decoded.frames[-1].timestamp_denominator == 12
     with pytest.raises(VideoDecodeError, match="video_decode_cancelled"):
         decode_uncompressed_avi(encoded, cancelled=lambda: True)
+
+
+def test_video_qc_retains_blank_frames_but_never_selects_them_when_valid_frames_exist() -> None:
+    valid = _rgba_fixture(10, 8, 2)
+    blank = bytes((232, 229, 222, 255) * 80)
+    encoded = encode_uncompressed_avi(10, 8, [blank, *([valid] * 23)], frames_per_second=12)
+    report = decode_video_source(
+        encoded,
+        source_id="video.qc",
+        capture_thresholds={
+            "minimumFocusScore": 0.0,
+            "minimumExposureBalance": 0.0,
+            "minimumForegroundCoverage": 0.0,
+            "minimumBackgroundSeparation": 0.0,
+        },
+    )
+    assert report["sourceFrameCount"] == 24
+    assert report["frameRows"][0]["qualityStatus"] == "rejected"
+    assert 0 not in report["selectedFrameIndices"]
 
 
 def test_pixels_drive_mask_quality_camera_and_development_model() -> None:

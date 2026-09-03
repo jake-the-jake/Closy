@@ -125,7 +125,8 @@ def select_video_frames(
         digest = str(row.get("pixelSha256", ""))
         if digest and digest not in unique:
             unique[digest] = dict(row)
-    candidates = list(unique.values())
+    accepted = [row for row in unique.values() if row.get("qualityStatus") == "accepted"]
+    candidates = accepted or list(unique.values())
     selected: list[dict[str, Any]] = []
     while candidates and len(selected) < maximum_selected:
 
@@ -207,8 +208,19 @@ def _video_frame_rows(
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for frame in video.frames:
-        observation = observe_pixels(frame.width, frame.height, frame.rgba)
-        quality = quality_acceptance(observation, capture_thresholds)
+        try:
+            observation = observe_pixels(frame.width, frame.height, frame.rgba)
+            quality = quality_acceptance(observation, capture_thresholds)
+            focus = round(observation.focus_score, 8)
+            coverage = round(observation.foreground_coverage, 8)
+            centroid = [round(value, 8) for value in observation.foreground_centroid]
+            error_code = None
+        except ValueError as error:
+            focus = 0.0
+            coverage = 0.0
+            centroid = [0.5, 0.5]
+            quality = {"status": "rejected", "checks": {}, "reasons": [str(error)]}
+            error_code = str(error)
         rows.append(
             {
                 "frameIndex": frame.index,
@@ -217,12 +229,12 @@ def _video_frame_rows(
                     "denominator": frame.timestamp_denominator,
                 },
                 "pixelSha256": frame.pixel_sha256,
-                "focusScore": round(observation.focus_score, 8),
-                "foregroundCoverage": round(observation.foreground_coverage, 8),
-                "foregroundCentroidNormalized": [
-                    round(value, 8) for value in observation.foreground_centroid
-                ],
+                "focusScore": focus,
+                "foregroundCoverage": coverage,
+                "foregroundCentroidNormalized": centroid,
                 "qualityStatus": quality["status"],
+                "qualityReasons": quality["reasons"],
+                "errorCode": error_code,
             }
         )
     return rows
