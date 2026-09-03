@@ -1,0 +1,22 @@
+{
+  "components": [
+    {
+      "codec": "BI_RGB 24-bit DIB",
+      "container": "RIFF AVI",
+      "implementation": "src/closy_forge/capture_engineering_v1/video_avi.py",
+      "license": "MIT; project-owned implementation",
+      "name": "closy-project-owned-avi-dib-decoder",
+      "networkRequired": false,
+      "version": "closy.project_owned_avi_dib.decoder.v1"
+    },
+    {
+      "implementation": "Pillow",
+      "license": "HPND",
+      "name": "Pillow",
+      "networkRequired": false,
+      "version": "11.1.0"
+    }
+  ],
+  "schemaVersion": 1,
+  "sbomVersion": "closy.capture_decoder_sbom.v1"
+}
