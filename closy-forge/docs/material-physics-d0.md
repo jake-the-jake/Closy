@@ -28,6 +28,19 @@ collision. Each varies one parameter over low/base/high values, integrates a res
 quantitative result and checks only the expected qualitative ordering. Result hashes cover the
 measured response and settings; the expected result is not copied from the input coefficient.
 
+## Synthetic Mechanical Calibration v2
+
+`reports/synthetic_mechanical_calibration.json` adds an inverse-calibration exercise over all four
+authored presets. Ten descriptor fields each produce three calibration observations and two unseen
+synthetic holdouts, for 120 calibration and 80 holdout observations. A bounded 2,049-candidate
+grid estimates each field from response values without receiving the authored truth as an input.
+The report retains per-observation hashes, per-parameter estimates, deterministic grid-resolution
+intervals, midpoint-baseline errors and held-out response errors. `warpOrientation` is explicitly
+not calibrated because these scalar coupons do not identify it.
+
+This is project-authored numerical evidence. Grid-resolution intervals are not statistical
+confidence intervals, and successful recovery is not evidence of real-fabric physical accuracy.
+
 ## T-Shirt Motion Evidence
 
 Every preset runs the existing fixed-avatar T-shirt reference solver. The report measures
@@ -43,6 +56,8 @@ failures are persisted; thresholds are not widened to manufacture acceptance.
 
 - Descriptor/schema and deterministic fixture selection: executed D0 public-fixture evidence.
 - Numerical calibration fixtures: executed, but not real-fabric measurement.
+- Synthetic inverse calibration and unseen authored holdouts: executed, but not real-fabric
+  measurement or learned inference.
 - Fixed-avatar T-shirt CPU motion and dense reconstruction: executed.
 - Learned material inference: not run.
 - Private-user material estimation: not run.

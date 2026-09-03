@@ -111,6 +111,10 @@ from closy_forge.simulation.self_collision import (
     build_self_collision_report,
     hash_self_collision_report,
 )
+from closy_forge.simulation.synthetic_mechanical_calibration import (
+    SyntheticCalibrationError,
+    validate_synthetic_mechanical_calibration,
+)
 from closy_forge.validation.issues import Severity, ValidationIssue
 from closy_forge.visual_understanding import (
     REQUIRED_TSHIRT_VISUAL_LANDMARKS,
@@ -258,6 +262,7 @@ EXPECTED_FILES = [
     "reports/binding_quality.json",
     "reports/material_selection.json",
     "reports/material_calibration.json",
+    "reports/synthetic_mechanical_calibration.json",
     "reports/material_motion_suite.json",
     "reports/package_validation.json",
     "reports/summary.json",
@@ -11209,8 +11214,17 @@ def _validate_material_physics(
     registry = _read_required_json(package_dir, "simulation/material_presets.json", issues)
     selection = _read_required_json(package_dir, "reports/material_selection.json", issues)
     calibration = _read_required_json(package_dir, "reports/material_calibration.json", issues)
+    synthetic_calibration = _read_required_json(
+        package_dir, "reports/synthetic_mechanical_calibration.json", issues
+    )
     motion = _read_required_json(package_dir, "reports/material_motion_suite.json", issues)
-    if registry is None or selection is None or calibration is None or motion is None:
+    if (
+        registry is None
+        or selection is None
+        or calibration is None
+        or synthetic_calibration is None
+        or motion is None
+    ):
         return
 
     presets = registry.get("presets", [])
@@ -11294,6 +11308,18 @@ def _validate_material_physics(
             )
         )
 
+    try:
+        validate_synthetic_mechanical_calibration(synthetic_calibration, registry)
+    except SyntheticCalibrationError as exc:
+        issues.append(
+            _issue(
+                "synthetic_mechanical_calibration_invalid",
+                "fatal",
+                "reports/synthetic_mechanical_calibration.json",
+                f"Synthetic mechanical calibration rejected: {exc.code}.",
+            )
+        )
+
     records = motion.get("presets", [])
     state_names = {
         "material.lightweight_knit_d0_v1": "lightweight_knit",
@@ -11366,6 +11392,8 @@ def _validate_material_physics(
         "materialPresetRegistryAvailable",
         "materialPresetSelectionAvailable",
         "materialCalibrationFixturesAvailable",
+        "syntheticMechanicalCalibrationAvailable",
+        "acceptedForProjectAuthoredSyntheticCalibration",
         "materialMotionSuiteAvailable",
         "materialDenseBindingReconstructionAvailable",
         "acceptedForD0MaterialPhysics",
