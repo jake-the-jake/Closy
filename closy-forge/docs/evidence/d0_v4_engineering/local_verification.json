@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "unit_ac_local_source_freeze_verification",
+  "environment": {
+    "os": "Windows",
+    "python": "3.12.13",
+    "ruff": "0.8.6",
+    "mypy": "1.14.1",
+    "pytest": "8.3.4"
+  },
+  "runs": [
+    {
+      "name": "repository_static",
+      "commands": [
+        "python -m ruff format --check .",
+        "python -m ruff check .",
+        "python -m mypy src",
+        "python -m closy_forge schemas check --schema-dir schemas/v1"
+      ],
+      "startedAt": "2026-09-03T02:29:28.7016916+01:00",
+      "endedAt": "2026-09-03T02:30:19.3292863+01:00",
+      "durationSeconds": 50.628,
+      "totals": {
+        "formattedFiles": 647,
+        "mypySourceFiles": 428,
+        "schemaIssues": 0
+      },
+      "status": "pass"
+    },
+    {
+      "name": "unit_and_corruption_shards",
+      "commandPattern": "python -m closy_forge.ci.test_shards --group shard-{0..4}",
+      "startedAt": "2026-09-03T02:38:28.6540790+01:00",
+      "endedAt": "2026-09-03T03:28:29.7676991+01:00",
+      "durationSeconds": 3001.114,
+      "totals": {
+        "passed": 850,
+        "failed": 0,
+        "skipped": 4,
+        "deselected": 1
+      },
+      "shards": [
+        {"group": "shard-0", "passed": 195, "skipped": 0, "deselected": 0, "durationSeconds": 1270.58},
+        {"group": "shard-1", "passed": 166, "skipped": 1, "deselected": 0, "durationSeconds": 1631.47},
+        {"group": "shard-2", "passed": 188, "skipped": 2, "deselected": 1, "durationSeconds": 698.08},
+        {"group": "shard-3", "passed": 206, "skipped": 1, "deselected": 0, "durationSeconds": 1186.53},
+        {"group": "shard-4", "passed": 95, "skipped": 0, "deselected": 0, "durationSeconds": 2999.66}
+      ],
+      "status": "pass"
+    },
+    {
+      "name": "integration_and_golden_shards",
+      "commandPattern": "python -m closy_forge.ci.test_shards --suite integration --group shard-{0..1}",
+      "startedAt": "2026-09-03T03:28:45.0034385+01:00",
+      "endedAt": "2026-09-03T04:07:41.5969488+01:00",
+      "durationSeconds": 2336.594,
+      "totals": {"passed": 33, "failed": 0, "skipped": 0},
+      "shards": [
+        {"group": "shard-0", "passed": 19, "durationSeconds": 2211.68},
+        {"group": "shard-1", "passed": 14, "durationSeconds": 2335.20}
+      ],
+      "status": "pass"
+    },
+    {
+      "name": "sealed_v2_failure_witness",
+      "command": "python scripts/verify_sealed_v2_failure.py",
+      "startedAt": "2026-09-03T04:07:50.8372415+01:00",
+      "endedAt": "2026-09-03T04:07:56.0915296+01:00",
+      "durationSeconds": 5.254,
+      "literalOutcome": "dependency_blocked_before_official_seed_v2",
+      "expectedInnerTestFailures": 1,
+      "unexpectedFailures": 0,
+      "status": "pass"
+    },
+    {
+      "name": "family_rebuilds",
+      "commandPattern": "python scripts/ci_family_shard.py --group {upper,lower,structured} --output-root .tmp/ac-local-family",
+      "startedAt": "2026-09-03T04:08:06.4739377+01:00",
+      "endedAt": "2026-09-03T04:16:16.5153088+01:00",
+      "durationSeconds": 490.041,
+      "groups": {
+        "upper": "pass_with_literal_tshirt_physical_warnings_preserved",
+        "lower": "pass",
+        "structured": "pass"
+      },
+      "deterministicPairComparisons": "identical",
+      "commandFailures": 0,
+      "status": "pass"
+    }
+  ],
+  "inventoryDigests": {
+    "unitAndCorruption": "03b20c964f0d0b478b993300d9b52135364c266e8e729c65d8798c0b8cf8739f",
+    "integrationAndGolden": "4fa7d004dc831b9942b1cd61744a849026a01bad0df10a39c5bc0c7d03b5ad94"
+  },
+  "developmentEvaluation": {
+    "partition": "validation",
+    "denominator": 128,
+    "readinessPass": true,
+    "resultDigest": "8e26e19f3c53e41e3b3a7912d80f8ff73bb211a930c1eaa67a66de824c5bcfb5"
+  },
+  "negativeControls": {
+    "passed": 10,
+    "failed": 0,
+    "resultDigest": "a3d109af61ad328d612ce0704a21bbfc77e7f10c3a6f54fc666ef896c00ac151"
+  },
+  "preliminaryRuns": [
+    {
+      "command": "python scripts/generate_d0_v4_negative_controls.py",
+      "status": "environment_error",
+      "reason": "unqualified PATH interpreter lacked pinned Pillow; no scientific budget or public data consumed"
+    },
+    {
+      "command": "python -m pytest",
+      "status": "operator_cancelled",
+      "reason": "replaced by complete repository-pinned parallel shard execution; no test failure observed"
+    }
+  ],
+  "publicTestExecutionsConsumed": 0,
+  "qualificationCohortCreated": false,
+  "status": "pass",
+  "resultDigest": "bf09d3fa2423bf634b1d14c760f24d38ab15bed919bec7c9f1445e7584b5730f"
+}
