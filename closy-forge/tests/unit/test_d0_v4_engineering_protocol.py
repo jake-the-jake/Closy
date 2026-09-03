@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import shutil
 from copy import deepcopy
 from pathlib import Path
 
+import pytest
+
 from closy_forge.d0_v4_engineering.protocol import (
     LIFECYCLE_STATES,
+    claim_public_test_execution,
+    complete_public_test_execution,
     load_budget_ledger,
     load_engineering_protocol,
     validate_budget_ledger,
@@ -51,9 +56,20 @@ def test_budget_ledger_is_append_only_and_within_frozen_caps() -> None:
     protocol = load_engineering_protocol(ROOT)
     ledger = load_budget_ledger(ROOT)
     assert validate_budget_ledger(ledger, protocol) == []
-    assert ledger["observationContractRevisionsConsumed"] == 1
-    assert ledger["modelTrainingTrialsConsumed"] == 1
-    assert ledger["publicTestExecutionsConsumed"] == 0
+    counts = {
+        event: sum(item["event"] == event for item in ledger["events"])
+        for event in (
+            "observation_contract_revision_completed",
+            "model_training_trial_completed",
+            "public_test_execution_started",
+        )
+    }
+    assert (
+        ledger["observationContractRevisionsConsumed"]
+        == counts["observation_contract_revision_completed"]
+    )
+    assert ledger["modelTrainingTrialsConsumed"] == counts["model_training_trial_completed"]
+    assert ledger["publicTestExecutionsConsumed"] == counts["public_test_execution_started"]
 
 
 def test_budget_ledger_rejects_reorder_and_overrun() -> None:
@@ -67,3 +83,52 @@ def test_budget_ledger_rejects_reorder_and_overrun() -> None:
         overrun["events"].append({"ordinal": ordinal, "event": "model_training_trial_completed"})
     overrun["modelTrainingTrialsConsumed"] = 13
     assert "model_training_trial_budget_exceeded" in validate_budget_ledger(overrun, protocol)
+
+
+def test_public_test_claim_is_atomic_one_shot_and_consumes_before_read(tmp_path: Path) -> None:
+    evidence = tmp_path / "docs" / "evidence" / "d0_v4_engineering"
+    evidence.mkdir(parents=True)
+    for name in ("engineering_protocol.json", "engineering_budget_ledger.json"):
+        shutil.copy2(ROOT / "docs" / "evidence" / "d0_v4_engineering" / name, evidence / name)
+    claimed = claim_public_test_execution(
+        tmp_path,
+        source_head="a" * 40,
+        model_sha256="b" * 64,
+    )
+    assert claimed["publicTestExecutionsConsumed"] == 1
+    assert claimed["events"][-1]["publicTestRead"] is False
+    with pytest.raises((FileExistsError, ValueError)):
+        claim_public_test_execution(
+            tmp_path,
+            source_head="a" * 40,
+            model_sha256="b" * 64,
+        )
+    completed = complete_public_test_execution(
+        tmp_path,
+        result_digest="c" * 64,
+        readiness_pass=True,
+    )
+    assert completed["publicTestExecutionsConsumed"] == 1
+    assert completed["events"][-1]["event"] == "public_test_execution_completed"
+
+
+def test_public_test_failure_reason_is_bounded_and_single_line(tmp_path: Path) -> None:
+    evidence = tmp_path / "docs" / "evidence" / "d0_v4_engineering"
+    evidence.mkdir(parents=True)
+    for name in ("engineering_protocol.json", "engineering_budget_ledger.json"):
+        shutil.copy2(ROOT / "docs" / "evidence" / "d0_v4_engineering" / name, evidence / name)
+    claim_public_test_execution(
+        tmp_path,
+        source_head="a" * 40,
+        model_sha256="b" * 64,
+    )
+    completed = complete_public_test_execution(
+        tmp_path,
+        result_digest=None,
+        readiness_pass=False,
+        failed_reason="private-path\n" + ("x" * 400),
+    )
+    reason = completed["events"][-1]["failedReason"]
+    assert isinstance(reason, str)
+    assert "\n" not in reason
+    assert len(reason) == 240

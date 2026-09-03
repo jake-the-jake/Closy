@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 
 from closy_forge.d0_v4_engineering.corpus import (
@@ -10,11 +11,12 @@ from closy_forge.d0_v4_engineering.model import (
     MODEL_ROOT,
     load_model,
     metadata_only_baseline,
+    model_digest,
     predict_structured,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-MODEL_PATH = ROOT / MODEL_ROOT / "trial-001.json"
+MODEL_PATH = ROOT / MODEL_ROOT / "trial-006.json"
 
 
 def test_persisted_model_is_genuinely_learned_and_complete() -> None:
@@ -44,9 +46,11 @@ def test_pixel_mutation_changes_geometry_and_zero_weights_do_not_match() -> None
     left = predict_structured(model, observation_for_record(records[0]))
     right = predict_structured(model, observation_for_record(records[1]))
     assert left["parameters"] != right["parameters"]
-    zero_model = {**model, "weights": [[0.0] * 41 for _ in range(11)]}
-    zero_model["integrity"] = {**model["integrity"], "modelSha256": "invalid"}
-    assert (
-        predict_structured(zero_model, observation_for_record(records[0]))["status"] == "rejected"
-    )
+    zero_model = deepcopy(model)
+    zero_model["weights"] = [[0.0] * len(row) for row in model["weights"]]
+    zero_model["integrity"]["weightsSha256"] = "zero_weight_ablation"
+    zero_model["integrity"]["modelSha256"] = model_digest(zero_model)
+    ablated = predict_structured(zero_model, observation_for_record(records[0]))
+    assert ablated["status"] == "predicted"
+    assert ablated["parameters"] != left["parameters"]
     assert metadata_only_baseline() != left["parameters"]

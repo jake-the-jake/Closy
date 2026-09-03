@@ -5,7 +5,9 @@ from pathlib import Path
 import pytest
 
 from closy_forge.d0_v4_engineering.corpus import (
+    DEVELOPMENT_PARTITION_COUNTS,
     PARTITION_COUNTS,
+    PUBLIC_TEST_MANIFEST_PATH,
     PublicTestAccessDenied,
     load_manifest,
     load_partition,
@@ -17,7 +19,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def test_corpus_has_exact_disjoint_inventory_and_two_renderers() -> None:
     manifest = load_manifest(ROOT)
-    assert manifest["partitionCounts"] == PARTITION_COUNTS
+    assert manifest["partitionCounts"] == DEVELOPMENT_PARTITION_COUNTS
+    assert manifest["allPartitionCounts"] == PARTITION_COUNTS
     assert manifest["separation"]["status"] == "pass"
     assert manifest["separation"]["uniqueCounts"]["identity"] == 768
     assert set(manifest["rendererFamilies"]) == {
@@ -42,6 +45,23 @@ def test_training_and_validation_use_same_pixel_observation_entrypoint() -> None
 def test_public_test_targets_are_fail_closed_outside_one_shot_evaluator() -> None:
     with pytest.raises(PublicTestAccessDenied):
         load_partition(ROOT, "public_test")
+
+
+def test_development_loader_never_deserializes_public_manifest(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from closy_forge.d0_v4_engineering import corpus
+
+    paths: list[Path] = []
+    original = corpus.read_json
+
+    def tracked(path: Path) -> object:
+        paths.append(path)
+        return original(path)
+
+    monkeypatch.setattr(corpus, "read_json", tracked)
+    assert len(load_partition(ROOT, "validation")) == 128
+    assert ROOT / PUBLIC_TEST_MANIFEST_PATH not in paths
 
 
 def test_variation_axes_include_crop_occlusion_logo_and_missing_rear() -> None:

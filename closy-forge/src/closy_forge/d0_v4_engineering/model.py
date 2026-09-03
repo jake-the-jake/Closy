@@ -17,7 +17,8 @@ from closy_forge.package_io.hashing import sha256_bytes
 from .corpus import observation_for_record
 from .observation import FEATURE_NAMES, observation_contract
 
-MODEL_VERSION = "closy.d0_v4.structured_rgb_multitask.v1"
+MODEL_VERSION = "closy.d0_v4.structured_rgb_multitask.v2"
+LEGACY_MODEL_VERSION = "closy.d0_v4.structured_rgb_multitask.v1"
 MODEL_ROOT = Path("models/d0_v4_engineering")
 RIDGE = 0.075
 
@@ -41,10 +42,10 @@ def train_structured_model(
         )
         for index in range(len(FEATURE_NAMES))
     ]
-    design = [[1.0, *_normalize(row, means, scales)] for row in raw_x]
+    design = [[1.0, *_polynomial_basis(_normalize(row, means, scales))] for row in raw_x]
     targets = [
         [
-            _logit(_normalized_target(name, float(record["parameters"][name])))
+            _normalized_target(name, float(record["parameters"][name]))
             for name in OBSERVABLE_PARAMETERS
         ]
         for record in training_records
@@ -81,7 +82,7 @@ def train_structured_model(
         "schemaVersion": 1,
         "modelVersion": MODEL_VERSION,
         "trialId": trial_id,
-        "architecture": "shared_40_feature_multiview_linear_trunk_with_11_bounded_heads",
+        "architecture": "shared_40_feature_degree3_multiview_basis_with_11_bounded_heads",
         "inputEvidence": "actual_front_rear_rgb_pixels_via_frozen_observation_contract",
         "viewValidityMasksIncluded": True,
         "multivariate": True,
@@ -103,9 +104,9 @@ def train_structured_model(
             "arithmetic": "python_binary64",
         },
         "outputConstraint": {
-            "kind": "per_parameter_logistic_range_transform",
+            "kind": "per_parameter_bounded_normalized_range_transform",
             "safeRanges": {name: list(PARAMETER_RANGES[name]) for name in OBSERVABLE_PARAMETERS},
-            "rawLogitsRetained": True,
+            "rawUnboundedValuesRetained": True,
             "saturationThreshold": 0.025,
         },
         "weights": [_round_vector(row) for row in weights],
@@ -170,8 +171,7 @@ def predict_structured(model: Mapping[str, Any], observation: Mapping[str, Any])
             }
         )
     saturation = {
-        name: round(min(_sigmoid(logits[name]), 1.0 - _sigmoid(logits[name])), 12) < 0.025
-        for name in OBSERVABLE_PARAMETERS
+        name: logits[name] < 0.025 or logits[name] > 0.975 for name in OBSERVABLE_PARAMETERS
     }
     parameters = {**values, **_fixed_parameters()}
     TShirtParameters(**parameters).validate()
@@ -219,7 +219,8 @@ def load_model(path: Path) -> dict[str, Any]:
 
 def validate_model(model: Mapping[str, Any]) -> list[str]:
     issues: list[str] = []
-    if model.get("modelVersion") != MODEL_VERSION:
+    version = model.get("modelVersion")
+    if version not in {MODEL_VERSION, LEGACY_MODEL_VERSION}:
         issues.append("model_version_invalid")
     if model.get("featureNames") != list(FEATURE_NAMES):
         issues.append("feature_axis_invalid")
@@ -229,10 +230,13 @@ def validate_model(model: Mapping[str, Any]) -> list[str]:
     if preprocessing.get("observationContractDigest") != observation_contract()["contractDigest"]:
         issues.append("observation_contract_mismatch")
     weights = model.get("weights")
+    expected_width = (
+        len(FEATURE_NAMES) * 3 + 1 if version == MODEL_VERSION else len(FEATURE_NAMES) + 1
+    )
     if (
         not isinstance(weights, list)
         or len(weights) != len(OBSERVABLE_PARAMETERS)
-        or any(not isinstance(row, list) or len(row) != len(FEATURE_NAMES) + 1 for row in weights)
+        or any(not isinstance(row, list) or len(row) != expected_width for row in weights)
     ):
         issues.append("weight_shape_invalid")
     integrity = _mapping(model.get("integrity"))
@@ -310,11 +314,15 @@ def _predict_parameters_and_logits(
     scales: Sequence[float],
     observation: Mapping[str, Any],
 ) -> tuple[dict[str, float], dict[str, float]]:
-    row = [1.0, *_normalize(_feature_vector(observation), means, scales)]
+    normalized = _normalize(_feature_vector(observation), means, scales)
+    polynomial_model = len(weights[0]) == len(FEATURE_NAMES) * 3 + 1
+    row = [1.0, *_polynomial_basis(normalized)] if polynomial_model else [1.0, *normalized]
     logits = {name: _dot(weights[index], row) for index, name in enumerate(OBSERVABLE_PARAMETERS)}
     values = {
         name: round(
-            low + (high - low) * _sigmoid(logits[name]),
+            low
+            + (high - low)
+            * (_clamp(logits[name], 0.0, 1.0) if polynomial_model else _sigmoid(logits[name])),
             9,
         )
         for name, (low, high) in PARAMETER_RANGES.items()
@@ -374,7 +382,7 @@ def _fixed_parameters() -> dict[str, float]:
         "hem_allowance": 0.025,
         "neckband_width": 0.035,
         "neckband_length_ease_ratio": 0.92,
-        "target_panel_edge_length": 0.045,
+        "target_panel_edge_length": 0.075,
     }
 
 
@@ -390,8 +398,13 @@ def _dot(left: Sequence[float], right: Sequence[float]) -> float:
     return math.fsum(a * b for a, b in zip(left, right, strict=True))
 
 
-def _logit(value: float) -> float:
-    return math.log(value / (1.0 - value))
+def _polynomial_basis(values: Sequence[float]) -> list[float]:
+    clipped = [_clamp(value, -8.0, 8.0) for value in values]
+    return [
+        *clipped,
+        *[value * value for value in clipped],
+        *[value**3 for value in clipped],
+    ]
 
 
 def _sigmoid(value: float) -> float:
