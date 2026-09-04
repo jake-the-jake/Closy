@@ -73,11 +73,7 @@ def build_source_freeze(repository: Path, source_commit: str, source_tree: str) 
     protocol = _read(forge / "fixtures" / "capture_reconstruction_v2" / "protocol.json")
     source_files = _implementation_paths(repository)
     inventory = [
-        {
-            "path": path.relative_to(repository).as_posix(),
-            "byteLength": path.stat().st_size,
-            "sha256": sha256_bytes(path.read_bytes()),
-        }
+        _git_blob_record(repository, source_commit, path.relative_to(repository).as_posix())
         for path in source_files
     ]
     groups = {
@@ -137,11 +133,23 @@ def verify_source_freeze(repository: Path, freeze: Mapping[str, Any]) -> list[st
         if not path.is_file():
             failures.append("capture_v2_frozen_implementation_missing")
             continue
-        payload = path.read_bytes()
-        if len(payload) != int(row.get("byteLength", -1)) or sha256_bytes(payload) != row.get(
-            "sha256"
-        ):
+        try:
+            frozen_record = _git_blob_record(
+                repository, str(freeze.get("sourceCommit", "")), relative
+            )
+            head_record = _git_blob_record(repository, "HEAD", relative)
+        except (subprocess.CalledProcessError, ValueError):
             failures.append("capture_v2_frozen_implementation_digest_changed")
+            continue
+        if frozen_record != row or head_record != row:
+            failures.append("capture_v2_frozen_implementation_digest_changed")
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain=v1", "--", relative],
+            cwd=repository,
+            text=True,
+        )
+        if status.strip():
+            failures.append("capture_v2_frozen_implementation_worktree_dirty")
     if freeze.get("implementationInventoryDigest") != canonical_digest(expected_rows):
         failures.append("capture_v2_frozen_inventory_digest_invalid")
     protocol = _read(
@@ -395,6 +403,27 @@ def _verify_git_identity(repository: Path, commit: str, tree: str) -> None:
     ).strip()
     if observed != tree:
         raise ValueError("capture_v2_source_tree_mismatch")
+
+
+def _git_blob_record(repository: Path, commit: str, relative: str) -> dict[str, Any]:
+    listing = subprocess.check_output(
+        ["git", "ls-tree", "-z", commit, "--", relative], cwd=repository
+    )
+    if not listing or b"\0" not in listing:
+        raise ValueError("capture_v2_source_blob_missing")
+    entry = listing.split(b"\0", 1)[0]
+    header, listed_path = entry.split(b"\t", 1)
+    mode, kind, oid = header.decode("ascii").split()
+    if kind != "blob" or listed_path.decode("utf-8") != relative:
+        raise ValueError("capture_v2_source_blob_invalid")
+    payload = subprocess.check_output(["git", "cat-file", "blob", oid], cwd=repository)
+    return {
+        "path": relative,
+        "gitMode": mode,
+        "gitBlobOid": oid,
+        "byteLength": len(payload),
+        "sha256": sha256_bytes(payload),
+    }
 
 
 def _implementation_paths(repository: Path) -> list[Path]:
