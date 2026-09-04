@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+import subprocess
 from pathlib import Path
 from typing import Any
 
-from closy_forge.package_io.hashing import sha256_file
 from closy_forge.simulation.reference_cloth_solver import SOLVER_VERSION
 
 from .common import canonical_bytes, canonical_digest, rounded, write_json
@@ -169,24 +169,34 @@ def run_development_studies(protocol: dict[str, Any]) -> dict[str, Any]:
 
 
 def legacy_byte_inventory(repository: Path) -> dict[str, Any]:
-    forge = repository / "closy-forge"
+    parent_commit = "fad7ff76b1a92643229c2db1d7fb62b57e4ce90d"
     roots = [
-        forge / "src" / "closy_forge" / "solver_material_v1",
-        forge / "fixtures" / "solver_material_v1",
-        forge / "docs" / "evidence" / "solver_material_v1",
+        "closy-forge/src/closy_forge/solver_material_v1",
+        "closy-forge/fixtures/solver_material_v1",
+        "closy-forge/docs/evidence/solver_material_v1",
     ]
+    paths = subprocess.check_output(
+        ["git", "ls-tree", "-r", "--name-only", parent_commit, "--", *roots],
+        cwd=repository,
+        text=True,
+    ).splitlines()
     rows = []
-    for root in roots:
-        if not root.exists():
-            continue
-        for path in sorted(item for item in root.rglob("*") if item.is_file()):
-            rows.append(
-                {
-                    "path": path.relative_to(repository).as_posix(),
-                    "bytes": path.stat().st_size,
-                    "sha256": sha256_file(path),
-                }
-            )
+    for relative in sorted(paths):
+        oid = subprocess.check_output(
+            ["git", "rev-parse", f"{parent_commit}:{relative}"],
+            cwd=repository,
+            text=True,
+        ).strip()
+        payload = subprocess.check_output(["git", "cat-file", "blob", oid], cwd=repository)
+        rows.append(
+            {
+                "path": relative,
+                "parentCommit": parent_commit,
+                "gitBlobOid": oid,
+                "bytes": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+            }
+        )
     return {
         "schemaVersion": 2,
         "legacyRoute": "solver_material_v1",

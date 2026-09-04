@@ -82,6 +82,22 @@ def main() -> int:
         write_json(evidence / "real_coupon_report.json", report)
         print(json.dumps(report, sort_keys=True))
         return 0
+    public_root = fixture / "locked_public"
+    contestant_path = evidence / "contestant_output.json"
+    envelope_path = evidence / "canonical_result_envelope.json"
+    disclosure_path = evidence / "synthetic_truth_disclosure.json"
+    if args.command == "check":
+        checker = check_publication_paths(
+            protocol_path,
+            public_root,
+            contestant_path,
+            envelope_path,
+            disclosure_path,
+            evidence / "development_studies.json",
+        )
+        write_json(evidence / "independent_checker.json", checker)
+        print(json.dumps(checker, sort_keys=True))
+        return 0 if checker["terminalOutcome"] == "passed" else 1
     run_id = _required(args.exact_head_run_id, "--exact-head-run-id")
     authority = build_seed_authority(freeze, run_id)
     if args.command == "generate-locked":
@@ -99,10 +115,6 @@ def main() -> int:
         print(json.dumps({"manifestDigest": result["manifest"]["manifestDigest"]}))
         return 0
     custody = _required_path(args.custody_root)
-    public_root = fixture / "locked_public"
-    contestant_path = evidence / "contestant_output.json"
-    envelope_path = evidence / "canonical_result_envelope.json"
-    disclosure_path = evidence / "synthetic_truth_disclosure.json"
     if args.command == "evaluate":
         if authority != read_json(fixture / "seed_authority.json"):
             raise SystemExit("seed_authority_substitution")
@@ -119,17 +131,7 @@ def main() -> int:
         )
         print(json.dumps({"resultDigest": publication["envelope"]["resultDigest"]}))
         return 0
-    checker = check_publication_paths(
-        protocol_path,
-        public_root,
-        contestant_path,
-        envelope_path,
-        disclosure_path,
-        evidence / "development_studies.json",
-    )
-    write_json(evidence / "independent_checker.json", checker)
-    print(json.dumps(checker, sort_keys=True))
-    return 0 if checker["terminalOutcome"] == "passed" else 1
+    raise AssertionError(f"unhandled command: {args.command}")
 
 
 def _required(value: str | None, name: str) -> str:

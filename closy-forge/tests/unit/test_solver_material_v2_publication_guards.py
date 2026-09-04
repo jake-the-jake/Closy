@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -29,9 +30,15 @@ def test_legacy_v1_inventory_matches_inherited_bytes() -> None:
     inventory = read_json(EVIDENCE / "legacy_byte_inventory.json")
     assert inventory["semanticsChanged"] is False
     for row in inventory["files"]:
-        payload = (REPOSITORY / row["path"]).read_bytes()
+        oid = subprocess.check_output(
+            ["git", "rev-parse", f"{row['parentCommit']}:{row['path']}"],
+            cwd=REPOSITORY,
+            text=True,
+        ).strip()
+        payload = subprocess.check_output(["git", "cat-file", "blob", oid], cwd=REPOSITORY)
         import hashlib
 
+        assert oid == row["gitBlobOid"]
         assert hashlib.sha256(payload).hexdigest() == row["sha256"]
 
 
