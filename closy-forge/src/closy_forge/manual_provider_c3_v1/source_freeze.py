@@ -14,9 +14,7 @@ SOURCE_PATHS = (
     "closy-forge/scripts/run_manual_provider_c3_v1.py",
     "closy-forge/tests/unit/test_manual_provider_c3_v1.py",
 )
-SOURCE_DIRECTORIES = (
-    "closy-forge/src/closy_forge/manual_provider_c3_v1",
-)
+SOURCE_DIRECTORIES = ("closy-forge/src/closy_forge/manual_provider_c3_v1",)
 
 
 def _git(repository: Path, *args: str) -> str:
