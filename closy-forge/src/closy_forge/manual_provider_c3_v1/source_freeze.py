@@ -10,10 +10,12 @@ SOURCE_PATHS = (
     "closy-forge/fixtures/manual_provider_c3_v1/protocol.json",
     "closy-forge/fixtures/manual_provider_c3_v1/raw_source_freeze.json",
     "closy-forge/scripts/author_manual_provider_c3_v1_sources.py",
+    "closy-forge/scripts/freeze_manual_provider_c3_v1_source.py",
+    "closy-forge/scripts/run_manual_provider_c3_v1.py",
+    "closy-forge/tests/unit/test_manual_provider_c3_v1.py",
 )
-SOURCE_GLOBS = (
-    "closy-forge/src/closy_forge/manual_provider_c3_v1/*.py",
-    "closy-forge/tests/unit/test_manual_provider_c3_v1*.py",
+SOURCE_DIRECTORIES = (
+    "closy-forge/src/closy_forge/manual_provider_c3_v1",
 )
 
 
@@ -23,9 +25,9 @@ def _git(repository: Path, *args: str) -> str:
 
 def source_inventory(repository: Path, commit: str) -> list[dict[str, Any]]:
     paths = set(SOURCE_PATHS)
-    for pattern in SOURCE_GLOBS:
+    for directory in SOURCE_DIRECTORIES:
         paths.update(
-            _git(repository, "ls-tree", "-r", "--name-only", commit, "--", pattern).splitlines()
+            _git(repository, "ls-tree", "-r", "--name-only", commit, "--", directory).splitlines()
         )
     records = []
     for relative in sorted(path for path in paths if path):
