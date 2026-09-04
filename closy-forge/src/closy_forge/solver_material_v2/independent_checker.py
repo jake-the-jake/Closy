@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Iterable
 from math import sqrt
 from pathlib import Path
 from typing import Any
@@ -106,7 +107,7 @@ def _recompute(
                 float(interval[0]) <= float(target[field]) <= float(interval[1])
             )
             widths.append(float(interval[1]) - float(interval[0]))
-        row_six.append(sum(errors[field] for field in SIX_FIELD_ORDER) / 6.0)
+        row_six.append(_ordered_sum(errors[field] for field in SIX_FIELD_ORDER) / 6.0)
         identifiable += int(
             not estimate["abstainedFields"] and estimate["effectiveRank"] == len(FIELD_ORDER)
         )
@@ -134,17 +135,19 @@ def _recompute(
                 and float(predicted["metrics"]["p95Strain"]) <= 0.35
                 and float(predicted["metrics"]["seamErrorMeters"]) <= 0.008
             )
-        normal = sum(errors.values()) / len(errors)
+        normal = _ordered_sum(errors.values()) / len(errors)
         controls.extend(_controls(tuple_id, output["controlOutputs"], target, normal))
         baselines["constant_prior"].append(
-            sum(abs(0.5 - float(target[field])) for field in FIELD_ORDER) / len(FIELD_ORDER)
+            _ordered_sum(abs(0.5 - float(target[field])) for field in FIELD_ORDER)
+            / len(FIELD_ORDER)
         )
         lookup = 0.44 + (sum(tuple_id.encode()) % 9) / 100.0
         baselines["lookup_retrieval"].append(
-            sum(abs(lookup - float(target[field])) for field in FIELD_ORDER) / len(FIELD_ORDER)
+            _ordered_sum(abs(lookup - float(target[field])) for field in FIELD_ORDER)
+            / len(FIELD_ORDER)
         )
         baselines["wrong_model"].append(
-            sum(
+            _ordered_sum(
                 abs((1.0 - float(estimate["estimatedFields"][field])) - float(target[field]))
                 for field in FIELD_ORDER
             )
@@ -276,8 +279,17 @@ def _controls(
 
 
 def _rms(values: list[float]) -> float:
-    return sqrt(sum(value * value for value in values) / len(values))
+    return sqrt(_ordered_sum(value * value for value in values) / len(values))
 
 
 def _mean(values: list[float]) -> float:
-    return sum(values) / len(values)
+    return _ordered_sum(values) / len(values)
+
+
+def _ordered_sum(values: Iterable[float]) -> float:
+    # Python 3.12 changed float sum() to compensated summation. Preserve the
+    # canonical Python 3.11 publication's explicit left-to-right accumulation.
+    total = 0.0
+    for value in values:
+        total += value
+    return total

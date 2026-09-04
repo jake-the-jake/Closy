@@ -64,6 +64,21 @@ def build_source_freeze(repository: Path, source_commit: str, source_tree: str) 
 
 def verify_source_freeze(repository: Path, freeze: dict[str, Any]) -> list[str]:
     failures: list[str] = []
+    amendment_path = (
+        repository
+        / "closy-forge"
+        / "docs"
+        / "evidence"
+        / "solver_material_v2"
+        / "post_result_verifier_portability_amendment.json"
+    )
+    amendment = read_json(amendment_path) if amendment_path.exists() else None
+    validated_amendments = _validate_portability_amendment(freeze, amendment)
+    if amendment is not None and validated_amendments is None:
+        failures.append("source_freeze_portability_amendment_invalid")
+        allowed_amendments = {}
+    else:
+        allowed_amendments = validated_amendments or {}
     if _git(repository, "rev-parse", f"{freeze['sourceCommit']}^{{tree}}") != freeze.get(
         "sourceTree"
     ):
@@ -74,13 +89,49 @@ def verify_source_freeze(repository: Path, freeze: dict[str, Any]) -> list[str]:
         if current != row:
             failures.append(f"source_blob_invalid:{row['path']}")
         head = _blob_record(repository, "HEAD", str(row["path"]))
-        if head != row:
+        if head != row and allowed_amendments.get(str(row["path"])) != head:
             failures.append(f"post_freeze_source_edit:{row['path']}")
     if freeze.get("implementationInventoryDigest") != canonical_digest(rows):
         failures.append("source_inventory_digest_invalid")
     if freeze.get("freezeDigest") != canonical_digest(freeze, "freezeDigest"):
         failures.append("source_freeze_digest_invalid")
     return sorted(set(failures))
+
+
+def _validate_portability_amendment(
+    freeze: dict[str, Any], amendment: dict[str, Any] | None
+) -> dict[str, dict[str, Any]] | None:
+    if amendment is None:
+        return {}
+    allowed_paths = {
+        "closy-forge/src/closy_forge/solver_material_v2/independent_checker.py",
+        "closy-forge/src/closy_forge/solver_material_v2/publication.py",
+    }
+    rows = amendment.get("changedFiles", [])
+    if (
+        amendment.get("amendmentVersion")
+        != "closy.solver_material_v2_post_result_verifier_portability.v1"
+        or amendment.get("originalFreezeDigest") != freeze.get("freezeDigest")
+        or amendment.get("sourceCommit") != freeze.get("sourceCommit")
+        or amendment.get("classification") != "post_result_verifier_only_portability"
+        or amendment.get("resultChanged") is not False
+        or amendment.get("estimatorRerun") is not False
+        or amendment.get("amendmentDigest") != canonical_digest(amendment, "amendmentDigest")
+        or {str(row.get("path")) for row in rows} != allowed_paths
+    ):
+        return None
+    frozen = {str(row["path"]): row for row in freeze.get("implementationInventory", [])}
+    replacements: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        path = str(row["path"])
+        original = row.get("originalBlob")
+        replacement = row.get("replacementBlob")
+        if original != frozen.get(path) or not isinstance(replacement, dict):
+            return None
+        if replacement.get("path") != path:
+            return None
+        replacements[path] = replacement
+    return replacements
 
 
 def build_seed_authority(freeze: dict[str, Any], exact_head_run_id: str) -> dict[str, Any]:
