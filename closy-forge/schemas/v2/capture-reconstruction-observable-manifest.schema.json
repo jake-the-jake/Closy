@@ -1,0 +1,28 @@
+{
+  "$id": "https://closy.local/schemas/v2/capture-reconstruction-observable-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Closy contestant-visible capture manifest V2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "manifestVersion",
+    "protocolDigest",
+    "partition",
+    "sessionCount",
+    "sourceReferenceCount",
+    "uniqueSourceFileCount",
+    "sessions",
+    "observableManifestDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "manifestVersion": { "type": "string" },
+    "protocolDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "partition": { "enum": ["development", "locked", "development_canary"] },
+    "sessionCount": { "type": "integer", "minimum": 1, "maximum": 90 },
+    "sourceReferenceCount": { "type": "integer", "minimum": 1 },
+    "uniqueSourceFileCount": { "type": "integer", "minimum": 1 },
+    "sessions": { "type": "array", "minItems": 1, "maxItems": 90 },
+    "observableManifestDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

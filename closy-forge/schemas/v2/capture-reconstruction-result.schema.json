@@ -1,0 +1,43 @@
+{
+  "$id": "https://closy.local/schemas/v2/capture-reconstruction-result.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Closy canonical capture reconstruction result V2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "resultSchemaVersion",
+    "protocolDigest",
+    "frozenSourceCommit",
+    "frozenSourceTree",
+    "terminalOutcome",
+    "firstUnmetPredicate",
+    "thresholdResults",
+    "modeFamilyResults",
+    "rows",
+    "denominators",
+    "terminalConservation",
+    "appearanceControls",
+    "resultDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "resultSchemaVersion": { "const": "closy.capture_reconstruction_v2_result.v2" },
+    "protocolDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "frozenSourceCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "frozenSourceTree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "terminalOutcome": {
+      "enum": [
+        "source_guarded_synthetic_capture_reconstruction_v2_passed",
+        "source_guarded_synthetic_capture_reconstruction_v2_failed"
+      ]
+    },
+    "firstUnmetPredicate": { "type": ["string", "null"] },
+    "thresholdResults": { "type": "array", "minItems": 26, "maxItems": 26 },
+    "modeFamilyResults": { "type": "array", "minItems": 15, "maxItems": 15 },
+    "rows": { "type": "array", "minItems": 30, "maxItems": 30 },
+    "denominators": { "type": "object" },
+    "terminalConservation": { "type": "object" },
+    "appearanceControls": { "type": "array", "minItems": 150, "maxItems": 150 },
+    "resultDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

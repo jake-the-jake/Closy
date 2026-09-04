@@ -1,0 +1,32 @@
+{
+  "$id": "https://closy.local/schemas/v2/capture-reconstruction-synthetic-disclosure.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Closy post-result synthetic truth audit disclosure V2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "disclosureVersion",
+    "protocolDigest",
+    "commitmentManifestDigest",
+    "canonicalResultDigest",
+    "sessionCount",
+    "truthRows",
+    "syntheticRecordsPermanentlyExposed",
+    "qualificationOrModelSelectionEligible",
+    "disclosureDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "disclosureVersion": {
+      "const": "closy.capture_reconstruction_v2_post_result_synthetic_truth.v2"
+    },
+    "protocolDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "commitmentManifestDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "canonicalResultDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sessionCount": { "const": 30 },
+    "truthRows": { "type": "array", "minItems": 30, "maxItems": 30 },
+    "syntheticRecordsPermanentlyExposed": { "const": true },
+    "qualificationOrModelSelectionEligible": { "const": false },
+    "disclosureDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

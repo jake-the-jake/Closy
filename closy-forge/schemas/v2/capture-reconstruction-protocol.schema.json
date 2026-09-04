@@ -1,0 +1,28 @@
+{
+  "$id": "https://closy.local/schemas/v2/capture-reconstruction-protocol.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Closy source-guarded capture reconstruction protocol V2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "protocolId",
+    "protocolVersion",
+    "sessionPlan",
+    "denominators",
+    "thresholdRegistry",
+    "executionRegistry",
+    "candidateBudget",
+    "protocolDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "protocolId": { "const": "CLOSY-CAPTURE-RECONSTRUCTION-V2-20260904" },
+    "protocolVersion": { "const": "closy.source_guarded_capture_reconstruction.v2" },
+    "sessionPlan": { "type": "array", "minItems": 90, "maxItems": 90 },
+    "denominators": { "type": "object" },
+    "thresholdRegistry": { "type": "array", "minItems": 26, "maxItems": 26 },
+    "executionRegistry": { "type": "object" },
+    "candidateBudget": { "type": "object" },
+    "protocolDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}
