@@ -60,6 +60,8 @@ NUMERIC_COLUMNS = {
     "relative_humidity_ratio",
     "measurement_uncertainty_si",
 }
+MAX_COUPON_BYTES = 8 * 1024 * 1024
+MAX_COUPON_RECORDS = 100_000
 
 
 class CouponValidationError(ValueError):
@@ -67,6 +69,7 @@ class CouponValidationError(ValueError):
 
 
 def parse_csv_bytes(payload: bytes) -> list[dict[str, Any]]:
+    _validate_payload_size(payload)
     try:
         text = payload.decode("utf-8-sig")
     except UnicodeDecodeError as error:
@@ -78,6 +81,7 @@ def parse_csv_bytes(payload: bytes) -> list[dict[str, Any]]:
 
 
 def parse_json_bytes(payload: bytes) -> list[dict[str, Any]]:
+    _validate_payload_size(payload)
     try:
         value = json.loads(payload.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -91,11 +95,12 @@ def parse_json_bytes(payload: bytes) -> list[dict[str, Any]]:
 
 def import_coupon(path: Path) -> dict[str, Any]:
     suffix = path.suffix.lower()
-    records = (
-        parse_csv_bytes(path.read_bytes())
-        if suffix == ".csv"
-        else parse_json_bytes(path.read_bytes())
-    )
+    if suffix not in {".csv", ".json"}:
+        raise CouponValidationError("coupon_source_format_unsupported")
+    if path.stat().st_size > MAX_COUPON_BYTES:
+        raise CouponValidationError("coupon_payload_too_large")
+    payload = path.read_bytes()
+    records = parse_csv_bytes(payload) if suffix == ".csv" else parse_json_bytes(payload)
     return {
         "schemaVersion": 1,
         "sourceFormat": suffix.removeprefix("."),
@@ -106,6 +111,8 @@ def import_coupon(path: Path) -> dict[str, Any]:
 
 
 def _validate_records(records: list[Any]) -> list[dict[str, Any]]:
+    if len(records) > MAX_COUPON_RECORDS:
+        raise CouponValidationError("coupon_record_count_too_large")
     output: list[dict[str, Any]] = []
     seen: set[str] = set()
     for value in records:
@@ -143,3 +150,8 @@ def _validate_records(records: list[Any]) -> list[dict[str, Any]]:
             raise CouponValidationError("coupon_absolute_local_path_forbidden")
         output.append(record)
     return output
+
+
+def _validate_payload_size(payload: bytes) -> None:
+    if len(payload) > MAX_COUPON_BYTES:
+        raise CouponValidationError("coupon_payload_too_large")

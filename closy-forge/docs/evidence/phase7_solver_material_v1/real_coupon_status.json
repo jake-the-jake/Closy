@@ -1,0 +1,1 @@
+{"csvTemplate":"fixtures/real_coupon_v1/empty_template.csv","jsonTemplate":"fixtures/real_coupon_v1/empty_template.json","realCouponCount":0,"realFabricCalibration":"not_run","realMeasurementsInvented":false,"schema":"schemas/real_coupon_v1/real_coupon.schema.json","schemaVersion":1}
