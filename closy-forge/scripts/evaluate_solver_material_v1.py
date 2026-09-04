@@ -58,6 +58,31 @@ def _tree_files(root: Path) -> dict[str, bytes]:
     }
 
 
+def _first_byte_difference(expected: bytes, observed: bytes) -> str:
+    shared = min(len(expected), len(observed))
+    offset = next((index for index in range(shared) if expected[index] != observed[index]), shared)
+    return (
+        f"offset={offset};expectedBytes={len(expected)};observedBytes={len(observed)};"
+        f"expectedSha256={_sha256(expected)};observedSha256={_sha256(observed)}"
+    )
+
+
+def _publication_differences(
+    expected: dict[str, bytes], observed: dict[str, bytes]
+) -> list[str]:
+    differences: list[str] = []
+    for path in sorted(set(expected) | set(observed)):
+        if path not in expected:
+            differences.append(f"unexpected:{path}")
+        elif path not in observed:
+            differences.append(f"missing:{path}")
+        elif expected[path] != observed[path]:
+            differences.append(
+                f"changed:{path}:{_first_byte_difference(expected[path], observed[path])}"
+            )
+    return differences
+
+
 def _guard_receipt() -> dict[str, Any]:
     manifest = read_json(GUARD_MANIFEST)
     unsigned = dict(manifest)
@@ -649,8 +674,11 @@ def check() -> None:
     with tempfile.TemporaryDirectory(prefix="closy-phase7-v1-check-") as temporary:
         candidate = Path(temporary) / "publication"
         build(candidate)
-        if _tree_files(candidate) != _tree_files(OUTPUT):
-            raise SystemExit("phase7_v1_publication_stale")
+        observed = _tree_files(candidate)
+        expected = _tree_files(OUTPUT)
+        if observed != expected:
+            detail = "|".join(_publication_differences(expected, observed))
+            raise SystemExit(f"phase7_v1_publication_stale:{detail}")
 
 
 def _coupon_command(path: Path, output: Path | None) -> None:
