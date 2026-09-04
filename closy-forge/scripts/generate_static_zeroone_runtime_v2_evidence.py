@@ -160,6 +160,8 @@ def main() -> int:
                         derivative_digest = str(integration.report["canonicalDerivativeHash"])
             if sha256_file(fallback) != fallback_before:
                 raise RuntimeError(f"conventional_fallback_changed:{family}")
+            geometry_audit = audit_glb_geometry(fallback)
+            fallback_geometry_valid = geometry_audit["status"] == "pass"
             static_rows.append(
                 {
                     "family": family,
@@ -176,13 +178,12 @@ def main() -> int:
                     "fallbackSha256Before": fallback_before,
                     "fallbackSha256After": sha256_file(fallback),
                     "conventionalFallbackAvailable": True,
+                    "conventionalFallbackGeometryValid": fallback_geometry_valid,
+                    "conventionalFallbackGeometryAudit": geometry_audit,
                     "optionalDerivativeSelectedForRuntime": derivative_digest is not None,
                 }
             )
             poses = _pose_positions(fallback)
-            geometry_audit = audit_glb_geometry(fallback)
-            if geometry_audit["status"] != "pass":
-                raise RuntimeError(f"fallback_geometry_invalid:{family}")
             for profile in PROFILES:
                 for rebuild in (1, 2):
                     runtime_path = (
@@ -250,6 +251,9 @@ def main() -> int:
                 "staticUnsupportedCount": _count_outcome(static_rows, "unsupported"),
                 "staticCorruptOrInvalidCount": _count_outcome(static_rows, "corrupt_or_invalid"),
                 "runtimeBuildCount": len(runtime_rows),
+                "runtimePassedCount": _count_outcome(runtime_rows, "passed"),
+                "runtimeFailedCount": _count_outcome(runtime_rows, "failed"),
+                "runtimeCorruptOrInvalidCount": _count_outcome(runtime_rows, "corrupt_or_invalid"),
                 "profileCount": len(PROFILES),
                 "cleanRebuildsPerProfile": 2,
                 "poseCountPerBuild": 4,
@@ -282,7 +286,16 @@ def main() -> int:
                     row["stageAudit"] is None or row["stageAudit"]["notRunStageIds"] == ["Z3", "Z7"]
                     for row in static_rows
                 ),
-                "allThirtySixRuntimeBuildsPassed": len(runtime_rows) == 36,
+                "everyStaticFailureHasValidConventionalRoute": all(
+                    row["conventionalFallbackGeometryValid"]
+                    for row in static_rows
+                    if row["terminalOutcome"] != "passed"
+                ),
+                "allConventionalFallbackGeometryValid": all(
+                    row["conventionalFallbackGeometryValid"] for row in static_rows
+                ),
+                "allThirtySixRuntimeBuildsPassed": len(runtime_rows) == 36
+                and _count_outcome(runtime_rows, "passed") == 36,
                 "allRuntimeRebuildsDeterministic": True,
                 "allPoseReconstructionsWithinOneMicrometre": all(
                     row["maximumPosePositionErrorMeters"] <= 1e-6 for row in runtime_rows
@@ -308,7 +321,12 @@ def main() -> int:
             "literalOutcome": (
                 "static_runtime_v2_scoped_host_cpu_pass_global_partial"
                 if _count_outcome(static_rows, "passed") == 9
-                else "static_runtime_v2_conventional_pass_zeroone_partial_global_partial"
+                and _count_outcome(runtime_rows, "passed") == 36
+                else (
+                    "static_runtime_v2_conventional_pass_zeroone_partial_global_partial"
+                    if _count_outcome(runtime_rows, "passed") == 36
+                    else "static_runtime_v2_engineering_failed_global_partial"
+                )
             ),
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -435,6 +453,12 @@ def _audit_runtime_build(
             "maximumPosePositionErrorMeters": position_error,
             "poseBoundsContainEveryVertex": bounds_valid,
             "glbGeometryAudit": geometry_audit,
+            "terminalOutcome": _runtime_terminal_outcome(geometry_audit),
+            "failureReason": (
+                None
+                if geometry_audit["status"] == "pass"
+                else "conventional_fallback_geometry_invalid"
+            ),
             "buildNanoseconds": build_nanoseconds,
             "load": _samples(load_samples),
             "fallbackPrefix": {
@@ -578,6 +602,10 @@ def _integration_terminal_outcome(status: str) -> str:
     if status == "derivative_corrupt":
         return "corrupt_or_invalid"
     return "failed"
+
+
+def _runtime_terminal_outcome(geometry_audit: dict[str, Any]) -> str:
+    return "passed" if geometry_audit.get("status") == "pass" else "corrupt_or_invalid"
 
 
 def _count_outcome(rows: list[dict[str, Any]], outcome: str) -> int:

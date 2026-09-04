@@ -12,6 +12,9 @@ RUNNER = runpy.run_path(
     )
 )
 TERMINAL_OUTCOME = cast(Callable[[str], str], RUNNER["_integration_terminal_outcome"])
+RUNTIME_TERMINAL_OUTCOME = cast(
+    Callable[[dict[str, Any]], str], RUNNER["_runtime_terminal_outcome"]
+)
 AGGREGATE_STAGES = cast(
     Callable[[list[dict[str, Any]]], dict[str, dict[str, Any]]],
     RUNNER["_aggregate_stage_outcomes"],
@@ -23,6 +26,11 @@ def test_static_runtime_runner_preserves_processor_failure_for_conventional_fall
     assert TERMINAL_OUTCOME("unavailable") == "unsupported"
     assert TERMINAL_OUTCOME("derivative_corrupt") == "corrupt_or_invalid"
     assert TERMINAL_OUTCOME("process_failed") == "failed"
+
+
+def test_static_runtime_runner_preserves_invalid_conventional_geometry_as_terminal_row() -> None:
+    assert RUNTIME_TERMINAL_OUTCOME({"status": "pass"}) == "passed"
+    assert RUNTIME_TERMINAL_OUTCOME({"status": "fail"}) == "corrupt_or_invalid"
 
 
 def test_static_runtime_runner_conserves_pass_not_run_and_blocked_stage_rows() -> None:
