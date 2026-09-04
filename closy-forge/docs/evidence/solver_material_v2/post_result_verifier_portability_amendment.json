@@ -1,0 +1,43 @@
+{
+  "amendmentDigest": "d4ef12c5de6e0a841df0cfcbfa98e97557879dcee3b35598c3d6229d5caac720",
+  "amendmentVersion": "closy.solver_material_v2_post_result_verifier_portability.v1",
+  "changedFiles": [
+    {
+      "originalBlob": {
+        "bytes": 12323,
+        "gitBlobOid": "2db860a5bba5c9435cdd9951e342defa8ac84164",
+        "path": "closy-forge/src/closy_forge/solver_material_v2/independent_checker.py",
+        "sha256": "53e875554d14749b300414c71b4edf55b21c0ab5664cbb28bedf437736cdcdb6"
+      },
+      "path": "closy-forge/src/closy_forge/solver_material_v2/independent_checker.py",
+      "replacementBlob": {
+        "bytes": 12738,
+        "gitBlobOid": "8c60ffb1142bd4a4246db8661b311b6f33393d6e",
+        "path": "closy-forge/src/closy_forge/solver_material_v2/independent_checker.py",
+        "sha256": "ca105b5b341684a516cadcd83e39835aa2a41cd5148d4504a3760c5b5c29863b"
+      }
+    },
+    {
+      "originalBlob": {
+        "bytes": 4994,
+        "gitBlobOid": "040d991fa9169616331d7df1eff352415d93c110",
+        "path": "closy-forge/src/closy_forge/solver_material_v2/publication.py",
+        "sha256": "6b64bb29a11f922145b7b9c9974cee00755fd99d2c44b3f43ead423da9c8b2a0"
+      },
+      "path": "closy-forge/src/closy_forge/solver_material_v2/publication.py",
+      "replacementBlob": {
+        "bytes": 7226,
+        "gitBlobOid": "831dc4c54658c60958cf4224c209752ce300a9d2",
+        "path": "closy-forge/src/closy_forge/solver_material_v2/publication.py",
+        "sha256": "9351af46959bb4d3720c634f26556f8b799ab3d77ac766cba7adcd9d79170235"
+      }
+    }
+  ],
+  "classification": "post_result_verifier_only_portability",
+  "estimatorRerun": false,
+  "originalFreezeDigest": "ad0c6802832c2b02702edd866e3a9b773f2dd6b5e1b656ee67bf7c85798db62d",
+  "reason": "Python 3.12 changed builtin float sum semantics; the independent verifier now uses explicit left-to-right accumulation matching the frozen Python 3.11 publication. Estimator, evaluator, protocol, thresholds, locked observations, contestant output, and result remain byte-identical.",
+  "resultChanged": false,
+  "resultDigest": "842a7175114f91ef2e3150aa2e311eaf6c7dbe26bbe36051ae9a5e4186c981b8",
+  "sourceCommit": "613ca176dc11980845e76175850c1b308a15c83b"
+}
