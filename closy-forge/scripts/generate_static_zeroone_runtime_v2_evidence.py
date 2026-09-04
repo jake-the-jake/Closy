@@ -53,7 +53,10 @@ from closy_forge.runtime_delivery.streaming_v2 import (
     materialize_runtime_archive_v2,
 )
 from closy_forge.zeroone.integration import integrate_zeroone_static
-from closy_forge.zeroone.static_stage_audit_v2 import audit_static_zeroone_stages
+from closy_forge.zeroone.static_stage_audit_v2 import (
+    StaticStageAuditError,
+    audit_static_zeroone_stages,
+)
 from closy_forge.zeroone.tool import resolve_zeroone_tool
 
 PROTOCOL_ID = "CLOSY-STATIC-ZEROONE-RUNTIME-V2-20260904"
@@ -132,15 +135,29 @@ def main() -> int:
                 publish=True,
             )
             static_elapsed = time.perf_counter_ns() - static_started
-            if integration.status != "valid":
-                raise RuntimeError(f"zeroone_static_failed:{family}:{integration.reason}")
-            derivative = package / "zeroone/static-d0/derivative"
-            stage_audit = audit_static_zeroone_stages(
-                derivative,
-                canonical_package=package,
+            stage_audit: dict[str, Any] | None = None
+            static_outcome = _integration_terminal_outcome(integration.status)
+            failure_reason: str | None = (
+                integration.reason if integration.status != "valid" else None
             )
-            if stage_audit["failedStageIds"]:
-                raise RuntimeError(f"zeroone_stage_audit_failed:{family}")
+            derivative_digest: str | None = None
+            if integration.status == "valid":
+                derivative = package / "zeroone/static-d0/derivative"
+                try:
+                    stage_audit = audit_static_zeroone_stages(
+                        derivative,
+                        canonical_package=package,
+                    )
+                except StaticStageAuditError as error:
+                    static_outcome = "corrupt_or_invalid"
+                    failure_reason = str(error)
+                else:
+                    if stage_audit["failedStageIds"]:
+                        static_outcome = "failed"
+                        failure_reason = "zeroone_stage_audit_failed"
+                    else:
+                        static_outcome = "passed"
+                        derivative_digest = str(integration.report["canonicalDerivativeHash"])
             if sha256_file(fallback) != fallback_before:
                 raise RuntimeError(f"conventional_fallback_changed:{family}")
             static_rows.append(
@@ -148,11 +165,18 @@ def main() -> int:
                     "family": family,
                     "garmentId": manifest["garmentId"],
                     "canonicalPackageDigest": _package_digest(manifest, package),
+                    "capabilitySupport": (
+                        "supported" if integration.tool.available else "unsupported"
+                    ),
+                    "terminalOutcome": static_outcome,
+                    "failureReason": failure_reason,
                     "integration": integration.to_json(),
                     "stageAudit": stage_audit,
                     "validationNanoseconds": static_elapsed,
                     "fallbackSha256Before": fallback_before,
                     "fallbackSha256After": sha256_file(fallback),
+                    "conventionalFallbackAvailable": True,
+                    "optionalDerivativeSelectedForRuntime": derivative_digest is not None,
                 }
             )
             poses = _pose_positions(fallback)
@@ -174,9 +198,7 @@ def main() -> int:
                             material_set=_material_set(package),
                             thumbnail_png=_thumbnail(family),
                             pose_positions=poses,
-                            zeroone_derivative_digest=str(
-                                integration.report["canonicalDerivativeHash"]
-                            ),
+                            zeroone_derivative_digest=derivative_digest,
                         ),
                         profile=profile,
                     )
@@ -201,7 +223,7 @@ def main() -> int:
         current, peak = tracemalloc.get_traced_memory()
         result = {
             "schemaVersion": 1,
-            "resultVersion": "closy.static_zeroone_runtime_v2.result.v1",
+            "resultVersion": "closy.static_zeroone_runtime_v2.result.v2",
             "protocolId": PROTOCOL_ID,
             "protocolDigest": protocol["protocolDigest"],
             "classification": "public_synthetic_static_runtime_engineering_host_cpu_only",
@@ -223,6 +245,10 @@ def main() -> int:
             },
             "denominators": {
                 "staticFamilyCount": len(static_rows),
+                "staticPassedCount": _count_outcome(static_rows, "passed"),
+                "staticFailedCount": _count_outcome(static_rows, "failed"),
+                "staticUnsupportedCount": _count_outcome(static_rows, "unsupported"),
+                "staticCorruptOrInvalidCount": _count_outcome(static_rows, "corrupt_or_invalid"),
                 "runtimeBuildCount": len(runtime_rows),
                 "profileCount": len(PROFILES),
                 "cleanRebuildsPerProfile": 2,
@@ -243,21 +269,18 @@ def main() -> int:
                 ),
                 "sampleScope": "actual_host_process_reports_and_python_tracemalloc",
             },
-            "stageOutcome": {
-                "Z3": "not_run_processor_emits_no_per_detail_classification",
-                "Z4": "passed_actual_cluster_payloads_decoded",
-                "Z5": "passed_actual_hierarchy_and_lod_decoded",
-                "Z6": "passed_actual_page_ranges_residency_and_dependencies_decoded",
-                "Z7": "not_run_processor_emits_no_recorded_or_procedural_detail_payload",
-                "Z8": "passed_actual_derivative_export_and_source_identity_decoded",
-            },
+            "stageOutcome": _aggregate_stage_outcomes(static_rows),
             "acceptance": {
-                "allNineFamiliesProcessed": len(static_rows) == 9,
+                "allNineFamiliesAccounted": len(static_rows) == 9,
+                "allNineFamiliesProcessed": _count_outcome(static_rows, "passed") == 9,
                 "allSupportedStaticStagesPassed": all(
-                    not row["stageAudit"]["failedStageIds"] for row in static_rows
+                    row["terminalOutcome"] == "passed"
+                    for row in static_rows
+                    if row["capabilitySupport"] == "supported"
                 ),
                 "unsupportedStaticStagesPreservedNotRun": all(
-                    row["stageAudit"]["notRunStageIds"] == ["Z3", "Z7"] for row in static_rows
+                    row["stageAudit"] is None or row["stageAudit"]["notRunStageIds"] == ["Z3", "Z7"]
+                    for row in static_rows
                 ),
                 "allThirtySixRuntimeBuildsPassed": len(runtime_rows) == 36,
                 "allRuntimeRebuildsDeterministic": True,
@@ -282,7 +305,11 @@ def main() -> int:
                 "productionNetworkClaimed": False,
                 "globalBlueprintComplete": False,
             },
-            "literalOutcome": "static_runtime_v2_scoped_host_cpu_pass_global_partial",
+            "literalOutcome": (
+                "static_runtime_v2_scoped_host_cpu_pass_global_partial"
+                if _count_outcome(static_rows, "passed") == 9
+                else "static_runtime_v2_conventional_pass_zeroone_partial_global_partial"
+            ),
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)
         write_canonical_json(args.output, result)
@@ -540,6 +567,50 @@ def _negative_matrix(
         "passed": recovered.package_digest == load_runtime_package_v2(last_good).package_digest,
         "reason": recovered.fallback_reason,
     }
+    return output
+
+
+def _integration_terminal_outcome(status: str) -> str:
+    if status == "valid":
+        return "passed"
+    if status == "unavailable":
+        return "unsupported"
+    if status == "derivative_corrupt":
+        return "corrupt_or_invalid"
+    return "failed"
+
+
+def _count_outcome(rows: list[dict[str, Any]], outcome: str) -> int:
+    return sum(row["terminalOutcome"] == outcome for row in rows)
+
+
+def _aggregate_stage_outcomes(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    output: dict[str, dict[str, Any]] = {}
+    for stage_id in ("Z3", "Z4", "Z5", "Z6", "Z7", "Z8"):
+        counts = {
+            "passed": 0,
+            "failed": 0,
+            "not_run": 0,
+            "dependency_blocked": 0,
+            "corrupt_or_invalid": 0,
+        }
+        for row in rows:
+            stage_audit = row["stageAudit"]
+            if stage_audit is None:
+                outcome = str(row["terminalOutcome"])
+                key = (
+                    "corrupt_or_invalid"
+                    if outcome == "corrupt_or_invalid"
+                    else "dependency_blocked"
+                )
+            else:
+                key = str(stage_audit["stages"][stage_id]["status"])
+            counts[key] += 1
+        output[stage_id] = {
+            "planned": len(rows),
+            **counts,
+            "terminalConservation": sum(counts.values()) == len(rows),
+        }
     return output
 
 
