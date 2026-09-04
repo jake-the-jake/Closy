@@ -20,6 +20,7 @@ PUBLIC_ERROR_CODES = frozenset(
     }
 )
 WINDOWS_RESERVED = re.compile(r"^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", re.IGNORECASE)
+_O_BINARY: int = getattr(os, "O_BINARY", 0)
 
 
 class SafePrivateIoError(OSError):
@@ -263,9 +264,7 @@ class SafePrivateRoot:
         temporary = self._root / f".{safe_name}.{os.getpid()}.partial"
         target = self._root / safe_name
         try:
-            descriptor = os.open(
-                temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_BINARY, 0o600
-            )
+            descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | _O_BINARY, 0o600)
             try:
                 written = os.write(descriptor, payload)
                 if written != len(payload):
@@ -297,7 +296,7 @@ class SafePrivateRoot:
                 raise SafePrivateIoError("private_link_forbidden")
             if before.st_dev != self._device or before.st_size > maximum_bytes:
                 raise SafePrivateIoError("private_cross_device_forbidden")
-            descriptor = os.open(path, os.O_RDONLY | os.O_BINARY)
+            descriptor = os.open(path, os.O_RDONLY | _O_BINARY)
             try:
                 opened = os.fstat(descriptor)
                 if (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
