@@ -47,6 +47,7 @@ from closy_forge.pipeline.build_simple_trousers_demo import build_demo_simple_tr
 from closy_forge.pipeline.build_sleeveless_demo import build_demo_sleeveless_package
 from closy_forge.pipeline.build_tshirt_demo import build_demo_tshirt_package
 from closy_forge.reports.reporter import human_report, summarize_package
+from closy_forge.solver_material_v2.real_coupon import ingest_real_coupon_file
 from closy_forge.validation.validator import validate_package
 from closy_forge.visual_understanding import (
     build_default_applied_correction_record,
@@ -483,7 +484,24 @@ def _parser() -> argparse.ArgumentParser:
     diagnostics.add_argument("--force", action="store_true")
     diagnostics.add_argument("--json", action="store_true")
     diagnostics.set_defaults(handler=_ci_diagnostics)
+    material_coupon = subparsers.add_parser(
+        "material-coupon", help="Ingest explicitly unit-bearing material coupon measurements."
+    )
+    material_coupon.add_argument("source", type=Path)
+    material_coupon.add_argument("--output", required=True, type=Path)
+    material_coupon.add_argument("--json", action="store_true")
+    material_coupon.set_defaults(handler=_ingest_material_coupon)
+
     return parser
+
+
+def _ingest_material_coupon(args: argparse.Namespace) -> int:
+    document = ingest_real_coupon_file(args.source, args.output)
+    if args.json:
+        print(canonical_dumps(document), end="")
+    else:
+        print(f"Ingested {document['realCouponCount']} coupon rows into {args.output}")
+    return EXIT_SUCCESS
 
 
 def _build_tshirt(args: argparse.Namespace) -> int:
