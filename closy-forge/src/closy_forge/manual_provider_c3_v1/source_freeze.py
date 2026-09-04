@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from .common import digest_file, digest_value, read_json, validate_embedded_digest, write_json
+from .common import digest_value, read_json, validate_embedded_digest, write_json
 
 SOURCE_PATHS = (
     "closy-forge/fixtures/manual_provider_c3_v1/protocol.json",
@@ -83,6 +83,6 @@ def verify_source_freeze(repository: Path, freeze: dict[str, Any]) -> None:
     if expected != freeze["sourceFiles"] or len(expected) != freeze["sourceFileCount"]:
         raise ValueError("source_file_inventory_mismatch")
     for record in expected:
-        checkout_path = repository / record["path"]
-        if digest_file(checkout_path) != record["sha256"]:
+        current_entry = _git(repository, "ls-tree", "HEAD", "--", record["path"]).split()
+        if len(current_entry) < 3 or current_entry[2] != record["gitBlobOid"]:
             raise ValueError(f"post_freeze_source_drift:{record['path']}")
