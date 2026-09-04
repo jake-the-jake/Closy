@@ -25,7 +25,11 @@ SEALED_V2_FAILURE_NODE = (
 
 def discover_sharded_tests(forge_root: Path, suite: str = "unit") -> tuple[str, ...]:
     directories = {
-        "unit": (forge_root / "tests" / "unit", forge_root / "tests" / "corruption"),
+        "unit": (
+            forge_root / "tests" / "unit",
+            forge_root / "tests" / "corruption",
+            forge_root / "tests" / "capture_reconstruction_v2",
+        ),
         "integration": (forge_root / "tests" / "integration", forge_root / "tests" / "golden"),
     }[suite]
     return tuple(
