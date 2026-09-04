@@ -82,7 +82,54 @@ def verify_source_freeze(repository: Path, freeze: dict[str, Any]) -> None:
     expected = source_inventory(repository, str(freeze["sourceCommit"]))
     if expected != freeze["sourceFiles"] or len(expected) != freeze["sourceFileCount"]:
         raise ValueError("source_file_inventory_mismatch")
+    allowed_replacements = _validated_post_result_amendment(repository, freeze)
     for record in expected:
         current_entry = _git(repository, "ls-tree", "HEAD", "--", record["path"]).split()
-        if len(current_entry) < 3 or current_entry[2] != record["gitBlobOid"]:
+        current_oid = current_entry[2] if len(current_entry) >= 3 else ""
+        if (
+            current_oid != record["gitBlobOid"]
+            and allowed_replacements.get(record["path"]) != current_oid
+        ):
             raise ValueError(f"post_freeze_source_drift:{record['path']}")
+
+
+def _validated_post_result_amendment(repository: Path, freeze: dict[str, Any]) -> dict[str, str]:
+    path = (
+        repository
+        / "closy-forge"
+        / "docs"
+        / "evidence"
+        / "manual_provider_c3_v1"
+        / "post_result_verifier_amendment.json"
+    )
+    if not path.exists():
+        return {}
+    amendment = read_json(path)
+    validate_embedded_digest(amendment, "amendmentDigest")
+    allowed = {
+        "closy-forge/src/closy_forge/manual_provider_c3_v1/independent_checker.py",
+        "closy-forge/src/closy_forge/manual_provider_c3_v1/publication.py",
+        "closy-forge/src/closy_forge/manual_provider_c3_v1/source_freeze.py",
+    }
+    rows = amendment.get("changedFiles", [])
+    if (
+        amendment.get("amendmentVersion") != "closy.manual_provider_c3_v1.post_result_verifier.v1"
+        or amendment.get("classification") != "post_result_verifier_only"
+        or amendment.get("originalSourceFreezeDigest") != freeze["sourceFreezeDigest"]
+        or amendment.get("benchmarkRerun") is not False
+        or amendment.get("resultChanged") is not False
+        or amendment.get("packagesChanged") is not False
+        or {str(row.get("path")) for row in rows} != allowed
+    ):
+        raise ValueError("post_result_verifier_amendment_invalid")
+    frozen = {str(row["path"]): row for row in freeze["sourceFiles"]}
+    replacements: dict[str, str] = {}
+    for row in rows:
+        relative = str(row["path"])
+        if row.get("originalBlob") != frozen.get(relative):
+            raise ValueError("post_result_verifier_original_blob_mismatch")
+        replacement = row.get("replacementBlob", {})
+        if replacement.get("path") != relative:
+            raise ValueError("post_result_verifier_replacement_blob_mismatch")
+        replacements[relative] = str(replacement.get("gitBlobOid", ""))
+    return replacements

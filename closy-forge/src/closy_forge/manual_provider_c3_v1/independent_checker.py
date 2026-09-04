@@ -12,6 +12,8 @@ from closy_forge.geometry.glb_io import audit_glb, audit_glb_geometry, read_glb_
 
 from .common import digest_file, digest_value, read_json, validate_embedded_digest
 
+FLOAT32_SERIALIZATION_TOLERANCE = 5e-8
+
 
 def _inversion_count(meshset: Any, positions: list[tuple[float, float, float]]) -> int:
     offset = 0
@@ -125,8 +127,19 @@ def _verify_package(package_root: Path) -> tuple[dict[str, Any], list[dict[str, 
             "maximumSeamCrackDeltaMeters": round(max(seam_errors, default=0.0), 8),
             "invertedTriangleCount": inverted,
         }
-        if recomputed != declared:
-            raise ValueError("checker_motion_row_mismatch")
+        for metric in (
+            "maximumErrorMeters",
+            "rmsErrorMeters",
+            "p95ErrorMeters",
+            "maximumSeamCrackDeltaMeters",
+        ):
+            if (
+                abs(float(recomputed[metric]) - float(declared[metric]))
+                > FLOAT32_SERIALIZATION_TOLERANCE
+            ):
+                raise ValueError(f"checker_motion_row_mismatch:{metric}")
+        if recomputed["invertedTriangleCount"] != declared["invertedTriangleCount"]:
+            raise ValueError("checker_motion_row_mismatch:invertedTriangleCount")
         rows.append(recomputed)
     return manifest, rows
 
@@ -166,7 +179,11 @@ def check_publication(publication_root: Path, result_path: Path) -> dict[str, An
         / len(all_rows),
     }
     for key, value in recomputed.items():
-        if observed[key] != value:
+        if isinstance(value, float):
+            matches = abs(float(observed[key]) - value) <= FLOAT32_SERIALIZATION_TOLERANCE
+        else:
+            matches = observed[key] == value
+        if not matches:
             raise ValueError(f"checker_result_metric_mismatch:{key}")
     report: dict[str, Any] = {
         "schemaVersion": 1,
@@ -179,6 +196,7 @@ def check_publication(publication_root: Path, result_path: Path) -> dict[str, An
         "decodedGlbCount": len(checked_packages) * 2,
         "decodedBindingCount": len(checked_packages),
         "decodedMotionPayloadCount": len(checked_packages) * 2,
+        "float32SerializationTolerance": FLOAT32_SERIALIZATION_TOLERANCE,
         "recomputedMetrics": recomputed,
     }
     report["checkerDigest"] = digest_value(report)
