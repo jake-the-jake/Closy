@@ -67,9 +67,7 @@ def _first_byte_difference(expected: bytes, observed: bytes) -> str:
     )
 
 
-def _publication_differences(
-    expected: dict[str, bytes], observed: dict[str, bytes]
-) -> list[str]:
+def _publication_differences(expected: dict[str, bytes], observed: dict[str, bytes]) -> list[str]:
     differences: list[str] = []
     for path in sorted(set(expected) | set(observed)):
         if path not in expected:
@@ -650,7 +648,11 @@ def build(output: Path) -> dict[str, Any]:
         _canonical_write(output / name, value)
     _text_write(output / "REPORT.md", _report(result, post_hoc))
     indexed = []
-    for path in sorted(path for path in output.iterdir() if path.is_file()):
+    publication_files = sorted(
+        (path for path in output.iterdir() if path.is_file()),
+        key=lambda path: (path.name.casefold(), path.name),
+    )
+    for path in publication_files:
         if path.name == "publication_manifest.json":
             continue
         payload = path.read_bytes()
