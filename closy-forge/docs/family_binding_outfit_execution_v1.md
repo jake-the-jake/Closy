@@ -27,7 +27,10 @@ exposed project-authored development evidence, not physical/scientific qualifica
 
 ## Restart checkpoint
 
-Current unit: A. Branch: `codex/closy-forge-all-family-layer-integration-v1`.
+Current unit: B publication / C final evaluation. Unit A is draft PR67,
+head `ac5900f6c3688225d22d6d60e766bb87e5a1d1d0`, tree
+`ecd2d9388cfcb54d3042ca5a2f294c900956c131`.
+Branch before B publication: `codex/closy-forge-all-family-layer-integration-v1`.
 Worktree: `E:/apps/Closy-all-family-layer-integration-v1`.
 Protected dirty primary worktree: `E:/apps/Closy` (unchanged).
 Known failure reused: settled sleeve collapse, 2/4/2 simulation triangles becoming
@@ -50,7 +53,24 @@ Local receipts: schema check `fresh`, targeted Unit A/parser/publication tests
 pushed head; it is not inferred from these local receipts.
 Post-evaluation static checking added list annotations to the evaluator only;
 the executed compiler/capture implementation and runtime behavior are unchanged.
-Next: publish the Unit A draft, branch Unit B from that final pushed head, run
-the serialized nine-shell/99-state binding regression, then complete Unit C.
+Unit B final evaluation `.tmp/binding-final-v2` exited 0: 18 packages, 9 deterministic
+pairs, 99/99 baseline rows, 44/44 extra motion rows, three typed extra rejections,
+17/17 baseline gates. Maximum rest error 5.809587714e-8 m, maximum motion error
+0.016086708 m. Wall 68.24 s; CPU 65.69 s. All three Unit A binding API probes remain
+unsupported (`binding_v2_unsupported_uv_lattice`), not global C3 passes.
+
+Optional static run `E:/apps/closy-static-v3-02` exited 0: nine families pass actual
+triangle/material/provenance/bounds audits. Z4/Z5/Z6/Z8 each pass 9; Z3/Z7 each
+not_run 9. New read-only PR66 hash reuse receipt, no ZeroOne rebuild. First attempt
+`.tmp/static-family-v3-01` retains nine processor cache path-length failures.
+
+Unit C final outfit matrix `.tmp/outfit-final-v1` is running (40 rows, 30 adjacent
+samples, 13 negatives). Earlier `.tmp/outfit-probe-01` and `-02` remain failed fit
+iterations. Security repairs: 109 focused tests passed. No fit success is inferred
+from safe geometry or successful runtime transport.
+
+Next: publish B from the exact final A head, finish C matrix/runtime44/demo, run one
+complete final local suite, and publish the final stacked draft. Never rerun already
+completed evaluations merely to refresh a report.
 
 The reporting parser is a separate pure sidecar; its files do not alter frozen inventories.
