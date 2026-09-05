@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://closy.dev/schemas/static-zeroone-runtime-v2-result-v2.json",
+  "title": "Closy static ZeroOne and conventional runtime V2 result",
+  "type": "object",
+  "required": ["schemaVersion", "resultVersion", "protocolId", "protocolDigest", "classification", "source", "host", "denominators", "staticZeroOne", "conventionalRuntime", "negativeCases", "performance", "stageOutcome", "acceptance", "literalOutcome"],
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "resultVersion": {"type": "string", "const": "closy.static_zeroone_runtime_v2.result.v2"},
+    "protocolId": {"type": "string", "const": "CLOSY-STATIC-ZEROONE-RUNTIME-V2-20260904"},
+    "protocolDigest": {"type": "string", "const": "b67193ebd322340fb758d98411334aec26084554f9ce7eefec5698ce90a6ed01"},
+    "classification": {"type": "string", "const": "public_synthetic_static_runtime_engineering_host_cpu_only"},
+    "source": {
+      "type": "object",
+      "required": ["closyCommit", "closyTree", "zeroOneCommit", "zeroOneTree", "zeroOneExecutableSha256", "zeroOneVersion", "trustedBuildRecordSha256"],
+      "properties": {
+        "closyCommit": {"type": "string"},
+        "closyTree": {"type": "string"},
+        "zeroOneCommit": {"type": "string"},
+        "zeroOneTree": {"type": "string"},
+        "zeroOneExecutableSha256": {"type": "string"},
+        "zeroOneVersion": {"type": "object"},
+        "trustedBuildRecordSha256": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "host": {"type": "object", "required": ["platform", "architecture", "python", "cpuOnly", "measurementScope"]},
+    "denominators": {
+      "type": "object",
+      "required": ["staticFamilyCount", "staticPassedCount", "staticFailedCount", "staticUnsupportedCount", "staticCorruptOrInvalidCount", "runtimeBuildCount", "runtimePassedCount", "runtimeFailedCount", "runtimeCorruptOrInvalidCount", "profileCount", "cleanRebuildsPerProfile", "poseCountPerBuild", "resumePointCountPerBuild", "negativeCaseCount"]
+    },
+    "staticZeroOne": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"type": "object", "required": ["family", "capabilitySupport", "terminalOutcome", "failureReason", "integration", "stageAudit", "fallbackSha256Before", "fallbackSha256After", "conventionalFallbackAvailable", "conventionalFallbackGeometryValid", "conventionalFallbackGeometryAudit", "optionalDerivativeSelectedForRuntime"]}},
+    "conventionalRuntime": {"type": "array", "minItems": 36, "maxItems": 36, "items": {"type": "object", "required": ["family", "profileId", "rebuild", "packageDigest", "terminalOutcome", "failureReason", "glbGeometryAudit", "fallbackPrefix", "resume", "claims"]}},
+    "negativeCases": {"type": "object", "required": ["corrupt_chunk", "truncated_stream", "trailing_stream", "stale_version", "cross_package_chunk", "decompression_bomb", "cancelled_transfer", "storage_quota_exceeded", "last_good_rollback"]},
+    "performance": {"type": "object", "required": ["totalWallNanoseconds", "totalCpuNanoseconds", "pythonTracedCurrentBytes", "pythonTracedPeakBytes", "zeroOnePeakMemoryBytesMaximum", "sampleScope"]},
+    "stageOutcome": {"type": "object", "required": ["Z3", "Z4", "Z5", "Z6", "Z7", "Z8"]},
+    "acceptance": {"type": "object", "required": ["allNineFamiliesAccounted", "allNineFamiliesProcessed", "allSupportedStaticStagesPassed", "allConventionalFallbackGeometryValid", "everyStaticFailureHasValidConventionalRoute", "allThirtySixRuntimeBuildsPassed", "allRuntimeRebuildsDeterministic", "allPoseReconstructionsWithinOneMicrometre", "allFallbacksAvailableFromVerifiedPrefix", "allResumePointsExact", "allNegativeCasesRejectedOrRecovered", "canonicalAuthorityChanged", "productRuntimeDefaultChanged", "dynamicZ2Claimed", "mobileClaimed", "gpuClaimed", "productionNetworkClaimed", "globalBlueprintComplete"]},
+    "literalOutcome": {"type": "string", "const": "static_runtime_v2_engineering_failed_global_partial"}
+  },
+  "additionalProperties": false
+}
