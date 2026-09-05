@@ -25,7 +25,8 @@ from closy_forge.package_io.canonical_json import (
     write_canonical_json,
     write_canonical_text,
 )
-from closy_forge.package_io.hashing import sha256_file
+from closy_forge.package_io.hashing import sha256_bytes, sha256_file
+from closy_forge.security.evidence_hygiene import scan_evidence_files
 
 
 def _module() -> ModuleType:
@@ -163,12 +164,81 @@ def test_wrapped_inventories_and_failed_results_publish_without_promoting(
     assert manifest["scientificQualification"] is False
     for row in manifest["files"]:
         assert sha256_file(output / row["path"]) == row["sha256"]
-    for name in ("source_inventory.json", "input_inventory.json", "result.json"):
+    for name in ("source_inventory.json", "result.json"):
         assert (output / name).read_bytes() == before[name]
+    projection = read_json(output / "input_inventory.json")
+    assert "digest" not in projection
+    assert projection["originalInventory"]["sha256"] == sha256_bytes(before["input_inventory.json"])
+    assert (
+        projection["originalInventory"]["inputDigest"]
+        == read_json(root / "result.json")["inputDigest"]
+    )
+    assert projection["originalInventory"]["publishedBytesAreOriginal"] is False
+    assert projection["files"] == read_json(root / "input_inventory.json")["files"]
+    assert (
+        module._identity(projection, "projectionDigest")
+        != projection["originalInventory"]["inputDigest"]
+    )
+    assert scan_evidence_files(sorted(output.iterdir())) == {}
     assert {p.name: p.read_bytes() for p in root.iterdir()} == before
     assert len(read_json(output / "package_index.json")) == 25
     with pytest.raises(ValueError, match="fresh_destination"):
         module.publish(root, output)
+
+
+@pytest.mark.parametrize(
+    ("relative", "expected"),
+    [
+        ("workspace/forge/.tmp/evaluation", "forge-relative/.tmp/evaluation"),
+        ("workspace/other/input", "workspace-relative/other/input"),
+        ("outside/input", "external-local/input"),
+    ],
+)
+def test_portable_location_has_explicit_base_or_redacted_external_label(
+    tmp_path: Path, relative: str, expected: str
+) -> None:
+    assert (
+        _module()._portable_location(tmp_path / relative, tmp_path / "workspace/forge", "input")
+        == expected
+    )
+
+
+def test_actual_published_evidence_is_portable_and_all_hashes_verify() -> None:
+    module = _module()
+    root = Path(module.FORGE) / "docs/evidence/manual_provider_binding_v2_development"
+    manifest = read_json(root / "publication_manifest.json")
+    assert manifest["version"] == module.VERSION
+    module._identity(manifest, "identity")
+    assert sorted(p.name for p in root.iterdir()) == sorted(
+        [row["path"] for row in manifest["files"]] + ["publication_manifest.json"]
+    )
+    assert len(manifest["files"]) == 7
+    for row in manifest["files"]:
+        assert (root / row["path"]).stat().st_size == row["byteSize"]
+        assert sha256_file(root / row["path"]) == row["sha256"]
+    projection = read_json(root / "input_inventory.json")
+    module._identity(projection, "projectionDigest")
+    original = projection["originalInventory"]
+    assert "digest" not in projection
+    assert original["publishedBytesAreOriginal"] is False
+    assert original["inputDigest"] == read_json(root / "result.json")["inputDigest"]
+    assert original["inputDigest"] != projection["projectionDigest"]
+    assert len(original["sha256"]) == 64 and original["byteSize"] > 0
+    assert manifest["sourceEvaluation"] == "forge-relative/.tmp/binding-final-v2"
+    assert projection["sourceRoot"] == "forge-relative/docs/evidence/manual_provider_c3_v1/packages"
+    assert projection["unitARoot"] == "forge-relative/.tmp/family-final-v2/build1"
+    assert scan_evidence_files(sorted(root.iterdir())) == {}
+
+
+def test_path_leak_rejected_before_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "evaluation"
+    module, _ = _evaluation(root, monkeypatch)
+    monkeypatch.setattr(module, "_portable_location", lambda *_: "Z:\\local\\evaluation")
+    with pytest.raises(ValueError, match="evidence_path_or_secret_leak"):
+        module.publish(root, tmp_path / "out")
+    assert not (tmp_path / "out").exists()
 
 
 @pytest.mark.parametrize(

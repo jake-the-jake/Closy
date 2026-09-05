@@ -36,10 +36,11 @@ from closy_forge.manual_provider_c3_v1.states import MOTION_STATES
 from closy_forge.package_io.canonical_json import canonical_dumps, canonical_text_bytes
 from closy_forge.package_io.hashing import sha256_bytes, sha256_file
 from closy_forge.package_io.paths import validate_package_relpath
+from closy_forge.security.evidence_hygiene import scan_evidence_text
 from closy_forge.security.strict_json import loads_strict_json_object
 
 FORGE = Path(__file__).resolve().parents[1]
-VERSION = "closy.binding_v2.saved_evidence_publication.v1"
+VERSION = "closy.binding_v2.saved_evidence_publication.v2"
 MAX_DOCUMENT_BYTES = 16 * 1024 * 1024
 STATE_IDS = [state.state_id for state in MOTION_STATES]
 AUTHORITY = {
@@ -95,6 +96,36 @@ def _identity(document: dict[str, Any], field: str) -> str:
 def _exact(actual: Any, expected: Any, code: str) -> None:
     # Unlike Python equality this distinguishes true/1 and numeric status forgeries.
     _require(canonical_dumps(actual) == canonical_dumps(expected), code)
+
+
+def _portable_location(path: Path, forge_root: Path, label: str) -> str:
+    for prefix, base in (("forge-relative", forge_root), ("workspace-relative", forge_root.parent)):
+        if path.resolve().is_relative_to(base.resolve()):
+            return f"{prefix}/{path.resolve().relative_to(base.resolve()).as_posix()}"
+    return f"external-local/{label}"
+
+
+def _input_projection(raw: bytes, evaluation: Path, forge_root: Path) -> dict[str, Any]:
+    original = _json(raw)
+    projection = {
+        "version": "closy.binding_v2.input_inventory_projection.v1",
+        "files": original["files"],
+        "sourceRoot": _portable_location(Path(original["sourceRoot"]), forge_root, "sourceRoot"),
+        "unitARoot": _portable_location(Path(original["unitARoot"]), forge_root, "unitARoot"),
+        "pathScope": "logical_forge_or_workspace_relative_labels_external_local_paths_redacted",
+        "originalInventory": {
+            "sha256": sha256_bytes(raw),
+            "byteSize": len(raw),
+            "inputDigest": original["digest"],
+            "retainedAt": _portable_location(
+                evaluation / "input_inventory.json", forge_root, "evaluation/input_inventory.json"
+            ),
+            "digestScope": "original_local_inventory_excluding_digest_not_this_projection",
+            "publishedBytesAreOriginal": False,
+        },
+    }
+    projection["projectionDigest"] = digest_json(projection)
+    return projection
 
 
 def _rows(rows: list[dict[str, Any]], source_id: str, family: str) -> None:
@@ -556,10 +587,15 @@ def prepare_publication(evaluation: Path, *, forge_root: Path = FORGE) -> dict[s
             _file(evaluation, name).read_bytes() == data, "evaluation_changed_during_validation"
         )
     output = {name: data for name, data in raw.items() if name != "checkpoint.json"}
+    output["input_inventory.json"] = canonical_dumps(
+        _input_projection(raw["input_inventory.json"], evaluation, forge_root)
+    ).encode()
     output["package_index.json"] = canonical_dumps(packages).encode()
     publication: dict[str, Any] = {
         "version": VERSION,
-        "sourceEvaluation": str(evaluation.resolve()),
+        "sourceEvaluation": _portable_location(evaluation, forge_root, "evaluation"),
+        "sourceEvaluationScope": "logical_relative_label_not_an_absolute_host_path",
+        "inputInventoryScope": "portable_projection_original_input_digest_is_not_projection_digest",
         "evaluationResultDigest": result["resultDigest"],
         "baselineStatus": result["baselineStatus"],
         "evaluationStatus": result["status"],
@@ -576,6 +612,10 @@ def prepare_publication(evaluation: Path, *, forge_root: Path = FORGE) -> dict[s
     }
     publication["identity"] = digest_json(publication)
     output["publication_manifest.json"] = canonical_dumps(publication).encode()
+    _require(
+        not any(scan_evidence_text(data.decode("utf-8")) for data in output.values()),
+        "evidence_path_or_secret_leak",
+    )
     return output
 
 

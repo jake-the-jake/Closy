@@ -34,3 +34,8 @@ suite belongs to the integrated Unit C head.
 
 Base is Unit A's final pushed head `ac5900f6c3688225d22d6d60e766bb87e5a1d1d0`.
 Keep draft, open and unmerged. No Expo, ZeroOne or historical experiment changes.
+
+Initial CI caught absolute host paths in two evidence files. Publication v2 replaces
+them with explicit portable projections, preserving the original local receipt hashes
+and separate projection digests. The unchanged path-safety check and 43 publication
+tests pass. The original failed CI run remains recorded; no binding evaluation rerun.
