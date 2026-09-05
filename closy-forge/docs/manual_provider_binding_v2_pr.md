@@ -39,3 +39,6 @@ Initial CI caught absolute host paths in two evidence files. Publication v2 repl
 them with explicit portable projections, preserving the original local receipt hashes
 and separate projection digests. The unchanged path-safety check and 43 publication
 tests pass. The original failed CI run remains recorded; no binding evaluation rerun.
+Windows CI additionally exposed CRLF conversion of the byte-hashed report. A new
+evidence-local attributes rule pins only this report to LF; a real `core.autocrlf=true`
+index checkout preserves its exact 1731 bytes and SHA-256. No hash tolerance was added.
