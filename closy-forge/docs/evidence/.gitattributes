@@ -1,2 +1,4 @@
 # New byte-hashed publications must survive Windows checkout without conversion.
 manual_provider_binding_v2_development/report.md text eol=lf
+outfit_layer_runtime_v1/** -text
+outfit_layer_runtime_v1/demo/index.html whitespace=cr-at-eol
