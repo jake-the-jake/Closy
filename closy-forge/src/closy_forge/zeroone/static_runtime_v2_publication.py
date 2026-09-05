@@ -235,15 +235,7 @@ def publish_static_runtime_v2(repository: Path, transition_commit: str) -> dict[
 
     if result_path.read_bytes() != before:
         raise ValueError("static_runtime_v2_result_mutated_during_publication")
-    inventory = [
-        {
-            "path": path.relative_to(evidence).as_posix(),
-            "bytes": path.stat().st_size,
-            "sha256": sha256_bytes(path.read_bytes()),
-        }
-        for path in sorted(evidence.rglob("*"))
-        if path.is_file() and path.name != "publication_manifest.json"
-    ]
+    inventory = _publication_inventory(evidence)
     manifest: dict[str, Any] = {
         "schemaVersion": 1,
         "publicationVersion": "closy.static_zeroone_runtime_v2.publication.v1",
@@ -258,6 +250,69 @@ def publish_static_runtime_v2(repository: Path, transition_commit: str) -> dict[
     manifest["publicationDigest"] = canonical_digest(manifest)
     write_json(evidence / "publication_manifest.json", manifest)
     return manifest
+
+
+def check_publication(repository: Path) -> list[str]:
+    failures: list[str] = []
+    evidence = repository / "closy-forge/docs/evidence/static_zeroone_runtime_v2"
+    result_path = evidence / "result.json"
+    schema_path = repository / "closy-forge/schemas/static_zeroone_runtime_v2/result.schema.json"
+    receipt = check_result_file(result_path, schema_path)
+    if read_json(evidence / "independent_checker_receipt.json") != receipt:
+        failures.append("publication_checker_receipt_stale")
+
+    transition66 = read_json(evidence / "inventory_transition_pr66.json")
+    transition_commit = str(transition66.get("transitionCommit", ""))
+    expected_inventories = build_inventory_chain(repository, transition_commit)
+    for name, expected in expected_inventories.items():
+        if read_json(evidence / name) != expected:
+            failures.append(f"publication_inventory_stale:{name}")
+
+    result = read_json(result_path)
+    support = Counter(str(row["capabilitySupport"]) for row in result["staticZeroOne"])
+    static_outcomes = Counter(str(row["terminalOutcome"]) for row in result["staticZeroOne"])
+    runtime_outcomes = Counter(str(row["terminalOutcome"]) for row in result["conventionalRuntime"])
+    final_inventory = expected_inventories["blueprint_inventory.json"]
+    expected_payload = _pr_body_payload(
+        result,
+        receipt,
+        final_inventory,
+        support,
+        static_outcomes,
+        runtime_outcomes,
+        transition_commit,
+    )
+    expected_json = {
+        "execution_history.json": _execution_history(receipt),
+        "host_environment_attestation.json": _host_attestation(result),
+        "protocol_deviations.json": _protocol_deviations(result),
+        "blocker_ledger.json": _blocker_ledger(result),
+        "blueprint_status.json": _blueprint_status(final_inventory),
+        "stack_manifest.json": _stack_manifest(transition_commit),
+        "pr_body_payload.json": expected_payload,
+        "resume.json": _resume(expected_payload),
+    }
+    for name, expected in expected_json.items():
+        if read_json(evidence / name) != expected:
+            failures.append(f"publication_artifact_stale:{name}")
+    if (evidence / "REPORT.md").read_text(encoding="utf-8") != _report(expected_payload):
+        failures.append("publication_report_stale")
+    if (evidence / "README.md").read_text(encoding="utf-8") != _readme():
+        failures.append("publication_readme_stale")
+
+    manifest = read_json(evidence / "publication_manifest.json")
+    inventory = _publication_inventory(evidence)
+    if manifest.get("inventory") != inventory:
+        failures.append("publication_file_inventory_stale")
+    if manifest.get("inventoryDigest") != canonical_digest(inventory):
+        failures.append("publication_inventory_digest_invalid")
+    if manifest.get("publicationDigest") != canonical_digest(manifest, "publicationDigest"):
+        failures.append("publication_digest_invalid")
+    if manifest.get("resultSha256") != receipt["resultSha256"]:
+        failures.append("publication_result_substituted")
+    for path in evidence.glob("*.json"):
+        failures.extend(f"{path.name}:{item}" for item in _path_hygiene_failures(read_json(path)))
+    return sorted(set(failures))
 
 
 def build_inventory_chain(repository: Path, transition_commit: str) -> dict[str, dict[str, Any]]:
@@ -934,6 +989,18 @@ def _readme() -> str:
         "manifest. Workflow URLs and final GitHub job states are intentionally external to "
         "canonical artifacts.\n"
     )
+
+
+def _publication_inventory(evidence: Path) -> list[dict[str, Any]]:
+    return [
+        {
+            "path": path.relative_to(evidence).as_posix(),
+            "bytes": path.stat().st_size,
+            "sha256": sha256_bytes(path.read_bytes()),
+        }
+        for path in sorted(evidence.rglob("*"))
+        if path.is_file() and path.name != "publication_manifest.json"
+    ]
 
 
 def _schema_type_matches(value: Any, expected: Any) -> bool:
