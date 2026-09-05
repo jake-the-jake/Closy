@@ -27,10 +27,11 @@ exposed project-authored development evidence, not physical/scientific qualifica
 
 ## Restart checkpoint
 
-Current unit: B publication / C final evaluation. Unit A is draft PR67,
+Current unit: C final evaluation. Unit A is draft PR67,
 head `ac5900f6c3688225d22d6d60e766bb87e5a1d1d0`, tree
 `ecd2d9388cfcb54d3042ca5a2f294c900956c131`.
-Branch before B publication: `codex/closy-forge-all-family-layer-integration-v1`.
+Current branch: `codex/closy-forge-outfit-layer-runtime-integration-v1`.
+Its exact parent is final B/PR68 head `795b8962d27cccf3da0d003b007d90cce4b4b12e`.
 Worktree: `E:/apps/Closy-all-family-layer-integration-v1`.
 Protected dirty primary worktree: `E:/apps/Closy` (unchanged).
 Known failure reused: settled sleeve collapse, 2/4/2 simulation triangles becoming
@@ -64,13 +65,22 @@ triangle/material/provenance/bounds audits. Z4/Z5/Z6/Z8 each pass 9; Z3/Z7 each
 not_run 9. New read-only PR66 hash reuse receipt, no ZeroOne rebuild. First attempt
 `.tmp/static-family-v3-01` retains nine processor cache path-length failures.
 
-Unit C final outfit matrix `.tmp/outfit-final-v1` is running (40 rows, 30 adjacent
-samples, 13 negatives). Earlier `.tmp/outfit-probe-01` and `-02` remain failed fit
-iterations. Security repairs: 109 focused tests passed. No fit success is inferred
-from safe geometry or successful runtime transport.
+Unit C final outfit matrix `.tmp/outfit-final-v2` exited 0 (40 valid geometry rows,
+zero fit-ready, 30 adjacent samples, 13 correct negative rejections, sources unchanged).
+The first final attempt retains 17 completed quality failures
+and an explicit interruption receipt: a separate no-contact lower-bound regression
+required a reporting correction. Earlier `.tmp/outfit-probe-01` and `-02` remain
+failed fit iterations. Security/report repairs: 110 focused tests passed. No fit
+success is inferred from safe geometry or successful runtime transport.
 
-Next: publish B from the exact final A head, finish C matrix/runtime44/demo, run one
-complete final local suite, and publish the final stacked draft. Never rerun already
-completed evaluations merely to refresh a report.
+The final demo has completed, with its failed outfit quality clearly labeled. The
+final-code runtime44 using final outfit inputs also exited 0: all 44 rows, 22 pairs
+and 43 controls pass, sourceFresh true. The final cumulative suite is still running.
+No more than two measured heavyweight jobs were active. Publish the third draft for
+required remote CI while this long local suite continues; explicitly retain pending
+status. Final closeout waits for real local/remote outcomes rather than treating a
+running process as passing. Saved evidence is losslessly archived with visible
+summaries/images; full details remain available without hundreds-file witness churn.
+See ACTIVE_BLUEPRINT_RESUME_OUTFIT_RUNTIME_V1.md for the latest safe pointer.
 
 The reporting parser is a separate pure sidecar; its files do not alter frozen inventories.
